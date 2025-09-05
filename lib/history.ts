@@ -1,35 +1,32 @@
 // lib/history.ts
-import { promises as fs } from 'node:fs';
-import path from 'node:path';
-import { HistoryRow } from './types';
-import { DATA_DIR } from './storage';
+import { appendLine, readLines } from '@/lib/storage';
+import type { HistoryRow } from '@/lib/types';
 
-const FILE = path.join(DATA_DIR, 'history.jsonl');
+const FILE = 'history.jsonl';
 
-async function ensureFile() {
-  await fs.mkdir(path.dirname(FILE), { recursive: true });
-  try { await fs.access(FILE); } catch { await fs.writeFile(FILE, '', 'utf8'); }
+export async function readAllHistory(): Promise<HistoryRow[]> {
+  const lines = await readLines(FILE);
+  return lines.map((l) => {
+    try {
+      return JSON.parse(l) as HistoryRow;
+    } catch {
+      return null as any;
+    }
+  }).filter(Boolean);
 }
 
 export async function appendHistoryPoint(row: HistoryRow) {
-  await ensureFile();
-  await fs.appendFile(FILE, JSON.stringify(row) + '\n', 'utf8');
+  await appendLine(FILE, JSON.stringify(row));
 }
 
-export async function readAllHistory(): Promise<HistoryRow[]> {
-  try {
-    await ensureFile();
-    const txt = await fs.readFile(FILE, 'utf8');
-    return txt.split('\n').filter(Boolean).map(l => JSON.parse(l));
-  } catch {
-    return [];
-  }
-}
-
-// append once per ~day
-export function shouldAppend(last: HistoryRow | undefined, next: HistoryRow) {
+export function shouldAppend(last: HistoryRow | undefined, row: HistoryRow) {
   if (!last) return true;
-  const lastDay = new Date(last.as_of_utc).toISOString().slice(0, 10);
-  const nextDay = new Date(next.as_of_utc).toISOString().slice(0, 10);
-  return lastDay !== nextDay;
+  // append if new calendar day or > 20h since last
+  const dtLast = Date.parse(last.as_of_utc);
+  const dtNow = Date.parse(row.as_of_utc);
+  if (Number.isNaN(dtLast) || Number.isNaN(dtNow)) return true;
+  const deltaH = (dtNow - dtLast) / 3_600_000;
+  const dayLast = new Date(dtLast).toISOString().slice(0, 10);
+  const dayNow  = new Date(dtNow ).toISOString().slice(0, 10);
+  return dayNow !== dayLast || deltaH > 20;
 }

@@ -2,28 +2,41 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-const DATA_DIR = path.join(process.cwd(), '.data');
-const JSON_DIR = path.join(DATA_DIR, 'json');
+const ROOT = path.join(process.cwd(), '.data', 'json');
 
-async function ensureDir(p: string) {
-  await fs.mkdir(p, { recursive: true });
+async function ensureDir() {
+  await fs.mkdir(ROOT, { recursive: true });
 }
 
 export async function saveJson(name: string, obj: any) {
-  await ensureDir(JSON_DIR);
-  const file = path.join(JSON_DIR, name);
-  await fs.writeFile(file, JSON.stringify(obj, null, 2), 'utf8');
-  return file;
+  await ensureDir();
+  const p = path.join(ROOT, name);
+  await fs.writeFile(p, JSON.stringify(obj, null, 2), 'utf8');
+  return p;
 }
 
 export async function readJson<T = any>(name: string): Promise<T | null> {
   try {
-    const file = path.join(JSON_DIR, name);
-    const txt = await fs.readFile(file, 'utf8');
+    const p = path.join(ROOT, name);
+    const txt = await fs.readFile(p, 'utf8');
     return JSON.parse(txt) as T;
   } catch {
     return null;
   }
 }
 
-export { DATA_DIR, JSON_DIR };
+export async function appendLine(name: string, line: string) {
+  await ensureDir();
+  const p = path.join(ROOT, name);
+  await fs.appendFile(p, line + '\n', 'utf8');
+}
+
+export async function readLines(name: string): Promise<string[]> {
+  try {
+    const p = path.join(ROOT, name);
+    const txt = await fs.readFile(p, 'utf8');
+    return txt.split(/\r?\n/).filter(Boolean);
+  } catch {
+    return [];
+  }
+}

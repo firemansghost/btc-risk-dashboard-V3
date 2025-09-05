@@ -1,5 +1,6 @@
 // lib/types.ts
 export type FactorStatus = 'fresh' | 'stale' | 'excluded';
+
 export type FactorDetail = { label: string; value: any };
 
 export type FactorSummary = {
@@ -27,7 +28,7 @@ export type LatestSnapshot = {
   };
   health: 'green' | 'yellow' | 'red' | 'gray';
   factors: FactorSummary[];
-  btc: { spot_usd: number | null; as_of_utc: string | null; source: string };
+  btc: { spot_usd: number | null; as_of_utc: string | null; source: string | null };
   provenance: any[];
   model_version: string;
   transform: Record<string, any>;
