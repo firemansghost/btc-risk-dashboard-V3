@@ -1,3 +1,5 @@
+import './globals.css';
+
 export const metadata = {
   title: process.env.NEXT_PUBLIC_APP_NAME || "Bitcoin Risk Dashboard",
   description: "A simple, transparent BTC risk dashboard.",

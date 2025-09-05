@@ -1,0 +1,99 @@
+{
+  "ok": true,
+  "as_of_utc": "2025-09-05T01:00:13.390Z",
+  "composite_score": 50,
+  "band": {
+    "key": "hold_neutral",
+    "label": "Hold/Neutral",
+    "range": [
+      35,
+      55
+    ],
+    "color": "blue",
+    "recommendation": "Maintain positions, selective buying"
+  },
+  "health": "green",
+  "factors": [
+    {
+      "key": "trend_valuation",
+      "label": "Trend & Valuation",
+      "weight_pct": 30,
+      "score": null,
+      "status": "excluded",
+      "last_utc": null,
+      "source": null,
+      "details": [],
+      "reason": "not_implemented_yet"
+    },
+    {
+      "key": "net_liquidity",
+      "label": "Net Liquidity (FRED)",
+      "weight_pct": 10,
+      "score": null,
+      "status": "excluded",
+      "last_utc": null,
+      "source": null,
+      "details": [],
+      "reason": "not_implemented_yet"
+    },
+    {
+      "key": "stablecoins",
+      "label": "Stablecoins",
+      "weight_pct": 15,
+      "score": null,
+      "status": "excluded",
+      "last_utc": null,
+      "source": null,
+      "details": [],
+      "reason": "not_implemented_yet"
+    },
+    {
+      "key": "term_leverage",
+      "label": "Term Structure & Leverage",
+      "weight_pct": 20,
+      "score": null,
+      "status": "excluded",
+      "last_utc": null,
+      "source": null,
+      "details": [],
+      "reason": "not_implemented_yet"
+    },
+    {
+      "key": "onchain",
+      "label": "On-chain Activity",
+      "weight_pct": 10,
+      "score": null,
+      "status": "excluded",
+      "last_utc": null,
+      "source": null,
+      "details": [],
+      "reason": "not_implemented_yet"
+    },
+    {
+      "key": "etf_flows",
+      "label": "ETF Flows",
+      "weight_pct": 15,
+      "score": null,
+      "status": "excluded",
+      "last_utc": null,
+      "source": null,
+      "details": [],
+      "reason": "not_implemented_yet"
+    }
+  ],
+  "btc": {
+    "spot_usd": 110478.51,
+    "as_of_utc": "2025-09-05T01:00:13.390Z",
+    "source": "coinbase"
+  },
+  "provenance": [
+    {
+      "url": "https://api.exchange.coinbase.com/products/BTC-USD/ticker",
+      "ok": false,
+      "status": 200,
+      "ms": 144
+    }
+  ],
+  "model_version": "v0.1.0",
+  "transform": {}
+}
