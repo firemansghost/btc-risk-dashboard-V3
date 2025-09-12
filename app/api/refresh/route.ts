@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { computeTrendValuation } from '@/lib/factors/trendValuation';
 import { fetchCoinbaseSpot }     from '@/lib/data/btc';
+import { saveJson }              from '@/lib/storage';
 
 function sanitizeProv(list: any[]) {
   const mask = (u: string) => u.replace(/(api_key=)[^&]+/i, '$1****');
@@ -161,21 +162,26 @@ async function buildLatest() {
     spot?.provenance,
   ].filter(Boolean) as any[]);
 
-  return NextResponse.json({
-    ok: true,
-    latest: {
-      ok: true,
-      as_of_utc: new Date().toISOString(),
-      composite_score: composite,
-      band,
-      health: 'green',
-      factors,
-      btc: { spot_usd: spot.usd, as_of_utc: spot.as_of_utc, source: 'coinbase' },
-      provenance: prov,
-      model_version: 'v3.2.0',
-      transform: {},
-    },
-  });
+      const latestData = {
+        ok: true,
+        as_of_utc: new Date().toISOString(),
+        composite_score: composite,
+        band,
+        health: 'green',
+        factors,
+        btc: { spot_usd: spot.usd, as_of_utc: spot.as_of_utc, source: 'coinbase' },
+        provenance: prov,
+        model_version: 'v3.2.0',
+        transform: {},
+      };
+
+      // Save to latest.json for /api/data/latest endpoint
+      await saveJson('latest.json', latestData);
+
+      return NextResponse.json({
+        ok: true,
+        latest: latestData,
+      });
 }
 
 export async function GET()  { return buildLatest(); }
