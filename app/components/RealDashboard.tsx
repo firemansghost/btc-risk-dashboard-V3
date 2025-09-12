@@ -12,6 +12,7 @@ export default function RealDashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [apiDetail, setApiDetail] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'data-sources'>('overview');
 
   const loadLatest = useCallback(async () => {
     setError(null);
@@ -90,7 +91,46 @@ export default function RealDashboard() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+      {/* Tab Navigation */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '1px solid #e5e7eb' }}>
+        <button
+          onClick={() => setActiveTab('overview')}
+          style={{
+            padding: '12px 24px',
+            border: 'none',
+            backgroundColor: 'transparent',
+            color: activeTab === 'overview' ? '#059669' : '#6b7280',
+            borderBottom: activeTab === 'overview' ? '2px solid #059669' : '2px solid transparent',
+            cursor: 'pointer',
+            fontSize: '16px',
+            fontWeight: activeTab === 'overview' ? '600' : '400',
+            transition: 'all 0.2s ease'
+          }}
+        >
+          Overview
+        </button>
+        <button
+          onClick={() => setActiveTab('data-sources')}
+          style={{
+            padding: '12px 24px',
+            border: 'none',
+            backgroundColor: 'transparent',
+            color: activeTab === 'data-sources' ? '#059669' : '#6b7280',
+            borderBottom: activeTab === 'data-sources' ? '2px solid #059669' : '2px solid transparent',
+            cursor: 'pointer',
+            fontSize: '16px',
+            fontWeight: activeTab === 'data-sources' ? '600' : '400',
+            transition: 'all 0.2s ease'
+          }}
+        >
+          Data Sources
+        </button>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'overview' && (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px', marginBottom: '24px' }}>
         <div style={{ 
           borderRadius: '12px', 
           border: '1px solid #e5e7eb', 
@@ -239,6 +279,43 @@ export default function RealDashboard() {
 {JSON.stringify(apiDetail, null, 2)}
           </pre>
         </details>
+      )}
+        </>
+      )}
+
+      {activeTab === 'data-sources' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+          {factors.map(factor => (
+            <div key={factor.key} style={{ 
+              borderRadius: '12px', 
+              border: '1px solid #e5e7eb', 
+              backgroundColor: 'white', 
+              padding: '16px', 
+              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' 
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0' }}>{factor.label}</h3>
+                <div style={{ 
+                  fontSize: '12px', 
+                  padding: '4px 8px', 
+                  borderRadius: '12px', 
+                  backgroundColor: '#f3f4f6',
+                  color: '#6b7280'
+                }}>
+                  {factor.weight_pct}% weight
+                </div>
+              </div>
+              
+              <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '12px' }}>
+                {factor.source || 'Source information will appear once this factor is active.'}
+              </div>
+              
+              <div style={{ fontSize: '12px', color: '#9ca3af', borderTop: '1px solid #f3f4f6', paddingTop: '8px' }}>
+                Last updated: {factor.last_utc ? new Date(factor.last_utc).toLocaleString() : '—'} • Status: {factor.status}
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
