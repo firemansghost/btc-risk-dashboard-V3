@@ -7,6 +7,7 @@ import { saveJson }              from '@/lib/storage';
 import { calculatePowerLawAdjustment, fetchExtendedDailyCandles } from '@/lib/math/powerLaw';
 import { clamp } from '@/lib/math/normalize';
 import { computeFastSpike } from '@/lib/adjust/fastSpike';
+import type { PillarKey } from '@/lib/types';
 
 function sanitizeProv(list: any[]) {
   const mask = (u: string) => u.replace(/(api_key=)[^&]+/i, '$1****');
@@ -19,13 +20,15 @@ export const dynamic = 'force-dynamic';
 type FactorCard = {
   key: string;
   label: string;
+  pillar: PillarKey;
   weight_pct: number;
   score: number | null;
   status: 'fresh' | 'stale' | 'excluded';
   last_utc: string | null;
   source: string | null;
-  details: { label: string; value: any }[];
+  details: { label: string; value: any; formula?: string; window?: string }[];
   reason?: string;
+  counts_toward?: PillarKey;
 };
 
 // Safely load & run ETF flows at runtime so a bad import or runtime error can't crash the route
@@ -90,10 +93,11 @@ async function buildLatest() {
 
   const factors: FactorCard[] = [];
 
-  // 25% Trend & Valuation
+  // 25% Trend & Valuation - Momentum pillar
   factors.push({
     key: 'trend_valuation',
     label: 'Trend & Valuation',
+    pillar: 'momentum',
     weight_pct: 25,
     score: tv.score,
     status: tv.score === null ? 'excluded' : 'fresh',
@@ -101,59 +105,80 @@ async function buildLatest() {
     source: 'Coinbase price → 200d SMA (Mayer), 2Y SMA, RSI(14)',
     details: tv.details || [
       { label: 'BMSB status', value: tv.bmsb?.status ?? '—' },
-      { label: 'dist_to_band', value: Number.isFinite(tv.bmsb?.dist) ? `${(tv.bmsb.dist * 100).toFixed(2)}%` : '—' },
-      { label: 'Mayer Multiple', value: Number.isFinite(tv.signals?.[0]?.raw) ? tv.signals[0].raw.toFixed(3) : '—' },
+      { label: 'dist_to_band', value: Number.isFinite(tv.bmsb?.dist) ? `${(tv.bmsb.dist * 100).toFixed(2)}%` : '—', formula: 'price / 21W EMA − 1', window: '2y pct rank' },
+      { label: 'Mayer Multiple', value: Number.isFinite(tv.signals?.[0]?.raw) ? tv.signals[0].raw.toFixed(3) : '—', formula: 'price / 200D SMA', window: '3y pct rank' },
       { label: '2Y MA Multiplier', value: Number.isFinite(tv.signals?.[1]?.raw) ? tv.signals[1].raw.toFixed(3) : '—' },
     ],
   });
 
-  // 10% Net Liquidity
+  // 10% Net Liquidity - Liquidity pillar
   factors.push(nl.score !== null ? {
     key: 'net_liquidity',
     label: 'Net Liquidity (FRED)',
+    pillar: 'liquidity',
     weight_pct: 10, score: nl.score!, status: 'fresh',
     last_utc: nl.last_utc, source: nl.source, details: nl.details,
-  } : { key: 'net_liquidity', label: 'Net Liquidity (FRED)', weight_pct: 10, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: 'fetch_or_key' });
+  } : { key: 'net_liquidity', label: 'Net Liquidity (FRED)', pillar: 'liquidity', weight_pct: 10, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: 'fetch_or_key' });
 
-  // 15% Stablecoins
+  // 15% Stablecoins - Liquidity pillar
   factors.push(sc.score !== null ? {
     key: 'stablecoins',
     label: 'Stablecoins',
+    pillar: 'liquidity',
     weight_pct: 15, score: sc.score!, status: 'fresh',
-    last_utc: sc.last_utc, source: sc.source, details: sc.details,
-  } : { key: 'stablecoins', label: 'Stablecoins', weight_pct: 15, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: 'fetch_or_limit' });
+    last_utc: sc.last_utc, source: sc.source, details: sc.details.map(d => ({ ...d, formula: d.label.includes('30d') ? '%Δ 30d' : undefined, window: d.label.includes('30d') ? '2y z-score → logistic' : undefined })),
+  } : { key: 'stablecoins', label: 'Stablecoins', pillar: 'liquidity', weight_pct: 15, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: 'fetch_or_limit' });
 
-  // 20% Term & Leverage
+  // 20% Term & Leverage - Leverage pillar
   factors.push(tsl.score !== null ? {
     key: 'term_leverage',
     label: 'Term Structure & Leverage',
+    pillar: 'leverage',
     weight_pct: 20, score: tsl.score!, status: 'fresh',
-    last_utc: tsl.last_utc, source: tsl.source, details: tsl.details,
-  } : { key: 'term_leverage', label: 'Term Structure & Leverage', weight_pct: 20, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: 'fetch_error' });
+    last_utc: tsl.last_utc, source: tsl.source, details: tsl.details.map(d => ({ ...d, formula: d.label.includes('7d') ? 'mean funding(7d)' : undefined, window: d.label.includes('7d') ? '2y z-score' : undefined })),
+  } : { key: 'term_leverage', label: 'Term Structure & Leverage', pillar: 'leverage', weight_pct: 20, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: 'fetch_error' });
 
-  // 10% On-chain
+  // 10% On-chain - Social pillar (but counts toward momentum)
   factors.push(oc.score !== null ? {
     key: 'onchain',
     label: 'On-chain Activity',
+    pillar: 'social',
     weight_pct: 10, score: oc.score!, status: 'fresh',
     last_utc: oc.last_utc, source: oc.source, details: oc.details,
-  } : { key: 'onchain', label: 'On-chain Activity', weight_pct: 10, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: 'fetch_error' });
+    counts_toward: 'momentum',
+  } : { key: 'onchain', label: 'On-chain Activity', pillar: 'social', weight_pct: 10, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: 'fetch_error', counts_toward: 'momentum' });
 
-  // 10% ETF Flows
+  // 10% ETF Flows - Liquidity pillar
   factors.push(etf.score !== null ? {
     key: 'etf_flows',
     label: 'ETF Flows',
+    pillar: 'liquidity',
     weight_pct: 10, score: etf.score!, status: 'fresh',
-    last_utc: etf.last_utc, source: etf.source, details: etf.details,
-  } : { key: 'etf_flows', label: 'ETF Flows', weight_pct: 10, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: etf.reason ?? 'missing_feed_or_parse_error' });
+    last_utc: etf.last_utc, source: etf.source, details: etf.details.map(d => ({ ...d, formula: d.label.includes('21d') ? 'Σ net flow(21d)' : undefined, window: d.label.includes('21d') ? '180d percentile' : undefined })),
+  } : { key: 'etf_flows', label: 'ETF Flows', pillar: 'liquidity', weight_pct: 10, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: etf.reason ?? 'missing_feed_or_parse_error' });
 
-  // 10% Social Interest
+  // 5% Social Interest - Social pillar
   factors.push(social.score !== null ? {
     key: 'social',
     label: 'Social Interest',
-    weight_pct: 10, score: social.score!, status: 'fresh',
-    last_utc: social.last_utc, source: social.source, details: social.details,
-  } : { key: 'social', label: 'Social Interest', weight_pct: 10, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: social.reason ?? 'social_error' });
+    pillar: 'social',
+    weight_pct: 5, score: social.score!, status: 'fresh',
+    last_utc: social.last_utc, source: social.source, details: social.details.map(d => ({ ...d, formula: d.label.includes('F&G') ? 'index 0–100' : undefined, window: d.label.includes('F&G') ? '2y pct rank' : undefined })),
+  } : { key: 'social', label: 'Social Interest', pillar: 'social', weight_pct: 5, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: social.reason ?? 'social_error' });
+
+  // 10% Macro Overlay - Macro pillar (placeholder)
+  factors.push({
+    key: 'macro_overlay',
+    label: 'Macro Overlay',
+    pillar: 'macro',
+    weight_pct: 10,
+    score: null,
+    status: 'excluded',
+    last_utc: null,
+    source: null,
+    details: [],
+    reason: 'coming_soon',
+  });
 
   // Renormalize composite over available factors
   const usable = factors.filter((f): f is FactorCard & { score: number } => typeof f.score === 'number');

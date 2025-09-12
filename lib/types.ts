@@ -1,11 +1,19 @@
 // lib/types.ts
 export type FactorStatus = 'fresh' | 'stale' | 'excluded';
 
-export type FactorDetail = { label: string; value: any };
+export type PillarKey = 'liquidity' | 'momentum' | 'leverage' | 'macro' | 'social';
 
-export type FactorSummary = {
+export interface FactorDetail {
+  label: string;
+  value: any;
+  formula?: string; // optional: short text
+  window?: string;  // optional: e.g., '2y pct rank'
+}
+
+export interface FactorSummary {
   key: string;
   label: string;
+  pillar: PillarKey; // NEW
   weight_pct: number;
   score: number | null;
   status: FactorStatus;
@@ -13,7 +21,9 @@ export type FactorSummary = {
   source: string | null;
   details: FactorDetail[];
   reason?: string;
-};
+  /** When display pillar ≠ math attribution (e.g., On-chain counts into Momentum). */
+  counts_toward?: PillarKey;
+}
 
 export type LatestSnapshot = {
   ok: boolean;
