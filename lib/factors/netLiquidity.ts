@@ -4,13 +4,8 @@
 
 type Prov = { url: string; ok: boolean; status: number; ms: number; error?: string };
 
-const logistic01 = (x: number, k = 3, x0 = 0.5) => 1 / (1 + Math.exp(-k * (x - x0)));
-const percentileRank = (arr: number[], x: number) => {
-  const a = arr.filter(Number.isFinite).slice().sort((m, n) => m - n);
-  if (!a.length || !Number.isFinite(x)) return NaN;
-  let lt = 0, eq = 0; for (const v of a) { if (v < x) lt++; else if (v === x) eq++; else break; }
-  return (lt + 0.5 * eq) / a.length;
-};
+import { percentileRank, riskFromPercentile } from '@/lib/math/normalize';
+import { NORM } from '@/lib/config';
 const toNum = (v: any) => {
   const n = Number(String(v).replace(/[, ]/g, ""));
   return Number.isFinite(n) ? n : NaN;
@@ -81,7 +76,7 @@ export async function computeNetLiquidity() {
 
     const latest = nlClean.at(-1)!;
     const pr = percentileRank(nlClean, latest);
-    const score = Math.round(100 * logistic01(pr, 3)); // higher nl → higher pr → higher score
+    const score = Number.isFinite(pr) ? riskFromPercentile(pr, { invert: false, k: NORM.logistic_k }) : null;
 
     const last_utc = dates.at(-1)! + "T00:00:00.000Z";
     const latestBn = Number.isFinite(latest) ? (latest / 1e3).toFixed(1) : "—";

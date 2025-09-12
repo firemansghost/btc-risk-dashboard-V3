@@ -9,32 +9,14 @@ import { fetchCoinbaseSpot } from "@/lib/data/btc";
 
 type Prov = { url: string; ok: boolean; status: number; ms: number; error?: string };
 
+import { percentileRank, riskFromPercentile, sma } from '@/lib/math/normalize';
+import { NORM } from '@/lib/config';
+
 const mean = (a: number[]) => {
   const x = a.filter(Number.isFinite);
   return x.length ? x.reduce((s, v) => s + v, 0) / x.length : NaN;
 };
-const percentileRank = (arr: number[], x: number) => {
-  const a = arr.filter(Number.isFinite).slice().sort((m, n) => m - n);
-  if (!a.length || !Number.isFinite(x)) return NaN;
-  let lt = 0, eq = 0;
-  for (const v of a) { if (v < x) lt++; else if (v === x) eq++; else break; }
-  return (lt + 0.5 * eq) / a.length;
-};
-const logistic01 = (x: number, k = 3, x0 = 0.5) => 1 / (1 + Math.exp(-k * (x - x0)));
 
-function movingAvg(vals: number[], n: number): number[] {
-  const out = new Array(vals.length).fill(NaN);
-  let s = 0, q: number[] = [];
-  for (let i = 0; i < vals.length; i++) {
-    const v = vals[i];
-    if (Number.isFinite(v)) {
-      q.push(v); s += v;
-      if (q.length > n) s -= q.shift()!;
-      if (q.length >= n) out[i] = s / q.length;
-    }
-  }
-  return out;
-}
 
 async function fetchChart(name: string, provenance: Prov[], timespan = "90days") {
   const url = `https://api.blockchain.info/charts/${name}?timespan=${timespan}&format=json`;
@@ -64,12 +46,12 @@ export async function computeOnchain() {
 
   // --- mempool (MB) ---
   const mem = await fetchChart("mempool-size", provenance);
-  const memMA7 = movingAvg(mem?.values ?? [], 7);
+  const memMA7 = sma(mem?.values ?? [], 7);
   const memLast = memMA7.at(-1);
   let s_mempool: number | null = null;
   if (Number.isFinite(memLast)) {
     const pr = percentileRank(memMA7.filter(Number.isFinite) as number[], memLast as number);
-    s_mempool = Math.round(100 * logistic01(1 - pr, 3));
+    s_mempool = Number.isFinite(pr) ? riskFromPercentile(pr, { invert: true, k: NORM.logistic_k }) : null;
     sourcesUsed.push("blockchain.info • mempool-size");
   }
 
@@ -80,7 +62,7 @@ export async function computeOnchain() {
 
   const feesUsd = await fetchChart("fees-usd", provenance);
   if (feesUsd?.values?.length) {
-    feesSeries = movingAvg(feesUsd.values, 7);
+    feesSeries = sma(feesUsd.values, 7);
     const last = feesSeries.at(-1);
     if (Number.isFinite(last)) {
       feesUSDLast = last as number;
@@ -91,7 +73,7 @@ export async function computeOnchain() {
   if (!Number.isFinite(feesUSDLast as number)) {
     const feesBtc = await fetchChart("transaction-fees", provenance);
     if (feesBtc?.values?.length) {
-      const maBTC = movingAvg(feesBtc.values, 7);
+      const maBTC = sma(feesBtc.values, 7);
       const lastBTC = maBTC.at(-1);
       if (Number.isFinite(lastBTC)) {
         const spot = await fetchCoinbaseSpot().catch(() => ({ usd: NaN }));
@@ -108,7 +90,7 @@ export async function computeOnchain() {
   let s_fees: number | null = null;
   if (Number.isFinite(feesUSDLast as number) && feesSeries.length) {
     const pr = percentileRank(feesSeries.filter(Number.isFinite) as number[], feesUSDLast as number);
-    s_fees = Math.round(100 * logistic01(1 - pr, 3));
+    s_fees = Number.isFinite(pr) ? riskFromPercentile(pr, { invert: true, k: NORM.logistic_k }) : null;
     sourcesUsed.push(feesSource);
   }
 
@@ -119,7 +101,7 @@ export async function computeOnchain() {
   let puellPercentile: number | null = null;
   
   if (revenue?.values?.length && revenue.values.length >= 365) {
-    const revenue365SMA = movingAvg(revenue.values, 365);
+    const revenue365SMA = sma(revenue.values, 365);
     const puellSeries: number[] = [];
     
     // Calculate Puell Multiple for each day where we have both revenue and SMA
@@ -136,7 +118,7 @@ export async function computeOnchain() {
       puellLast = puellClean[puellClean.length - 1];
       puellPercentile = percentileRank(puellClean, puellLast);
       // Higher Puell Multiple = higher risk (inverted)
-      s_puell = Math.round(100 * logistic01(puellPercentile, 3));
+      s_puell = Number.isFinite(puellPercentile) ? riskFromPercentile(puellPercentile, { invert: false, k: NORM.logistic_k }) : null;
       sourcesUsed.push("blockchain.info • miners-revenue");
     }
   }

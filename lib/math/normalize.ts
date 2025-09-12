@@ -1,43 +1,62 @@
 // lib/math/normalize.ts
-// Mathematical utilities for normalization and statistical functions
+// Unified normalization helpers for consistent risk scoring across all factors
+
+import { NORM } from '@/lib/config';
 
 /**
- * Winsorize values by capping extreme values at specified percentiles
- * @param values Array of numbers to winsorize
- * @param lower Lower percentile (default 0.05)
- * @param upper Upper percentile (default 0.95)
- * @returns Array of winsorized values
+ * Winsorize array values to specified percentiles
+ * @param arr Input array
+ * @param limits [lower_percentile, upper_percentile] as fractions (0-1)
+ * @returns Winsorized array
  */
-export function winsor(values: number[], lower = 0.05, upper = 0.95): number[] {
-  if (values.length === 0) return [];
+export function winsorize(arr: number[], [lo, hi]: [number, number]): number[] {
+  const finite = arr.filter(Number.isFinite);
+  if (finite.length === 0) return arr.map(() => NaN);
   
-  const sorted = [...values].filter(Number.isFinite).sort((a, b) => a - b);
-  if (sorted.length === 0) return values;
+  const sorted = finite.slice().sort((a, b) => a - b);
+  const lower = sorted[Math.floor(lo * sorted.length)];
+  const upper = sorted[Math.ceil(hi * sorted.length) - 1];
   
-  const lowerIndex = Math.floor(sorted.length * lower);
-  const upperIndex = Math.ceil(sorted.length * upper) - 1;
-  
-  const lowerBound = sorted[Math.max(0, lowerIndex)];
-  const upperBound = sorted[Math.min(sorted.length - 1, upperIndex)];
-  
-  return values.map(v => {
-    if (!Number.isFinite(v)) return v;
-    return Math.max(lowerBound, Math.min(upperBound, v));
+  return arr.map(v => {
+    if (!Number.isFinite(v)) return NaN;
+    return Math.max(lower, Math.min(upper, v));
   });
 }
 
 /**
- * Calculate percentile rank of a value within a series
- * @param series Array of numbers
- * @param x Value to find percentile rank for
- * @returns Percentile rank (0-1)
+ * Calculate z-score of a value relative to reference array
+ * @param x Value to score
+ * @param ref Reference array for mean/std calculation
+ * @returns Z-score (NaN if inputs invalid)
  */
-export function percentileRank(series: number[], x: number): number {
-  const sorted = series.filter(Number.isFinite).slice().sort((a, b) => a - b);
-  if (sorted.length === 0 || !Number.isFinite(x)) return NaN;
+export function zScore(x: number, ref: number[]): number {
+  if (!Number.isFinite(x)) return NaN;
   
-  let lt = 0;
-  let eq = 0;
+  const finite = ref.filter(Number.isFinite);
+  if (finite.length === 0) return NaN;
+  
+  const mean = finite.reduce((s, v) => s + v, 0) / finite.length;
+  const variance = finite.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / finite.length;
+  const std = Math.sqrt(variance);
+  
+  if (std === 0) return NaN;
+  return (x - mean) / std;
+}
+
+/**
+ * Calculate percentile rank of a value in reference array
+ * @param ref Reference array (sorted or unsorted)
+ * @param x Value to rank
+ * @returns Percentile rank in [0,1] (NaN if inputs invalid)
+ */
+export function percentileRank(ref: number[], x: number): number {
+  if (!Number.isFinite(x)) return NaN;
+  
+  const finite = ref.filter(Number.isFinite);
+  if (finite.length === 0) return NaN;
+  
+  const sorted = finite.slice().sort((a, b) => a - b);
+  let lt = 0, eq = 0;
   
   for (const v of sorted) {
     if (v < x) lt++;
@@ -49,13 +68,133 @@ export function percentileRank(series: number[], x: number): number {
 }
 
 /**
- * Logistic function mapping input to 0-1 range
+ * Logistic function mapping to [0,1]
  * @param x Input value
- * @param k Steepness parameter (default 3)
- * @param x0 Midpoint parameter (default 0.5)
- * @returns Logistic value between 0 and 1
+ * @param k Steepness parameter (default from config)
+ * @param x0 Center point (default 0.5)
+ * @returns Logistic output in [0,1]
  */
-export function logistic01(x: number, k = 3, x0 = 0.5): number {
+export const logistic01 = (x: number, k = NORM.logistic_k, x0 = 0.5): number => {
+  if (!Number.isFinite(x)) return NaN;
   return 1 / (1 + Math.exp(-k * (x - x0)));
+};
+
+/**
+ * Tanh-based mapping to [0,1] for z-scores
+ * @param z Z-score input
+ * @param scale Scaling factor (default from config)
+ * @returns Tanh output in [0,1]
+ */
+export const tanh01 = (z: number, scale = NORM.z_scale): number => {
+  if (!Number.isFinite(z)) return NaN;
+  return 0.5 * (1 + Math.tanh(z / scale));
+};
+
+/**
+ * Convert percentile to risk score with optional inversion
+ * @param p Percentile in [0,1]
+ * @param opts Options for inversion and logistic parameters
+ * @returns Risk score 0-100 (NaN if input invalid)
+ */
+export function riskFromPercentile(
+  p: number,
+  opts: { invert?: boolean; k?: number } = {}
+): number {
+  if (!Number.isFinite(p) || p < 0 || p > 1) return NaN;
+  
+  const { invert = false, k = NORM.logistic_k } = opts;
+  const x = invert ? 1 - p : p;
+  const logistic = logistic01(x, k);
+  
+  return Math.round(100 * logistic);
 }
 
+/**
+ * Convert z-score to risk score with direction control
+ * @param z Z-score input
+ * @param opts Options for direction, scaling, and clipping
+ * @returns Risk score 0-100 (NaN if input invalid)
+ */
+export function riskFromZ(
+  z: number,
+  opts: { direction?: 1 | -1; scale?: number; clip?: number } = {}
+): number {
+  if (!Number.isFinite(z)) return NaN;
+  
+  const { direction = 1, scale = NORM.z_scale, clip = NORM.z_clip } = opts;
+  
+  // Clamp z-score to prevent extreme values
+  const clampedZ = Math.max(-clip, Math.min(clip, z));
+  
+  // Apply direction (multiply by -1 if needed)
+  const directedZ = direction * clampedZ;
+  
+  // Convert to [0,1] via tanh
+  const tanh = tanh01(directedZ, scale);
+  
+  return Math.round(100 * tanh);
+}
+
+/**
+ * Simple Exponential Weighted Moving Average
+ * @param prev Previous EWMA value (null for first calculation)
+ * @param curr Current value
+ * @param alpha Smoothing factor (0-1, higher = more responsive)
+ * @returns New EWMA value
+ */
+export const ewma = (prev: number | null, curr: number, alpha = 0.3): number => {
+  if (!Number.isFinite(curr)) return prev ?? NaN;
+  if (prev == null || !Number.isFinite(prev)) return curr;
+  
+  return alpha * curr + (1 - alpha) * prev;
+};
+
+/**
+ * Simple moving average helper
+ * @param arr Input array
+ * @param n Window size
+ * @returns Array of moving averages (NaN for insufficient data)
+ */
+export function sma(arr: number[], n: number): number[] {
+  const out = new Array(arr.length).fill(NaN);
+  let sum = 0;
+  const queue: number[] = [];
+  
+  for (let i = 0; i < arr.length; i++) {
+    const v = arr[i];
+    if (Number.isFinite(v)) {
+      queue.push(v);
+      sum += v;
+      if (queue.length > n) {
+        sum -= queue.shift()!;
+      }
+      if (queue.length >= n) {
+        out[i] = sum / n;
+      }
+    }
+  }
+  
+  return out;
+}
+
+/**
+ * Exponential moving average helper
+ * @param arr Input array
+ * @param n Window size (converted to alpha = 2/(n+1))
+ * @returns Array of exponential moving averages
+ */
+export function ema(arr: number[], n: number): number[] {
+  const out = new Array(arr.length).fill(NaN);
+  const alpha = 2 / (n + 1);
+  let ema = NaN;
+  
+  for (let i = 0; i < arr.length; i++) {
+    const v = arr[i];
+    if (Number.isFinite(v)) {
+      ema = Number.isFinite(ema) ? ema + alpha * (v - ema) : v;
+      out[i] = ema;
+    }
+  }
+  
+  return out;
+}

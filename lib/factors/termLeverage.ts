@@ -4,31 +4,14 @@
 
 type Prov = { url: string; ok: boolean; status: number; ms: number; error?: string };
 
+import { percentileRank, riskFromPercentile, sma } from '@/lib/math/normalize';
+import { NORM } from '@/lib/config';
+
 const mean = (a: number[]) => {
   const x = a.filter(Number.isFinite);
   return x.length ? x.reduce((s, v) => s + v, 0) / x.length : NaN;
 };
-const percentileRank = (arr: number[], x: number) => {
-  const a = arr.filter(Number.isFinite).slice().sort((m, n) => m - n);
-  if (!a.length || !Number.isFinite(x)) return NaN;
-  let lt = 0, eq = 0; for (const v of a) { if (v < x) lt++; else if (v === x) eq++; else break; }
-  return (lt + 0.5 * eq) / a.length;
-};
-const logistic01 = (x: number, k = 3, x0 = 0.5) => 1 / (1 + Math.exp(-k * (x - x0)));
 
-function ma(arr: number[], n: number) {
-  const out = new Array(arr.length).fill(NaN);
-  let s = 0, q: number[] = [];
-  for (let i = 0; i < arr.length; i++) {
-    const v = arr[i];
-    if (Number.isFinite(v)) {
-      q.push(v); s += v;
-      if (q.length > n) s -= q.shift()!;
-      if (q.length >= n) out[i] = s / q.length;
-    }
-  }
-  return out;
-}
 
 async function fetchBitmexFunding(provenance: Prov[]) {
   const url = "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&count=500&reverse=true";
@@ -57,24 +40,27 @@ export async function computeTermLeverage() {
   if (!f?.rates?.length) return { score: null, last_utc: null, source: null, details: [], provenance };
 
   // Window sizes in 8h steps: 7d ≈ 21, 30d ≈ 90
-  const m7  = ma(f.rates, 21);
-  const m30 = ma(f.rates, 90);
+  const m7  = sma(f.rates, 21);
+  const m30 = sma(f.rates, 90);
   const latest7  = m7.at(-1)!;
   const latest30 = m30.at(-1)!;
   const delta = latest7 - latest30;
 
   // (A) Magnitude (smaller |7d| → safer)
   const magSeries = m7.map(Math.abs).filter(Number.isFinite) as number[];
-  const s_mag = Math.round(100 * logistic01(1 - percentileRank(magSeries, Math.abs(latest7)), 3));
+  const magPr = percentileRank(magSeries, Math.abs(latest7));
+  const s_mag = Number.isFinite(magPr) ? riskFromPercentile(magPr, { invert: true, k: NORM.logistic_k }) : null;
 
   // (B) Momentum (lower or negative 7d-30d → safer)
   const momSeries: number[] = [];
   for (let i = 0; i < f.rates.length; i++) {
     if (Number.isFinite(m7[i]) && Number.isFinite(m30[i])) momSeries.push(m7[i] - m30[i]);
   }
-  const s_mom = Math.round(100 * logistic01(1 - percentileRank(momSeries, delta), 3));
+  const momPr = percentileRank(momSeries, delta);
+  const s_mom = Number.isFinite(momPr) ? riskFromPercentile(momPr, { invert: true, k: NORM.logistic_k }) : null;
 
-  const score = Math.round(mean([s_mag, s_mom]));
+  const parts = [s_mag, s_mom].filter(Number.isFinite) as number[];
+  const score = parts.length > 0 ? Math.round(mean(parts)) : null;
   const last_utc = new Date(f.ts.at(-1)!).toISOString().slice(0, 19) + "Z";
 
   return {

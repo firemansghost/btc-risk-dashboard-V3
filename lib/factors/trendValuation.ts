@@ -4,24 +4,11 @@
 // Score = weighted blend of percentile-inverted signals (0..100, higher = lower risk).
 
 import { rsi14 } from '@/lib/indicators/rsi';
-import { percentileRank, logistic01 } from '@/lib/math/normalize';
+import { percentileRank, riskFromPercentile, sma, ema } from '@/lib/math/normalize';
+import { NORM } from '@/lib/config';
 
 type Prov = { url: string; ok: boolean; status: number; ms: number; error?: string; note?: string };
 
-function sma(vals: number[], n: number): number[] {
-  const out = new Array(vals.length).fill(NaN);
-  let sum = 0, q: number[] = [];
-  for (let i = 0; i < vals.length; i++) {
-    const v = vals[i];
-    if (Number.isFinite(v)) {
-      q.push(v);
-      sum += v;
-      if (q.length > n) sum -= q.shift()!;
-      if (q.length >= n) out[i] = sum / q.length;
-    }
-  }
-  return out;
-}
 
 const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
 
@@ -130,13 +117,17 @@ export async function computeTrendValuation() {
   const prLong  = percentileRank(longRatioSeries.filter(Number.isFinite) as number[], longR);
   const prRsi   = percentileRank(rsiSeries.filter(Number.isFinite) as number[], rsiLatest);
 
-  // Convert to risk scores (higher percentile = higher risk)
-  const sBmsb  = Math.round(100 * logistic01(1 - clamp01(prMayer), 3)); // BMSB uses Mayer percentile
-  const sMayer = Math.round(100 * logistic01(1 - clamp01(prMayer), 3));
-  const sRsi   = Math.round(100 * logistic01(clamp01(prRsi), 3)); // Higher RSI = higher risk
+  // Convert to risk scores using unified normalization
+  const sBmsb  = Number.isFinite(prMayer) ? riskFromPercentile(prMayer, { invert: true, k: NORM.logistic_k }) : null;
+  const sMayer = Number.isFinite(prMayer) ? riskFromPercentile(prMayer, { invert: true, k: NORM.logistic_k }) : null;
+  const sRsi   = Number.isFinite(prRsi) ? riskFromPercentile(prRsi, { invert: false, k: NORM.logistic_k }) : null;
 
   // Weighted blend: BMSB 40%, Mayer 40%, RSI 20%
-  const score = Math.round((sBmsb * 0.4) + (sMayer * 0.4) + (sRsi * 0.2));
+  const parts = [sBmsb, sMayer, sRsi].filter(Number.isFinite) as number[];
+  const weights = [0.4, 0.4, 0.2];
+  const validWeights = weights.slice(0, parts.length);
+  const weightSum = validWeights.reduce((s, w) => s + w, 0);
+  const score = parts.length > 0 ? Math.round(parts.reduce((s, v, i) => s + v * (validWeights[i] / weightSum), 0)) : null;
 
   const last_utc = new Date(times[last]).toISOString().slice(0, 19) + 'Z';
 
@@ -153,6 +144,7 @@ export async function computeTrendValuation() {
       { label: 'BMSB status', value: bmsbStatus },
       { label: 'dist_to_band', value: Number.isFinite(bmsbDist) ? `${(bmsbDist * 100).toFixed(2)}%` : '—' },
       { label: 'Mayer Multiple', value: Number.isFinite(mayer) ? mayer.toFixed(3) : '—' },
+      { label: 'Mayer pct (3y)', value: Number.isFinite(prMayer) ? `${(100 * prMayer).toFixed(0)}%` : '—' },
       { label: `${longN}d MA ratio`, value: Number.isFinite(longR) ? longR.toFixed(3) : '—' },
       { label: 'RSI(14)', value: Number.isFinite(rsiLatest) ? rsiLatest.toFixed(1) : '—' },
       { label: 'RSI pct (3y)', value: Number.isFinite(prRsi) ? `${(100 * prRsi).toFixed(0)}%` : '—' },

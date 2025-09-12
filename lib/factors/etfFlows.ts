@@ -17,14 +17,10 @@ import path from "node:path";
 
 type Prov = { url: string; ok: boolean; status: number; ms: number; error?: string; note?: string };
 
+import { percentileRank, riskFromPercentile } from '@/lib/math/normalize';
+import { NORM } from '@/lib/config';
+
 const mean = (a: number[]) => { const x = a.filter(Number.isFinite); return x.length ? x.reduce((s,v)=>s+v,0)/x.length : NaN; };
-const percentileRank = (arr: number[], x: number) => {
-  const a = arr.filter(Number.isFinite).slice().sort((m,n)=>m-n);
-  if (!a.length || !Number.isFinite(x)) return NaN;
-  let lt=0, eq=0; for (const v of a){ if (v<x) lt++; else if (v===x) eq++; else break; }
-  return (lt + 0.5*eq)/a.length;
-};
-const logistic01 = (x:number,k=3,x0=0.5)=> 1/(1+Math.exp(-k*(x-x0)));
 
 function cleanNumStr(s: string) {
   return s
@@ -446,8 +442,8 @@ export async function computeEtfFlows() {
   }
   
   const pr21 = percentileRank(series21, latest21);
-  const s_momentum = Math.round(100 * logistic01(1 - pr21, 3));
-  const score = Number.isFinite(s_momentum) ? s_momentum : null;
+  const s_momentum = Number.isFinite(pr21) ? riskFromPercentile(pr21, { invert: true, k: NORM.logistic_k }) : null;
+  const score = s_momentum;
 
   const fmtCompactUsd = (n:number) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 }).format(n);

@@ -187,7 +187,13 @@ async function buildLatest() {
         btc: { spot_usd: spot.usd, as_of_utc: spot.as_of_utc, source: 'coinbase' },
         provenance: prov,
         model_version: 'v3.2.0',
-        transform: {},
+        transform: {
+          winsor: [0.05, 0.95],
+          logistic_k: 3,
+          z_scale: 2.0,
+          z_clip: 4.0,
+          percentile_window_days: 1825,
+        },
       };
 
       // Save to latest.json for /api/data/latest endpoint

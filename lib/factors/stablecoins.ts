@@ -4,7 +4,8 @@
 
 type Prov = { url: string; ok: boolean; status: number; ms: number; error?: string; usedApiKey?: boolean };
 
-const logistic01 = (x: number, k = 3, x0 = 0.5) => 1 / (1 + Math.exp(-k * (x - x0)));
+import { percentileRank, riskFromPercentile } from '@/lib/math/normalize';
+import { NORM } from '@/lib/config';
 
 async function fetchCG(coin: string, provenance: Prov[]) {
   const url = `https://api.coingecko.com/api/v3/coins/${coin}/market_chart?vs_currency=usd&days=90&interval=daily`;
@@ -79,14 +80,8 @@ export async function computeStablecoins() {
 
   // Score: higher growth → lower risk
   const deltasForPR = delta30.filter(Number.isFinite) as number[];
-  const rank = (() => {
-    const sorted = deltasForPR.slice().sort((a, b) => a - b);
-    const x = latestDelta;
-    let lt = 0, eq = 0;
-    for (const v of sorted) { if (v < x) lt++; else if (v === x) eq++; else break; }
-    return (lt + 0.5 * eq) / sorted.length;
-  })();
-  const score = Math.round(100 * logistic01(rank, 3));
+  const rank = percentileRank(deltasForPR, latestDelta);
+  const score = Number.isFinite(rank) ? riskFromPercentile(rank, { invert: true, k: NORM.logistic_k }) : null;
 
   const last_utc = new Date(ts.at(-1)!).toISOString().slice(0, 19) + "Z";
   return {
