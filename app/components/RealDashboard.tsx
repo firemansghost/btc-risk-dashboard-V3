@@ -340,14 +340,15 @@ export default function RealDashboard() {
                 case 'onchain':
                   return {
                     title: 'On-chain Network Activity',
-                    description: 'Measures Bitcoin network usage through transaction fees and mempool activity, indicating network demand and congestion.',
+                    description: 'Measures Bitcoin network usage through transaction fees, mempool activity, and miner profitability, providing a comprehensive view of on-chain dynamics.',
                     components: [
+                      '**Puell Multiple**: Miner revenue divided by 365-day SMA (50% weight)',
                       '**Transaction Fees**: Daily USD-denominated transaction fees (7-day average)',
                       '**Mempool Size**: Bitcoin mempool size in MB (7-day average)',
                       '**Fee Fallback**: If USD fees unavailable, uses BTC fees × current spot price',
-                      '**Network Congestion**: Higher fees and mempool size indicate increased demand'
+                      '**Miner Economics**: Higher Puell Multiple indicates increased miner profitability'
                     ],
-                    methodology: 'Higher network activity suggests increased usage but also potential congestion. Score based on percentile ranking of 7-day averages, inverted (higher activity = lower risk score).'
+                    methodology: 'Blends Puell Multiple (50%) with fee/mempool activity (50%). Higher values indicate increased network activity and miner profitability, which can signal both usage and potential risk.'
                   };
                 case 'etf_flows':
                   return {

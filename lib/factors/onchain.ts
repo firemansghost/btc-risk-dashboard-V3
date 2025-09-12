@@ -1,8 +1,9 @@
 // lib/factors/onchain.ts
-// On-chain Activity: combines BTC mempool usage and tx fees.
+// On-chain Activity: combines BTC mempool usage, tx fees, and miner profitability.
 // - mempool-size (MB)
 // - fees-usd (preferred) OR transaction-fees (BTC) × spot
-// Score = average of percentile(7d MA), inverted (higher activity => lower risk).
+// - Puell Multiple (miner revenue / 365-day SMA)
+// Score = blend of Puell (50%) + fee/mempool (50%), inverted (higher activity => lower risk).
 
 import { fetchCoinbaseSpot } from "@/lib/data/btc";
 
@@ -35,8 +36,8 @@ function movingAvg(vals: number[], n: number): number[] {
   return out;
 }
 
-async function fetchChart(name: string, provenance: Prov[]) {
-  const url = `https://api.blockchain.info/charts/${name}?timespan=90days&format=json`;
+async function fetchChart(name: string, provenance: Prov[], timespan = "90days") {
+  const url = `https://api.blockchain.info/charts/${name}?timespan=${timespan}&format=json`;
   const t0 = Date.now();
   try {
     const res = await fetch(url, { headers: { "User-Agent": "btc-risk-dashboard" }, cache: "no-store" as RequestCache });
@@ -111,9 +112,41 @@ export async function computeOnchain() {
     sourcesUsed.push(feesSource);
   }
 
-  // --- combine parts ---
-  const parts = [s_fees, s_mempool].filter(Number.isFinite) as number[];
-  const score = parts.length ? Math.round(mean(parts)) : null;
+  // --- Puell Multiple (miner revenue / 365-day SMA) ---
+  const revenue = await fetchChart("miners-revenue", provenance, "3years");
+  let s_puell: number | null = null;
+  let puellLast: number | null = null;
+  let puellPercentile: number | null = null;
+  
+  if (revenue?.values?.length && revenue.values.length >= 365) {
+    const revenue365SMA = movingAvg(revenue.values, 365);
+    const puellSeries: number[] = [];
+    
+    // Calculate Puell Multiple for each day where we have both revenue and SMA
+    for (let i = 0; i < revenue.values.length; i++) {
+      if (Number.isFinite(revenue.values[i]) && Number.isFinite(revenue365SMA[i]) && revenue365SMA[i] > 0) {
+        puellSeries.push(revenue.values[i] / revenue365SMA[i]);
+      } else {
+        puellSeries.push(NaN);
+      }
+    }
+    
+    const puellClean = puellSeries.filter(Number.isFinite) as number[];
+    if (puellClean.length > 0) {
+      puellLast = puellClean[puellClean.length - 1];
+      puellPercentile = percentileRank(puellClean, puellLast);
+      // Higher Puell Multiple = higher risk (inverted)
+      s_puell = Math.round(100 * logistic01(puellPercentile, 3));
+      sourcesUsed.push("blockchain.info • miners-revenue");
+    }
+  }
+
+  // --- combine parts: Puell (50%) + fee/mempool (50%) ---
+  const feeMempoolParts = [s_fees, s_mempool].filter(Number.isFinite) as number[];
+  const s_feeMempool = feeMempoolParts.length ? Math.round(mean(feeMempoolParts)) : null;
+  
+  const finalParts = [s_puell, s_feeMempool].filter(Number.isFinite) as number[];
+  const score = finalParts.length ? Math.round(mean(finalParts)) : null;
 
   // Timestamp from mempool (fallback to now)
   const lastTs = mem?.timestamps?.at(-1) ?? Date.now();
@@ -124,8 +157,10 @@ export async function computeOnchain() {
     last_utc,
     source: sourcesUsed.join(" + ") || "blockchain.info",
     details: [
-      { label: "Fees 7d avg (USD)",   value: Number.isFinite(feesUSDLast as number) ? Math.round(feesUSDLast as number).toLocaleString("en-US") : "—" },
-      { label: "Mempool 7d avg (MB)", value: Number.isFinite(memLast as number)     ? Math.round(memLast as number)                                   : "—" },
+      { label: "Puell Multiple", value: Number.isFinite(puellLast as number) ? (puellLast as number).toFixed(3) : "—" },
+      { label: "Puell pct (3y)", value: Number.isFinite(puellPercentile as number) ? `${Math.round((puellPercentile as number) * 100)}%` : "—" },
+      { label: "Fees 7d avg (USD)", value: Number.isFinite(feesUSDLast as number) ? Math.round(feesUSDLast as number).toLocaleString("en-US") : "—" },
+      { label: "Mempool 7d avg (MB)", value: Number.isFinite(memLast as number) ? Math.round(memLast as number) : "—" },
     ],
     provenance,
   };

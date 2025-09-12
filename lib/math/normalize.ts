@@ -58,3 +58,4 @@ export function percentileRank(series: number[], x: number): number {
 export function logistic01(x: number, k = 3, x0 = 0.5): number {
   return 1 / (1 + Math.exp(-k * (x - x0)));
 }
+
