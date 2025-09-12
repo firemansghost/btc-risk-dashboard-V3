@@ -2,5 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Optional tiny tweaks */
-html, body { height: 100%; }
+/* Simple, clean base styles */
+html, body { 
+  height: 100%; 
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  @apply bg-gray-50 text-gray-900 antialiased;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}

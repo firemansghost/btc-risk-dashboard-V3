@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "as_of_utc": "2025-09-05T01:00:13.390Z",
+  "as_of_utc": "2025-09-05T01:03:08.404Z",
   "composite_score": 50,
   "band": {
     "key": "hold_neutral",
@@ -82,8 +82,8 @@
     }
   ],
   "btc": {
-    "spot_usd": 110478.51,
-    "as_of_utc": "2025-09-05T01:00:13.390Z",
+    "spot_usd": 110502.09,
+    "as_of_utc": "2025-09-05T01:03:08.404Z",
     "source": "coinbase"
   },
   "provenance": [
@@ -91,7 +91,7 @@
       "url": "https://api.exchange.coinbase.com/products/BTC-USD/ticker",
       "ok": false,
       "status": 200,
-      "ms": 144
+      "ms": 188
     }
   ],
   "model_version": "v0.1.0",

@@ -56,17 +56,17 @@ export default function RealDashboard() {
   ].filter(p => !hasFactor(p.key));
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+    <div style={{ padding: '24px', backgroundColor: '#f9fafb', minHeight: '100vh' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
         <div>
-          <h1 className="text-2xl font-semibold">Bitcoin Risk Dashboard</h1>
-          <p className="text-sm text-gray-500">
-            Updated <span className="font-mono">{latest?.as_of_utc ?? '—'}</span>
+          <h1 style={{ fontSize: '24px', fontWeight: '600', margin: '0 0 8px 0', color: '#111827' }}>Bitcoin Risk Dashboard</h1>
+          <p style={{ fontSize: '14px', color: '#6b7280', margin: '0' }}>
+            Updated <span style={{ fontFamily: 'monospace' }}>{latest?.as_of_utc ?? '—'}</span>
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button
-            className="text-sm underline"
+            style={{ fontSize: '14px', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }}
             onClick={() => window.open('/api/data/latest?ts=' + Date.now(), '_blank', 'noopener,noreferrer')}
           >
             View Raw
@@ -74,43 +74,71 @@ export default function RealDashboard() {
           <button
             onClick={onRefresh}
             disabled={loading}
-            className="px-4 py-2 rounded-lg bg-emerald-600 text-white disabled:opacity-50"
+            style={{ 
+              padding: '8px 16px', 
+              borderRadius: '8px', 
+              backgroundColor: loading ? '#9ca3af' : '#059669', 
+              color: 'white', 
+              border: 'none', 
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
           >
             {loading ? 'Refreshing…' : 'Refresh Dashboard'}
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="rounded-xl border p-4">
-          <div className="text-sm text-gray-500">Composite Score</div>
-          <div className="text-4xl font-bold">{latest?.composite_score ?? '—'}</div>
-          <div className="mt-2 text-xs text-gray-500">Band: {latest?.band?.label ?? '—'}</div>
-          {latest?.band?.recommendation && <div className="mt-1 text-xs">{latest.band.recommendation}</div>}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ 
+          borderRadius: '12px', 
+          border: '1px solid #e5e7eb', 
+          backgroundColor: 'white', 
+          padding: '16px', 
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' 
+        }}>
+          <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px' }}>Composite Score</div>
+          <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}>{latest?.composite_score ?? '—'}</div>
+          <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Band: {latest?.band?.label ?? '—'}</div>
+          {latest?.band?.recommendation && <div style={{ fontSize: '12px', color: '#4b5563' }}>{latest.band.recommendation}</div>}
           {typeof latest?.btc?.spot_usd === 'number' && (
-            <div className="mt-1 text-xs text-gray-500">
+            <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
               BTC: {fmtUsd0(latest.btc.spot_usd)}
             </div>
           )}
         </div>
 
-        <div className="rounded-xl border p-4 md:col-span-2">
-          <div className="text-sm text-gray-500 mb-2">Health</div>
-          <div className="h-2 rounded bg-gray-200 overflow-hidden">
-            {!!latest && <div className="h-2 bg-green-500" style={{ width: '100%' }} />}
+        <div style={{ 
+          borderRadius: '12px', 
+          border: '1px solid #e5e7eb', 
+          backgroundColor: 'white', 
+          padding: '16px', 
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+          gridColumn: 'span 2'
+        }}>
+          <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px' }}>Health</div>
+          <div style={{ height: '8px', borderRadius: '4px', backgroundColor: '#e5e7eb', overflow: 'hidden', marginBottom: '8px' }}>
+            {!!latest && <div style={{ height: '100%', backgroundColor: '#10b981', width: '100%' }} />}
           </div>
-          <div className="mt-2 text-xs text-gray-500">
+          <div style={{ fontSize: '12px', color: '#6b7280' }}>
             Price candles: Coinbase Exchange. More factors coming next.
           </div>
         </div>
       </div>
 
       {placeholders.length ? (
-        <div className="grid md:grid-cols-3 gap-4">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', marginBottom: '24px' }}>
           {placeholders.map(p => (
-            <div key={p.key} className="rounded-xl border p-4">
-              <div className="font-medium">{p.label}</div>
-              <div className="text-sm text-gray-500 mt-1">Coming soon — safely excluded.</div>
+            <div key={p.key} style={{ 
+              borderRadius: '12px', 
+              border: '1px solid #e5e7eb', 
+              backgroundColor: 'white', 
+              padding: '16px', 
+              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' 
+            }}>
+              <div style={{ fontWeight: '500', color: '#111827', marginBottom: '4px' }}>{p.label}</div>
+              <div style={{ fontSize: '14px', color: '#6b7280' }}>Coming soon — safely excluded.</div>
             </div>
           ))}
         </div>
@@ -118,14 +146,34 @@ export default function RealDashboard() {
 
       <HistoryChart />
 
-      {error && <div className="text-red-600 text-sm">Error: {error}</div>}
+      {error && (
+        <div style={{ 
+          color: '#dc2626', 
+          fontSize: '14px', 
+          backgroundColor: '#fef2f2', 
+          border: '1px solid #fecaca', 
+          borderRadius: '8px', 
+          padding: '12px',
+          marginBottom: '24px'
+        }}>
+          Error: {error}
+        </div>
+      )}
 
       {apiDetail && (
-        <details className="text-sm">
-          <summary className="cursor-pointer">API Response Details</summary>
-          <pre className="mt-2 p-3 rounded-lg bg-black text-white overflow-auto text-xs">
+        <details style={{ fontSize: '14px' }}>
+          <summary style={{ cursor: 'pointer', color: '#6b7280', marginBottom: '8px' }}>API Response Details</summary>
+          <pre style={{ 
+            marginTop: '8px', 
+            padding: '12px', 
+            borderRadius: '8px', 
+            backgroundColor: '#1f2937', 
+            color: 'white', 
+            overflow: 'auto', 
+            fontSize: '12px' 
+          }}>
 {JSON.stringify(apiDetail, null, 2)}
-</pre>
+          </pre>
         </details>
       )}
     </div>
