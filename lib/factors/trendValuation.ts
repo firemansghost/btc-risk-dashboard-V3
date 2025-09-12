@@ -1,7 +1,10 @@
 // lib/factors/trendValuation.ts
 // Trend & Valuation using Coinbase daily candles (chunked to respect 300-point limit).
-// Signals: Mayer Multiple (price / 200d SMA) and a long MA ratio (price / longMA).
-// Score = average of percentile-inverted signals (0..100, higher = lower risk).
+// Signals: BMSB (40%), Mayer Multiple (40%), RSI(14) (20%).
+// Score = weighted blend of percentile-inverted signals (0..100, higher = lower risk).
+
+import { rsi14 } from '@/lib/indicators/rsi';
+import { percentileRank, logistic01 } from '@/lib/math/normalize';
 
 type Prov = { url: string; ok: boolean; status: number; ms: number; error?: string; note?: string };
 
@@ -20,14 +23,6 @@ function sma(vals: number[], n: number): number[] {
   return out;
 }
 
-function percentileRank(arr: number[], x: number) {
-  const a = arr.filter(Number.isFinite).slice().sort((m, n) => m - n);
-  if (!a.length || !Number.isFinite(x)) return NaN;
-  let lt = 0, eq = 0;
-  for (const v of a) { if (v < x) lt++; else if (v === x) eq++; else break; }
-  return (lt + 0.5 * eq) / a.length;
-}
-const logistic01 = (x: number, k = 3, x0 = 0.5) => 1 / (1 + Math.exp(-k * (x - x0)));
 const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
 
 const isoUTC = (d: Date) =>
@@ -118,20 +113,30 @@ export async function computeTrendValuation() {
   const longMA = sma(closes, longN);
   const longRatioSeries = closes.map((p, i) => p / longMA[i]);
 
+  // Calculate RSI(14)
+  const rsiSeries = rsi14(closes);
+
   const last = closes.length - 1;
   const price = closes[last];
   const mayer = mayerSeries[last];
   const longR = longRatioSeries[last];
+  const rsiLatest = rsiSeries[last];
 
   const bmsbStatus = price > sma200[last] ? 'above' : 'below';
   const bmsbDist = (price - sma200[last]) / sma200[last];
 
-  // Lower multiples → lower risk → invert percentile
+  // Calculate percentile ranks for 3-year window
   const prMayer = percentileRank(mayerSeries.filter(Number.isFinite) as number[], mayer);
   const prLong  = percentileRank(longRatioSeries.filter(Number.isFinite) as number[], longR);
-  const sMayer  = Math.round(100 * logistic01(1 - clamp01(prMayer), 3));
-  const sLong   = Math.round(100 * logistic01(1 - clamp01(prLong),  3));
-  const score   = Math.round((sMayer + sLong) / 2);
+  const prRsi   = percentileRank(rsiSeries.filter(Number.isFinite) as number[], rsiLatest);
+
+  // Convert to risk scores (higher percentile = higher risk)
+  const sBmsb  = Math.round(100 * logistic01(1 - clamp01(prMayer), 3)); // BMSB uses Mayer percentile
+  const sMayer = Math.round(100 * logistic01(1 - clamp01(prMayer), 3));
+  const sRsi   = Math.round(100 * logistic01(clamp01(prRsi), 3)); // Higher RSI = higher risk
+
+  // Weighted blend: BMSB 40%, Mayer 40%, RSI 20%
+  const score = Math.round((sBmsb * 0.4) + (sMayer * 0.4) + (sRsi * 0.2));
 
   const last_utc = new Date(times[last]).toISOString().slice(0, 19) + 'Z';
 
@@ -142,6 +147,15 @@ export async function computeTrendValuation() {
     signals: [
       { name: 'Mayer Multiple', raw: mayer },
       { name: `${longN}d MA ratio`, raw: longR },
+      { name: 'RSI(14)', raw: rsiLatest },
+    ],
+    details: [
+      { label: 'BMSB status', value: bmsbStatus },
+      { label: 'dist_to_band', value: Number.isFinite(bmsbDist) ? `${(bmsbDist * 100).toFixed(2)}%` : '—' },
+      { label: 'Mayer Multiple', value: Number.isFinite(mayer) ? mayer.toFixed(3) : '—' },
+      { label: `${longN}d MA ratio`, value: Number.isFinite(longR) ? longR.toFixed(3) : '—' },
+      { label: 'RSI(14)', value: Number.isFinite(rsiLatest) ? rsiLatest.toFixed(1) : '—' },
+      { label: 'RSI pct (3y)', value: Number.isFinite(prRsi) ? `${(100 * prRsi).toFixed(0)}%` : '—' },
     ],
     provenance,
   };

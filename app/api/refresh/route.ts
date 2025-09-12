@@ -88,8 +88,8 @@ async function buildLatest() {
     score: tv.score,
     status: tv.score === null ? 'excluded' : 'fresh',
     last_utc: tv.last_utc,
-    source: 'Coinbase price → 200d SMA (Mayer), 2Y SMA',
-    details: [
+    source: 'Coinbase price → 200d SMA (Mayer), 2Y SMA, RSI(14)',
+    details: tv.details || [
       { label: 'BMSB status', value: tv.bmsb?.status ?? '—' },
       { label: 'dist_to_band', value: Number.isFinite(tv.bmsb?.dist) ? `${(tv.bmsb.dist * 100).toFixed(2)}%` : '—' },
       { label: 'Mayer Multiple', value: Number.isFinite(tv.signals?.[0]?.raw) ? tv.signals[0].raw.toFixed(3) : '—' },
