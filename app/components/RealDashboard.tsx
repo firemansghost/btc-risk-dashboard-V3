@@ -127,6 +127,70 @@ export default function RealDashboard() {
         </div>
       </div>
 
+      {/* Factor Cards */}
+      {factors.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+          {factors.map(factor => (
+            <div key={factor.key} style={{ 
+              borderRadius: '12px', 
+              border: '1px solid #e5e7eb', 
+              backgroundColor: 'white', 
+              padding: '16px', 
+              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' 
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                <div style={{ fontWeight: '500', color: '#111827' }}>{factor.label}</div>
+                <div style={{ 
+                  fontSize: '12px', 
+                  padding: '2px 8px', 
+                  borderRadius: '12px', 
+                  backgroundColor: factor.status === 'fresh' ? '#dcfce7' : factor.status === 'stale' ? '#fef3c7' : '#f3f4f6',
+                  color: factor.status === 'fresh' ? '#166534' : factor.status === 'stale' ? '#92400e' : '#6b7280'
+                }}>
+                  {factor.weight_pct}%
+                </div>
+              </div>
+              
+              {factor.score !== null ? (
+                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}>
+                  {factor.score}
+                </div>
+              ) : (
+                <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px' }}>
+                  {factor.reason || 'No data available'}
+                </div>
+              )}
+              
+              {factor.details && factor.details.length > 0 && (
+                <div style={{ marginTop: '8px' }}>
+                  {factor.details.slice(0, 3).map((detail, idx) => (
+                    <div key={idx} style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      fontSize: '12px', 
+                      color: '#6b7280',
+                      marginBottom: '2px'
+                    }}>
+                      <span>{detail.label}:</span>
+                      <span style={{ fontWeight: '500' }}>{detail.value}</span>
+                    </div>
+                  ))}
+                  {factor.details.length > 3 && (
+                    <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>
+                      +{factor.details.length - 3} more...
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '8px', borderTop: '1px solid #f3f4f6', paddingTop: '8px' }}>
+                {factor.source}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {placeholders.length ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', marginBottom: '24px' }}>
           {placeholders.map(p => (
