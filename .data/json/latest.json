@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "as_of_utc": "2025-09-12T19:40:09.291Z",
+  "as_of_utc": "2025-09-12T19:58:35.548Z",
   "composite_score": 44,
   "band": {
     "key": "hold_neutral",
@@ -18,7 +18,7 @@
       "key": "trend_valuation",
       "label": "Trend & Valuation",
       "weight_pct": 25,
-      "score": 44,
+      "score": 43,
       "status": "fresh",
       "last_utc": "2025-09-12T00:00:00Z",
       "source": "Coinbase price → 200d SMA (Mayer), 2Y SMA, RSI(14)",
@@ -29,27 +29,27 @@
         },
         {
           "label": "dist_to_band",
-          "value": "14.13%"
+          "value": "14.25%"
         },
         {
           "label": "Mayer Multiple",
-          "value": "1.141"
+          "value": "1.143"
         },
         {
           "label": "Mayer pct (3y)",
-          "value": "66%"
+          "value": "67%"
         },
         {
           "label": "300d MA ratio",
-          "value": "1.157"
+          "value": "1.158"
         },
         {
           "label": "RSI(14)",
-          "value": "60.6"
+          "value": "60.9"
         },
         {
           "label": "RSI pct (3y)",
-          "value": "66%"
+          "value": "67%"
         }
       ]
     },
@@ -82,12 +82,12 @@
       "weight_pct": 15,
       "score": 35,
       "status": "fresh",
-      "last_utc": "2025-09-12T19:40:02Z",
+      "last_utc": "2025-09-12T19:58:30Z",
       "source": "CoinGecko (USDT/USDC 90d market_chart; supply≈mc/price)",
       "details": [
         {
           "label": "Supply Δ 30d",
-          "value": "4.51%"
+          "value": "4.52%"
         },
         {
           "label": "USDT dom. Δ 30d",
@@ -126,9 +126,9 @@
       "key": "onchain",
       "label": "On-chain Activity",
       "weight_pct": 10,
-      "score": 60,
+      "score": 61,
       "status": "fresh",
-      "last_utc": "2025-09-12T13:45:00Z",
+      "last_utc": "2025-09-12T14:00:00Z",
       "source": "blockchain.info • mempool-size + blockchain.info • transaction-fees × spot + blockchain.info • miners-revenue",
       "details": [
         {
@@ -141,11 +141,11 @@
         },
         {
           "label": "Fees 7d avg (USD)",
-          "value": "485,730"
+          "value": "486,269"
         },
         {
           "label": "Mempool 7d avg (MB)",
-          "value": 1240362
+          "value": 1162142
         }
       ]
     },
@@ -201,93 +201,93 @@
     }
   ],
   "btc": {
-    "spot_usd": 116658.26,
-    "as_of_utc": "2025-09-12T19:40:07.315Z",
+    "spot_usd": 116788,
+    "as_of_utc": "2025-09-12T19:58:33.389Z",
     "source": "coinbase"
   },
   "provenance": [
     {
-      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=2024-11-26T19%3A40%3A00Z&end=2025-09-12T19%3A40%3A00Z",
+      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=2024-11-26T19%3A58%3A00Z&end=2025-09-12T19%3A58%3A00Z",
       "ok": true,
       "status": 200,
-      "ms": 291,
-      "note": "segment 2024-11-26T19:40:00Z → 2025-09-12T19:40:00Z"
+      "ms": 527,
+      "note": "segment 2024-11-26T19:58:00Z → 2025-09-12T19:58:00Z"
     },
     {
-      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=2024-09-17T19%3A40%3A00Z&end=2024-11-26T19%3A40%3A00Z",
+      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=2024-09-17T19%3A58%3A00Z&end=2024-11-26T19%3A58%3A00Z",
       "ok": true,
       "status": 200,
-      "ms": 98,
-      "note": "segment 2024-09-17T19:40:00Z → 2024-11-26T19:40:00Z"
+      "ms": 92,
+      "note": "segment 2024-09-17T19:58:00Z → 2024-11-26T19:58:00Z"
     },
     {
       "url": "https://api.stlouisfed.org/fred/series/observations?series_id=WALCL&api_key=****&file_type=json&observation_start=2022-06-10&observation_end=2025-09-12&frequency=w&aggregation_method=avg",
       "ok": true,
       "status": 200,
-      "ms": 300
-    },
-    {
-      "url": "https://api.stlouisfed.org/fred/series/observations?series_id=WTREGEN&api_key=****&file_type=json&observation_start=2022-06-10&observation_end=2025-09-12&frequency=w&aggregation_method=avg",
-      "ok": true,
-      "status": 200,
-      "ms": 298
+      "ms": 265
     },
     {
       "url": "https://api.stlouisfed.org/fred/series/observations?series_id=RRPONTSYD&api_key=****&file_type=json&observation_start=2022-06-10&observation_end=2025-09-12&frequency=w&aggregation_method=avg",
       "ok": true,
       "status": 200,
-      "ms": 366
+      "ms": 278
+    },
+    {
+      "url": "https://api.stlouisfed.org/fred/series/observations?series_id=WTREGEN&api_key=****&file_type=json&observation_start=2022-06-10&observation_end=2025-09-12&frequency=w&aggregation_method=avg",
+      "ok": true,
+      "status": 200,
+      "ms": 353
     },
     {
       "url": "https://api.coingecko.com/api/v3/coins/usd-coin/market_chart?vs_currency=usd&days=90&interval=daily",
       "ok": true,
       "status": 200,
-      "ms": 312,
+      "ms": 242,
       "usedApiKey": false
     },
     {
       "url": "https://api.coingecko.com/api/v3/coins/tether/market_chart?vs_currency=usd&days=90&interval=daily",
       "ok": true,
       "status": 200,
-      "ms": 396,
+      "ms": 257,
       "usedApiKey": false
     },
     {
       "url": "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&count=500&reverse=true",
       "ok": true,
       "status": 200,
-      "ms": 474
+      "ms": 393
     },
     {
       "url": "https://api.blockchain.info/charts/mempool-size?timespan=90days&format=json",
       "ok": true,
       "status": 200,
-      "ms": 798
+      "ms": 729
     },
     {
       "url": "https://api.blockchain.info/charts/fees-usd?timespan=90days&format=json",
       "ok": false,
       "status": 404,
-      "ms": 538,
+      "ms": 527,
       "error": "{\"status\":\"not-found\",\"error\":null}"
     },
     {
       "url": "https://api.blockchain.info/charts/transaction-fees?timespan=90days&format=json",
       "ok": true,
       "status": 200,
-      "ms": 192
+      "ms": 422
     },
     {
       "url": "https://api.blockchain.info/charts/miners-revenue?timespan=3years&format=json",
       "ok": true,
       "status": 200,
-      "ms": 566
+      "ms": 561
     },
     {
       "url": "https://farside.co.uk/bitcoin-etf-flow-all-data/",
       "ok": true,
       "status": 200,
-      "ms": 820
+      "ms": 756
     },
     {
       "url": "inline:csv-candidates",
@@ -321,13 +321,13 @@
       "url": "https://api.alternative.me/fng/?limit=0&format=json",
       "ok": true,
       "status": 200,
-      "ms": 307
+      "ms": 526
     },
     {
       "url": "https://api.exchange.coinbase.com/products/BTC-USD/ticker",
       "ok": false,
       "status": 200,
-      "ms": 239
+      "ms": 147
     }
   ],
   "model_version": "v3.2.0",
