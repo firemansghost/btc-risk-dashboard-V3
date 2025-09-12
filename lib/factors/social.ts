@@ -5,18 +5,8 @@
 
 type Prov = { url: string; ok: boolean; status: number; ms: number; error?: string; note?: string };
 
-const logistic01 = (x: number, k = 3, x0 = 0.5) => 1 / (1 + Math.exp(-k * (x - x0)));
-const percentileRank = (arr: number[], x: number) => {
-  const a = arr.filter(Number.isFinite).slice().sort((m, n) => m - n);
-  if (!a.length || !Number.isFinite(x)) return NaN;
-  let lt = 0, eq = 0;
-  for (const v of a) {
-    if (v < x) lt++;
-    else if (v === x) eq++;
-    else break;
-  }
-  return (lt + 0.5 * eq) / a.length;
-};
+import { percentileRank, riskFromPercentile } from '@/lib/math/normalize';
+import { NORM } from '@/lib/config';
 
 async function fetchFearGreed(provenance: Prov[]) {
   const url = "https://api.alternative.me/fng/?limit=0&format=json";
@@ -107,8 +97,8 @@ export async function computeSocial() {
       };
     }
     
-    // Higher value (greed) => higher risk
-    const score = Math.round(100 * logistic01(percentile, 3));
+    // Higher value (greed) => higher risk (no inversion needed)
+    const score = Number.isFinite(percentile) ? riskFromPercentile(percentile, { invert: false, k: NORM.logistic_k }) : null;
     
     // Last UTC = today's UTC midnight
     const today = new Date();
