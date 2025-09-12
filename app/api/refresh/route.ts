@@ -6,6 +6,7 @@ import { fetchCoinbaseSpot }     from '@/lib/data/btc';
 import { saveJson }              from '@/lib/storage';
 import { calculatePowerLawAdjustment, fetchExtendedDailyCandles } from '@/lib/math/powerLaw';
 import { clamp } from '@/lib/math/normalize';
+import { computeFastSpike } from '@/lib/adjust/fastSpike';
 
 function sanitizeProv(list: any[]) {
   const mask = (u: string) => u.replace(/(api_key=)[^&]+/i, '$1****');
@@ -171,8 +172,17 @@ async function buildLatest() {
     console.warn('Power-law adjustment failed:', error);
   }
 
-  // Apply power-law adjustment to composite score
-  const composite = clamp(composite_raw + cycleAdjustment.adj_pts, 0, 100);
+  // Calculate fast-path spike adjustment
+  let spikeAdjustment = { adj_pts: 0, r_1d: 0, sigma: 0, z: 0, ref_close: 0, spot: 0, last_utc: '', source: '', reason: 'disabled' };
+  try {
+    spikeAdjustment = await computeFastSpike();
+  } catch (error) {
+    // Spike adjustment failed, continue with existing adjustments
+    console.warn('Spike adjustment failed:', error);
+  }
+
+  // Apply both adjustments to composite score
+  const composite = clamp(composite_raw + cycleAdjustment.adj_pts + spikeAdjustment.adj_pts, 0, 100);
 
   const band =
     composite < 15 ? { key: 'aggressive_buy', label: 'Aggressive Buying', range: [0, 15], color: 'green',  recommendation: 'Max allocation' } :
@@ -200,6 +210,7 @@ async function buildLatest() {
         composite_raw: composite_raw,
         composite_score: composite,
         cycle_adjustment: cycleAdjustment,
+        spike_adjustment: spikeAdjustment,
         band,
         health: 'green',
         factors,
