@@ -361,6 +361,18 @@ export default function RealDashboard() {
                     ],
                     methodology: 'Higher net inflows indicate increased demand. Score based on 21-day rolling sum percentile ranking. Uses multiple parsing strategies for robust data collection.'
                   };
+                case 'social':
+                  return {
+                    title: 'Social Interest & Sentiment',
+                    description: 'Measures market sentiment and social interest in Bitcoin using the Fear & Greed Index, which aggregates various sentiment indicators.',
+                    components: [
+                      '**Fear & Greed Index**: 0-100 scale from Alternative.me',
+                      '**2-year Historical Window**: Builds percentile context from 2 years of daily data',
+                      '**Sentiment Categories**: Extreme Fear (0-24), Fear (25-49), Neutral (50-74), Greed (75-89), Extreme Greed (90-100)',
+                      '**Data Aggregation**: Combines volatility, market momentum, social media, surveys, and dominance'
+                    ],
+                    methodology: 'Higher Fear & Greed values (greed) indicate higher risk. Score based on 2-year percentile ranking using logistic function normalization.'
+                  };
                 default:
                   return {
                     title: factor.label,

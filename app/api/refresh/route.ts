@@ -1,6 +1,7 @@
 // app/api/refresh/route.ts
 import { NextResponse } from 'next/server';
 import { computeTrendValuation } from '@/lib/factors/trendValuation';
+import { computeSocial }         from '@/lib/factors/social';
 import { fetchCoinbaseSpot }     from '@/lib/data/btc';
 import { saveJson }              from '@/lib/storage';
 
@@ -60,7 +61,7 @@ async function getEtfFlowsSafe(): Promise<FactorResult> {
 }
 
 async function buildLatest() {
-  const [tv, nl, sc, tsl, oc, etf, spot] = await Promise.all([
+  const [tv, nl, sc, tsl, oc, etf, social, spot] = await Promise.all([
     // If any of these throws, catch and return a harmless excluded payload
     computeTrendValuation().catch((e: any) => ({
       score: null, last_utc: null, source: null, details: [],
@@ -76,16 +77,21 @@ async function buildLatest() {
     (async () => { try { const m = await import('@/lib/factors/onchain');       return await m.computeOnchain(); }
       catch (e:any){ return { score:null,last_utc:null,source:null,details:[],provenance:[{url:'inline:oc-error',ok:false,status:0,ms:0,error:String(e)}],reason:'oc_error' }; } })(),
     getEtfFlowsSafe(), // <- SAFE
+    computeSocial().catch((e: any) => ({
+      score: null, last_utc: null, source: null, details: [],
+      provenance: [{ url: 'inline:social-error', ok: false, status: 0, ms: 0, error: String(e) }],
+      reason: 'social_error'
+    })),
     fetchCoinbaseSpot().catch(() => ({ usd: NaN, as_of_utc: new Date().toISOString(), provenance: { url: 'inline:spot-error' } })),
   ]);
 
   const factors: FactorCard[] = [];
 
-  // 30% Trend & Valuation
+  // 25% Trend & Valuation
   factors.push({
     key: 'trend_valuation',
     label: 'Trend & Valuation',
-    weight_pct: 30,
+    weight_pct: 25,
     score: tv.score,
     status: tv.score === null ? 'excluded' : 'fresh',
     last_utc: tv.last_utc,
@@ -130,13 +136,21 @@ async function buildLatest() {
     last_utc: oc.last_utc, source: oc.source, details: oc.details,
   } : { key: 'onchain', label: 'On-chain Activity', weight_pct: 10, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: 'fetch_error' });
 
-  // 15% ETF Flows
+  // 10% ETF Flows
   factors.push(etf.score !== null ? {
     key: 'etf_flows',
     label: 'ETF Flows',
-    weight_pct: 15, score: etf.score!, status: 'fresh',
+    weight_pct: 10, score: etf.score!, status: 'fresh',
     last_utc: etf.last_utc, source: etf.source, details: etf.details,
-  } : { key: 'etf_flows', label: 'ETF Flows', weight_pct: 15, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: etf.reason ?? 'missing_feed_or_parse_error' });
+  } : { key: 'etf_flows', label: 'ETF Flows', weight_pct: 10, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: etf.reason ?? 'missing_feed_or_parse_error' });
+
+  // 10% Social Interest
+  factors.push(social.score !== null ? {
+    key: 'social',
+    label: 'Social Interest',
+    weight_pct: 10, score: social.score!, status: 'fresh',
+    last_utc: social.last_utc, source: social.source, details: social.details,
+  } : { key: 'social', label: 'Social Interest', weight_pct: 10, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: social.reason ?? 'social_error' });
 
   // Renormalize composite over available factors
   const usable = factors.filter((f): f is FactorCard & { score: number } => typeof f.score === 'number');
@@ -159,6 +173,7 @@ async function buildLatest() {
     ...(tsl?.provenance || []),
     ...(oc?.provenance || []),
     ...(etf?.provenance || []),
+    ...(social?.provenance || []),
     spot?.provenance,
   ].filter(Boolean) as any[]);
 
