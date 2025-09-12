@@ -1,7 +1,15 @@
 {
   "ok": true,
-  "as_of_utc": "2025-09-12T19:58:35.548Z",
-  "composite_score": 44,
+  "as_of_utc": "2025-09-12T20:45:43.787Z",
+  "composite_raw": 43,
+  "composite_score": 43,
+  "cycle_adjustment": {
+    "adj_pts": 0,
+    "residual_z": null,
+    "last_utc": null,
+    "source": null,
+    "reason": "disabled"
+  },
   "band": {
     "key": "hold_neutral",
     "label": "Hold/Neutral",
@@ -29,27 +37,27 @@
         },
         {
           "label": "dist_to_band",
-          "value": "14.25%"
+          "value": "13.82%"
         },
         {
           "label": "Mayer Multiple",
-          "value": "1.143"
+          "value": "1.138"
         },
         {
           "label": "Mayer pct (3y)",
-          "value": "67%"
+          "value": "65%"
         },
         {
           "label": "300d MA ratio",
-          "value": "1.158"
+          "value": "1.154"
         },
         {
           "label": "RSI(14)",
-          "value": "60.9"
+          "value": "59.9"
         },
         {
           "label": "RSI pct (3y)",
-          "value": "67%"
+          "value": "65%"
         }
       ]
     },
@@ -80,18 +88,18 @@
       "key": "stablecoins",
       "label": "Stablecoins",
       "weight_pct": 15,
-      "score": 35,
+      "score": 31,
       "status": "fresh",
-      "last_utc": "2025-09-12T19:58:30Z",
+      "last_utc": "2025-09-12T20:45:33Z",
       "source": "CoinGecko (USDT/USDC 90d market_chart; supply≈mc/price)",
       "details": [
         {
           "label": "Supply Δ 30d",
-          "value": "4.52%"
+          "value": "4.78%"
         },
         {
           "label": "USDT dom. Δ 30d",
-          "value": "-1.22 pp"
+          "value": "-1.39 pp"
         }
       ]
     },
@@ -99,9 +107,9 @@
       "key": "term_leverage",
       "label": "Term Structure & Leverage",
       "weight_pct": 20,
-      "score": 47,
+      "score": 45,
       "status": "fresh",
-      "last_utc": "2025-09-12T12:00:00Z",
+      "last_utc": "2025-09-12T20:00:00Z",
       "source": "BitMEX XBTUSD perpetual funding",
       "details": [
         {
@@ -114,7 +122,7 @@
         },
         {
           "label": "Δ (7d − 30d)",
-          "value": "0.000 pp"
+          "value": "0.001 pp"
         },
         {
           "label": "Samples (8h)",
@@ -126,9 +134,9 @@
       "key": "onchain",
       "label": "On-chain Activity",
       "weight_pct": 10,
-      "score": 61,
+      "score": 60,
       "status": "fresh",
-      "last_utc": "2025-09-12T14:00:00Z",
+      "last_utc": "2025-09-12T14:45:00Z",
       "source": "blockchain.info • mempool-size + blockchain.info • transaction-fees × spot + blockchain.info • miners-revenue",
       "details": [
         {
@@ -141,11 +149,11 @@
         },
         {
           "label": "Fees 7d avg (USD)",
-          "value": "486,269"
+          "value": "484,432"
         },
         {
           "label": "Mempool 7d avg (MB)",
-          "value": 1162142
+          "value": 1228892
         }
       ]
     },
@@ -201,93 +209,93 @@
     }
   ],
   "btc": {
-    "spot_usd": 116788,
-    "as_of_utc": "2025-09-12T19:58:33.389Z",
+    "spot_usd": 116350.16,
+    "as_of_utc": "2025-09-12T20:45:41.503Z",
     "source": "coinbase"
   },
   "provenance": [
     {
-      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=2024-11-26T19%3A58%3A00Z&end=2025-09-12T19%3A58%3A00Z",
+      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=2024-11-26T20%3A45%3A00Z&end=2025-09-12T20%3A45%3A00Z",
       "ok": true,
       "status": 200,
-      "ms": 527,
-      "note": "segment 2024-11-26T19:58:00Z → 2025-09-12T19:58:00Z"
+      "ms": 589,
+      "note": "segment 2024-11-26T20:45:00Z → 2025-09-12T20:45:00Z"
     },
     {
-      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=2024-09-17T19%3A58%3A00Z&end=2024-11-26T19%3A58%3A00Z",
+      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=2024-09-17T20%3A45%3A00Z&end=2024-11-26T20%3A45%3A00Z",
       "ok": true,
       "status": 200,
-      "ms": 92,
-      "note": "segment 2024-09-17T19:58:00Z → 2024-11-26T19:58:00Z"
+      "ms": 85,
+      "note": "segment 2024-09-17T20:45:00Z → 2024-11-26T20:45:00Z"
     },
     {
       "url": "https://api.stlouisfed.org/fred/series/observations?series_id=WALCL&api_key=****&file_type=json&observation_start=2022-06-10&observation_end=2025-09-12&frequency=w&aggregation_method=avg",
       "ok": true,
       "status": 200,
-      "ms": 265
-    },
-    {
-      "url": "https://api.stlouisfed.org/fred/series/observations?series_id=RRPONTSYD&api_key=****&file_type=json&observation_start=2022-06-10&observation_end=2025-09-12&frequency=w&aggregation_method=avg",
-      "ok": true,
-      "status": 200,
-      "ms": 278
+      "ms": 242
     },
     {
       "url": "https://api.stlouisfed.org/fred/series/observations?series_id=WTREGEN&api_key=****&file_type=json&observation_start=2022-06-10&observation_end=2025-09-12&frequency=w&aggregation_method=avg",
       "ok": true,
       "status": 200,
-      "ms": 353
+      "ms": 324
     },
     {
-      "url": "https://api.coingecko.com/api/v3/coins/usd-coin/market_chart?vs_currency=usd&days=90&interval=daily",
+      "url": "https://api.stlouisfed.org/fred/series/observations?series_id=RRPONTSYD&api_key=****&file_type=json&observation_start=2022-06-10&observation_end=2025-09-12&frequency=w&aggregation_method=avg",
       "ok": true,
       "status": 200,
-      "ms": 242,
-      "usedApiKey": false
+      "ms": 341
     },
     {
       "url": "https://api.coingecko.com/api/v3/coins/tether/market_chart?vs_currency=usd&days=90&interval=daily",
       "ok": true,
       "status": 200,
-      "ms": 257,
+      "ms": 299,
+      "usedApiKey": false
+    },
+    {
+      "url": "https://api.coingecko.com/api/v3/coins/usd-coin/market_chart?vs_currency=usd&days=90&interval=daily",
+      "ok": true,
+      "status": 200,
+      "ms": 393,
       "usedApiKey": false
     },
     {
       "url": "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&count=500&reverse=true",
       "ok": true,
       "status": 200,
-      "ms": 393
+      "ms": 417
     },
     {
       "url": "https://api.blockchain.info/charts/mempool-size?timespan=90days&format=json",
       "ok": true,
       "status": 200,
-      "ms": 729
+      "ms": 797
     },
     {
       "url": "https://api.blockchain.info/charts/fees-usd?timespan=90days&format=json",
       "ok": false,
       "status": 404,
-      "ms": 527,
+      "ms": 544,
       "error": "{\"status\":\"not-found\",\"error\":null}"
     },
     {
       "url": "https://api.blockchain.info/charts/transaction-fees?timespan=90days&format=json",
       "ok": true,
       "status": 200,
-      "ms": 422
+      "ms": 393
     },
     {
       "url": "https://api.blockchain.info/charts/miners-revenue?timespan=3years&format=json",
       "ok": true,
       "status": 200,
-      "ms": 561
+      "ms": 560
     },
     {
       "url": "https://farside.co.uk/bitcoin-etf-flow-all-data/",
       "ok": true,
       "status": 200,
-      "ms": 756
+      "ms": 734
     },
     {
       "url": "inline:csv-candidates",
@@ -321,13 +329,13 @@
       "url": "https://api.alternative.me/fng/?limit=0&format=json",
       "ok": true,
       "status": 200,
-      "ms": 526
+      "ms": 259
     },
     {
       "url": "https://api.exchange.coinbase.com/products/BTC-USD/ticker",
       "ok": false,
       "status": 200,
-      "ms": 147
+      "ms": 179
     }
   ],
   "model_version": "v3.2.0",

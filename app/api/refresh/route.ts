@@ -4,6 +4,8 @@ import { computeTrendValuation } from '@/lib/factors/trendValuation';
 import { computeSocial }         from '@/lib/factors/social';
 import { fetchCoinbaseSpot }     from '@/lib/data/btc';
 import { saveJson }              from '@/lib/storage';
+import { calculatePowerLawAdjustment, fetchExtendedDailyCandles } from '@/lib/math/powerLaw';
+import { clamp } from '@/lib/math/normalize';
 
 function sanitizeProv(list: any[]) {
   const mask = (u: string) => u.replace(/(api_key=)[^&]+/i, '$1****');
@@ -155,7 +157,22 @@ async function buildLatest() {
   // Renormalize composite over available factors
   const usable = factors.filter((f): f is FactorCard & { score: number } => typeof f.score === 'number');
   const weightSum = usable.reduce((s, f) => s + f.weight_pct, 0) || 1;
-  const composite = Math.round(usable.reduce((s, f) => s + f.score * (f.weight_pct / weightSum), 0));
+  const composite_raw = Math.round(usable.reduce((s, f) => s + f.score * (f.weight_pct / weightSum), 0));
+
+  // Calculate power-law diminishing returns adjustment
+  let cycleAdjustment = { adj_pts: 0, residual_z: null, last_utc: null, source: null, reason: 'disabled' };
+  try {
+    const dailyCandles = await fetchExtendedDailyCandles([]);
+    if (dailyCandles.length > 0) {
+      cycleAdjustment = await calculatePowerLawAdjustment(dailyCandles, []);
+    }
+  } catch (error) {
+    // Power-law adjustment failed, continue with raw composite
+    console.warn('Power-law adjustment failed:', error);
+  }
+
+  // Apply power-law adjustment to composite score
+  const composite = clamp(composite_raw + cycleAdjustment.adj_pts, 0, 100);
 
   const band =
     composite < 15 ? { key: 'aggressive_buy', label: 'Aggressive Buying', range: [0, 15], color: 'green',  recommendation: 'Max allocation' } :
@@ -180,7 +197,9 @@ async function buildLatest() {
       const latestData = {
         ok: true,
         as_of_utc: new Date().toISOString(),
+        composite_raw: composite_raw,
         composite_score: composite,
+        cycle_adjustment: cycleAdjustment,
         band,
         health: 'green',
         factors,

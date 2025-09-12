@@ -198,3 +198,97 @@ export function ema(arr: number[], n: number): number[] {
   
   return out;
 }
+
+/**
+ * Ordinary Least Squares regression
+ * @param xs X values array
+ * @param ys Y values array
+ * @returns {a, b} for line y = a + b*x, or null if insufficient data
+ */
+export function ols(xs: number[], ys: number[]): { a: number; b: number } | null {
+  if (xs.length !== ys.length || xs.length < 10) return null;
+  
+  const finite = xs.map((x, i) => ({ x, y: ys[i] })).filter(p => Number.isFinite(p.x) && Number.isFinite(p.y));
+  if (finite.length < 10) return null;
+  
+  const n = finite.length;
+  const Sx = finite.reduce((s, p) => s + p.x, 0);
+  const Sy = finite.reduce((s, p) => s + p.y, 0);
+  const Sxx = finite.reduce((s, p) => s + p.x * p.x, 0);
+  const Sxy = finite.reduce((s, p) => s + p.x * p.y, 0);
+  
+  const den = n * Sxx - Sx * Sx;
+  if (Math.abs(den) < 1e-10) return null;
+  
+  const b = (n * Sxy - Sx * Sy) / den;
+  const a = (Sy - b * Sx) / n;
+  
+  return { a, b };
+}
+
+/**
+ * Calculate sample standard deviation
+ * @param arr Array of numbers
+ * @returns Sample standard deviation, or 1 if insufficient data
+ */
+export function sampleStdDev(arr: number[]): number {
+  const finite = arr.filter(Number.isFinite);
+  if (finite.length < 2) return 1;
+  
+  const mean = finite.reduce((s, v) => s + v, 0) / finite.length;
+  const variance = finite.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / (finite.length - 1);
+  return Math.sqrt(variance);
+}
+
+/**
+ * Clamp value to range
+ * @param value Value to clamp
+ * @param min Minimum value
+ * @param max Maximum value
+ * @returns Clamped value
+ */
+export function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+/**
+ * Convert daily candles to weekly closes
+ * @param candles Array of {timestamp, close} objects
+ * @returns Array of {timestamp, close} for weekly closes
+ */
+export function dailyToWeekly(candles: { timestamp: number; close: number }[]): { timestamp: number; close: number }[] {
+  if (candles.length === 0) return [];
+  
+  // Sort by timestamp (oldest first)
+  const sorted = candles.slice().sort((a, b) => a.timestamp - b.timestamp);
+  
+  const weekly: { timestamp: number; close: number }[] = [];
+  let currentWeek = -1;
+  let lastTimestamp = 0;
+  let lastClose = 0;
+  
+  for (const candle of sorted) {
+    if (!Number.isFinite(candle.close) || candle.close <= 0) continue;
+    
+    // Calculate week number (weeks since epoch)
+    const week = Math.floor(candle.timestamp / (7 * 24 * 60 * 60 * 1000));
+    
+    if (week !== currentWeek) {
+      // New week - save previous week's last close
+      if (currentWeek >= 0) {
+        weekly.push({ timestamp: lastTimestamp, close: lastClose });
+      }
+      currentWeek = week;
+    }
+    
+    lastTimestamp = candle.timestamp;
+    lastClose = candle.close;
+  }
+  
+  // Add the last week
+  if (currentWeek >= 0) {
+    weekly.push({ timestamp: lastTimestamp, close: lastClose });
+  }
+  
+  return weekly;
+}
