@@ -85,12 +85,12 @@ export default function RealDashboard() {
           <div className="mt-2 flex gap-2">
             {latest?.cycle_adjustment?.adj_pts !== 0 && (
               <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
-                Cycle: {latest.cycle_adjustment.adj_pts > 0 ? '+' : ''}{latest.cycle_adjustment.adj_pts}
+                Cycle: {latest?.cycle_adjustment?.adj_pts && latest.cycle_adjustment.adj_pts > 0 ? '+' : ''}{latest?.cycle_adjustment?.adj_pts}
               </span>
             )}
             {latest?.spike_adjustment?.adj_pts !== 0 && (
               <span className="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded">
-                Spike: {latest.spike_adjustment.adj_pts > 0 ? '+' : ''}{latest.spike_adjustment.adj_pts}
+                Spike: {latest?.spike_adjustment?.adj_pts && latest.spike_adjustment.adj_pts > 0 ? '+' : ''}{latest?.spike_adjustment?.adj_pts}
               </span>
             )}
           </div>
