@@ -2,8 +2,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-type Point = { as_of_utc: string; composite: number; trendValuation?: number | null };
-type Api = { ok: boolean; range: string; points: Point[] };
+type Point = { 
+  date: string; 
+  composite: number; 
+  trend_valuation?: number | null;
+  net_liquidity?: number | null;
+  stablecoins?: number | null;
+  term_leverage?: number | null;
+  onchain?: number | null;
+  etf_flows?: number | null;
+  social_interest?: number | null;
+  macro_overlay?: number | null;
+};
 
 const ranges: Array<{ key:'30d'|'90d'|'180d'|'1y'; label:string }> = [
   { key: '30d', label: '30D' }, { key: '90d', label: '90D' }, { key: '180d', label: '180D' }, { key: '1y', label: '1Y' },
@@ -18,24 +28,99 @@ export default function HistoryChart() {
     let alive = true;
     (async () => {
       setErr(null);
-      const res = await fetch(`/api/history?range=${range}&ts=${Date.now()}`, { cache: 'no-store' });
-      const json: Api = await res.json().catch(()=>({ ok:false, range, points:[] } as any));
-      if (alive) {
-        if (!res.ok || !json.ok) setErr('Failed to load history');
-        else setData(json.points || []);
+      try {
+        const res = await fetch(`/data/history.csv?ts=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) {
+          setErr('Failed to load history CSV');
+          return;
+        }
+        
+        const csvText = await res.text();
+        const lines = csvText.trim().split('\n').filter(line => line.trim() !== '');
+        if (lines.length < 2) {
+          setErr('No history data available');
+          return;
+        }
+        
+        // Parse CSV - find the header line
+        let headerIndex = 0;
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].startsWith('date,composite')) {
+            headerIndex = i;
+            break;
+          }
+        }
+        
+        const headers = lines[headerIndex].split(',');
+        const data: Point[] = [];
+        
+        for (let i = headerIndex + 1; i < lines.length; i++) {
+          const values = lines[i].split(',');
+          if (values.length !== headers.length) continue;
+          
+          const point: Point = {
+            date: values[0],
+            composite: parseFloat(values[1]) || 0,
+            trend_valuation: values[2] ? parseFloat(values[2]) : null,
+            net_liquidity: values[3] ? parseFloat(values[3]) : null,
+            stablecoins: values[4] ? parseFloat(values[4]) : null,
+            term_leverage: values[5] ? parseFloat(values[5]) : null,
+            onchain: values[6] ? parseFloat(values[6]) : null,
+            etf_flows: values[7] ? parseFloat(values[7]) : null,
+            social_interest: values[8] ? parseFloat(values[8]) : null,
+            macro_overlay: values[9] ? parseFloat(values[9]) : null,
+          };
+          data.push(point);
+        }
+        
+        if (alive) {
+          setData(data);
+        }
+      } catch (error) {
+        if (alive) {
+          setErr('Failed to parse history data');
+        }
       }
     })();
     return () => { alive = false; };
   }, [range]);
 
-  const pretty = useMemo(
-    () => (data || []).map(p => ({
-      date: new Date(p.as_of_utc).toISOString().slice(0,10),
-      composite: p.composite ?? null,
-      trendValuation: p.trendValuation ?? null,
-    })),
-    [data]
-  );
+  const pretty = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    
+    // Filter by range
+    const now = new Date();
+    const cutoff = new Date();
+    switch (range) {
+      case '30d': cutoff.setDate(now.getDate() - 30); break;
+      case '90d': cutoff.setDate(now.getDate() - 90); break;
+      case '180d': cutoff.setDate(now.getDate() - 180); break;
+      case '1y': cutoff.setFullYear(now.getFullYear() - 1); break;
+    }
+    
+    const filtered = data.filter(p => new Date(p.date) >= cutoff);
+    
+    // Apply EWMA smoothing (alpha = 0.1 from config)
+    const alpha = 0.1;
+    const smoothed: typeof filtered = [];
+    filtered.forEach((p, i) => {
+      if (i === 0) {
+        smoothed.push(p);
+      } else {
+        const prev = smoothed[i - 1];
+        smoothed.push({
+          ...p,
+          composite: alpha * p.composite + (1 - alpha) * prev.composite
+        });
+      }
+    });
+    
+    return smoothed.map(p => ({
+      date: p.date,
+      composite: Math.round(p.composite),
+      trendValuation: p.trend_valuation,
+    }));
+  }, [data, range]);
 
   return (
     <div style={{ 
@@ -82,9 +167,26 @@ export default function HistoryChart() {
           Error: {err}
         </div>
       )}
-      <div style={{ height: '256px' }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={pretty}>
+      {!err && pretty.length === 0 && (
+        <div style={{ 
+          height: '256px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#6b7280',
+          fontSize: '14px'
+        }}>
+          <div style={{ marginBottom: '4px' }}>No history data yet.</div>
+          <div style={{ fontSize: '12px', color: '#9ca3af' }}>
+            Run the daily ETL or refresh after first snapshot.
+          </div>
+        </div>
+      )}
+      {!err && pretty.length > 0 && (
+        <div style={{ height: '256px' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={pretty}>
             <defs>
               <linearGradient id="gScore" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#10b981" stopOpacity={0.35}/>
@@ -118,9 +220,10 @@ export default function HistoryChart() {
               strokeWidth={2}
               fill="url(#gScore)" 
             />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
       <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '8px' }}>
         Composite uses available sub-scores as we add them.
       </div>

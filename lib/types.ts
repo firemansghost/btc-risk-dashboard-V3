@@ -29,6 +29,7 @@ export type LatestSnapshot = {
   ok: boolean;
   as_of_utc: string;
   composite_score: number;
+  composite_raw?: number;
   band: {
     key: string;
     label: string;
@@ -42,6 +43,24 @@ export type LatestSnapshot = {
   provenance: any[];
   model_version: string;
   transform: Record<string, any>;
+  cycle_adjustment?: {
+    adj_pts: number;
+    residual_z: number | null;
+    last_utc: string | null;
+    source: string | null;
+    reason?: string;
+  };
+  spike_adjustment?: {
+    adj_pts: number;
+    r_1d: number;
+    sigma: number;
+    z: number;
+    ref_close: number;
+    spot: number;
+    last_utc: string;
+    source: string;
+    reason?: string;
+  };
 };
 
 export type HistoryRow = {

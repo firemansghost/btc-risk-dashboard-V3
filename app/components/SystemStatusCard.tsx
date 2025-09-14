@@ -7,9 +7,11 @@ import type { FactorSummary } from '@/lib/types';
 interface SystemStatusCardProps {
   factors: FactorSummary[];
   provenance: any[];
+  onOpenWeights?: () => void;
+  onOpenProvenance?: () => void;
 }
 
-export default function SystemStatusCard({ factors, provenance }: SystemStatusCardProps) {
+export default function SystemStatusCard({ factors, provenance, onOpenWeights, onOpenProvenance }: SystemStatusCardProps) {
   const [showProvenance, setShowProvenance] = useState(false);
 
   const getStatusColor = (status: string) => {
@@ -43,10 +45,16 @@ export default function SystemStatusCard({ factors, provenance }: SystemStatusCa
         <h3 className="font-medium text-gray-900">System Status</h3>
         <div className="flex items-center gap-2">
           <button
+            onClick={onOpenProvenance}
+            className="text-sm text-blue-600 hover:text-blue-800 underline"
+          >
+            Show Provenance
+          </button>
+          <button
             onClick={() => setShowProvenance(!showProvenance)}
             className="text-sm text-blue-600 hover:text-blue-800 underline"
           >
-            {showProvenance ? 'Hide' : 'Show'} Provenance
+            {showProvenance ? 'Hide' : 'Show'} Details
           </button>
           <button
             onClick={() => window.open('/api/data/latest?ts=' + Date.now(), '_blank')}
@@ -59,7 +67,12 @@ export default function SystemStatusCard({ factors, provenance }: SystemStatusCa
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {sources.map((source, index) => (
-          <div key={index} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50">
+          <div 
+            key={index} 
+            className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+            title="Weights affect this factor's contribution. Press W to open Weights."
+            onClick={onOpenWeights}
+          >
             <div className={`w-2 h-2 rounded-full ${getStatusDot(source.status)}`}></div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-gray-900 truncate">{source.name}</div>

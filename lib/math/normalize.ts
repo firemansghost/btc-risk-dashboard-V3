@@ -104,7 +104,7 @@ export function riskFromPercentile(
   
   const { invert = false, k = NORM.logistic_k } = opts;
   const x = invert ? 1 - p : p;
-  const logistic = logistic01(x, k);
+  const logistic = logistic01(x, k as any);
   
   return Math.round(100 * logistic);
 }
@@ -130,7 +130,7 @@ export function riskFromZ(
   const directedZ = direction * clampedZ;
   
   // Convert to [0,1] via tanh
-  const tanh = tanh01(directedZ, scale);
+  const tanh = tanh01(directedZ, scale as any);
   
   return Math.round(100 * tanh);
 }

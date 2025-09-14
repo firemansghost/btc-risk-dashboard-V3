@@ -1,6 +1,8 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import SiteFooter from './components/SiteFooter';
+import Navigation from './components/Navigation';
 
 const inter = Inter({ 
   subsets: ['latin'], 
@@ -18,7 +20,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={inter.variable}>
       <body className="min-h-screen antialiased">
         <div className="container max-w-6xl mx-auto py-6">
-          {children}
+          <Navigation />
+          <main>
+            {children}
+          </main>
+          <SiteFooter />
         </div>
       </body>
     </html>

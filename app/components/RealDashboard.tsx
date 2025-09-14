@@ -4,7 +4,10 @@ import { useCallback, useEffect, useState } from 'react';
 import HistoryChart from './HistoryChart';
 import PillarBadge from './PillarBadge';
 import InfoTooltip from './InfoTooltip';
-import WeightsButton from './WeightsButton';
+import WeightsLauncher from './WeightsLauncher';
+import RiskBandLegend from './RiskBandLegend';
+import WhatIfWeightsModal from './WhatIfWeightsModal';
+import ProvenanceModal from './ProvenanceModal';
 import SystemStatusCard from './SystemStatusCard';
 import MacroCard from './MacroCard';
 import type { LatestSnapshot } from '@/lib/types';
@@ -17,6 +20,9 @@ export default function RealDashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [apiDetail, setApiDetail] = useState<any>(null);
+  const [expandedFactors, setExpandedFactors] = useState<Set<string>>(new Set());
+  const [whatIfModalOpen, setWhatIfModalOpen] = useState(false);
+  const [provenanceModalOpen, setProvenanceModalOpen] = useState(false);
 
   const loadLatest = useCallback(async () => {
     setError(null);
@@ -46,6 +52,18 @@ export default function RealDashboard() {
     }
   }, [loadLatest]);
 
+  const toggleFactorExpansion = useCallback((factorKey: string) => {
+    setExpandedFactors(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(factorKey)) {
+        newSet.delete(factorKey);
+      } else {
+        newSet.add(factorKey);
+      }
+      return newSet;
+    });
+  }, []);
+
   useEffect(() => { loadLatest(); }, [loadLatest]);
 
   const factors = latest?.factors ?? [];
@@ -61,7 +79,7 @@ export default function RealDashboard() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <WeightsButton />
+          <WeightsLauncher onOpen={() => setWhatIfModalOpen(true)} />
           <button
             onClick={onRefresh}
             disabled={loading}
@@ -79,8 +97,19 @@ export default function RealDashboard() {
           <div className="text-4xl font-bold text-gray-900 mb-2">{latest?.composite_score ?? '—'}</div>
           <div className="text-xs text-gray-500 mb-1">Band: {latest?.band?.label ?? '—'}</div>
           {latest?.band?.recommendation && (
-            <div className="text-xs text-gray-600">{latest.band.recommendation}</div>
+            <div className="text-xs text-gray-600 mb-2">{latest.band.recommendation}</div>
           )}
+          {/* Tune weights link */}
+          <div className="mt-2">
+            <button
+              type="button"
+              onClick={() => setWhatIfModalOpen(true)}
+              className="rounded px-1.5 py-0.5 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+              title="Press W to open weights"
+            >
+              Tune weights
+            </button>
+          </div>
           {/* Adjustment indicators */}
           <div className="mt-2 flex gap-2">
             {latest?.cycle_adjustment?.adj_pts !== 0 && (
@@ -113,16 +142,32 @@ export default function RealDashboard() {
         </div>
       </div>
 
+      {/* Risk Band Legend */}
+      {latest?.composite_score !== undefined && (
+        <div className="mb-6">
+          <RiskBandLegend score={latest.composite_score} />
+        </div>
+      )}
+
       {/* System Status */}
       <div className="mb-6">
-        <SystemStatusCard factors={factors} provenance={latest?.provenance ?? []} />
+        <SystemStatusCard 
+          factors={factors} 
+          provenance={latest?.provenance ?? []} 
+          onOpenWeights={() => setWhatIfModalOpen(true)}
+          onOpenProvenance={() => setProvenanceModalOpen(true)}
+        />
       </div>
 
 
       {/* Five-Pillar Factor Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        {factors.map(factor => (
-          <div key={factor.key} className="rounded-xl border p-4 bg-white shadow-sm">
+        {factors.map(factor => {
+          const isExpanded = expandedFactors.has(factor.key);
+          const hasMoreDetails = factor.details && factor.details.length > 3;
+          
+          return (
+            <div key={factor.key} className="rounded-xl border p-4 bg-white shadow-sm">
             {/* Header with Pillar Badge and Weight */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -141,7 +186,16 @@ export default function RealDashboard() {
             </div>
             
             {/* Factor Title */}
-            <h3 className="font-medium text-gray-900 mb-3">{factor.label}</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-medium text-gray-900">{factor.label}</h3>
+              <a
+                href={`/methodology#${factor.key}`}
+                className="text-xs text-blue-600 hover:text-blue-800 underline"
+                title="Learn more about this factor"
+              >
+                What's this?
+              </a>
+            </div>
             
             {/* Status */}
             <div className="mb-3">
@@ -166,9 +220,44 @@ export default function RealDashboard() {
                     <span className="font-medium text-gray-900">{detail.value}</span>
                   </div>
                 ))}
-                {factor.details.length > 3 && (
-                  <div className="text-xs text-gray-400">
-                    +{factor.details.length - 3} more...
+                {hasMoreDetails && (
+                  <div>
+                    {/* Expandable details */}
+                    {isExpanded && (
+                      <div className="space-y-2 mt-2 pt-2 border-t border-gray-100">
+                        {factor.details.slice(3).map((detail, idx) => (
+                          <div key={idx + 3} className="flex justify-between items-center text-sm">
+                            <span className="text-gray-600 flex items-center gap-1">
+                              {detail.label}
+                              <InfoTooltip formula={detail.formula} window={detail.window} />
+                            </span>
+                            <span className="font-medium text-gray-900">{detail.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Toggle button */}
+                    <button
+                      onClick={() => toggleFactorExpansion(factor.key)}
+                      className="text-xs text-emerald-600 hover:text-emerald-700 font-medium mt-2 flex items-center gap-1 transition-colors"
+                    >
+                      {isExpanded ? (
+                        <>
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          </svg>
+                          Show less
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                          +{factor.details.length - 3} more...
+                        </>
+                      )}
+                    </button>
                   </div>
                 )}
               </div>
@@ -182,7 +271,8 @@ export default function RealDashboard() {
               )}
             </div>
           </div>
-        ))}
+          );
+        })}
         
         {/* Macro Overlay Card */}
         <MacroCard />
@@ -204,6 +294,19 @@ export default function RealDashboard() {
           </pre>
         </details>
       )}
+
+      {/* What-If Weights Modal */}
+      <WhatIfWeightsModal
+        isOpen={whatIfModalOpen}
+        onClose={() => setWhatIfModalOpen(false)}
+      />
+
+      {/* Provenance Modal */}
+      <ProvenanceModal
+        open={provenanceModalOpen}
+        onClose={() => setProvenanceModalOpen(false)}
+        items={latest?.provenance ?? []}
+      />
     </div>
   );
 }

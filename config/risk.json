@@ -1,0 +1,57 @@
+{
+  "version": "v3.3.0-custom",
+  "lastModified": "2024-01-15T10:30:00.000Z",
+  "factors": [
+    {
+      "key": "trend_valuation",
+      "weight": 30,
+      "enabled": true
+    },
+    {
+      "key": "net_liquidity", 
+      "weight": 15,
+      "enabled": true
+    },
+    {
+      "key": "stablecoins",
+      "weight": 20,
+      "enabled": true
+    },
+    {
+      "key": "etf_flows",
+      "weight": 15,
+      "enabled": true
+    },
+    {
+      "key": "term_leverage",
+      "weight": 15,
+      "enabled": true
+    },
+    {
+      "key": "onchain",
+      "weight": 5,
+      "enabled": true
+    },
+    {
+      "key": "social_interest",
+      "weight": 0,
+      "enabled": false
+    },
+    {
+      "key": "macro_overlay",
+      "weight": 0,
+      "enabled": false
+    }
+  ],
+  "spikeDetector": {
+    "enabled": true,
+    "maxPoints": 8
+  },
+  "powerLaw": {
+    "enabled": false
+  },
+  "normalization": {
+    "logisticK": 2.5,
+    "zScale": 1.8
+  }
+}

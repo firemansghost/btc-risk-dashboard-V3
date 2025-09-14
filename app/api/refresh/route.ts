@@ -7,7 +7,20 @@ import { saveJson }              from '@/lib/storage';
 import { calculatePowerLawAdjustment, fetchExtendedDailyCandles } from '@/lib/math/powerLaw';
 import { clamp } from '@/lib/math/normalize';
 import { computeFastSpike } from '@/lib/adjust/fastSpike';
+import { getBandForScore, getConfig, getConfigDigest, normalizeFactorWeights, getFreshnessHours, isFresh } from '@/lib/riskConfig';
 import type { PillarKey } from '@/lib/types';
+
+const TOKEN = process.env.RISK_REFRESH_TOKEN;
+
+// naive in-memory limiter
+const hits = new Map<string, number>(); // ip -> lastTs
+function rateLimit(ip: string, ms = 60_000) {
+  const now = Date.now();
+  const last = hits.get(ip) ?? 0;
+  if (now - last < ms) return false;
+  hits.set(ip, now);
+  return true;
+}
 
 function sanitizeProv(list: any[]) {
   const mask = (u: string) => u.replace(/(api_key=)[^&]+/i, '$1****');
@@ -67,7 +80,10 @@ async function getEtfFlowsSafe(): Promise<FactorResult> {
 }
 
 async function buildLatest() {
-  const [tv, nl, sc, tsl, oc, etf, social, spot] = await Promise.all([
+  const config = getConfig();
+  const factorWeightsMap = normalizeFactorWeights(config.factors);
+
+  const [tv, nl, sc, tsl, oc, etf, social, macro, spot] = await Promise.all([
     // If any of these throws, catch and return a harmless excluded payload
     computeTrendValuation().catch((e: any) => ({
       score: null, last_utc: null, source: null, details: [],
@@ -88,134 +104,114 @@ async function buildLatest() {
       provenance: [{ url: 'inline:social-error', ok: false, status: 0, ms: 0, error: String(e) }],
       reason: 'social_error'
     })),
+    (async () => { 
+      const macroConfig = config.factors.find(f => f.key === 'macro_overlay');
+      if (macroConfig?.enabled) {
+        try { 
+          const m = await import('@/lib/factors/macroOverlay');  
+          return await m.computeMacroOverlay(); 
+        } catch (e: any) { 
+          return { score: null, last_utc: null, source: null, details: [], provenance: [{ url: 'inline:macro-error', ok: false, status: 0, ms: 0, error: String(e) }], reason: 'macro_error' }; 
+        }
+      }
+      return { score: null, last_utc: null, source: null, details: [], provenance: [], reason: 'disabled' };
+    })(),
     fetchCoinbaseSpot().catch(() => ({ usd: NaN, as_of_utc: new Date().toISOString(), provenance: { url: 'inline:spot-error' } })),
   ]);
 
   const factors: FactorCard[] = [];
 
-  // 25% Trend & Valuation - Momentum pillar
-  factors.push({
-    key: 'trend_valuation',
-    label: 'Trend & Valuation',
-    pillar: 'momentum',
-    weight_pct: 25,
-    score: tv.score,
-    status: tv.score === null ? 'excluded' : 'fresh',
-    last_utc: tv.last_utc,
-    source: 'Coinbase price → 200d SMA (Mayer), 2Y SMA, RSI(14)',
-    details: tv.details || [
-      { label: 'BMSB status', value: tv.bmsb?.status ?? '—' },
-      { label: 'dist_to_band', value: Number.isFinite(tv.bmsb?.dist) ? `${(tv.bmsb.dist * 100).toFixed(2)}%` : '—', formula: 'price / 21W EMA − 1', window: '2y pct rank' },
-      { label: 'Mayer Multiple', value: Number.isFinite(tv.signals?.[0]?.raw) ? tv.signals[0].raw.toFixed(3) : '—', formula: 'price / 200D SMA', window: '3y pct rank' },
-      { label: '2Y MA Multiplier', value: Number.isFinite(tv.signals?.[1]?.raw) ? tv.signals[1].raw.toFixed(3) : '—' },
-    ],
+  // Use config.factors for definitions and weights
+  config.factors.forEach(cfgFactor => {
+    let factorResult: FactorResult | undefined;
+    switch (cfgFactor.key) {
+      case 'trend_valuation': factorResult = tv; break;
+      case 'net_liquidity': factorResult = nl; break;
+      case 'stablecoins': factorResult = sc; break;
+      case 'term_leverage': factorResult = tsl; break;
+      case 'onchain': factorResult = oc; break;
+      case 'etf_flows': factorResult = etf; break;
+      case 'social_interest': factorResult = social; break;
+      case 'macro_overlay': factorResult = macro; break;
+      default: return;
+    }
+
+    const pillarConfig = config.pillars.find(p => p.key === cfgFactor.pillar);
+
+    // Determine status based on staleness rules
+    let status: 'fresh' | 'stale' | 'excluded';
+    let stalenessReason: string | undefined;
+    
+    if (factorResult.score === null) {
+      status = 'excluded';
+    } else {
+      const freshnessHours = getFreshnessHours(cfgFactor.key);
+      if (isFresh(factorResult.last_utc, freshnessHours)) {
+        status = 'fresh';
+      } else {
+        status = 'stale';
+        stalenessReason = `Data older than ${freshnessHours}h`;
+      }
+    }
+
+    factors.push({
+      key: cfgFactor.key,
+      label: cfgFactor.label,
+      pillar: cfgFactor.pillar,
+      weight_pct: cfgFactor.weight, // Display weight from config
+      score: factorResult.score,
+      status,
+      last_utc: factorResult.last_utc,
+      source: factorResult.source,
+      details: factorResult.details || [],
+      reason: stalenessReason || factorResult.reason,
+      counts_toward: cfgFactor.counts_toward,
+    });
   });
 
-  // 10% Net Liquidity - Liquidity pillar
-  factors.push(nl.score !== null ? {
-    key: 'net_liquidity',
-    label: 'Net Liquidity (FRED)',
-    pillar: 'liquidity',
-    weight_pct: 10, score: nl.score!, status: 'fresh',
-    last_utc: nl.last_utc, source: nl.source, details: nl.details,
-  } : { key: 'net_liquidity', label: 'Net Liquidity (FRED)', pillar: 'liquidity', weight_pct: 10, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: 'fetch_or_key' });
-
-  // 15% Stablecoins - Liquidity pillar
-  factors.push(sc.score !== null ? {
-    key: 'stablecoins',
-    label: 'Stablecoins',
-    pillar: 'liquidity',
-    weight_pct: 15, score: sc.score!, status: 'fresh',
-    last_utc: sc.last_utc, source: sc.source, details: sc.details.map(d => ({ ...d, formula: d.label.includes('30d') ? '%Δ 30d' : undefined, window: d.label.includes('30d') ? '2y z-score → logistic' : undefined })),
-  } : { key: 'stablecoins', label: 'Stablecoins', pillar: 'liquidity', weight_pct: 15, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: 'fetch_or_limit' });
-
-  // 20% Term & Leverage - Leverage pillar
-  factors.push(tsl.score !== null ? {
-    key: 'term_leverage',
-    label: 'Term Structure & Leverage',
-    pillar: 'leverage',
-    weight_pct: 20, score: tsl.score!, status: 'fresh',
-    last_utc: tsl.last_utc, source: tsl.source, details: tsl.details.map(d => ({ ...d, formula: d.label.includes('7d') ? 'mean funding(7d)' : undefined, window: d.label.includes('7d') ? '2y z-score' : undefined })),
-  } : { key: 'term_leverage', label: 'Term Structure & Leverage', pillar: 'leverage', weight_pct: 20, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: 'fetch_error' });
-
-  // 10% On-chain - Social pillar (but counts toward momentum)
-  factors.push(oc.score !== null ? {
-    key: 'onchain',
-    label: 'On-chain Activity',
-    pillar: 'social',
-    weight_pct: 10, score: oc.score!, status: 'fresh',
-    last_utc: oc.last_utc, source: oc.source, details: oc.details,
-    counts_toward: 'momentum',
-  } : { key: 'onchain', label: 'On-chain Activity', pillar: 'social', weight_pct: 10, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: 'fetch_error', counts_toward: 'momentum' });
-
-  // 10% ETF Flows - Liquidity pillar
-  factors.push(etf.score !== null ? {
-    key: 'etf_flows',
-    label: 'ETF Flows',
-    pillar: 'liquidity',
-    weight_pct: 10, score: etf.score!, status: 'fresh',
-    last_utc: etf.last_utc, source: etf.source, details: etf.details.map(d => ({ ...d, formula: d.label.includes('21d') ? 'Σ net flow(21d)' : undefined, window: d.label.includes('21d') ? '180d percentile' : undefined })),
-  } : { key: 'etf_flows', label: 'ETF Flows', pillar: 'liquidity', weight_pct: 10, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: etf.reason ?? 'missing_feed_or_parse_error' });
-
-  // 5% Social Interest - Social pillar
-  factors.push(social.score !== null ? {
-    key: 'social',
-    label: 'Social Interest',
-    pillar: 'social',
-    weight_pct: 5, score: social.score!, status: 'fresh',
-    last_utc: social.last_utc, source: social.source, details: social.details.map(d => ({ ...d, formula: d.label.includes('F&G') ? 'index 0–100' : undefined, window: d.label.includes('F&G') ? '2y pct rank' : undefined })),
-  } : { key: 'social', label: 'Social Interest', pillar: 'social', weight_pct: 5, score: null, status: 'excluded', last_utc: null, source: null, details: [], reason: social.reason ?? 'social_error' });
-
-  // 10% Macro Overlay - Macro pillar (placeholder)
-  factors.push({
-    key: 'macro_overlay',
-    label: 'Macro Overlay',
-    pillar: 'macro',
-    weight_pct: 10,
-    score: null,
-    status: 'excluded',
-    last_utc: null,
-    source: null,
-    details: [],
-    reason: 'coming_soon',
-  });
-
-  // Renormalize composite over available factors
-  const usable = factors.filter((f): f is FactorCard & { score: number } => typeof f.score === 'number');
-  const weightSum = usable.reduce((s, f) => s + f.weight_pct, 0) || 1;
-  const composite_raw = Math.round(usable.reduce((s, f) => s + f.score * (f.weight_pct / weightSum), 0));
+  // Only use fresh factors for composite calculation
+  const usable = factors.filter((f): f is FactorCard & { score: number } => 
+    typeof f.score === 'number' && f.status === 'fresh'
+  );
+  
+  // Re-normalize weights for fresh factors only
+  const freshFactorWeights = normalizeFactorWeights(
+    config.factors.filter(f => f.enabled && usable.some(u => u.key === f.key))
+  );
+  
+  // Calculate composite_raw using re-normalized weights
+  const composite_raw = Math.round(usable.reduce((s, f) => {
+    const normalizedWeight = freshFactorWeights.get(f.key) || 0;
+    return s + f.score * normalizedWeight;
+  }, 0));
 
   // Calculate power-law diminishing returns adjustment
   let cycleAdjustment = { adj_pts: 0, residual_z: null, last_utc: null, source: null, reason: 'disabled' };
-  try {
-    const dailyCandles = await fetchExtendedDailyCandles([]);
-    if (dailyCandles.length > 0) {
-      cycleAdjustment = await calculatePowerLawAdjustment(dailyCandles, []);
+  if (config.powerLaw.enabled) { // Use config to enable/disable
+    try {
+      const dailyCandles = await fetchExtendedDailyCandles([]);
+      if (dailyCandles.length > 0) {
+        cycleAdjustment = await calculatePowerLawAdjustment(dailyCandles, []);
+      }
+    } catch (error) {
+      console.warn('Power-law adjustment failed:', error);
     }
-  } catch (error) {
-    // Power-law adjustment failed, continue with raw composite
-    console.warn('Power-law adjustment failed:', error);
   }
 
   // Calculate fast-path spike adjustment
   let spikeAdjustment = { adj_pts: 0, r_1d: 0, sigma: 0, z: 0, ref_close: 0, spot: 0, last_utc: '', source: '', reason: 'disabled' };
-  try {
-    spikeAdjustment = await computeFastSpike();
-  } catch (error) {
-    // Spike adjustment failed, continue with existing adjustments
-    console.warn('Spike adjustment failed:', error);
+  if (config.spikeDetector.enabled) { // Use config to enable/disable
+    try {
+      spikeAdjustment = await computeFastSpike();
+    } catch (error) {
+      console.warn('Spike adjustment failed:', error);
+    }
   }
 
   // Apply both adjustments to composite score
   const composite = clamp(composite_raw + cycleAdjustment.adj_pts + spikeAdjustment.adj_pts, 0, 100);
 
-  const band =
-    composite < 15 ? { key: 'aggressive_buy', label: 'Aggressive Buying', range: [0, 15], color: 'green',  recommendation: 'Max allocation' } :
-    composite < 35 ? { key: 'dca_buy',         label: 'Regular DCA Buying', range: [15, 35], color: 'green',  recommendation: 'Continue regular purchases' } :
-    composite < 55 ? { key: 'hold_neutral',    label: 'Hold/Neutral',       range: [35, 55], color: 'blue',   recommendation: 'Maintain positions, selective buying' } :
-    composite < 70 ? { key: 'begin_scaling',   label: 'Begin Scaling Out',  range: [55, 70], color: 'yellow', recommendation: 'Take some profits' } :
-    composite < 85 ? { key: 'increase_sell',   label: 'Increase Selling',   range: [70, 85], color: 'orange', recommendation: 'Accelerate profit taking' } :
-                     { key: 'max_sell',        label: 'Maximum Selling',    range: [85,100], color: 'red',    recommendation: 'Exit most/all positions' };
+  const band = getBandForScore(composite); // Use centralized function
 
   // Build comprehensive provenance array
   const prov = sanitizeProv([
@@ -226,6 +222,7 @@ async function buildLatest() {
     ...(oc?.provenance || []),
     ...(etf?.provenance || []),
     ...(social?.provenance || []),
+    ...(macro?.provenance || []),
     spot?.provenance,
   ].filter(Boolean) as any[]);
 
@@ -241,24 +238,48 @@ async function buildLatest() {
         factors,
         btc: { spot_usd: spot.usd, as_of_utc: spot.as_of_utc, source: 'coinbase' },
         provenance: prov,
-        model_version: 'v3.2.0',
-        transform: {
-          winsor: [0.05, 0.95],
-          logistic_k: 3,
-          z_scale: 2.0,
-          z_clip: 4.0,
-          percentile_window_days: 1825,
+        model_version: config.version, // Use config version
+        config_digest: getConfigDigest(), // Add config digest
+        transform: { // Use config normalization settings
+          winsor: config.normalization.winsor,
+          logistic_k: config.normalization.logisticK,
+          z_scale: config.normalization.zScale,
+          z_clip: config.normalization.zClip,
+          percentile_window_days: config.normalization.percentileWindowDays,
         },
       };
 
       // Save to latest.json for /api/data/latest endpoint
       await saveJson('latest.json', latestData);
 
-      return NextResponse.json({
+      const res = NextResponse.json({
         ok: true,
         latest: latestData,
       });
+      
+      // Add cache headers for GET requests
+      res.headers.set('Cache-Control', 'public, max-age=60, s-maxage=60');
+      return res;
 }
 
-export async function GET()  { return buildLatest(); }
-export async function POST() { return buildLatest(); }
+export async function POST(req: Request) {
+  if (TOKEN) {
+    const auth = req.headers.get('authorization') || '';
+    const param = new URL(req.url).searchParams.get('token') || '';
+    const bearer = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+    if (![bearer, param].includes(TOKEN)) {
+      return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 403 });
+    }
+  }
+  // Force recompute
+  return buildLatest();
+}
+
+export async function GET(req: Request) {
+  const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0] || '0.0.0.0';
+  if (!rateLimit(ip)) {
+    return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 });
+  }
+  // Return latest or compute if needed
+  return buildLatest();
+}
