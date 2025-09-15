@@ -1,8 +1,8 @@
 {
   "version": "v3.1.0",
-  "updated_at": "2025-09-15T23:31:57.245Z",
-  "price_usd": 115502.53,
-  "composite": 44,
+  "updated_at": "2025-09-15T23:44:52.845Z",
+  "price_usd": 115377.73,
+  "composite": 40,
   "band": {
     "name": "Hold/Neutral",
     "lo": 35,
@@ -23,16 +23,16 @@
       "label": "Net Liquidity (FRED)",
       "pillar": "liquidity",
       "weight": 10,
-      "score": 93,
-      "status": "fresh",
-      "reason": "success"
+      "score": null,
+      "status": "excluded",
+      "reason": "missing_fred_api_key"
     },
     {
       "key": "stablecoins",
       "label": "Stablecoins",
       "pillar": "liquidity",
       "weight": 15,
-      "score": 24,
+      "score": 26,
       "status": "fresh",
       "reason": "success"
     },
@@ -41,9 +41,9 @@
       "label": "ETF Flows",
       "pillar": "liquidity",
       "weight": 10,
-      "score": null,
-      "status": "excluded",
-      "reason": "error: Farside 404"
+      "score": 45,
+      "status": "fresh",
+      "reason": "success"
     },
     {
       "key": "term_leverage",
@@ -77,9 +77,9 @@
       "label": "Macro Overlay",
       "pillar": "macro",
       "weight": 5,
-      "score": 20,
-      "status": "fresh",
-      "reason": "success"
+      "score": null,
+      "status": "excluded",
+      "reason": "missing_fred_api_key"
     }
   ],
   "adjustments": {
