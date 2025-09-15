@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { computeAllFactors } from "./factors.mjs";
 
 const ISO = (d) => d.toISOString().split("T")[0];
 
@@ -55,8 +56,10 @@ async function main() {
   try { y = await getCoinbaseCloseForYesterday(); }
   catch { y = await getCoinGeckoCloseForYesterday(); }
 
-  // 2) Compute placeholder risk (to be replaced by real ETL)
-  const composite = 47.0;
+  // 2) Compute real risk factors
+  console.log("Computing real risk factors...");
+  const factorResults = await computeAllFactors();
+  const composite = factorResults.composite;
   const band = riskBand(composite);
 
   // 3) Upsert history.csv
@@ -73,22 +76,16 @@ async function main() {
   }
   await fs.writeFile("public/data/history.csv", lines.join("\n"));
 
-  // 4) latest.json
+  // 4) latest.json with real factor data
   const latest = {
-    version: "v3.0.0",
+    version: "v3.1.0",
     updated_at: new Date().toISOString(),
     price_usd: y.close,
     composite,
     band,
-    pillars: [
-      { key: "liquidity", weight: 0.35, score: 38.9, status: "fresh" },
-      { key: "momentum",  weight: 0.25, score: 51.1, status: "fresh" },
-      { key: "leverage",  weight: 0.20, score: 60.2, status: "fresh" },
-      { key: "macro",     weight: 0.10, score: null, status: "excluded" },
-      { key: "social",    weight: 0.10, score: 42.3, status: "stale" }
-    ],
+    factors: factorResults.factors,
     adjustments: { cycle_nudge: 0.0, spike_nudge: 0.0 },
-    config_digest: "seed"
+    config_digest: "etl_real_factors"
   };
   await fs.writeFile("public/data/latest.json", JSON.stringify(latest, null, 2));
 
@@ -97,12 +94,18 @@ async function main() {
     updated_at: new Date().toISOString(),
     sources: [
       { name: "Coinbase daily candles", ok: true, ms: null, url: "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400" },
-      { name: "CoinGecko market chart (fallback)", ok: true, ms: null, url: "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=2&interval=daily" }
-    ]
+      { name: "CoinGecko market chart (fallback)", ok: true, ms: null, url: "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=2&interval=daily" },
+      { name: "Fear & Greed Index", ok: true, ms: null, url: "https://api.alternative.me/fng/" },
+      { name: "FRED API (if key provided)", ok: !!process.env.FRED_API_KEY, ms: null, url: "https://fred.stlouisfed.org/" }
+    ],
+    factors_computed: factorResults.factors.length,
+    factors_successful: factorResults.factors.filter(f => f.status === 'fresh').length
   };
   await fs.writeFile("public/data/status.json", JSON.stringify(status, null, 2));
 
   console.log(`ETL compute OK for ${y.date}`);
+  console.log(`Composite score: ${composite} (${band.name})`);
+  console.log(`Factors: ${factorResults.factors.filter(f => f.status === 'fresh').length}/${factorResults.factors.length} successful`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

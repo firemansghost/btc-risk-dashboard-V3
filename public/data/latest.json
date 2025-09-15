@@ -1,48 +1,90 @@
 {
-  "version": "v3.0.0",
-  "updated_at": "2025-09-15T21:08:21.493Z",
-  "price_usd": 115309.35,
-  "composite": 47,
+  "version": "v3.1.0",
+  "updated_at": "2025-09-15T22:57:17.861Z",
+  "price_usd": 115331.86,
+  "composite": 44,
   "band": {
     "name": "Hold/Neutral",
     "lo": 35,
     "hi": 55
   },
-  "pillars": [
+  "factors": [
     {
-      "key": "liquidity",
-      "weight": 0.35,
-      "score": 38.9,
-      "status": "fresh"
+      "key": "trend_valuation",
+      "label": "Trend & Valuation",
+      "pillar": "momentum",
+      "weight": 25,
+      "score": 43,
+      "status": "fresh",
+      "reason": "success"
     },
     {
-      "key": "momentum",
-      "weight": 0.25,
-      "score": 51.1,
-      "status": "fresh"
-    },
-    {
-      "key": "leverage",
-      "weight": 0.2,
-      "score": 60.2,
-      "status": "fresh"
-    },
-    {
-      "key": "macro",
-      "weight": 0.1,
+      "key": "net_liquidity",
+      "label": "Net Liquidity (FRED)",
+      "pillar": "liquidity",
+      "weight": 10,
       "score": null,
-      "status": "excluded"
+      "status": "excluded",
+      "reason": "missing_fred_api_key"
     },
     {
-      "key": "social",
-      "weight": 0.1,
-      "score": 42.3,
-      "status": "stale"
+      "key": "stablecoins",
+      "label": "Stablecoins",
+      "pillar": "liquidity",
+      "weight": 15,
+      "score": 30,
+      "status": "fresh",
+      "reason": "success"
+    },
+    {
+      "key": "etf_flows",
+      "label": "ETF Flows",
+      "pillar": "liquidity",
+      "weight": 10,
+      "score": null,
+      "status": "excluded",
+      "reason": "etf_flows_not_implemented"
+    },
+    {
+      "key": "term_leverage",
+      "label": "Term Structure & Leverage",
+      "pillar": "leverage",
+      "weight": 20,
+      "score": null,
+      "status": "excluded",
+      "reason": "term_leverage_not_implemented"
+    },
+    {
+      "key": "onchain",
+      "label": "On-chain Activity",
+      "pillar": "social",
+      "weight": 10,
+      "score": null,
+      "status": "excluded",
+      "reason": "onchain_not_implemented"
+    },
+    {
+      "key": "social_interest",
+      "label": "Social Interest",
+      "pillar": "social",
+      "weight": 5,
+      "score": 95,
+      "status": "fresh",
+      "reason": "success"
+    },
+    {
+      "key": "macro_overlay",
+      "label": "Macro Overlay",
+      "pillar": "macro",
+      "weight": 5,
+      "score": null,
+      "status": "excluded",
+      "reason": "missing_fred_api_key"
     }
   ],
   "adjustments": {
     "cycle_nudge": 0,
     "spike_nudge": 0
   },
-  "config_digest": "seed"
+  "config_digest": "etl_real_factors"
 }
