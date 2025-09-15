@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-09-15T23:31:57.246Z",
+  "updated_at": "2025-09-15T23:40:08.783Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -27,5 +27,5 @@
     }
   ],
   "factors_computed": 8,
-  "factors_successful": 7
+  "factors_successful": 8
 }

@@ -1,7 +1,7 @@
 {
   "version": "v3.1.0",
-  "updated_at": "2025-09-15T23:31:57.245Z",
-  "price_usd": 115502.53,
+  "updated_at": "2025-09-15T23:40:08.783Z",
+  "price_usd": 115473.12,
   "composite": 44,
   "band": {
     "name": "Hold/Neutral",
@@ -32,7 +32,7 @@
       "label": "Stablecoins",
       "pillar": "liquidity",
       "weight": 15,
-      "score": 24,
+      "score": 26,
       "status": "fresh",
       "reason": "success"
     },
@@ -41,9 +41,9 @@
       "label": "ETF Flows",
       "pillar": "liquidity",
       "weight": 10,
-      "score": null,
-      "status": "excluded",
-      "reason": "error: Farside 404"
+      "score": 45,
+      "status": "fresh",
+      "reason": "success"
     },
     {
       "key": "term_leverage",
