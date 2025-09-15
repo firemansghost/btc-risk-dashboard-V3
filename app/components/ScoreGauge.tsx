@@ -1,4 +1,3 @@
-import React from 'react';
 
 export default function ScoreGauge({ value }: { value: number }) {
   const v = Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0));

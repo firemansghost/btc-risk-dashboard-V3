@@ -98,8 +98,8 @@ export default function WhatIfWeightsModal({ isOpen, onClose }: WhatIfWeightsMod
   const calculatePreview = useCallback(() => {
     if (!config || !latestSnapshot) return;
 
-    const latest = latestSnapshot.latest || latestSnapshot;
-    const availableFactors = latest.factors.filter(f => 
+    const latest = (latestSnapshot as any).latest || latestSnapshot;
+    const availableFactors = latest.factors.filter((f: any) => 
       f.score !== null && typeof f.score === 'number' && f.score >= 0 && f.score <= 100
     );
 
@@ -116,7 +116,7 @@ export default function WhatIfWeightsModal({ isOpen, onClose }: WhatIfWeightsMod
       const pillarGroups = new Map<string, typeof availableFactors>();
       
       // Group factors by pillar
-      availableFactors.forEach(factor => {
+      availableFactors.forEach((factor: any) => {
         const pillar = factor.pillar || 'unknown';
         if (!pillarGroups.has(pillar)) {
           pillarGroups.set(pillar, []);
@@ -128,14 +128,14 @@ export default function WhatIfWeightsModal({ isOpen, onClose }: WhatIfWeightsMod
       pillarGroups.forEach((factors, pillarKey) => {
         const pillarWeight = pillarSliders.get(pillarKey) || 0;
         const factorWeight = pillarWeight / factors.length;
-        factors.forEach(factor => {
+        factors.forEach((factor: any) => {
           weights.set(factor.key, factorWeight);
         });
       });
     } else {
       // Use factor weights directly
       weights = new Map();
-      availableFactors.forEach(factor => {
+      availableFactors.forEach((factor: any) => {
         const weight = factorSliders.get(factor.key) || 0;
         weights.set(factor.key, weight);
       });
@@ -146,7 +146,7 @@ export default function WhatIfWeightsModal({ isOpen, onClose }: WhatIfWeightsMod
     if (totalWeight === 0) {
       // Fallback to uniform weights
       const uniformWeight = 100 / availableFactors.length;
-      availableFactors.forEach(factor => {
+      availableFactors.forEach((factor: any) => {
         weights.set(factor.key, uniformWeight);
       });
     } else {
@@ -158,7 +158,7 @@ export default function WhatIfWeightsModal({ isOpen, onClose }: WhatIfWeightsMod
 
     // Calculate composite score
     let compositeScore = 0;
-    availableFactors.forEach(factor => {
+    availableFactors.forEach((factor: any) => {
       const weight = weights.get(factor.key) || 0;
       compositeScore += (weight / 100) * (factor.score || 0);
     });
@@ -251,8 +251,8 @@ export default function WhatIfWeightsModal({ isOpen, onClose }: WhatIfWeightsMod
 
   if (!isOpen) return null;
 
-  const latest = latestSnapshot?.latest || latestSnapshot;
-  const availableFactors = latest?.factors.filter(f => 
+  const latest = (latestSnapshot as any)?.latest || latestSnapshot;
+  const availableFactors = latest?.factors.filter((f: any) => 
     f.score !== null && typeof f.score === 'number' && f.score >= 0 && f.score <= 100
   ) || [];
 
@@ -370,7 +370,7 @@ export default function WhatIfWeightsModal({ isOpen, onClose }: WhatIfWeightsMod
                     <div className="space-y-4">
                       <h3 className="text-lg font-medium text-gray-900">Pillar Weights</h3>
                       {config.config.pillars.map(pillar => {
-                        const pillarFactors = availableFactors.filter(f => f.pillar === pillar.key);
+                        const pillarFactors = availableFactors.filter((f: any) => f.pillar === pillar.key);
                         const isDisabled = pillarFactors.length === 0;
                         const currentValue = pillarSliders.get(pillar.key) || pillar.weight;
                         
@@ -407,10 +407,10 @@ export default function WhatIfWeightsModal({ isOpen, onClose }: WhatIfWeightsMod
                     <div className="space-y-4">
                       <h3 className="text-lg font-medium text-gray-900">Factor Weights</h3>
                       {config.config.factors
-                        .filter(factor => factor.enabled && availableFactors.some(f => f.key === factor.key))
+                        .filter(factor => factor.enabled && availableFactors.some((f: any) => f.key === factor.key))
                         .map(factor => {
                           const currentValue = factorSliders.get(factor.key) || factor.weight;
-                          const factorData = availableFactors.find(f => f.key === factor.key);
+                          const factorData = availableFactors.find((f: any) => f.key === factor.key);
                           
                           return (
                             <div key={factor.key} className="space-y-2">

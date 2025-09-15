@@ -49,8 +49,8 @@ export async function computeStablecoins() {
     return { score: null, last_utc: null, source: null, details: [], provenance };
   }
 
-  const s1 = toSeriesSupply(usdt.market_caps ?? usdt.caps, usdt.prices);
-  const s2 = toSeriesSupply(usdc.market_caps ?? usdc.caps, usdc.prices);
+  const s1 = toSeriesSupply(usdt.caps, usdt.prices);
+  const s2 = toSeriesSupply(usdc.caps, usdc.prices);
   const n = Math.min(s1.length, s2.length);
   if (n < 40) return { score: null, last_utc: null, source: null, details: [], provenance };
 

@@ -119,33 +119,16 @@ export async function calculatePowerLawAdjustment(
  * @returns Array of daily candles with extended history
  */
 export async function fetchExtendedDailyCandles(provenance: Prov[]): Promise<{ timestamp: number; close: number }[]> {
-  const { fetchCoinbaseDailyCloses } = await import('@/lib/data/btc');
+  const { fetchDailyCandles } = await import('@/lib/data/btc');
   
   // Fetch more data for power-law calculation (12 years worth)
   const days = DIMRT.weekly_window_years * 365;
-  const result = await fetchCoinbaseDailyCloses(days);
+  const result = await fetchDailyCandles(days, provenance);
   
-  if (result.provenance) {
-    provenance.push(result.provenance);
-  }
-
-  if (!result.closes || result.closes.length === 0) {
-    return [];
-  }
-
   // Convert to timestamp/close format
-  // Note: fetchCoinbaseDailyCloses returns closes in oldest-first order
-  const candles: { timestamp: number; close: number }[] = [];
-  const startDate = new Date();
-  startDate.setTime(startDate.getTime() - (days * 24 * 60 * 60 * 1000));
-
-  for (let i = 0; i < result.closes.length; i++) {
-    const timestamp = startDate.getTime() + (i * 24 * 60 * 60 * 1000);
-    candles.push({
-      timestamp,
-      close: result.closes[i]
-    });
-  }
-
-  return candles;
+  // fetchDailyCandles returns DailyCandle[] with time and close properties
+  return result.map(candle => ({
+    timestamp: candle.time,
+    close: candle.close
+  }));
 }

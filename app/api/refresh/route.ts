@@ -48,10 +48,13 @@ type FactorCard = {
 type FactorResult = {
   score: number | null;
   last_utc: string | null;
-  source: string | null;
-  details: { label: string; value: any }[];
+  source?: string | null;
+  details?: { label: string; value: any }[];
   provenance?: any[];
   reason?: string;
+  // Additional fields that some factors return
+  bmsb?: { status: string; dist: number };
+  signals?: { name: string; raw: number }[];
 };
 
 async function getEtfFlowsSafe(): Promise<FactorResult> {
@@ -162,7 +165,7 @@ async function buildLatest() {
       score: factorResult.score,
       status,
       last_utc: factorResult.last_utc,
-      source: factorResult.source,
+      source: factorResult.source || null,
       details: factorResult.details || [],
       reason: stalenessReason || factorResult.reason,
       counts_toward: cfgFactor.counts_toward,
@@ -181,12 +184,12 @@ async function buildLatest() {
   
   // Calculate composite_raw using re-normalized weights
   const composite_raw = Math.round(usable.reduce((s, f) => {
-    const normalizedWeight = freshFactorWeights.get(f.key) || 0;
+    const normalizedWeight = freshFactorWeights.get(f.key as any) || 0;
     return s + f.score * normalizedWeight;
   }, 0));
 
   // Calculate power-law diminishing returns adjustment
-  let cycleAdjustment = { adj_pts: 0, residual_z: null, last_utc: null, source: null, reason: 'disabled' };
+  let cycleAdjustment: { adj_pts: number; residual_z: number | null; last_utc: string | null; source: string | null; reason?: string } = { adj_pts: 0, residual_z: null, last_utc: null, source: null, reason: 'disabled' };
   if (config.powerLaw.enabled) { // Use config to enable/disable
     try {
       const dailyCandles = await fetchExtendedDailyCandles([]);
@@ -199,7 +202,7 @@ async function buildLatest() {
   }
 
   // Calculate fast-path spike adjustment
-  let spikeAdjustment = { adj_pts: 0, r_1d: 0, sigma: 0, z: 0, ref_close: 0, spot: 0, last_utc: '', source: '', reason: 'disabled' };
+  let spikeAdjustment: { adj_pts: number; r_1d: number; sigma: number; z: number; ref_close: number; spot: number; last_utc: string; source: string; reason?: string } = { adj_pts: 0, r_1d: 0, sigma: 0, z: 0, ref_close: 0, spot: 0, last_utc: '', source: '', reason: 'disabled' };
   if (config.spikeDetector.enabled) { // Use config to enable/disable
     try {
       spikeAdjustment = await computeFastSpike();
