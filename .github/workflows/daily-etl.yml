@@ -30,6 +30,8 @@ jobs:
 
       - name: Run ETL compute
         run: npm run etl:compute
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
 
       - name: Commit & push updated artifacts
         run: |

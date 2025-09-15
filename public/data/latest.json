@@ -1,8 +1,8 @@
 {
   "version": "v3.1.0",
-  "updated_at": "2025-09-15T22:57:17.861Z",
-  "price_usd": 115331.86,
-  "composite": 44,
+  "updated_at": "2025-09-15T23:21:10.656Z",
+  "price_usd": 115426.03,
+  "composite": 38,
   "band": {
     "name": "Hold/Neutral",
     "lo": 35,
@@ -14,7 +14,7 @@
       "label": "Trend & Valuation",
       "pillar": "momentum",
       "weight": 25,
-      "score": 43,
+      "score": 42,
       "status": "fresh",
       "reason": "success"
     },
@@ -32,7 +32,7 @@
       "label": "Stablecoins",
       "pillar": "liquidity",
       "weight": 15,
-      "score": 30,
+      "score": 24,
       "status": "fresh",
       "reason": "success"
     },
@@ -43,25 +43,25 @@
       "weight": 10,
       "score": null,
       "status": "excluded",
-      "reason": "etf_flows_not_implemented"
+      "reason": "error: Farside 404"
     },
     {
       "key": "term_leverage",
       "label": "Term Structure & Leverage",
       "pillar": "leverage",
       "weight": 20,
-      "score": null,
-      "status": "excluded",
-      "reason": "term_leverage_not_implemented"
+      "score": 40,
+      "status": "fresh",
+      "reason": "success"
     },
     {
       "key": "onchain",
       "label": "On-chain Activity",
       "pillar": "social",
       "weight": 10,
-      "score": null,
-      "status": "excluded",
-      "reason": "onchain_not_implemented"
+      "score": 20,
+      "status": "fresh",
+      "reason": "success"
     },
     {
       "key": "social_interest",
