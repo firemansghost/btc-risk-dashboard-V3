@@ -116,14 +116,15 @@ export const factorContent: FactorContent[] = [
     key: 'social_interest',
     pillar: 'Social / Attention',
     what: [
-      'Google Trends "Bitcoin" (fallback Fear & Greed)'
+      'Google Trends "Bitcoin" search volume',
+      'Fear & Greed Index (market sentiment)'
     ],
     why: 'Retail attention spikes cluster near tops; apathy near bottoms.',
     affects: '↑ attention/euphoria ⇒ ↑ risk; muted interest ⇒ ↓ risk',
     cadence: 'Daily; stale >48h',
     sources: [
-      { label: 'Google Trends', url: 'https://trends.google.com/' },
-      { label: 'Alternative.me', url: 'https://alternative.me/' }
+      { label: 'Google Trends', url: 'https://trends.google.com/trends/explore?q=Bitcoin' },
+      { label: 'Fear & Greed Index', url: 'https://feargreedmeter.com/' }
     ],
     caveats: 'News cycles distort short periods.'
   },
