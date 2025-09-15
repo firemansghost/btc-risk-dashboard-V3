@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-09-15T23:40:08.783Z",
+  "updated_at": "2025-09-15T23:50:42.846Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -21,11 +21,11 @@
     },
     {
       "name": "FRED API (if key provided)",
-      "ok": true,
+      "ok": false,
       "ms": null,
       "url": "https://fred.stlouisfed.org/"
     }
   ],
   "factors_computed": 8,
-  "factors_successful": 8
+  "factors_successful": 6
 }
