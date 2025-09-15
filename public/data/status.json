@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-09-15T21:08:21.494Z",
+  "updated_at": "2025-09-15T22:24:18.402Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -11,7 +11,7 @@
       "name": "CoinGecko market chart (fallback)",
       "ok": true,
       "ms": null,
-      "url": "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=10&interval=daily"
+      "url": "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=2&interval=daily"
     }
   ]
 }
