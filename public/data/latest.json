@@ -1,8 +1,8 @@
 {
   "version": "v3.1.0",
-  "updated_at": "2025-09-15T23:21:10.656Z",
-  "price_usd": 115426.03,
-  "composite": 38,
+  "updated_at": "2025-09-15T23:31:57.245Z",
+  "price_usd": 115502.53,
+  "composite": 44,
   "band": {
     "name": "Hold/Neutral",
     "lo": 35,
@@ -23,9 +23,9 @@
       "label": "Net Liquidity (FRED)",
       "pillar": "liquidity",
       "weight": 10,
-      "score": null,
-      "status": "excluded",
-      "reason": "missing_fred_api_key"
+      "score": 93,
+      "status": "fresh",
+      "reason": "success"
     },
     {
       "key": "stablecoins",
@@ -77,9 +77,9 @@
       "label": "Macro Overlay",
       "pillar": "macro",
       "weight": 5,
-      "score": null,
-      "status": "excluded",
-      "reason": "missing_fred_api_key"
+      "score": 20,
+      "status": "fresh",
+      "reason": "success"
     }
   ],
   "adjustments": {
