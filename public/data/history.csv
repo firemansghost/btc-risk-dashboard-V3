@@ -1,2 +1,12 @@
-date,composite,trend_valuation,net_liquidity,stablecoins,term_leverage,onchain,etf_flows,social_interest,macro_overlay
-2025-09-14,49,47,19,46,47,65,58,39,
+date,score,band,price_usd
+2025-09-05,47,Hold/Neutral,110670.02
+2025-09-06,47,Hold/Neutral,110212.60
+2025-09-07,47,Hold/Neutral,111129.61
+2025-09-08,47,Hold/Neutral,112072.57
+2025-09-09,47,Hold/Neutral,111549.32
+2025-09-10,47,Hold/Neutral,113983.97
+2025-09-11,47,Hold/Neutral,115540.00
+2025-09-12,47,Hold/Neutral,116106.03
+2025-09-13,47,Hold/Neutral,115968.35
+2025-09-14,47,Hold/Neutral,115314.13
+2025-09-15,47,Hold/Neutral,115309.35

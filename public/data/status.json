@@ -1,0 +1,17 @@
+{
+  "updated_at": "2025-09-15T21:08:21.494Z",
+  "sources": [
+    {
+      "name": "Coinbase daily candles",
+      "ok": true,
+      "ms": null,
+      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400"
+    },
+    {
+      "name": "CoinGecko market chart (fallback)",
+      "ok": true,
+      "ms": null,
+      "url": "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=10&interval=daily"
+    }
+  ]
+}

@@ -2,3 +2,6 @@
   main[m
   [31mremotes/origin/feat/risk-upgrades[m
   [31mremotes/origin/main[m
+[33m7d77b77[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeat/risk-upgrades[m[33m, [m[1;31morigin/feat/risk-upgrades[m[33m)[m fix: Upgrade to React 19 for Next.js 15 compatibility
+[33m83fdeac[m feat: Complete production-ready Bitcoin Risk Dashboard upgrade
+[33m3196e5c[m fix(ui): resolve null reference error in adjustment indicators
