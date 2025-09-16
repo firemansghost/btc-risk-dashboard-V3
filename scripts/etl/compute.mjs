@@ -1,6 +1,26 @@
 import fs from "node:fs/promises";
 import { computeAllFactors } from "./factors.mjs";
 
+// Load environment variables from .env.local if it exists
+try {
+  const envContent = await fs.readFile('.env.local', 'utf8');
+  envContent.split(/\r?\n/).forEach(line => {
+    line = line.trim();
+    if (line && !line.startsWith('#')) {
+      const equalIndex = line.indexOf('=');
+      if (equalIndex > 0) {
+        const key = line.substring(0, equalIndex).trim();
+        const value = line.substring(equalIndex + 1).trim();
+        if (!process.env[key]) {
+          process.env[key] = value;
+        }
+      }
+    }
+  });
+} catch (error) {
+  // .env.local doesn't exist, that's fine
+}
+
 const ISO = (d) => d.toISOString().split("T")[0];
 
 async function readText(path) {
