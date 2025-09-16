@@ -46,11 +46,12 @@ export default function RealDashboard() {
         setError(json?.error ?? res.statusText ?? 'Refresh failed');
         return;
       }
-      await loadLatest();
+      // Use the real-time data directly instead of reloading static data
+      setLatest(json);
     } finally {
       setLoading(false);
     }
-  }, [loadLatest]);
+  }, []);
 
   const toggleFactorExpansion = useCallback((factorKey: string) => {
     setExpandedFactors(prev => {
