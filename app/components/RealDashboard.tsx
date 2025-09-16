@@ -47,7 +47,7 @@ export default function RealDashboard() {
         return;
       }
       // Use the real-time data directly instead of reloading static data
-      setLatest(json);
+      setLatest(json.latest);
     } finally {
       setLoading(false);
     }
