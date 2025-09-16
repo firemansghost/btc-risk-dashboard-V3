@@ -111,10 +111,11 @@ export async function GET() {
     return NextResponse.json(apiData);
   } catch (error) {
     console.error('API Error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ 
       ok: false, 
-      error: `Error: ${error.message}`,
-      details: error.toString()
+      error: `Error: ${errorMessage}`,
+      details: String(error)
     }, { status: 404 });
   }
 }
