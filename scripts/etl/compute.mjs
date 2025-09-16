@@ -70,6 +70,14 @@ function riskBand(score) {
 
 async function main() {
   await ensureDir("public/data");
+  
+  // Clean old cache files
+  try {
+    const { cleanOldCacheFiles } = await import('./factors.mjs');
+    await cleanOldCacheFiles();
+  } catch (error) {
+    console.warn('Could not clean cache files:', error.message);
+  }
 
   // 1) Get yesterday's close (Coinbase → CG fallback)
   let y;

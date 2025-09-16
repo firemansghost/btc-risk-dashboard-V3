@@ -317,37 +317,69 @@ async function computeStablecoins() {
   }
 }
 
-// 5. ETF FLOWS (Farside Investors) - Enhanced implementation
+// 5. ETF FLOWS (Farside Investors) - Enhanced implementation with caching
 async function computeEtfFlows() {
   try {
-    // Try Farside endpoints in order of preference
-    const urls = [
-      "https://farside.co.uk/bitcoin-etf-flow-all-data/",
-      "https://farside.co.uk/bitcoin-etf-flow/",
-      "https://farside.co.uk/etf-flows/",
-      "https://farside.co.uk/etf-flows/btc"
-    ];
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const cacheDir = 'public/data/cache/etf';
+    const cacheFile = `${cacheDir}/${today}.html`;
     
+    // Try to read from cache first (if today's data exists)
     let html = "";
     let successfulUrl = "";
+    let fromCache = false;
     
-    for (const url of urls) {
-      try {
-        const res = await fetch(url, { 
-          headers: { 
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Cache-Control": "no-cache"
+    try {
+      const fs = await import('node:fs');
+      if (fs.existsSync(cacheFile)) {
+        html = fs.readFileSync(cacheFile, 'utf8');
+        fromCache = true;
+        console.log(`ETF Flows: Using cached data from ${today}`);
+      }
+    } catch (error) {
+      // Cache read failed, continue to live fetch
+    }
+    
+    // If no cache, try live fetch
+    if (!html) {
+      const urls = [
+        "https://farside.co.uk/bitcoin-etf-flow-all-data/",
+        "https://farside.co.uk/bitcoin-etf-flow/",
+        "https://farside.co.uk/etf-flows/",
+        "https://farside.co.uk/etf-flows/btc"
+      ];
+      
+      for (const url of urls) {
+        try {
+          const res = await fetch(url, { 
+            headers: { 
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36",
+              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+              "Accept-Language": "en-US,en;q=0.9",
+              "Cache-Control": "no-cache"
+            }
+          });
+          if (res.ok) {
+            html = await res.text();
+            successfulUrl = url;
+            break;
           }
-        });
-        if (res.ok) {
-          html = await res.text();
-          successfulUrl = url;
-          break;
+        } catch (error) {
+          continue;
         }
-      } catch (error) {
-        continue;
+      }
+      
+      // Save to cache if we got live data
+      if (html && !fromCache) {
+        try {
+          const fs = await import('node:fs');
+          const path = await import('node:path');
+          fs.mkdirSync(cacheDir, { recursive: true });
+          fs.writeFileSync(cacheFile, html, 'utf8');
+          console.log(`ETF Flows: Saved live data to cache ${cacheFile}`);
+        } catch (error) {
+          console.warn('ETF Flows: Failed to save to cache:', error.message);
+        }
       }
     }
     
@@ -431,7 +463,8 @@ async function computeEtfFlows() {
         },
         { label: "Data Points", value: flows.length.toString() },
         { label: "Last Update", value: `${daysSinceUpdate.toFixed(1)} days ago` },
-        { label: "Source", value: "Farside Investors" }
+        { label: "Source", value: "Farside Investors" },
+        { label: "Data Source", value: fromCache ? "Cache" : "Live" }
       ]
     };
   } catch (error) {
@@ -651,6 +684,41 @@ async function checkSchemaTripwire(currentHash) {
   } catch (error) {
     console.warn('ETF Flows: Could not check schema tripwire:', error.message);
     return false;
+  }
+}
+
+// Helper function to clean old cache files
+async function cleanOldCacheFiles() {
+  try {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    
+    const cacheDir = 'public/data/cache/etf';
+    if (!fs.existsSync(cacheDir)) return;
+    
+    const files = fs.readdirSync(cacheDir);
+    const now = new Date();
+    const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+    let cleaned = 0;
+    
+    for (const file of files) {
+      if (file.endsWith('.html')) {
+        const filePath = path.join(cacheDir, file);
+        const stats = fs.statSync(filePath);
+        const age = now.getTime() - stats.mtime.getTime();
+        
+        if (age > maxAge) {
+          fs.unlinkSync(filePath);
+          cleaned++;
+        }
+      }
+    }
+    
+    if (cleaned > 0) {
+      console.log(`ETF Flows: Cleaned ${cleaned} old cache files`);
+    }
+  } catch (error) {
+    console.warn('ETF Flows: Could not clean cache files:', error.message);
   }
 }
 
@@ -909,3 +977,6 @@ export async function computeAllFactors() {
     weightedSum
   };
 }
+
+// Export additional functions for use in other modules
+export { cleanOldCacheFiles };
