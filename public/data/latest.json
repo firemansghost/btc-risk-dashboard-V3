@@ -1,8 +1,8 @@
 {
   "version": "v3.1.0",
-  "updated_at": "2025-09-16T02:10:02.628Z",
-  "price_usd": 115124.82,
-  "composite": 53,
+  "updated_at": "2025-09-16T20:59:29.298Z",
+  "price_usd": 116914.01,
+  "composite": 50,
   "band": {
     "name": "Hold/Neutral",
     "lo": 35,
@@ -14,9 +14,31 @@
       "label": "Trend & Valuation",
       "pillar": "momentum",
       "weight": 25,
-      "score": 49,
+      "score": 30,
       "status": "fresh",
-      "reason": "success"
+      "reason": "success",
+      "details": [
+        {
+          "label": "Price vs 200-day SMA (Mayer)",
+          "value": "1.14"
+        },
+        {
+          "label": "Distance to Bull Market Support Band",
+          "value": "13.7%"
+        },
+        {
+          "label": "Weekly momentum (RSI proxy)",
+          "value": "75.4"
+        },
+        {
+          "label": "Current Price",
+          "value": "$116,882.064"
+        },
+        {
+          "label": "200-day SMA",
+          "value": "$102,806.559"
+        }
+      ]
     },
     {
       "key": "net_liquidity",
@@ -25,25 +47,103 @@
       "weight": 10,
       "score": 93,
       "status": "fresh",
-      "reason": "success"
+      "reason": "success",
+      "details": [
+        {
+          "label": "Fed Balance Sheet (WALCL)",
+          "value": "$0.0T"
+        },
+        {
+          "label": "Reverse Repo (RRP)",
+          "value": "$0B"
+        },
+        {
+          "label": "Treasury General Account",
+          "value": "$0B"
+        },
+        {
+          "label": "Net Liquidity",
+          "value": "$0.0T"
+        },
+        {
+          "label": "Liquidity Percentile (1y)",
+          "value": "6%"
+        }
+      ]
     },
     {
       "key": "stablecoins",
       "label": "Stablecoins",
       "pillar": "liquidity",
       "weight": 15,
-      "score": 35,
+      "score": 32,
       "status": "fresh",
-      "reason": "success"
+      "reason": "success",
+      "details": [
+        {
+          "label": "USDC Market Cap",
+          "value": "$73.3B"
+        },
+        {
+          "label": "30-day Change",
+          "value": "7.4%"
+        },
+        {
+          "label": "Supply Growth Percentile",
+          "value": "62%"
+        },
+        {
+          "label": "30-day Trend",
+          "value": "Strong Growth"
+        }
+      ]
     },
     {
       "key": "etf_flows",
       "label": "ETF Flows",
       "pillar": "liquidity",
       "weight": 10,
-      "score": 45,
+      "score": 56,
       "status": "fresh",
-      "reason": "success"
+      "reason": "success",
+      "details": [
+        {
+          "label": "Latest Daily Flow",
+          "value": "$0",
+          "tooltip": "Exact: $0 (2025-09-16)"
+        },
+        {
+          "label": "21-day Rolling Sum",
+          "value": "$2.1K",
+          "tooltip": "Exact: $2,096.4 (21-day momentum)"
+        },
+        {
+          "label": "21-day Percentile",
+          "value": "46%"
+        },
+        {
+          "label": "21-day Z-Score",
+          "value": "-0.20σ",
+          "tooltip": "Normal: -0.20σ from mean"
+        },
+        {
+          "label": "Total Flows (all time)",
+          "value": "$57.1K",
+          "tooltip": "Exact: $57,051.6 (since ETF inception)"
+        },
+        {
+          "label": "Data Points",
+          "value": "437"
+        },
+        {
+          "label": "Last Update",
+          "value": "0.9 days ago"
+        },
+        {
+          "label": "Source",
+          "value": "Farside Investors"
+        }
+      ]
     },
     {
       "key": "term_leverage",
@@ -52,7 +152,25 @@
       "weight": 20,
       "score": 40,
       "status": "fresh",
-      "reason": "success"
+      "reason": "success",
+      "details": [
+        {
+          "label": "Current Funding Rate",
+          "value": "0.0097%"
+        },
+        {
+          "label": "30-day Average",
+          "value": "0.0070%"
+        },
+        {
+          "label": "30-day Range",
+          "value": "-0.0054% - 0.0100%"
+        },
+        {
+          "label": "Leverage Level",
+          "value": "Low"
+        }
+      ]
     },
     {
       "key": "onchain",
@@ -61,7 +179,29 @@
       "weight": 10,
       "score": 83,
       "status": "fresh",
-      "reason": "success"
+      "reason": "success",
+      "details": [
+        {
+          "label": "Current Transaction Fees",
+          "value": "$4"
+        },
+        {
+          "label": "30-day Average",
+          "value": "$4"
+        },
+        {
+          "label": "30-day Range",
+          "value": "$2 - $9"
+        },
+        {
+          "label": "Activity Percentile",
+          "value": "77%"
+        },
+        {
+          "label": "Network Activity",
+          "value": "Moderate"
+        }
+      ]
     },
     {
       "key": "social_interest",
@@ -70,16 +210,60 @@
       "weight": 5,
       "score": 95,
       "status": "fresh",
-      "reason": "success"
+      "reason": "success",
+      "details": [
+        {
+          "label": "Fear & Greed Index",
+          "value": "95"
+        },
+        {
+          "label": "Index Percentile (1y)",
+          "value": "100%"
+        },
+        {
+          "label": "Sentiment Level",
+          "value": "Extreme Greed"
+        },
+        {
+          "label": "Data Points",
+          "value": "2781"
+        }
+      ]
     },
     {
       "key": "macro_overlay",
       "label": "Macro Overlay",
       "pillar": "macro",
       "weight": 5,
-      "score": 20,
+      "score": 30,
       "status": "fresh",
-      "reason": "success"
+      "reason": "success",
+      "details": [
+        {
+          "label": "DXY 20d Δ",
+          "value": "-0.2%"
+        },
+        {
+          "label": "US2Y 20d Δ",
+          "value": "-6.1%"
+        },
+        {
+          "label": "VIX pctile",
+          "value": "42%"
+        },
+        {
+          "label": "Current DXY",
+          "value": "120.5"
+        },
+        {
+          "label": "Current 2Y Yield",
+          "value": "3.54%"
+        },
+        {
+          "label": "Current VIX",
+          "value": "15.7"
+        }
+      ]
     }
   ],
   "adjustments": {
