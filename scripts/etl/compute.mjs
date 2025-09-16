@@ -109,8 +109,17 @@ async function main() {
   };
   await fs.writeFile("public/data/latest.json", JSON.stringify(latest, null, 2));
 
-  // 5) status.json
+  // 5) status.json (preserve existing data like schema hashes)
+  let existingStatus = {};
+  try {
+    const existingContent = await fs.readFile("public/data/status.json", "utf8");
+    existingStatus = JSON.parse(existingContent);
+  } catch (error) {
+    // File doesn't exist or is invalid, start fresh
+  }
+  
   const status = {
+    ...existingStatus, // Preserve existing data like etf_schema_hash
     updated_at: new Date().toISOString(),
     sources: [
       { name: "Coinbase daily candles", ok: true, ms: null, url: "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400" },

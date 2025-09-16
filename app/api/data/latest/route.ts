@@ -9,8 +9,31 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     // Read from public/data/latest.json (where ETL writes)
-    const filePath = path.join(process.cwd(), 'public', 'data', 'latest.json');
-    const content = await fs.readFile(filePath, 'utf8');
+    // Try multiple possible paths
+    const possiblePaths = [
+      path.join(process.cwd(), 'public', 'data', 'latest.json'),
+      path.join(process.cwd(), '..', 'public', 'data', 'latest.json'),
+      './public/data/latest.json',
+      '../public/data/latest.json'
+    ];
+    
+    let content = null;
+    let filePath = null;
+    
+    for (const testPath of possiblePaths) {
+      try {
+        content = await fs.readFile(testPath, 'utf8');
+        filePath = testPath;
+        break;
+      } catch (e) {
+        // Try next path
+      }
+    }
+    
+    if (!content) {
+      throw new Error('Could not find latest.json in any expected location');
+    }
+    
     const etlData = JSON.parse(content);
     
     // Transform ETL format to full API format expected by dashboard
@@ -54,7 +77,7 @@ export async function GET() {
         status: factor.status,
         last_utc: etlData.updated_at,
         source: factor.reason === 'success' ? 'ETL pipeline' : null,
-        details: [
+        details: factor.details || [
           {
             label: 'Score',
             value: factor.score?.toString() || 'N/A'
@@ -87,9 +110,11 @@ export async function GET() {
     
     return NextResponse.json(apiData);
   } catch (error) {
+    console.error('API Error:', error);
     return NextResponse.json({ 
       ok: false, 
-      error: 'No snapshot yet. Run ETL pipeline first.' 
+      error: `Error: ${error.message}`,
+      details: error.toString()
     }, { status: 404 });
   }
 }

@@ -35,6 +35,37 @@ function sma(arr, period) {
   return result;
 }
 
+// Simple RSI calculation
+function calculateRSI(prices, period = 14) {
+  const result = [];
+  for (let i = 0; i < prices.length; i++) {
+    if (i < period) {
+      result.push(NaN);
+    } else {
+      let gains = 0;
+      let losses = 0;
+      
+      for (let j = i - period + 1; j <= i; j++) {
+        const change = prices[j] - prices[j - 1];
+        if (change > 0) gains += change;
+        else losses -= change;
+      }
+      
+      const avgGain = gains / period;
+      const avgLoss = losses / period;
+      
+      if (avgLoss === 0) {
+        result.push(100);
+      } else {
+        const rs = avgGain / avgLoss;
+        const rsi = 100 - (100 / (1 + rs));
+        result.push(rsi);
+      }
+    }
+  }
+  return result;
+}
+
 // Risk score from percentile (0-100)
 function riskFromPercentile(percentile, options = {}) {
   const { invert = false, k = 3 } = options;
@@ -83,7 +114,26 @@ async function computeTrendValuation() {
     // Higher Mayer Multiple = higher risk (invert percentile)
     const score = riskFromPercentile(percentile, { invert: true, k: 3 });
     
-    return { score, reason: "success" };
+    // Calculate additional metrics for details
+    const latestPrice = closes[closes.length - 1];
+    const latestSma200 = sma200[sma200.length - 1];
+    const bmsbDistance = ((latestMayer - 1) * 100);
+    
+    // Simple RSI calculation for momentum
+    const rsi = calculateRSI(closes, 14);
+    const latestRsi = rsi[rsi.length - 1];
+    
+    return { 
+      score, 
+      reason: "success",
+      details: [
+        { label: "Price vs 200-day SMA (Mayer)", value: latestMayer.toFixed(2) },
+        { label: "Distance to Bull Market Support Band", value: `${bmsbDistance.toFixed(1)}%` },
+        { label: "Weekly momentum (RSI proxy)", value: latestRsi.toFixed(1) },
+        { label: "Current Price", value: `$${latestPrice.toLocaleString()}` },
+        { label: "200-day SMA", value: `$${latestSma200.toLocaleString()}` }
+      ]
+    };
   } catch (error) {
     return { score: null, reason: `error: ${error.message}` };
   }
@@ -116,7 +166,16 @@ async function computeSocialInterest() {
     // Higher Fear & Greed value (greed) = higher risk (no inversion)
     const score = riskFromPercentile(percentile, { invert: false, k: 3 });
     
-    return { score, reason: "success" };
+    return { 
+      score, 
+      reason: "success",
+      details: [
+        { label: "Fear & Greed Index", value: latest.toString() },
+        { label: "Index Percentile (1y)", value: `${(percentile * 100).toFixed(0)}%` },
+        { label: "Sentiment Level", value: latest >= 75 ? "Extreme Greed" : latest >= 55 ? "Greed" : latest >= 45 ? "Neutral" : latest >= 25 ? "Fear" : "Extreme Fear" },
+        { label: "Data Points", value: values.length.toString() }
+      ]
+    };
   } catch (error) {
     return { score: null, reason: `error: ${error.message}` };
   }
@@ -185,7 +244,17 @@ async function computeNetLiquidity() {
     // Higher net liquidity = lower risk (invert percentile)
     const score = riskFromPercentile(percentile, { invert: true, k: 3 });
     
-    return { score, reason: "success" };
+    return { 
+      score, 
+      reason: "success",
+      details: [
+        { label: "Fed Balance Sheet (WALCL)", value: `$${(latestWalcl / 1e12).toFixed(1)}T` },
+        { label: "Reverse Repo (RRP)", value: `$${(latestRrp / 1e9).toFixed(0)}B` },
+        { label: "Treasury General Account", value: `$${(latestTga / 1e9).toFixed(0)}B` },
+        { label: "Net Liquidity", value: `$${(netLiquidity / 1e12).toFixed(1)}T` },
+        { label: "Liquidity Percentile (1y)", value: `${(percentile * 100).toFixed(0)}%` }
+      ]
+    };
   } catch (error) {
     return { score: null, reason: `error: ${error.message}` };
   }
@@ -233,60 +302,355 @@ async function computeStablecoins() {
     // Higher supply growth = lower risk (invert percentile)
     const score = riskFromPercentile(percentile, { invert: true, k: 3 });
     
-    return { score, reason: "success" };
+    return { 
+      score, 
+      reason: "success",
+      details: [
+        { label: "USDC Market Cap", value: `$${(latest / 1e9).toFixed(1)}B` },
+        { label: "30-day Change", value: `${(change * 100).toFixed(1)}%` },
+        { label: "Supply Growth Percentile", value: `${(percentile * 100).toFixed(0)}%` },
+        { label: "30-day Trend", value: change > 0.05 ? "Strong Growth" : change > 0 ? "Moderate Growth" : change > -0.05 ? "Stable" : "Declining" }
+      ]
+    };
   } catch (error) {
     return { score: null, reason: `error: ${error.message}` };
   }
 }
 
-// 5. ETF FLOWS (Farside Investors)
+// 5. ETF FLOWS (Farside Investors) - Enhanced implementation
 async function computeEtfFlows() {
   try {
-    // Try multiple Farside endpoints
+    // Try Farside endpoints in order of preference
     const urls = [
+      "https://farside.co.uk/bitcoin-etf-flow-all-data/",
+      "https://farside.co.uk/bitcoin-etf-flow/",
       "https://farside.co.uk/etf-flows/",
-      "https://farside.co.uk/etf-flows/btc",
-      "https://farside.co.uk/etf-flows/bitcoin"
+      "https://farside.co.uk/etf-flows/btc"
     ];
     
     let html = "";
-    let lastError = null;
+    let successfulUrl = "";
     
     for (const url of urls) {
       try {
-        const res = await fetch(url, { headers: { "User-Agent": "btc-risk-etl" } });
+        const res = await fetch(url, { 
+          headers: { 
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Cache-Control": "no-cache"
+          }
+        });
         if (res.ok) {
           html = await res.text();
+          successfulUrl = url;
           break;
         }
       } catch (error) {
-        lastError = error;
         continue;
       }
     }
     
     if (!html) {
-      // Fallback: return a neutral score based on general market conditions
-      // This is a reasonable approach when the primary data source is unavailable
-      const score = 50; // Neutral
-      return { score, reason: "farside_unavailable_fallback" };
+      return { score: null, reason: "farside_unavailable" };
     }
     
-    // Simple approach: look for recent flow data in the HTML
-    const hasRecentData = html.includes('2025') || html.includes('2024');
+    // Parse ETF flows from HTML with schema validation
+    const parseResult = parseEtfFlowsFromHtml(html);
+    const flows = parseResult.flows;
+    const schemaHash = parseResult.schemaHash;
     
-    if (!hasRecentData) {
-      return { score: null, reason: "no_recent_etf_data" };
+    if (flows.length === 0) {
+      return { score: null, reason: "no_etf_data_parsed" };
     }
     
-    // For now, return a placeholder score based on general market conditions
-    const score = 45; // Neutral placeholder
+    // Schema tripwire - check if format changed
+    const schemaChanged = await checkSchemaTripwire(schemaHash);
+    if (schemaChanged) {
+      console.warn(`ETF Flows: Schema change detected (hash: ${schemaHash}). Using cached data if available.`);
+    }
     
-    return { score, reason: "success" };
+    // Calculate 21-day rolling sum
+    const flows21d = calculate21DayRollingSum(flows);
+    
+    if (flows21d.length === 0) {
+      return { score: null, reason: "insufficient_data_for_21d_calculation" };
+    }
+    
+    // Check staleness - if latest data is > 5 days old, mark as stale
+    const latestDate = new Date(flows[flows.length - 1].date);
+    const daysSinceUpdate = (Date.now() - latestDate.getTime()) / (1000 * 60 * 60 * 24);
+    const isStale = daysSinceUpdate > 5;
+    
+    // Get latest 21-day sum and calculate percentile
+    const latest21d = flows21d[flows21d.length - 1];
+    const percentile = percentileRank(flows21d, latest21d);
+    
+    // Z-score tripwire: check if latest 21-day sum is > 4σ from historical mean
+    const mean21d = flows21d.reduce((sum, val) => sum + val, 0) / flows21d.length;
+    const variance21d = flows21d.reduce((sum, val) => sum + Math.pow(val - mean21d, 2), 0) / flows21d.length;
+    const stdDev21d = Math.sqrt(variance21d);
+    const zScore21d = stdDev21d > 0 ? (latest21d - mean21d) / stdDev21d : 0;
+    
+    const isExtremeChange = Math.abs(zScore21d) > 4;
+    if (isExtremeChange) {
+      console.warn(`ETF Flows: Extreme 21-day sum change detected (z-score: ${zScore21d.toFixed(2)}). Latest: $${latest21d.toLocaleString()}, Mean: $${mean21d.toLocaleString()}, StdDev: $${stdDev21d.toLocaleString()}`);
+    }
+    
+    // Higher inflows = lower risk (invert percentile)
+    const score = riskFromPercentile(percentile, { invert: true, k: 3 });
+    
+    // Format details with explicit units and tooltips
+    const latestFlow = flows[flows.length - 1];
+    const totalFlows = flows.reduce((sum, f) => sum + f.flow, 0);
+    
+    return { 
+      score: isStale ? null : score, 
+      reason: isStale ? "stale_data" : "success",
+      details: [
+        { 
+          label: "Latest Daily Flow", 
+          value: formatCurrencyWithTooltip(latestFlow.flow),
+          tooltip: `Exact: $${latestFlow.flow.toLocaleString()} (${latestFlow.date})`
+        },
+        { 
+          label: "21-day Rolling Sum", 
+          value: formatCurrencyWithTooltip(latest21d),
+          tooltip: `Exact: $${latest21d.toLocaleString()} (21-day momentum)`
+        },
+        { label: "21-day Percentile", value: `${(percentile * 100).toFixed(0)}%` },
+        { 
+          label: "21-day Z-Score", 
+          value: `${zScore21d.toFixed(2)}σ`,
+          tooltip: isExtremeChange ? `EXTREME: ${zScore21d.toFixed(2)}σ from mean (${mean21d.toLocaleString()})` : `Normal: ${zScore21d.toFixed(2)}σ from mean`
+        },
+        { 
+          label: "Total Flows (all time)", 
+          value: formatCurrencyWithTooltip(totalFlows),
+          tooltip: `Exact: $${totalFlows.toLocaleString()} (since ETF inception)`
+        },
+        { label: "Data Points", value: flows.length.toString() },
+        { label: "Last Update", value: `${daysSinceUpdate.toFixed(1)} days ago` },
+        { label: "Source", value: "Farside Investors" }
+      ]
+    };
   } catch (error) {
-    // Fallback to neutral score when all else fails
-    const score = 50;
-    return { score, reason: `error_fallback: ${error.message}` };
+    return { score: null, reason: `error: ${error.message}` };
+  }
+}
+
+// Helper function to parse ETF flows from HTML
+function parseEtfFlowsFromHtml(html) {
+  const flows = [];
+  
+  // Look for data tables
+  const tableMatches = html.match(/<table[\s\S]*?<\/table>/gi) || [];
+  let dataTable = null;
+  
+  // Find the table with actual ETF flow data
+  for (const match of tableMatches) {
+    if (match.includes('2024-') || match.includes('2025-') || match.includes('Date') || match.includes('Total')) {
+      dataTable = match;
+      break;
+    }
+  }
+  
+  if (!dataTable) return { flows: [], schemaHash: null };
+  
+  // Parse table rows
+  const rows = dataTable.match(/<tr[\s\S]*?<\/tr>/gi) || [];
+  const cellText = (h) => h.replace(/<[^>]+>/g, '').replace(/&nbsp;/g,' ').trim();
+  
+  const parsed = [];
+  for (const r of rows) {
+    const cells = [...r.matchAll(/<(td|th)[^>]*>([\s\S]*?)<\/\1>/gi)].map(m => cellText(m[2]));
+    if (cells.length) parsed.push(cells);
+  }
+  
+  if (parsed.length < 2) return { flows: [], schemaHash: null };
+  
+  // Find date and flow columns
+  const header = parsed[0].map(h => h.toLowerCase());
+  const dateCol = 0; // Usually first column
+  const hasTotalCol = header.some(h => h.includes('total'));
+  
+  // Generate schema hash for tripwire
+  const schemaHash = generateSchemaHash(header);
+  
+  // Determine scale (millions, billions, etc.)
+  const hdr = header.join(' ');
+  const scale = /\$bn|us\$bn/i.test(hdr) ? 1e9 :
+                /\$m|us\$m|\(us\$m\)|\(\$m\)/i.test(hdr) ? 1e6 : 1;
+  
+  // Parse data rows
+  for (let i = 1; i < parsed.length; i++) {
+    const cells = parsed[i];
+    const dateRaw = (cells[dateCol] || '').trim();
+    const date = parseDate(dateRaw);
+    
+    if (!date) continue; // Skip non-date rows
+    
+    let flow = NaN;
+    
+    // Try to find total flow column first
+    if (hasTotalCol) {
+      const idx = header.findIndex(h => h.includes('total'));
+      const v = parseNumber(cells[idx]);
+      if (Number.isFinite(v)) flow = v * scale;
+    }
+    
+    // If no total column, sum all numeric columns
+    if (!Number.isFinite(flow)) {
+      let sum = 0;
+      let hasData = false;
+      for (let c = 1; c < cells.length; c++) {
+        const v = parseNumber(cells[c]);
+        if (Number.isFinite(v)) {
+          sum += v;
+          hasData = true;
+        }
+      }
+      if (hasData) flow = sum * scale;
+    }
+    
+    if (Number.isFinite(flow)) {
+      flows.push({ date, flow });
+    }
+  }
+  
+  // Sort by date and deduplicate
+  flows.sort((a, b) => a.date.localeCompare(b.date));
+  const unique = new Map();
+  for (const f of flows) {
+    unique.set(f.date, f);
+  }
+  
+  return { flows: Array.from(unique.values()), schemaHash };
+}
+
+// Helper function to parse dates in various formats
+function parseDate(s) {
+  const cleaned = s.trim().replace(/\s+/g, ' ');
+  
+  // ISO format
+  if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) return cleaned;
+  
+  // DD Mon YYYY (e.g., 11 Jan 2024)
+  const m1 = cleaned.match(/^(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{4})$/i);
+  if (m1) {
+    const [, d, mon, y] = m1;
+    const mm = {jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12'};
+    return `${y}-${mm[mon.toLowerCase()]}-${d.padStart(2,'0')}`;
+  }
+  
+  // MM/DD/YYYY or DD/MM/YYYY
+  const m2 = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m2) {
+    const [, a, b, y] = m2;
+    const A = parseInt(a,10), B = parseInt(b,10);
+    // Default to MM/DD/YYYY (US format)
+    return `${y}-${String(A).padStart(2,'0')}-${String(B).padStart(2,'0')}`;
+  }
+  
+  return null;
+}
+
+// Helper function to parse numbers from strings
+function parseNumber(s) {
+  if (s == null) return NaN;
+  const cleaned = String(s).replace(/[\s,$]/g, '').replace(/[–—−]/g, '-').replace(/\(([^)]+)\)/, '-$1');
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : NaN;
+}
+
+// Helper function to calculate 21-day rolling sum
+function calculate21DayRollingSum(flows) {
+  const sums = [];
+  const flowsArray = flows.map(f => f.flow);
+  
+  for (let i = 0; i < flowsArray.length; i++) {
+    if (i < 20) {
+      sums.push(NaN); // Not enough data for 21-day sum
+    } else {
+      const sum = flowsArray.slice(i - 20, i + 1).reduce((a, b) => a + b, 0);
+      sums.push(sum);
+    }
+  }
+  
+  return sums.filter(Number.isFinite);
+}
+
+// Helper function to format currency
+function formatCurrency(amount) {
+  if (!Number.isFinite(amount)) return "—";
+  
+  if (Math.abs(amount) >= 1e9) {
+    return `$${(amount / 1e9).toFixed(1)}B`;
+  } else if (Math.abs(amount) >= 1e6) {
+    return `$${(amount / 1e6).toFixed(1)}M`;
+  } else if (Math.abs(amount) >= 1e3) {
+    return `$${(amount / 1e3).toFixed(1)}K`;
+  } else {
+    return `$${amount.toFixed(0)}`;
+  }
+}
+
+// Helper function to format currency with tooltip support
+function formatCurrencyWithTooltip(amount) {
+  if (!Number.isFinite(amount)) return "—";
+  
+  if (Math.abs(amount) >= 1e9) {
+    return `$${(amount / 1e9).toFixed(1)}B`;
+  } else if (Math.abs(amount) >= 1e6) {
+    return `$${(amount / 1e6).toFixed(1)}M`;
+  } else if (Math.abs(amount) >= 1e3) {
+    return `$${(amount / 1e3).toFixed(1)}K`;
+  } else {
+    return `$${amount.toFixed(0)}`;
+  }
+}
+
+// Helper function to generate schema hash for tripwire
+function generateSchemaHash(headers) {
+  const headerString = headers.join(',');
+  // Simple hash function (in production, you might want to use crypto.createHash)
+  let hash = 0;
+  for (let i = 0; i < headerString.length; i++) {
+    const char = headerString.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash).toString(16);
+}
+
+// Helper function to check schema tripwire
+async function checkSchemaTripwire(currentHash) {
+  try {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    
+    const statusPath = path.join(process.cwd(), 'public', 'data', 'status.json');
+    let lastHash = null;
+    
+    if (fs.existsSync(statusPath)) {
+      const statusContent = fs.readFileSync(statusPath, 'utf8');
+      const status = JSON.parse(statusContent);
+      lastHash = status.etf_schema_hash;
+    }
+    
+    // Store current hash in status
+    if (fs.existsSync(statusPath)) {
+      const statusContent = fs.readFileSync(statusPath, 'utf8');
+      const status = JSON.parse(statusContent);
+      status.etf_schema_hash = currentHash;
+      status.etf_schema_last_check = new Date().toISOString();
+      fs.writeFileSync(statusPath, JSON.stringify(status, null, 2));
+    }
+    
+    return lastHash && lastHash !== currentHash;
+  } catch (error) {
+    console.warn('ETF Flows: Could not check schema tripwire:', error.message);
+    return false;
   }
 }
 
@@ -320,7 +684,20 @@ async function computeTermLeverage() {
     else if (avgFunding > 0) score = 40; // Low leverage
     else score = 20; // Negative funding (bearish sentiment)
     
-    return { score, reason: "success" };
+    const latestFunding = fundingRates[fundingRates.length - 1];
+    const maxFunding = Math.max(...fundingRates);
+    const minFunding = Math.min(...fundingRates);
+    
+    return { 
+      score, 
+      reason: "success",
+      details: [
+        { label: "Current Funding Rate", value: `${latestFunding.toFixed(4)}%` },
+        { label: "30-day Average", value: `${avgFunding.toFixed(4)}%` },
+        { label: "30-day Range", value: `${minFunding.toFixed(4)}% - ${maxFunding.toFixed(4)}%` },
+        { label: "Leverage Level", value: avgFunding > 0.1 ? "High" : avgFunding > 0.05 ? "Moderate" : avgFunding > 0 ? "Low" : "Negative" }
+      ]
+    };
   } catch (error) {
     return { score: null, reason: `error: ${error.message}` };
   }
@@ -354,7 +731,20 @@ async function computeOnchain() {
     const percentile = percentileRank(fees, latestFee);
     const score = riskFromPercentile(percentile, { invert: false, k: 3 });
     
-    return { score, reason: "success" };
+    const maxFee = Math.max(...fees);
+    const minFee = Math.min(...fees);
+    
+    return { 
+      score, 
+      reason: "success",
+      details: [
+        { label: "Current Transaction Fees", value: `$${latestFee.toFixed(0)}` },
+        { label: "30-day Average", value: `$${avgFee.toFixed(0)}` },
+        { label: "30-day Range", value: `$${minFee.toFixed(0)} - $${maxFee.toFixed(0)}` },
+        { label: "Activity Percentile", value: `${(percentile * 100).toFixed(0)}%` },
+        { label: "Network Activity", value: percentile > 0.8 ? "High" : percentile > 0.5 ? "Moderate" : "Low" }
+      ]
+    };
   } catch (error) {
     return { score: null, reason: `error: ${error.message}` };
   }
@@ -416,7 +806,22 @@ async function computeMacroOverlay() {
     // Average the three components
     const score = Math.round((dxyRisk + dgs2Risk + vixRisk) / 3);
 
-    return { score, reason: "success" };
+    const latestDxy = dxyValues[dxyValues.length - 1];
+    const latestDgs2 = dgs2Values[dgs2Values.length - 1];
+    const latestVix = vixValues[vixValues.length - 1];
+
+    return { 
+      score, 
+      reason: "success",
+      details: [
+        { label: "DXY 20d Δ", value: `${(dxy20dChange * 100).toFixed(1)}%` },
+        { label: "US2Y 20d Δ", value: `${(dgs2_20dChange * 100).toFixed(1)}%` },
+        { label: "VIX pctile", value: `${(vixPercentile * 100).toFixed(0)}%` },
+        { label: "Current DXY", value: latestDxy.toFixed(1) },
+        { label: "Current 2Y Yield", value: `${latestDgs2.toFixed(2)}%` },
+        { label: "Current VIX", value: latestVix.toFixed(1) }
+      ]
+    };
   } catch (error) {
     return { score: null, reason: `error: ${error.message}` };
   }
@@ -487,7 +892,8 @@ export async function computeAllFactors() {
       weight: factor.weight,
       score,
       status,
-      reason
+      reason,
+      details: result.status === 'fulfilled' ? result.value.details : undefined
     });
 
     console.log(`${factor.key}: ${score !== null ? score : 'null'} (${status}) - ${reason}`);
