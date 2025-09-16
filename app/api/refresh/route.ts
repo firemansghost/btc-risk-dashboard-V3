@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 import { computeTrendValuation } from '@/lib/factors/trendValuation';
 import { computeSocial }         from '@/lib/factors/social';
 import { fetchCoinbaseSpot }     from '@/lib/data/btc';
-import { saveJson }              from '@/lib/storage';
 import { calculatePowerLawAdjustment, fetchExtendedDailyCandles } from '@/lib/math/powerLaw';
 import { clamp } from '@/lib/math/normalize';
 import { computeFastSpike } from '@/lib/adjust/fastSpike';
@@ -252,9 +251,7 @@ async function buildLatest() {
         },
       };
 
-      // Save to latest.json for /api/data/latest endpoint
-      await saveJson('latest.json', latestData);
-
+      // Return the computed data directly (can't write to file system in serverless)
       const res = NextResponse.json({
         ok: true,
         latest: latestData,
