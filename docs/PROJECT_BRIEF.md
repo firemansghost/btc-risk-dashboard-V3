@@ -50,6 +50,7 @@ The Bitcoin Risk Dashboard provides institutional-grade risk assessment for Bitc
 - **Methodology Documentation**: Detailed explanations of each factor's calculation
 - **Real-time Updates**: Live data refresh with source attribution
 - **Display-Only Context**: BTC⇄Gold and Satoshis per Dollar provide additional perspective without affecting risk scores
+- **Factor History**: Per-factor historical data persisted daily for transparency and trend analysis
 
 ## Deployment Architecture
 

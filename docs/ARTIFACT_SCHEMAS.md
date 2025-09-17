@@ -137,6 +137,66 @@ date,sats_per_usd,usd_per_sat,btc_close_usd
 2025-09-15,881.0572687224669,0.0011350000000000001,113500.00
 ```
 
+## Factor History CSVs
+
+Per-factor historical data for transparency and analysis (CSV-first approach).
+
+### signals/stablecoins_30d.csv
+```csv
+date,pct_change_30d,z,score
+2025-09-17,8.3,0,23
+2025-09-16,7.8,-0.2,25
+2025-09-15,8.1,0.1,22
+```
+
+### signals/etf_flows_21d.csv
+```csv
+date,day_flow_usd,sum21_usd,z,pct,score
+2025-09-17,292300,2388700,-1.34,0.07,93
+2025-09-16,185600,2156400,-1.45,0.05,95
+2025-09-15,320100,1970800,-1.28,0.08,92
+```
+
+### signals/net_liquidity_20d.csv
+```csv
+date,delta20d_usd,z,score
+2025-09-17,2.1,1.8,93
+2025-09-16,2.0,1.7,91
+2025-09-15,1.9,1.6,89
+```
+
+### signals/mayer_multiple.csv
+```csv
+date,mayer,stretch,z,score
+2025-09-17,1.2,0.8,-0.5,48
+2025-09-16,1.3,0.9,-0.3,45
+2025-09-15,1.1,0.7,-0.7,52
+```
+
+### signals/funding_7d.csv
+```csv
+date,funding_7d_avg,z,score
+2025-09-17,0.02,0.1,40
+2025-09-16,0.01,0.0,42
+2025-09-15,0.03,0.2,38
+```
+
+### signals/dxy_20d.csv
+```csv
+date,dxy_delta20d,z,score
+2025-09-17,1.2,0.5,34
+2025-09-16,1.0,0.3,36
+2025-09-15,1.4,0.7,32
+```
+
+### signals/fear_greed.csv
+```csv
+date,fng_value,z,score
+2025-09-17,21,-1.2,21
+2025-09-16,23,-1.0,25
+2025-09-15,19,-1.4,18
+```
+
 ## extras/gold_cross.json
 
 BTC⇄Gold cross-rates with provenance tracking.

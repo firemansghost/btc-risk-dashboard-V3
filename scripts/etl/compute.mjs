@@ -1,6 +1,37 @@
 import fs from "node:fs/promises";
 import { computeAllFactors } from "./factors.mjs";
 
+// Helper function to append a row to a CSV file (idempotent by date)
+async function appendCsvRow(filePath, header, rowData, dateField = 'date') {
+  try {
+    let csvContent = "";
+    try {
+      csvContent = await fs.readFile(filePath, "utf8");
+    } catch (error) {
+      csvContent = header + "\n";
+    }
+    
+    const csvLines = csvContent.trim().split("\n");
+    const hasHeader = csvLines[0] === header;
+    if (!hasHeader) csvLines.unshift(header);
+    
+    const newRow = Object.values(rowData).join(',');
+    const dateValue = rowData[dateField];
+    const alreadyExists = csvLines.some(line => line.startsWith(dateValue + ","));
+    
+    if (!alreadyExists) {
+      csvLines.push(newRow);
+      await fs.writeFile(filePath, csvLines.join("\n"));
+      return { appended: true, rows: csvLines.length - 1 };
+    }
+    
+    return { appended: false, rows: csvLines.length - 1 };
+  } catch (error) {
+    console.warn(`Failed to append to ${filePath}:`, error.message);
+    return { appended: false, rows: 0, error: error.message };
+  }
+}
+
 // Load environment variables from .env.local if it exists
 try {
   const envContent = await fs.readFile('.env.local', 'utf8');
@@ -100,6 +131,125 @@ async function main() {
   const satsPerUsd = 100_000_000 / y.close;
   const usdPerSat = 1 / satsPerUsd;
 
+  // 2.7) Generate factor history CSVs
+  console.log("Generating factor history CSVs...");
+  await ensureDir("public/signals");
+  
+  const historyResults = [];
+  
+  // Process each factor and generate history CSV
+  for (const factor of factorResults.factors) {
+    if (factor.status !== 'fresh') continue; // Only process fresh factors
+    
+    let csvResult = { appended: false, rows: 0 };
+    
+    switch (factor.key) {
+      case 'stablecoins':
+        csvResult = await appendCsvRow(
+          "public/signals/stablecoins_30d.csv",
+          "date,pct_change_30d,z,score",
+          {
+            date: y.date,
+            pct_change_30d: factor.details?.find(d => d.label === "30-day Change")?.value?.replace('%', '') || '0',
+            z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
+            score: factor.score
+          }
+        );
+        break;
+        
+      case 'etf_flows':
+        // ETF flows CSV already exists, ensure it has the right columns
+        csvResult = await appendCsvRow(
+          "public/signals/etf_flows_21d.csv",
+          "date,day_flow_usd,sum21_usd,z,pct,score",
+          {
+            date: y.date,
+            day_flow_usd: factor.details?.find(d => d.label === "Latest Daily Flow")?.value?.replace(/[,$]/g, '') || '0',
+            sum21_usd: factor.details?.find(d => d.label === "21-day Sum")?.value?.replace(/[,$]/g, '') || '0',
+            z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
+            pct: factor.details?.find(d => d.label === "Percentile")?.value?.replace('%', '') || '0',
+            score: factor.score
+          }
+        );
+        break;
+        
+      case 'net_liquidity':
+        csvResult = await appendCsvRow(
+          "public/signals/net_liquidity_20d.csv",
+          "date,delta20d_usd,z,score",
+          {
+            date: y.date,
+            delta20d_usd: factor.details?.find(d => d.label === "Net Liquidity")?.value?.replace(/[,$T]/g, '') || '0',
+            z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
+            score: factor.score
+          }
+        );
+        break;
+        
+      case 'trend_valuation':
+        csvResult = await appendCsvRow(
+          "public/signals/mayer_multiple.csv",
+          "date,mayer,stretch,z,score",
+          {
+            date: y.date,
+            mayer: factor.details?.find(d => d.label === "Mayer Multiple")?.value || '0',
+            stretch: factor.details?.find(d => d.label === "Stretch")?.value || '0',
+            z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
+            score: factor.score
+          }
+        );
+        break;
+        
+      case 'term_leverage':
+        csvResult = await appendCsvRow(
+          "public/signals/funding_7d.csv",
+          "date,funding_7d_avg,z,score",
+          {
+            date: y.date,
+            funding_7d_avg: factor.details?.find(d => d.label === "7-day Change")?.value?.replace('%', '') || '0',
+            z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
+            score: factor.score
+          }
+        );
+        break;
+        
+      case 'macro_overlay':
+        csvResult = await appendCsvRow(
+          "public/signals/dxy_20d.csv",
+          "date,dxy_delta20d,z,score",
+          {
+            date: y.date,
+            dxy_delta20d: factor.details?.find(d => d.label === "DXY 20d Change")?.value?.replace('%', '') || '0',
+            z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
+            score: factor.score
+          }
+        );
+        break;
+        
+      case 'social_interest':
+        csvResult = await appendCsvRow(
+          "public/signals/fear_greed.csv",
+          "date,fng_value,z,score",
+          {
+            date: y.date,
+            fng_value: factor.details?.find(d => d.label === "Fear & Greed Index")?.value || '0',
+            z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
+            score: factor.score
+          }
+        );
+        break;
+    }
+    
+    if (csvResult.appended) {
+      historyResults.push({
+        name: `History: ${factor.key}`,
+        ok: true,
+        rows_appended: 1,
+        total_rows: csvResult.rows
+      });
+    }
+  }
+
   // 3) Upsert history.csv
   const header = "date,score,band,price_usd";
   const existing = await readText("public/data/history.csv");
@@ -149,7 +299,8 @@ async function main() {
         ...p,
         cache_used: false, // Gold data is always fresh from API
         fallback_used: p.fallback || false
-      })) : [])
+      })) : []),
+      ...historyResults // Add factor history tracking
     ],
     factors_computed: factorResults.factors.length,
     factors_successful: factorResults.factors.filter(f => f.status === 'fresh').length,

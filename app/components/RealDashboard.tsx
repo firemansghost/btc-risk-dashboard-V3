@@ -13,6 +13,7 @@ import MacroCard from './MacroCard';
 import EtfTable from './EtfTable';
 import BtcGoldCard from './BtcGoldCard';
 import SatoshisPerDollarCard from './SatoshisPerDollarCard';
+import FactorHistoryModal from './FactorHistoryModal';
 import type { LatestSnapshot } from '@/lib/types';
 
 const fmtUsd0 = (n: number) =>
@@ -26,6 +27,8 @@ export default function RealDashboard() {
   const [expandedFactors, setExpandedFactors] = useState<Set<string>>(new Set());
   const [whatIfModalOpen, setWhatIfModalOpen] = useState(false);
   const [provenanceModalOpen, setProvenanceModalOpen] = useState(false);
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [selectedFactor, setSelectedFactor] = useState<{key: string, label: string} | null>(null);
 
   const loadLatest = useCallback(async () => {
     setError(null);
@@ -195,13 +198,25 @@ export default function RealDashboard() {
             {/* Factor Title */}
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-medium text-gray-900">{factor.label}</h3>
-              <a
-                href={`/methodology#${factor.key}`}
-                className="text-xs text-blue-600 hover:text-blue-800 underline"
-                title="Learn more about this factor"
-              >
-                What's this?
-              </a>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setSelectedFactor({ key: factor.key, label: factor.label });
+                    setHistoryModalOpen(true);
+                  }}
+                  className="text-xs text-green-600 hover:text-green-800 underline"
+                  title="View factor history"
+                >
+                  History
+                </button>
+                <a
+                  href={`/methodology#${factor.key}`}
+                  className="text-xs text-blue-600 hover:text-blue-800 underline"
+                  title="Learn more about this factor"
+                >
+                  What's this?
+                </a>
+              </div>
             </div>
             
             {/* Status */}
@@ -323,6 +338,19 @@ export default function RealDashboard() {
         onClose={() => setProvenanceModalOpen(false)}
         items={latest?.provenance ?? []}
       />
+
+      {/* Factor History Modal */}
+      {selectedFactor && (
+        <FactorHistoryModal
+          isOpen={historyModalOpen}
+          onClose={() => {
+            setHistoryModalOpen(false);
+            setSelectedFactor(null);
+          }}
+          factorKey={selectedFactor.key}
+          factorLabel={selectedFactor.label}
+        />
+      )}
     </div>
   );
 }

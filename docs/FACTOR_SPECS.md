@@ -107,3 +107,23 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 - **Cache Fallbacks**: Use cached data when live sources fail
 - **Retry Logic**: Exponential backoff for API failures
 - **Validation**: Type checking and range validation for all inputs
+
+## Factor History Tracking
+
+Per-factor historical data is persisted daily for transparency and analysis:
+
+- **CSV-First Approach**: Each factor generates a dedicated CSV file with daily snapshots
+- **Idempotent Updates**: One row per day per factor, preventing duplicates
+- **Complete Data**: Includes raw values, z-scores, and final risk scores
+- **UI Integration**: Factor cards include "History" links for trend analysis
+- **Optional Sparklines**: SVG sparklines available via configuration flag
+- **Change Tracking**: 7/30/90-day change indicators for trend analysis
+
+**History Files**:
+- `stablecoins_30d.csv`: 30-day percentage changes and scores
+- `etf_flows_21d.csv`: Daily flows, 21-day sums, and percentiles
+- `net_liquidity_20d.csv`: 20-day liquidity deltas and scores
+- `mayer_multiple.csv`: Mayer Multiple values and stretch indicators
+- `funding_7d.csv`: 7-day funding rate averages and scores
+- `dxy_20d.csv`: DXY 20-day changes and macro scores
+- `fear_greed.csv`: Fear & Greed Index values and social scores
