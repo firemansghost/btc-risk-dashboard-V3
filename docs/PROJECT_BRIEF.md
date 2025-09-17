@@ -1,6 +1,6 @@
 # Project Brief & Methodology
 
-*See also: [Brand Card](BRAND_CARD.md) (voice, naming, bands).*
+*See also: [Brand Card](/brand) (voice, naming, bands).*
 
 ## Purpose
 

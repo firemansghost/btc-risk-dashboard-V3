@@ -9,7 +9,7 @@ export default function SiteFooter() {
         <div>
           <a className="underline hover:text-gray-900" href="/disclaimer">Disclaimer</a> ·{' '}
           <a className="underline hover:text-gray-900" href="/methodology">Methodology</a> ·{' '}
-          <a className="underline hover:text-gray-900" href="/docs/BRAND_CARD.md">Brand Card</a>
+          <a className="underline hover:text-gray-900" href="/brand">Brand Card</a>
         </div>
       </div>
     </footer>
