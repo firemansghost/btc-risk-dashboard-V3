@@ -132,7 +132,7 @@ async function buildLatest() {
 
     const band = getBandForScore(composite_raw);
 
-    return {
+    return NextResponse.json({
       ok: true,
       latest: {
         ok: true,
@@ -150,7 +150,7 @@ async function buildLatest() {
         config_digest: "etl",
         transform: {},
       }
-    };
+    });
   }
 
   // Fallback to real-time computation (original logic)
