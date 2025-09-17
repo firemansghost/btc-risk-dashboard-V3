@@ -1,8 +1,8 @@
 {
   "version": "v3.1.0",
-  "updated_at": "2025-09-17T12:02:34.774Z",
-  "price_usd": 116283.03,
-  "composite": 54,
+  "updated_at": "2025-09-17T12:11:53.286Z",
+  "price_usd": 116317.36,
+  "composite": 50,
   "band": {
     "name": "Hold/Neutral",
     "lo": 35,
@@ -28,15 +28,15 @@
         },
         {
           "label": "Weekly momentum (RSI proxy)",
-          "value": "70.6"
+          "value": "70.4"
         },
         {
           "label": "Current Price",
-          "value": "$116,279.787"
+          "value": "$116,244.419"
         },
         {
           "label": "200-day SMA",
-          "value": "$102,957.336"
+          "value": "$102,957.159"
         }
       ]
     },
@@ -220,21 +220,21 @@
       "label": "Social Interest",
       "pillar": "social",
       "weight": 5,
-      "score": 95,
+      "score": 21,
       "status": "fresh",
       "reason": "success",
       "details": [
         {
           "label": "Fear & Greed Index",
-          "value": "95"
+          "value": "30"
         },
         {
           "label": "Index Percentile (1y)",
-          "value": "100%"
+          "value": "28%"
         },
         {
           "label": "Sentiment Level",
-          "value": "Extreme Greed"
+          "value": "Fear"
         },
         {
           "label": "Data Points",

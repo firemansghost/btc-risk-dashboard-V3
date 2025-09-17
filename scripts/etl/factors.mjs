@@ -151,17 +151,19 @@ async function computeSocialInterest() {
       return { score: null, reason: "no_data" };
     }
 
-    // Extract values and sort by timestamp
-    const values = data.data
+    // Extract values and get the latest (most recent) value
+    const allValues = data.data
       .map(item => Number(item.value))
-      .filter(Number.isFinite)
-      .sort((a, b) => a - b);
+      .filter(Number.isFinite);
 
-    if (values.length === 0) return { score: null, reason: "no_valid_data" };
+    if (allValues.length === 0) return { score: null, reason: "no_valid_data" };
 
-    // Use latest value for percentile ranking
-    const latest = values[values.length - 1];
-    const percentile = percentileRank(values, latest);
+    // Get the latest (most recent) value
+    const latest = allValues[allValues.length - 1];
+    
+    // Sort values for percentile ranking
+    const sortedValues = [...allValues].sort((a, b) => a - b);
+    const percentile = percentileRank(sortedValues, latest);
     
     // Higher Fear & Greed value (greed) = higher risk (no inversion)
     const score = riskFromPercentile(percentile, { invert: false, k: 3 });
@@ -173,7 +175,7 @@ async function computeSocialInterest() {
         { label: "Fear & Greed Index", value: latest.toString() },
         { label: "Index Percentile (1y)", value: `${(percentile * 100).toFixed(0)}%` },
         { label: "Sentiment Level", value: latest >= 75 ? "Extreme Greed" : latest >= 55 ? "Greed" : latest >= 45 ? "Neutral" : latest >= 25 ? "Fear" : "Extreme Fear" },
-        { label: "Data Points", value: values.length.toString() }
+        { label: "Data Points", value: allValues.length.toString() }
       ]
     };
   } catch (error) {

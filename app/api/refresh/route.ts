@@ -81,25 +81,29 @@ async function getEtfFlowsSafe(): Promise<FactorResult> {
   }
 }
 
-async function buildLatest() {
+async function buildLatest(forceRealTime = false) {
   const config = getConfig();
   const factorWeightsMap = normalizeFactorWeights(config.factors);
 
-  // Try to load ETL data first, fallback to real-time computation if needed
+  // For refresh requests, always compute fresh data; for initial loads, try ETL data first
   let etlData: any = null;
-  try {
-    const { promises: fs } = await import('node:fs');
-    const path = await import('node:path');
-    const etlPath = path.join(process.cwd(), 'public', 'data', 'latest.json');
-    const etlContent = await fs.readFile(etlPath, 'utf8');
-    etlData = JSON.parse(etlContent);
-    console.log('Refresh API: Using ETL data from', etlData.updated_at);
-  } catch (error) {
-    console.warn('Refresh API: Could not load ETL data, falling back to real-time computation:', error);
+  if (!forceRealTime) {
+    try {
+      const { promises: fs } = await import('node:fs');
+      const path = await import('node:path');
+      const etlPath = path.join(process.cwd(), 'public', 'data', 'latest.json');
+      const etlContent = await fs.readFile(etlPath, 'utf8');
+      etlData = JSON.parse(etlContent);
+      console.log('Refresh API: Using ETL data from', etlData.updated_at);
+    } catch (error) {
+      console.warn('Refresh API: Could not load ETL data, falling back to real-time computation:', error);
+    }
+  } else {
+    console.log('Refresh API: Computing fresh data (refresh requested)');
   }
 
-  // If we have ETL data, use it; otherwise compute in real-time
-  if (etlData && etlData.factors) {
+  // If we have ETL data and not forcing real-time, use it; otherwise compute in real-time
+  if (etlData && etlData.factors && !forceRealTime) {
     // Transform ETL data to refresh API format
     const factors: FactorCard[] = etlData.factors.map((factor: any) => ({
       key: factor.key,
@@ -340,8 +344,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 403 });
     }
   }
-  // Force recompute
-  return buildLatest();
+  // Force recompute with fresh data
+  return buildLatest(true);
 }
 
 export async function GET(req: Request) {
