@@ -1,8 +1,8 @@
 {
   "version": "v3.1.0",
-  "updated_at": "2025-09-16T23:12:40.346Z",
-  "price_usd": 116932.45,
-  "composite": 53,
+  "updated_at": "2025-09-17T11:18:55.299Z",
+  "price_usd": 116314,
+  "composite": 49,
   "band": {
     "name": "Hold/Neutral",
     "lo": 35,
@@ -14,29 +14,29 @@
       "label": "Trend & Valuation",
       "pillar": "momentum",
       "weight": 25,
-      "score": 29,
+      "score": 37,
       "status": "fresh",
       "reason": "success",
       "details": [
         {
           "label": "Price vs 200-day SMA (Mayer)",
-          "value": "1.14"
+          "value": "1.13"
         },
         {
           "label": "Distance to Bull Market Support Band",
-          "value": "13.7%"
+          "value": "13.0%"
         },
         {
           "label": "Weekly momentum (RSI proxy)",
-          "value": "75.4"
+          "value": "71.0"
         },
         {
           "label": "Current Price",
-          "value": "$116,924.104"
+          "value": "$116,336.879"
         },
         {
           "label": "200-day SMA",
-          "value": "$102,806.769"
+          "value": "$102,957.621"
         }
       ]
     },
@@ -76,42 +76,60 @@
       "label": "Stablecoins",
       "pillar": "liquidity",
       "weight": 15,
-      "score": null,
-      "status": "excluded",
-      "reason": "error: CoinGecko 429"
+      "score": 23,
+      "status": "fresh",
+      "reason": "success",
+      "details": [
+        {
+          "label": "USDC Market Cap",
+          "value": "$73.6B"
+        },
+        {
+          "label": "30-day Change",
+          "value": "8.4%"
+        },
+        {
+          "label": "Supply Growth Percentile",
+          "value": "70%"
+        },
+        {
+          "label": "30-day Trend",
+          "value": "Strong Growth"
+        }
+      ]
     },
     {
       "key": "etf_flows",
       "label": "ETF Flows",
       "pillar": "liquidity",
       "weight": 10,
-      "score": 56,
+      "score": 53,
       "status": "fresh",
       "reason": "success",
       "details": [
         {
           "label": "Latest Daily Flow",
-          "value": "$0",
-          "tooltip": "Exact: $0 (2025-09-16)"
+          "value": "$292",
+          "tooltip": "Exact: $292.3 (2025-09-16)"
         },
         {
           "label": "21-day Rolling Sum",
-          "value": "$2.1K",
-          "tooltip": "Exact: $2,096.4 (21-day momentum)"
+          "value": "$2.4K",
+          "tooltip": "Exact: $2,388.7 (21-day momentum)"
         },
         {
           "label": "21-day Percentile",
-          "value": "46%"
+          "value": "48%"
         },
         {
           "label": "21-day Z-Score",
-          "value": "-0.20σ",
-          "tooltip": "Normal: -0.20σ from mean"
+          "value": "-0.10σ",
+          "tooltip": "Normal: -0.10σ from mean"
         },
         {
           "label": "Total Flows (all time)",
-          "value": "$57.1K",
-          "tooltip": "Exact: $57,051.6 (since ETF inception)"
+          "value": "$57.3K",
+          "tooltip": "Exact: $57,343.9 (since ETF inception)"
         },
         {
           "label": "Data Points",
@@ -119,7 +137,7 @@
         },
         {
           "label": "Last Update",
-          "value": "1.0 days ago"
+          "value": "1.5 days ago"
         },
         {
           "label": "Source",
@@ -127,7 +145,7 @@
         },
         {
           "label": "Data Source",
-          "value": "Cache"
+          "value": "Live"
         }
       ]
     },
@@ -142,11 +160,11 @@
       "details": [
         {
           "label": "Current Funding Rate",
-          "value": "0.0097%"
+          "value": "0.0100%"
         },
         {
           "label": "30-day Average",
-          "value": "0.0070%"
+          "value": "0.0069%"
         },
         {
           "label": "30-day Range",
@@ -163,7 +181,7 @@
       "label": "On-chain Activity",
       "pillar": "social",
       "weight": 10,
-      "score": 83,
+      "score": 77,
       "status": "fresh",
       "reason": "success",
       "details": [
@@ -181,7 +199,7 @@
         },
         {
           "label": "Activity Percentile",
-          "value": "77%"
+          "value": "70%"
         },
         {
           "label": "Network Activity",
@@ -212,7 +230,7 @@
         },
         {
           "label": "Data Points",
-          "value": "2781"
+          "value": "2782"
         }
       ]
     },
@@ -235,7 +253,7 @@
         },
         {
           "label": "VIX pctile",
-          "value": "42%"
+          "value": "43%"
         },
         {
           "label": "Current DXY",
