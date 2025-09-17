@@ -2,6 +2,8 @@
 
 Key technical choices and rationale for the Bitcoin Risk Dashboard.
 
+## 2025-09-17: Adopted Brand Card v1.1 (GhostGauge) as single source of truth for voice, naming, bands
+
 ## 2025-09-17: ETL Commits Artifacts
 
 **Decision**: ETL pipeline generates and commits data artifacts to repository

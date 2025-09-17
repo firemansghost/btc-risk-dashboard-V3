@@ -1,5 +1,7 @@
 # Project Brief & Methodology
 
+*See also: [Brand Card](BRAND_CARD.md) (voice, naming, bands).*
+
 ## Purpose
 
 The Bitcoin Risk Dashboard provides institutional-grade risk assessment for Bitcoin investments through a transparent, quantitative framework. It generates a 0-100 risk score where lower scores indicate better buying opportunities and higher scores suggest caution or selling pressure.

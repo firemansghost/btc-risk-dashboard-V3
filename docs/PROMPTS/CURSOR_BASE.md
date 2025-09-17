@@ -15,6 +15,7 @@ Development rules and best practices for AI-assisted development.
 - **Version bump required**: Contract changes require version increments
 - **Decision tracking**: Document significant choices in `DECISIONS.md`
 - **Schema updates**: Modify `ARTIFACT_SCHEMAS.md` for any data structure changes
+- **Brand consistency**: Consult `/docs/BRAND_CARD.md` for voice, naming, band labels; keep UI copy in sync
 
 ## Development Workflow
 

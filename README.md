@@ -25,6 +25,7 @@ The dashboard relies on a daily ETL pipeline that computes all risk factors and 
 ## Read More
 
 - [Project Brief & Methodology](docs/PROJECT_BRIEF.md) - Complete product overview and risk calculation methodology
+- [Brand Card](docs/BRAND_CARD.md) - Voice, naming conventions, and ready-to-use copy
 - [Factor Specifications](docs/FACTOR_SPECS.md) - Mathematical contracts for all risk factors
 - [Data Schemas](docs/ARTIFACT_SCHEMAS.md) - Authoritative data contracts and API specifications
 - [Runbook](docs/RUNBOOK.md) - Local development, deployment, and troubleshooting guide
