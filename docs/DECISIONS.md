@@ -69,20 +69,29 @@ Key technical choices and rationale for the Bitcoin Risk Dashboard.
 2. Premium APIs with licensing costs (Metals API, Quandl)
 3. Multiple free sources with redundancy
 
-**Chosen Solution**: Licensed-friendly sources (marked as planned)
+**Chosen Solution**: Multi-source fallback chain with licensed-friendly priority
+
+**Implementation**:
+- **Primary**: Metals API (requires API key, professional grade)
+- **Secondary**: Alpha Vantage (free tier, 25/day limit)
+- **Fallback**: Stooq CSV (no key required, reliable)
+- **Provenance tracking**: All sources tracked in status.json
+- **Daily cadence**: Aligned with Bitcoin daily closes
 
 **Rationale**:
-- Ensures long-term data availability
-- Avoids rate limiting issues
-- Provides professional-grade data quality
+- Ensures long-term data availability through fallback chain
+- Avoids rate limiting issues with multiple sources
+- Provides professional-grade data quality when available
 - Supports commercial usage requirements
+- Graceful degradation when premium sources unavailable
 
-**Implementation Status**: Planned for Week 1-2 of roadmap
+**Implementation Status**: ✅ Completed - ETL generates gold_cross.json and btc_xau.csv
 
 **Trade-offs**:
-- Additional API costs
+- Additional API costs for premium sources
 - More complex integration requirements
 - Need for API key management
+- Fallback sources may have lower data quality
 
 ## 2025-09-17: Refresh API Uses ETL Data for Consistency
 

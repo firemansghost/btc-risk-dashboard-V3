@@ -1109,5 +1109,139 @@ export async function computeAllFactors() {
   };
 }
 
+// Helper function to get yesterday's Bitcoin close from CoinGecko
+async function getCoinGeckoCloseForYesterday() {
+  const url = new URL("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart");
+  url.searchParams.set("vs_currency", "usd");
+  url.searchParams.set("days", "2");
+  url.searchParams.set("interval", "daily");
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`CoinGecko ${res.status}`);
+  const j = await res.json(); // oldest-first
+  const pair = j.prices[j.prices.length - 1]; // [ms, price]
+  return { date: new Date(pair[0]).toISOString().split('T')[0], close: Number(pair[1]) };
+}
+
+// BTC⇄Gold cross-rates calculation
+async function computeBtcGoldRates() {
+  try {
+    const btcPrice = await getCoinGeckoCloseForYesterday();
+    if (!btcPrice) {
+      return { success: false, reason: "no_btc_price" };
+    }
+
+    // Try multiple gold price sources with fallback chain
+    let goldPrice = null;
+    let goldSource = null;
+    let goldLatency = 0;
+    let goldFallback = false;
+
+    // Source 1: Metals API (requires API key)
+    if (process.env.METALS_API_KEY) {
+      try {
+        const startTime = Date.now();
+        const url = `https://metals-api.com/api/latest?access_key=${process.env.METALS_API_KEY}&base=USD&symbols=XAU`;
+        const res = await fetch(url, { headers: { "User-Agent": "btc-risk-etl" } });
+        goldLatency = Date.now() - startTime;
+        
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.rates && data.rates.XAU) {
+            // Metals API returns XAU as USD per troy ounce
+            goldPrice = data.rates.XAU;
+            goldSource = "Metals API";
+          }
+        }
+      } catch (error) {
+        console.warn('Metals API failed:', error.message);
+      }
+    }
+
+    // Source 2: Alpha Vantage (free tier, 25/day)
+    if (!goldPrice && process.env.ALPHAVANTAGE_API_KEY) {
+      try {
+        const startTime = Date.now();
+        const url = `https://www.alphavantage.co/query?function=FX_DAILY&from_symbol=XAU&to_symbol=USD&apikey=${process.env.ALPHAVANTAGE_API_KEY}`;
+        const res = await fetch(url, { headers: { "User-Agent": "btc-risk-etl" } });
+        goldLatency = Date.now() - startTime;
+        
+        if (res.ok) {
+          const data = await res.json();
+          if (data["Time Series (FX)"]) {
+            const timeSeries = data["Time Series (FX)"];
+            const dates = Object.keys(timeSeries).sort().reverse();
+            if (dates.length > 0) {
+              const latestDate = dates[0];
+              const latestData = timeSeries[latestDate];
+              goldPrice = parseFloat(latestData["4. close"]);
+              goldSource = "Alpha Vantage";
+            }
+          }
+        }
+      } catch (error) {
+        console.warn('Alpha Vantage failed:', error.message);
+      }
+    }
+
+    // Source 3: Stooq CSV (no key required, fallback)
+    if (!goldPrice) {
+      try {
+        const startTime = Date.now();
+        const url = "https://stooq.com/q/d/l/?s=xauusd&i=d";
+        const res = await fetch(url, { headers: { "User-Agent": "btc-risk-etl" } });
+        goldLatency = Date.now() - startTime;
+        
+        if (res.ok) {
+          const csvText = await res.text();
+          const lines = csvText.split('\n').filter(line => line.trim());
+          if (lines.length > 1) {
+            // Parse CSV: Date,Open,High,Low,Close,Volume
+            const lastLine = lines[lines.length - 1];
+            const columns = lastLine.split(',');
+            if (columns.length >= 5) {
+              goldPrice = parseFloat(columns[4]); // Close price
+              goldSource = "Stooq";
+              goldFallback = true;
+            }
+          }
+        }
+      } catch (error) {
+        console.warn('Stooq fallback failed:', error.message);
+      }
+    }
+
+    if (!goldPrice) {
+      return { success: false, reason: "no_gold_price" };
+    }
+
+    // Calculate ratios
+    const btcPerOz = btcPrice.close / goldPrice;
+    const ozPerBtc = 1 / btcPerOz;
+
+    return {
+      success: true,
+      data: {
+        updated_at: new Date().toISOString(),
+        date: btcPrice.date,
+        btc_close_usd: btcPrice.close,
+        xau_close_usd: goldPrice,
+        btc_per_oz: btcPerOz,
+        oz_per_btc: ozPerBtc,
+        provenance: [{
+          name: goldSource,
+          ok: true,
+          url: goldSource === "Metals API" ? "https://metals-api.com/" : 
+               goldSource === "Alpha Vantage" ? "https://www.alphavantage.co/" : 
+               "https://stooq.com/",
+          ms: goldLatency,
+          fallback: goldFallback
+        }]
+      }
+    };
+  } catch (error) {
+    return { success: false, reason: `error: ${error.message}` };
+  }
+}
+
 // Export additional functions for use in other modules
-export { cleanOldCacheFiles };
+export { cleanOldCacheFiles, computeBtcGoldRates };

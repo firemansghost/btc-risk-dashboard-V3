@@ -2,24 +2,24 @@
 
 Development timeline for the next 4-6 weeks.
 
-## Week 1-2: BTC⇄Gold Panel
+## Week 1-2: BTC⇄Gold Panel ✅ COMPLETED
 
 ### ETL Integration
-- [ ] Add gold price data source (Metals API or alternative)
-- [ ] Implement BTC/Gold ratio calculation in ETL pipeline
-- [ ] Add gold cross-rates to `latest.json` schema
-- [ ] Create historical baseline for ratio percentiles
+- [x] Add gold price data source (Metals API or alternative)
+- [x] Implement BTC/Gold ratio calculation in ETL pipeline
+- [x] Add gold cross-rates to `latest.json` schema
+- [x] Create historical baseline for ratio percentiles
 
 ### UI Component
-- [ ] Design BTC⇄Gold comparison card
-- [ ] Show current ratio and 1-year percentile
-- [ ] Display both BTC per ounce and ounces per BTC
-- [ ] Add trend indicators and historical context
+- [x] Design BTC⇄Gold comparison card
+- [x] Show current ratio and 1-year percentile
+- [x] Display both BTC per ounce and ounces per BTC
+- [x] Add trend indicators and historical context
 
 ### Data Artifacts
-- [ ] Generate `extras/gold_cross.json` artifact
-- [ ] Update `ARTIFACT_SCHEMAS.md` with gold data contracts
-- [ ] Add gold price to `history.csv` for historical tracking
+- [x] Generate `extras/gold_cross.json` artifact
+- [x] Update `ARTIFACT_SCHEMAS.md` with gold data contracts
+- [x] Add gold price to `history.csv` for historical tracking
 
 ## Week 3-4: Factor History & Mini Sparklines
 

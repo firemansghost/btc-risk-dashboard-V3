@@ -11,6 +11,7 @@ import ProvenanceModal from './ProvenanceModal';
 import SystemStatusCard from './SystemStatusCard';
 import MacroCard from './MacroCard';
 import EtfTable from './EtfTable';
+import BtcGoldCard from './BtcGoldCard';
 import type { LatestSnapshot } from '@/lib/types';
 
 const fmtUsd0 = (n: number) =>
@@ -92,8 +93,8 @@ export default function RealDashboard() {
         </div>
       </div>
 
-      {/* Top Row: Composite Score + BTC Price */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      {/* Top Row: Composite Score + BTC Price + BTC⇄Gold */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border p-4 bg-white">
           <div className="text-sm text-gray-500 mb-2">Composite Score</div>
           <div className="text-4xl font-bold text-gray-900 mb-2">{latest?.composite_score ?? '—'}</div>
@@ -142,6 +143,8 @@ export default function RealDashboard() {
           <div className="text-lg font-semibold text-gray-900">{latest?.model_version ?? '—'}</div>
           <div className="text-xs text-gray-500 mt-1">Five-pillar risk framework</div>
         </div>
+        
+        <BtcGoldCard />
       </div>
 
       {/* Risk Band Legend */}

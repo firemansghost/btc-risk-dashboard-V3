@@ -90,6 +90,11 @@ async function main() {
   const composite = factorResults.composite;
   const band = riskBand(composite);
 
+  // 2.5) Compute BTC⇄Gold cross-rates
+  console.log("Computing BTC⇄Gold cross-rates...");
+  const { computeBtcGoldRates } = await import('./factors.mjs');
+  const goldResult = await computeBtcGoldRates();
+
   // 3) Upsert history.csv
   const header = "date,score,band,price_usd";
   const existing = await readText("public/data/history.csv");
@@ -113,7 +118,8 @@ async function main() {
     band,
     factors: factorResults.factors,
     adjustments: { cycle_nudge: 0.0, spike_nudge: 0.0 },
-    config_digest: "etl_real_factors"
+    config_digest: "etl_real_factors",
+    ...(goldResult.success && { cross: { btc_per_oz: goldResult.data.btc_per_oz, oz_per_btc: goldResult.data.oz_per_btc } })
   };
   await fs.writeFile("public/data/latest.json", JSON.stringify(latest, null, 2));
 
@@ -133,12 +139,48 @@ async function main() {
       { name: "Coinbase daily candles", ok: true, ms: null, url: "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400" },
       { name: "CoinGecko market chart (fallback)", ok: true, ms: null, url: "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=2&interval=daily" },
       { name: "Fear & Greed Index", ok: true, ms: null, url: "https://api.alternative.me/fng/" },
-      { name: "FRED API (if key provided)", ok: !!process.env.FRED_API_KEY, ms: null, url: "https://fred.stlouisfed.org/" }
+      { name: "FRED API (if key provided)", ok: !!process.env.FRED_API_KEY, ms: null, url: "https://fred.stlouisfed.org/" },
+      ...(goldResult.success ? goldResult.data.provenance : [])
     ],
     factors_computed: factorResults.factors.length,
     factors_successful: factorResults.factors.filter(f => f.status === 'fresh').length
   };
   await fs.writeFile("public/data/status.json", JSON.stringify(status, null, 2));
+
+  // 6) Create gold artifacts if successful
+  if (goldResult.success) {
+    // Create extras/gold_cross.json
+    await ensureDir("public/extras");
+    await fs.writeFile("public/extras/gold_cross.json", JSON.stringify(goldResult.data, null, 2));
+
+    // Create signals/btc_xau.csv
+    await ensureDir("public/signals");
+    const csvHeader = "date,btc_close_usd,xau_close_usd,btc_per_oz,oz_per_btc";
+    const csvPath = "public/signals/btc_xau.csv";
+    
+    let csvContent = "";
+    try {
+      csvContent = await fs.readFile(csvPath, "utf8");
+    } catch (error) {
+      csvContent = csvHeader + "\n";
+    }
+    
+    const csvLines = csvContent.trim().split("\n");
+    const hasHeader = csvLines[0] === csvHeader;
+    if (!hasHeader) csvLines.unshift(csvHeader);
+    
+    const newRow = `${goldResult.data.date},${goldResult.data.btc_close_usd},${goldResult.data.xau_close_usd},${goldResult.data.btc_per_oz},${goldResult.data.oz_per_btc}`;
+    const alreadyExists = csvLines.some(line => line.startsWith(goldResult.data.date + ","));
+    
+    if (!alreadyExists) {
+      csvLines.push(newRow);
+    }
+    
+    await fs.writeFile(csvPath, csvLines.join("\n"));
+    console.log(`Gold cross-rates: 1 BTC = ${goldResult.data.btc_per_oz.toFixed(4)} oz, 1 oz = ${goldResult.data.oz_per_btc.toFixed(4)} BTC`);
+  } else {
+    console.warn(`Gold cross-rates failed: ${goldResult.reason}`);
+  }
 
   console.log(`ETL compute OK for ${y.date}`);
   console.log(`Composite score: ${composite} (${band.name})`);

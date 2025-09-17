@@ -1,8 +1,8 @@
 {
   "version": "v3.1.0",
-  "updated_at": "2025-09-17T12:28:10.763Z",
-  "price_usd": 116337.99,
-  "composite": 50,
+  "updated_at": "2025-09-17T15:41:15.326Z",
+  "price_usd": 115816.46,
+  "composite": 52,
   "band": {
     "name": "Hold/Neutral",
     "lo": 35,
@@ -14,29 +14,29 @@
       "label": "Trend & Valuation",
       "pillar": "momentum",
       "weight": 25,
-      "score": 37,
+      "score": 43,
       "status": "fresh",
       "reason": "success",
       "details": [
         {
           "label": "Price vs 200-day SMA (Mayer)",
-          "value": "1.13"
+          "value": "1.12"
         },
         {
           "label": "Distance to Bull Market Support Band",
-          "value": "13.0%"
+          "value": "12.5%"
         },
         {
           "label": "Weekly momentum (RSI proxy)",
-          "value": "71.1"
+          "value": "67.8"
         },
         {
           "label": "Current Price",
-          "value": "$116,344.01"
+          "value": "$115,817.468"
         },
         {
           "label": "200-day SMA",
-          "value": "$102,957.657"
+          "value": "$102,955.024"
         }
       ]
     },
@@ -86,7 +86,7 @@
         },
         {
           "label": "30-day Change",
-          "value": "8.4%"
+          "value": "8.3%"
         },
         {
           "label": "Supply Growth Percentile",
@@ -137,7 +137,7 @@
         },
         {
           "label": "Last Update",
-          "value": "1.5 days ago"
+          "value": "1.7 days ago"
         },
         {
           "label": "Source",
@@ -264,7 +264,7 @@
       "label": "Macro Overlay",
       "pillar": "macro",
       "weight": 5,
-      "score": 30,
+      "score": 34,
       "status": "fresh",
       "reason": "success",
       "details": [
@@ -278,7 +278,7 @@
         },
         {
           "label": "VIX pctile",
-          "value": "43%"
+          "value": "55%"
         },
         {
           "label": "Current DXY",
@@ -290,7 +290,7 @@
         },
         {
           "label": "Current VIX",
-          "value": "15.7"
+          "value": "16.4"
         }
       ]
     }
@@ -299,5 +299,9 @@
     "cycle_nudge": 0,
     "spike_nudge": 0
   },
-  "config_digest": "etl_real_factors"
+  "config_digest": "etl_real_factors",
+  "cross": {
+    "btc_per_oz": 31.41975750291805,
+    "oz_per_btc": 0.03182710751052509
+  }
 }
