@@ -1,0 +1,29 @@
+# humanstxt.org/
+# The humans responsible & technology colophon
+
+# TEAM
+
+    GrayGhost -- Builder, Author
+    Contact: [Project URL]
+    From: Global
+
+# THANKS
+
+    Next.js -- React framework
+    Vercel -- Hosting platform
+    TypeScript -- Type safety
+    Tailwind CSS -- Styling
+
+# SITE
+
+    Last update: 2025/09/17
+    Language: English
+    Doctype: HTML5
+    IDE: Cursor AI
+
+# PROJECT
+
+    GhostGauge -- Bitcoin Risk Dashboard
+    Brand Guidelines: /docs/BRAND_CARD.md
+    Methodology: /docs/PROJECT_BRIEF.md
+    Repository: https://github.com/firemansghost/btc-risk-dashboard-V3
