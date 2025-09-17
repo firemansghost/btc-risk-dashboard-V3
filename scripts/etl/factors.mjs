@@ -484,7 +484,7 @@ async function computeEtfFlows() {
     return { 
       score: isStale ? null : score,
       reason: isStale ? "stale_data" : "success",
-      individualEtfFlows: latestIndividualFlows,
+      individualEtfFlows: individualEtfFlows, // Return full array for per-ETF breakdown
       details: [
         { 
           label: "Latest Daily Flow", 

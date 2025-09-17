@@ -17,6 +17,7 @@ The Bitcoin Risk Dashboard provides institutional-grade risk assessment for Bitc
 
 ### Default Weights
 - **Liquidity (40%)**: Net Liquidity (10%), Stablecoins (15%), ETF Flows (10%), On-chain Activity (5%)
+  - *ETF Flows includes per-ETF breakdown with individual fund flows, 21-day rolling sums, and cumulative totals*
 - **Momentum (25%)**: Trend & Valuation (25%)
 - **Leverage (20%)**: Term Structure & Leverage (20%)
 - **Social (5%)**: Social Interest (5%)

@@ -14,6 +14,7 @@ import EtfTable from './EtfTable';
 import BtcGoldCard from './BtcGoldCard';
 import SatoshisPerDollarCard from './SatoshisPerDollarCard';
 import FactorHistoryModal from './FactorHistoryModal';
+import EtfBreakdownModal from './EtfBreakdownModal';
 import AlertBell from './AlertBell';
 import type { LatestSnapshot } from '@/lib/types';
 import { getBandTextColor } from '@/lib/band-colors';
@@ -31,6 +32,7 @@ export default function RealDashboard() {
   const [provenanceModalOpen, setProvenanceModalOpen] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [selectedFactor, setSelectedFactor] = useState<{key: string, label: string} | null>(null);
+  const [etfBreakdownOpen, setEtfBreakdownOpen] = useState(false);
 
   const loadLatest = useCallback(async () => {
     setError(null);
@@ -222,6 +224,15 @@ export default function RealDashboard() {
                 >
                   History
                 </button>
+                {factor.key === 'etf_flows' && (
+                  <button
+                    onClick={() => setEtfBreakdownOpen(true)}
+                    className="text-xs text-purple-600 hover:text-purple-800 underline"
+                    title="View per-ETF breakdown"
+                  >
+                    By ETF
+                  </button>
+                )}
                 <a
                   href={`/methodology#${factor.key}`}
                   className="text-xs text-blue-600 hover:text-blue-800 underline"
@@ -364,6 +375,12 @@ export default function RealDashboard() {
           factorLabel={selectedFactor.label}
         />
       )}
+
+      {/* ETF Breakdown Modal */}
+      <EtfBreakdownModal
+        isOpen={etfBreakdownOpen}
+        onClose={() => setEtfBreakdownOpen(false)}
+      />
     </div>
   );
 }

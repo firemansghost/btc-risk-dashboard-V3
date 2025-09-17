@@ -115,6 +115,26 @@ date,day_flow_usd,sum21_usd,z,pct,score
 2025-09-15,320100,1970800,-1.28,0.08,92
 ```
 
+## signals/etf_by_fund.csv
+
+Per-ETF breakdown with individual fund flows, 21-day rolling sums, and cumulative totals.
+
+```csv
+date,symbol,day_flow_usd,sum21_usd,cumulative_usd
+2025-09-17,IBIT,125000,1850000,12500000
+2025-09-17,FBTC,85000,1200000,8500000
+2025-09-17,BITB,45000,650000,4500000
+2025-09-16,IBIT,110000,1725000,12375000
+2025-09-16,FBTC,75000,1115000,8415000
+```
+
+**Columns:**
+- `date`: UTC date (YYYY-MM-DD)
+- `symbol`: ETF ticker symbol (e.g., IBIT, FBTC, BITB)
+- `day_flow_usd`: Daily flow in USD (positive = inflow, negative = outflow)
+- `sum21_usd`: 21-day rolling sum in USD (business days only)
+- `cumulative_usd`: Cumulative total from fund inception in USD
+
 ## signals/btc_xau.csv
 
 BTC⇄Gold historical cross-rates data.

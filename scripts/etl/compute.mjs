@@ -10,8 +10,126 @@ function createWebhookSignature(secret, payload, timestamp) {
   return signature;
 }
 
-// Helper function to append a row to a CSV file (idempotent by date)
-async function appendCsvRow(filePath, header, rowData, dateField = 'date') {
+// Helper function to check if a date is a business day (Monday-Friday)
+function isBusinessDay(date) {
+  const day = new Date(date).getDay();
+  return day >= 1 && day <= 5; // Monday = 1, Friday = 5
+}
+
+// Helper function to generate per-ETF breakdown CSV
+async function generatePerEtfBreakdown(currentDate, individualEtfFlows) {
+  if (!individualEtfFlows || individualEtfFlows.length === 0) {
+    console.log("No individual ETF flows data available for breakdown");
+    return;
+  }
+
+  const csvPath = "public/signals/etf_by_fund.csv";
+  const header = "date,symbol,day_flow_usd,sum21_usd,cumulative_usd";
+  
+  // Load existing CSV to get historical data for rolling calculations
+  let existingData = new Map(); // Map of "date,symbol" -> {day_flow_usd, sum21_usd, cumulative_usd}
+  let cumulativeTotals = new Map(); // Map of symbol -> cumulative total
+  
+  try {
+    const existingContent = await fs.readFile(csvPath, "utf8");
+    const lines = existingContent.trim().split("\n");
+    
+    if (lines.length > 1) {
+      for (let i = 1; i < lines.length; i++) {
+        const [date, symbol, dayFlow, sum21, cumulative] = lines[i].split(',');
+        const key = `${date},${symbol}`;
+        existingData.set(key, {
+          day_flow_usd: parseFloat(dayFlow) || 0,
+          sum21_usd: parseFloat(sum21) || 0,
+          cumulative_usd: parseFloat(cumulative) || 0
+        });
+        cumulativeTotals.set(symbol, parseFloat(cumulative) || 0);
+      }
+    }
+  } catch (error) {
+    // File doesn't exist yet, start fresh
+  }
+
+  // Get today's individual ETF flows
+  const todayFlows = individualEtfFlows.find(f => f.date === currentDate);
+  if (!todayFlows || !todayFlows.flows) {
+    console.log("No ETF flows data for today");
+    return;
+  }
+
+  let rowsAppended = 0;
+  const processedSymbols = new Set();
+
+  // Process each ETF symbol
+  for (const [symbol, dayFlow] of Object.entries(todayFlows.flows)) {
+    const key = `${currentDate},${symbol}`;
+    
+    // Skip if already processed today
+    if (existingData.has(key)) {
+      continue;
+    }
+
+    // Calculate 21-day rolling sum (business days only)
+    let sum21 = dayFlow;
+    let businessDaysCounted = 1;
+    
+    // Look back through historical data to build 21-day sum
+    const sortedDates = Array.from(existingData.keys())
+      .map(k => k.split(',')[0])
+      .filter(d => d < currentDate)
+      .sort((a, b) => b.localeCompare(a)); // Most recent first
+    
+    for (const date of sortedDates) {
+      if (businessDaysCounted >= 21) break;
+      
+      if (isBusinessDay(date)) {
+        const historicalKey = `${date},${symbol}`;
+        const historicalData = existingData.get(historicalKey);
+        if (historicalData) {
+          sum21 += historicalData.day_flow_usd;
+          businessDaysCounted++;
+        }
+      }
+    }
+
+    // Update cumulative total
+    const currentCumulative = cumulativeTotals.get(symbol) || 0;
+    const newCumulative = currentCumulative + dayFlow;
+    cumulativeTotals.set(symbol, newCumulative);
+
+    // Append row to CSV
+    const rowData = {
+      date: currentDate,
+      symbol: symbol,
+      day_flow_usd: dayFlow,
+      sum21_usd: sum21,
+      cumulative_usd: newCumulative
+    };
+
+    await appendCsvRow(csvPath, header, rowData, 'date,symbol');
+    rowsAppended++;
+    processedSymbols.add(symbol);
+  }
+
+  if (rowsAppended > 0) {
+    console.log(`ETF by fund: Added ${rowsAppended} rows for ${processedSymbols.size} funds`);
+  }
+
+  // Generate schema hash for the ETF by fund data
+  const schemaHash = crypto.createHash('sha256')
+    .update(header + JSON.stringify(Array.from(processedSymbols).sort()))
+    .digest('hex')
+    .substring(0, 8);
+
+  return {
+    rowsAppended,
+    fundsCount: processedSymbols.size,
+    schemaHash
+  };
+}
+
+// Helper function to append a row to a CSV file (idempotent by date or composite key)
+async function appendCsvRow(filePath, header, rowData, keyField = 'date') {
   try {
     let csvContent = "";
     try {
@@ -25,8 +143,17 @@ async function appendCsvRow(filePath, header, rowData, dateField = 'date') {
     if (!hasHeader) csvLines.unshift(header);
     
     const newRow = Object.values(rowData).join(',');
-    const dateValue = rowData[dateField];
-    const alreadyExists = csvLines.some(line => line.startsWith(dateValue + ","));
+    
+    // Handle composite keys (e.g., "date,symbol")
+    let keyValue;
+    if (keyField.includes(',')) {
+      const keyFields = keyField.split(',');
+      keyValue = keyFields.map(field => rowData[field]).join(',');
+    } else {
+      keyValue = rowData[keyField];
+    }
+    
+    const alreadyExists = csvLines.some(line => line.startsWith(keyValue + ","));
     
     if (!alreadyExists) {
       csvLines.push(newRow);
@@ -180,6 +307,20 @@ async function main() {
             score: factor.score
           }
         );
+        
+        // Generate per-ETF breakdown CSV
+        if (factor.details?.find(d => d.label === "Individual ETF Flows")?.value === "Available") {
+          const etfBreakdownResult = await generatePerEtfBreakdown(y.date, factor.individualEtfFlows);
+          if (etfBreakdownResult && etfBreakdownResult.rowsAppended > 0) {
+            historyResults.push({
+              name: 'ETF by fund',
+              ok: true,
+              rows_appended: etfBreakdownResult.rowsAppended,
+              funds: etfBreakdownResult.fundsCount,
+              schema_hash_funds: etfBreakdownResult.schemaHash
+            });
+          }
+        }
         break;
         
       case 'net_liquidity':
