@@ -23,6 +23,8 @@ export interface FactorSummary {
   reason?: string;
   /** When display pillar ≠ math attribution (e.g., On-chain counts into Momentum). */
   counts_toward?: PillarKey;
+  /** Individual ETF flows data (for ETF flows factor only) */
+  individualEtfFlows?: Record<string, number>;
 }
 
 export type LatestSnapshot = {
