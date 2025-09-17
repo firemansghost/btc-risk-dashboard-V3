@@ -11,6 +11,7 @@
     "etl": "tsx scripts/etl/update-history.ts",
     "etl:seed": "node scripts/etl/seed.mjs",
     "etl:compute": "node scripts/etl/compute.mjs",
+    "etl:backfill": "node scripts/etl/backfill-etf.mjs",
     "test": "vitest run"
   },
   "engines": {

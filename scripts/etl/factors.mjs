@@ -416,11 +416,31 @@ async function computeEtfFlows() {
     
     // Get latest 21-day sum and calculate percentile
     const latest21d = flows21d[flows21d.length - 1];
-    const percentile = percentileRank(flows21d, latest21d);
+    
+    // Load historical baseline for percentile calculation
+    let historicalBaseline = null;
+    try {
+      const fs = await import('node:fs');
+      const historicalFile = 'public/data/etf-flows-historical.json';
+      if (fs.existsSync(historicalFile)) {
+        const historicalContent = fs.readFileSync(historicalFile, 'utf8');
+        const historicalData = JSON.parse(historicalContent);
+        historicalBaseline = historicalData.rollingSums.map(f => f.sum);
+        console.log(`ETF Flows: Using historical baseline with ${historicalBaseline.length} data points`);
+      }
+    } catch (error) {
+      console.warn('ETF Flows: Could not load historical baseline:', error.message);
+    }
+    
+    // Calculate percentile rank using historical baseline if available
+    const percentile = historicalBaseline ? 
+      percentileRank(historicalBaseline, latest21d) : 
+      percentileRank(flows21d, latest21d);
     
     // Z-score tripwire: check if latest 21-day sum is > 4σ from historical mean
-    const mean21d = flows21d.reduce((sum, val) => sum + val, 0) / flows21d.length;
-    const variance21d = flows21d.reduce((sum, val) => sum + Math.pow(val - mean21d, 2), 0) / flows21d.length;
+    const baselineForZScore = historicalBaseline || flows21d;
+    const mean21d = baselineForZScore.reduce((sum, val) => sum + val, 0) / baselineForZScore.length;
+    const variance21d = baselineForZScore.reduce((sum, val) => sum + Math.pow(val - mean21d, 2), 0) / baselineForZScore.length;
     const stdDev21d = Math.sqrt(variance21d);
     const zScore21d = stdDev21d > 0 ? (latest21d - mean21d) / stdDev21d : 0;
     
@@ -464,7 +484,8 @@ async function computeEtfFlows() {
         { label: "Data Points", value: flows.length.toString() },
         { label: "Last Update", value: `${daysSinceUpdate.toFixed(1)} days ago` },
         { label: "Source", value: "Farside Investors" },
-        { label: "Data Source", value: fromCache ? "Cache" : "Live" }
+        { label: "Data Source", value: fromCache ? "Cache" : "Live" },
+        { label: "Baseline", value: historicalBaseline ? `Historical (${historicalBaseline.length} points)` : "Current data only" }
       ]
     };
   } catch (error) {
