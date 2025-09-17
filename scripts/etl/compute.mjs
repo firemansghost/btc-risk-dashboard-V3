@@ -95,6 +95,11 @@ async function main() {
   const { computeBtcGoldRates } = await import('./factors.mjs');
   const goldResult = await computeBtcGoldRates();
 
+  // 2.6) Compute Satoshis per Dollar (display-only)
+  console.log("Computing Satoshis per Dollar...");
+  const satsPerUsd = 100_000_000 / y.close;
+  const usdPerSat = 1 / satsPerUsd;
+
   // 3) Upsert history.csv
   const header = "date,score,band,price_usd";
   const existing = await readText("public/data/history.csv");
@@ -156,6 +161,11 @@ async function main() {
     } : {
       status: "failed",
       reason: goldResult.reason
+    },
+    satoshis_per_dollar: {
+      status: "success",
+      source: "BTC daily close (derived)",
+      derived: true
     }
   };
   await fs.writeFile("public/data/status.json", JSON.stringify(status, null, 2));
@@ -194,6 +204,50 @@ async function main() {
   } else {
     console.warn(`Gold cross-rates failed: ${goldResult.reason}`);
   }
+
+  // 7) Create satoshis artifacts
+  const satsData = {
+    updated_at: new Date().toISOString(),
+    date: y.date,
+    btc_close_usd: y.close,
+    sats_per_usd: satsPerUsd,
+    usd_per_sat: usdPerSat,
+    provenance: [{
+      name: "BTC daily close (Coinbase)",
+      ok: true,
+      url: "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400",
+      ms: null // We don't track latency for derived data
+    }]
+  };
+
+  // Create extras/sats.json
+  await ensureDir("public/extras");
+  await fs.writeFile("public/extras/sats.json", JSON.stringify(satsData, null, 2));
+
+  // Create signals/sats_per_usd.csv
+  const satsCsvHeader = "date,sats_per_usd,usd_per_sat,btc_close_usd";
+  const satsCsvPath = "public/signals/sats_per_usd.csv";
+  
+  let satsCsvContent = "";
+  try {
+    satsCsvContent = await fs.readFile(satsCsvPath, "utf8");
+  } catch (error) {
+    satsCsvContent = satsCsvHeader + "\n";
+  }
+  
+  const satsCsvLines = satsCsvContent.trim().split("\n");
+  const hasSatsHeader = satsCsvLines[0] === satsCsvHeader;
+  if (!hasSatsHeader) satsCsvLines.unshift(satsCsvHeader);
+  
+  const satsNewRow = `${y.date},${satsPerUsd},${usdPerSat},${y.close}`;
+  const satsAlreadyExists = satsCsvLines.some(line => line.startsWith(y.date + ","));
+  
+  if (!satsAlreadyExists) {
+    satsCsvLines.push(satsNewRow);
+  }
+  
+  await fs.writeFile(satsCsvPath, satsCsvLines.join("\n"));
+  console.log(`Satoshis per dollar: 1 USD = ${Math.round(satsPerUsd).toLocaleString()} sats, 1 sat = $${usdPerSat.toFixed(8)}`);
 
   console.log(`ETL compute OK for ${y.date}`);
   console.log(`Composite score: ${composite} (${band.name})`);

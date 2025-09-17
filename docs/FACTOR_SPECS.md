@@ -76,14 +76,21 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 - **Staleness TTL**: 1 day
 - **Aggregation**: Multi-factor percentile ranking
 
-## Planned: BTC⇄Gold Panel
+## Display-Only Features (No Risk Weight)
 
-### BTC/Gold Ratio (planned, no risk weight yet)
-- **Data Source**: CoinGecko Bitcoin + Metals API Gold
-- **Window**: 1 year of daily data
+### BTC⇄Gold Cross-Rates
+- **Data Source**: CoinGecko Bitcoin + Metals API/Alpha Vantage/Stooq Gold
+- **Window**: Daily close data
 - **Transform**: BTC price / Gold price per ounce
-- **Mapping**: TBD (ratios only, no risk scoring)
-- **Status**: Schema documented but not implemented
+- **Mapping**: Display-only (no risk scoring)
+- **Status**: ✅ Implemented - provides cross-asset context
+
+### Satoshis per Dollar
+- **Data Source**: BTC daily close (Coinbase/CoinGecko)
+- **Window**: Daily close data
+- **Transform**: sats_per_usd = 100,000,000 / btc_close_usd
+- **Mapping**: Display-only (no risk scoring)
+- **Status**: ✅ Implemented - provides micro-unit perspective
 
 ## Score Aggregation
 

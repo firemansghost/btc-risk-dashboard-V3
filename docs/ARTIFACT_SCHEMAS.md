@@ -126,6 +126,17 @@ date,btc_close_usd,xau_close_usd,btc_per_oz,oz_per_btc
 2025-09-15,113500.00,3675.25,30.875,0.0324
 ```
 
+## signals/sats_per_usd.csv
+
+Satoshis per Dollar historical data (display-only, derived from BTC daily close).
+
+```csv
+date,sats_per_usd,usd_per_sat,btc_close_usd
+2025-09-17,864.4404386274518,0.0011568177000000001,115681.77
+2025-09-16,875.1234567890123,0.0011428571428571429,114200.00
+2025-09-15,881.0572687224669,0.0011350000000000001,113500.00
+```
+
 ## extras/gold_cross.json
 
 BTC⇄Gold cross-rates with provenance tracking.
@@ -145,6 +156,28 @@ BTC⇄Gold cross-rates with provenance tracking.
       "url": "https://stooq.com/",
       "ms": 1044,
       "fallback": true
+    }
+  ]
+}
+```
+
+## extras/sats.json
+
+Satoshis per Dollar cross-rates (display-only, derived from BTC daily close).
+
+```json
+{
+  "updated_at": "2025-09-17T16:28:59.409Z",
+  "date": "2025-09-17",
+  "btc_close_usd": 115681.77,
+  "sats_per_usd": 864.4404386274518,
+  "usd_per_sat": 0.0011568177000000001,
+  "provenance": [
+    {
+      "name": "BTC daily close (Coinbase)",
+      "ok": true,
+      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400",
+      "ms": null
     }
   ]
 }
