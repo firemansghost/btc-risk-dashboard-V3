@@ -141,8 +141,12 @@ export default function EtfBreakdownModal({ isOpen, onClose }: EtfBreakdownModal
 
           {error && (
             <div className="text-center py-8">
-              <div className="text-red-600 mb-2">⚠️ Error loading data</div>
-              <div className="text-sm text-gray-600">{error}</div>
+              <div className="text-amber-600 mb-2">📊 ETF Breakdown Data</div>
+              <div className="text-sm text-gray-600 mb-4">{error}</div>
+              <div className="text-xs text-gray-500 max-w-md mx-auto">
+                This feature shows individual ETF flows (IBIT, FBTC, BITB, etc.) with 21-day rolling sums and cumulative totals. 
+                Data will be available once the ETL processes fresh ETF flows data.
+              </div>
             </div>
           )}
 
