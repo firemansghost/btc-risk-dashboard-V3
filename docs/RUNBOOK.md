@@ -259,6 +259,60 @@ def webhook():
 }
 ```
 
+### Local Testing
+
+#### Start Webhook Test Receiver
+```bash
+# Start the local webhook receiver
+npm run webhook:dev
+
+# Server runs on http://localhost:8787/alerts
+# Health check: http://localhost:8787/health
+```
+
+#### Environment Setup for Testing
+```bash
+# Set up test secrets
+export ALERT_WEBHOOK_SECRET_ACTIVE="test-secret-active-123"
+export ALERT_WEBHOOK_SECRET_NEXT="test-secret-next-456"
+export ALERT_WEBHOOK_URL="http://localhost:8787/alerts"
+
+# Run ETL with webhook testing
+npm run etl:compute
+```
+
+#### Manual Testing with curl
+```bash
+# Test webhook with valid signature
+curl -X POST http://localhost:8787/alerts \
+  -H "Content-Type: application/json" \
+  -H "X-GhostGauge-Signature: $(echo -n "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ).{\"test\":\"payload\"}" | openssl dgst -sha256 -hmac "test-secret-active-123" -hex | cut -d' ' -f2)" \
+  -H "X-GhostGauge-Timestamp: $(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)" \
+  -d '{"test": "payload"}'
+
+# Test with invalid signature (should fail)
+curl -X POST http://localhost:8787/alerts \
+  -H "Content-Type: application/json" \
+  -H "X-GhostGauge-Signature: invalid-signature" \
+  -H "X-GhostGauge-Timestamp: $(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)" \
+  -d '{"test": "payload"}'
+
+# Test with old timestamp (should fail)
+curl -X POST http://localhost:8787/alerts \
+  -H "Content-Type: application/json" \
+  -H "X-GhostGauge-Signature: $(echo -n "2020-01-01T00:00:00.000Z.{\"test\":\"payload\"}" | openssl dgst -sha256 -hmac "test-secret-active-123" -hex | cut -d' ' -f2)" \
+  -H "X-GhostGauge-Timestamp: 2020-01-01T00:00:00.000Z" \
+  -d '{"test": "payload"}'
+```
+
+#### Test Receiver Features
+- **Signature Verification**: Validates HMAC-SHA256 signatures with active/next secrets
+- **Timestamp Validation**: Rejects timestamps older than 5 minutes or in the future
+- **Idempotency**: Prevents duplicate event processing using event ID hashing
+- **Detailed Logging**: Color-coded console output with full request/response details
+- **Health Check**: `/health` endpoint for monitoring
+- **Event Database**: Stores processed events in `tmp/webhook-events.json`
+
 ## Monitoring
 
 ### Health Checks
