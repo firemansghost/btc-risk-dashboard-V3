@@ -1,7 +1,7 @@
 {
   "version": "v3.1.0",
-  "updated_at": "2025-09-17T12:11:53.286Z",
-  "price_usd": 116317.36,
+  "updated_at": "2025-09-17T12:28:10.763Z",
+  "price_usd": 116337.99,
   "composite": 50,
   "band": {
     "name": "Hold/Neutral",
@@ -14,7 +14,7 @@
       "label": "Trend & Valuation",
       "pillar": "momentum",
       "weight": 25,
-      "score": 38,
+      "score": 37,
       "status": "fresh",
       "reason": "success",
       "details": [
@@ -24,19 +24,19 @@
         },
         {
           "label": "Distance to Bull Market Support Band",
-          "value": "12.9%"
+          "value": "13.0%"
         },
         {
           "label": "Weekly momentum (RSI proxy)",
-          "value": "70.4"
+          "value": "71.1"
         },
         {
           "label": "Current Price",
-          "value": "$116,244.419"
+          "value": "$116,344.01"
         },
         {
           "label": "200-day SMA",
-          "value": "$102,957.159"
+          "value": "$102,957.657"
         }
       ]
     },
@@ -150,8 +150,25 @@
         {
           "label": "Baseline",
           "value": "Historical (274 points)"
+        },
+        {
+          "label": "Individual ETF Flows",
+          "value": "Available"
         }
-      ]
+      ],
+      "individualEtfFlows": {
+        "ibit": 209.2,
+        "fbtc": 45.8,
+        "bitb": -10.8,
+        "arkb": 40.7,
+        "btco": 0,
+        "ezbc": 0,
+        "brrr": 0,
+        "hodl": 7.4,
+        "btcw": 0,
+        "gbtc": 0,
+        "btc": 45.8
+      }
     },
     {
       "key": "term_leverage",

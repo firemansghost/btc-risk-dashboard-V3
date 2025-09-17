@@ -410,6 +410,7 @@ async function computeEtfFlows() {
     // Parse ETF flows from HTML with schema validation
     const parseResult = parseEtfFlowsFromHtml(html);
     const flows = parseResult.flows;
+    const individualEtfFlows = parseResult.individualEtfFlows;
     const schemaHash = parseResult.schemaHash;
     
     if (flows.length === 0) {
@@ -436,6 +437,10 @@ async function computeEtfFlows() {
     
     // Get latest 21-day sum and calculate percentile
     const latest21d = flows21d[flows21d.length - 1];
+    
+    // Calculate latest individual ETF flows
+    const latestIndividualFlows = individualEtfFlows.length > 0 ? 
+      individualEtfFlows[individualEtfFlows.length - 1].flows : {};
     
     // Load historical baseline for percentile calculation
     let historicalBaseline = null;
@@ -477,8 +482,9 @@ async function computeEtfFlows() {
     const totalFlows = flows.reduce((sum, f) => sum + f.flow, 0);
     
     return { 
-      score: isStale ? null : score, 
+      score: isStale ? null : score,
       reason: isStale ? "stale_data" : "success",
+      individualEtfFlows: latestIndividualFlows,
       details: [
         { 
           label: "Latest Daily Flow", 
@@ -505,7 +511,8 @@ async function computeEtfFlows() {
         { label: "Last Update", value: `${daysSinceUpdate.toFixed(1)} days ago` },
         { label: "Source", value: "Farside Investors" },
         { label: "Data Source", value: fromCache ? "Cache" : "Live" },
-        { label: "Baseline", value: historicalBaseline ? `Historical (${historicalBaseline.length} points)` : "Current data only" }
+        { label: "Baseline", value: historicalBaseline ? `Historical (${historicalBaseline.length} points)` : "Current data only" },
+        { label: "Individual ETF Flows", value: Object.keys(latestIndividualFlows).length > 0 ? "Available" : "Not available" }
       ]
     };
   } catch (error) {
@@ -516,6 +523,7 @@ async function computeEtfFlows() {
 // Helper function to parse ETF flows from HTML
 function parseEtfFlowsFromHtml(html) {
   const flows = [];
+  const individualEtfFlows = [];
   
   // Look for data tables
   const tableMatches = html.match(/<table[\s\S]*?<\/table>/gi) || [];
@@ -529,7 +537,7 @@ function parseEtfFlowsFromHtml(html) {
     }
   }
   
-  if (!dataTable) return { flows: [], schemaHash: null };
+  if (!dataTable) return { flows: [], individualEtfFlows: [], schemaHash: null };
   
   // Parse table rows
   const rows = dataTable.match(/<tr[\s\S]*?<\/tr>/gi) || [];
@@ -541,7 +549,7 @@ function parseEtfFlowsFromHtml(html) {
     if (cells.length) parsed.push(cells);
   }
   
-  if (parsed.length < 2) return { flows: [], schemaHash: null };
+  if (parsed.length < 2) return { flows: [], individualEtfFlows: [], schemaHash: null };
   
   // Find date and flow columns
   const header = parsed[0].map(h => h.toLowerCase());
@@ -556,6 +564,9 @@ function parseEtfFlowsFromHtml(html) {
   const scale = /\$bn|us\$bn/i.test(hdr) ? 1e9 :
                 /\$m|us\$m|\(us\$m\)|\(\$m\)/i.test(hdr) ? 1e6 : 1;
   
+  // Define individual ETF columns
+  const etfColumns = ['ibit', 'fbtc', 'bitb', 'arkb', 'btco', 'ezbc', 'brrr', 'hodl', 'btcw', 'gbtc', 'btc'];
+  
   // Parse data rows
   for (let i = 1; i < parsed.length; i++) {
     const cells = parsed[i];
@@ -565,12 +576,24 @@ function parseEtfFlowsFromHtml(html) {
     if (!date) continue; // Skip non-date rows
     
     let flow = NaN;
+    const individualFlows = {};
     
     // Try to find total flow column first
     if (hasTotalCol) {
       const idx = header.findIndex(h => h.includes('total'));
       const v = parseNumber(cells[idx]);
       if (Number.isFinite(v)) flow = v * scale;
+    }
+    
+    // Extract individual ETF flows
+    for (const etf of etfColumns) {
+      const etfIdx = header.findIndex(h => h.includes(etf));
+      if (etfIdx !== -1 && etfIdx < cells.length) {
+        const v = parseNumber(cells[etfIdx]);
+        if (Number.isFinite(v)) {
+          individualFlows[etf] = v * scale;
+        }
+      }
     }
     
     // If no total column, sum all numeric columns
@@ -589,17 +612,31 @@ function parseEtfFlowsFromHtml(html) {
     
     if (Number.isFinite(flow)) {
       flows.push({ date, flow });
+      if (Object.keys(individualFlows).length > 0) {
+        individualEtfFlows.push({ date, flows: individualFlows });
+      }
     }
   }
   
   // Sort by date and deduplicate
   flows.sort((a, b) => a.date.localeCompare(b.date));
+  individualEtfFlows.sort((a, b) => a.date.localeCompare(b.date));
+  
   const unique = new Map();
   for (const f of flows) {
     unique.set(f.date, f);
   }
   
-  return { flows: Array.from(unique.values()), schemaHash };
+  const uniqueIndividual = new Map();
+  for (const f of individualEtfFlows) {
+    uniqueIndividual.set(f.date, f);
+  }
+  
+  return { 
+    flows: Array.from(unique.values()), 
+    individualEtfFlows: Array.from(uniqueIndividual.values()),
+    schemaHash 
+  };
 }
 
 // Helper function to parse dates in various formats
@@ -1054,7 +1091,8 @@ export async function computeAllFactors() {
       score,
       status,
       reason,
-      details: result.status === 'fulfilled' ? result.value.details : undefined
+      details: result.status === 'fulfilled' ? result.value.details : undefined,
+      individualEtfFlows: result.status === 'fulfilled' && result.value.individualEtfFlows ? result.value.individualEtfFlows : undefined
     });
 
     console.log(`${factor.key}: ${score !== null ? score : 'null'} (${status}) - ${reason}`);

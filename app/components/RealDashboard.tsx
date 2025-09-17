@@ -10,6 +10,7 @@ import WhatIfWeightsModal from './WhatIfWeightsModal';
 import ProvenanceModal from './ProvenanceModal';
 import SystemStatusCard from './SystemStatusCard';
 import MacroCard from './MacroCard';
+import EtfTable from './EtfTable';
 import type { LatestSnapshot } from '@/lib/types';
 
 const fmtUsd0 = (n: number) =>
@@ -278,6 +279,15 @@ export default function RealDashboard() {
         {/* Macro Overlay Card */}
         <MacroCard />
       </div>
+
+      {/* ETF Flows Table */}
+      {factors.find(f => f.key === 'etf_flows')?.individualEtfFlows && (
+        <div className="mb-6">
+          <EtfTable 
+            individualEtfFlows={factors.find(f => f.key === 'etf_flows')?.individualEtfFlows}
+          />
+        </div>
+      )}
 
       <HistoryChart />
 
