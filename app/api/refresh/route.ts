@@ -85,6 +85,75 @@ async function buildLatest() {
   const config = getConfig();
   const factorWeightsMap = normalizeFactorWeights(config.factors);
 
+  // Try to load ETL data first, fallback to real-time computation if needed
+  let etlData: any = null;
+  try {
+    const { promises: fs } = await import('node:fs');
+    const path = await import('node:path');
+    const etlPath = path.join(process.cwd(), 'public', 'data', 'latest.json');
+    const etlContent = await fs.readFile(etlPath, 'utf8');
+    etlData = JSON.parse(etlContent);
+    console.log('Refresh API: Using ETL data from', etlData.updated_at);
+  } catch (error) {
+    console.warn('Refresh API: Could not load ETL data, falling back to real-time computation:', error);
+  }
+
+  // If we have ETL data, use it; otherwise compute in real-time
+  if (etlData && etlData.factors) {
+    // Transform ETL data to refresh API format
+    const factors: FactorCard[] = etlData.factors.map((factor: any) => ({
+      key: factor.key,
+      label: factor.label,
+      pillar: factor.pillar,
+      weight_pct: factor.weight,
+      score: factor.score,
+      status: factor.status,
+      last_utc: etlData.updated_at,
+      source: factor.reason === 'success' ? 'ETL pipeline' : null,
+      details: factor.details || [],
+      reason: factor.reason,
+    }));
+
+    // Only use fresh factors for composite calculation
+    const usable = factors.filter((f): f is FactorCard & { score: number } => 
+      typeof f.score === 'number' && f.status === 'fresh'
+    );
+    
+    // Re-normalize weights for fresh factors only
+    const freshFactorWeights = normalizeFactorWeights(
+      config.factors.filter(f => f.enabled && usable.some(u => u.key === f.key))
+    );
+    
+    // Calculate composite_raw using re-normalized weights
+    const composite_raw = Math.round(usable.reduce((s, f) => {
+      const normalizedWeight = freshFactorWeights.get(f.key as any) || 0;
+      return s + f.score * normalizedWeight;
+    }, 0));
+
+    const band = getBandForScore(composite_raw);
+
+    return {
+      ok: true,
+      latest: {
+        ok: true,
+        as_of_utc: etlData.updated_at,
+        composite_raw: composite_raw,
+        composite_score: composite_raw,
+        cycle_adjustment: { adj_pts: 0, residual_z: null, last_utc: null, source: null, reason: "disabled" },
+        spike_adjustment: { adj_pts: 0, r_1d: 0, sigma: 0, z: 0, ref_close: 0, spot: 0, last_utc: '', source: '', reason: 'disabled' },
+        band,
+        health: 'green',
+        factors,
+        btc: { spot_usd: etlData.price_usd, as_of_utc: etlData.updated_at, source: 'ETL pipeline' },
+        provenance: [{ url: 'ETL pipeline', ok: true, status: 200, ms: 0, note: 'Computed via ETL pipeline' }],
+        model_version: etlData.version || 'v3.1.0',
+        config_digest: "etl",
+        transform: {},
+      }
+    };
+  }
+
+  // Fallback to real-time computation (original logic)
   const [tv, nl, sc, tsl, oc, etf, social, macro, spot] = await Promise.all([
     // If any of these throws, catch and return a harmless excluded payload
     computeTrendValuation().catch((e: any) => ({
