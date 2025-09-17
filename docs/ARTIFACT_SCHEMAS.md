@@ -197,6 +197,47 @@ date,fng_value,z,score
 2025-09-15,19,-1.4,18
 ```
 
+## Alert System Artifacts
+
+Alert detection and logging for significant market events.
+
+### alerts/latest.json
+
+Current day's alerts (overwritten each ETL run).
+
+```json
+{
+  "occurred_at": "2025-09-17T17:04:58.124Z",
+  "alerts": [
+    {
+      "type": "etf_zero_cross",
+      "direction": "up",
+      "from": -1500000,
+      "to": 2000000,
+      "deadband": 50000
+    },
+    {
+      "type": "band_change",
+      "from": "Hold/Neutral",
+      "to": "Buy",
+      "composite_from": 45,
+      "composite_to": 52
+    }
+  ]
+}
+```
+
+### alerts/log.csv
+
+Historical alert log (append-only, idempotent by date + type).
+
+```csv
+occurred_at,type,details
+2025-09-17,etf_zero_cross,"{""type"":""etf_zero_cross"",""direction"":""up"",""from"":-1500000,""to"":2000000,""deadband"":50000}"
+2025-09-17,band_change,"{""type"":""band_change"",""from"":""Hold/Neutral"",""to"":""Buy"",""composite_from"":45,""composite_to"":52}"
+2025-09-16,etf_zero_cross,"{""type"":""etf_zero_cross"",""direction"":""down"",""from"":800000,""to"":-200000,""deadband"":45000}"
+```
+
 ## extras/gold_cross.json
 
 BTC⇄Gold cross-rates with provenance tracking.

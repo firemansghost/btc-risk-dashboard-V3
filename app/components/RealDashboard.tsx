@@ -14,6 +14,7 @@ import EtfTable from './EtfTable';
 import BtcGoldCard from './BtcGoldCard';
 import SatoshisPerDollarCard from './SatoshisPerDollarCard';
 import FactorHistoryModal from './FactorHistoryModal';
+import AlertBell from './AlertBell';
 import type { LatestSnapshot } from '@/lib/types';
 
 const fmtUsd0 = (n: number) =>
@@ -86,6 +87,7 @@ export default function RealDashboard() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <AlertBell />
           <WeightsLauncher onOpen={() => setWhatIfModalOpen(true)} />
           <button
             onClick={onRefresh}

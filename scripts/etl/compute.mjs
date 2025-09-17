@@ -250,6 +250,195 @@ async function main() {
     }
   }
 
+  // 2.8) Generate alerts for significant events
+  console.log("Checking for alerts...");
+  await ensureDir("public/alerts");
+  
+  const alerts = [];
+  
+  // 1) ETF Zero-Cross Detection
+  try {
+    const etfCsvPath = "public/signals/etf_flows_21d.csv";
+    const etfCsvContent = await fs.readFile(etfCsvPath, "utf8");
+    const etfLines = etfCsvContent.trim().split("\n");
+    
+    if (etfLines.length >= 2) {
+      const headers = etfLines[0].split(',');
+      const sum21Index = headers.indexOf('sum21_usd');
+      
+      if (sum21Index !== -1) {
+        // Get last 180 days of sum21_usd for deadband calculation
+        const last180Rows = etfLines.slice(-180).map(line => {
+          const values = line.split(',');
+          return Number(values[sum21Index]) || 0;
+        });
+        
+        // Calculate deadband: max(round(0.02 * std), 1000)
+        const mean = last180Rows.reduce((a, b) => a + b, 0) / last180Rows.length;
+        const variance = last180Rows.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / last180Rows.length;
+        const std = Math.sqrt(variance);
+        const eps = Math.max(Math.round(0.02 * std), 1000);
+        
+        // Get last two rows
+        const prevRow = etfLines[etfLines.length - 2].split(',');
+        const currRow = etfLines[etfLines.length - 1].split(',');
+        const prev = Number(prevRow[sum21Index]) || 0;
+        const curr = Number(currRow[sum21Index]) || 0;
+        
+        // Check for zero-cross with deadband
+        if (Math.abs(prev) > eps && Math.abs(curr) > eps && 
+            Math.sign(prev) !== Math.sign(curr)) {
+          const direction = curr > 0 ? 'up' : 'down';
+          alerts.push({
+            type: 'etf_zero_cross',
+            direction,
+            from: prev,
+            to: curr,
+            deadband: eps
+          });
+        }
+      }
+    }
+  } catch (error) {
+    console.warn("ETF zero-cross detection failed:", error.message);
+  }
+  
+  // 2) Risk Band Change Detection
+  try {
+    // Read yesterday from history.csv
+    const historyContent = await fs.readFile("public/data/history.csv", "utf8");
+    const historyLines = historyContent.trim().split("\n");
+    const yesterdayRow = historyLines.find(line => line.startsWith(y.date));
+    
+    if (yesterdayRow) {
+      const yesterdayValues = yesterdayRow.split(',');
+      const yesterdayBand = yesterdayValues[2]; // band column
+      const yesterdayComposite = Number(yesterdayValues[1]); // score column
+      
+      // Get today's band from latest.json (already computed)
+      const todayBand = band.name;
+      const todayComposite = composite;
+      
+      if (yesterdayBand !== todayBand) {
+        alerts.push({
+          type: 'band_change',
+          from: yesterdayBand,
+          to: todayBand,
+          composite_from: yesterdayComposite,
+          composite_to: todayComposite
+        });
+      }
+    }
+  } catch (error) {
+    console.warn("Band change detection failed:", error.message);
+  }
+  
+  // 3) Idempotence check and alert persistence
+  const alertLogPath = "public/alerts/log.csv";
+  const alertLogHeader = "occurred_at,type,details";
+  
+  // Read existing log to check for today's alerts
+  let existingLog = "";
+  try {
+    existingLog = await fs.readFile(alertLogPath, "utf8");
+  } catch (error) {
+    existingLog = alertLogHeader + "\n";
+  }
+  
+  const logLines = existingLog.trim().split("\n");
+  const todayDate = y.date;
+  
+  // Filter out alerts that already exist for today
+  const newAlerts = alerts.filter(alert => {
+    const alertType = alert.type;
+    return !logLines.some(line => 
+      line.startsWith(todayDate) && line.includes(alertType)
+    );
+  });
+  
+  // Append new alerts to log
+  if (newAlerts.length > 0) {
+    const newLogLines = newAlerts.map(alert => 
+      `${todayDate},${alert.type},"${JSON.stringify(alert).replace(/"/g, '""')}"`
+    );
+    await fs.writeFile(alertLogPath, logLines.concat(newLogLines).join("\n"));
+  }
+  
+  // 4) Write latest alerts
+  const latestAlerts = {
+    occurred_at: new Date().toISOString(),
+    alerts: newAlerts
+  };
+  await fs.writeFile("public/alerts/latest.json", JSON.stringify(latestAlerts, null, 2));
+  
+  // 5) Optional webhook notification
+  if (process.env.ALERT_WEBHOOK_URL && newAlerts.length > 0) {
+    try {
+      const webhookPayload = {
+        run_id: process.env.GITHUB_RUN_ID || 'local',
+        occurred_at: latestAlerts.occurred_at,
+        alerts: newAlerts,
+        diagnostics: {
+          etf_csv_rows: etfLines?.length || 0,
+          history_csv_rows: historyLines?.length || 0,
+          total_alerts_today: newAlerts.length
+        }
+      };
+      
+      // Retry logic with exponential backoff
+      let retries = 2;
+      let delay = 1000;
+      
+      while (retries >= 0) {
+        try {
+          const response = await fetch(process.env.ALERT_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(webhookPayload)
+          });
+          
+          if (response.ok) {
+            console.log("Webhook notification sent successfully");
+            break;
+          } else if (response.status === 429 || response.status >= 500) {
+            if (retries > 0) {
+              console.log(`Webhook failed with ${response.status}, retrying in ${delay}ms...`);
+              await new Promise(resolve => setTimeout(resolve, delay));
+              delay *= 2;
+              retries--;
+            } else {
+              throw new Error(`Webhook failed with ${response.status}`);
+            }
+          } else {
+            throw new Error(`Webhook failed with ${response.status}`);
+          }
+        } catch (error) {
+          if (retries === 0) {
+            throw error;
+          }
+          console.log(`Webhook error: ${error.message}, retrying in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          delay *= 2;
+          retries--;
+        }
+      }
+    } catch (error) {
+      console.warn("Webhook notification failed:", error.message);
+      // Add webhook failure to status (will be added to status.json later)
+      historyResults.push({
+        name: "Alerts Webhook",
+        ok: false,
+        error: error.message
+      });
+    }
+  }
+  
+  if (newAlerts.length > 0) {
+    console.log(`Generated ${newAlerts.length} alerts:`, newAlerts.map(a => a.type).join(', '));
+  } else {
+    console.log("No new alerts generated");
+  }
+
   // 3) Upsert history.csv
   const header = "date,score,band,price_usd";
   const existing = await readText("public/data/history.csv");

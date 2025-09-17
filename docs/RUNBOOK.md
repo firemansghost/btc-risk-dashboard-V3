@@ -69,7 +69,7 @@ npm run test
 - `ETF_FLOWS_CSV_URL`: Alternative ETF data source
 - `ALPHAVANTAGE_API_KEY`: For additional market data (BTC⇄Gold feature)
 - `METALS_API_KEY`: For gold price data (BTC⇄Gold feature)
-- `ALERT_WEBHOOK_URL`: Slack/Discord notifications for failures
+- `ALERT_WEBHOOK_URL`: Optional webhook for alert notifications (ETF zero-cross, band changes)
 
 ### Local Development
 Create `.env.local`:
