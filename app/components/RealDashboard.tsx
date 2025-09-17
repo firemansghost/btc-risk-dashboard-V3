@@ -82,13 +82,17 @@ export default function RealDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <div className="text-sm text-gray-500 mb-1">GhostGauge — Bitcoin Risk Dashboard</div>
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2" aria-label={`Bitcoin G-Score ${latest?.composite_score ?? '—'}, band ${latest?.band?.label ?? '—'}`}>
-            Bitcoin G-Score: <span className={`whitespace-nowrap ${latest?.band?.color ? getBandTextColor(latest.band.color) : 'text-gray-900'}`}>
-              {latest?.composite_score ?? '—'} — {latest?.band?.label ?? '—'}
-            </span>
-          </h1>
-          <p className="text-sm text-gray-500">
+          <div className="space-y-1">
+            <div className="font-bold tracking-tight text-2xl md:text-3xl text-gray-900">
+              <a href="/" className="no-underline hover:underline">GhostGauge</a> — Bitcoin Risk Dashboard
+            </div>
+            <h1 className="text-xl md:text-2xl font-medium text-gray-900" aria-label={`Bitcoin G-Score ${latest?.composite_score ?? '—'}, band ${latest?.band?.label ?? '—'}`}>
+              Bitcoin G-Score: <span className={`whitespace-nowrap ${latest?.band?.color ? getBandTextColor(latest.band.color) : 'text-gray-900'}`}>
+                {latest?.composite_score ?? '—'} — {latest?.band?.label ?? '—'}
+              </span>
+            </h1>
+          </div>
+          <p className="text-sm text-gray-500 mt-2">
             Daily 0–100 risk score for Bitcoin (GRS v3). As of <span className="font-mono">{latest?.as_of_utc ?? '—'}</span> · 
             <a href="/methodology" className="text-blue-600 hover:text-blue-800 underline ml-1">Methodology</a>
           </p>
