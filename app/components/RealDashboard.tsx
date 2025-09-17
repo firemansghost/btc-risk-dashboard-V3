@@ -16,6 +16,7 @@ import SatoshisPerDollarCard from './SatoshisPerDollarCard';
 import FactorHistoryModal from './FactorHistoryModal';
 import AlertBell from './AlertBell';
 import type { LatestSnapshot } from '@/lib/types';
+import { getBandTextColor } from '@/lib/band-colors';
 
 const fmtUsd0 = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
@@ -81,11 +82,14 @@ export default function RealDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2" aria-label={`Bitcoin G-Score current value ${latest?.composite_score ?? '—'}, band ${latest?.band?.label ?? '—'}`}>
-            Bitcoin G-Score: {latest?.composite_score ?? '—'} — {latest?.band?.label ?? '—'}
+          <div className="text-sm text-gray-500 mb-1">GhostGauge — Bitcoin Risk Dashboard</div>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2" aria-label={`Bitcoin G-Score ${latest?.composite_score ?? '—'}, band ${latest?.band?.label ?? '—'}`}>
+            Bitcoin G-Score: <span className={`whitespace-nowrap ${latest?.band?.color ? getBandTextColor(latest.band.color) : 'text-gray-900'}`}>
+              {latest?.composite_score ?? '—'} — {latest?.band?.label ?? '—'}
+            </span>
           </h1>
           <p className="text-sm text-gray-500">
-            As of <span className="font-mono">{latest?.as_of_utc ?? '—'}</span> UTC · 
+            Daily 0–100 risk score for Bitcoin (GRS v3). As of <span className="font-mono">{latest?.as_of_utc ?? '—'}</span> · 
             <a href="/methodology" className="text-blue-600 hover:text-blue-800 underline ml-1">Methodology</a>
           </p>
         </div>
