@@ -212,26 +212,44 @@ async function computeNetLiquidity() {
     ]);
 
     // Extract values and calculate net liquidity
-    const walclValues = walclData.observations?.map(o => Number(o.value)).filter(Number.isFinite) || [];
-    const rrpValues = rrpData.observations?.map(o => Number(o.value)).filter(Number.isFinite) || [];
-    const tgaValues = tgaData.observations?.map(o => Number(o.value)).filter(Number.isFinite) || [];
+    // FRED API returns values in millions, so we need to convert them
+    const walclValues = walclData.observations?.map(o => {
+      const val = Number(o.value);
+      return Number.isFinite(val) ? val * 1e6 : null; // Convert millions to actual dollars
+    }).filter(Number.isFinite) || [];
+    
+    const rrpValues = rrpData.observations?.map(o => {
+      const val = Number(o.value);
+      return Number.isFinite(val) ? val * 1e6 : null; // Convert millions to actual dollars
+    }).filter(Number.isFinite) || [];
+    
+    const tgaValues = tgaData.observations?.map(o => {
+      const val = Number(o.value);
+      return Number.isFinite(val) ? val * 1e6 : null; // Convert millions to actual dollars
+    }).filter(Number.isFinite) || [];
 
-    if (walclValues.length === 0 || rrpValues.length === 0 || tgaValues.length === 0) {
+    if (walclValues.length === 0 || tgaValues.length === 0) {
       return { score: null, reason: "insufficient_fred_data" };
+    }
+    
+    // RRP might have no data (common), so we'll use 0 as default
+    if (rrpValues.length === 0) {
+      console.warn('Net Liquidity: No RRP data available, using 0');
     }
 
     // Calculate net liquidity (simplified - use latest values)
     const latestWalcl = walclValues[walclValues.length - 1];
-    const latestRrp = rrpValues[rrpValues.length - 1];
+    const latestRrp = rrpValues.length > 0 ? rrpValues[rrpValues.length - 1] : 0;
     const latestTga = tgaValues[tgaValues.length - 1];
     
     const netLiquidity = latestWalcl - latestRrp - latestTga;
     
     // Create a simple series for percentile ranking (use all available values)
     const netLiquiditySeries = [];
-    const minLength = Math.min(walclValues.length, rrpValues.length, tgaValues.length);
+    const minLength = Math.min(walclValues.length, tgaValues.length);
     for (let i = 0; i < minLength; i++) {
-      const nl = walclValues[i] - rrpValues[i] - tgaValues[i];
+      const rrpValue = i < rrpValues.length ? rrpValues[i] : 0;
+      const nl = walclValues[i] - rrpValue - tgaValues[i];
       if (Number.isFinite(nl)) netLiquiditySeries.push(nl);
     }
 
@@ -249,7 +267,7 @@ async function computeNetLiquidity() {
       reason: "success",
       details: [
         { label: "Fed Balance Sheet (WALCL)", value: `$${(latestWalcl / 1e12).toFixed(1)}T` },
-        { label: "Reverse Repo (RRP)", value: `$${(latestRrp / 1e9).toFixed(0)}B` },
+        { label: "Reverse Repo (RRP)", value: rrpValues.length > 0 ? `$${(latestRrp / 1e9).toFixed(0)}B` : "No data" },
         { label: "Treasury General Account", value: `$${(latestTga / 1e9).toFixed(0)}B` },
         { label: "Net Liquidity", value: `$${(netLiquidity / 1e12).toFixed(1)}T` },
         { label: "Liquidity Percentile (1y)", value: `${(percentile * 100).toFixed(0)}%` }

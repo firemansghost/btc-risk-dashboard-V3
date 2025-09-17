@@ -1,7 +1,7 @@
 {
   "version": "v3.1.0",
-  "updated_at": "2025-09-17T11:25:00.706Z",
-  "price_usd": 116377.99,
+  "updated_at": "2025-09-17T11:46:52.385Z",
+  "price_usd": 116339.59,
   "composite": 53,
   "band": {
     "name": "Hold/Neutral",
@@ -32,11 +32,11 @@
         },
         {
           "label": "Current Price",
-          "value": "$116,342.003"
+          "value": "$116,342.224"
         },
         {
           "label": "200-day SMA",
-          "value": "$102,957.647"
+          "value": "$102,957.648"
         }
       ]
     },
@@ -51,7 +51,7 @@
       "details": [
         {
           "label": "Fed Balance Sheet (WALCL)",
-          "value": "$0.0T"
+          "value": "$6.6T"
         },
         {
           "label": "Reverse Repo (RRP)",
@@ -59,11 +59,11 @@
         },
         {
           "label": "Treasury General Account",
-          "value": "$0B"
+          "value": "$1B"
         },
         {
           "label": "Net Liquidity",
-          "value": "$0.0T"
+          "value": "$6.6T"
         },
         {
           "label": "Liquidity Percentile (1y)",
