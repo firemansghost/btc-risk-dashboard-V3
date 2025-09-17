@@ -1,8 +1,8 @@
 {
   "version": "v3.1.0",
-  "updated_at": "2025-09-17T15:52:01.352Z",
-  "price_usd": 115851.16,
-  "composite": 52,
+  "updated_at": "2025-09-17T16:19:50.677Z",
+  "price_usd": 115611.82,
+  "composite": 53,
   "band": {
     "name": "Hold/Neutral",
     "lo": 35,
@@ -14,29 +14,29 @@
       "label": "Trend & Valuation",
       "pillar": "momentum",
       "weight": 25,
-      "score": 43,
+      "score": 48,
       "status": "fresh",
       "reason": "success",
       "details": [
         {
           "label": "Price vs 200-day SMA (Mayer)",
-          "value": "1.13"
+          "value": "1.12"
         },
         {
           "label": "Distance to Bull Market Support Band",
-          "value": "12.5%"
+          "value": "12.3%"
         },
         {
           "label": "Weekly momentum (RSI proxy)",
-          "value": "67.9"
+          "value": "66.5"
         },
         {
           "label": "Current Price",
-          "value": "$115,837.879"
+          "value": "$115,599.224"
         },
         {
           "label": "200-day SMA",
-          "value": "$102,955.126"
+          "value": "$102,953.933"
         }
       ]
     },
@@ -82,7 +82,7 @@
       "details": [
         {
           "label": "USDC Market Cap",
-          "value": "$73.6B"
+          "value": "$73.5B"
         },
         {
           "label": "30-day Change",
@@ -301,7 +301,7 @@
   },
   "config_digest": "etl_real_factors",
   "cross": {
-    "btc_per_oz": 31.440903728864022,
-    "oz_per_btc": 0.03180570153528887
+    "btc_per_oz": 31.361928500601895,
+    "oz_per_btc": 0.03188579426742868
   }
 }

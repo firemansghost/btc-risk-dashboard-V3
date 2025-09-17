@@ -31,7 +31,13 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
   useEffect(() => {
     async function fetchGoldData() {
       try {
-        const response = await fetch('/extras/gold_cross.json');
+        // Force fresh read with cache: 'no-store' to prevent stale data
+        const response = await fetch('/extras/gold_cross.json', { 
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
@@ -118,6 +124,9 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
 
       <div className="mt-2 text-xs text-gray-400">
         Source: {sourceName}
+        {isFallback && (
+          <span className="ml-1 text-yellow-600">• Using fallback source</span>
+        )}
       </div>
     </div>
   );

@@ -36,8 +36,11 @@ export default function BtcGoldDetailPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Fetch historical data
-        const csvResponse = await fetch('/signals/btc_xau.csv');
+        // Fetch historical data with fresh read
+        const csvResponse = await fetch('/signals/btc_xau.csv', { 
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        });
         if (csvResponse.ok) {
           const csvText = await csvResponse.text();
           const lines = csvText.trim().split('\n');
@@ -54,8 +57,11 @@ export default function BtcGoldDetailPage() {
           setHistoricalData(data);
         }
 
-        // Fetch current data
-        const jsonResponse = await fetch('/extras/gold_cross.json');
+        // Fetch current data with fresh read
+        const jsonResponse = await fetch('/extras/gold_cross.json', { 
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        });
         if (jsonResponse.ok) {
           const data = await jsonResponse.json();
           setCurrentData(data);
@@ -264,7 +270,7 @@ export default function BtcGoldDetailPage() {
             </p>
             <p>
               <strong>Cadence:</strong> Daily close data, updated once per day at 11:00 UTC.
-              Gold data is forward-filled over weekends when markets are closed.
+              BTC = yesterday's close; gold = most recent daily close (weekends forward-filled).
             </p>
             <p>
               <strong>Sources:</strong> Primary sources are Metals API and Alpha Vantage, 

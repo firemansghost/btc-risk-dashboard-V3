@@ -140,10 +140,23 @@ async function main() {
       { name: "CoinGecko market chart (fallback)", ok: true, ms: null, url: "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=2&interval=daily" },
       { name: "Fear & Greed Index", ok: true, ms: null, url: "https://api.alternative.me/fng/" },
       { name: "FRED API (if key provided)", ok: !!process.env.FRED_API_KEY, ms: null, url: "https://fred.stlouisfed.org/" },
-      ...(goldResult.success ? goldResult.data.provenance : [])
+      ...(goldResult.success ? goldResult.data.provenance.map(p => ({
+        ...p,
+        cache_used: false, // Gold data is always fresh from API
+        fallback_used: p.fallback || false
+      })) : [])
     ],
     factors_computed: factorResults.factors.length,
-    factors_successful: factorResults.factors.filter(f => f.status === 'fresh').length
+    factors_successful: factorResults.factors.filter(f => f.status === 'fresh').length,
+    gold_cross_rates: goldResult.success ? {
+      status: "success",
+      source: goldResult.data.provenance[0]?.name || "unknown",
+      fallback_used: goldResult.data.provenance[0]?.fallback || false,
+      latency_ms: goldResult.data.provenance[0]?.ms || 0
+    } : {
+      status: "failed",
+      reason: goldResult.reason
+    }
   };
   await fs.writeFile("public/data/status.json", JSON.stringify(status, null, 2));
 
