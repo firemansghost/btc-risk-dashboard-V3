@@ -34,6 +34,9 @@ export default function EtfBreakdownModal({ isOpen, onClose }: EtfBreakdownModal
         const response = await fetch('/signals/etf_by_fund.csv', { cache: 'no-store' });
         
         if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error('ETF breakdown data not available yet. The ETL will generate this data when individual ETF flows are available.');
+          }
           throw new Error(`Failed to fetch ETF breakdown data: ${response.status}`);
         }
         
