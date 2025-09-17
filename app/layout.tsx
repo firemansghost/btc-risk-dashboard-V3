@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     siteName: 'GhostGauge',
     images: [
       {
-        url: '/og-default.png',
+        url: '/api/og',
         width: 1200,
         height: 630,
         alt: 'GhostGauge — Bitcoin G-Score',
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     site: '@grayghost',
     title: 'GhostGauge — Bitcoin G-Score',
     description: 'Daily, transparent, factor-weighted risk for Bitcoin. Liquidity, momentum, term structure, macro, social. Signals, not hype.',
-    images: ['/og-default.png'],
+    images: ['/api/og'],
   },
   robots: {
     index: true,
