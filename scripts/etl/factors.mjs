@@ -813,43 +813,95 @@ async function computeTermLeverage() {
 // 7. ON-CHAIN ACTIVITY (blockchain.info)
 async function computeOnchain() {
   try {
-    // Fetch transaction fees data from blockchain.info
-    const url = "https://api.blockchain.info/charts/transaction-fees?timespan=30days&format=json";
-    const res = await fetch(url, { headers: { "User-Agent": "btc-risk-etl" } });
-    if (!res.ok) throw new Error(`Blockchain.info ${res.status}`);
+    // Fetch multiple metrics from blockchain.info for comprehensive analysis
+    const [feesRes, txCountRes, hashRateRes] = await Promise.all([
+      fetch("https://api.blockchain.info/charts/transaction-fees?timespan=30days&format=json", { headers: { "User-Agent": "btc-risk-etl" } }),
+      fetch("https://api.blockchain.info/charts/n-transactions?timespan=30days&format=json", { headers: { "User-Agent": "btc-risk-etl" } }),
+      fetch("https://api.blockchain.info/charts/hash-rate?timespan=30days&format=json", { headers: { "User-Agent": "btc-risk-etl" } })
+    ]);
     
-    const data = await res.json();
-    if (!data.values || !Array.isArray(data.values) || data.values.length === 0) {
+    if (!feesRes.ok) throw new Error(`Blockchain.info fees ${feesRes.status}`);
+    if (!txCountRes.ok) throw new Error(`Blockchain.info tx count ${txCountRes.status}`);
+    if (!hashRateRes.ok) throw new Error(`Blockchain.info hash rate ${hashRateRes.status}`);
+    
+    const [feesData, txCountData, hashRateData] = await Promise.all([
+      feesRes.json(),
+      txCountRes.json(),
+      hashRateRes.json()
+    ]);
+    
+    // Process transaction fees
+    if (!feesData.values || !Array.isArray(feesData.values) || feesData.values.length === 0) {
       return { score: null, reason: "no_fee_data" };
     }
     
-    // Extract fee values (in USD)
-    const fees = data.values.map(item => Number(item.y)).filter(Number.isFinite);
+    const fees = feesData.values.map(item => Number(item.y)).filter(Number.isFinite);
     if (fees.length === 0) {
       return { score: null, reason: "no_valid_fee_data" };
     }
     
-    // Calculate average fee over the period
+    // Process transaction counts
+    const txCounts = txCountData.values?.map(item => Number(item.y)).filter(Number.isFinite) || [];
+    
+    // Process hash rate
+    const hashRates = hashRateData.values?.map(item => Number(item.y)).filter(Number.isFinite) || [];
+    
+    // Calculate metrics
     const avgFee = fees.reduce((sum, fee) => sum + fee, 0) / fees.length;
     const latestFee = fees[fees.length - 1];
-    
-    // Higher fees = higher network activity = potentially higher risk (speculation)
-    // Use percentile ranking for more sophisticated scoring
-    const percentile = percentileRank(fees, latestFee);
-    const score = riskFromPercentile(percentile, { invert: false, k: 3 });
-    
     const maxFee = Math.max(...fees);
     const minFee = Math.min(...fees);
+    
+    // Calculate composite activity score based on multiple factors
+    let activityScore = 0;
+    let activityFactors = [];
+    
+    // Factor 1: Transaction fees (40% weight)
+    const feePercentile = percentileRank(fees, latestFee);
+    activityScore += feePercentile * 0.4;
+    activityFactors.push(`Fees: ${(feePercentile * 100).toFixed(0)}%`);
+    
+    // Factor 2: Transaction count (30% weight) - if available
+    if (txCounts.length > 0) {
+      const latestTxCount = txCounts[txCounts.length - 1];
+      const txCountPercentile = percentileRank(txCounts, latestTxCount);
+      activityScore += txCountPercentile * 0.3;
+      activityFactors.push(`Tx Count: ${(txCountPercentile * 100).toFixed(0)}%`);
+    } else {
+      activityScore += 0.5 * 0.3; // Default to 50% if no data
+      activityFactors.push(`Tx Count: No data`);
+    }
+    
+    // Factor 3: Hash rate (30% weight) - if available
+    if (hashRates.length > 0) {
+      const latestHashRate = hashRates[hashRates.length - 1];
+      const hashRatePercentile = percentileRank(hashRates, latestHashRate);
+      activityScore += hashRatePercentile * 0.3;
+      activityFactors.push(`Hash Rate: ${(hashRatePercentile * 100).toFixed(0)}%`);
+    } else {
+      activityScore += 0.5 * 0.3; // Default to 50% if no data
+      activityFactors.push(`Hash Rate: No data`);
+    }
+    
+    // Convert composite score to risk score
+    // Higher activity = higher risk (speculation)
+    const score = riskFromPercentile(activityScore, { invert: false, k: 3 });
+    
+    // Determine network activity level
+    let networkActivity = "Low";
+    if (activityScore > 0.8) networkActivity = "High";
+    else if (activityScore > 0.5) networkActivity = "Moderate";
     
     return { 
       score, 
       reason: "success",
       details: [
-        { label: "Current Transaction Fees", value: `$${latestFee.toFixed(0)}` },
-        { label: "30-day Average", value: `$${avgFee.toFixed(0)}` },
-        { label: "30-day Range", value: `$${minFee.toFixed(0)} - $${maxFee.toFixed(0)}` },
-        { label: "Activity Percentile", value: `${(percentile * 100).toFixed(0)}%` },
-        { label: "Network Activity", value: percentile > 0.8 ? "High" : percentile > 0.5 ? "Moderate" : "Low" }
+        { label: "Current Transaction Fees", value: `$${latestFee.toFixed(2)}` },
+        { label: "30-day Average", value: `$${avgFee.toFixed(2)}` },
+        { label: "30-day Range", value: `$${minFee.toFixed(2)} - $${maxFee.toFixed(2)}` },
+        { label: "Activity Percentile", value: `${(activityScore * 100).toFixed(0)}%` },
+        { label: "Network Activity", value: networkActivity },
+        { label: "Activity Factors", value: activityFactors.join(", ") }
       ]
     };
   } catch (error) {

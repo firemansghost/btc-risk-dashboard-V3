@@ -1,8 +1,8 @@
 {
   "version": "v3.1.0",
-  "updated_at": "2025-09-17T11:46:52.385Z",
-  "price_usd": 116339.59,
-  "composite": 53,
+  "updated_at": "2025-09-17T12:02:34.774Z",
+  "price_usd": 116283.03,
+  "composite": 54,
   "band": {
     "name": "Hold/Neutral",
     "lo": 35,
@@ -14,7 +14,7 @@
       "label": "Trend & Valuation",
       "pillar": "momentum",
       "weight": 25,
-      "score": 37,
+      "score": 38,
       "status": "fresh",
       "reason": "success",
       "details": [
@@ -24,19 +24,19 @@
         },
         {
           "label": "Distance to Bull Market Support Band",
-          "value": "13.0%"
+          "value": "12.9%"
         },
         {
           "label": "Weekly momentum (RSI proxy)",
-          "value": "71.0"
+          "value": "70.6"
         },
         {
           "label": "Current Price",
-          "value": "$116,342.224"
+          "value": "$116,279.787"
         },
         {
           "label": "200-day SMA",
-          "value": "$102,957.648"
+          "value": "$102,957.336"
         }
       ]
     },
@@ -168,7 +168,7 @@
         },
         {
           "label": "30-day Average",
-          "value": "0.0069%"
+          "value": "0.0066%"
         },
         {
           "label": "30-day Range",
@@ -185,29 +185,33 @@
       "label": "On-chain Activity",
       "pillar": "social",
       "weight": 10,
-      "score": 77,
+      "score": 82,
       "status": "fresh",
       "reason": "success",
       "details": [
         {
           "label": "Current Transaction Fees",
-          "value": "$4"
+          "value": "$4.18"
         },
         {
           "label": "30-day Average",
-          "value": "$4"
+          "value": "$3.99"
         },
         {
           "label": "30-day Range",
-          "value": "$2 - $9"
+          "value": "$2.27 - $9.44"
         },
         {
           "label": "Activity Percentile",
-          "value": "70%"
+          "value": "75%"
         },
         {
           "label": "Network Activity",
           "value": "Moderate"
+        },
+        {
+          "label": "Activity Factors",
+          "value": "Fees: 70%, Tx Count: 67%, Hash Rate: 90%"
         }
       ]
     },
