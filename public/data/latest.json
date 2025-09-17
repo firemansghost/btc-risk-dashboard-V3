@@ -1,7 +1,7 @@
 {
   "version": "v3.1.0",
-  "updated_at": "2025-09-17T17:04:58.127Z",
-  "price_usd": 115826.9,
+  "updated_at": "2025-09-17T21:21:02.741Z",
+  "price_usd": 115818.84,
   "composite": 52,
   "band": {
     "name": "Hold/Neutral",
@@ -28,15 +28,15 @@
         },
         {
           "label": "Weekly momentum (RSI proxy)",
-          "value": "67.6"
+          "value": "67.7"
         },
         {
           "label": "Current Price",
-          "value": "$115,779.591"
+          "value": "$115,797.607"
         },
         {
           "label": "200-day SMA",
-          "value": "$102,954.835"
+          "value": "$102,954.925"
         }
       ]
     },
@@ -82,11 +82,11 @@
       "details": [
         {
           "label": "USDC Market Cap",
-          "value": "$73.6B"
+          "value": "$73.5B"
         },
         {
           "label": "30-day Change",
-          "value": "8.3%"
+          "value": "8.2%"
         },
         {
           "label": "Supply Growth Percentile",
@@ -137,7 +137,7 @@
         },
         {
           "label": "Last Update",
-          "value": "1.7 days ago"
+          "value": "1.9 days ago"
         },
         {
           "label": "Source",
@@ -274,7 +274,7 @@
         },
         {
           "label": "US2Y 20d Δ",
-          "value": "-6.1%"
+          "value": "-6.4%"
         },
         {
           "label": "VIX pctile",
@@ -286,7 +286,7 @@
         },
         {
           "label": "Current 2Y Yield",
-          "value": "3.54%"
+          "value": "3.51%"
         },
         {
           "label": "Current VIX",
@@ -301,7 +301,7 @@
   },
   "config_digest": "etl_real_factors",
   "cross": {
-    "btc_per_oz": 31.435992232946166,
-    "oz_per_btc": 0.03181067079384122
+    "btc_per_oz": 31.64171628280108,
+    "oz_per_btc": 0.031603848257230976
   }
 }

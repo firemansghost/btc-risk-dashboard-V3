@@ -1,5 +1,14 @@
 import fs from "node:fs/promises";
+import crypto from "node:crypto";
 import { computeAllFactors } from "./factors.mjs";
+
+// Helper function to create HMAC signature for webhook
+function createWebhookSignature(secret, payload, timestamp) {
+  const body = JSON.stringify(payload);
+  const message = `${timestamp}.${body}`;
+  const signature = crypto.createHmac('sha256', secret).update(message).digest('hex');
+  return signature;
+}
 
 // Helper function to append a row to a CSV file (idempotent by date)
 async function appendCsvRow(filePath, header, rowData, dateField = 'date') {
@@ -385,6 +394,16 @@ async function main() {
         }
       };
       
+      // Prepare headers with HMAC signature if secret is provided
+      const headers = { 'Content-Type': 'application/json' };
+      const timestamp = new Date().toISOString();
+      
+      if (process.env.ALERT_WEBHOOK_SECRET) {
+        const signature = createWebhookSignature(process.env.ALERT_WEBHOOK_SECRET, webhookPayload, timestamp);
+        headers['X-GhostGauge-Signature'] = signature;
+        headers['X-GhostGauge-Timestamp'] = timestamp;
+      }
+      
       // Retry logic with exponential backoff
       let retries = 2;
       let delay = 1000;
@@ -393,8 +412,9 @@ async function main() {
         try {
           const response = await fetch(process.env.ALERT_WEBHOOK_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(webhookPayload)
+            headers,
+            body: JSON.stringify(webhookPayload),
+            signal: AbortSignal.timeout(30000) // 30 second timeout
           });
           
           if (response.ok) {

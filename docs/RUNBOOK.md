@@ -70,6 +70,7 @@ npm run test
 - `ALPHAVANTAGE_API_KEY`: For additional market data (BTC⇄Gold feature)
 - `METALS_API_KEY`: For gold price data (BTC⇄Gold feature)
 - `ALERT_WEBHOOK_URL`: Optional webhook for alert notifications (ETF zero-cross, band changes)
+- `ALERT_WEBHOOK_SECRET`: Optional HMAC secret for webhook signature verification
 
 ### Local Development
 Create `.env.local`:
@@ -153,6 +154,110 @@ When modifying API endpoints:
 3. **Update Types**: Modify TypeScript interfaces
 4. **Test Endpoints**: Verify all API routes work correctly
 5. **Document Breaking Changes**: Update CHANGELOG.md
+
+## Webhook Verification
+
+### HMAC Signature Verification
+
+When `ALERT_WEBHOOK_SECRET` is set, webhooks include HMAC signatures for security:
+
+- **Header**: `X-GhostGauge-Signature` (hex-encoded HMAC-SHA256)
+- **Header**: `X-GhostGauge-Timestamp` (ISO timestamp)
+- **Algorithm**: `HMAC-SHA256(secret, timestamp + "." + rawBody)`
+
+### Verification Examples
+
+#### Node.js
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhookSignature(secret, signature, timestamp, body) {
+  const message = `${timestamp}.${body}`;
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(message)
+    .digest('hex');
+  
+  return crypto.timingSafeEqual(
+    Buffer.from(signature, 'hex'),
+    Buffer.from(expectedSignature, 'hex')
+  );
+}
+
+// Usage in Express.js
+app.post('/webhook', express.raw({type: 'application/json'}), (req, res) => {
+  const signature = req.headers['x-ghostgauge-signature'];
+  const timestamp = req.headers['x-ghostgauge-timestamp'];
+  const body = req.body.toString();
+  
+  if (!verifyWebhookSignature(process.env.WEBHOOK_SECRET, signature, timestamp, body)) {
+    return res.status(401).send('Invalid signature');
+  }
+  
+  // Process webhook payload
+  const payload = JSON.parse(body);
+  console.log('Verified webhook:', payload);
+  res.status(200).send('OK');
+});
+```
+
+#### Python
+```python
+import hmac
+import hashlib
+import time
+from flask import Flask, request, jsonify
+
+def verify_webhook_signature(secret, signature, timestamp, body):
+    message = f"{timestamp}.{body}"
+    expected_signature = hmac.new(
+        secret.encode('utf-8'),
+        message.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+    
+    return hmac.compare_digest(signature, expected_signature)
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    signature = request.headers.get('X-GhostGauge-Signature')
+    timestamp = request.headers.get('X-GhostGauge-Timestamp')
+    body = request.get_data(as_text=True)
+    
+    if not verify_webhook_signature(
+        os.environ['WEBHOOK_SECRET'], 
+        signature, 
+        timestamp, 
+        body
+    ):
+        return jsonify({'error': 'Invalid signature'}), 401
+    
+    # Process webhook payload
+    payload = request.get_json()
+    print(f"Verified webhook: {payload}")
+    return jsonify({'status': 'OK'}), 200
+```
+
+### Webhook Payload Format
+```json
+{
+  "run_id": "github_run_123",
+  "occurred_at": "2025-01-17T11:00:00.000Z",
+  "alerts": [
+    {
+      "type": "etf_zero_cross",
+      "direction": "up",
+      "from": -1500000,
+      "to": 2000000
+    }
+  ],
+  "diagnostics": {
+    "etf_csv_rows": 180,
+    "history_csv_rows": 365,
+    "total_alerts_today": 1
+  }
+}
+```
 
 ## Monitoring
 
