@@ -81,9 +81,12 @@ export default function RealDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">Bitcoin Risk Dashboard</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2" aria-label={`Bitcoin G-Score current value ${latest?.composite_score ?? '—'}, band ${latest?.band?.label ?? '—'}`}>
+            Bitcoin G-Score: {latest?.composite_score ?? '—'} — {latest?.band?.label ?? '—'}
+          </h1>
           <p className="text-sm text-gray-500">
-            Updated <span className="font-mono">{latest?.as_of_utc ?? '—'}</span>
+            As of <span className="font-mono">{latest?.as_of_utc ?? '—'}</span> UTC · 
+            <a href="/methodology" className="text-blue-600 hover:text-blue-800 underline ml-1">Methodology</a>
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -102,7 +105,7 @@ export default function RealDashboard() {
       {/* Top Row: Composite Score + BTC Price + BTC⇄Gold + Satoshis per Dollar */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         <div className="rounded-xl border p-4 bg-white">
-          <div className="text-sm text-gray-500 mb-2">Composite Score</div>
+          <div className="text-sm text-gray-500 mb-2">BTC G-Score</div>
           <div className="text-4xl font-bold text-gray-900 mb-2">{latest?.composite_score ?? '—'}</div>
           <div className="text-xs text-gray-500 mb-1">Band: {latest?.band?.label ?? '—'}</div>
           {latest?.band?.recommendation && (

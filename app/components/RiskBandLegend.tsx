@@ -54,6 +54,7 @@ export default function RiskBandLegend({ score }: { score: number }) {
 
   return (
     <div className="rounded-xl border border-slate-200/60 bg-white p-4">
+      <p className="text-xs text-slate-500 mb-2">Bands apply to Bitcoin.</p>
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-slate-700">Risk Bands</h3>
         <div className="flex items-center gap-2">

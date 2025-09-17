@@ -12,14 +12,14 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'GhostGauge — Bitcoin G-Score (0–100 multi-factor market risk)',
-  description: 'Daily, transparent, factor-weighted risk for BTC. Liquidity, momentum, term structure, macro, social. Signals, not hype.',
+  description: 'Daily, transparent, factor-weighted risk for Bitcoin. Liquidity, momentum, term structure, macro, social. Signals, not hype.',
   metadataBase: new URL('https://ghostgauge.com'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: 'GhostGauge — Bitcoin G-Score',
-    description: 'Daily, transparent, factor-weighted risk for BTC. Liquidity, momentum, term structure, macro, social. Signals, not hype.',
+    description: 'Daily, transparent, factor-weighted risk for Bitcoin. Liquidity, momentum, term structure, macro, social. Signals, not hype.',
     url: 'https://ghostgauge.com',
     siteName: 'GhostGauge',
     images: [
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@grayghost',
     title: 'GhostGauge — Bitcoin G-Score',
-    description: 'Daily, transparent, factor-weighted risk for BTC. Liquidity, momentum, term structure, macro, social. Signals, not hype.',
+    description: 'Daily, transparent, factor-weighted risk for Bitcoin. Liquidity, momentum, term structure, macro, social. Signals, not hype.',
     images: ['/og-default.png'],
   },
   robots: {
@@ -58,7 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'GhostGauge',
-    description: 'Daily, transparent, factor-weighted risk for BTC. Liquidity, momentum, term structure, macro, social. Signals, not hype.',
+    description: 'Daily, transparent, factor-weighted risk for Bitcoin. Liquidity, momentum, term structure, macro, social. Signals, not hype.',
     url: 'https://ghostgauge.com',
     logo: 'https://ghostgauge.com/og-default.png',
     founder: {

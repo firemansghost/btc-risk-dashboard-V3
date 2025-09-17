@@ -80,7 +80,7 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
   return (
     <div className={`bg-white rounded-lg border border-gray-200 p-4 ${className}`}>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-gray-900">BTC⇄Gold</h3>
+        <h3 className="text-sm font-medium text-gray-900">Bitcoin⇄Gold</h3>
         {isFallback && (
           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
             fallback
@@ -90,7 +90,7 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">1 BTC =</span>
+          <span className="text-sm text-gray-600">1 Bitcoin =</span>
           <span 
             className="text-lg font-semibold text-gray-900"
             title={`Exact: ${goldData.btc_per_oz.toFixed(6)} oz`}
@@ -103,9 +103,9 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
           <span className="text-sm text-gray-600">1 oz =</span>
           <span 
             className="text-lg font-semibold text-gray-900"
-            title={`Exact: ${goldData.oz_per_btc.toFixed(6)} BTC`}
+            title={`Exact: ${goldData.oz_per_btc.toFixed(6)} Bitcoin`}
           >
-            {goldData.oz_per_btc.toFixed(4)} BTC
+            {goldData.oz_per_btc.toFixed(4)} Bitcoin
           </span>
         </div>
       </div>
