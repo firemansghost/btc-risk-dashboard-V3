@@ -35,6 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
+    site: '@grayghost',
     title: 'GhostGauge — Bitcoin G-Score',
     description: 'Daily, transparent, factor-weighted risk for BTC. Liquidity, momentum, term structure, macro, social. Signals, not hype.',
     images: ['/og-default.png'],
@@ -53,8 +54,35 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'GhostGauge',
+    description: 'Daily, transparent, factor-weighted risk for BTC. Liquidity, momentum, term structure, macro, social. Signals, not hype.',
+    url: 'https://ghostgauge.com',
+    logo: 'https://ghostgauge.com/og-default.png',
+    founder: {
+      '@type': 'Person',
+      name: 'GrayGhost',
+      sameAs: [
+        'https://x.com/grayghost',
+        'https://github.com/firemansghost'
+      ]
+    },
+    sameAs: [
+      'https://x.com/grayghost',
+      'https://github.com/firemansghost/btc-risk-dashboard-V3'
+    ]
+  };
+
   return (
     <html lang="en" className={inter.variable}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="min-h-screen antialiased">
         <div className="container max-w-6xl mx-auto py-6">
           <Navigation />
