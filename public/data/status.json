@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-09-17T15:41:15.328Z",
+  "updated_at": "2025-09-17T15:52:01.354Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -29,12 +29,12 @@
       "name": "Stooq",
       "ok": true,
       "url": "https://stooq.com/",
-      "ms": 1044,
+      "ms": 1223,
       "fallback": true
     }
   ],
   "factors_computed": 8,
   "factors_successful": 8,
   "etf_schema_hash": "cd3800",
-  "etf_schema_last_check": "2025-09-17T15:41:13.026Z"
+  "etf_schema_last_check": "2025-09-17T15:51:58.458Z"
 }
