@@ -402,16 +402,17 @@ export default function RealDashboard() {
         <div className="fixed bottom-4 right-4 bg-black bg-opacity-80 text-white text-xs p-3 rounded max-w-sm">
           <div className="font-bold mb-2">Debug Info</div>
           <div className="mb-1">
-            <strong>Last Fetched:</strong>
-            {debugInfo.lastFetched.map((url, i) => (
-              <div key={i} className="ml-2 text-gray-300">{url}</div>
-            ))}
+            <strong>Data Version:</strong> {data?.version || 'N/A'}
           </div>
-          {debugInfo.lastUpdated && (
-            <div>
-              <strong>Last Updated:</strong> {debugInfo.lastUpdated}
-            </div>
-          )}
+          <div className="mb-1">
+            <strong>Fetched At:</strong> {data?.fetchedAt ? new Date(data.fetchedAt).toLocaleTimeString() : 'N/A'}
+          </div>
+          <div className="mb-1">
+            <strong>Loading:</strong> {isLoading ? 'Yes' : 'No'}
+          </div>
+          <div className="mb-1">
+            <strong>Refreshing:</strong> {isRefreshing ? 'Yes' : 'No'}
+          </div>
         </div>
       )}
     </div>
