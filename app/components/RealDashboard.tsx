@@ -469,7 +469,7 @@ export default function RealDashboard() {
 
       {(error || refreshError) && (
         <div className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg p-3 mb-6">
-          Error: {error?.message || refreshError}
+          Error: {error || refreshError}
         </div>
       )}
 
