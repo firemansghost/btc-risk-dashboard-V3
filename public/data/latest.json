@@ -1,8 +1,8 @@
 {
   "version": "v3.1.0",
-  "updated_at": "2025-09-17T21:37:02.619Z",
-  "price_usd": 115805.75,
-  "composite": 52,
+  "updated_at": "2025-09-18T11:18:42.342Z",
+  "price_usd": 117293.8,
+  "composite": 42,
   "band": {
     "name": "Hold/Neutral",
     "lo": 35,
@@ -14,29 +14,29 @@
       "label": "Trend & Valuation",
       "pillar": "momentum",
       "weight": 25,
-      "score": 43,
+      "score": 29,
       "status": "fresh",
       "reason": "success",
       "details": [
         {
           "label": "Price vs 200-day SMA (Mayer)",
-          "value": "1.12"
+          "value": "1.14"
         },
         {
           "label": "Distance to Bull Market Support Band",
-          "value": "12.5%"
+          "value": "13.8%"
         },
         {
           "label": "Weekly momentum (RSI proxy)",
-          "value": "67.6"
+          "value": "80.5"
         },
         {
           "label": "Current Price",
-          "value": "$115,790.368"
+          "value": "$117,253.484"
         },
         {
           "label": "200-day SMA",
-          "value": "$102,954.888"
+          "value": "$103,073.176"
         }
       ]
     },
@@ -76,7 +76,7 @@
       "label": "Stablecoins",
       "pillar": "liquidity",
       "weight": 15,
-      "score": 23,
+      "score": 19,
       "status": "fresh",
       "reason": "success",
       "details": [
@@ -86,11 +86,11 @@
         },
         {
           "label": "30-day Change",
-          "value": "8.2%"
+          "value": "8.8%"
         },
         {
           "label": "Supply Growth Percentile",
-          "value": "70%"
+          "value": "74%"
         },
         {
           "label": "30-day Trend",
@@ -109,13 +109,13 @@
       "details": [
         {
           "label": "Latest Daily Flow",
-          "value": "$292",
-          "tooltip": "Exact: $292.3 (2025-09-16)"
+          "value": "$-51",
+          "tooltip": "Exact: $-51.3 (2025-09-17)"
         },
         {
           "label": "21-day Rolling Sum",
-          "value": "$2.4K",
-          "tooltip": "Exact: $2,388.7 (21-day momentum)"
+          "value": "$2.5K",
+          "tooltip": "Exact: $2,459.1 (21-day momentum)"
         },
         {
           "label": "21-day Percentile",
@@ -123,21 +123,21 @@
         },
         {
           "label": "21-day Z-Score",
-          "value": "-1.34σ",
-          "tooltip": "Normal: -1.34σ from mean"
+          "value": "-1.32σ",
+          "tooltip": "Normal: -1.32σ from mean"
         },
         {
           "label": "Total Flows (all time)",
           "value": "$57.3K",
-          "tooltip": "Exact: $57,343.9 (since ETF inception)"
+          "tooltip": "Exact: $57,292.6 (since ETF inception)"
         },
         {
           "label": "Data Points",
-          "value": "437"
+          "value": "438"
         },
         {
           "label": "Last Update",
-          "value": "1.9 days ago"
+          "value": "1.5 days ago"
         },
         {
           "label": "Source",
@@ -145,7 +145,7 @@
         },
         {
           "label": "Data Source",
-          "value": "Cache"
+          "value": "Live"
         },
         {
           "label": "Baseline",
@@ -6892,6 +6892,22 @@
             "gbtc": 0,
             "btc": 45.8
           }
+        },
+        {
+          "date": "2025-09-17",
+          "flows": {
+            "ibit": 149.7,
+            "fbtc": -116,
+            "bitb": -12.6,
+            "arkb": -32.3,
+            "btco": 0,
+            "ezbc": 0,
+            "brrr": 0,
+            "hodl": 0,
+            "btcw": 0,
+            "gbtc": -62.6,
+            "btc": -116
+          }
         }
       ]
     },
@@ -6927,17 +6943,17 @@
       "label": "On-chain Activity",
       "pillar": "social",
       "weight": 10,
-      "score": 82,
+      "score": 30,
       "status": "fresh",
       "reason": "success",
       "details": [
         {
           "label": "Current Transaction Fees",
-          "value": "$4.18"
+          "value": "$4.51"
         },
         {
           "label": "30-day Average",
-          "value": "$3.99"
+          "value": "$4.03"
         },
         {
           "label": "30-day Range",
@@ -6945,15 +6961,15 @@
         },
         {
           "label": "Activity Percentile",
-          "value": "75%"
+          "value": "36%"
         },
         {
           "label": "Network Activity",
-          "value": "Moderate"
+          "value": "Low"
         },
         {
           "label": "Activity Factors",
-          "value": "Fees: 70%, Tx Count: 67%, Hash Rate: 90%"
+          "value": "Fees: 77%, Tx Count: 3%, Hash Rate: 13%"
         }
       ]
     },
@@ -6980,7 +6996,7 @@
         },
         {
           "label": "Data Points",
-          "value": "2782"
+          "value": "2783"
         }
       ]
     },
@@ -7003,7 +7019,7 @@
         },
         {
           "label": "VIX pctile",
-          "value": "55%"
+          "value": "56%"
         },
         {
           "label": "Current DXY",
@@ -7024,5 +7040,9 @@
     "cycle_nudge": 0,
     "spike_nudge": 0
   },
-  "config_digest": "etl_real_factors"
+  "config_digest": "etl_real_factors",
+  "cross": {
+    "btc_per_oz": 31.948672213898845,
+    "oz_per_btc": 0.03130020532011228
+  }
 }

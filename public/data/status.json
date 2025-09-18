@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-09-17T21:37:02.626Z",
+  "updated_at": "2025-09-18T11:18:42.344Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -24,15 +24,68 @@
       "ok": true,
       "ms": null,
       "url": "https://fred.stlouisfed.org/"
+    },
+    {
+      "name": "Stooq",
+      "ok": true,
+      "url": "https://stooq.com/",
+      "ms": 867,
+      "fallback": true,
+      "cache_used": false,
+      "fallback_used": true
+    },
+    {
+      "name": "History: trend_valuation",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 2
+    },
+    {
+      "name": "History: net_liquidity",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 2
+    },
+    {
+      "name": "History: stablecoins",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 2
+    },
+    {
+      "name": "History: etf_flows",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 2
+    },
+    {
+      "name": "History: term_leverage",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 2
+    },
+    {
+      "name": "History: social_interest",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 2
+    },
+    {
+      "name": "History: macro_overlay",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 2
     }
   ],
   "factors_computed": 8,
   "factors_successful": 8,
   "etf_schema_hash": "cd3800",
-  "etf_schema_last_check": "2025-09-17T21:37:02.201Z",
+  "etf_schema_last_check": "2025-09-18T11:18:40.923Z",
   "gold_cross_rates": {
-    "status": "failed",
-    "reason": "error: CoinGecko 429"
+    "status": "success",
+    "source": "Stooq",
+    "fallback_used": true,
+    "latency_ms": 867
   },
   "satoshis_per_dollar": {
     "status": "success",
