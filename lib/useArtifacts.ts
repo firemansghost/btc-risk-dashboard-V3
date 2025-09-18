@@ -77,22 +77,6 @@ const createFallbackData = (): ArtifactData => {
       provenance: [],
       model_version: 'v3.1.0',
       transform: {},
-      cycle_adjustment: {
-        adj_pts: 0,
-        residual_z: null,
-        last_utc: null,
-        source: null
-      },
-      spike_adjustment: {
-        adj_pts: 0,
-        r_1d: 0,
-        sigma: 0,
-        z: 0,
-        ref_close: 0,
-        spot: 0,
-        last_utc: now,
-        source: 'fallback'
-      },
     },
     status: {
       updated_at: now,
@@ -100,8 +84,11 @@ const createFallbackData = (): ArtifactData => {
         {
           name: 'Fallback Data',
           ok: true,
-          url: undefined,
-          ms: undefined
+          url: 'fallback://data',
+          ms: null,
+          fallback: true,
+          cache_used: false,
+          fallback_used: true
         }
       ],
       factors_computed: 1,
