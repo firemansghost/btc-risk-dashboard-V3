@@ -41,8 +41,8 @@ export default function RealDashboard() {
   const [refreshError, setRefreshError] = useState<string | null>(null);
   
   // Extract data from SWR response with proper guards
-  const latest: LatestSnapshot | undefined = data?.latest;
-  const status: Status | undefined = data?.status;
+  const latest: LatestSnapshot | null | undefined = data?.latest;
+  const status: Status | null | undefined = data?.status;
   
   // Safe derived values
   const gScore = latest?.composite_score ?? null;
@@ -85,6 +85,39 @@ export default function RealDashboard() {
     );
   }
 
+  // Show fallback state when data exists but latest is null (artifacts missing)
+  if (data && !latest) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="text-yellow-600 text-6xl mb-4">⏳</div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Dashboard Data Not Available</h2>
+          <p className="text-gray-600 mb-4">
+            The ETL artifacts are not yet available. This usually means the daily ETL process hasn't run yet.
+          </p>
+          <div className="space-y-2">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 mr-2"
+            >
+              Check Again
+            </button>
+            <a
+              href="https://github.com/firemansghost/btc-risk-dashboard-V3/actions"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 inline-block"
+            >
+              Check ETL Status
+            </a>
+            <div className="text-xs text-gray-500 mt-2">
+              Last updated: {data?.fetchedAt ? new Date(data.fetchedAt).toLocaleString() : 'Never'}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Check if ETF by fund data is available
   const checkByFundAvailability = useCallback(async () => {
@@ -138,27 +171,6 @@ export default function RealDashboard() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      {/* Fallback Data Banner */}
-      {latest?.btc?.source === 'fallback' && (
-        <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <span className="text-yellow-500">⚠️</span>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-yellow-700">
-                <strong>Using fallback data:</strong> ETL artifacts are not available. 
-                <button
-                  onClick={() => window.location.reload()}
-                  className="ml-2 text-yellow-800 underline hover:text-yellow-900"
-                >
-                  Refresh to check for updates
-                </button>
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
