@@ -98,6 +98,6 @@ export function useArtifacts() {
     error, 
     isLoading, 
     refresh,
-    isRefreshing: isLoading && data // Show loading state when we have data but are refreshing
+    isRefreshing: Boolean(isLoading && data) // Show loading state when we have data but are refreshing
   };
 }
