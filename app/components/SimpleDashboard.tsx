@@ -144,15 +144,20 @@ export default function SimpleDashboard() {
             <h2 className="text-xl font-semibold mb-4">Risk Factors</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {data.factors.map((factor: any, index: number) => (
-                <div key={factor.key || index} className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+                <div key={factor.key || index} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-6">
                   {/* Header with pillar/weight info */}
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
+                      <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                        factor.score !== null ? 
+                          (factor.score >= 70 ? 'bg-red-100 text-red-800' :
+                           factor.score >= 50 ? 'bg-yellow-100 text-yellow-800' :
+                           factor.score >= 30 ? 'bg-emerald-100 text-emerald-800' :
+                           'bg-blue-100 text-blue-800') : 
+                          'bg-gray-100 text-gray-800'
                       }`}>
-                        {factor.score !== null ? factor.score.toFixed(1) : 'N/A'}
+                        {factor.score !== null ? factor.score.toFixed(0) : 'N/A'}
                       </span>
                     </div>
                     
@@ -190,71 +195,64 @@ export default function SimpleDashboard() {
                     </div>
                   </div>
 
-                  {/* Always show first 3 details */}
+                  {/* Sophisticated details display */}
                   {factor.details && factor.details.length > 0 && (
                     <div className="border-t border-gray-200 pt-4 mt-4">
-                      <div className="space-y-3">
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-900 mb-2">Details:</h4>
-                          <div className="space-y-2">
-                            {factor.details.slice(0, 3).map((detail: any, detailIndex: number) => (
-                              <div key={detailIndex} className="text-sm">
-                                <span className="font-medium text-gray-700">{detail.label}:</span>
-                                <span className="ml-2 text-gray-600">
-                                  {typeof detail.value === 'number' ? detail.value.toFixed(2) : detail.value}
-                                </span>
-                                {detail.window && (
-                                  <span className="ml-2 text-xs text-gray-500">({detail.window})</span>
-                                )}
-                              </div>
-                            ))}
+                      <div className="space-y-4">
+                        {/* Primary metrics - show first 3-4 key metrics prominently */}
+                        <div className="grid grid-cols-1 gap-3">
+                          {factor.details.slice(0, 4).map((detail: any, detailIndex: number) => (
+                            <div key={detailIndex} className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-md">
+                              <span className="text-sm font-medium text-gray-700">{detail.label}</span>
+                              <span className="text-sm font-semibold text-gray-900">
+                                {typeof detail.value === 'number' ? detail.value.toFixed(2) : detail.value}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* Additional details - collapsible */}
+                        {factor.details.length > 4 && (
+                          <div>
+                            {!expandedDetails.has(factor.key) && (
+                              <button
+                                onClick={() => toggleDetailsExpansion(factor.key)}
+                                className="w-full text-sm text-emerald-600 hover:text-emerald-700 font-medium py-2 px-3 border border-emerald-200 rounded-md hover:bg-emerald-50 transition-colors"
+                              >
+                                +{factor.details.length - 4} more details
+                              </button>
+                            )}
                             
-                            {factor.details.length > 3 && (
-                              <div>
-                                {!expandedDetails.has(factor.key) && (
-                                  <button
-                                    onClick={() => toggleDetailsExpansion(factor.key)}
-                                    className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-                                  >
-                                    +{factor.details.length - 3} more
-                                  </button>
-                                )}
-                                
-                                {expandedDetails.has(factor.key) && (
-                                  <div className="space-y-2">
-                                    {factor.details.slice(3).map((detail: any, detailIndex: number) => (
-                                      <div key={detailIndex + 3} className="text-sm">
-                                        <span className="font-medium text-gray-700">{detail.label}:</span>
-                                        <span className="ml-2 text-gray-600">
-                                          {typeof detail.value === 'number' ? detail.value.toFixed(2) : detail.value}
-                                        </span>
-                                        {detail.window && (
-                                          <span className="ml-2 text-xs text-gray-500">({detail.window})</span>
-                                        )}
-                                      </div>
-                                    ))}
-                                    <button
-                                      onClick={() => toggleDetailsExpansion(factor.key)}
-                                      className="text-sm text-gray-500 hover:text-gray-700"
-                                    >
-                                      Show less
-                                    </button>
+                            {expandedDetails.has(factor.key) && (
+                              <div className="space-y-2">
+                                <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Additional Details</div>
+                                {factor.details.slice(4).map((detail: any, detailIndex: number) => (
+                                  <div key={detailIndex + 4} className="flex justify-between items-center py-1 px-2 text-sm">
+                                    <span className="text-gray-600">{detail.label}</span>
+                                    <span className="text-gray-800 font-medium">
+                                      {typeof detail.value === 'number' ? detail.value.toFixed(2) : detail.value}
+                                    </span>
                                   </div>
-                                )}
+                                ))}
+                                <button
+                                  onClick={() => toggleDetailsExpansion(factor.key)}
+                                  className="w-full text-sm text-gray-500 hover:text-gray-700 py-1 mt-2"
+                                >
+                                  Show less
+                                </button>
                               </div>
                             )}
                           </div>
-                        </div>
-                        
-                        {factor.reason && (
-                          <div>
-                            <h4 className="text-sm font-medium text-gray-900 mb-1">Note:</h4>
-                            <p className="text-sm text-gray-600">{factor.reason}</p>
-                          </div>
                         )}
                         
-                        <div className="text-xs text-gray-500">
-                          Last updated: {factor.last_utc ? new Date(factor.last_utc).toLocaleString() : 'Unknown'}
+                        {/* Status and metadata */}
+                        <div className="pt-2 border-t border-gray-100">
+                          <div className="flex justify-between items-center text-xs text-gray-500">
+                            <span>Last updated: {factor.last_utc ? new Date(factor.last_utc).toLocaleString() : 'Unknown'}</span>
+                            {factor.reason && factor.reason !== 'success' && (
+                              <span className="text-orange-600 italic">{factor.reason}</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -266,23 +264,21 @@ export default function SimpleDashboard() {
                     </div>
                   )}
 
-                  {/* Footer with source and what's this link */}
+                  {/* Sophisticated footer */}
                   <div className="border-t border-gray-200 pt-4 mt-4">
-                    <div className="space-y-2">
-                      {factor.source && (
-                        <div className="text-xs text-gray-500">
-                          <span className="font-medium">Source:</span> {factor.source}
-                        </div>
-                      )}
-                      <div className="flex justify-between items-center">
-                        <button className="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-3">
+                        <button className="text-xs text-blue-600 hover:text-blue-700 font-medium border-b border-blue-200 hover:border-blue-300 transition-colors">
                           What's this?
                         </button>
-                        {factor.reason && (
-                          <div className="text-xs text-gray-500 italic">
-                            {factor.reason}
-                          </div>
+                        {factor.details && factor.details.some((d: any) => d.tooltip) && (
+                          <button className="text-xs text-gray-500 hover:text-gray-700 font-medium">
+                            View tooltips
+                          </button>
                         )}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {factor.weight}% weight
                       </div>
                     </div>
                   </div>
