@@ -97,7 +97,10 @@ export default function RealDashboard() {
           </p>
           <div className="space-y-2">
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                // Force a refresh of the SWR data
+                window.location.reload();
+              }}
               className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 mr-2"
             >
               Check Again
@@ -110,6 +113,9 @@ export default function RealDashboard() {
             >
               Check ETL Status
             </a>
+            <div className="text-xs text-gray-500 mt-2">
+              Last updated: {data?.fetchedAt ? new Date(data.fetchedAt).toLocaleString() : 'Never'}
+            </div>
           </div>
         </div>
       </div>
