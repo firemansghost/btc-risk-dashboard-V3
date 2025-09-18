@@ -523,7 +523,7 @@ export default function RealDashboard() {
             <strong>Refreshing:</strong> {isRefreshing ? 'Yes' : 'No'}
           </div>
           <div className="mb-1">
-            <strong>Has Data:</strong> {data ? 'Yes' : 'No'}
+            <strong>Has Data:</strong> {latest ? 'Yes' : 'No'}
           </div>
           <div className="mb-1">
             <strong>Has Latest:</strong> {latest ? 'Yes' : 'No'}
