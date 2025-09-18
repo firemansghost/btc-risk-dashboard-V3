@@ -259,7 +259,7 @@ export default function RealDashboard() {
 
         {/* Risk Band Legend */}
         <div className="mb-8">
-          <RiskBandLegend />
+          <RiskBandLegend score={gScore || 0} />
         </div>
 
         {/* Factor Cards */}
