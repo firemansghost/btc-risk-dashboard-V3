@@ -226,11 +226,9 @@ export default function RealDashboard() {
             >
               Data source: ETL
             </span>
-            {data?.fetchedAt && (
-              <span className="text-gray-500">
-                Last fetched: {new Date(data.fetchedAt).toLocaleTimeString()}
-              </span>
-            )}
+            <span className="text-gray-500">
+              Last updated: {latest?.as_of_utc ? new Date(latest.as_of_utc).toLocaleTimeString() : 'N/A'}
+            </span>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -513,10 +511,10 @@ export default function RealDashboard() {
         <div className="fixed bottom-4 right-4 bg-black bg-opacity-80 text-white text-xs p-3 rounded max-w-sm">
           <div className="font-bold mb-2">Debug Info</div>
           <div className="mb-1">
-            <strong>Data Version:</strong> {data?.version || 'N/A'}
+            <strong>Data Version:</strong> {latest?.model_version || 'N/A'}
           </div>
           <div className="mb-1">
-            <strong>Fetched At:</strong> {data?.fetchedAt ? new Date(data.fetchedAt).toLocaleTimeString() : 'N/A'}
+            <strong>Last Updated:</strong> {latest?.as_of_utc ? new Date(latest.as_of_utc).toLocaleTimeString() : 'N/A'}
           </div>
           <div className="mb-1">
             <strong>Loading:</strong> {isLoading ? 'Yes' : 'No'}
