@@ -41,8 +41,8 @@ export default function RealDashboard() {
   const [refreshError, setRefreshError] = useState<string | null>(null);
   
   // Extract data from SWR response with proper guards
-  const latest: LatestSnapshot | undefined = data?.latest;
-  const status: Status | undefined = data?.status;
+  const latest: LatestSnapshot | null | undefined = data?.latest;
+  const status: Status | null | undefined = data?.status;
   
   // Safe derived values
   const gScore = latest?.composite_score ?? null;
