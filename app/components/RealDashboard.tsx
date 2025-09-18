@@ -139,7 +139,7 @@ export default function RealDashboard() {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       {/* Fallback Data Banner */}
-      {latest?.config_digest === 'fallback' && (
+      {latest?.btc?.source === 'fallback' && (
         <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6">
           <div className="flex">
             <div className="flex-shrink-0">

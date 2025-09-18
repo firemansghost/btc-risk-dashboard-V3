@@ -91,7 +91,6 @@ const createFallbackData = (): ArtifactData => {
         last_utc: null,
         source: null
       },
-      config_digest: 'fallback'
     },
     status: {
       updated_at: now,
