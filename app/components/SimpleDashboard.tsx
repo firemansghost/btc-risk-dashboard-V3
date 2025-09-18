@@ -8,6 +8,7 @@ export default function SimpleDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedFactors, setExpandedFactors] = useState<Set<string>>(new Set());
+  const [expandedDetails, setExpandedDetails] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const loadData = async () => {
@@ -44,6 +45,18 @@ export default function SimpleDashboard() {
 
   const toggleFactorExpansion = (key: string) => {
     setExpandedFactors(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleDetailsExpansion = (key: string) => {
+    setExpandedDetails(prev => {
       const newSet = new Set(prev);
       if (newSet.has(key)) {
         newSet.delete(key);
@@ -167,7 +180,7 @@ export default function SimpleDashboard() {
                           <div>
                             <h4 className="text-sm font-medium text-gray-900 mb-2">Details:</h4>
                             <div className="space-y-2">
-                              {factor.details.map((detail: any, detailIndex: number) => (
+                              {factor.details.slice(0, 3).map((detail: any, detailIndex: number) => (
                                 <div key={detailIndex} className="text-sm">
                                   <span className="font-medium text-gray-700">{detail.label}:</span>
                                   <span className="ml-2 text-gray-600">
@@ -178,6 +191,41 @@ export default function SimpleDashboard() {
                                   )}
                                 </div>
                               ))}
+                              
+                              {factor.details.length > 3 && (
+                                <div>
+                                  {!expandedDetails.has(factor.key) && (
+                                    <button
+                                      onClick={() => toggleDetailsExpansion(factor.key)}
+                                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                                    >
+                                      +{factor.details.length - 3} more
+                                    </button>
+                                  )}
+                                  
+                                  {expandedDetails.has(factor.key) && (
+                                    <div className="space-y-2">
+                                      {factor.details.slice(3).map((detail: any, detailIndex: number) => (
+                                        <div key={detailIndex + 3} className="text-sm">
+                                          <span className="font-medium text-gray-700">{detail.label}:</span>
+                                          <span className="ml-2 text-gray-600">
+                                            {typeof detail.value === 'number' ? detail.value.toFixed(2) : detail.value}
+                                          </span>
+                                          {detail.window && (
+                                            <span className="ml-2 text-xs text-gray-500">({detail.window})</span>
+                                          )}
+                                        </div>
+                                      ))}
+                                      <button
+                                        onClick={() => toggleDetailsExpansion(factor.key)}
+                                        className="text-sm text-gray-500 hover:text-gray-700"
+                                      >
+                                        Show less
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                         ) : (
