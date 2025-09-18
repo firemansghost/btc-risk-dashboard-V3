@@ -53,6 +53,37 @@ export default function RealDashboard() {
   // Simple derived flags
   const hasLatest = !!latest && latest.ok !== false;
   const hasStatus = !!status;
+  
+  // Show loading state while data is being fetched
+  if (isLoading && !data) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show error state if there's an error and no data
+  if (error && !data) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="text-red-600 text-6xl mb-4">⚠️</div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Failed to load dashboard</h2>
+          <p className="text-gray-600 mb-4">{error.message}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Check if ETF by fund data is available
   const checkByFundAvailability = useCallback(async () => {
@@ -430,6 +461,23 @@ export default function RealDashboard() {
           <div className="mb-1">
             <strong>Refreshing:</strong> {isRefreshing ? 'Yes' : 'No'}
           </div>
+          <div className="mb-1">
+            <strong>Has Data:</strong> {data ? 'Yes' : 'No'}
+          </div>
+          <div className="mb-1">
+            <strong>Has Latest:</strong> {latest ? 'Yes' : 'No'}
+          </div>
+          <div className="mb-1">
+            <strong>Has Status:</strong> {status ? 'Yes' : 'No'}
+          </div>
+          <div className="mb-1">
+            <strong>Error:</strong> {error ? error.message : 'None'}
+          </div>
+          {latest && (
+            <div className="mb-1">
+              <strong>Latest OK:</strong> {latest.ok ? 'Yes' : 'No'}
+            </div>
+          )}
         </div>
       )}
     </div>

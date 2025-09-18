@@ -39,26 +39,31 @@ type ArtifactData = {
 };
 
 const fetcher = async ([_, version]: [string, number]): Promise<ArtifactData> => {
-  const [latestRes, statusRes] = await Promise.all([
-    fetchArtifact('/data/latest.json', version),
-    fetchArtifact('/data/status.json', version)
-  ]);
+  try {
+    const [latestRes, statusRes] = await Promise.all([
+      fetchArtifact('/data/latest.json', version),
+      fetchArtifact('/data/status.json', version)
+    ]);
 
-  if (!latestRes.ok || !statusRes.ok) {
-    throw new Error(`Failed to fetch artifacts: ${latestRes.status}, ${statusRes.status}`);
+    if (!latestRes.ok || !statusRes.ok) {
+      throw new Error(`Failed to fetch artifacts: ${latestRes.status}, ${statusRes.status}`);
+    }
+
+    const [latest, status] = await Promise.all([
+      latestRes.json(),
+      statusRes.json()
+    ]);
+
+    return {
+      latest,
+      status,
+      version,
+      fetchedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Fetcher error:', error);
+    throw error;
   }
-
-  const [latest, status] = await Promise.all([
-    latestRes.json(),
-    statusRes.json()
-  ]);
-
-  return {
-    latest,
-    status,
-    version,
-    fetchedAt: new Date().toISOString()
-  };
 };
 
 export function useArtifacts() {
