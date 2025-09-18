@@ -147,20 +147,11 @@ export default function SimpleDashboard() {
                 <div key={factor.key || index} className="border border-gray-200 rounded-lg p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
-                    <div className="flex items-center space-x-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {factor.score !== null ? factor.score.toFixed(1) : 'N/A'}
-                      </span>
-                      <button
-                        onClick={() => toggleFactorExpansion(factor.key)}
-                        className="text-gray-400 hover:text-gray-600 text-lg font-bold"
-                        aria-label={expandedFactors.has(factor.key) ? 'Collapse details' : 'Expand details'}
-                      >
-                        {expandedFactors.has(factor.key) ? '−' : '+'}
-                      </button>
-                    </div>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {factor.score !== null ? factor.score.toFixed(1) : 'N/A'}
+                    </span>
                   </div>
                   
                   <div className="text-sm text-gray-600 mb-2">
@@ -173,64 +164,61 @@ export default function SimpleDashboard() {
                     </span>
                   </div>
 
-                  {expandedFactors.has(factor.key) && (
+                  {/* Always show first 3 details */}
+                  {factor.details && factor.details.length > 0 && (
                     <div className="border-t border-gray-200 pt-4 mt-4">
                       <div className="space-y-3">
-                        {factor.details && factor.details.length > 0 ? (
-                          <div>
-                            <h4 className="text-sm font-medium text-gray-900 mb-2">Details:</h4>
-                            <div className="space-y-2">
-                              {factor.details.slice(0, 3).map((detail: any, detailIndex: number) => (
-                                <div key={detailIndex} className="text-sm">
-                                  <span className="font-medium text-gray-700">{detail.label}:</span>
-                                  <span className="ml-2 text-gray-600">
-                                    {typeof detail.value === 'number' ? detail.value.toFixed(2) : detail.value}
-                                  </span>
-                                  {detail.window && (
-                                    <span className="ml-2 text-xs text-gray-500">({detail.window})</span>
-                                  )}
-                                </div>
-                              ))}
-                              
-                              {factor.details.length > 3 && (
-                                <div>
-                                  {!expandedDetails.has(factor.key) && (
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-900 mb-2">Details:</h4>
+                          <div className="space-y-2">
+                            {factor.details.slice(0, 3).map((detail: any, detailIndex: number) => (
+                              <div key={detailIndex} className="text-sm">
+                                <span className="font-medium text-gray-700">{detail.label}:</span>
+                                <span className="ml-2 text-gray-600">
+                                  {typeof detail.value === 'number' ? detail.value.toFixed(2) : detail.value}
+                                </span>
+                                {detail.window && (
+                                  <span className="ml-2 text-xs text-gray-500">({detail.window})</span>
+                                )}
+                              </div>
+                            ))}
+                            
+                            {factor.details.length > 3 && (
+                              <div>
+                                {!expandedDetails.has(factor.key) && (
+                                  <button
+                                    onClick={() => toggleDetailsExpansion(factor.key)}
+                                    className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                                  >
+                                    +{factor.details.length - 3} more
+                                  </button>
+                                )}
+                                
+                                {expandedDetails.has(factor.key) && (
+                                  <div className="space-y-2">
+                                    {factor.details.slice(3).map((detail: any, detailIndex: number) => (
+                                      <div key={detailIndex + 3} className="text-sm">
+                                        <span className="font-medium text-gray-700">{detail.label}:</span>
+                                        <span className="ml-2 text-gray-600">
+                                          {typeof detail.value === 'number' ? detail.value.toFixed(2) : detail.value}
+                                        </span>
+                                        {detail.window && (
+                                          <span className="ml-2 text-xs text-gray-500">({detail.window})</span>
+                                        )}
+                                      </div>
+                                    ))}
                                     <button
                                       onClick={() => toggleDetailsExpansion(factor.key)}
-                                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                                      className="text-sm text-gray-500 hover:text-gray-700"
                                     >
-                                      +{factor.details.length - 3} more
+                                      Show less
                                     </button>
-                                  )}
-                                  
-                                  {expandedDetails.has(factor.key) && (
-                                    <div className="space-y-2">
-                                      {factor.details.slice(3).map((detail: any, detailIndex: number) => (
-                                        <div key={detailIndex + 3} className="text-sm">
-                                          <span className="font-medium text-gray-700">{detail.label}:</span>
-                                          <span className="ml-2 text-gray-600">
-                                            {typeof detail.value === 'number' ? detail.value.toFixed(2) : detail.value}
-                                          </span>
-                                          {detail.window && (
-                                            <span className="ml-2 text-xs text-gray-500">({detail.window})</span>
-                                          )}
-                                        </div>
-                                      ))}
-                                      <button
-                                        onClick={() => toggleDetailsExpansion(factor.key)}
-                                        className="text-sm text-gray-500 hover:text-gray-700"
-                                      >
-                                        Show less
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
-                        ) : (
-                          <div className="text-sm text-gray-500">No additional details available.</div>
-                        )}
+                        </div>
                         
                         {factor.reason && (
                           <div>
@@ -243,6 +231,12 @@ export default function SimpleDashboard() {
                           Last updated: {factor.last_utc ? new Date(factor.last_utc).toLocaleString() : 'Unknown'}
                         </div>
                       </div>
+                    </div>
+                  )}
+
+                  {(!factor.details || factor.details.length === 0) && (
+                    <div className="border-t border-gray-200 pt-4 mt-4">
+                      <div className="text-sm text-gray-500">No additional details available.</div>
                     </div>
                   )}
                 </div>
