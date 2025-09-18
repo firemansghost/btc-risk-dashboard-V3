@@ -348,8 +348,10 @@ export default function RealDashboard() {
       
       {historyModalOpen && selectedFactor && (
         <FactorHistoryModal
+          isOpen={historyModalOpen}
           onClose={() => setHistoryModalOpen(false)}
-          factor={selectedFactor}
+          factorKey={selectedFactor?.key || ''}
+          factorLabel={selectedFactor?.label || ''}
         />
       )}
       
