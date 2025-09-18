@@ -17,7 +17,7 @@ import FactorHistoryModal from './FactorHistoryModal';
 import EtfBreakdownModal from './EtfBreakdownModal';
 import AlertBell from './AlertBell';
 import { getBandTextColor } from '@/lib/band-colors';
-import { useArtifacts } from '@/lib/useArtifacts';
+import { fetchArtifact } from '@/lib/artifactFetch';
 import type { LatestSnapshot, FactorSummary } from '@/lib/types';
 
 const fmtUsd0 = (n: number) =>
@@ -30,7 +30,11 @@ type Status = {
 };
 
 export default function RealDashboard() {
-  const { data, error, isLoading, isValidating, refresh, isRefreshing } = useArtifacts();
+  const [latest, setLatest] = useState<LatestSnapshot | null>(null);
+  const [status, setStatus] = useState<Status | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [expandedFactors, setExpandedFactors] = useState<Set<string>>(new Set());
   const [whatIfModalOpen, setWhatIfModalOpen] = useState(false);
   const [provenanceModalOpen, setProvenanceModalOpen] = useState(false);
@@ -39,10 +43,6 @@ export default function RealDashboard() {
   const [etfBreakdownOpen, setEtfBreakdownOpen] = useState(false);
   const [hasByFund, setHasByFund] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
-  
-  // Extract data from SWR response with proper guards
-  const latest: LatestSnapshot | null | undefined = data?.latest;
-  const status: Status | null | undefined = data?.status;
   
   // Safe derived values
   const gScore = latest?.composite_score ?? null;
@@ -55,7 +55,7 @@ export default function RealDashboard() {
   const hasStatus = !!status;
   
   // Show loading state while data is being fetched
-  if (isLoading && !data) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -65,15 +65,15 @@ export default function RealDashboard() {
       </div>
     );
   }
-  
-  // Show error state only if there's a real error (not just missing data)
-  if (error && !data) {
+
+  // Show error state if there's an error
+  if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="text-red-600 text-6xl mb-4">⚠️</div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Failed to load dashboard</h2>
-          <p className="text-gray-600 mb-4">{error.message}</p>
+          <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
@@ -85,8 +85,8 @@ export default function RealDashboard() {
     );
   }
 
-  // Show fallback state when data exists but latest is null (artifacts missing)
-  if (data && !latest) {
+  // Show fallback state when latest is null (artifacts missing)
+  if (!latest) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center max-w-md">
@@ -110,19 +110,39 @@ export default function RealDashboard() {
             >
               Check ETL Status
             </a>
-            <div className="text-xs text-gray-500 mt-2">
-              Last updated: {data?.fetchedAt ? new Date(data.fetchedAt).toLocaleString() : 'Never'}
-            </div>
           </div>
         </div>
       </div>
     );
   }
 
+  // Load data function
+  const loadData = useCallback(async () => {
+    try {
+      const [latestRes, statusRes] = await Promise.all([
+        fetchArtifact('/data/latest.json'),
+        fetchArtifact('/data/status.json')
+      ]);
+
+      if (latestRes.ok && statusRes.ok) {
+        const [latestData, statusData] = await Promise.all([
+          latestRes.json(),
+          statusRes.json()
+        ]);
+        setLatest(latestData);
+        setStatus(statusData);
+        setError(null);
+      } else {
+        setError(`Failed to load data: latest=${latestRes.status}, status=${statusRes.status}`);
+      }
+    } catch (err) {
+      setError(`Failed to load data: ${err}`);
+    }
+  }, []);
+
   // Check if ETF by fund data is available
   const checkByFundAvailability = useCallback(async () => {
     try {
-      // Check if the CSV file exists
       const response = await fetch('/signals/etf_by_fund.csv', { cache: 'no-store' });
       setHasByFund(response.ok);
     } catch (error) {
@@ -132,15 +152,29 @@ export default function RealDashboard() {
 
   const handleRefresh = useCallback(async () => {
     setRefreshError(null);
-    const success = await refresh();
+    setIsRefreshing(true);
     
-    if (!success) {
+    try {
+      await loadData();
+      await checkByFundAvailability();
+    } catch (err) {
       setRefreshError('Refresh failed. Using previous snapshot.');
+    } finally {
+      setIsRefreshing(false);
     }
+  }, [loadData, checkByFundAvailability]);
+
+  // Load data on mount
+  useEffect(() => {
+    const initializeData = async () => {
+      setIsLoading(true);
+      await loadData();
+      await checkByFundAvailability();
+      setIsLoading(false);
+    };
     
-    // Check ETF by fund availability after refresh
-    checkByFundAvailability();
-  }, [refresh, checkByFundAvailability]);
+    initializeData();
+  }, [loadData, checkByFundAvailability]);
 
   const toggleFactorExpansion = useCallback((factorKey: string) => {
     setExpandedFactors(prev => {
@@ -204,10 +238,10 @@ export default function RealDashboard() {
           <WeightsLauncher onOpen={() => setWhatIfModalOpen(true)} />
           <button
             onClick={handleRefresh}
-            disabled={isRefreshing || isValidating}
+            disabled={isRefreshing}
             className="px-4 py-2 rounded-lg bg-emerald-600 text-white disabled:opacity-50 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
-            {isRefreshing || isValidating ? 'Refreshing…' : 'Refresh Dashboard'}
+            {isRefreshing ? 'Refreshing…' : 'Refresh Dashboard'}
           </button>
         </div>
       </div>
