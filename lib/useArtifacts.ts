@@ -100,8 +100,8 @@ const createFallbackData = (): ArtifactData => {
         {
           name: 'Fallback Data',
           ok: true,
-          url: null,
-          ms: null
+          url: undefined,
+          ms: undefined
         }
       ],
       factors_computed: 1,
