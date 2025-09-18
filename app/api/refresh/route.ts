@@ -336,14 +336,8 @@ async function buildLatest(forceRealTime = false) {
 }
 
 export async function POST(req: Request) {
-  if (TOKEN) {
-    const auth = req.headers.get('authorization') || '';
-    const param = new URL(req.url).searchParams.get('token') || '';
-    const bearer = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-    if (![bearer, param].includes(TOKEN)) {
-      return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 403 });
-    }
-  }
+  // Note: Authentication removed to allow public refresh functionality
+  // The refresh endpoint only computes data and doesn't modify anything
   // Force recompute with fresh data
   return buildLatest(true);
 }
