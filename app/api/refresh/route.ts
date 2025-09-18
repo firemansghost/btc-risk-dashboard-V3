@@ -359,7 +359,8 @@ export async function POST(req: Request) {
   // Always disable recompute - return 405
   return NextResponse.json({ 
     ok: false, 
-    error: 'Recompute disabled; ETL only.' 
+    error: 'Recompute disabled; ETL only.',
+    timestamp: new Date().toISOString()
   }, { status: 405 });
 }
 
