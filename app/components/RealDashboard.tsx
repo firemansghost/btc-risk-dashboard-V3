@@ -286,7 +286,9 @@ export default function RealDashboard() {
               {expandedFactors.has(factor.key) && (
                 <div className="border-t border-gray-200 pt-4">
                   <div className="text-sm text-gray-600 mb-4">
-                    {factor.details?.description || 'No description available.'}
+                    {factor.details && factor.details.length > 0 
+                      ? factor.details[0].label 
+                      : 'No details available.'}
                   </div>
                   <div className="flex space-x-2">
                     <button
