@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-09-18T13:30:47.819Z",
+  "updated_at": "2025-09-18T13:50:12.637Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -29,7 +29,7 @@
       "name": "Stooq",
       "ok": true,
       "url": "https://stooq.com/",
-      "ms": 990,
+      "ms": 967,
       "fallback": true,
       "cache_used": false,
       "fallback_used": true
@@ -38,12 +38,12 @@
   "factors_computed": 8,
   "factors_successful": 8,
   "etf_schema_hash": "cd3800",
-  "etf_schema_last_check": "2025-09-18T13:30:45.465Z",
+  "etf_schema_last_check": "2025-09-18T13:50:10.045Z",
   "gold_cross_rates": {
     "status": "success",
     "source": "Stooq",
     "fallback_used": true,
-    "latency_ms": 990
+    "latency_ms": 967
   },
   "satoshis_per_dollar": {
     "status": "success",
