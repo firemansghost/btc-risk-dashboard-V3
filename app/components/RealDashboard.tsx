@@ -33,6 +33,21 @@ export default function RealDashboard() {
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [selectedFactor, setSelectedFactor] = useState<{key: string, label: string} | null>(null);
   const [etfBreakdownOpen, setEtfBreakdownOpen] = useState(false);
+  const [hasByFund, setHasByFund] = useState(false);
+
+  // Check if ETF by fund data is available
+  const checkByFundAvailability = useCallback(async () => {
+    try {
+      // Check if the CSV file exists
+      const response = await fetch('/signals/etf_by_fund.csv', { 
+        method: 'HEAD',
+        cache: 'no-store' 
+      });
+      setHasByFund(response.ok);
+    } catch (error) {
+      setHasByFund(false);
+    }
+  }, []);
 
   const loadLatest = useCallback(async () => {
     setError(null);
@@ -43,25 +58,44 @@ export default function RealDashboard() {
       return;
     }
     setLatest(json);
-  }, []);
+    // Check ETF by fund availability after loading data
+    checkByFundAvailability();
+  }, [checkByFundAvailability]);
 
   const onRefresh = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('/api/refresh', { method: 'POST' });
-      const json = await res.json().catch(() => ({}));
-      setApiDetail({ ok: res.ok, status: res.status, json });
-      if (!res.ok || !json?.ok) {
-        setError(json?.error ?? res.statusText ?? 'Refresh failed');
+      
+      // Refetch ETL artifacts with cache busting
+      const timestamp = Date.now();
+      const [latestRes, statusRes] = await Promise.all([
+        fetch(`/api/data/latest?v=${timestamp}`, { cache: 'no-store' }),
+        fetch(`/data/status.json?v=${timestamp}`, { cache: 'no-store' })
+      ]);
+      
+      const latestJson = await latestRes.json().catch(() => ({}));
+      const statusJson = await statusRes.json().catch(() => ({}));
+      
+      setApiDetail({ 
+        ok: latestRes.ok, 
+        status: latestRes.status, 
+        json: { mode: 'artifacts', latest: latestJson, status: statusJson }
+      });
+      
+      if (!latestRes.ok || !latestJson?.ok) {
+        setError(latestJson?.error ?? latestRes.statusText ?? 'Refresh failed');
         return;
       }
-      // Use the real-time data directly instead of reloading static data
-      setLatest(json.latest);
+      
+      // Use the ETL data directly
+      setLatest(latestJson);
+      // Check ETF by fund availability after refresh
+      checkByFundAvailability();
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [checkByFundAvailability]);
 
   const toggleFactorExpansion = useCallback((factorKey: string) => {
     setExpandedFactors(prev => {
@@ -97,6 +131,13 @@ export default function RealDashboard() {
           <p className="text-sm text-gray-500 mt-2">
             Daily 0–100 risk score for Bitcoin (GRS v3). As of <span className="font-mono">{latest?.as_of_utc ?? '—'}</span> · 
             <a href="/methodology" className="text-blue-600 hover:text-blue-800 underline ml-1">Methodology</a>
+            <span 
+              className="ml-2 px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded cursor-pointer hover:bg-gray-200"
+              onClick={() => setProvenanceModalOpen(true)}
+              title="Click to view data sources and status"
+            >
+              Data source: ETL
+            </span>
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -224,7 +265,7 @@ export default function RealDashboard() {
                 >
                   History
                 </button>
-                {factor.key === 'etf_flows' && (
+                {factor.key === 'etf_flows' && hasByFund && (
                   <button
                     onClick={() => setEtfBreakdownOpen(true)}
                     className="text-xs text-purple-600 hover:text-purple-800 underline"
