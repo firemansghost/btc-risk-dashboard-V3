@@ -134,19 +134,13 @@ export default function RealDashboard() {
     setRefreshError(null);
     const success = await refresh();
     
-    if (success) {
-      // Check if data actually changed
-      if (data?.latest?.as_of_utc === latest?.as_of_utc) {
-        // Data didn't change, could show a toast here
-        console.log('Data already up to date');
-      }
-    } else {
+    if (!success) {
       setRefreshError('Refresh failed. Using previous snapshot.');
     }
     
     // Check ETF by fund availability after refresh
     checkByFundAvailability();
-  }, [refresh, data?.latest?.as_of_utc, latest?.as_of_utc, checkByFundAvailability]);
+  }, [refresh, checkByFundAvailability]);
 
   const toggleFactorExpansion = useCallback((factorKey: string) => {
     setExpandedFactors(prev => {

@@ -1,4 +1,5 @@
 // lib/useArtifacts.ts
+import { useCallback } from 'react';
 import useSWR, { mutate as globalMutate } from 'swr';
 import { fetchArtifact } from './artifactFetch';
 import type { LatestSnapshot } from './types';
@@ -69,24 +70,16 @@ export function useArtifacts() {
     dedupingInterval: 0, // Disable deduplication for immediate refreshes
   });
 
-  async function refresh(): Promise<boolean> {
+  const refresh = useCallback(async (): Promise<boolean> => {
     try {
-      // Force revalidation with a new timestamp
+      // Force revalidation
       await mutate();
-      
-      // Also update any components using individual CSVs by busting SWR cache keys
-      globalMutate(
-        (key: any) => Array.isArray(key) && key[0]?.startsWith?.('csv:'), 
-        undefined, 
-        { revalidate: true }
-      );
-      
       return true;
     } catch (error) {
       console.error('Refresh failed:', error);
       return false;
     }
-  }
+  }, [mutate]);
 
   return { 
     data, 
