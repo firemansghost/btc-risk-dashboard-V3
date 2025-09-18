@@ -190,10 +190,10 @@ export default function RealDashboard() {
 
   useEffect(() => {
     // Check ETF by fund availability when data loads
-    if (data) {
+    if (latest) {
       checkByFundAvailability();
     }
-  }, [data, checkByFundAvailability]);
+  }, [latest, checkByFundAvailability]);
 
   const factors = latest?.factors ?? [];
 
