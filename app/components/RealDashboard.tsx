@@ -16,38 +16,13 @@ import SatoshisPerDollarCard from './SatoshisPerDollarCard';
 import FactorHistoryModal from './FactorHistoryModal';
 import EtfBreakdownModal from './EtfBreakdownModal';
 import AlertBell from './AlertBell';
-import type { LatestSnapshot } from '@/lib/types';
 import { getBandTextColor } from '@/lib/band-colors';
 import { useArtifacts } from '@/lib/useArtifacts';
+import type { LatestSnapshot, FactorSummary } from '@/lib/types';
 
 const fmtUsd0 = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
-type Latest = {
-  ok: boolean;
-  as_of_utc: string;
-  composite_score: number;
-  band: { 
-    key: string;
-    label: string;
-    range: [number, number];
-    color: string;
-    recommendation: string;
-  };
-  btc: { 
-    spot_usd: number | null; 
-    as_of_utc: string | null; 
-    source: string | null 
-  };
-  model_version: string;
-  factors: Array<{
-    key: string;
-    label: string;
-    score: number;
-    status?: 'fresh' | 'stale' | 'excluded';
-    details?: any;
-  }>;
-};
 
 type Status = {
   updated_at: string;
@@ -66,7 +41,7 @@ export default function RealDashboard() {
   const [refreshError, setRefreshError] = useState<string | null>(null);
   
   // Extract data from SWR response with proper guards
-  const latest: Latest | undefined = data?.latest;
+  const latest: LatestSnapshot | undefined = data?.latest;
   const status: Status | undefined = data?.status;
   
   // Safe derived values
