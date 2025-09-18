@@ -88,8 +88,10 @@ const createFallbackData = (): ArtifactData => {
         r_1d: 0,
         sigma: 0,
         z: 0,
-        last_utc: null,
-        source: null
+        ref_close: 0,
+        spot: 0,
+        last_utc: now,
+        source: 'fallback'
       },
     },
     status: {
