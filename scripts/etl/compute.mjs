@@ -623,12 +623,28 @@ async function main() {
 
   // 4) latest.json with real factor data
   const latest = {
+    ok: true,
     version: "v3.1.0",
-    updated_at: new Date().toISOString(),
-    price_usd: y.close,
-    composite,
-    band,
+    as_of_utc: new Date().toISOString(),
+    composite_score: composite,
+    composite_raw: composite,
+    band: {
+      key: band.key || band.name.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+      label: band.name,
+      range: [band.lo, band.hi],
+      color: band.color || '#6B7280',
+      recommendation: band.recommendation || band.name
+    },
+    health: 'green',
     factors: factorResults.factors,
+    btc: {
+      spot_usd: y.close,
+      as_of_utc: new Date().toISOString(),
+      source: 'Coinbase'
+    },
+    provenance: [],
+    model_version: "v3.1.0",
+    transform: {},
     adjustments: { cycle_nudge: 0.0, spike_nudge: 0.0 },
     config_digest: "etl_real_factors",
     ...(goldResult.success && { cross: { btc_per_oz: goldResult.data.btc_per_oz, oz_per_btc: goldResult.data.oz_per_btc } })
