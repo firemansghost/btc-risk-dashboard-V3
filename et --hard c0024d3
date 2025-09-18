@@ -1,0 +1,10 @@
+[33m02e71fb[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m test: create simple dashboard to isolate data loading issues
+[33mef7d24c[m fix: override Vercel CSP with vercel.json configuration
+[33m28bb0a6[m fix: re-enable CSP with unsafe-eval and add data loading debug logs
+[33m41deb1e[m temp: disable CSP to fix loading issue
+[33mad2e6a7[m fix: remove error.message in debug section
+[33m56cb3dd[m fix: replace 'data' reference in debug section with 'latest'
+[33m4246dbb[m fix: remove .message property access on string error type
+[33m01ea5fd[m fix: replace remaining 'data' references with 'latest' properties
+[33m53e133d[m fix: replace 'data' reference with 'latest' in useEffect
+[33m2734650[m fix: replace SWR with simple state management to isolate React error 310
