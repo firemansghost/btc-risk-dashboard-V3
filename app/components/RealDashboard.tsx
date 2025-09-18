@@ -119,24 +119,35 @@ export default function RealDashboard() {
   // Load data function
   const loadData = useCallback(async () => {
     try {
+      console.log('Loading data...');
       const [latestRes, statusRes] = await Promise.all([
         fetchArtifact('/data/latest.json'),
         fetchArtifact('/data/status.json')
       ]);
+
+      console.log('Fetch responses:', {
+        latest: { ok: latestRes.ok, status: latestRes.status },
+        status: { ok: statusRes.ok, status: statusRes.status }
+      });
 
       if (latestRes.ok && statusRes.ok) {
         const [latestData, statusData] = await Promise.all([
           latestRes.json(),
           statusRes.json()
         ]);
+        console.log('Data loaded successfully:', { latest: !!latestData, status: !!statusData });
         setLatest(latestData);
         setStatus(statusData);
         setError(null);
       } else {
-        setError(`Failed to load data: latest=${latestRes.status}, status=${statusRes.status}`);
+        const errorMsg = `Failed to load data: latest=${latestRes.status}, status=${statusRes.status}`;
+        console.error(errorMsg);
+        setError(errorMsg);
       }
     } catch (err) {
-      setError(`Failed to load data: ${err}`);
+      const errorMsg = `Failed to load data: ${err}`;
+      console.error(errorMsg);
+      setError(errorMsg);
     }
   }, []);
 
