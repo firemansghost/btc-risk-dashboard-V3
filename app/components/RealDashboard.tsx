@@ -70,7 +70,6 @@ export default function RealDashboard() {
     const success = await refresh();
     
     if (success) {
-      setLastRefreshTime(new Date().toISOString());
       // Check if data actually changed
       if (data?.latest?.as_of_utc === latest?.as_of_utc) {
         // Data didn't change, could show a toast here
