@@ -66,7 +66,7 @@ export default function RealDashboard() {
     );
   }
   
-  // Show error state if there's an error and no data
+  // Show error state only if there's a real error (not just missing data)
   if (error && !data) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -80,6 +80,37 @@ export default function RealDashboard() {
           >
             Retry
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show fallback state when data exists but latest is null (artifacts missing)
+  if (data && !latest) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="text-yellow-600 text-6xl mb-4">⏳</div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Dashboard Data Not Available</h2>
+          <p className="text-gray-600 mb-4">
+            The ETL artifacts are not yet available. This usually means the daily ETL process hasn't run yet.
+          </p>
+          <div className="space-y-2">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 mr-2"
+            >
+              Check Again
+            </button>
+            <a
+              href="https://github.com/firemansghost/btc-risk-dashboard-V3/actions"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 inline-block"
+            >
+              Check ETL Status
+            </a>
+          </div>
         </div>
       </div>
     );

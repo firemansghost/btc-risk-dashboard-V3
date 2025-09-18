@@ -32,8 +32,8 @@ type Status = {
 };
 
 type ArtifactData = {
-  latest: LatestSnapshot;
-  status: Status;
+  latest: LatestSnapshot | null;
+  status: Status | null;
   version: number;
   fetchedAt: string;
 };
@@ -45,14 +45,32 @@ const fetcher = async ([_, version]: [string, number]): Promise<ArtifactData> =>
       fetchArtifact('/data/status.json', version)
     ]);
 
-    if (!latestRes.ok || !statusRes.ok) {
-      throw new Error(`Failed to fetch artifacts: ${latestRes.status}, ${statusRes.status}`);
+    // If both files are missing, return empty data instead of throwing
+    if (!latestRes.ok && !statusRes.ok) {
+      console.warn('Both artifacts missing, returning empty data');
+      return {
+        latest: null,
+        status: null,
+        version,
+        fetchedAt: new Date().toISOString()
+      };
     }
 
-    const [latest, status] = await Promise.all([
-      latestRes.json(),
-      statusRes.json()
-    ]);
+    // If only one is missing, try to fetch the other
+    let latest = null;
+    let status = null;
+
+    if (latestRes.ok) {
+      latest = await latestRes.json();
+    } else {
+      console.warn('latest.json missing');
+    }
+
+    if (statusRes.ok) {
+      status = await statusRes.json();
+    } else {
+      console.warn('status.json missing');
+    }
 
     return {
       latest,
@@ -62,7 +80,13 @@ const fetcher = async ([_, version]: [string, number]): Promise<ArtifactData> =>
     };
   } catch (error) {
     console.error('Fetcher error:', error);
-    throw error;
+    // Return empty data instead of throwing to prevent error state
+    return {
+      latest: null,
+      status: null,
+      version,
+      fetchedAt: new Date().toISOString()
+    };
   }
 };
 
