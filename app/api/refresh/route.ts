@@ -337,9 +337,9 @@ async function buildLatest(forceRealTime = false) {
 
 export async function POST(req: Request) {
   // Note: Authentication removed to allow public refresh functionality
-  // The refresh endpoint only computes data and doesn't modify anything
-  // Force recompute with fresh data
-  return buildLatest(true);
+  // The refresh endpoint should use ETL data (which is fresh and comprehensive)
+  // instead of forcing real-time computation which can fail
+  return buildLatest(false);
 }
 
 export async function GET(req: Request) {
