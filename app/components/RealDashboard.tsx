@@ -532,7 +532,7 @@ export default function RealDashboard() {
             <strong>Has Status:</strong> {status ? 'Yes' : 'No'}
           </div>
           <div className="mb-1">
-            <strong>Error:</strong> {error ? error.message : 'None'}
+            <strong>Error:</strong> {error || 'None'}
           </div>
           {latest && (
             <div className="mb-1">
