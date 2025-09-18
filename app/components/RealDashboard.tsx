@@ -23,8 +23,29 @@ import { useArtifacts } from '@/lib/useArtifacts';
 const fmtUsd0 = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
+type Latest = {
+  ok: boolean;
+  as_of_utc: string;
+  composite_score: number;
+  band?: { label?: string; value?: number };
+  btc?: { spot_usd?: number };
+  model_version?: string;
+  factors?: Array<{
+    key: string;
+    label: string;
+    score: number;
+    status?: 'fresh' | 'stale' | 'excluded';
+    details?: any;
+  }>;
+};
+
+type Status = {
+  updated_at: string;
+  sources?: Array<{ name: string; ok: boolean; url?: string; ms?: number }>;
+};
+
 export default function RealDashboard() {
-  const { data, error, isLoading, refresh, isRefreshing } = useArtifacts();
+  const { data, error, isLoading, isValidating, refresh, isRefreshing } = useArtifacts();
   const [expandedFactors, setExpandedFactors] = useState<Set<string>>(new Set());
   const [whatIfModalOpen, setWhatIfModalOpen] = useState(false);
   const [provenanceModalOpen, setProvenanceModalOpen] = useState(false);
@@ -33,11 +54,20 @@ export default function RealDashboard() {
   const [etfBreakdownOpen, setEtfBreakdownOpen] = useState(false);
   const [hasByFund, setHasByFund] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
-  const [lastRefreshTime, setLastRefreshTime] = useState<string | null>(null);
   
-  // Extract data from SWR response
-  const latest = data?.latest || null;
-  const status = data?.status || null;
+  // Extract data from SWR response with proper guards
+  const latest: Latest | undefined = data?.latest;
+  const status: Status | undefined = data?.status;
+  
+  // Safe derived values
+  const gScore = latest?.composite_score ?? null;
+  const bandText = latest?.band?.label ?? '—';
+  const price = latest?.btc?.spot_usd ?? null;
+  const version = latest?.model_version ?? 'v3';
+  
+  // Simple derived flags
+  const hasLatest = !!latest && latest.ok !== false;
+  const hasStatus = !!status;
 
   // Check if ETF by fund data is available
   const checkByFundAvailability = useCallback(async () => {
@@ -99,38 +129,41 @@ export default function RealDashboard() {
             <div className="font-bold tracking-tight text-2xl md:text-3xl text-gray-900">
               <a href="/" className="no-underline hover:underline">GhostGauge</a> — Bitcoin Risk Dashboard
             </div>
-            <h1 className="text-xl md:text-2xl font-medium text-gray-900" aria-label={`Bitcoin G-Score ${latest?.composite_score ?? '—'}, band ${latest?.band?.label ?? '—'}`}>
-              Bitcoin G-Score: <span className={`whitespace-nowrap ${latest?.band?.color ? getBandTextColor(latest.band.color) : 'text-gray-900'}`}>
-                {latest?.composite_score ?? '—'} — {latest?.band?.label ?? '—'}
+            <h1 className="text-xl md:text-2xl font-medium text-gray-900" aria-label={`Bitcoin G-Score ${gScore ?? '—'}, band ${bandText}`}>
+              Bitcoin G-Score: <span className={`whitespace-nowrap ${getBandTextColor(bandText)}`}>
+                {gScore ?? '—'} — {bandText}
               </span>
             </h1>
           </div>
-          <p className="text-sm text-gray-500 mt-2">
-            Daily 0–100 risk score for Bitcoin (GRS v3). As of <span className="font-mono">{latest?.as_of_utc ?? '—'}</span> · 
-            <a href="/methodology" className="text-blue-600 hover:text-blue-800 underline ml-1">Methodology</a>
+          <div className="text-sm text-gray-600 mt-2">
+            Daily 0–100 risk score for Bitcoin (GRS v3). As of {latest?.as_of_utc ? new Date(latest.as_of_utc).toUTCString() : '—'} · <a href="/methodology" className="underline">Methodology</a>
+          </div>
+          <div className="mt-2 flex gap-3 text-sm">
+            <span>Price: {price != null ? `$${Intl.NumberFormat('en-US').format(price)}` : '—'}</span>
+            <span>Model: {version}</span>
             <span 
-              className="ml-2 px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded cursor-pointer hover:bg-gray-200"
+              className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded cursor-pointer hover:bg-gray-200"
               onClick={() => setProvenanceModalOpen(true)}
               title="Click to view data sources and status"
             >
               Data source: ETL
             </span>
             {data?.fetchedAt && (
-              <span className="ml-1 text-xs text-gray-500">
+              <span className="text-gray-500">
                 Last fetched: {new Date(data.fetchedAt).toLocaleTimeString()}
               </span>
             )}
-          </p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <AlertBell />
           <WeightsLauncher onOpen={() => setWhatIfModalOpen(true)} />
           <button
             onClick={handleRefresh}
-            disabled={isRefreshing}
+            disabled={isRefreshing || isValidating}
             className="px-4 py-2 rounded-lg bg-emerald-600 text-white disabled:opacity-50 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
-            {isRefreshing ? 'Refreshing…' : 'Refresh Dashboard'}
+            {isRefreshing || isValidating ? 'Refreshing…' : 'Refresh Dashboard'}
           </button>
         </div>
       </div>
@@ -201,7 +234,7 @@ export default function RealDashboard() {
       <div className="mb-6">
         <SystemStatusCard 
           factors={factors} 
-          provenance={latest?.provenance ?? []} 
+          provenance={status?.sources ?? []} 
           onOpenWeights={() => setWhatIfModalOpen(true)}
           onOpenProvenance={() => setProvenanceModalOpen(true)}
         />

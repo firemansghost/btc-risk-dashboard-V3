@@ -62,7 +62,7 @@ const fetcher = async ([_, version]: [string, number]): Promise<ArtifactData> =>
 };
 
 export function useArtifacts() {
-  const { data, error, isLoading, mutate } = useSWR(['artifacts', 0], fetcher, {
+  const { data, error, isLoading, isValidating, mutate } = useSWR(['artifacts', 0], fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
     revalidateIfStale: false,
@@ -97,6 +97,7 @@ export function useArtifacts() {
     data, 
     error, 
     isLoading, 
+    isValidating,
     refresh,
     isRefreshing: Boolean(isLoading && data) // Show loading state when we have data but are refreshing
   };

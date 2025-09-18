@@ -6,7 +6,7 @@ const PROD_BASE = process.env.NEXT_PUBLIC_PROD_BASE || 'https://ghostgauge.com';
 
 export async function fetchArtifact(path: string, version?: number): Promise<Response> {
   const versionParam = version || Date.now();
-  const url = `${ARTIFACT_BASE}${path}?v=${versionParam}`;
+  const url = `${ARTIFACT_BASE}${path}${path.includes('?') ? '&' : '?'}v=${versionParam}`;
   
   try {
     const response = await fetch(url, { cache: 'no-store' });
@@ -14,17 +14,22 @@ export async function fetchArtifact(path: string, version?: number): Promise<Res
     // If 404 and in development, try production fallback
     if (response.status === 404 && process.env.NODE_ENV === 'development') {
       console.log(`Dev fallback: fetching ${path} from production`);
-      const prodUrl = `${PROD_BASE}${path}?v=${versionParam}`;
-      return await fetch(prodUrl, { cache: 'no-store' });
+      const prodUrl = `${PROD_BASE}${path}${path.includes('?') ? '&' : '?'}v=${versionParam}`;
+      const prodResponse = await fetch(prodUrl, { cache: 'no-store' });
+      if (!prodResponse.ok) throw new Error(`Fetch failed: ${prodResponse.status} ${prodUrl}`);
+      return prodResponse;
     }
     
+    if (!response.ok) throw new Error(`Fetch failed: ${response.status} ${url}`);
     return response;
   } catch (error) {
     // If fetch fails and in development, try production fallback
     if (process.env.NODE_ENV === 'development') {
       console.log(`Dev fallback: fetching ${path} from production (error: ${error})`);
-      const prodUrl = `${PROD_BASE}${path}?v=${versionParam}`;
-      return await fetch(prodUrl, { cache: 'no-store' });
+      const prodUrl = `${PROD_BASE}${path}${path.includes('?') ? '&' : '?'}v=${versionParam}`;
+      const prodResponse = await fetch(prodUrl, { cache: 'no-store' });
+      if (!prodResponse.ok) throw new Error(`Fetch failed: ${prodResponse.status} ${prodUrl}`);
+      return prodResponse;
     }
     throw error;
   }
