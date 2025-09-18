@@ -142,26 +142,52 @@ export default function SimpleDashboard() {
         {data?.factors && data.factors.length > 0 && (
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Risk Factors</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {data.factors.map((factor: any, index: number) => (
-                <div key={factor.key || index} className="border border-gray-200 rounded-lg p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {factor.score !== null ? factor.score.toFixed(1) : 'N/A'}
-                    </span>
-                  </div>
-                  
-                  <div className="text-sm text-gray-600 mb-2">
-                    Status: <span className={`font-medium ${
-                      factor.status === 'fresh' ? 'text-green-600' : 
-                      factor.status === 'stale' ? 'text-yellow-600' : 
-                      factor.status === 'excluded' ? 'text-gray-600' : 'text-red-600'
-                    }`}>
-                      {factor.status || 'Unknown'}
-                    </span>
+                <div key={factor.key || index} className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+                  {/* Header with pillar/weight info */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {factor.score !== null ? factor.score.toFixed(1) : 'N/A'}
+                      </span>
+                    </div>
+                    
+                    {/* Pillar and weight info */}
+                    <div className="text-sm text-gray-600 mb-2">
+                      <span className="font-medium text-gray-700">
+                        {factor.pillar ? factor.pillar.charAt(0).toUpperCase() + factor.pillar.slice(1) : 'Unknown'} / 
+                        {factor.counts_toward ? factor.counts_toward.charAt(0).toUpperCase() + factor.counts_toward.slice(1) : 'Unknown'}
+                      </span>
+                      {factor.weight_pct && (
+                        <span className="ml-2 text-gray-500">
+                          (Weight {factor.weight_pct}%, Score {factor.score !== null ? factor.score.toFixed(0) : 'N/A'})
+                        </span>
+                      )}
+                      {factor.counts_toward && factor.counts_toward !== factor.pillar && (
+                        <span className="ml-2 text-xs text-blue-600">
+                          (counts toward {factor.counts_toward})
+                        </span>
+                      )}
+                    </div>
+                    
+                    {/* Status */}
+                    <div className="text-sm text-gray-600">
+                      Status: <span className={`font-medium ${
+                        factor.status === 'fresh' ? 'text-green-600' : 
+                        factor.status === 'stale' ? 'text-yellow-600' : 
+                        factor.status === 'excluded' ? 'text-gray-600' : 
+                        factor.status === 'coming soon' ? 'text-blue-600' : 'text-red-600'
+                      }`}>
+                        {factor.status || 'Unknown'}
+                      </span>
+                      {factor.status === 'stale' && (
+                        <span className="ml-2 text-xs text-yellow-600">(Data older than 48h)</span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Always show first 3 details */}
@@ -239,6 +265,27 @@ export default function SimpleDashboard() {
                       <div className="text-sm text-gray-500">No additional details available.</div>
                     </div>
                   )}
+
+                  {/* Footer with source and what's this link */}
+                  <div className="border-t border-gray-200 pt-4 mt-4">
+                    <div className="space-y-2">
+                      {factor.source && (
+                        <div className="text-xs text-gray-500">
+                          <span className="font-medium">Source:</span> {factor.source}
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center">
+                        <button className="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                          What's this?
+                        </button>
+                        {factor.reason && (
+                          <div className="text-xs text-gray-500 italic">
+                            {factor.reason}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
