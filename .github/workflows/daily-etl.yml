@@ -14,11 +14,14 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  run-etl:
+  daily:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
 
       - name: Use Node 20
         uses: actions/setup-node@v4
@@ -33,14 +36,16 @@ jobs:
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
 
-      - name: Commit & push updated artifacts
+      - name: Configure git
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/data public/signals public/extras public/alerts || true
-          if ! git diff --cached --quiet; then
-            git commit -m "ETL: update artifacts [skip ci]"
-            git push
-          else
-            echo "No data changes"
+          git config user.name "ghostgauge-bot"
+          git config user.email "bot@ghostgauge.local"
+
+      - name: Commit artifacts
+        run: |
+          git add -A public/data public/signals public/extras public/alerts
+          if git diff --cached --quiet; then
+            echo "No changes"; exit 0
           fi
+          git commit -m "chore(etl): update artifacts [skip ci]"
+          git push

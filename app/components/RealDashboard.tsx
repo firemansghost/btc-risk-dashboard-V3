@@ -18,6 +18,7 @@ import EtfBreakdownModal from './EtfBreakdownModal';
 import AlertBell from './AlertBell';
 import type { LatestSnapshot } from '@/lib/types';
 import { getBandTextColor } from '@/lib/band-colors';
+import { fetchArtifact, isUsingProdFallback } from '@/lib/artifactFetch';
 
 const fmtUsd0 = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
@@ -43,10 +44,7 @@ export default function RealDashboard() {
   const checkByFundAvailability = useCallback(async () => {
     try {
       // Check if the CSV file exists
-      const response = await fetch('/signals/etf_by_fund.csv', { 
-        method: 'HEAD',
-        cache: 'no-store' 
-      });
+      const response = await fetchArtifact('/signals/etf_by_fund.csv');
       setHasByFund(response.ok);
     } catch (error) {
       setHasByFund(false);
@@ -58,7 +56,7 @@ export default function RealDashboard() {
     // Always fetch ETL artifacts directly with cache busting
     const timestamp = Date.now();
     const url = `/data/latest.json?v=${timestamp}`;
-    const res = await fetch(url, { cache: 'no-store' });
+    const res = await fetchArtifact(url);
     const json = await res.json().catch(() => null);
     if (!res.ok || !json) {
       setError(`Failed to load ETL data: ${res.status}`);
@@ -89,8 +87,8 @@ export default function RealDashboard() {
       ];
       
       const [latestRes, statusRes] = await Promise.all([
-        fetch(urls[0], { cache: 'no-store' }),
-        fetch(urls[1], { cache: 'no-store' })
+        fetchArtifact(urls[0]),
+        fetchArtifact(urls[1])
       ]);
       
       const latestJson = await latestRes.json().catch(() => ({}));
@@ -163,6 +161,14 @@ export default function RealDashboard() {
             >
               Data source: ETL
             </span>
+            {isUsingProdFallback() && (
+              <span 
+                className="ml-1 px-2 py-1 text-xs bg-blue-100 text-blue-600 rounded"
+                title="Using production artifacts for development"
+              >
+                Using production artifacts
+              </span>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-3">

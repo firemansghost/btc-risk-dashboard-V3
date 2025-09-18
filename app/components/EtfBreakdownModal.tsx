@@ -22,6 +22,7 @@ export default function EtfBreakdownModal({ isOpen, onClose }: EtfBreakdownModal
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isStale, setIsStale] = useState(false);
+  const [dataSource, setDataSource] = useState<'local' | 'github' | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -31,7 +32,13 @@ export default function EtfBreakdownModal({ isOpen, onClose }: EtfBreakdownModal
         setLoading(true);
         setError(null);
         
-        const response = await fetch('/signals/etf_by_fund.csv', { cache: 'no-store' });
+        // Try direct path first, then proxy fallback
+        let response = await fetch('/signals/etf_by_fund.csv', { cache: 'no-store' });
+        
+        if (!response.ok && response.status === 404) {
+          // Try proxy fallback
+          response = await fetch('/api/etf_by_fund', { cache: 'no-store' });
+        }
         
         if (!response.ok) {
           if (response.status === 404) {
@@ -39,6 +46,10 @@ export default function EtfBreakdownModal({ isOpen, onClose }: EtfBreakdownModal
           }
           throw new Error(`Failed to fetch ETF breakdown data: ${response.status}`);
         }
+        
+        // Check data source from response headers
+        const source = response.headers.get('X-Data-Source') as 'local' | 'github' | null;
+        setDataSource(source);
         
         const csvText = await response.text();
         const lines = csvText.trim().split('\n');
@@ -118,6 +129,11 @@ export default function EtfBreakdownModal({ isOpen, onClose }: EtfBreakdownModal
             {isStale && (
               <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
                 Stale
+              </span>
+            )}
+            {dataSource === 'github' && (
+              <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                from GitHub
               </span>
             )}
           </div>
