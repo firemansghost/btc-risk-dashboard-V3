@@ -89,12 +89,15 @@ async function buildLatest(forceRealTime = false) {
   let etlData: any = null;
   if (!forceRealTime) {
     try {
-      const { promises: fs } = await import('node:fs');
-      const path = await import('node:path');
-      const etlPath = path.join(process.cwd(), 'public', 'data', 'latest.json');
-      const etlContent = await fs.readFile(etlPath, 'utf8');
-      etlData = JSON.parse(etlContent);
-      console.log('Refresh API: Using ETL data from', etlData.updated_at);
+      // Try to fetch ETL data via HTTP (works better in serverless environments)
+      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+      const etlResponse = await fetch(`${baseUrl}/data/latest.json`, { cache: 'no-store' });
+      if (etlResponse.ok) {
+        etlData = await etlResponse.json();
+        console.log('Refresh API: Using ETL data from', etlData.updated_at);
+      } else {
+        throw new Error(`ETL data not accessible: ${etlResponse.status}`);
+      }
     } catch (error) {
       console.warn('Refresh API: Could not load ETL data, falling back to real-time computation:', error);
     }
