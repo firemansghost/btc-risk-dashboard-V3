@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import RiskBandLegend from './RiskBandLegend';
 
 export default function SimpleDashboard() {
   const [data, setData] = useState<any>(null);
@@ -98,6 +99,11 @@ export default function SimpleDashboard() {
               <div className="text-sm text-gray-600">Model Version</div>
             </div>
           </div>
+        </div>
+
+        {/* Risk Band Legend */}
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <RiskBandLegend score={data?.composite_score || 0} />
         </div>
 
         <div className="bg-white rounded-lg shadow p-6 mb-6">
