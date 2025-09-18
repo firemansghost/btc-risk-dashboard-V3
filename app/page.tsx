@@ -1,6 +1,6 @@
-import RealDashboard from './components/RealDashboard';
+import SimpleDashboard from './components/SimpleDashboard';
 
 export default function Page() {
-  // Restored to original dashboard
-  return <RealDashboard />;
+  // Back to simple dashboard to avoid CSP issues
+  return <SimpleDashboard />;
 }
