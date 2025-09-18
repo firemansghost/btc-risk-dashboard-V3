@@ -10,9 +10,6 @@ export async function fetchArtifact(path: string, version?: number): Promise<Res
   const relativePath = path.startsWith('/') ? path : `/${path}`;
   const url = `${relativePath}${path.includes('?') ? '&' : '?'}v=${versionParam}`;
   
-  // Debug: log the constructed URL to see what's happening
-  console.log(`[fetchArtifact] Constructed URL: "${url}"`);
-  
   try {
     const response = await fetch(url, { cache: 'no-store' });
     

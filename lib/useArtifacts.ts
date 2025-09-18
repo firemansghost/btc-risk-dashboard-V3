@@ -70,14 +70,9 @@ export function useArtifacts() {
   });
 
   async function refresh(): Promise<boolean> {
-    const version = Date.now();
-    
     try {
-      // Cancel any in-flight revalidation and force a new one with fresh version
-      await mutate(() => fetcher(['artifacts', version]), { 
-        revalidate: false, 
-        optimisticData: data 
-      });
+      // Force revalidation with a new timestamp
+      await mutate();
       
       // Also update any components using individual CSVs by busting SWR cache keys
       globalMutate(
