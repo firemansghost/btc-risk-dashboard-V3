@@ -7,6 +7,7 @@ export default function SimpleDashboard() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedFactors, setExpandedFactors] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const loadData = async () => {
@@ -40,6 +41,18 @@ export default function SimpleDashboard() {
 
     loadData();
   }, []);
+
+  const toggleFactorExpansion = (key: string) => {
+    setExpandedFactors(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
+      }
+      return newSet;
+    });
+  };
 
   if (loading) {
     return (
@@ -116,20 +129,74 @@ export default function SimpleDashboard() {
         {data?.factors && data.factors.length > 0 && (
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Risk Factors</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {data.factors.map((factor: any, index: number) => (
-                <div key={factor.key || index} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-medium text-gray-900">{factor.label}</h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
+                <div key={factor.key || index} className="border border-gray-200 rounded-lg p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
+                    <div className="flex items-center space-x-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {factor.score !== null ? factor.score.toFixed(1) : 'N/A'}
+                      </span>
+                      <button
+                        onClick={() => toggleFactorExpansion(factor.key)}
+                        className="text-gray-400 hover:text-gray-600 text-lg font-bold"
+                        aria-label={expandedFactors.has(factor.key) ? 'Collapse details' : 'Expand details'}
+                      >
+                        {expandedFactors.has(factor.key) ? '−' : '+'}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="text-sm text-gray-600 mb-2">
+                    Status: <span className={`font-medium ${
+                      factor.status === 'fresh' ? 'text-green-600' : 
+                      factor.status === 'stale' ? 'text-yellow-600' : 
+                      factor.status === 'excluded' ? 'text-gray-600' : 'text-red-600'
                     }`}>
-                      {factor.score !== null ? factor.score.toFixed(1) : 'N/A'}
+                      {factor.status || 'Unknown'}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-600">
-                    Status: {factor.status || 'Unknown'}
-                  </div>
+
+                  {expandedFactors.has(factor.key) && (
+                    <div className="border-t border-gray-200 pt-4 mt-4">
+                      <div className="space-y-3">
+                        {factor.details && factor.details.length > 0 ? (
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900 mb-2">Details:</h4>
+                            <div className="space-y-2">
+                              {factor.details.map((detail: any, detailIndex: number) => (
+                                <div key={detailIndex} className="text-sm">
+                                  <span className="font-medium text-gray-700">{detail.label}:</span>
+                                  <span className="ml-2 text-gray-600">
+                                    {typeof detail.value === 'number' ? detail.value.toFixed(2) : detail.value}
+                                  </span>
+                                  {detail.window && (
+                                    <span className="ml-2 text-xs text-gray-500">({detail.window})</span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-sm text-gray-500">No additional details available.</div>
+                        )}
+                        
+                        {factor.reason && (
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900 mb-1">Note:</h4>
+                            <p className="text-sm text-gray-600">{factor.reason}</p>
+                          </div>
+                        )}
+                        
+                        <div className="text-xs text-gray-500">
+                          Last updated: {factor.last_utc ? new Date(factor.last_utc).toLocaleString() : 'Unknown'}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
