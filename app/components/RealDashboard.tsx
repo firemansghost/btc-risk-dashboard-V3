@@ -333,8 +333,8 @@ export default function RealDashboard() {
       {/* Modals */}
       {whatIfModalOpen && (
         <WhatIfWeightsModal
+          isOpen={whatIfModalOpen}
           onClose={() => setWhatIfModalOpen(false)}
-          currentWeights={latest?.transform || {}}
         />
       )}
       
