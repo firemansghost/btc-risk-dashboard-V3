@@ -99,36 +99,94 @@ export default function SimpleDashboard() {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">
-          GhostGauge — Bitcoin Risk Dashboard
-        </h1>
+        {/* Navigation Tabs */}
+        <div className="mb-6">
+          <nav className="flex space-x-8">
+            <button className="border-b-2 border-emerald-600 text-emerald-600 font-medium py-2 px-1 text-sm">
+              Overview
+            </button>
+            <button className="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium py-2 px-1 text-sm">
+              Methodology
+            </button>
+          </nav>
+        </div>
+
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Bitcoin G-Score Dashboard</h1>
+              <p className="text-sm text-gray-600 mt-1">
+                Updated {data?.as_of_utc ? new Date(data.as_of_utc).toISOString() : 'Unknown'}
+              </p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <button className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                </svg>
+                <span className="text-sm font-medium">Weights</span>
+              </button>
+              <button className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition-colors font-medium">
+                Refresh Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
         
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Current Status</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-emerald-600">{data?.composite_score || 'N/A'}</div>
-              <div className="text-sm text-gray-600">G-Score</div>
+        {/* Key Metrics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Composite Score Card */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Composite Score</h3>
+            <div className="text-4xl font-bold text-gray-900 mb-2">
+              {data?.composite_score || 'N/A'}
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{data?.band?.label || 'N/A'}</div>
-              <div className="text-sm text-gray-600">Risk Band</div>
+            <div className="text-sm text-gray-600 mb-3">
+              Band: {data?.band?.label || 'N/A'}
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
-                {data?.btc?.spot_usd ? `$${data.btc.spot_usd.toLocaleString()}` : 'N/A'}
-              </div>
-              <div className="text-sm text-gray-600">Bitcoin Price</div>
+            <div className="text-sm text-gray-700 mb-4">
+              {data?.band?.recommendation || 'No guidance available'}
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-700">{data?.model_version || 'N/A'}</div>
-              <div className="text-sm text-gray-600">Model Version</div>
+            <button className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+              Tune weights
+            </button>
+          </div>
+
+          {/* Bitcoin Price Card */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Bitcoin Price</h3>
+            <div className="text-4xl font-bold text-gray-900 mb-2">
+              ${data?.btc?.spot_usd ? data.btc.spot_usd.toLocaleString() : 'N/A'}
+            </div>
+            <div className="text-sm text-gray-600">
+              as of {data?.btc?.as_of_utc ? new Date(data.btc.as_of_utc).toISOString().replace('T', ' ').replace('Z', 'Z') : 'Unknown'}
+            </div>
+          </div>
+
+          {/* Model Version Card */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Model Version</h3>
+            <div className="text-4xl font-bold text-gray-900 mb-2">
+              {data?.model_version || 'N/A'}
+            </div>
+            <div className="text-sm text-gray-600">
+              Five-pillar risk framework
             </div>
           </div>
         </div>
 
-        {/* Risk Band Legend */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        {/* Risk Bands Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">Risk Bands</h2>
+            <div className="flex items-center space-x-4">
+              <span className="text-xs text-gray-500">cfg e610de09434312d6</span>
+              <a href="/methodology#bands" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                Learn how bands work →
+              </a>
+            </div>
+          </div>
           <RiskBandLegend score={data?.composite_score || 0} />
         </div>
 
