@@ -1,8 +1,8 @@
 {
   "version": "v3.1.0",
-  "updated_at": "2025-09-18T13:50:12.633Z",
-  "price_usd": 117335.79,
-  "composite": 43,
+  "updated_at": "2025-09-18T14:22:23.944Z",
+  "price_usd": 117826.82,
+  "composite": 41,
   "band": {
     "name": "Hold/Neutral",
     "lo": 35,
@@ -14,7 +14,7 @@
       "label": "Trend & Valuation",
       "pillar": "momentum",
       "weight": 25,
-      "score": 31,
+      "score": 25,
       "status": "fresh",
       "reason": "success",
       "details": [
@@ -24,19 +24,19 @@
         },
         {
           "label": "Distance to Bull Market Support Band",
-          "value": "13.6%"
+          "value": "14.3%"
         },
         {
           "label": "Weekly momentum (RSI proxy)",
-          "value": "80.3"
+          "value": "81.5"
         },
         {
           "label": "Current Price",
-          "value": "$117,137.4"
+          "value": "$117,822.628"
         },
         {
           "label": "200-day SMA",
-          "value": "$103,072.596"
+          "value": "$103,076.022"
         }
       ]
     },
@@ -7042,7 +7042,7 @@
   },
   "config_digest": "etl_real_factors",
   "cross": {
-    "btc_per_oz": 32.231649098482464,
-    "oz_per_btc": 0.031025406020788498
+    "btc_per_oz": 32.3974685565616,
+    "oz_per_btc": 0.03086660916898909
   }
 }
