@@ -18,15 +18,13 @@ import EtfBreakdownModal from './EtfBreakdownModal';
 import AlertBell from './AlertBell';
 import type { LatestSnapshot } from '@/lib/types';
 import { getBandTextColor } from '@/lib/band-colors';
+import { useArtifacts } from '@/lib/useArtifacts';
 
 const fmtUsd0 = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
 export default function RealDashboard() {
-  const [latest, setLatest] = useState<LatestSnapshot | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [apiDetail, setApiDetail] = useState<any>(null);
+  const { data, error, isLoading, refresh, isRefreshing } = useArtifacts();
   const [expandedFactors, setExpandedFactors] = useState<Set<string>>(new Set());
   const [whatIfModalOpen, setWhatIfModalOpen] = useState(false);
   const [provenanceModalOpen, setProvenanceModalOpen] = useState(false);
@@ -34,10 +32,12 @@ export default function RealDashboard() {
   const [selectedFactor, setSelectedFactor] = useState<{key: string, label: string} | null>(null);
   const [etfBreakdownOpen, setEtfBreakdownOpen] = useState(false);
   const [hasByFund, setHasByFund] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<{
-    lastFetched: string[];
-    lastUpdated: string | null;
-  }>({ lastFetched: [], lastUpdated: null });
+  const [refreshError, setRefreshError] = useState<string | null>(null);
+  const [lastRefreshTime, setLastRefreshTime] = useState<string | null>(null);
+  
+  // Extract data from SWR response
+  const latest = data?.latest || null;
+  const status = data?.status || null;
 
   // Check if ETF by fund data is available
   const checkByFundAvailability = useCallback(async () => {
@@ -50,75 +50,24 @@ export default function RealDashboard() {
     }
   }, []);
 
-  const loadLatest = useCallback(async () => {
-    setError(null);
-    // Always fetch ETL artifacts directly with cache busting
-    const timestamp = Date.now();
-    const url = `/data/latest.json?v=${timestamp}`;
-    const res = await fetch(url, { cache: 'no-store' });
-    const json = await res.json().catch(() => null);
-    if (!res.ok || !json) {
-      setError(`Failed to load ETL data: ${res.status}`);
-      return;
-    }
-    setLatest(json);
+  const handleRefresh = useCallback(async () => {
+    setRefreshError(null);
+    const success = await refresh();
     
-    // Update debug info
-    setDebugInfo({
-      lastFetched: [url],
-      lastUpdated: json.updated_at || null
-    });
-    
-    // Check ETF by fund availability after loading data
-    checkByFundAvailability();
-  }, [checkByFundAvailability]);
-
-  const onRefresh = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Refetch ETL artifacts with cache busting
-      const timestamp = Date.now();
-      const urls = [
-        `/data/latest.json?v=${timestamp}`,
-        `/data/status.json?v=${timestamp}`
-      ];
-      
-      const [latestRes, statusRes] = await Promise.all([
-        fetch(urls[0], { cache: 'no-store' }),
-        fetch(urls[1], { cache: 'no-store' })
-      ]);
-      
-      const latestJson = await latestRes.json().catch(() => ({}));
-      const statusJson = await statusRes.json().catch(() => ({}));
-      
-      setApiDetail({ 
-        ok: latestRes.ok, 
-        status: latestRes.status, 
-        json: { mode: 'artifacts', latest: latestJson, status: statusJson }
-      });
-      
-      if (!latestRes.ok || !latestJson) {
-        setError(`Failed to refresh ETL data: ${latestRes.status}`);
-        return;
+    if (success) {
+      setLastRefreshTime(new Date().toISOString());
+      // Check if data actually changed
+      if (data?.latest?.as_of_utc === latest?.as_of_utc) {
+        // Data didn't change, could show a toast here
+        console.log('Data already up to date');
       }
-      
-      // Update the main state with the refreshed data
-      setLatest(latestJson);
-      
-      // Update debug info
-      setDebugInfo({
-        lastFetched: urls,
-        lastUpdated: latestJson.as_of_utc || null
-      });
-      
-      // Check ETF by fund availability after refresh
-      checkByFundAvailability();
-    } finally {
-      setLoading(false);
+    } else {
+      setRefreshError('Refresh failed. Using previous snapshot.');
     }
-  }, [checkByFundAvailability]);
+    
+    // Check ETF by fund availability after refresh
+    checkByFundAvailability();
+  }, [refresh, data?.latest?.as_of_utc, latest?.as_of_utc, checkByFundAvailability]);
 
   const toggleFactorExpansion = useCallback((factorKey: string) => {
     setExpandedFactors(prev => {
@@ -132,7 +81,12 @@ export default function RealDashboard() {
     });
   }, []);
 
-  useEffect(() => { loadLatest(); }, [loadLatest]);
+  useEffect(() => {
+    // Check ETF by fund availability when data loads
+    if (data) {
+      checkByFundAvailability();
+    }
+  }, [data, checkByFundAvailability]);
 
   const factors = latest?.factors ?? [];
 
@@ -161,17 +115,22 @@ export default function RealDashboard() {
             >
               Data source: ETL
             </span>
+            {data?.fetchedAt && (
+              <span className="ml-1 text-xs text-gray-500">
+                Last fetched: {new Date(data.fetchedAt).toLocaleTimeString()}
+              </span>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-3">
           <AlertBell />
           <WeightsLauncher onOpen={() => setWhatIfModalOpen(true)} />
           <button
-            onClick={onRefresh}
-            disabled={loading}
+            onClick={handleRefresh}
+            disabled={isRefreshing}
             className="px-4 py-2 rounded-lg bg-emerald-600 text-white disabled:opacity-50 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
-            {loading ? 'Refreshing…' : 'Refresh Dashboard'}
+            {isRefreshing ? 'Refreshing…' : 'Refresh Dashboard'}
           </button>
         </div>
       </div>
@@ -399,20 +358,12 @@ export default function RealDashboard() {
 
       <HistoryChart />
 
-      {error && (
+      {(error || refreshError) && (
         <div className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg p-3 mb-6">
-          Error: {error}
+          Error: {error?.message || refreshError}
         </div>
       )}
 
-      {apiDetail && (
-        <details className="text-sm">
-          <summary className="cursor-pointer text-gray-600 mb-2">API Response Details</summary>
-          <pre className="mt-2 p-3 rounded-lg bg-gray-900 text-white overflow-auto text-xs">
-            {JSON.stringify(apiDetail, null, 2)}
-          </pre>
-        </details>
-      )}
 
       {/* What-If Weights Modal */}
       <WhatIfWeightsModal
