@@ -340,8 +340,9 @@ export default function RealDashboard() {
       
       {provenanceModalOpen && (
         <ProvenanceModal
+          open={provenanceModalOpen}
           onClose={() => setProvenanceModalOpen(false)}
-          provenance={latest?.provenance || []}
+          items={latest?.provenance || []}
         />
       )}
       
