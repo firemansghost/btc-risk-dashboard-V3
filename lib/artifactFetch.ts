@@ -8,8 +8,11 @@ export async function fetchArtifact(path: string, version?: number): Promise<Res
   const versionParam = version || Date.now();
   const url = `${ARTIFACT_BASE}${path}${path.includes('?') ? '&' : '?'}v=${versionParam}`;
   
+  console.log(`Fetching artifact: ${url}`);
+  
   try {
     const response = await fetch(url, { cache: 'no-store' });
+    console.log(`Response for ${path}:`, { status: response.status, ok: response.ok });
     
     // If 404 and in development, try production fallback
     if (response.status === 404 && process.env.NODE_ENV === 'development') {
@@ -23,6 +26,7 @@ export async function fetchArtifact(path: string, version?: number): Promise<Res
     if (!response.ok) throw new Error(`Fetch failed: ${response.status} ${url}`);
     return response;
   } catch (error) {
+    console.error(`Fetch error for ${path}:`, error);
     // If fetch fails and in development, try production fallback
     if (process.env.NODE_ENV === 'development') {
       console.log(`Dev fallback: fetching ${path} from production (error: ${error})`);
