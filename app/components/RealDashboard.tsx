@@ -357,6 +357,7 @@ export default function RealDashboard() {
       
       {etfBreakdownOpen && (
         <EtfBreakdownModal
+          isOpen={etfBreakdownOpen}
           onClose={() => setEtfBreakdownOpen(false)}
         />
       )}
