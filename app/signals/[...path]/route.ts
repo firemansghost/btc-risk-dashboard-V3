@@ -5,10 +5,11 @@ import path from 'node:path';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
   try {
-    const filePath = params.path.join('/');
+    const { path: pathArray } = await params;
+    const filePath = pathArray.join('/');
     const fullPath = path.join(process.cwd(), 'public', 'signals', filePath);
     
     // Security check - ensure file is within signals directory
