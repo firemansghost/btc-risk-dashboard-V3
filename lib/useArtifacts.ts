@@ -85,7 +85,7 @@ const createFallbackData = (): ArtifactData => {
           name: 'Fallback Data',
           ok: true,
           url: 'fallback://data',
-          ms: null,
+          ms: undefined,
           fallback: true,
           cache_used: false,
           fallback_used: true
