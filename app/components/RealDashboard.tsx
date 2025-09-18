@@ -27,10 +27,20 @@ type Latest = {
   ok: boolean;
   as_of_utc: string;
   composite_score: number;
-  band?: { label?: string; value?: number };
-  btc?: { spot_usd?: number };
-  model_version?: string;
-  factors?: Array<{
+  band: { 
+    key: string;
+    label: string;
+    range: [number, number];
+    color: string;
+    recommendation: string;
+  };
+  btc: { 
+    spot_usd: number | null; 
+    as_of_utc: string | null; 
+    source: string | null 
+  };
+  model_version: string;
+  factors: Array<{
     key: string;
     label: string;
     score: number;
