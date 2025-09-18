@@ -26,6 +26,13 @@ async function generatePerEtfBreakdown(currentDate, individualEtfFlows) {
   const csvPath = "public/signals/etf_by_fund.csv";
   const header = "date,symbol,day_flow_usd,sum21_usd,cumulative_usd";
   
+  // Ensure the signals directory exists
+  try {
+    await fs.mkdir("public/signals", { recursive: true });
+  } catch (error) {
+    // Directory might already exist, ignore error
+  }
+  
   // Load existing CSV to get historical data for rolling calculations
   let existingData = new Map(); // Map of "date,symbol" -> {day_flow_usd, sum21_usd, cumulative_usd}
   let cumulativeTotals = new Map(); // Map of symbol -> cumulative total

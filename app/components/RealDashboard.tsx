@@ -34,6 +34,10 @@ export default function RealDashboard() {
   const [selectedFactor, setSelectedFactor] = useState<{key: string, label: string} | null>(null);
   const [etfBreakdownOpen, setEtfBreakdownOpen] = useState(false);
   const [hasByFund, setHasByFund] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<{
+    lastFetched: string[];
+    lastUpdated: string | null;
+  }>({ lastFetched: [], lastUpdated: null });
 
   // Check if ETF by fund data is available
   const checkByFundAvailability = useCallback(async () => {
@@ -51,13 +55,23 @@ export default function RealDashboard() {
 
   const loadLatest = useCallback(async () => {
     setError(null);
-    const res = await fetch('/api/data/latest?ts=' + Date.now(), { cache: 'no-store' });
+    // Always fetch ETL artifacts directly with cache busting
+    const timestamp = Date.now();
+    const url = `/data/latest.json?v=${timestamp}`;
+    const res = await fetch(url, { cache: 'no-store' });
     const json = await res.json().catch(() => null);
-    if (!res.ok || !json?.ok) {
-      setError(json?.error ?? `GET /api/data/latest failed: ${res.status}`);
+    if (!res.ok || !json) {
+      setError(`Failed to load ETL data: ${res.status}`);
       return;
     }
     setLatest(json);
+    
+    // Update debug info
+    setDebugInfo({
+      lastFetched: [url],
+      lastUpdated: json.updated_at || null
+    });
+    
     // Check ETF by fund availability after loading data
     checkByFundAvailability();
   }, [checkByFundAvailability]);
@@ -69,9 +83,14 @@ export default function RealDashboard() {
       
       // Refetch ETL artifacts with cache busting
       const timestamp = Date.now();
+      const urls = [
+        `/data/latest.json?v=${timestamp}`,
+        `/data/status.json?v=${timestamp}`
+      ];
+      
       const [latestRes, statusRes] = await Promise.all([
-        fetch(`/api/data/latest?v=${timestamp}`, { cache: 'no-store' }),
-        fetch(`/data/status.json?v=${timestamp}`, { cache: 'no-store' })
+        fetch(urls[0], { cache: 'no-store' }),
+        fetch(urls[1], { cache: 'no-store' })
       ]);
       
       const latestJson = await latestRes.json().catch(() => ({}));
@@ -83,10 +102,16 @@ export default function RealDashboard() {
         json: { mode: 'artifacts', latest: latestJson, status: statusJson }
       });
       
-      if (!latestRes.ok || !latestJson?.ok) {
-        setError(latestJson?.error ?? latestRes.statusText ?? 'Refresh failed');
+      if (!latestRes.ok || !latestJson) {
+        setError(`Failed to refresh ETL data: ${latestRes.status}`);
         return;
       }
+      
+      // Update debug info
+      setDebugInfo({
+        lastFetched: urls,
+        lastUpdated: latestJson.updated_at || null
+      });
       
       // Use the ETL data directly
       setLatest(latestJson);
@@ -418,10 +443,28 @@ export default function RealDashboard() {
       )}
 
       {/* ETF Breakdown Modal */}
-      <EtfBreakdownModal
-        isOpen={etfBreakdownOpen}
-        onClose={() => setEtfBreakdownOpen(false)}
+      <EtfBreakdownModal 
+        isOpen={etfBreakdownOpen} 
+        onClose={() => setEtfBreakdownOpen(false)} 
       />
+      
+      {/* Debug overlay for dev mode */}
+      {process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEBUG === '1' && (
+        <div className="fixed bottom-4 right-4 bg-black bg-opacity-80 text-white text-xs p-3 rounded max-w-sm">
+          <div className="font-bold mb-2">Debug Info</div>
+          <div className="mb-1">
+            <strong>Last Fetched:</strong>
+            {debugInfo.lastFetched.map((url, i) => (
+              <div key={i} className="ml-2 text-gray-300">{url}</div>
+            ))}
+          </div>
+          {debugInfo.lastUpdated && (
+            <div>
+              <strong>Last Updated:</strong> {debugInfo.lastUpdated}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

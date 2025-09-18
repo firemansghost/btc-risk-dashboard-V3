@@ -1,8 +1,8 @@
 {
   "version": "v3.1.0",
-  "updated_at": "2025-09-18T11:18:42.342Z",
-  "price_usd": 117293.8,
-  "composite": 42,
+  "updated_at": "2025-09-18T13:07:39.803Z",
+  "price_usd": 117269.38,
+  "composite": 43,
   "band": {
     "name": "Hold/Neutral",
     "lo": 35,
@@ -14,7 +14,7 @@
       "label": "Trend & Valuation",
       "pillar": "momentum",
       "weight": 25,
-      "score": 29,
+      "score": 31,
       "status": "fresh",
       "reason": "success",
       "details": [
@@ -24,19 +24,19 @@
         },
         {
           "label": "Distance to Bull Market Support Band",
-          "value": "13.8%"
+          "value": "13.6%"
         },
         {
           "label": "Weekly momentum (RSI proxy)",
-          "value": "80.5"
+          "value": "80.3"
         },
         {
           "label": "Current Price",
-          "value": "$117,253.484"
+          "value": "$117,126.664"
         },
         {
           "label": "200-day SMA",
-          "value": "$103,073.176"
+          "value": "$103,072.542"
         }
       ]
     },
@@ -76,21 +76,21 @@
       "label": "Stablecoins",
       "pillar": "liquidity",
       "weight": 15,
-      "score": 19,
+      "score": 21,
       "status": "fresh",
       "reason": "success",
       "details": [
         {
           "label": "USDC Market Cap",
-          "value": "$73.5B"
+          "value": "$73.3B"
         },
         {
           "label": "30-day Change",
-          "value": "8.8%"
+          "value": "8.5%"
         },
         {
           "label": "Supply Growth Percentile",
-          "value": "74%"
+          "value": "72%"
         },
         {
           "label": "30-day Trend",
@@ -103,28 +103,28 @@
       "label": "ETF Flows",
       "pillar": "liquidity",
       "weight": 10,
-      "score": 93,
+      "score": 90,
       "status": "fresh",
       "reason": "success",
       "details": [
         {
           "label": "Latest Daily Flow",
-          "value": "$-51",
-          "tooltip": "Exact: $-51.3 (2025-09-17)"
+          "value": "$0",
+          "tooltip": "Exact: $0 (2025-09-18)"
         },
         {
           "label": "21-day Rolling Sum",
-          "value": "$2.5K",
-          "tooltip": "Exact: $2,459.1 (21-day momentum)"
+          "value": "$3.0K",
+          "tooltip": "Exact: $2,982.4 (21-day momentum)"
         },
         {
           "label": "21-day Percentile",
-          "value": "7%"
+          "value": "14%"
         },
         {
           "label": "21-day Z-Score",
-          "value": "-1.32σ",
-          "tooltip": "Normal: -1.32σ from mean"
+          "value": "-1.12σ",
+          "tooltip": "Normal: -1.12σ from mean"
         },
         {
           "label": "Total Flows (all time)",
@@ -133,11 +133,11 @@
         },
         {
           "label": "Data Points",
-          "value": "438"
+          "value": "439"
         },
         {
           "label": "Last Update",
-          "value": "1.5 days ago"
+          "value": "0.5 days ago"
         },
         {
           "label": "Source",
@@ -7042,7 +7042,7 @@
   },
   "config_digest": "etl_real_factors",
   "cross": {
-    "btc_per_oz": 31.948672213898845,
-    "oz_per_btc": 0.03130020532011228
+    "btc_per_oz": 32.03011174443198,
+    "oz_per_btc": 0.03122062164437616
   }
 }

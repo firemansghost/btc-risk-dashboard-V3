@@ -356,18 +356,11 @@ async function buildLatest(forceRealTime = false) {
 }
 
 export async function POST(req: Request) {
-  // In production, disable recompute and return 405
-  if (process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_REFRESH_MODE === 'artifacts') {
-    return NextResponse.json({ 
-      ok: false, 
-      error: 'Recompute disabled in production; use GitHub Actions.' 
-    }, { status: 405 });
-  }
-  
-  // Note: Authentication removed to allow public refresh functionality
-  // The refresh endpoint should use ETL data (which is fresh and comprehensive)
-  // instead of forcing real-time computation which can fail
-  return buildLatest(false);
+  // Always disable recompute - return 405
+  return NextResponse.json({ 
+    ok: false, 
+    error: 'Recompute disabled; ETL only.' 
+  }, { status: 405 });
 }
 
 export async function GET(req: Request) {
@@ -376,47 +369,10 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 });
   }
   
-  // In production, return artifacts mode info instead of recomputing
-  if (process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_REFRESH_MODE === 'artifacts') {
-    try {
-      const { promises: fs } = await import('node:fs');
-      const path = await import('node:path');
-      const possiblePaths = [
-        path.join(process.cwd(), 'public', 'data', 'latest.json'),
-        path.join(process.cwd(), '..', 'public', 'data', 'latest.json'),
-        './public/data/latest.json',
-        '../public/data/latest.json'
-      ];
-      
-      let content = null;
-      for (const testPath of possiblePaths) {
-        try {
-          content = await fs.readFile(testPath, 'utf8');
-          break;
-        } catch (e) {
-          // Try next path
-        }
-      }
-      
-      if (content) {
-        const etlData = JSON.parse(content);
-        return NextResponse.json({ 
-          ok: true, 
-          mode: 'artifacts', 
-          updated_at: etlData.updated_at 
-        });
-      }
-    } catch (error) {
-      console.warn('Could not read ETL data for artifacts mode:', error);
-    }
-    
-    return NextResponse.json({ 
-      ok: true, 
-      mode: 'artifacts', 
-      updated_at: null 
-    });
-  }
-  
-  // Return latest or compute if needed (dev mode)
-  return buildLatest();
+  // Always return artifacts mode - no recompute
+  return NextResponse.json({ 
+    ok: true, 
+    mode: 'artifacts',
+    message: 'Use ETL artifacts directly via /data/latest.json'
+  });
 }
