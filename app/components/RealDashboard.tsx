@@ -104,14 +104,15 @@ export default function RealDashboard() {
         return;
       }
       
+      // Update the main state with the refreshed data
+      setLatest(latestJson);
+      
       // Update debug info
       setDebugInfo({
         lastFetched: urls,
-        lastUpdated: latestJson.updated_at || null
+        lastUpdated: latestJson.as_of_utc || null
       });
       
-      // Use the ETL data directly
-      setLatest(latestJson);
       // Check ETF by fund availability after refresh
       checkByFundAvailability();
     } finally {
