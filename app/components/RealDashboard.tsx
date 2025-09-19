@@ -192,9 +192,35 @@ export default function RealDashboard() {
           {latest?.factors?.map((factor: any) => (
             <div key={factor.key} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="mb-4">
-                {/* Header Row with Title, Links, and Score */}
+                {/* Header Row with Title, Weight, and Score */}
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
+                  <div className="flex items-center space-x-3">
+                    {factor.weight_pct && (
+                      <span className="text-sm text-gray-600 font-medium">
+                        Weight: {factor.weight_pct}%
+                      </span>
+                    )}
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      Score: {factor.score !== null ? factor.score.toFixed(0) : 'N/A'}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Pillar Row with Links */}
+                <div className="flex items-center justify-between mb-1">
+                  <div className="text-sm text-gray-600">
+                    <span className="font-medium text-gray-700">
+                      {factor.pillar ? factor.pillar.charAt(0).toUpperCase() + factor.pillar.slice(1) : 'Unknown'} Pillar
+                    </span>
+                    {factor.counts_toward && factor.counts_toward !== factor.pillar && (
+                      <span className="ml-2 text-xs text-blue-600">
+                        (counts toward {factor.counts_toward})
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center space-x-3">
                     <button
                       onClick={() => openHistoryModal({key: factor.key, label: factor.label})}
@@ -208,30 +234,10 @@ export default function RealDashboard() {
                     >
                       What's this?
                     </a>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {factor.score !== null ? factor.score.toFixed(0) : 'N/A'}
-                    </span>
                   </div>
                 </div>
                 
-                {/* Pillar and Status Info */}
-                <div className="text-sm text-gray-600 mb-1">
-                  <span className="font-medium text-gray-700">
-                    {factor.pillar ? factor.pillar.charAt(0).toUpperCase() + factor.pillar.slice(1) : 'Unknown'} Pillar
-                  </span>
-                  {factor.weight_pct && (
-                    <span className="ml-2 text-gray-500">
-                      • Weight: {factor.weight_pct}%
-                    </span>
-                  )}
-                  {factor.counts_toward && factor.counts_toward !== factor.pillar && (
-                    <span className="ml-2 text-xs text-blue-600">
-                      (counts toward {factor.counts_toward})
-                    </span>
-                  )}
-                </div>
+                {/* Status Info */}
                 <div className="text-sm text-gray-600">
                   Status: <span className={`font-medium ${
                     factor.status === 'fresh' ? 'text-green-600' : 
