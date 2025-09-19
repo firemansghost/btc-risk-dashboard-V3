@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { fmtUsd0 } from '@/lib/format';
-import { getBandTextColor } from '@/lib/bands';
+import { getBandTextColor } from '@/lib/band-colors';
 import SystemStatusCard from './SystemStatusCard';
 import RiskBandLegend from './RiskBandLegend';
 import WhatIfWeightsModal from './WhatIfWeightsModal';
