@@ -38,12 +38,16 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 - **Aggregation**: Weighted composite with historical baseline percentile ranking
 
 ### On-chain Activity (5% weight, counts toward Momentum)
-- **Data Source**: Blockchain.info (transaction fees, transaction count, hash rate)
+- **Data Source**: Blockchain.info + CoinGecko (fees, transactions, hash rate, prices, volumes)
 - **Window**: 30 days of daily data
-- **Transform**: Composite score (40% fees + 30% tx count + 30% hash rate)
-- **Mapping**: Higher activity = Higher risk (not inverted)
+- **Transform**: Multi-factor composite (Congestion 35%, Activity 30%, NVT 35% + Security adjustment)
+  - **Network Congestion**: Transaction fees relative to historical levels
+  - **Transaction Activity**: Normalized daily transaction count
+  - **NVT Ratio**: Network Value to Transactions (market cap / volume proxy)
+  - **Hash Rate Security**: Network security bonus/penalty (±5 points)
+- **Mapping**: Higher congestion + activity + NVT = Higher risk; higher security = Lower risk
 - **Staleness TTL**: 1 day
-- **Aggregation**: Multi-factor percentile ranking
+- **Aggregation**: Weighted composite with security adjustment and percentile ranking
 
 ## Momentum Pillar (25% total weight)
 

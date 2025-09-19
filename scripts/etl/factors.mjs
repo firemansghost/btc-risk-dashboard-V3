@@ -1138,24 +1138,28 @@ async function computeTermLeverage() {
   }
 }
 
-// 7. ON-CHAIN ACTIVITY (blockchain.info)
+// 7. ON-CHAIN ACTIVITY (Multi-source comprehensive analysis)
 async function computeOnchain() {
   try {
-    // Fetch multiple metrics from blockchain.info for comprehensive analysis
-    const [feesRes, txCountRes, hashRateRes] = await Promise.all([
+    // Fetch multiple metrics from various sources for comprehensive analysis
+    const [feesRes, txCountRes, hashRateRes, tvlRes, pricesRes] = await Promise.all([
       fetch("https://api.blockchain.info/charts/transaction-fees?timespan=30days&format=json", { headers: { "User-Agent": "btc-risk-etl" } }),
       fetch("https://api.blockchain.info/charts/n-transactions?timespan=30days&format=json", { headers: { "User-Agent": "btc-risk-etl" } }),
-      fetch("https://api.blockchain.info/charts/hash-rate?timespan=30days&format=json", { headers: { "User-Agent": "btc-risk-etl" } })
+      fetch("https://api.blockchain.info/charts/hash-rate?timespan=30days&format=json", { headers: { "User-Agent": "btc-risk-etl" } }),
+      fetch("https://api.blockchain.info/charts/total-bitcoins?timespan=30days&format=json", { headers: { "User-Agent": "btc-risk-etl" } }),
+      fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30&interval=daily")
     ]);
     
     if (!feesRes.ok) throw new Error(`Blockchain.info fees ${feesRes.status}`);
     if (!txCountRes.ok) throw new Error(`Blockchain.info tx count ${txCountRes.status}`);
     if (!hashRateRes.ok) throw new Error(`Blockchain.info hash rate ${hashRateRes.status}`);
     
-    const [feesData, txCountData, hashRateData] = await Promise.all([
+    const [feesData, txCountData, hashRateData, tvlData, pricesData] = await Promise.all([
       feesRes.json(),
       txCountRes.json(),
-      hashRateRes.json()
+      hashRateRes.json(),
+      tvlRes.ok ? tvlRes.json() : null,
+      pricesRes.ok ? pricesRes.json() : null
     ]);
     
     // Process transaction fees
@@ -1174,62 +1178,105 @@ async function computeOnchain() {
     // Process hash rate
     const hashRates = hashRateData.values?.map(item => Number(item.y)).filter(Number.isFinite) || [];
     
-    // Calculate metrics
-    const avgFee = fees.reduce((sum, fee) => sum + fee, 0) / fees.length;
+    // Process price data for NVT-like calculations
+    const prices = pricesData?.prices?.map(([timestamp, price]) => price).filter(Number.isFinite) || [];
+    const volumes = pricesData?.total_volumes?.map(([timestamp, volume]) => volume).filter(Number.isFinite) || [];
+    
+    // Multi-factor analysis
+    // 1. Network Congestion (35% weight) - fees relative to activity
     const latestFee = fees[fees.length - 1];
+    const avgFee = fees.reduce((sum, fee) => sum + fee, 0) / fees.length;
     const maxFee = Math.max(...fees);
     const minFee = Math.min(...fees);
     
-    // Calculate composite activity score based on multiple factors
-    let activityScore = 0;
-    let activityFactors = [];
-    
-    // Factor 1: Transaction fees (40% weight)
     const feePercentile = percentileRank(fees, latestFee);
-    activityScore += feePercentile * 0.4;
-    activityFactors.push(`Fees: ${(feePercentile * 100).toFixed(0)}%`);
+    const congestionScore = riskFromPercentile(feePercentile, { invert: false, k: 3 });
+
+    // 2. Transaction Activity (30% weight) - normalized transaction count
+    let activityScore = 50; // neutral default
+    let latestTxCount = 0;
+    let avgTxCount = 0;
     
-    // Factor 2: Transaction count (30% weight) - if available
     if (txCounts.length > 0) {
-      const latestTxCount = txCounts[txCounts.length - 1];
-      const txCountPercentile = percentileRank(txCounts, latestTxCount);
-      activityScore += txCountPercentile * 0.3;
-      activityFactors.push(`Tx Count: ${(txCountPercentile * 100).toFixed(0)}%`);
-    } else {
-      activityScore += 0.5 * 0.3; // Default to 50% if no data
-      activityFactors.push(`Tx Count: No data`);
+      latestTxCount = txCounts[txCounts.length - 1];
+      avgTxCount = txCounts.reduce((sum, count) => sum + count, 0) / txCounts.length;
+      const txPercentile = percentileRank(txCounts, latestTxCount);
+      activityScore = riskFromPercentile(txPercentile, { invert: false, k: 3 });
     }
+
+    // 3. Network Value to Transactions (NVT) Proxy (35% weight)
+    let nvtScore = 50; // neutral default
+    let nvtRatio = 0;
     
-    // Factor 3: Hash rate (30% weight) - if available
-    if (hashRates.length > 0) {
-      const latestHashRate = hashRates[hashRates.length - 1];
-      const hashRatePercentile = percentileRank(hashRates, latestHashRate);
-      activityScore += hashRatePercentile * 0.3;
-      activityFactors.push(`Hash Rate: ${(hashRatePercentile * 100).toFixed(0)}%`);
-    } else {
-      activityScore += 0.5 * 0.3; // Default to 50% if no data
-      activityFactors.push(`Hash Rate: No data`);
+    if (prices.length > 0 && volumes.length > 0 && txCounts.length > 0) {
+      const latestPrice = prices[prices.length - 1];
+      const latestVolume = volumes[volumes.length - 1];
+      
+      // Simple NVT proxy: Market Cap / Transaction Volume
+      const marketCap = latestPrice * 21000000; // Approximate circulating supply
+      nvtRatio = latestVolume > 0 ? marketCap / latestVolume : 0;
+      
+      // Build NVT series for percentile ranking
+      const nvtSeries = [];
+      const minLength = Math.min(prices.length, volumes.length, txCounts.length);
+      for (let i = 0; i < minLength; i++) {
+        const mc = prices[i] * 21000000;
+        const vol = volumes[i];
+        if (vol > 0) nvtSeries.push(mc / vol);
+      }
+      
+      if (nvtSeries.length > 0) {
+        const nvtPercentile = percentileRank(nvtSeries, nvtRatio);
+        nvtScore = riskFromPercentile(nvtPercentile, { invert: false, k: 3 }); // Higher NVT = higher risk
+      }
     }
+
+    // 4. Hash Rate Security (bonus factor) - network security
+    let securityScore = 50; // neutral default
+    let latestHashRate = 0;
+    let hashRateGrowth = 0;
     
-    // Convert composite score to risk score
-    // Higher activity = higher risk (speculation)
-    const score = riskFromPercentile(activityScore, { invert: false, k: 3 });
+    if (hashRates.length > 7) {
+      latestHashRate = hashRates[hashRates.length - 1];
+      const weekAgoHashRate = hashRates[hashRates.length - 8];
+      hashRateGrowth = ((latestHashRate - weekAgoHashRate) / weekAgoHashRate) * 100;
+      
+      const hashPercentile = percentileRank(hashRates, latestHashRate);
+      securityScore = riskFromPercentile(hashPercentile, { invert: true, k: 3 }); // Higher hash rate = lower risk
+    }
+
+    // Composite score (weighted blend)
+    const compositeScore = Math.round(
+      congestionScore * 0.35 + 
+      activityScore * 0.30 + 
+      nvtScore * 0.35
+    );
     
-    // Determine network activity level
-    let networkActivity = "Low";
-    if (activityScore > 0.8) networkActivity = "High";
-    else if (activityScore > 0.5) networkActivity = "Moderate";
+    // Apply security adjustment (±5 points max)
+    const securityAdjustment = Math.round((securityScore - 50) * 0.1);
+    const finalScore = Math.max(0, Math.min(100, compositeScore + securityAdjustment));
+    
+    // Determine network state
+    let networkState = "Normal";
+    if (latestFee > avgFee * 2) networkState = "Congested";
+    else if (latestFee < avgFee * 0.5) networkState = "Quiet";
+    
+    let activityLevel = "Moderate";
+    if (activityScore > 70) activityLevel = "High";
+    else if (activityScore < 30) activityLevel = "Low";
     
     return { 
-      score, 
+      score: finalScore, 
       reason: "success",
       details: [
         { label: "Current Transaction Fees", value: `$${latestFee.toFixed(2)}` },
-        { label: "30-day Average", value: `$${avgFee.toFixed(2)}` },
-        { label: "30-day Range", value: `$${minFee.toFixed(2)} - $${maxFee.toFixed(2)}` },
-        { label: "Activity Percentile", value: `${(activityScore * 100).toFixed(0)}%` },
-        { label: "Network Activity", value: networkActivity },
-        { label: "Activity Factors", value: activityFactors.join(", ") }
+        { label: "Fee vs 30d Average", value: `${((latestFee / avgFee - 1) * 100).toFixed(1)}%` },
+        { label: "Daily Transactions", value: latestTxCount > 0 ? latestTxCount.toLocaleString() : "N/A" },
+        { label: "Hash Rate (7d growth)", value: latestHashRate > 0 ? `${hashRateGrowth.toFixed(1)}%` : "N/A" },
+        { label: "Network State", value: networkState },
+        { label: "Activity Level", value: activityLevel },
+        { label: "NVT Ratio", value: nvtRatio > 0 ? nvtRatio.toFixed(0) : "N/A" },
+        { label: "Component Scores", value: `Congestion: ${congestionScore}, Activity: ${activityScore}, NVT: ${nvtScore}` }
       ]
     };
   } catch (error) {

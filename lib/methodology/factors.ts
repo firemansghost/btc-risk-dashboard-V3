@@ -101,18 +101,19 @@ export const factorContent: FactorContent[] = [
     key: 'onchain',
     pillar: 'Social / Attention (counts toward momentum)',
     what: [
-      'Fees in USD (7-day avg)',
-      'Mempool size',
-      'Miner revenue proxies'
+      'Network Congestion (transaction fees vs history) - 35% weight',
+      'Transaction Activity (daily transaction count) - 30% weight',
+      'NVT Ratio (Network Value to Transactions proxy) - 35% weight',
+      'Hash Rate Security (network security adjustment) - ±5 points'
     ],
-    why: 'Activity/congestion reflects demand and cycle heat.',
-    affects: '↑ fees/congestion in speculative phases ⇒ ↑ risk; cool-off ⇒ ↓ risk',
-    cadence: '~10 min; stale >6h',
+    why: 'Multi-dimensional on-chain analysis captures network usage patterns and valuation metrics. Congestion shows demand pressure, activity reflects adoption, NVT indicates overvaluation, and hash rate provides security context.',
+    affects: '↑ congestion + ↑ activity + ↑ NVT ⇒ ↑ risk; ↑ hash rate security ⇒ slight ↓ risk adjustment',
+    cadence: 'Daily updates; stale >24h',
     sources: [
-      { label: 'Blockchain.info', url: 'https://blockchain.info/' },
-      { label: 'On-chain APIs', url: 'https://blockchain.info/' }
+      { label: 'Blockchain.info (fees, transactions, hash rate)', url: 'https://blockchain.info/' },
+      { label: 'CoinGecko (prices, volumes)', url: 'https://www.coingecko.com/' }
     ],
-    caveats: 'Spikes can be event-driven.'
+    caveats: 'NVT proxy uses trading volume instead of transaction volume. Hash rate spikes can be temporary. Fee spikes may be event-driven (ordinals, etc.).'
   },
   {
     key: 'social_interest',
