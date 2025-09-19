@@ -166,43 +166,156 @@ async function computeTrendValuation() {
   }
 }
 
-// 2. SOCIAL INTEREST (Fear & Greed Index)
+// 2. SOCIAL INTEREST (Multi-source sentiment analysis)
 async function computeSocialInterest() {
   try {
-    const url = "https://api.alternative.me/fng/?limit=0&format=json";
-    const res = await fetch(url, { headers: { "User-Agent": "btc-risk-etl" } });
-    if (!res.ok) throw new Error(`Fear & Greed ${res.status}`);
+    // Fetch multiple sentiment sources in parallel
+    const [fngRes, trendsRes] = await Promise.all([
+      fetch("https://api.alternative.me/fng/?limit=30&format=json", { headers: { "User-Agent": "btc-risk-etl" } }),
+      // Google Trends proxy using CoinGecko search trends (limited but available)
+      fetch("https://api.coingecko.com/api/v3/search/trending", { headers: { "User-Agent": "btc-risk-etl" } })
+    ]);
     
-    const data = await res.json();
-    if (!Array.isArray(data?.data) || data.data.length === 0) {
-      return { score: null, reason: "no_data" };
+    if (!fngRes.ok) throw new Error(`Fear & Greed ${fngRes.status}`);
+    
+    const [fngData, trendsData] = await Promise.all([
+      fngRes.json(),
+      trendsRes.ok ? trendsRes.json() : null
+    ]);
+    
+    if (!Array.isArray(fngData?.data) || fngData.data.length === 0) {
+      return { score: null, reason: "no_fng_data" };
     }
 
-    // Extract values and get the latest (most recent) value
-    const allValues = data.data
-      .map(item => Number(item.value))
-      .filter(Number.isFinite);
+    // Process Fear & Greed Index data
+    const fngValues = fngData.data
+      .map(item => ({
+        value: Number(item.value),
+        timestamp: item.timestamp
+      }))
+      .filter(item => Number.isFinite(item.value));
 
-    if (allValues.length === 0) return { score: null, reason: "no_valid_data" };
+    if (fngValues.length === 0) return { score: null, reason: "no_valid_fng_data" };
 
-    // Get the latest (most recent) value
-    const latest = allValues[allValues.length - 1];
+    const latestFng = fngValues[0].value; // Most recent first
+    const values = fngValues.map(item => item.value);
     
-    // Sort values for percentile ranking
-    const sortedValues = [...allValues].sort((a, b) => a - b);
-    const percentile = percentileRank(sortedValues, latest);
+    // Multi-factor analysis
+    // 1. Fear & Greed Level (50% weight) - absolute sentiment
+    const fngPercentile = percentileRank(values, latestFng);
+    const fngScore = riskFromPercentile(fngPercentile, { invert: false, k: 3 });
+
+    // 2. Sentiment Momentum (30% weight) - 7-day trend
+    let momentumScore = 50; // neutral default
+    let sentimentTrend = "Stable";
     
-    // Higher Fear & Greed value (greed) = higher risk (no inversion)
-    const score = riskFromPercentile(percentile, { invert: false, k: 3 });
+    if (fngValues.length >= 7) {
+      const recent7d = fngValues.slice(0, 7).map(item => item.value);
+      const previous7d = fngValues.slice(7, 14).map(item => item.value);
+      
+      if (previous7d.length > 0) {
+        const recentAvg = recent7d.reduce((sum, val) => sum + val, 0) / recent7d.length;
+        const previousAvg = previous7d.reduce((sum, val) => sum + val, 0) / previous7d.length;
+        const trendChange = recentAvg - previousAvg;
+        
+        // Build trend series for percentile ranking
+        const trendSeries = [];
+        for (let i = 7; i < fngValues.length - 7; i++) {
+          const recentPeriod = fngValues.slice(i - 7, i).map(item => item.value);
+          const previousPeriod = fngValues.slice(i, i + 7).map(item => item.value);
+          if (recentPeriod.length > 0 && previousPeriod.length > 0) {
+            const rAvg = recentPeriod.reduce((sum, val) => sum + val, 0) / recentPeriod.length;
+            const pAvg = previousPeriod.reduce((sum, val) => sum + val, 0) / previousPeriod.length;
+            trendSeries.push(rAvg - pAvg);
+          }
+        }
+        
+        if (trendSeries.length > 0) {
+          const trendPercentile = percentileRank(trendSeries, trendChange);
+          momentumScore = riskFromPercentile(trendPercentile, { invert: false, k: 3 });
+        }
+        
+        // Determine trend direction
+        if (trendChange > 5) sentimentTrend = "Improving (Bullish)";
+        else if (trendChange < -5) sentimentTrend = "Deteriorating (Bearish)";
+        else sentimentTrend = "Stable";
+      }
+    }
+
+    // 3. Attention Volatility (20% weight) - sentiment instability
+    let volatilityScore = 50; // neutral default
+    let sentimentVolatility = 0;
+    
+    if (fngValues.length >= 14) {
+      const recentValues = fngValues.slice(0, 14).map(item => item.value);
+      const mean = recentValues.reduce((sum, val) => sum + val, 0) / recentValues.length;
+      const variance = recentValues.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / recentValues.length;
+      sentimentVolatility = Math.sqrt(variance);
+      
+      // Build volatility series for percentile ranking
+      const volSeries = [];
+      for (let i = 14; i < fngValues.length; i++) {
+        const subset = fngValues.slice(i - 14, i).map(item => item.value);
+        const subMean = subset.reduce((sum, val) => sum + val, 0) / subset.length;
+        const subVar = subset.reduce((sum, val) => sum + Math.pow(val - subMean, 2), 0) / subset.length;
+        volSeries.push(Math.sqrt(subVar));
+      }
+      
+      if (volSeries.length > 0) {
+        const volPercentile = percentileRank(volSeries, sentimentVolatility);
+        volatilityScore = riskFromPercentile(volPercentile, { invert: false, k: 3 }); // Higher volatility = higher risk
+      }
+    }
+
+    // Check for Bitcoin trending status (bonus factor)
+    let trendingBonus = 0;
+    let bitcoinRank = "N/A";
+    
+    if (trendsData?.coins && Array.isArray(trendsData.coins)) {
+      const bitcoinTrending = trendsData.coins.find(coin => 
+        coin.item?.id === 'bitcoin' || coin.item?.symbol?.toLowerCase() === 'btc'
+      );
+      
+      if (bitcoinTrending) {
+        const rank = trendsData.coins.indexOf(bitcoinTrending) + 1;
+        bitcoinRank = `#${rank}`;
+        
+        // Higher trending rank = higher attention = higher risk
+        if (rank <= 3) trendingBonus = 10;
+        else if (rank <= 7) trendingBonus = 5;
+        else trendingBonus = 0;
+      }
+    }
+
+    // Composite score (weighted blend + trending bonus)
+    const compositeScore = Math.round(
+      fngScore * 0.5 + 
+      momentumScore * 0.3 + 
+      volatilityScore * 0.2
+    );
+    
+    const finalScore = Math.min(100, compositeScore + trendingBonus);
+    
+    // Determine overall sentiment regime
+    let sentimentRegime = "Neutral";
+    if (latestFng >= 75) sentimentRegime = "Extreme Greed";
+    else if (latestFng >= 55) sentimentRegime = "Greed";
+    else if (latestFng >= 45) sentimentRegime = "Neutral";
+    else if (latestFng >= 25) sentimentRegime = "Fear";
+    else sentimentRegime = "Extreme Fear";
     
     return { 
-      score, 
+      score: finalScore, 
       reason: "success",
       details: [
-        { label: "Fear & Greed Index", value: latest.toString() },
-        { label: "Index Percentile (1y)", value: `${(percentile * 100).toFixed(0)}%` },
-        { label: "Sentiment Level", value: latest >= 75 ? "Extreme Greed" : latest >= 55 ? "Greed" : latest >= 45 ? "Neutral" : latest >= 25 ? "Fear" : "Extreme Fear" },
-        { label: "Data Points", value: allValues.length.toString() }
+        { label: "Fear & Greed Index", value: latestFng.toString() },
+        { label: "Sentiment Regime", value: sentimentRegime },
+        { label: "7-day Sentiment Trend", value: sentimentTrend },
+        { label: "Sentiment Volatility (14d)", value: sentimentVolatility.toFixed(1) },
+        { label: "Bitcoin Trending Rank", value: bitcoinRank },
+        { label: "Index Percentile (30d)", value: `${(fngPercentile * 100).toFixed(0)}%` },
+        { label: "Trending Bonus", value: trendingBonus > 0 ? `+${trendingBonus}` : "0" },
+        { label: "Component Scores", value: `F&G: ${fngScore}, Momentum: ${momentumScore}, Vol: ${volatilityScore}` }
       ]
     };
   } catch (error) {

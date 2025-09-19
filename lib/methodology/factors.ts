@@ -119,17 +119,19 @@ export const factorContent: FactorContent[] = [
     key: 'social_interest',
     pillar: 'Social / Attention',
     what: [
-      'Google Trends "Bitcoin" search volume',
-      'Fear & Greed Index (market sentiment)'
+      'Fear & Greed Index Level (0-100 sentiment) - 50% weight',
+      'Sentiment Momentum (7-day trend analysis) - 30% weight',
+      'Attention Volatility (14-day sentiment instability) - 20% weight',
+      'Trending Bonus (Bitcoin search ranking) - +0 to +10 points'
     ],
-    why: 'Retail attention spikes cluster near tops; apathy near bottoms.',
-    affects: '↑ attention/euphoria ⇒ ↑ risk; muted interest ⇒ ↓ risk',
-    cadence: 'Daily; stale >48h',
+    why: 'Multi-dimensional sentiment analysis captures both absolute sentiment and trend dynamics. F&G level shows current sentiment, momentum identifies trend shifts, volatility measures instability, and trending shows attention spikes.',
+    affects: '↑ greed + ↑ improving sentiment + ↑ volatility + ↑ trending attention ⇒ ↑ risk; fear + stable/deteriorating sentiment ⇒ ↓ risk',
+    cadence: 'Daily updates; stale >48h',
     sources: [
-      { label: 'Google Trends', url: 'https://trends.google.com/trends/explore?q=Bitcoin' },
-      { label: 'Fear & Greed Index', url: 'https://feargreedmeter.com/' }
+      { label: 'Alternative.me Fear & Greed Index', url: 'https://alternative.me/crypto/fear-and-greed-index/' },
+      { label: 'CoinGecko trending searches', url: 'https://www.coingecko.com/' }
     ],
-    caveats: 'News cycles distort short periods.'
+    caveats: 'Trending data limited to CoinGecko search proxy. News cycles can cause temporary sentiment spikes. 30-day F&G window may miss longer-term sentiment shifts.'
   },
   {
     key: 'macro_overlay',
