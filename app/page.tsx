@@ -1,12 +1,13 @@
 import SimpleDashboard from './components/SimpleDashboard';
 import RealDashboard from './components/RealDashboard';
 
-export default function Page({
+export default async function Page({
   searchParams
 }: {
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const viewParam = searchParams?.view;
+  const sp = await searchParams;
+  const viewParam = sp?.view;
   const view = Array.isArray(viewParam) ? viewParam[0] : viewParam;
 
   // Priority: URL param > env flag > default to RealDashboard
