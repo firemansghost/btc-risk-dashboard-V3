@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-09-19T13:55:47.420Z",
+  "updated_at": "2025-09-19T16:54:16.871Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -21,7 +21,7 @@
     },
     {
       "name": "FRED API (if key provided)",
-      "ok": false,
+      "ok": true,
       "ms": null,
       "url": "https://fred.stlouisfed.org/"
     },
@@ -29,19 +29,31 @@
       "name": "Stooq",
       "ok": true,
       "url": "https://stooq.com/",
-      "ms": 952,
+      "ms": 984,
       "fallback": true,
       "cache_used": false,
       "fallback_used": true
+    },
+    {
+      "name": "History: net_liquidity",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 1
+    },
+    {
+      "name": "History: macro_overlay",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 1
     }
   ],
   "factors_computed": 8,
-  "factors_successful": 6,
+  "factors_successful": 8,
   "gold_cross_rates": {
     "status": "success",
     "source": "Stooq",
     "fallback_used": true,
-    "latency_ms": 952
+    "latency_ms": 984
   },
   "satoshis_per_dollar": {
     "status": "success",
@@ -49,5 +61,5 @@
     "derived": true
   },
   "etf_schema_hash": "cd3800",
-  "etf_schema_last_check": "2025-09-19T13:55:45.371Z"
+  "etf_schema_last_check": "2025-09-19T16:54:14.282Z"
 }

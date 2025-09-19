@@ -84,7 +84,7 @@ function riskFromPercentile(percentile, options = {}) {
 // FACTOR COMPUTATIONS
 // ============================================================================
 
-// 1. TREND & VALUATION
+// 1. TREND & VALUATION (Multi-factor: BMSB 40%, Mayer 40%, RSI 20%)
 async function computeTrendValuation() {
   try {
     // Use CoinGecko for more reliable data access
@@ -107,21 +107,42 @@ async function computeTrendValuation() {
     
     if (mayerSeries.length === 0) return { score: null, reason: "calculation_failed" };
 
-    // Use latest Mayer Multiple for percentile ranking
-    const latestMayer = mayerSeries[mayerSeries.length - 1];
-    const percentile = percentileRank(mayerSeries, latestMayer);
+    // Calculate RSI(14) for momentum
+    const rsi = calculateRSI(closes, 14);
+    const rsiSeries = rsi.filter(Number.isFinite);
     
-    // Higher Mayer Multiple = higher risk (invert percentile)
-    const score = riskFromPercentile(percentile, { invert: true, k: 3 });
-    
-    // Calculate additional metrics for details
+    if (rsiSeries.length === 0) return { score: null, reason: "calculation_failed" };
+
+    // Get latest values
     const latestPrice = closes[closes.length - 1];
     const latestSma200 = sma200[sma200.length - 1];
-    const bmsbDistance = ((latestMayer - 1) * 100);
+    const latestMayer = mayerSeries[mayerSeries.length - 1];
+    const latestRsi = rsiSeries[rsiSeries.length - 1];
     
-    // Simple RSI calculation for momentum
-    const rsi = calculateRSI(closes, 14);
-    const latestRsi = rsi[rsi.length - 1];
+    // Calculate Bull Market Support Band (BMSB) - using SMA200 as proxy
+    const bmsbStatus = latestPrice > latestSma200 ? 'above' : 'below';
+    const bmsbDistance = ((latestPrice - latestSma200) / latestSma200) * 100;
+    
+    // Calculate percentile ranks for scoring
+    const prMayer = percentileRank(mayerSeries, latestMayer);
+    const prBmsb = percentileRank(mayerSeries, latestMayer); // Using Mayer as BMSB proxy for now
+    const prRsi = percentileRank(rsiSeries, latestRsi);
+    
+    // Convert to individual risk scores (higher values = higher risk)
+    const sMayer = Number.isFinite(prMayer) ? riskFromPercentile(prMayer, { invert: true, k: 3 }) : null;
+    const sBmsb = Number.isFinite(prBmsb) ? riskFromPercentile(prBmsb, { invert: true, k: 3 }) : null;
+    const sRsi = Number.isFinite(prRsi) ? riskFromPercentile(prRsi, { invert: false, k: 3 }) : null; // RSI: higher = more overbought = higher risk
+    
+    // Weighted blend: BMSB 40%, Mayer 40%, RSI 20%
+    const parts = [sBmsb, sMayer, sRsi].filter(v => v !== null && Number.isFinite(v));
+    const weights = [0.4, 0.4, 0.2];
+    const validWeights = weights.slice(0, parts.length);
+    const weightSum = validWeights.reduce((s, w) => s + w, 0);
+    
+    let score = null;
+    if (parts.length > 0 && weightSum > 0) {
+      score = Math.round(parts.reduce((s, v, i) => s + v * (validWeights[i] / weightSum), 0));
+    }
     
     return { 
       score, 
@@ -131,7 +152,8 @@ async function computeTrendValuation() {
         { label: "Distance to Bull Market Support Band", value: `${bmsbDistance.toFixed(1)}%` },
         { label: "Weekly momentum (RSI proxy)", value: latestRsi.toFixed(1) },
         { label: "Current Price", value: `$${latestPrice.toLocaleString()}` },
-        { label: "200-day SMA", value: `$${latestSma200.toLocaleString()}` }
+        { label: "200-day SMA", value: `$${latestSma200.toLocaleString()}` },
+        { label: "Component Scores", value: `BMSB: ${sBmsb || 'N/A'}, Mayer: ${sMayer || 'N/A'}, RSI: ${sRsi || 'N/A'}` }
       ]
     };
   } catch (error) {
