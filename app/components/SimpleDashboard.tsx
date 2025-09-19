@@ -8,6 +8,8 @@ import RiskBandLegend from './RiskBandLegend';
 import SystemStatusCard from './SystemStatusCard';
 
 export default function SimpleDashboard() {
+  console.log('SimpleDashboard: component mounting');
+  
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

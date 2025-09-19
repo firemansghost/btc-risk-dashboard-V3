@@ -10,6 +10,8 @@ function DashboardView({ latest, status }: { latest: any; status: any }) {
 }
 
 export default function RealDashboard() {
+  console.log('RealDashboard: component mounting');
+  
   const [latest, setLatest] = useState<any|null>(null);
   const [status, setStatus] = useState<any|null>(null);
   const [error, setError] = useState<string|null>(null);
