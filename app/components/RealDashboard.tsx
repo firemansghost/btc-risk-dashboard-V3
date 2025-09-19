@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { withTimeout } from '@/lib/withTimeout';
 import HistoryChart from './HistoryChart';
 import PillarBadge from './PillarBadge';
 import InfoTooltip from './InfoTooltip';
@@ -118,11 +119,10 @@ export default function RealDashboard() {
   const loadData = useCallback(async () => {
     try {
       console.log('RealDashboard: Loading data...');
-      
-      const [latestRes, statusRes] = await Promise.all([
+      const [latestRes, statusRes] = await withTimeout(Promise.all([
         fetch('/data/latest.json', { cache: 'no-store' }),
         fetch('/data/status.json', { cache: 'no-store' })
-      ]);
+      ]), 12000, 'loadData fetch artifacts');
 
       console.log('RealDashboard: Fetch responses:', {
         latest: { ok: latestRes.ok, status: latestRes.status },
@@ -130,10 +130,10 @@ export default function RealDashboard() {
       });
 
       if (latestRes.ok && statusRes.ok) {
-        const [latestData, statusData] = await Promise.all([
+        const [latestData, statusData] = await withTimeout(Promise.all([
           latestRes.json(),
           statusRes.json()
-        ]);
+        ]), 8000, 'parse artifacts json');
         console.log('RealDashboard: Data loaded successfully:', { latest: !!latestData, status: !!statusData });
         setLatest(latestData);
         setStatus(statusData);

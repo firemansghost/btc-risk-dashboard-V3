@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import SiteFooter from './components/SiteFooter';
 import Navigation from './components/Navigation';
+import { assertEnv } from '@/lib/assertEnv';
 
 const inter = Inter({ 
   subsets: ['latin'], 
@@ -54,6 +55,17 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // Early env sanity (logged only)
+  if (typeof window === 'undefined') {
+    assertEnv([
+      { key: 'FRED_API_KEY', required: false, note: 'Optional for Net Liquidity' },
+      { key: 'METALS_API_KEY', required: false, note: 'Optional for Gold cross' },
+      { key: 'ALPHAVANTAGE_API_KEY', required: false, note: 'Optional for Gold cross' },
+      { key: 'RISK_REFRESH_TOKEN', required: false },
+      { key: 'NEXT_PUBLIC_USE_SIMPLE_DASHBOARD', required: false },
+      { key: 'NEXT_PUBLIC_SHOW_VIEW_BADGE', required: false },
+    ]);
+  }
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',

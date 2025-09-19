@@ -6,6 +6,10 @@ export default async function Page({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  // Ensure dynamic rendering to avoid ISR cache causing stale view selection
+  // @ts-expect-error next-dynamic-flag
+  export const dynamic = 'force-dynamic';
+
   const sp = await searchParams;
   const viewParam = sp?.view;
   const view = Array.isArray(viewParam) ? viewParam[0] : viewParam;
