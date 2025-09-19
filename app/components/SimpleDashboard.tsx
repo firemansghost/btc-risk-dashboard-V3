@@ -134,44 +134,60 @@ export default function SimpleDashboard() {
           </div>
         </div>
         
-        {/* Key Metrics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Key Metrics Cards - 5 Box Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           {/* Composite Score Card */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Composite Score</h3>
-            <div className="text-4xl font-bold text-gray-900 mb-2">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Composite Score</h3>
+            <div className="text-3xl font-bold text-gray-900 mb-1">
               {data?.composite_score || 'N/A'}
             </div>
-            <div className="text-sm text-gray-600 mb-3">
+            <div className="text-xs text-gray-600">
               Band: {data?.band?.label || 'N/A'}
             </div>
-            <div className="text-sm text-gray-700 mb-4">
-              {data?.band?.recommendation || 'No guidance available'}
-            </div>
-            <button className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
-              Tune weights
-            </button>
           </div>
 
           {/* Bitcoin Price Card */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Bitcoin Price</h3>
-            <div className="text-4xl font-bold text-gray-900 mb-2">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Bitcoin Price</h3>
+            <div className="text-3xl font-bold text-gray-900 mb-1">
               ${data?.btc?.spot_usd ? data.btc.spot_usd.toLocaleString() : 'N/A'}
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-xs text-gray-600">
               as of {data?.btc?.as_of_utc ? new Date(data.btc.as_of_utc).toISOString().replace('T', ' ').replace('Z', 'Z') : 'Unknown'}
             </div>
           </div>
 
+          {/* Gold Price Card */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Gold Price</h3>
+            <div className="text-3xl font-bold text-gray-900 mb-1">
+              {data?.cross?.btc_per_oz ? `₿${(1 / data.cross.btc_per_oz).toFixed(2)}` : 'N/A'}
+            </div>
+            <div className="text-xs text-gray-600">
+              per ounce
+            </div>
+          </div>
+
+          {/* Satoshis per Dollar Card */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Satoshis per Dollar</h3>
+            <div className="text-3xl font-bold text-gray-900 mb-1">
+              {data?.btc?.spot_usd ? Math.round(100000000 / data.btc.spot_usd).toLocaleString() : 'N/A'}
+            </div>
+            <div className="text-xs text-gray-600">
+              sats per $1
+            </div>
+          </div>
+
           {/* Model Version Card */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Model Version</h3>
-            <div className="text-4xl font-bold text-gray-900 mb-2">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Model Version</h3>
+            <div className="text-3xl font-bold text-gray-900 mb-1">
               {data?.model_version || 'N/A'}
             </div>
-            <div className="text-sm text-gray-600">
-              Five-pillar risk framework
+            <div className="text-xs text-gray-600">
+              Five-pillar framework
             </div>
           </div>
         </div>
