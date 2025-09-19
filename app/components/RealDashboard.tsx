@@ -182,6 +182,7 @@ export default function RealDashboard() {
           <SystemStatusCard
             factors={latest?.factors || []}
             provenance={latest?.provenance || []}
+            asOfUtc={latest?.as_of_utc}
             onOpenProvenance={() => setProvenanceModalOpen(true)}
             onOpenWeights={() => setWhatIfModalOpen(true)}
           />
@@ -307,20 +308,27 @@ export default function RealDashboard() {
                 </div>
               )}
               
-              {/* ETF-specific action button */}
-              {factor.key === 'etf_flows' && (
-                <div className="mt-2">
-                  <button
-                    onClick={openEtfBreakdown}
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    By ETF
-                  </button>
+                  {/* ETF-specific action button */}
+                  {factor.key === 'etf_flows' && (
+                    <div className="mt-2">
+                      <button
+                        onClick={openEtfBreakdown}
+                        className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                      >
+                        By ETF
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Last Updated timestamp */}
+                  <div className="mt-4 pt-3 border-t border-gray-100">
+                    <div className="text-xs text-gray-500">
+                      Last updated: {latest?.as_of_utc ? new Date(latest.as_of_utc).toLocaleString() + ' UTC' : 'Unknown'}
+                    </div>
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
-          ))}
-        </div>
 
         {/* History Chart */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">

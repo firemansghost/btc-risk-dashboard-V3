@@ -227,6 +227,7 @@ export default function SimpleDashboard() {
             <SystemStatusCard 
               factors={data.factors}
               provenance={data?.provenance || []}
+              asOfUtc={data?.as_of_utc}
             />
           </div>
         )}

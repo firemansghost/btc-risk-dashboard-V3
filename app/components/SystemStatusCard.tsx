@@ -7,11 +7,12 @@ import type { FactorSummary } from '@/lib/types';
 interface SystemStatusCardProps {
   factors: FactorSummary[];
   provenance: any[];
+  asOfUtc?: string; // Global timestamp for all factors
   onOpenWeights?: () => void;
   onOpenProvenance?: () => void;
 }
 
-export default function SystemStatusCard({ factors, provenance, onOpenWeights, onOpenProvenance }: SystemStatusCardProps) {
+export default function SystemStatusCard({ factors, provenance, asOfUtc, onOpenWeights, onOpenProvenance }: SystemStatusCardProps) {
   const [showProvenance, setShowProvenance] = useState(false);
 
   const getStatusColor = (status: string) => {
@@ -34,7 +35,7 @@ export default function SystemStatusCard({ factors, provenance, onOpenWeights, o
 
   const sources = factors.map(factor => ({
     name: factor.label,
-    as_of: factor.last_utc,
+    as_of: factor.last_utc || asOfUtc, // Use factor timestamp or global timestamp
     status: factor.status,
     note: factor.reason,
   }));

@@ -1,9 +1,9 @@
 {
   "ok": true,
   "version": "v3.1.0",
-  "as_of_utc": "2025-09-19T19:18:36.057Z",
-  "composite_score": 46,
-  "composite_raw": 46,
+  "as_of_utc": "2025-09-19T19:47:21.462Z",
+  "composite_score": 47,
+  "composite_raw": 47,
   "band": {
     "key": "hold_neutral",
     "label": "Hold/Neutral",
@@ -21,7 +21,7 @@
       "label": "Trend & Valuation",
       "pillar": "momentum",
       "weight": 25,
-      "score": 54,
+      "score": 56,
       "status": "fresh",
       "reason": "success",
       "details": [
@@ -31,7 +31,7 @@
         },
         {
           "label": "Distance to Bull Market Support Band",
-          "value": "11.8%"
+          "value": "11.6%"
         },
         {
           "label": "Weekly momentum (RSI proxy)",
@@ -39,11 +39,11 @@
         },
         {
           "label": "Current Price",
-          "value": "$115,350.57"
+          "value": "$115,223.548"
         },
         {
           "label": "200-day SMA",
-          "value": "$103,218.765"
+          "value": "$103,218.13"
         },
         {
           "label": "Latest Weekly Sample",
@@ -51,7 +51,7 @@
         },
         {
           "label": "Component Scores",
-          "value": "BMSB: 54, Mayer: 54, RSI: 56"
+          "value": "BMSB: 56, Mayer: 56, RSI: 56"
         }
       ]
     },
@@ -105,7 +105,7 @@
       "details": [
         {
           "label": "Total Market Cap",
-          "value": "$250.3B"
+          "value": "$250.2B"
         },
         {
           "label": "Dominant Stablecoin",
@@ -121,7 +121,7 @@
         },
         {
           "label": "Market Concentration",
-          "value": "HHI: 5578"
+          "value": "HHI: 5579"
         },
         {
           "label": "Supply Growth Percentile",
@@ -129,7 +129,7 @@
         },
         {
           "label": "Component Scores",
-          "value": "Supply: 5, Momentum: 70, Concentration: 55.779443027383465"
+          "value": "Supply: 5, Momentum: 70, Concentration: 55.79268957441753"
         }
       ]
     },
@@ -7053,17 +7053,17 @@
       "label": "Social Interest",
       "pillar": "social",
       "weight": 5,
-      "score": 69,
+      "score": 71,
       "status": "fresh",
       "reason": "success",
       "details": [
         {
           "label": "Search Attention",
-          "value": "Low"
+          "value": "Moderate"
         },
         {
           "label": "Bitcoin Trending Rank",
-          "value": "N/A"
+          "value": "#15"
         },
         {
           "label": "Price Signal (7d)",
@@ -7075,11 +7075,11 @@
         },
         {
           "label": "Social Risk Level",
-          "value": "Moderate"
+          "value": "High"
         },
         {
           "label": "Component Scores",
-          "value": "Search: 50, Momentum: 71, Vol: 95"
+          "value": "Search: 55, Momentum: 71, Vol: 95"
         },
         {
           "label": "Data Source",
@@ -7132,8 +7132,8 @@
     }
   ],
   "btc": {
-    "spot_usd": 115362.1,
-    "as_of_utc": "2025-09-19T19:18:36.057Z",
+    "spot_usd": 115225.78,
+    "as_of_utc": "2025-09-19T19:47:21.463Z",
     "source": "Coinbase"
   },
   "provenance": [],
@@ -7146,7 +7146,7 @@
   "cycle_adjustment": {
     "adj_pts": 0,
     "residual_z": null,
-    "last_utc": "2025-09-19T19:18:36.056Z",
+    "last_utc": "2025-09-19T19:47:21.462Z",
     "source": "ETL fallback",
     "reason": "disabled"
   },
@@ -7155,9 +7155,9 @@
     "r_1d": 0,
     "sigma": 0,
     "z": 0,
-    "ref_close": 115362.1,
-    "spot": 115362.1,
-    "last_utc": "2025-09-19T19:18:36.056Z",
+    "ref_close": 115225.78,
+    "spot": 115225.78,
+    "last_utc": "2025-09-19T19:47:21.462Z",
     "source": "ETL fallback",
     "reason": "disabled"
   },
