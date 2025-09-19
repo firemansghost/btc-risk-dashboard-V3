@@ -107,8 +107,11 @@ async function computeTrendValuation() {
     
     if (mayerSeries.length === 0) return { score: null, reason: "calculation_failed" };
 
-    // Calculate RSI(14) for momentum
-    const rsi = calculateRSI(closes, 14);
+    // Use weekly sampling (every 7th day) for true weekly momentum
+    const weeklyPrices = closes.filter((_, index) => index % 7 === 0);
+    
+    // Calculate RSI(14) on weekly price samples for weekly momentum
+    const rsi = calculateRSI(weeklyPrices, 14);
     const rsiSeries = rsi.filter(Number.isFinite);
     
     if (rsiSeries.length === 0) return { score: null, reason: "calculation_failed" };
@@ -118,6 +121,7 @@ async function computeTrendValuation() {
     const latestSma200 = sma200[sma200.length - 1];
     const latestMayer = mayerSeries[mayerSeries.length - 1];
     const latestRsi = rsiSeries[rsiSeries.length - 1];
+    const latestWeeklyPrice = weeklyPrices[weeklyPrices.length - 1];
     
     // Calculate Bull Market Support Band (BMSB) - using SMA200 as proxy
     const bmsbStatus = latestPrice > latestSma200 ? 'above' : 'below';
@@ -153,6 +157,7 @@ async function computeTrendValuation() {
         { label: "Weekly momentum (RSI proxy)", value: latestRsi.toFixed(1) },
         { label: "Current Price", value: `$${latestPrice.toLocaleString()}` },
         { label: "200-day SMA", value: `$${latestSma200.toLocaleString()}` },
+        { label: "Latest Weekly Sample", value: `$${latestWeeklyPrice.toLocaleString()}` },
         { label: "Component Scores", value: `BMSB: ${sBmsb || 'N/A'}, Mayer: ${sMayer || 'N/A'}, RSI: ${sRsi || 'N/A'}` }
       ]
     };
