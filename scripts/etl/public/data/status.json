@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-09-19T20:22:04.824Z",
+  "updated_at": "2025-09-19T20:50:21.409Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -24,13 +24,24 @@
       "ok": true,
       "ms": null,
       "url": "https://fred.stlouisfed.org/"
+    },
+    {
+      "name": "Stooq",
+      "ok": true,
+      "url": "https://stooq.com/",
+      "ms": 1072,
+      "fallback": true,
+      "cache_used": false,
+      "fallback_used": true
     }
   ],
   "factors_computed": 8,
-  "factors_successful": 6,
+  "factors_successful": 8,
   "gold_cross_rates": {
-    "status": "failed",
-    "reason": "error: CoinGecko 429"
+    "status": "success",
+    "source": "Stooq",
+    "fallback_used": true,
+    "latency_ms": 1072
   },
   "satoshis_per_dollar": {
     "status": "success",
@@ -38,5 +49,5 @@
     "derived": true
   },
   "etf_schema_hash": "cd3800",
-  "etf_schema_last_check": "2025-09-19T20:22:04.137Z"
+  "etf_schema_last_check": "2025-09-19T20:50:18.510Z"
 }

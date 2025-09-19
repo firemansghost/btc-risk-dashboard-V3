@@ -84,15 +84,13 @@ function riskFromPercentile(percentile, options = {}) {
 // FACTOR COMPUTATIONS
 // ============================================================================
 
+import { coinGecko } from './coinGeckoCache.mjs';
+
 // 1. TREND & VALUATION (Multi-factor: BMSB 40%, Mayer 40%, RSI 20%)
 async function computeTrendValuation() {
   try {
-    // Use CoinGecko for more reliable data access
-    const url = "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=365&interval=daily";
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`CoinGecko ${res.status}`);
-    
-    const data = await res.json();
+    // Use centralized CoinGecko client with caching and rate limiting
+    const data = await coinGecko.getMarketChart(365, 'daily');
     if (!data.prices || !Array.isArray(data.prices) || data.prices.length < 200) {
       return { score: null, reason: "insufficient_data" };
     }
@@ -170,16 +168,10 @@ async function computeTrendValuation() {
 // 2. SOCIAL INTEREST (Search trends and social sentiment)
 async function computeSocialInterest() {
   try {
-    // Since Alternative.me is not a crypto site, we'll use available crypto sentiment sources
-    // Fetch multiple sentiment/attention sources
-    const [trendsRes, priceRes] = await Promise.all([
-      fetch("https://api.coingecko.com/api/v3/search/trending", { headers: { "User-Agent": "btc-risk-etl" } }),
-      fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30&interval=daily")
-    ]);
-    
+    // Use centralized CoinGecko client with caching and rate limiting
     const [trendsData, priceData] = await Promise.all([
-      trendsRes.ok ? trendsRes.json() : null,
-      priceRes.ok ? priceRes.json() : null
+      coinGecko.getTrending().catch(() => null),
+      coinGecko.getMarketChart(30, 'daily').catch(() => null)
     ]);
 
     // Multi-factor analysis using available data
@@ -1125,20 +1117,16 @@ async function cleanOldCacheFiles() {
 // 6. TERM STRUCTURE & LEVERAGE (Multi-factor derivatives analysis)
 async function computeTermLeverage() {
   try {
-    // Fetch multiple data sources in parallel for comprehensive analysis
-    const [fundingRes, spotRes] = await Promise.all([
+    // Fetch funding data from BitMEX and spot data from cached CoinGecko
+    const [fundingRes, spotData] = await Promise.all([
       fetch("https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&count=30&reverse=true", 
         { headers: { "User-Agent": "btc-risk-etl" } }),
-      fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30&interval=daily")
+      coinGecko.getMarketChart(30, 'daily')
     ]);
 
     if (!fundingRes.ok) throw new Error(`BitMEX ${fundingRes.status}`);
-    if (!spotRes.ok) throw new Error(`CoinGecko ${spotRes.status}`);
     
-    const [fundingData, spotData] = await Promise.all([
-      fundingRes.json(),
-      spotRes.json()
-    ]);
+    const fundingData = await fundingRes.json();
     
     if (!Array.isArray(fundingData) || fundingData.length === 0) {
       return { score: null, reason: "no_funding_data" };
@@ -1269,24 +1257,23 @@ async function computeTermLeverage() {
 async function computeOnchain() {
   try {
     // Fetch multiple metrics from various sources for comprehensive analysis
-    const [feesRes, txCountRes, hashRateRes, tvlRes, pricesRes] = await Promise.all([
+    const [feesRes, txCountRes, hashRateRes, tvlRes, pricesData] = await Promise.all([
       fetch("https://api.blockchain.info/charts/transaction-fees?timespan=30days&format=json", { headers: { "User-Agent": "btc-risk-etl" } }),
       fetch("https://api.blockchain.info/charts/n-transactions?timespan=30days&format=json", { headers: { "User-Agent": "btc-risk-etl" } }),
       fetch("https://api.blockchain.info/charts/hash-rate?timespan=30days&format=json", { headers: { "User-Agent": "btc-risk-etl" } }),
       fetch("https://api.blockchain.info/charts/total-bitcoins?timespan=30days&format=json", { headers: { "User-Agent": "btc-risk-etl" } }),
-      fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30&interval=daily")
+      coinGecko.getMarketChart(30, 'daily').catch(() => null)
     ]);
     
     if (!feesRes.ok) throw new Error(`Blockchain.info fees ${feesRes.status}`);
     if (!txCountRes.ok) throw new Error(`Blockchain.info tx count ${txCountRes.status}`);
     if (!hashRateRes.ok) throw new Error(`Blockchain.info hash rate ${hashRateRes.status}`);
     
-    const [feesData, txCountData, hashRateData, tvlData, pricesData] = await Promise.all([
+    const [feesData, txCountData, hashRateData, tvlData] = await Promise.all([
       feesRes.json(),
       txCountRes.json(),
       hashRateRes.json(),
-      tvlRes.ok ? tvlRes.json() : null,
-      pricesRes.ok ? pricesRes.json() : null
+      tvlRes.ok ? tvlRes.json() : null
     ]);
     
     // Process transaction fees
@@ -1700,15 +1687,16 @@ export async function computeAllFactors() {
 
 // Helper function to get yesterday's Bitcoin close from CoinGecko
 async function getCoinGeckoCloseForYesterday() {
-  const url = new URL("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart");
-  url.searchParams.set("vs_currency", "usd");
-  url.searchParams.set("days", "2");
-  url.searchParams.set("interval", "daily");
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`CoinGecko ${res.status}`);
-  const j = await res.json(); // oldest-first
-  const pair = j.prices[j.prices.length - 1]; // [ms, price]
-  return { date: new Date(pair[0]).toISOString().split('T')[0], close: Number(pair[1]) };
+  try {
+    const result = await coinGecko.getYesterdayClose();
+    return { 
+      date: new Date(result.timestamp).toISOString().split('T')[0], 
+      close: result.close 
+    };
+  } catch (error) {
+    console.warn('Failed to get yesterday close from CoinGecko:', error.message);
+    throw error; // Re-throw to maintain existing error handling
+  }
 }
 
 // BTC⇄Gold cross-rates calculation
