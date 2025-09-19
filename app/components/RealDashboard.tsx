@@ -282,6 +282,16 @@ export default function RealDashboard() {
           <RiskBandLegend score={gScore || 0} />
         </div>
 
+        {/* System Status */}
+        <div className="mb-8">
+          <SystemStatusCard 
+            factors={latest?.factors || []}
+            provenance={latest?.provenance || []}
+            onOpenProvenance={() => setProvenanceModalOpen(true)}
+            onOpenWeights={() => setWhatIfModalOpen(true)}
+          />
+        </div>
+
         {/* Factor Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {latest?.factors?.map((factor) => (
