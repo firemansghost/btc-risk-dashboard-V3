@@ -91,12 +91,16 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 ## Macro Pillar (5% total weight)
 
 ### Macro Overlay (5% weight)
-- **Data Source**: FRED API (DXY, 2Y Treasury, VIX)
-- **Window**: 20 days of daily data
-- **Transform**: Composite macro stress indicator
-- **Mapping**: Higher stress = Higher risk (not inverted)
+- **Data Source**: FRED API (DXY, 2Y/10Y Treasury, VIX, 10Y TIPS)
+- **Window**: 120 days of macro data for trend analysis
+- **Transform**: Multi-factor composite (Dollar 35%, Rates 30%, VIX 25%, Real Rates 10%)
+  - **Dollar Strength Pressure**: DXY momentum with percentile ranking (stronger dollar = higher risk)
+  - **Interest Rate Environment**: Yield level changes + yield curve analysis (higher/inverted = higher risk)
+  - **Risk Appetite Gauge**: VIX level + momentum (rising fear = higher risk)
+  - **Real Rate Pressure**: 10Y TIPS real yield changes (higher real rates = higher risk)
+- **Mapping**: Dollar strength + rising rates + market fear + real rate pressure = Higher risk
 - **Staleness TTL**: 1 day
-- **Aggregation**: Multi-factor percentile ranking
+- **Aggregation**: Weighted composite with regime classification and percentile ranking
 
 ## Display-Only Features (No Risk Weight)
 

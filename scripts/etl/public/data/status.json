@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-09-19T18:12:12.493Z",
+  "updated_at": "2025-09-19T19:18:36.062Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -38,5 +38,5 @@
     "derived": true
   },
   "etf_schema_hash": "cd3800",
-  "etf_schema_last_check": "2025-09-19T18:12:11.897Z"
+  "etf_schema_last_check": "2025-09-19T19:18:35.149Z"
 }

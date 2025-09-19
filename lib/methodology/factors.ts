@@ -136,17 +136,17 @@ export const factorContent: FactorContent[] = [
     key: 'macro_overlay',
     pillar: 'Macro Overlay',
     what: [
-      'DXY 20-day Δ',
-      'US 2-year yield 20-day Δ',
-      'VIX percentile'
+      'Dollar Strength Pressure (DXY momentum analysis) - 35% weight',
+      'Interest Rate Environment (yield changes + curve shape) - 30% weight',
+      'Risk Appetite Gauge (VIX level + momentum) - 25% weight',
+      'Real Rate Pressure (10Y TIPS real yield changes) - 10% weight'
     ],
-    why: 'Strong dollar, rising front-end rates, high equity vol weigh on crypto.',
-    affects: '↑ DXY / ↑ 2Y / ↑ VIX ⇒ ↑ risk',
-    cadence: 'Daily (VIX business days); stale >72h',
+    why: 'Multi-dimensional macro environment analysis captures key risk factors for Bitcoin: dollar strength pressures international flows, rising rates compete with risk assets, market fear drives flight-to-quality, and real rates affect discount rates for growth assets.',
+    affects: '↑ dollar strength + ↑ rising rates + ↑ market fear + ↑ real rate pressure ⇒ ↑ risk; yield curve inversion adds recession risk premium',
+    cadence: 'Daily updates; stale >48h',
     sources: [
-      { label: 'FRED', url: 'https://fred.stlouisfed.org/' },
-      { label: 'CBOE', url: 'https://www.cboe.com/' }
+      { label: 'FRED Economic Data (DXY, Treasury yields, VIX, TIPS)', url: 'https://fred.stlouisfed.org/' }
     ],
-    caveats: 'Regime-dependent; show "excluded" if disabled.'
+    caveats: 'Real rates (TIPS) may have data gaps. VIX momentum can be volatile. Dollar strength effects vary by global liquidity conditions. Yield curve inversions are rare but high-impact events.'
   }
 ];

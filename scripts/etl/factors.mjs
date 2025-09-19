@@ -1400,7 +1400,7 @@ async function computeOnchain() {
   }
 }
 
-// 8. MACRO OVERLAY (FRED data)
+// 8. MACRO OVERLAY (Multi-factor macro environment analysis)
 async function computeMacroOverlay() {
   const apiKey = process.env.FRED_API_KEY;
   if (!apiKey) {
@@ -1409,67 +1409,159 @@ async function computeMacroOverlay() {
 
   try {
     const end = new Date();
-    const start = new Date(end.getTime() - 90 * 24 * 60 * 60 * 1000); // 90 days
+    const start = new Date(end.getTime() - 120 * 24 * 60 * 60 * 1000); // 120 days for better trend analysis
     const startISO = start.toISOString().slice(0, 10);
     const endISO = end.toISOString().slice(0, 10);
 
-    // Fetch DXY (Dollar Index), 2Y Yield, and VIX
-    const [dxyRes, dgs2Res, vixRes] = await Promise.all([
+    // Fetch expanded macro indicators: DXY, 2Y/10Y yields, VIX, Real Rates
+    const [dxyRes, dgs2Res, dgs10Res, vixRes, tipRes] = await Promise.all([
       fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=DTWEXBGS&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=d&aggregation_method=avg`),
       fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=DGS2&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=d&aggregation_method=avg`),
-      fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=VIXCLS&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=d&aggregation_method=avg`)
+      fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=DGS10&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=d&aggregation_method=avg`),
+      fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=VIXCLS&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=d&aggregation_method=avg`),
+      fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=DFII10&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=d&aggregation_method=avg`)
     ]);
 
-    if (!dxyRes.ok || !dgs2Res.ok || !vixRes.ok) {
+    if (!dxyRes.ok || !dgs2Res.ok || !dgs10Res.ok || !vixRes.ok) {
       return { score: null, reason: "fred_api_error" };
     }
 
-    const [dxyData, dgs2Data, vixData] = await Promise.all([
+    const [dxyData, dgs2Data, dgs10Data, vixData, tipData] = await Promise.all([
       dxyRes.json(),
       dgs2Res.json(),
-      vixRes.json()
+      dgs10Res.json(),
+      vixRes.json(),
+      tipRes.ok ? tipRes.json() : null
     ]);
 
-    // Extract values
+    // Extract and clean values
     const dxyValues = dxyData.observations?.map(o => Number(o.value)).filter(Number.isFinite) || [];
     const dgs2Values = dgs2Data.observations?.map(o => Number(o.value)).filter(Number.isFinite) || [];
+    const dgs10Values = dgs10Data.observations?.map(o => Number(o.value)).filter(Number.isFinite) || [];
     const vixValues = vixData.observations?.map(o => Number(o.value)).filter(Number.isFinite) || [];
+    const realRateValues = tipData?.observations?.map(o => Number(o.value)).filter(Number.isFinite) || [];
 
-    if (dxyValues.length === 0 || dgs2Values.length === 0 || vixValues.length === 0) {
+    if (dxyValues.length < 30 || dgs2Values.length < 30 || vixValues.length < 30) {
       return { score: null, reason: "insufficient_macro_data" };
     }
 
-    // Calculate 20-day percentage changes
-    const dxy20dChange = dxyValues.length >= 20 ? 
-      (dxyValues[dxyValues.length - 1] - dxyValues[dxyValues.length - 20]) / dxyValues[dxyValues.length - 20] : 0;
-    const dgs2_20dChange = dgs2Values.length >= 20 ? 
-      (dgs2Values[dgs2Values.length - 1] - dgs2Values[dgs2Values.length - 20]) / dgs2Values[dgs2Values.length - 20] : 0;
-    
-    // VIX percentile
-    const vixPercentile = percentileRank(vixValues, vixValues[vixValues.length - 1]);
-
-    // Convert to risk scores
-    const dxyRisk = Math.min(100, Math.max(0, 50 + (dxy20dChange * 1000))); // Stronger dollar = higher risk
-    const dgs2Risk = Math.min(100, Math.max(0, 50 + (dgs2_20dChange * 1000))); // Higher yields = higher risk
-    const vixRisk = vixPercentile * 100; // Higher VIX = higher risk
-
-    // Average the three components
-    const score = Math.round((dxyRisk + dgs2Risk + vixRisk) / 3);
-
+    // Multi-factor analysis
+    // 1. Dollar Strength Pressure (35% weight) - DXY momentum and level
     const latestDxy = dxyValues[dxyValues.length - 1];
-    const latestDgs2 = dgs2Values[dgs2Values.length - 1];
+    const dxy20dChange = dxyValues.length >= 20 ? 
+      ((dxyValues[dxyValues.length - 1] - dxyValues[dxyValues.length - 20]) / dxyValues[dxyValues.length - 20]) * 100 : 0;
+    const dxy60dChange = dxyValues.length >= 60 ? 
+      ((dxyValues[dxyValues.length - 1] - dxyValues[dxyValues.length - 60]) / dxyValues[dxyValues.length - 60]) * 100 : 0;
+    
+    // Build DXY change series for percentile ranking
+    const dxyChangeSeries = [];
+    for (let i = 20; i < dxyValues.length - 20; i++) {
+      const change = ((dxyValues[i] - dxyValues[i - 20]) / dxyValues[i - 20]) * 100;
+      if (Number.isFinite(change)) dxyChangeSeries.push(change);
+    }
+    
+    const dxyPercentile = dxyChangeSeries.length > 0 ? percentileRank(dxyChangeSeries, dxy20dChange) : 0.5;
+    const dollarScore = riskFromPercentile(dxyPercentile, { invert: false, k: 3 }); // Stronger dollar = higher risk for Bitcoin
+
+    // 2. Interest Rate Environment (30% weight) - Yield levels and curve shape
+    const latest2Y = dgs2Values[dgs2Values.length - 1];
+    const latest10Y = dgs10Values.length > 0 ? dgs10Values[dgs10Values.length - 1] : latest2Y + 1; // Fallback if 10Y unavailable
+    const yieldCurve = latest10Y - latest2Y; // Term spread
+    
+    const dgs2_20dChange = dgs2Values.length >= 20 ? 
+      ((dgs2Values[dgs2Values.length - 1] - dgs2Values[dgs2Values.length - 20]) / dgs2Values[dgs2Values.length - 20]) * 100 : 0;
+    
+    // Build yield change series for percentile ranking
+    const yieldChangeSeries = [];
+    for (let i = 20; i < dgs2Values.length - 20; i++) {
+      const change = ((dgs2Values[i] - dgs2Values[i - 20]) / dgs2Values[i - 20]) * 100;
+      if (Number.isFinite(change)) yieldChangeSeries.push(change);
+    }
+    
+    const yieldPercentile = yieldChangeSeries.length > 0 ? percentileRank(yieldChangeSeries, dgs2_20dChange) : 0.5;
+    let ratesScore = riskFromPercentile(yieldPercentile, { invert: false, k: 3 }); // Higher rates = higher risk
+    
+    // Adjust for yield curve inversion (additional risk)
+    if (yieldCurve < 0) ratesScore = Math.min(100, ratesScore + 15); // Inverted curve adds risk
+
+    // 3. Risk Appetite / Fear Gauge (25% weight) - VIX with momentum
     const latestVix = vixValues[vixValues.length - 1];
+    const vixPercentile = percentileRank(vixValues, latestVix);
+    
+    // VIX momentum (recent vs past)
+    const vix7dAvg = vixValues.length >= 7 ? 
+      vixValues.slice(-7).reduce((sum, v) => sum + v, 0) / 7 : latestVix;
+    const vix30dAvg = vixValues.length >= 30 ? 
+      vixValues.slice(-30, -7).reduce((sum, v) => sum + v, 0) / 23 : latestVix;
+    const vixMomentum = vix7dAvg - vix30dAvg;
+    
+    let vixScore = riskFromPercentile(vixPercentile, { invert: false, k: 3 }); // Higher VIX = higher risk
+    
+    // Adjust for VIX momentum (rising fear = additional risk)
+    if (vixMomentum > 2) vixScore = Math.min(100, vixScore + 10);
+    else if (vixMomentum < -2) vixScore = Math.max(0, vixScore - 5);
+
+    // 4. Real Rate Pressure (10% weight) - Real yields impact on risk assets
+    let realRateScore = 50; // neutral default
+    let latestRealRate = 0;
+    let realRateChange = 0;
+    
+    if (realRateValues.length >= 20) {
+      latestRealRate = realRateValues[realRateValues.length - 1];
+      realRateChange = ((latestRealRate - realRateValues[realRateValues.length - 20]) / Math.abs(realRateValues[realRateValues.length - 20])) * 100;
+      
+      // Build real rate series for percentile ranking
+      const realRateSeries = [];
+      for (let i = 20; i < realRateValues.length - 20; i++) {
+        const change = ((realRateValues[i] - realRateValues[i - 20]) / Math.abs(realRateValues[i - 20])) * 100;
+        if (Number.isFinite(change)) realRateSeries.push(change);
+      }
+      
+      if (realRateSeries.length > 0) {
+        const realRatePercentile = percentileRank(realRateSeries, realRateChange);
+        realRateScore = riskFromPercentile(realRatePercentile, { invert: false, k: 3 }); // Higher real rates = higher risk
+      }
+    }
+
+    // Composite score (weighted blend)
+    const compositeScore = Math.round(
+      dollarScore * 0.35 + 
+      ratesScore * 0.30 + 
+      vixScore * 0.25 + 
+      realRateScore * 0.10
+    );
+
+    // Determine macro regime
+    let macroRegime = "Neutral";
+    if (latestVix > 25 && dxy20dChange > 2) macroRegime = "Risk-Off";
+    else if (latestVix < 15 && dgs2_20dChange < -10) macroRegime = "Risk-On";
+    else if (yieldCurve < -0.5) macroRegime = "Recession Risk";
+    else if (latest2Y > 5) macroRegime = "Restrictive";
+    
+    // Determine dollar trend
+    let dollarTrend = "Stable";
+    if (dxy20dChange > 3) dollarTrend = "Strengthening";
+    else if (dxy20dChange < -3) dollarTrend = "Weakening";
+    
+    // Determine rate environment
+    let rateEnvironment = "Neutral";
+    if (dgs2_20dChange > 15) rateEnvironment = "Rising Rapidly";
+    else if (dgs2_20dChange > 5) rateEnvironment = "Rising";
+    else if (dgs2_20dChange < -15) rateEnvironment = "Falling Rapidly";
+    else if (dgs2_20dChange < -5) rateEnvironment = "Falling";
 
     return { 
-      score, 
+      score: compositeScore, 
       reason: "success",
       details: [
-        { label: "DXY 20d Δ", value: `${(dxy20dChange * 100).toFixed(1)}%` },
-        { label: "US2Y 20d Δ", value: `${(dgs2_20dChange * 100).toFixed(1)}%` },
-        { label: "VIX pctile", value: `${(vixPercentile * 100).toFixed(0)}%` },
-        { label: "Current DXY", value: latestDxy.toFixed(1) },
-        { label: "Current 2Y Yield", value: `${latestDgs2.toFixed(2)}%` },
-        { label: "Current VIX", value: latestVix.toFixed(1) }
+        { label: "Macro Regime", value: macroRegime },
+        { label: "Dollar Trend (20d)", value: `${dollarTrend} (${dxy20dChange.toFixed(1)}%)` },
+        { label: "Rate Environment", value: `${rateEnvironment} (${dgs2_20dChange.toFixed(1)}%)` },
+        { label: "VIX Level", value: `${latestVix.toFixed(1)} (${(vixPercentile * 100).toFixed(0)}%ile)` },
+        { label: "Yield Curve (10Y-2Y)", value: `${yieldCurve.toFixed(2)}%${yieldCurve < 0 ? ' (Inverted)' : ''}` },
+        { label: "Real Rate (10Y TIPS)", value: realRateValues.length > 0 ? `${latestRealRate.toFixed(2)}%` : "N/A" },
+        { label: "Component Scores", value: `Dollar: ${dollarScore}, Rates: ${ratesScore}, VIX: ${vixScore}, Real: ${realRateScore}` },
+        { label: "Current Levels", value: `DXY: ${latestDxy.toFixed(1)}, 2Y: ${latest2Y.toFixed(2)}%, VIX: ${latestVix.toFixed(1)}` }
       ]
     };
   } catch (error) {
