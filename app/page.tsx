@@ -1,15 +1,14 @@
 import SimpleDashboard from './components/SimpleDashboard';
 import RealDashboard from './components/RealDashboard';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Page({
   searchParams
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  // Ensure dynamic rendering to avoid ISR cache causing stale view selection
-  // @ts-expect-error next-dynamic-flag
-  export const dynamic = 'force-dynamic';
-
   const sp = await searchParams;
   const viewParam = sp?.view;
   const view = Array.isArray(viewParam) ? viewParam[0] : viewParam;
