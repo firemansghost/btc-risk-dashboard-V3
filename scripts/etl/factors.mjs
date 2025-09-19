@@ -151,6 +151,7 @@ async function computeTrendValuation() {
     return { 
       score, 
       reason: "success",
+      lastUpdated: new Date().toISOString(),
       details: [
         { label: "Price vs 200-day SMA (Mayer)", value: latestMayer.toFixed(2) },
         { label: "Distance to Bull Market Support Band", value: `${bmsbDistance.toFixed(1)}%` },
@@ -311,6 +312,7 @@ async function computeSocialInterest() {
     return { 
       score: compositeScore, 
       reason: "success",
+      lastUpdated: new Date().toISOString(),
       details: [
         { label: "Search Attention", value: searchAttention },
         { label: "Bitcoin Trending Rank", value: bitcoinRank },
@@ -358,10 +360,14 @@ async function computeNetLiquidity() {
 
     // Extract values and calculate net liquidity time series
     // FRED API returns values in millions, so we need to convert them
-    const walclValues = walclData.observations?.map(o => {
+    const walclObservations = walclData.observations || [];
+    const walclValues = walclObservations.map(o => {
       const val = Number(o.value);
       return Number.isFinite(val) ? val * 1e6 : null; // Convert millions to actual dollars
     }).filter(Number.isFinite) || [];
+    
+    // Get the latest observation date for staleness detection
+    const latestWalclDate = walclObservations.length > 0 ? walclObservations[walclObservations.length - 1].date : null;
     
     const rrpValues = rrpData.observations?.map(o => {
       const val = Number(o.value);
@@ -459,6 +465,7 @@ async function computeNetLiquidity() {
     return { 
       score: compositeScore, 
       reason: "success",
+      lastUpdated: latestWalclDate ? `${latestWalclDate}T00:00:00.000Z` : new Date().toISOString(),
       details: [
         { label: "Fed Balance Sheet (WALCL)", value: `$${(latestWalcl / 1e12).toFixed(1)}T` },
         { label: "Reverse Repo (RRP)", value: rrpValues.length > 0 ? `$${(latestRrp / 1e9).toFixed(0)}B` : "No data" },
@@ -466,7 +473,8 @@ async function computeNetLiquidity() {
         { label: "Net Liquidity", value: `$${(latest / 1e12).toFixed(1)}T` },
         { label: "4-week Change", value: `${roc4w >= 0 ? '+' : ''}${roc4w.toFixed(1)}%` },
         { label: "Level Percentile (1y)", value: `${(levelPercentile * 100).toFixed(0)}%` },
-        { label: "Component Scores", value: `Level: ${levelScore}, RoC: ${rocScore}, Momentum: ${momentumScore}` }
+        { label: "Component Scores", value: `Level: ${levelScore}, RoC: ${rocScore}, Momentum: ${momentumScore}` },
+        { label: "Data as of", value: latestWalclDate || "Unknown" }
       ]
     };
   } catch (error) {
@@ -593,6 +601,7 @@ async function computeStablecoins() {
     return { 
       score: compositeScore, 
       reason: "success",
+      lastUpdated: new Date().toISOString(),
       details: [
         { label: "Total Market Cap", value: `$${(totalMarketCap / 1e9).toFixed(1)}B` },
         { label: "Dominant Stablecoin", value: `${dominantCoin.symbol} (${((dominantCoin.marketCap / totalMarketCap) * 100).toFixed(0)}%)` },
@@ -796,6 +805,7 @@ async function computeEtfFlows() {
     return { 
       score: isStale ? null : score,
       reason: isStale ? "stale_data" : "success",
+      lastUpdated: latestFlow.date ? `${latestFlow.date}T16:00:00.000Z` : new Date().toISOString(), // ETFs update after market close
       individualEtfFlows: individualEtfFlows, // Return full array for per-ETF breakdown
       details: [
         { 
@@ -1238,6 +1248,7 @@ async function computeTermLeverage() {
     return { 
       score: compositeScore, 
       reason: "success",
+      lastUpdated: new Date().toISOString(),
       details: [
         { label: "Current Funding Rate", value: `${latestFunding.toFixed(4)}%` },
         { label: "30-day Average", value: `${avgFunding.toFixed(4)}%` },
@@ -1384,6 +1395,7 @@ async function computeOnchain() {
     return { 
       score: finalScore, 
       reason: "success",
+      lastUpdated: new Date().toISOString(),
       details: [
         { label: "Current Transaction Fees", value: `$${latestFee.toFixed(2)}` },
         { label: "Fee vs 30d Average", value: `${((latestFee / avgFee - 1) * 100).toFixed(1)}%` },
@@ -1553,6 +1565,7 @@ async function computeMacroOverlay() {
     return { 
       score: compositeScore, 
       reason: "success",
+      lastUpdated: new Date().toISOString(),
       details: [
         { label: "Macro Regime", value: macroRegime },
         { label: "Dollar Trend (20d)", value: `${dollarTrend} (${dxy20dChange.toFixed(1)}%)` },
@@ -1572,6 +1585,8 @@ async function computeMacroOverlay() {
 // ============================================================================
 // MAIN COMPUTE FUNCTION
 // ============================================================================
+
+import { getStalenessStatus, getStalenessConfig } from './stalenessUtils.mjs';
 
 export async function computeAllFactors() {
   console.log("Computing risk factors...");
@@ -1609,6 +1624,7 @@ export async function computeAllFactors() {
     let score = null;
     let status = 'excluded';
     let reason = 'unknown';
+    let lastUpdated = null;
 
     if (result.status === 'fulfilled') {
       const data = result.value;
@@ -1616,9 +1632,31 @@ export async function computeAllFactors() {
       reason = data.reason;
       
       if (score !== null && Number.isFinite(score)) {
-        status = 'fresh';
-        totalWeight += factor.weight;
-        weightedSum += (factor.weight * score);
+        // Get staleness configuration for this factor
+        const stalenessConfig = getStalenessConfig(factor.key);
+        
+        // Check staleness status
+        const stalenessStatus = getStalenessStatus(
+          { ...data, lastUpdated: data.lastUpdated || new Date().toISOString() },
+          stalenessConfig.ttlHours,
+          {
+            factorName: factor.key,
+            marketDependent: stalenessConfig.marketDependent,
+            businessDaysOnly: stalenessConfig.businessDaysOnly
+          }
+        );
+        
+        status = stalenessStatus.status;
+        lastUpdated = stalenessStatus.lastUpdated;
+        
+        // Only include fresh factors in composite calculation
+        if (status === 'fresh') {
+          totalWeight += factor.weight;
+          weightedSum += (factor.weight * score);
+          reason = stalenessStatus.reason;
+        } else {
+          reason = `${data.reason} -> ${stalenessStatus.reason}`;
+        }
       } else {
         status = 'excluded';
       }
@@ -1635,6 +1673,7 @@ export async function computeAllFactors() {
       score,
       status,
       reason,
+      last_utc: lastUpdated, // Add timestamp for SystemStatusCard
       details: result.status === 'fulfilled' ? result.value.details : undefined,
       individualEtfFlows: result.status === 'fulfilled' && result.value.individualEtfFlows ? result.value.individualEtfFlows : undefined
     });
@@ -1642,8 +1681,14 @@ export async function computeAllFactors() {
     console.log(`${factor.key}: ${score !== null ? score : 'null'} (${status}) - ${reason}`);
   }
 
-  // Calculate composite score
+  // Calculate composite score with weight normalization
   const composite = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 47; // fallback to 47
+  
+  // Log staleness summary
+  const freshCount = factorResults.filter(f => f.status === 'fresh').length;
+  const staleCount = factorResults.filter(f => f.status === 'stale').length;
+  const excludedCount = factorResults.filter(f => f.status === 'excluded').length;
+  console.log(`Factor staleness: ${freshCount} fresh, ${staleCount} stale, ${excludedCount} excluded`);
 
   return {
     factors: factorResults,

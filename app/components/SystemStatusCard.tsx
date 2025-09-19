@@ -35,7 +35,7 @@ export default function SystemStatusCard({ factors, provenance, asOfUtc, onOpenW
 
   const sources = factors.map(factor => ({
     name: factor.label,
-    as_of: factor.last_utc || asOfUtc, // Use factor timestamp or global timestamp
+    as_of: factor.last_utc || asOfUtc, // Use individual factor timestamp or global timestamp
     status: factor.status,
     note: factor.reason,
   }));

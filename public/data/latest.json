@@ -1,9 +1,9 @@
 {
   "ok": true,
   "version": "v3.1.0",
-  "as_of_utc": "2025-09-19T19:47:21.462Z",
-  "composite_score": 47,
-  "composite_raw": 47,
+  "as_of_utc": "2025-09-19T20:22:04.818Z",
+  "composite_score": 43,
+  "composite_raw": 43,
   "band": {
     "key": "hold_neutral",
     "label": "Hold/Neutral",
@@ -21,39 +21,10 @@
       "label": "Trend & Valuation",
       "pillar": "momentum",
       "weight": 25,
-      "score": 56,
-      "status": "fresh",
-      "reason": "success",
-      "details": [
-        {
-          "label": "Price vs 200-day SMA (Mayer)",
-          "value": "1.12"
-        },
-        {
-          "label": "Distance to Bull Market Support Band",
-          "value": "11.6%"
-        },
-        {
-          "label": "Weekly momentum (RSI proxy)",
-          "value": "65.2"
-        },
-        {
-          "label": "Current Price",
-          "value": "$115,223.548"
-        },
-        {
-          "label": "200-day SMA",
-          "value": "$103,218.13"
-        },
-        {
-          "label": "Latest Weekly Sample",
-          "value": "$117,145.495"
-        },
-        {
-          "label": "Component Scores",
-          "value": "BMSB: 56, Mayer: 56, RSI: 56"
-        }
-      ]
+      "score": null,
+      "status": "excluded",
+      "reason": "error: CoinGecko 429",
+      "last_utc": null
     },
     {
       "key": "net_liquidity",
@@ -62,7 +33,8 @@
       "weight": 10,
       "score": 59,
       "status": "fresh",
-      "reason": "success",
+      "reason": "fresh (68.4h old)",
+      "last_utc": "2025-09-17T00:00:00.000Z",
       "details": [
         {
           "label": "Fed Balance Sheet (WALCL)",
@@ -91,6 +63,10 @@
         {
           "label": "Component Scores",
           "value": "Level: 93, RoC: 6, Momentum: 95"
+        },
+        {
+          "label": "Data as of",
+          "value": "2025-09-17"
         }
       ]
     },
@@ -101,19 +77,20 @@
       "weight": 15,
       "score": 35,
       "status": "fresh",
-      "reason": "success",
+      "reason": "fresh (0.0h old)",
+      "last_utc": "2025-09-19T20:22:04.415Z",
       "details": [
         {
           "label": "Total Market Cap",
-          "value": "$250.2B"
+          "value": "$245.6B"
         },
         {
           "label": "Dominant Stablecoin",
-          "value": "USDT (69%)"
+          "value": "USDT (70%)"
         },
         {
           "label": "Aggregate 30d Growth",
-          "value": "5.2%"
+          "value": "4.7%"
         },
         {
           "label": "Growth Momentum",
@@ -121,7 +98,7 @@
         },
         {
           "label": "Market Concentration",
-          "value": "HHI: 5579"
+          "value": "HHI: 5786"
         },
         {
           "label": "Supply Growth Percentile",
@@ -129,7 +106,7 @@
         },
         {
           "label": "Component Scores",
-          "value": "Supply: 5, Momentum: 70, Concentration: 55.79268957441753"
+          "value": "Supply: 5, Momentum: 70, Concentration: 57.8610928756276"
         }
       ]
     },
@@ -140,7 +117,8 @@
       "weight": 10,
       "score": 36,
       "status": "fresh",
-      "reason": "success",
+      "reason": "fresh (4.4h old)",
+      "last_utc": "2025-09-19T16:00:00.000Z",
       "details": [
         {
           "label": "Latest Daily Flow",
@@ -6967,52 +6945,20 @@
       "label": "Term Structure & Leverage",
       "pillar": "leverage",
       "weight": 20,
-      "score": 43,
-      "status": "fresh",
-      "reason": "success",
-      "details": [
-        {
-          "label": "Current Funding Rate",
-          "value": "0.0100%"
-        },
-        {
-          "label": "30-day Average",
-          "value": "0.0068%"
-        },
-        {
-          "label": "Funding Volatility",
-          "value": "0.0048%"
-        },
-        {
-          "label": "Price Volatility (30d)",
-          "value": "1.48%"
-        },
-        {
-          "label": "Leverage Regime",
-          "value": "Low"
-        },
-        {
-          "label": "Term Structure",
-          "value": "Normal"
-        },
-        {
-          "label": "30-day Range",
-          "value": "-0.0054% - 0.0100%"
-        },
-        {
-          "label": "Component Scores",
-          "value": "Funding: 27, Vol: 53, Stress: 54"
-        }
-      ]
+      "score": null,
+      "status": "excluded",
+      "reason": "error: CoinGecko 429",
+      "last_utc": null
     },
     {
       "key": "onchain",
       "label": "On-chain Activity",
       "pillar": "social",
       "weight": 5,
-      "score": 49,
+      "score": 40,
       "status": "fresh",
-      "reason": "success",
+      "reason": "fresh (0.0h old)",
+      "last_utc": "2025-09-19T20:22:04.419Z",
       "details": [
         {
           "label": "Current Transaction Fees",
@@ -7040,11 +6986,11 @@
         },
         {
           "label": "NVT Ratio",
-          "value": "67"
+          "value": "N/A"
         },
         {
           "label": "Component Scores",
-          "value": "Congestion: 55, Activity: 23, NVT: 77"
+          "value": "Congestion: 55, Activity: 23, NVT: 50"
         }
       ]
     },
@@ -7053,17 +6999,18 @@
       "label": "Social Interest",
       "pillar": "social",
       "weight": 5,
-      "score": 71,
+      "score": 69,
       "status": "fresh",
-      "reason": "success",
+      "reason": "fresh (0.0h old)",
+      "last_utc": "2025-09-19T20:22:04.515Z",
       "details": [
         {
           "label": "Search Attention",
-          "value": "Moderate"
+          "value": "Low"
         },
         {
           "label": "Bitcoin Trending Rank",
-          "value": "#15"
+          "value": "N/A"
         },
         {
           "label": "Price Signal (7d)",
@@ -7075,11 +7022,11 @@
         },
         {
           "label": "Social Risk Level",
-          "value": "High"
+          "value": "Moderate"
         },
         {
           "label": "Component Scores",
-          "value": "Search: 55, Momentum: 71, Vol: 95"
+          "value": "Search: 50, Momentum: 71, Vol: 95"
         },
         {
           "label": "Data Source",
@@ -7092,9 +7039,10 @@
       "label": "Macro Overlay",
       "pillar": "macro",
       "weight": 5,
-      "score": 26,
+      "score": 27,
       "status": "fresh",
-      "reason": "success",
+      "reason": "fresh (0.0h old)",
+      "last_utc": "2025-09-19T20:22:04.677Z",
       "details": [
         {
           "label": "Macro Regime",
@@ -7106,7 +7054,7 @@
         },
         {
           "label": "Rate Environment",
-          "value": "Falling (-5.9%)"
+          "value": "Falling (-5.8%)"
         },
         {
           "label": "VIX Level",
@@ -7118,22 +7066,22 @@
         },
         {
           "label": "Real Rate (10Y TIPS)",
-          "value": "1.68%"
+          "value": "1.73%"
         },
         {
           "label": "Component Scores",
-          "value": "Dollar: 50, Rates: 6, VIX: 26, Real: 5"
+          "value": "Dollar: 50, Rates: 7, VIX: 26, Real: 5"
         },
         {
           "label": "Current Levels",
-          "value": "DXY: 120.5, 2Y: 3.52%, VIX: 15.7"
+          "value": "DXY: 120.5, 2Y: 3.57%, VIX: 15.7"
         }
       ]
     }
   ],
   "btc": {
-    "spot_usd": 115225.78,
-    "as_of_utc": "2025-09-19T19:47:21.463Z",
+    "spot_usd": 115385.99,
+    "as_of_utc": "2025-09-19T20:22:04.818Z",
     "source": "Coinbase"
   },
   "provenance": [],
@@ -7146,7 +7094,7 @@
   "cycle_adjustment": {
     "adj_pts": 0,
     "residual_z": null,
-    "last_utc": "2025-09-19T19:47:21.462Z",
+    "last_utc": "2025-09-19T20:22:04.818Z",
     "source": "ETL fallback",
     "reason": "disabled"
   },
@@ -7155,9 +7103,9 @@
     "r_1d": 0,
     "sigma": 0,
     "z": 0,
-    "ref_close": 115225.78,
-    "spot": 115225.78,
-    "last_utc": "2025-09-19T19:47:21.462Z",
+    "ref_close": 115385.99,
+    "spot": 115385.99,
+    "last_utc": "2025-09-19T20:22:04.818Z",
     "source": "ETL fallback",
     "reason": "disabled"
   },
