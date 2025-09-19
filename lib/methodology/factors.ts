@@ -119,19 +119,18 @@ export const factorContent: FactorContent[] = [
     key: 'social_interest',
     pillar: 'Social / Attention',
     what: [
-      'Fear & Greed Index Level (0-100 sentiment) - 50% weight',
-      'Sentiment Momentum (7-day trend analysis) - 30% weight',
-      'Attention Volatility (14-day sentiment instability) - 20% weight',
-      'Trending Bonus (Bitcoin search ranking) - +0 to +10 points'
+      'Search Attention (Bitcoin trending rank) - 40% weight',
+      'Price Momentum Signal (7d vs 7d performance) - 35% weight',
+      'Volatility Social Signal (14-day price volatility) - 25% weight'
     ],
-    why: 'Multi-dimensional sentiment analysis captures both absolute sentiment and trend dynamics. F&G level shows current sentiment, momentum identifies trend shifts, volatility measures instability, and trending shows attention spikes.',
-    affects: '↑ greed + ↑ improving sentiment + ↑ volatility + ↑ trending attention ⇒ ↑ risk; fear + stable/deteriorating sentiment ⇒ ↓ risk',
+    why: 'Social sentiment proxy using available data sources. Search attention captures retail interest spikes, price momentum reflects social sentiment (bullish/bearish), and volatility indicates attention-driving market activity.',
+    affects: '↑ search attention + ↑ bullish momentum + ↑ volatility ⇒ ↑ risk; low attention + bearish/neutral momentum + low volatility ⇒ ↓ risk',
     cadence: 'Daily updates; stale >48h',
     sources: [
-      { label: 'Alternative.me Fear & Greed Index', url: 'https://alternative.me/crypto/fear-and-greed-index/' },
-      { label: 'CoinGecko trending searches', url: 'https://www.coingecko.com/' }
+      { label: 'CoinGecko trending searches', url: 'https://www.coingecko.com/' },
+      { label: 'CoinGecko Bitcoin price data', url: 'https://www.coingecko.com/' }
     ],
-    caveats: 'Trending data limited to CoinGecko search proxy. News cycles can cause temporary sentiment spikes. 30-day F&G window may miss longer-term sentiment shifts.'
+    caveats: 'Limited to available free APIs. Price-based sentiment is indirect. Trending searches may not fully capture broader social sentiment. No direct social media or Google Trends integration.'
   },
   {
     key: 'macro_overlay',

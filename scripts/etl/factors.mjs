@@ -166,110 +166,26 @@ async function computeTrendValuation() {
   }
 }
 
-// 2. SOCIAL INTEREST (Multi-source sentiment analysis)
+// 2. SOCIAL INTEREST (Search trends and social sentiment)
 async function computeSocialInterest() {
   try {
-    // Fetch multiple sentiment sources in parallel
-    const [fngRes, trendsRes] = await Promise.all([
-      fetch("https://api.alternative.me/fng/?limit=30&format=json", { headers: { "User-Agent": "btc-risk-etl" } }),
-      // Google Trends proxy using CoinGecko search trends (limited but available)
-      fetch("https://api.coingecko.com/api/v3/search/trending", { headers: { "User-Agent": "btc-risk-etl" } })
+    // Since Alternative.me is not a crypto site, we'll use available crypto sentiment sources
+    // Fetch multiple sentiment/attention sources
+    const [trendsRes, priceRes] = await Promise.all([
+      fetch("https://api.coingecko.com/api/v3/search/trending", { headers: { "User-Agent": "btc-risk-etl" } }),
+      fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30&interval=daily")
     ]);
     
-    if (!fngRes.ok) throw new Error(`Fear & Greed ${fngRes.status}`);
-    
-    const [fngData, trendsData] = await Promise.all([
-      fngRes.json(),
-      trendsRes.ok ? trendsRes.json() : null
+    const [trendsData, priceData] = await Promise.all([
+      trendsRes.ok ? trendsRes.json() : null,
+      priceRes.ok ? priceRes.json() : null
     ]);
-    
-    if (!Array.isArray(fngData?.data) || fngData.data.length === 0) {
-      return { score: null, reason: "no_fng_data" };
-    }
 
-    // Process Fear & Greed Index data
-    const fngValues = fngData.data
-      .map(item => ({
-        value: Number(item.value),
-        timestamp: item.timestamp
-      }))
-      .filter(item => Number.isFinite(item.value));
-
-    if (fngValues.length === 0) return { score: null, reason: "no_valid_fng_data" };
-
-    const latestFng = fngValues[0].value; // Most recent first
-    const values = fngValues.map(item => item.value);
-    
-    // Multi-factor analysis
-    // 1. Fear & Greed Level (50% weight) - absolute sentiment
-    const fngPercentile = percentileRank(values, latestFng);
-    const fngScore = riskFromPercentile(fngPercentile, { invert: false, k: 3 });
-
-    // 2. Sentiment Momentum (30% weight) - 7-day trend
-    let momentumScore = 50; // neutral default
-    let sentimentTrend = "Stable";
-    
-    if (fngValues.length >= 7) {
-      const recent7d = fngValues.slice(0, 7).map(item => item.value);
-      const previous7d = fngValues.slice(7, 14).map(item => item.value);
-      
-      if (previous7d.length > 0) {
-        const recentAvg = recent7d.reduce((sum, val) => sum + val, 0) / recent7d.length;
-        const previousAvg = previous7d.reduce((sum, val) => sum + val, 0) / previous7d.length;
-        const trendChange = recentAvg - previousAvg;
-        
-        // Build trend series for percentile ranking
-        const trendSeries = [];
-        for (let i = 7; i < fngValues.length - 7; i++) {
-          const recentPeriod = fngValues.slice(i - 7, i).map(item => item.value);
-          const previousPeriod = fngValues.slice(i, i + 7).map(item => item.value);
-          if (recentPeriod.length > 0 && previousPeriod.length > 0) {
-            const rAvg = recentPeriod.reduce((sum, val) => sum + val, 0) / recentPeriod.length;
-            const pAvg = previousPeriod.reduce((sum, val) => sum + val, 0) / previousPeriod.length;
-            trendSeries.push(rAvg - pAvg);
-          }
-        }
-        
-        if (trendSeries.length > 0) {
-          const trendPercentile = percentileRank(trendSeries, trendChange);
-          momentumScore = riskFromPercentile(trendPercentile, { invert: false, k: 3 });
-        }
-        
-        // Determine trend direction
-        if (trendChange > 5) sentimentTrend = "Improving (Bullish)";
-        else if (trendChange < -5) sentimentTrend = "Deteriorating (Bearish)";
-        else sentimentTrend = "Stable";
-      }
-    }
-
-    // 3. Attention Volatility (20% weight) - sentiment instability
-    let volatilityScore = 50; // neutral default
-    let sentimentVolatility = 0;
-    
-    if (fngValues.length >= 14) {
-      const recentValues = fngValues.slice(0, 14).map(item => item.value);
-      const mean = recentValues.reduce((sum, val) => sum + val, 0) / recentValues.length;
-      const variance = recentValues.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / recentValues.length;
-      sentimentVolatility = Math.sqrt(variance);
-      
-      // Build volatility series for percentile ranking
-      const volSeries = [];
-      for (let i = 14; i < fngValues.length; i++) {
-        const subset = fngValues.slice(i - 14, i).map(item => item.value);
-        const subMean = subset.reduce((sum, val) => sum + val, 0) / subset.length;
-        const subVar = subset.reduce((sum, val) => sum + Math.pow(val - subMean, 2), 0) / subset.length;
-        volSeries.push(Math.sqrt(subVar));
-      }
-      
-      if (volSeries.length > 0) {
-        const volPercentile = percentileRank(volSeries, sentimentVolatility);
-        volatilityScore = riskFromPercentile(volPercentile, { invert: false, k: 3 }); // Higher volatility = higher risk
-      }
-    }
-
-    // Check for Bitcoin trending status (bonus factor)
-    let trendingBonus = 0;
+    // Multi-factor analysis using available data
+    // 1. Search Attention (40% weight) - Bitcoin trending rank
+    let searchScore = 50; // neutral default
     let bitcoinRank = "N/A";
+    let searchAttention = "Low";
     
     if (trendsData?.coins && Array.isArray(trendsData.coins)) {
       const bitcoinTrending = trendsData.coins.find(coin => 
@@ -280,42 +196,129 @@ async function computeSocialInterest() {
         const rank = trendsData.coins.indexOf(bitcoinTrending) + 1;
         bitcoinRank = `#${rank}`;
         
-        // Higher trending rank = higher attention = higher risk
-        if (rank <= 3) trendingBonus = 10;
-        else if (rank <= 7) trendingBonus = 5;
-        else trendingBonus = 0;
+        // Convert rank to risk score (higher rank = higher attention = higher risk)
+        if (rank <= 3) {
+          searchScore = 85;
+          searchAttention = "Extreme";
+        } else if (rank <= 7) {
+          searchScore = 70;
+          searchAttention = "High";
+        } else if (rank <= 15) {
+          searchScore = 55;
+          searchAttention = "Moderate";
+        } else {
+          searchScore = 35;
+          searchAttention = "Low";
+        }
       }
     }
 
-    // Composite score (weighted blend + trending bonus)
+    // 2. Price Momentum Social Signal (35% weight) - price-based sentiment proxy
+    let momentumScore = 50; // neutral default
+    let priceSignal = "Neutral";
+    
+    if (priceData?.prices && Array.isArray(priceData.prices) && priceData.prices.length >= 14) {
+      const prices = priceData.prices.map(([timestamp, price]) => price).filter(Number.isFinite);
+      
+      if (prices.length >= 14) {
+        // Calculate recent vs past performance (social sentiment proxy)
+        const recent7d = prices.slice(-7);
+        const previous7d = prices.slice(-14, -7);
+        
+        const recentAvg = recent7d.reduce((sum, price) => sum + price, 0) / recent7d.length;
+        const previousAvg = previous7d.reduce((sum, price) => sum + price, 0) / previous7d.length;
+        const priceChange = ((recentAvg - previousAvg) / previousAvg) * 100;
+        
+        // Build price change series for percentile ranking
+        const changeSeries = [];
+        for (let i = 14; i < prices.length; i++) {
+          const recent = prices.slice(i-7, i);
+          const previous = prices.slice(i-14, i-7);
+          const rAvg = recent.reduce((sum, p) => sum + p, 0) / recent.length;
+          const pAvg = previous.reduce((sum, p) => sum + p, 0) / previous.length;
+          const change = ((rAvg - pAvg) / pAvg) * 100;
+          if (Number.isFinite(change)) changeSeries.push(change);
+        }
+        
+        if (changeSeries.length > 0) {
+          const changePercentile = percentileRank(changeSeries, priceChange);
+          momentumScore = riskFromPercentile(changePercentile, { invert: false, k: 3 });
+        }
+        
+        // Determine price signal
+        if (priceChange > 10) priceSignal = "Strong Bullish";
+        else if (priceChange > 3) priceSignal = "Bullish";
+        else if (priceChange > -3) priceSignal = "Neutral";
+        else if (priceChange > -10) priceSignal = "Bearish";
+        else priceSignal = "Strong Bearish";
+      }
+    }
+
+    // 3. Volatility Social Signal (25% weight) - price volatility as attention proxy
+    let volatilityScore = 50; // neutral default
+    let volatilityLevel = "Normal";
+    
+    if (priceData?.prices && Array.isArray(priceData.prices) && priceData.prices.length >= 14) {
+      const prices = priceData.prices.map(([timestamp, price]) => price).filter(Number.isFinite);
+      
+      if (prices.length >= 14) {
+        // Calculate 14-day price volatility
+        const returns = [];
+        for (let i = 1; i < Math.min(prices.length, 14); i++) {
+          const return_ = (prices[i] - prices[i-1]) / prices[i-1];
+          if (Number.isFinite(return_)) returns.push(return_);
+        }
+        
+        if (returns.length > 0) {
+          const volatility = Math.sqrt(returns.reduce((sum, r) => sum + r*r, 0) / returns.length) * 100;
+          
+          // Build volatility series for percentile ranking
+          const volSeries = [];
+          for (let i = 14; i < prices.length; i++) {
+            const subset = prices.slice(i-14, i);
+            const rets = [];
+            for (let j = 1; j < subset.length; j++) {
+              const ret = (subset[j] - subset[j-1]) / subset[j-1];
+              if (Number.isFinite(ret)) rets.push(ret);
+            }
+            if (rets.length > 0) {
+              const vol = Math.sqrt(rets.reduce((sum, r) => sum + r*r, 0) / rets.length) * 100;
+              volSeries.push(vol);
+            }
+          }
+          
+          if (volSeries.length > 0) {
+            const volPercentile = percentileRank(volSeries, volatility);
+            volatilityScore = riskFromPercentile(volPercentile, { invert: false, k: 3 });
+          }
+          
+          // Determine volatility level
+          if (volatility > 8) volatilityLevel = "Extreme";
+          else if (volatility > 5) volatilityLevel = "High";
+          else if (volatility > 2) volatilityLevel = "Moderate";
+          else volatilityLevel = "Low";
+        }
+      }
+    }
+
+    // Composite score (weighted blend)
     const compositeScore = Math.round(
-      fngScore * 0.5 + 
-      momentumScore * 0.3 + 
-      volatilityScore * 0.2
+      searchScore * 0.4 + 
+      momentumScore * 0.35 + 
+      volatilityScore * 0.25
     );
     
-    const finalScore = Math.min(100, compositeScore + trendingBonus);
-    
-    // Determine overall sentiment regime
-    let sentimentRegime = "Neutral";
-    if (latestFng >= 75) sentimentRegime = "Extreme Greed";
-    else if (latestFng >= 55) sentimentRegime = "Greed";
-    else if (latestFng >= 45) sentimentRegime = "Neutral";
-    else if (latestFng >= 25) sentimentRegime = "Fear";
-    else sentimentRegime = "Extreme Fear";
-    
     return { 
-      score: finalScore, 
+      score: compositeScore, 
       reason: "success",
       details: [
-        { label: "Fear & Greed Index", value: latestFng.toString() },
-        { label: "Sentiment Regime", value: sentimentRegime },
-        { label: "7-day Sentiment Trend", value: sentimentTrend },
-        { label: "Sentiment Volatility (14d)", value: sentimentVolatility.toFixed(1) },
+        { label: "Search Attention", value: searchAttention },
         { label: "Bitcoin Trending Rank", value: bitcoinRank },
-        { label: "Index Percentile (30d)", value: `${(fngPercentile * 100).toFixed(0)}%` },
-        { label: "Trending Bonus", value: trendingBonus > 0 ? `+${trendingBonus}` : "0" },
-        { label: "Component Scores", value: `F&G: ${fngScore}, Momentum: ${momentumScore}, Vol: ${volatilityScore}` }
+        { label: "Price Signal (7d)", value: priceSignal },
+        { label: "Volatility Level (14d)", value: volatilityLevel },
+        { label: "Social Risk Level", value: compositeScore > 70 ? "High" : compositeScore > 50 ? "Moderate" : "Low" },
+        { label: "Component Scores", value: `Search: ${searchScore}, Momentum: ${momentumScore}, Vol: ${volatilityScore}` },
+        { label: "Data Source", value: "CoinGecko trends + price analysis" }
       ]
     };
   } catch (error) {

@@ -78,16 +78,15 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 ## Social Pillar (5% total weight)
 
 ### Social Interest (5% weight)
-- **Data Source**: Alternative.me Fear & Greed Index + CoinGecko trending data
-- **Window**: 30 days of Fear & Greed data + real-time trending
-- **Transform**: Multi-factor composite (F&G Level 50%, Momentum 30%, Volatility 20% + Trending bonus)
-  - **Fear & Greed Level**: Absolute sentiment reading (0-100 scale)
-  - **Sentiment Momentum**: 7-day trend direction (improving/deteriorating/stable)
-  - **Attention Volatility**: 14-day sentiment volatility (instability measure)
-  - **Trending Bonus**: Bitcoin search ranking bonus (+0 to +10 points)
-- **Mapping**: Higher greed + improving sentiment + higher volatility + trending = Higher risk
+- **Data Source**: CoinGecko trending searches + Bitcoin price data
+- **Window**: Real-time trending + 30 days of price data
+- **Transform**: Multi-factor composite (Search Attention 40%, Price Momentum 35%, Volatility 25%)
+  - **Search Attention**: Bitcoin trending rank on CoinGecko (higher rank = higher risk)
+  - **Price Momentum**: 7-day vs 7-day price performance as sentiment proxy
+  - **Volatility Social Signal**: 14-day price volatility as attention proxy
+- **Mapping**: Higher search attention + bullish momentum + higher volatility = Higher risk
 - **Staleness TTL**: 1 day
-- **Aggregation**: Weighted composite with trending attention bonus and percentile ranking
+- **Aggregation**: Weighted composite with percentile ranking for momentum and volatility components
 
 ## Macro Pillar (5% total weight)
 
