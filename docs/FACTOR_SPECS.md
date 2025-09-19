@@ -40,11 +40,14 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 
 ### Trend & Valuation (25% weight)
 - **Data Source**: CoinGecko Bitcoin price data
-- **Window**: 200 days of daily data
-- **Transform**: Mayer Multiple (Price / 200-day SMA)
-- **Mapping**: Higher multiple = Higher risk (not inverted)
+- **Window**: 365 days of daily data
+- **Transform**: Multi-factor composite (BMSB 40%, Mayer Multiple 40%, Weekly RSI 20%)
+  - **Mayer Multiple**: Price / 200-day SMA
+  - **Bull Market Support Band (BMSB)**: Distance from 200-day SMA (proxy)
+  - **Weekly RSI**: RSI(14) calculated on weekly price samples (every 7th day)
+- **Mapping**: Higher values = Higher risk (not inverted)
 - **Staleness TTL**: 1 day
-- **Aggregation**: Current Mayer Multiple percentile vs. historical multiples
+- **Aggregation**: Weighted composite of three percentile-ranked components
 
 ## Leverage Pillar (20% total weight)
 

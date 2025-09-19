@@ -17,18 +17,18 @@ export const factorContent: FactorContent[] = [
     key: 'trend_valuation',
     pillar: 'Momentum / Valuation',
     what: [
-      'Price vs 200-day SMA (Mayer)',
-      'Distance to Bull Market Support Band (20W SMA / 21W EMA proxy)',
-      'Weekly momentum (RSI proxy)'
+      'Price vs 200-day SMA (Mayer Multiple) - 40% weight',
+      'Distance to Bull Market Support Band (BMSB proxy) - 40% weight',
+      'Weekly momentum (RSI-14 on weekly samples) - 20% weight'
     ],
-    why: 'Captures overextension versus long-term trend; extended runs above trend often cool.',
-    affects: '↑ stretch above trend ⇒ ↑ risk; below trend ⇒ ↓ risk',
-    cadence: 'Daily; stale >48h',
+    why: 'Multi-factor approach captures both valuation stretch and momentum persistence. Combines price vs trend (Mayer), technical support levels (BMSB), and sustained directional moves (weekly RSI).',
+    affects: '↑ Mayer Multiple + ↑ BMSB distance + ↑ weekly RSI ⇒ ↑ risk; below trend with weak momentum ⇒ ↓ risk',
+    cadence: 'Daily updates; stale >48h',
     sources: [
-      { label: 'Coinbase price', url: 'https://www.coinbase.com/' },
-      { label: 'Rolling SMAs/EMA', url: 'https://www.coinbase.com/' }
+      { label: 'CoinGecko Bitcoin prices', url: 'https://www.coingecko.com/' },
+      { label: '365-day price history for calculations', url: 'https://www.coingecko.com/' }
     ],
-    caveats: 'Trend can stay elevated in strong markets.'
+    caveats: 'Weekly RSI uses every 7th day sampling to avoid smoothing artifacts. Trend can stay elevated in strong markets.'
   },
   {
     key: 'net_liquidity',
