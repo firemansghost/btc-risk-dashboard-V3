@@ -14,6 +14,7 @@ export default function SimpleDashboard() {
   const [expandedFactors, setExpandedFactors] = useState<Set<string>>(new Set());
   const [expandedDetails, setExpandedDetails] = useState<Set<string>>(new Set());
   const [showAdj, setShowAdj] = useState(false);
+  const showBadge = process.env.NEXT_PUBLIC_SHOW_VIEW_BADGE !== 'false';
 
   useEffect(() => {
     const loadData = async () => {
@@ -110,6 +111,9 @@ export default function SimpleDashboard() {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
+        {showBadge && (
+          <div className="mb-2 text-xs text-gray-500">View: SimpleDashboard</div>
+        )}
         {/* Navigation Tabs */}
         <div className="mb-6">
           <nav className="flex space-x-8">
