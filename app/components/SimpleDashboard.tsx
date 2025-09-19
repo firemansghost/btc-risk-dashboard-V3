@@ -5,6 +5,7 @@ import BtcGoldCard from './BtcGoldCard';
 import SatoshisPerDollarCard from './SatoshisPerDollarCard';
 import AdjustmentsModal from './AdjustmentsModal';
 import RiskBandLegend from './RiskBandLegend';
+import SystemStatusCard from './SystemStatusCard';
 
 export default function SimpleDashboard() {
   const [data, setData] = useState<any>(null);
@@ -216,6 +217,16 @@ export default function SimpleDashboard() {
           </div>
           <RiskBandLegend score={data?.composite_score || 0} />
         </div>
+
+        {/* System Status */}
+        {data?.factors && (
+          <div className="mb-8">
+            <SystemStatusCard 
+              factors={data.factors}
+              provenance={data?.provenance || []}
+            />
+          </div>
+        )}
 
         <AdjustmentsModal
           isOpen={showAdj}
