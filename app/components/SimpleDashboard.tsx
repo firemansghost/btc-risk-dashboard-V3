@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import BtcGoldCard from './BtcGoldCard';
+import SatoshisPerDollarCard from './SatoshisPerDollarCard';
 import RiskBandLegend from './RiskBandLegend';
 
 export default function SimpleDashboard() {
@@ -66,6 +68,12 @@ export default function SimpleDashboard() {
       return newSet;
     });
   };
+
+  function formatSignedNumber(value: number | null | undefined, digits: number = 0): string {
+    if (value === null || value === undefined || Number.isNaN(value)) return '0';
+    const fixed = value.toFixed(digits);
+    return value >= 0 ? `+${fixed}` : fixed;
+  }
 
   if (loading) {
     return (
@@ -154,8 +162,12 @@ export default function SimpleDashboard() {
               <button className="text-xs text-blue-600 hover:text-blue-700 font-medium">Tune weights</button>
             </div>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 text-[11px] rounded bg-slate-100 text-slate-700 border border-slate-200">Cycle:</span>
-              <span className="px-2 py-0.5 text-[11px] rounded bg-yellow-100 text-yellow-800 border border-yellow-200">Spike:</span>
+              <span className="px-2 py-0.5 text-[11px] rounded bg-slate-100 text-slate-700 border border-slate-200">
+                Cycle: {formatSignedNumber(data?.adjustments?.cycle_nudge ?? 0)}
+              </span>
+              <span className="px-2 py-0.5 text-[11px] rounded bg-slate-100 text-slate-700 border border-slate-200">
+                Spike: {formatSignedNumber(data?.adjustments?.spike_nudge ?? 0)}
+              </span>
             </div>
           </div>
 
@@ -171,55 +183,10 @@ export default function SimpleDashboard() {
           </div>
 
           {/* Bitcoin ⇄ Gold Card */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Bitcoin⇄Gold</h3>
-              <span className="text-[10px] rounded bg-yellow-100 text-yellow-800 px-2 py-0.5">fallback</span>
-            </div>
-            <div className="text-sm text-gray-700">
-              <div className="flex items-baseline justify-between">
-                <span>1 Bitcoin</span>
-                <span className="text-2xl font-semibold text-gray-900">
-                  {data?.cross?.btc_per_oz ? `${data.cross.btc_per_oz.toFixed(2)} oz` : '—'}
-                </span>
-              </div>
-              <div className="mt-2 flex items-baseline justify-between">
-                <span>1 oz</span>
-                <span className="text-lg font-semibold text-gray-900">
-                  {data?.cross?.oz_per_btc ? `${Number(data.cross.oz_per_btc).toFixed(6)} Bitcoin` : '—'}
-                </span>
-              </div>
-            </div>
-            <div className="mt-3 flex items-center justify-between text-[11px] text-gray-500">
-              <span>As of {data?.as_of_utc ? new Date(data.as_of_utc).toLocaleDateString() : '—'}</span>
-              <a className="text-blue-600 hover:text-blue-700" href="#">View details</a>
-            </div>
-            <div className="mt-1 text-[11px] text-gray-500">Source: Stooq • Using fallback source</div>
-          </div>
+          <BtcGoldCard className="h-full" />
 
           {/* Satoshis per Dollar Card */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Satoshis per Dollar</h3>
-            <div className="text-sm text-gray-700">
-              <div className="flex items-baseline justify-between">
-                <span>1 USD =</span>
-                <span className="text-2xl font-semibold text-gray-900">
-                  {data?.btc?.spot_usd ? `${Math.round(100000000 / data.btc.spot_usd).toLocaleString()} sats` : '—'}
-                </span>
-              </div>
-              <div className="mt-2 flex items-baseline justify-between">
-                <span>1 sat =</span>
-                <span className="text-lg font-semibold text-gray-900">
-                  {data?.btc?.spot_usd ? `$${(data.btc.spot_usd / 100000000).toFixed(8)}` : '—'}
-                </span>
-              </div>
-            </div>
-            <div className="mt-3 flex items-center justify-between text-[11px] text-gray-500">
-              <span>As of {data?.btc?.as_of_utc ? new Date(data.btc.as_of_utc).toLocaleDateString() : '—'}</span>
-              <a className="text-blue-600 hover:text-blue-700" href="#">View details</a>
-            </div>
-            <div className="mt-1 text-[11px] text-gray-500">Source: BTC daily close (Coinbase)</div>
-          </div>
+          <SatoshisPerDollarCard className="h-full" />
 
           {/* Model Version Card */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
