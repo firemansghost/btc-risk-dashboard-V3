@@ -11,8 +11,9 @@ export default function CanaryPage() {
   }, []);
   
   return (
-    <main style={{padding:16}}>
-      <div style={{fontSize:12,opacity:0.8}}>Hydration canary: {t}s (should tick)</div>
+    <main>
+      {/* Hydration canary - hidden but available for debugging */}
+      <div style={{display:'none', fontSize:12,opacity:0.8}}>Hydration canary: {t}s (should tick)</div>
       <ViewSwitch />
     </main>
   );

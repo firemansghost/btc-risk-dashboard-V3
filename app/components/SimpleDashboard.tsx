@@ -113,11 +113,6 @@ export default function SimpleDashboard() {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-4 text-xs text-gray-500">
-          <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
-            🟢 SimpleDashboard
-          </span>
-        </div>
         {/* Navigation Tabs */}
         <div className="mb-6">
           <nav className="flex space-x-8">
@@ -407,6 +402,13 @@ export default function SimpleDashboard() {
           >
             Refresh Dashboard
           </button>
+        </div>
+
+        {/* Dashboard Type Badge */}
+        <div className="flex justify-center mt-8 pb-4">
+          <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
+            🟢 SimpleDashboard
+          </span>
         </div>
       </div>
     </div>
