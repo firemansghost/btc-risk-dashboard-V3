@@ -98,9 +98,11 @@ export default function RealDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex-1">
-              {process.env.NEXT_PUBLIC_SHOW_VIEW_BADGE !== 'false' && (
-                <div className="text-xs text-gray-500 mb-1">View: RealDashboard</div>
-              )}
+              <div className="text-xs text-gray-500 mb-1">
+                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+                  🚀 RealDashboard
+                </span>
+              </div>
               <div className="font-bold tracking-tight text-2xl md:text-3xl text-gray-900">
                 <a href="/" className="hover:text-emerald-600 transition-colors">GhostGauge</a>
               </div>

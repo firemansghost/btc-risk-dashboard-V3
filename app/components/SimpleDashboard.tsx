@@ -113,9 +113,11 @@ export default function SimpleDashboard() {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        {showBadge && (
-          <div className="mb-2 text-xs text-gray-500">View: SimpleDashboard</div>
-        )}
+        <div className="mb-4 text-xs text-gray-500">
+          <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
+            🟢 SimpleDashboard
+          </span>
+        </div>
         {/* Navigation Tabs */}
         <div className="mb-6">
           <nav className="flex space-x-8">
