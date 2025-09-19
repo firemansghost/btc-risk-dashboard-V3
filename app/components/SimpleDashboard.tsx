@@ -113,14 +113,22 @@ export default function SimpleDashboard() {
 
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Bitcoin G-Score Dashboard</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Updated {data?.as_of_utc ? new Date(data.as_of_utc).toISOString() : 'Unknown'}
+              <h1 className="text-3xl font-bold text-gray-900">GhostGauge — Bitcoin Risk Dashboard</h1>
+              <div className="mt-1 text-lg text-gray-800">
+                Bitcoin G-Score: <span className="font-semibold">{data?.composite_score ?? '—'}</span> — {data?.band?.label || '—'}
+            </div>
+              <p className="text-sm text-gray-600 mt-2">
+                Daily 0–100 risk score for Bitcoin (GRS v3). As of {data?.as_of_utc ? new Date(data.as_of_utc).toISOString() : 'Unknown'} ·
+                <a href="/methodology" className="ml-1 underline text-gray-700 hover:text-gray-900">Methodology</a>
+                <span className="ml-3 text-gray-500">Data source:</span> <span className="ml-1 text-gray-700">ETL</span>
               </p>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-4">
+              <div className="hidden md:flex items-center text-sm text-gray-500">
+                <span className="mr-1">No</span> alerts
+              </div>
               <button className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
@@ -138,12 +146,16 @@ export default function SimpleDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           {/* Composite Score Card */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Composite Score</h3>
-            <div className="text-3xl font-bold text-gray-900 mb-1">
-              {data?.composite_score || 'N/A'}
+            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">BTC G-Score</h3>
+            <div className="text-4xl font-bold text-gray-900 mb-1">{data?.composite_score ?? '—'}</div>
+            <div className="text-xs text-gray-600 mb-1">Band: {data?.band?.label || '—'}</div>
+            <div className="text-xs text-gray-700 mb-2">{data?.band?.label || ''}</div>
+            <div className="flex items-center gap-2 mb-3">
+              <button className="text-xs text-blue-600 hover:text-blue-700 font-medium">Tune weights</button>
             </div>
-            <div className="text-xs text-gray-600">
-              Band: {data?.band?.label || 'N/A'}
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 text-[11px] rounded bg-slate-100 text-slate-700 border border-slate-200">Cycle:</span>
+              <span className="px-2 py-0.5 text-[11px] rounded bg-yellow-100 text-yellow-800 border border-yellow-200">Spike:</span>
             </div>
           </div>
 
@@ -158,26 +170,55 @@ export default function SimpleDashboard() {
             </div>
           </div>
 
-          {/* Gold Price Card */}
+          {/* Bitcoin ⇄ Gold Card */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Gold Price</h3>
-            <div className="text-3xl font-bold text-gray-900 mb-1">
-              {data?.cross?.btc_per_oz ? `₿${(1 / data.cross.btc_per_oz).toFixed(2)}` : 'N/A'}
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Bitcoin⇄Gold</h3>
+              <span className="text-[10px] rounded bg-yellow-100 text-yellow-800 px-2 py-0.5">fallback</span>
             </div>
-            <div className="text-xs text-gray-600">
-              per ounce
+            <div className="text-sm text-gray-700">
+              <div className="flex items-baseline justify-between">
+                <span>1 Bitcoin</span>
+                <span className="text-2xl font-semibold text-gray-900">
+                  {data?.cross?.btc_per_oz ? `${data.cross.btc_per_oz.toFixed(2)} oz` : '—'}
+                </span>
+              </div>
+              <div className="mt-2 flex items-baseline justify-between">
+                <span>1 oz</span>
+                <span className="text-lg font-semibold text-gray-900">
+                  {data?.cross?.oz_per_btc ? `${Number(data.cross.oz_per_btc).toFixed(6)} Bitcoin` : '—'}
+                </span>
+              </div>
             </div>
+            <div className="mt-3 flex items-center justify-between text-[11px] text-gray-500">
+              <span>As of {data?.as_of_utc ? new Date(data.as_of_utc).toLocaleDateString() : '—'}</span>
+              <a className="text-blue-600 hover:text-blue-700" href="#">View details</a>
+            </div>
+            <div className="mt-1 text-[11px] text-gray-500">Source: Stooq • Using fallback source</div>
           </div>
 
           {/* Satoshis per Dollar Card */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Satoshis per Dollar</h3>
-            <div className="text-3xl font-bold text-gray-900 mb-1">
-              {data?.btc?.spot_usd ? Math.round(100000000 / data.btc.spot_usd).toLocaleString() : 'N/A'}
+            <div className="text-sm text-gray-700">
+              <div className="flex items-baseline justify-between">
+                <span>1 USD =</span>
+                <span className="text-2xl font-semibold text-gray-900">
+                  {data?.btc?.spot_usd ? `${Math.round(100000000 / data.btc.spot_usd).toLocaleString()} sats` : '—'}
+                </span>
+              </div>
+              <div className="mt-2 flex items-baseline justify-between">
+                <span>1 sat =</span>
+                <span className="text-lg font-semibold text-gray-900">
+                  {data?.btc?.spot_usd ? `$${(data.btc.spot_usd / 100000000).toFixed(8)}` : '—'}
+                </span>
+              </div>
             </div>
-            <div className="text-xs text-gray-600">
-              sats per $1
+            <div className="mt-3 flex items-center justify-between text-[11px] text-gray-500">
+              <span>As of {data?.btc?.as_of_utc ? new Date(data.btc.as_of_utc).toLocaleDateString() : '—'}</span>
+              <a className="text-blue-600 hover:text-blue-700" href="#">View details</a>
             </div>
+            <div className="mt-1 text-[11px] text-gray-500">Source: BTC daily close (Coinbase)</div>
           </div>
 
           {/* Model Version Card */}
