@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import BtcGoldCard from './BtcGoldCard';
 import SatoshisPerDollarCard from './SatoshisPerDollarCard';
+import AdjustmentsModal from './AdjustmentsModal';
 import RiskBandLegend from './RiskBandLegend';
 
 export default function SimpleDashboard() {
@@ -11,6 +12,7 @@ export default function SimpleDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [expandedFactors, setExpandedFactors] = useState<Set<string>>(new Set());
   const [expandedDetails, setExpandedDetails] = useState<Set<string>>(new Set());
+  const [showAdj, setShowAdj] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -160,13 +162,14 @@ export default function SimpleDashboard() {
             <div className="text-xs text-gray-700 mb-2">{data?.band?.label || ''}</div>
             <div className="flex items-center gap-2 mb-3">
               <button className="text-xs text-blue-600 hover:text-blue-700 font-medium">Tune weights</button>
+              <button onClick={() => setShowAdj(true)} className="text-xs text-gray-600 hover:text-gray-800 font-medium">View details</button>
             </div>
             <div className="flex items-center gap-2">
               <span className="px-2 py-0.5 text-[11px] rounded bg-slate-100 text-slate-700 border border-slate-200">
-                Cycle: {formatSignedNumber(data?.adjustments?.cycle_nudge ?? 0)}
+                Cycle: {formatSignedNumber(data?.cycle_adjustment?.adj_pts ?? data?.adjustments?.cycle_nudge ?? 0)}
               </span>
               <span className="px-2 py-0.5 text-[11px] rounded bg-slate-100 text-slate-700 border border-slate-200">
-                Spike: {formatSignedNumber(data?.adjustments?.spike_nudge ?? 0)}
+                Spike: {formatSignedNumber(data?.spike_adjustment?.adj_pts ?? data?.adjustments?.spike_nudge ?? 0)}
               </span>
             </div>
           </div>
@@ -213,6 +216,14 @@ export default function SimpleDashboard() {
           </div>
           <RiskBandLegend score={data?.composite_score || 0} />
         </div>
+
+        <AdjustmentsModal
+          isOpen={showAdj}
+          onClose={() => setShowAdj(false)}
+          cycle={data?.cycle_adjustment ?? null}
+          spike={data?.spike_adjustment ?? null}
+          latestIso={data?.as_of_utc ?? null}
+        />
 
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">Last Updated</h2>

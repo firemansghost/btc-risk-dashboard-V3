@@ -42,23 +42,24 @@ export async function GET() {
       as_of_utc: etlData.updated_at,
       composite_raw: etlData.composite,
       composite_score: etlData.composite,
-      cycle_adjustment: {
+      // Prefer rich objects if present; fall back to legacy nudges
+      cycle_adjustment: etlData.cycle_adjustment ?? {
         adj_pts: etlData.adjustments?.cycle_nudge || 0,
         residual_z: null,
-        last_utc: null,
-        source: null,
-        reason: "disabled"
+        last_utc: etlData.updated_at ?? null,
+        source: 'ETL pipeline',
+        reason: 'disabled'
       },
-      spike_adjustment: {
+      spike_adjustment: etlData.spike_adjustment ?? {
         adj_pts: etlData.adjustments?.spike_nudge || 0,
-        r_1d: null,
-        sigma: null,
-        z: null,
-        ref_close: null,
+        r_1d: 0,
+        sigma: 0,
+        z: 0,
+        ref_close: etlData.price_usd,
         spot: etlData.price_usd,
         last_utc: etlData.updated_at,
-        source: "ETL pipeline",
-        reason: "disabled"
+        source: 'ETL pipeline',
+        reason: 'disabled'
       },
       band: {
         key: etlData.band?.name?.toLowerCase().replace(/\s+/g, '_') || 'hold_neutral',

@@ -622,6 +622,27 @@ async function main() {
   await fs.writeFile("public/data/history.csv", lines.join("\n"));
 
   // 4) latest.json with real factor data
+  // Compose adjustments in richer object form per docs
+  const nowIso = new Date().toISOString();
+  const cycle_adjustment = {
+    adj_pts: 0,
+    residual_z: null,
+    last_utc: nowIso,
+    source: 'ETL fallback',
+    reason: 'disabled'
+  };
+  const spike_adjustment = {
+    adj_pts: 0,
+    r_1d: 0,
+    sigma: 0,
+    z: 0,
+    ref_close: y.close,
+    spot: y.close,
+    last_utc: nowIso,
+    source: 'ETL fallback',
+    reason: 'disabled'
+  };
+
   const latest = {
     ok: true,
     version: "v3.1.0",
@@ -645,7 +666,11 @@ async function main() {
     provenance: [],
     model_version: "v3.1.0",
     transform: {},
+    // Legacy nudges preserved for backward-compat clients
     adjustments: { cycle_nudge: 0.0, spike_nudge: 0.0 },
+    // Rich objects for UI/API
+    cycle_adjustment,
+    spike_adjustment,
     config_digest: "etl_real_factors",
     ...(goldResult.success && { cross: { btc_per_oz: goldResult.data.btc_per_oz, oz_per_btc: goldResult.data.oz_per_btc } })
   };
