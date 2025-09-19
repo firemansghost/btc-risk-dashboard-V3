@@ -247,14 +247,34 @@ export default function RealDashboard() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Top Row Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <BtcGoldCard />
-          <SatoshisPerDollarCard />
-          <SystemStatusCard 
-            factors={latest?.factors || []} 
-            provenance={latest?.provenance || []}
-          />
+        {/* Key Metrics Cards - 5 Box Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+          {/* Composite Score */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">BTC G-Score</h3>
+            <div className="text-3xl font-bold text-gray-900 mb-1">{gScore ?? '—'}</div>
+            <div className="text-xs text-gray-600">Band: {bandText}</div>
+          </div>
+
+          {/* Bitcoin Price */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Bitcoin Price</h3>
+            <div className="text-3xl font-bold text-gray-900 mb-1">{price ? fmtUsd0(price) : 'N/A'}</div>
+            <div className="text-xs text-gray-600">as of {latest?.btc?.as_of_utc ? new Date(latest.btc.as_of_utc).toISOString().replace('T', ' ').replace('Z', 'Z') : '—'}</div>
+          </div>
+
+          {/* Model Version */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Model Version</h3>
+            <div className="text-3xl font-bold text-gray-900 mb-1">{version}</div>
+            <div className="text-xs text-gray-600">Five-pillar framework</div>
+          </div>
+
+          {/* Bitcoin ⇄ Gold */}
+          <BtcGoldCard className="h-full" />
+
+          {/* Satoshis per Dollar */}
+          <SatoshisPerDollarCard className="h-full" />
         </div>
 
         {/* Risk Band Legend */}
