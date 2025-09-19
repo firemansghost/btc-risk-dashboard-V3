@@ -191,44 +191,59 @@ export default function RealDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {latest?.factors?.map((factor: any) => (
             <div key={factor.key} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
+              <div className="mb-4">
+                {/* Header Row with Title, Links, and Score */}
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => openHistoryModal({key: factor.key, label: factor.label})}
+                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                    >
+                      History
+                    </button>
+                    <a 
+                      href="/methodology" 
+                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                    >
+                      What's this?
+                    </a>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                       factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
                     }`}>
                       {factor.score !== null ? factor.score.toFixed(0) : 'N/A'}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    <span className="font-medium text-gray-700">
-                      {factor.pillar ? factor.pillar.charAt(0).toUpperCase() + factor.pillar.slice(1) : 'Unknown'} Pillar
+                </div>
+                
+                {/* Pillar and Status Info */}
+                <div className="text-sm text-gray-600 mb-1">
+                  <span className="font-medium text-gray-700">
+                    {factor.pillar ? factor.pillar.charAt(0).toUpperCase() + factor.pillar.slice(1) : 'Unknown'} Pillar
+                  </span>
+                  {factor.weight_pct && (
+                    <span className="ml-2 text-gray-500">
+                      • Weight: {factor.weight_pct}%
                     </span>
-                    {factor.weight_pct && (
-                      <span className="ml-2 text-gray-500">
-                        • Weight: {factor.weight_pct}%
-                      </span>
-                    )}
-                    {factor.counts_toward && factor.counts_toward !== factor.pillar && (
-                      <span className="ml-2 text-xs text-blue-600">
-                        (counts toward {factor.counts_toward})
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Status: <span className={`font-medium ${
-                      factor.status === 'fresh' ? 'text-green-600' : 
-                      factor.status === 'stale' ? 'text-yellow-600' : 
-                      factor.status === 'excluded' ? 'text-gray-600' : 
-                      'text-red-600'
-                    }`}>
-                      {factor.status || 'Unknown'}
+                  )}
+                  {factor.counts_toward && factor.counts_toward !== factor.pillar && (
+                    <span className="ml-2 text-xs text-blue-600">
+                      (counts toward {factor.counts_toward})
                     </span>
-                    {factor.status === 'excluded' && factor.reason && (
-                      <span className="ml-2 text-xs text-gray-500">({factor.reason})</span>
-                    )}
-                  </div>
+                  )}
+                </div>
+                <div className="text-sm text-gray-600">
+                  Status: <span className={`font-medium ${
+                    factor.status === 'fresh' ? 'text-green-600' : 
+                    factor.status === 'stale' ? 'text-yellow-600' : 
+                    factor.status === 'excluded' ? 'text-gray-600' : 
+                    'text-red-600'
+                  }`}>
+                    {factor.status || 'Unknown'}
+                  </span>
+                  {factor.status === 'excluded' && factor.reason && (
+                    <span className="ml-2 text-xs text-gray-500">({factor.reason})</span>
+                  )}
                 </div>
               </div>
 
@@ -286,31 +301,17 @@ export default function RealDashboard() {
                 </div>
               )}
               
-              {/* Action Buttons */}
-              <div className="flex justify-between items-center">
-                <div className="flex space-x-3">
+              {/* ETF-specific action button */}
+              {factor.key === 'etf_flows' && (
+                <div className="mt-2">
                   <button
-                    onClick={() => openHistoryModal({key: factor.key, label: factor.label})}
-                    className="text-sm text-gray-600 hover:text-emerald-600 font-medium"
+                    onClick={openEtfBreakdown}
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                   >
-                    History
+                    By ETF
                   </button>
-                  {factor.key === 'etf_flows' && (
-                    <button
-                      onClick={openEtfBreakdown}
-                      className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                    >
-                      By ETF
-                    </button>
-                  )}
                 </div>
-                <a 
-                  href="/methodology" 
-                  className="text-sm text-gray-600 hover:text-emerald-600 font-medium"
-                >
-                  What's this?
-                </a>
-              </div>
+              )}
             </div>
           ))}
         </div>
