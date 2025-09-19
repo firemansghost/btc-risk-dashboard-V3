@@ -110,7 +110,19 @@ export default function RealDashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <button
-                onClick={load}
+                onClick={() => {
+                  // Try to refresh via API first, fallback to data reload
+                  fetch('/api/refresh', { method: 'POST' })
+                    .then(res => res.ok ? res.json() : Promise.reject())
+                    .then(() => {
+                      // Wait a moment then reload data
+                      setTimeout(() => load(), 1000);
+                    })
+                    .catch(() => {
+                      // Fallback to just reloading data
+                      load();
+                    });
+                }}
                 disabled={loading}
                 className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
               >
@@ -180,16 +192,46 @@ export default function RealDashboard() {
           {latest?.factors?.map((factor: any) => (
             <div key={factor.key} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
+                  <div className="text-sm text-gray-600 mt-1">
+                    <span className="font-medium text-gray-700">
+                      {factor.pillar ? factor.pillar.charAt(0).toUpperCase() + factor.pillar.slice(1) : 'Unknown'} Pillar
+                    </span>
+                    {factor.weight_pct && (
+                      <span className="ml-2 text-gray-500">
+                        (Weight: {factor.weight_pct}%)
+                      </span>
+                    )}
+                    {factor.counts_toward && factor.counts_toward !== factor.pillar && (
+                      <span className="ml-2 text-xs text-blue-600">
+                        (counts toward {factor.counts_toward})
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    Status: <span className={`font-medium ${
+                      factor.status === 'fresh' ? 'text-green-600' : 
+                      factor.status === 'stale' ? 'text-yellow-600' : 
+                      factor.status === 'excluded' ? 'text-gray-600' : 
+                      'text-red-600'
+                    }`}>
+                      {factor.status || 'Unknown'}
+                    </span>
+                    {factor.status === 'excluded' && factor.reason && (
+                      <span className="ml-2 text-xs text-gray-500">({factor.reason})</span>
+                    )}
+                  </div>
+                </div>
                 <div className="flex items-center space-x-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                     factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
                   }`}>
-                    {factor.score !== null ? factor.score.toFixed(1) : 'N/A'}
+                    {factor.score !== null ? factor.score.toFixed(0) : 'N/A'}
                   </span>
                   <button
                     onClick={() => toggleFactorExpansion(factor.key)}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 hover:text-gray-600 text-lg font-bold"
                   >
                     {expandedFactors.has(factor.key) ? '−' : '+'}
                   </button>
@@ -198,11 +240,21 @@ export default function RealDashboard() {
 
               {expandedFactors.has(factor.key) && (
                 <div className="border-t border-gray-200 pt-4">
-                  <div className="text-sm text-gray-600 mb-4">
-                    {factor.details && factor.details.length > 0
-                      ? factor.details[0].label
-                      : 'No details available.'}
-                  </div>
+                  {/* Factor Details */}
+                  {factor.details && factor.details.length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Details:</h4>
+                      <div className="space-y-1">
+                        {factor.details.slice(0, 3).map((detail: any, idx: number) => (
+                          <div key={idx} className="text-sm text-gray-600">
+                            <span className="font-medium">{detail.label}:</span> {detail.value}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Action Buttons */}
                   <div className="flex space-x-2">
                     <button
                       onClick={() => openHistoryModal({key: factor.key, label: factor.label})}
