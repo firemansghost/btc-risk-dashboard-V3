@@ -35,6 +35,7 @@ export default function RealDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [expandedFactors, setExpandedFactors] = useState<Set<string>>(new Set());
+  const [startedAt, setStartedAt] = useState<number | null>(null);
   const [whatIfModalOpen, setWhatIfModalOpen] = useState(false);
   const [provenanceModalOpen, setProvenanceModalOpen] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
@@ -60,6 +61,9 @@ export default function RealDashboard() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading dashboard...</p>
+          {startedAt && (
+            <p className="text-xs text-gray-500 mt-2">{Math.round((Date.now() - startedAt)/1000)}s elapsed</p>
+          )}
         </div>
       </div>
     );
@@ -119,6 +123,7 @@ export default function RealDashboard() {
   const loadData = useCallback(async () => {
     try {
       console.log('RealDashboard: Loading data...');
+      setStartedAt(Date.now());
       const [latestRes, statusRes] = await withTimeout(Promise.all([
         fetch('/data/latest.json', { cache: 'no-store' }),
         fetch('/data/status.json', { cache: 'no-store' })
@@ -185,6 +190,18 @@ export default function RealDashboard() {
     
     initializeData();
   }, [loadData, checkByFundAvailability]);
+
+  // Watchdog to prevent endless spinner
+  useEffect(() => {
+    if (!isLoading) return;
+    const timer = setTimeout(() => {
+      if (isLoading) {
+        setError('Timed out waiting for dashboard data.');
+        setIsLoading(false);
+      }
+    }, 13000);
+    return () => clearTimeout(timer);
+  }, [isLoading]);
 
   const toggleFactorExpansion = (key: string) => {
     setExpandedFactors(prev => {
