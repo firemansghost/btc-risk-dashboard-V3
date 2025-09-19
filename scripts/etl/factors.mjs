@@ -240,7 +240,7 @@ async function computeNetLiquidity() {
       tga.json()
     ]);
 
-    // Extract values and calculate net liquidity
+    // Extract values and calculate net liquidity time series
     // FRED API returns values in millions, so we need to convert them
     const walclValues = walclData.observations?.map(o => {
       const val = Number(o.value);
@@ -266,14 +266,7 @@ async function computeNetLiquidity() {
       console.warn('Net Liquidity: No RRP data available, using 0');
     }
 
-    // Calculate net liquidity (simplified - use latest values)
-    const latestWalcl = walclValues[walclValues.length - 1];
-    const latestRrp = rrpValues.length > 0 ? rrpValues[rrpValues.length - 1] : 0;
-    const latestTga = tgaValues[tgaValues.length - 1];
-    
-    const netLiquidity = latestWalcl - latestRrp - latestTga;
-    
-    // Create a simple series for percentile ranking (use all available values)
+    // Build complete net liquidity time series
     const netLiquiditySeries = [];
     const minLength = Math.min(walclValues.length, tgaValues.length);
     for (let i = 0; i < minLength; i++) {
@@ -282,24 +275,82 @@ async function computeNetLiquidity() {
       if (Number.isFinite(nl)) netLiquiditySeries.push(nl);
     }
 
-    if (netLiquiditySeries.length === 0) {
-      return { score: null, reason: "net_liquidity_calculation_failed" };
+    if (netLiquiditySeries.length < 8) { // Need at least 8 weeks for momentum
+      return { score: null, reason: "insufficient_data_for_analysis" };
     }
 
-    const percentile = percentileRank(netLiquiditySeries, netLiquidity);
+    // Multi-factor analysis
+    const latest = netLiquiditySeries[netLiquiditySeries.length - 1];
+    const latestWalcl = walclValues[walclValues.length - 1];
+    const latestRrp = rrpValues.length > 0 ? rrpValues[rrpValues.length - 1] : 0;
+    const latestTga = tgaValues[tgaValues.length - 1];
+
+    // 1. Absolute Level (30% weight)
+    const levelPercentile = percentileRank(netLiquiditySeries, latest);
+    const levelScore = riskFromPercentile(levelPercentile, { invert: true, k: 3 });
+
+    // 2. 4-week Rate of Change (40% weight) - more predictive
+    const fourWeeksAgo = netLiquiditySeries[netLiquiditySeries.length - 5] || netLiquiditySeries[0];
+    const roc4w = ((latest - fourWeeksAgo) / Math.abs(fourWeeksAgo)) * 100;
     
-    // Higher net liquidity = lower risk (invert percentile)
-    const score = riskFromPercentile(percentile, { invert: true, k: 3 });
+    // Build RoC series for percentile ranking
+    const rocSeries = [];
+    for (let i = 4; i < netLiquiditySeries.length; i++) {
+      const current = netLiquiditySeries[i];
+      const past = netLiquiditySeries[i - 4];
+      const roc = ((current - past) / Math.abs(past)) * 100;
+      if (Number.isFinite(roc)) rocSeries.push(roc);
+    }
+    
+    const rocPercentile = rocSeries.length > 0 ? percentileRank(rocSeries, roc4w) : 0.5;
+    const rocScore = riskFromPercentile(rocPercentile, { invert: true, k: 3 }); // Higher growth = lower risk
+
+    // 3. 12-week Momentum/Acceleration (30% weight) - trend strength
+    let momentumScore = 50; // neutral default
+    if (netLiquiditySeries.length >= 12) {
+      const twelveWeeksAgo = netLiquiditySeries[netLiquiditySeries.length - 13];
+      const eightWeeksAgo = netLiquiditySeries[netLiquiditySeries.length - 9];
+      
+      const recentSlope = (latest - eightWeeksAgo) / 4; // per week
+      const pastSlope = (eightWeeksAgo - twelveWeeksAgo) / 4; // per week
+      const acceleration = recentSlope - pastSlope;
+      
+      // Build acceleration series
+      const accelSeries = [];
+      for (let i = 12; i < netLiquiditySeries.length; i++) {
+        const curr = netLiquiditySeries[i];
+        const mid = netLiquiditySeries[i - 4];
+        const past = netLiquiditySeries[i - 8];
+        const recentSlp = (curr - mid) / 4;
+        const pastSlp = (mid - past) / 4;
+        const accel = recentSlp - pastSlp;
+        if (Number.isFinite(accel)) accelSeries.push(accel);
+      }
+      
+      if (accelSeries.length > 0) {
+        const accelPercentile = percentileRank(accelSeries, acceleration);
+        momentumScore = riskFromPercentile(accelPercentile, { invert: true, k: 3 });
+      }
+    }
+
+    // Composite score (weighted blend)
+    const compositeScore = Math.round(
+      levelScore * 0.3 + 
+      rocScore * 0.4 + 
+      momentumScore * 0.3
+    );
     
     return { 
-      score, 
+      score: compositeScore, 
       reason: "success",
       details: [
         { label: "Fed Balance Sheet (WALCL)", value: `$${(latestWalcl / 1e12).toFixed(1)}T` },
         { label: "Reverse Repo (RRP)", value: rrpValues.length > 0 ? `$${(latestRrp / 1e9).toFixed(0)}B` : "No data" },
         { label: "Treasury General Account", value: `$${(latestTga / 1e9).toFixed(0)}B` },
-        { label: "Net Liquidity", value: `$${(netLiquidity / 1e12).toFixed(1)}T` },
-        { label: "Liquidity Percentile (1y)", value: `${(percentile * 100).toFixed(0)}%` }
+        { label: "Net Liquidity", value: `$${(latest / 1e12).toFixed(1)}T` },
+        { label: "4-week Change", value: `${roc4w >= 0 ? '+' : ''}${roc4w.toFixed(1)}%` },
+        { label: "Level Percentile (1y)", value: `${(levelPercentile * 100).toFixed(0)}%` },
+        { label: "Component Scores", value: `Level: ${levelScore}, RoC: ${rocScore}, Momentum: ${momentumScore}` }
       ]
     };
   } catch (error) {

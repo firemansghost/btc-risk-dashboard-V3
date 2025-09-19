@@ -34,17 +34,17 @@ export const factorContent: FactorContent[] = [
     key: 'net_liquidity',
     pillar: 'Liquidity / Flows',
     what: [
-      'Fed balance sheet (WALCL)',
-      'RRP (RRPONTSYD)',
-      'Treasury General Account (WTREGEN) → net liquidity proxy'
+      'Net Liquidity Level (WALCL - RRPONTSYD - WTREGEN) - 30% weight',
+      '4-week Rate of Change (short-term trend) - 40% weight', 
+      '12-week Momentum/Acceleration (trend strength) - 30% weight'
     ],
-    why: 'Liquidity conditions shape risk appetite; shrinking liquidity pressures risk assets.',
-    affects: '↓ net liquidity / negative Δ ⇒ ↑ risk; ↑ liquidity ⇒ ↓ risk',
-    cadence: 'Weekly; stale >8 days',
+    why: 'Multi-factor approach captures both absolute liquidity and directional changes. Rate of change is more predictive than levels alone, while momentum shows trend sustainability.',
+    affects: '↑ net liquidity + ↑ growth rate + ↑ acceleration ⇒ ↓ risk; contracting liquidity ⇒ ↑ risk',
+    cadence: 'Weekly updates; stale >8 days',
     sources: [
       { label: 'St. Louis Fed (FRED)', url: 'https://fred.stlouisfed.org/' }
     ],
-    caveats: 'Macro proxy; indirect for BTC.'
+    caveats: 'Macro proxy; RRP data may be sparse during normalization periods. Indirect relationship to BTC.'
   },
   {
     key: 'stablecoins',

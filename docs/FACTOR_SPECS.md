@@ -7,10 +7,13 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 ### Net Liquidity (10% weight)
 - **Data Source**: FRED API (WALCL, RRPONTSYD, WTREGEN)
 - **Window**: 1 year of weekly data
-- **Transform**: Net Liquidity = Fed Balance Sheet - Reverse Repo - Treasury General Account
-- **Mapping**: Higher liquidity = Lower risk (inverted)
+- **Transform**: Multi-factor composite (Level 30%, Rate of Change 40%, Momentum 30%)
+  - **Net Liquidity**: Fed Balance Sheet - Reverse Repo - Treasury General Account
+  - **4-week Rate of Change**: Short-term liquidity trend (more predictive)
+  - **12-week Momentum**: Acceleration/deceleration analysis
+- **Mapping**: Higher liquidity growth = Lower risk (inverted)
 - **Staleness TTL**: 7 days
-- **Aggregation**: Latest value percentile vs. 1-year history
+- **Aggregation**: Weighted composite of three percentile-ranked components
 
 ### Stablecoins (15% weight)
 - **Data Source**: CoinGecko USDC market cap
