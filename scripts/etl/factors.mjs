@@ -1049,7 +1049,7 @@ export async function computeAllFactors() {
     { key: 'stablecoins', label: 'Stablecoins', pillar: 'liquidity', weight: 15 },
     { key: 'etf_flows', label: 'ETF Flows', pillar: 'liquidity', weight: 10 },
     { key: 'term_leverage', label: 'Term Structure & Leverage', pillar: 'leverage', weight: 20 },
-    { key: 'onchain', label: 'On-chain Activity', pillar: 'social', weight: 10, counts_toward: 'momentum' },
+    { key: 'onchain', label: 'On-chain Activity', pillar: 'social', weight: 5, counts_toward: 'momentum' },
     { key: 'social_interest', label: 'Social Interest', pillar: 'social', weight: 5 },
     { key: 'macro_overlay', label: 'Macro Overlay', pillar: 'macro', weight: 5 }
   ];

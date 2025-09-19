@@ -98,25 +98,25 @@ export interface RiskConfig {
 // ============================================================================
 
 const DEFAULT_CONFIG: RiskConfig = {
-  // Pillar definitions with display weights (for UI)
+  // Pillar definitions with display weights (per FACTOR_SPECS.md)
   pillars: [
     { key: 'liquidity', label: 'Liquidity / Flows', color: 'bg-blue-100 text-blue-800 border-blue-200', weight: 35 },
-    { key: 'momentum', label: 'Momentum / Valuation', color: 'bg-green-100 text-green-800 border-green-200', weight: 25 },
+    { key: 'momentum', label: 'Momentum / Valuation', color: 'bg-green-100 text-green-800 border-green-200', weight: 30 },
     { key: 'leverage', label: 'Term Structure / Leverage', color: 'bg-orange-100 text-orange-800 border-orange-200', weight: 20 },
-    { key: 'macro', label: 'Macro Overlay', color: 'bg-gray-100 text-gray-800 border-gray-200', weight: 10 },
-    { key: 'social', label: 'Social / Attention', color: 'bg-purple-100 text-purple-800 border-purple-200', weight: 10 }
+    { key: 'macro', label: 'Macro Overlay', color: 'bg-gray-100 text-gray-800 border-gray-200', weight: 5 },
+    { key: 'social', label: 'Social / Attention', color: 'bg-purple-100 text-purple-800 border-purple-200', weight: 5 }
   ],
 
-  // Factor definitions with actual composite weights
+  // Factor definitions with actual composite weights (per FACTOR_SPECS.md)
   factors: [
     { key: 'trend_valuation', label: 'Trend & Valuation', pillar: 'momentum', weight: 25, enabled: true },
     { key: 'net_liquidity', label: 'Net Liquidity (FRED)', pillar: 'liquidity', weight: 10, enabled: true },
     { key: 'stablecoins', label: 'Stablecoins', pillar: 'liquidity', weight: 15, enabled: true },
     { key: 'etf_flows', label: 'ETF Flows', pillar: 'liquidity', weight: 10, enabled: true },
     { key: 'term_leverage', label: 'Term Structure & Leverage', pillar: 'leverage', weight: 20, enabled: true },
-    { key: 'onchain', label: 'On-chain Activity', pillar: 'social', weight: 10, counts_toward: 'momentum', enabled: true },
+    { key: 'onchain', label: 'On-chain Activity', pillar: 'social', weight: 5, counts_toward: 'momentum', enabled: true },
     { key: 'social_interest', label: 'Social Interest', pillar: 'social', weight: 5, enabled: true },
-    { key: 'macro_overlay', label: 'Macro Overlay', pillar: 'macro', weight: 5, enabled: false }
+    { key: 'macro_overlay', label: 'Macro Overlay', pillar: 'macro', weight: 5, enabled: true }
   ],
 
   // Risk band thresholds
