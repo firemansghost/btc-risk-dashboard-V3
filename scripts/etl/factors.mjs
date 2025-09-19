@@ -996,48 +996,141 @@ async function cleanOldCacheFiles() {
   }
 }
 
-// 6. TERM LEVERAGE (BitMEX funding rates)
+// 6. TERM STRUCTURE & LEVERAGE (Multi-factor derivatives analysis)
 async function computeTermLeverage() {
   try {
-    // BitMEX provides funding rate data via their public API
-    const url = "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&count=30&reverse=true";
-    const res = await fetch(url, { headers: { "User-Agent": "btc-risk-etl" } });
-    if (!res.ok) throw new Error(`BitMEX ${res.status}`);
+    // Fetch multiple data sources in parallel for comprehensive analysis
+    const [fundingRes, spotRes] = await Promise.all([
+      fetch("https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&count=30&reverse=true", 
+        { headers: { "User-Agent": "btc-risk-etl" } }),
+      fetch("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30&interval=daily")
+    ]);
+
+    if (!fundingRes.ok) throw new Error(`BitMEX ${fundingRes.status}`);
+    if (!spotRes.ok) throw new Error(`CoinGecko ${spotRes.status}`);
     
-    const data = await res.json();
-    if (!Array.isArray(data) || data.length === 0) {
+    const [fundingData, spotData] = await Promise.all([
+      fundingRes.json(),
+      spotRes.json()
+    ]);
+    
+    if (!Array.isArray(fundingData) || fundingData.length === 0) {
       return { score: null, reason: "no_funding_data" };
     }
     
-    // Extract funding rates (as percentages)
-    const fundingRates = data.map(item => Number(item.fundingRate) * 100).filter(Number.isFinite);
+    if (!spotData.prices || !Array.isArray(spotData.prices)) {
+      return { score: null, reason: "no_spot_data" };
+    }
+
+    // Extract and process funding rates
+    const fundingRates = fundingData.map(item => ({
+      rate: Number(item.fundingRate) * 100, // Convert to percentage
+      timestamp: new Date(item.timestamp)
+    })).filter(item => Number.isFinite(item.rate));
+    
     if (fundingRates.length === 0) {
       return { score: null, reason: "no_valid_funding_rates" };
     }
+
+    // Extract spot prices for volatility calculation
+    const spotPrices = spotData.prices.map(([timestamp, price]) => price).filter(Number.isFinite);
+    if (spotPrices.length < 7) {
+      return { score: null, reason: "insufficient_spot_data" };
+    }
+
+    // Multi-factor analysis
+    // 1. Funding Rate Level (40% weight) - leverage intensity
+    const rates = fundingRates.map(f => f.rate);
+    const avgFunding = rates.reduce((sum, rate) => sum + rate, 0) / rates.length;
+    const latestFunding = rates[0]; // Most recent (reverse=true)
     
-    // Calculate average funding rate over the period
-    const avgFunding = fundingRates.reduce((sum, rate) => sum + rate, 0) / fundingRates.length;
+    // Build historical series for percentile ranking
+    const fundingPercentile = percentileRank(rates, avgFunding);
+    const fundingScore = riskFromPercentile(fundingPercentile, { invert: false, k: 3 });
+
+    // 2. Funding Rate Volatility (30% weight) - leverage instability
+    const fundingMean = avgFunding;
+    const fundingVariance = rates.reduce((sum, rate) => sum + Math.pow(rate - fundingMean, 2), 0) / rates.length;
+    const fundingVolatility = Math.sqrt(fundingVariance);
     
-    // Higher funding rates = higher leverage = higher risk
-    // Convert to risk score (0-100)
-    let score;
-    if (avgFunding > 0.1) score = 80; // High leverage
-    else if (avgFunding > 0.05) score = 60; // Moderate leverage
-    else if (avgFunding > 0) score = 40; // Low leverage
-    else score = 20; // Negative funding (bearish sentiment)
+    // Build volatility series for comparison
+    const volSeries = [];
+    for (let i = 7; i < rates.length; i++) {
+      const subset = rates.slice(i-7, i);
+      const mean = subset.reduce((sum, r) => sum + r, 0) / subset.length;
+      const variance = subset.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / subset.length;
+      volSeries.push(Math.sqrt(variance));
+    }
     
-    const latestFunding = fundingRates[fundingRates.length - 1];
-    const maxFunding = Math.max(...fundingRates);
-    const minFunding = Math.min(...fundingRates);
+    const volPercentile = volSeries.length > 0 ? percentileRank(volSeries, fundingVolatility) : 0.5;
+    const volScore = riskFromPercentile(volPercentile, { invert: false, k: 3 });
+
+    // 3. Funding-Spot Divergence (30% weight) - term structure stress
+    // Calculate 7-day price volatility as proxy for market stress
+    const priceReturns = [];
+    for (let i = 1; i < Math.min(spotPrices.length, 30); i++) {
+      const return_ = (spotPrices[i] - spotPrices[i-1]) / spotPrices[i-1];
+      if (Number.isFinite(return_)) priceReturns.push(return_);
+    }
+    
+    const priceVolatility = priceReturns.length > 0 ? 
+      Math.sqrt(priceReturns.reduce((sum, r) => sum + r*r, 0) / priceReturns.length) * 100 : 0;
+    
+    // High price volatility + high funding = term structure stress
+    const stressIndicator = (Math.abs(avgFunding) * 10) + (priceVolatility * 0.1);
+    
+    // Build stress series for percentile ranking
+    const stressSeries = [];
+    for (let i = 7; i < Math.min(rates.length, spotPrices.length-7); i++) {
+      const fundingSubset = rates.slice(i-7, i);
+      const priceSubset = spotPrices.slice(i-7, i);
+      const avgF = fundingSubset.reduce((sum, r) => sum + r, 0) / fundingSubset.length;
+      
+      const returns = [];
+      for (let j = 1; j < priceSubset.length; j++) {
+        returns.push((priceSubset[j] - priceSubset[j-1]) / priceSubset[j-1]);
+      }
+      const vol = returns.length > 0 ? 
+        Math.sqrt(returns.reduce((sum, r) => sum + r*r, 0) / returns.length) * 100 : 0;
+      
+      stressSeries.push((Math.abs(avgF) * 10) + (vol * 0.1));
+    }
+    
+    const stressPercentile = stressSeries.length > 0 ? percentileRank(stressSeries, stressIndicator) : 0.5;
+    const stressScore = riskFromPercentile(stressPercentile, { invert: false, k: 3 });
+
+    // Composite score (weighted blend)
+    const compositeScore = Math.round(
+      fundingScore * 0.4 + 
+      volScore * 0.3 + 
+      stressScore * 0.3
+    );
+    
+    // Determine leverage regime
+    let leverageRegime = "Low";
+    if (Math.abs(avgFunding) > 0.05) leverageRegime = "High";
+    else if (Math.abs(avgFunding) > 0.02) leverageRegime = "Moderate";
+    
+    // Determine term structure state
+    let termStructure = "Normal";
+    if (stressIndicator > 2) termStructure = "Stressed";
+    else if (stressIndicator > 1) termStructure = "Elevated";
+    
+    const maxFunding = Math.max(...rates);
+    const minFunding = Math.min(...rates);
     
     return { 
-      score, 
+      score: compositeScore, 
       reason: "success",
       details: [
         { label: "Current Funding Rate", value: `${latestFunding.toFixed(4)}%` },
         { label: "30-day Average", value: `${avgFunding.toFixed(4)}%` },
+        { label: "Funding Volatility", value: `${fundingVolatility.toFixed(4)}%` },
+        { label: "Price Volatility (30d)", value: `${priceVolatility.toFixed(2)}%` },
+        { label: "Leverage Regime", value: leverageRegime },
+        { label: "Term Structure", value: termStructure },
         { label: "30-day Range", value: `${minFunding.toFixed(4)}% - ${maxFunding.toFixed(4)}%` },
-        { label: "Leverage Level", value: avgFunding > 0.1 ? "High" : avgFunding > 0.05 ? "Moderate" : avgFunding > 0 ? "Low" : "Negative" }
+        { label: "Component Scores", value: `Funding: ${fundingScore}, Vol: ${volScore}, Stress: ${stressScore}` }
       ]
     };
   } catch (error) {

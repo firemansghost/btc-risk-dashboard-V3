@@ -84,18 +84,18 @@ export const factorContent: FactorContent[] = [
     key: 'term_leverage',
     pillar: 'Term Structure / Leverage',
     what: [
-      'Perp funding (7d/30d)',
-      'Front-month basis vs spot',
-      'Open interest context'
+      'Funding Rate Level (BitMEX 30-day average) - 40% weight',
+      'Funding Rate Volatility (instability measure) - 30% weight',
+      'Term Structure Stress (funding-spot divergence) - 30% weight'
     ],
-    why: 'Crowded leverage (positive funding, contango) increases unwind risk.',
-    affects: '↑ funding/contango/OI ⇒ ↑ risk; backwardation ⇒ ↓ risk',
-    cadence: 'Every 8h; stale >24h',
+    why: 'Multi-dimensional leverage analysis captures both intensity and instability. Funding levels show leverage demand, volatility indicates market stress, and divergence measures term structure health.',
+    affects: '↑ funding rates + ↑ volatility + ↑ stress divergence ⇒ ↑ risk; negative funding + low volatility ⇒ ↓ risk',
+    cadence: 'Daily updates; stale >24h',
     sources: [
-      { label: 'BitMEX', url: 'https://www.bitmex.com/' },
-      { label: 'Derivatives venues', url: 'https://www.bitmex.com/' }
+      { label: 'BitMEX funding rates', url: 'https://www.bitmex.com/' },
+      { label: 'CoinGecko spot prices', url: 'https://www.coingecko.com/' }
     ],
-    caveats: 'Venue quirks; event regimes.'
+    caveats: 'Single venue dependency (BitMEX). Extreme events may cause API failures. Funding-spot correlation assumes efficient arbitrage.'
   },
   {
     key: 'onchain',

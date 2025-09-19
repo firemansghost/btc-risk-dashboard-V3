@@ -61,12 +61,15 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 ## Leverage Pillar (20% total weight)
 
 ### Term Structure & Leverage (20% weight)
-- **Data Source**: CoinGecko Bitcoin price data
-- **Window**: 30 days of daily data
-- **Transform**: 7-day percentage change in Bitcoin price
-- **Mapping**: Higher volatility = Higher risk (not inverted)
+- **Data Source**: BitMEX funding rates + CoinGecko spot prices
+- **Window**: 30 days of funding data + spot price volatility
+- **Transform**: Multi-factor composite (Funding Level 40%, Volatility 30%, Stress 30%)
+  - **Funding Rate Level**: Average funding rate intensity (leverage demand)
+  - **Funding Volatility**: Standard deviation of funding rates (instability)
+  - **Term Structure Stress**: Combined funding-volatility stress indicator
+- **Mapping**: Higher funding + higher volatility + higher stress = Higher risk
 - **Staleness TTL**: 1 day
-- **Aggregation**: Current 7d change percentile vs. historical 7d changes
+- **Aggregation**: Weighted composite with percentile ranking of each component
 
 ## Social Pillar (5% total weight)
 
