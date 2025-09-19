@@ -1,8 +1,8 @@
-import ViewSwitch from './components/ViewSwitch';
+import CanaryPage from './components/CanaryPage';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export default function Page() {
-  return <ViewSwitch />;
+export default function Page() { 
+  return <CanaryPage />; 
 }

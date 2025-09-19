@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import SiteFooter from './components/SiteFooter';
 import Navigation from './components/Navigation';
+import GlobalClientErrorBar from './components/GlobalClientErrorBar';
 import { assertEnv } from '@/lib/assertEnv';
 
 const inter = Inter({ 
@@ -96,6 +97,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-screen antialiased">
+        <GlobalClientErrorBar />
         <div className="container max-w-6xl mx-auto py-6">
           <Navigation />
           <main>
