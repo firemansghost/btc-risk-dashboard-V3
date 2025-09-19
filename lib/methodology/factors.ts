@@ -50,17 +50,18 @@ export const factorContent: FactorContent[] = [
     key: 'stablecoins',
     pillar: 'Liquidity / Flows',
     what: [
-      '30-day change in total USDT/USDC (and others if available)',
-      'USDT dominance trend'
+      'Aggregate Supply Growth (USDT 65%, USDC 28%, DAI 7%) - 50% weight',
+      'Growth Momentum (7d vs 30d acceleration) - 30% weight',
+      'Market Concentration Risk (HHI diversification) - 20% weight'
     ],
-    why: 'Stablecoin supply precedes on-exchange buying capacity.',
-    affects: '↑ supply growth ⇒ ↓ risk; contractions ⇒ ↑ risk',
-    cadence: 'Daily; stale >48h',
+    why: 'Multi-stablecoin approach captures total crypto buying power. Supply growth indicates liquidity expansion, momentum shows sustainability, and concentration measures systemic risk from dominance.',
+    affects: '↑ aggregate supply growth + ↑ momentum + ↓ concentration ⇒ ↓ risk; supply contractions or high concentration ⇒ ↑ risk',
+    cadence: 'Daily updates; stale >48h',
     sources: [
-      { label: 'CoinGecko', url: 'https://www.coingecko.com/' },
-      { label: 'On-chain data', url: 'https://www.coingecko.com/' }
+      { label: 'CoinGecko USDT/USDC/DAI', url: 'https://www.coingecko.com/' },
+      { label: 'Market cap weighted aggregation', url: 'https://www.coingecko.com/' }
     ],
-    caveats: 'Exchange behavior and chain migrations can add noise.'
+    caveats: 'Exchange behavior, regulatory events, and chain migrations can create temporary distortions. HHI reflects current market structure risk.'
   },
   {
     key: 'etf_flows',

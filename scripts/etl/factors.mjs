@@ -358,56 +358,133 @@ async function computeNetLiquidity() {
   }
 }
 
-// 4. STABLECOINS (CoinGecko data)
+// 4. STABLECOINS (Multi-stablecoin analysis)
 async function computeStablecoins() {
   try {
-    const url = "https://api.coingecko.com/api/v3/coins/usd-coin/market_chart?vs_currency=usd&days=90&interval=daily";
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`CoinGecko ${res.status}`);
+    // Fetch multiple major stablecoins in parallel
+    const stablecoins = [
+      { id: 'tether', symbol: 'USDT', weight: 0.65 }, // Market leader
+      { id: 'usd-coin', symbol: 'USDC', weight: 0.28 }, // Second largest
+      { id: 'dai', symbol: 'DAI', weight: 0.07 } // Decentralized option
+    ];
+
+    const promises = stablecoins.map(coin => 
+      fetch(`https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=90&interval=daily`)
+        .then(res => res.ok ? res.json() : null)
+    );
+
+    const responses = await Promise.all(promises);
     
-    const data = await res.json();
-    if (!data.market_caps || !Array.isArray(data.market_caps)) {
-      return { score: null, reason: "no_market_cap_data" };
+    let totalMarketCap = 0;
+    let totalSupplyChange = 0;
+    let totalWeightedChange = 0;
+    let validCoins = 0;
+    const coinData = [];
+
+    // Process each stablecoin
+    for (let i = 0; i < stablecoins.length; i++) {
+      const coin = stablecoins[i];
+      const data = responses[i];
+      
+      if (!data?.market_caps || !Array.isArray(data.market_caps) || data.market_caps.length < 30) {
+        console.warn(`Stablecoins: No data for ${coin.symbol}`);
+        continue;
+      }
+
+      const marketCaps = data.market_caps.map(([timestamp, cap]) => cap).filter(Number.isFinite);
+      if (marketCaps.length < 30) continue;
+
+      const latest = marketCaps[marketCaps.length - 1];
+      const thirtyDaysAgo = marketCaps[Math.max(0, marketCaps.length - 30)];
+      const sevenDaysAgo = marketCaps[Math.max(0, marketCaps.length - 7)];
+      
+      const change30d = (latest - thirtyDaysAgo) / thirtyDaysAgo;
+      const change7d = (latest - sevenDaysAgo) / sevenDaysAgo;
+
+      coinData.push({
+        symbol: coin.symbol,
+        marketCap: latest,
+        change30d: change30d,
+        change7d: change7d,
+        weight: coin.weight
+      });
+
+      totalMarketCap += latest;
+      totalSupplyChange += change30d * coin.weight;
+      totalWeightedChange += change30d * coin.weight;
+      validCoins++;
     }
 
-    // Extract market cap values (oldest first)
-    const marketCaps = data.market_caps.map(([timestamp, cap]) => cap).filter(Number.isFinite);
-    if (marketCaps.length < 30) {
-      return { score: null, reason: "insufficient_stablecoin_data" };
+    if (validCoins === 0) {
+      return { score: null, reason: "no_stablecoin_data" };
     }
 
-    // Calculate 30-day change
-    const latest = marketCaps[marketCaps.length - 1];
-    const thirtyDaysAgo = marketCaps[Math.max(0, marketCaps.length - 30)];
-    const change = (latest - thirtyDaysAgo) / thirtyDaysAgo;
+    // Multi-factor analysis
+    // 1. Aggregate Supply Growth (50% weight)
+    const aggregateChange = totalWeightedChange; // Weighted by market share
 
-    // Create a series of 30-day changes for percentile ranking
+    // 2. Supply Growth Momentum (30% weight) - 7d vs 30d trend
+    const recentMomentum = coinData.reduce((sum, coin) => {
+      const momentum = coin.change7d / Math.max(Math.abs(coin.change30d), 0.001); // Recent vs longer term
+      return sum + momentum * coin.weight;
+    }, 0);
+
+    // 3. Market Concentration Risk (20% weight) - diversification
+    const hhi = coinData.reduce((sum, coin) => {
+      const marketShare = coin.marketCap / totalMarketCap;
+      return sum + Math.pow(marketShare, 2);
+    }, 0); // Herfindahl-Hirschman Index
+    const concentrationScore = Math.min(hhi * 100, 100); // Higher = more concentrated = higher risk
+
+    // Build historical series for percentile ranking
     const changeSeries = [];
-    for (let i = 30; i < marketCaps.length; i++) {
-      const current = marketCaps[i];
-      const past = marketCaps[i - 30];
-      if (Number.isFinite(current) && Number.isFinite(past) && past !== 0) {
-        changeSeries.push((current - past) / past);
+    
+    // Use USDT as the primary reference (largest stablecoin)
+    const usdtData = responses[0]; // USDT is first
+    if (usdtData?.market_caps) {
+      const marketCaps = usdtData.market_caps.map(([timestamp, cap]) => cap).filter(Number.isFinite);
+      for (let i = 30; i < marketCaps.length; i++) {
+        const current = marketCaps[i];
+        const past = marketCaps[i - 30];
+        if (Number.isFinite(current) && Number.isFinite(past) && past !== 0) {
+          changeSeries.push((current - past) / past);
+        }
       }
     }
 
     if (changeSeries.length === 0) {
-      return { score: null, reason: "change_calculation_failed" };
+      return { score: null, reason: "percentile_calculation_failed" };
     }
 
-    const percentile = percentileRank(changeSeries, change);
+    // Calculate component scores
+    const supplyPercentile = percentileRank(changeSeries, aggregateChange);
+    const supplyScore = riskFromPercentile(supplyPercentile, { invert: true, k: 3 });
     
-    // Higher supply growth = lower risk (invert percentile)
-    const score = riskFromPercentile(percentile, { invert: true, k: 3 });
+    const momentumScore = recentMomentum > 1 ? 30 : recentMomentum > 0.5 ? 50 : 70; // Lower momentum = higher risk
+    const concentrationRiskScore = concentrationScore; // Direct mapping
+
+    // Composite score (weighted blend)
+    const compositeScore = Math.round(
+      supplyScore * 0.5 + 
+      momentumScore * 0.3 + 
+      concentrationRiskScore * 0.2
+    );
+    
+    // Find dominant stablecoin for display
+    const dominantCoin = coinData.reduce((max, coin) => 
+      coin.marketCap > max.marketCap ? coin : max, coinData[0]);
     
     return { 
-      score, 
+      score: compositeScore, 
       reason: "success",
       details: [
-        { label: "USDC Market Cap", value: `$${(latest / 1e9).toFixed(1)}B` },
-        { label: "30-day Change", value: `${(change * 100).toFixed(1)}%` },
-        { label: "Supply Growth Percentile", value: `${(percentile * 100).toFixed(0)}%` },
-        { label: "30-day Trend", value: change > 0.05 ? "Strong Growth" : change > 0 ? "Moderate Growth" : change > -0.05 ? "Stable" : "Declining" }
+        { label: "Total Market Cap", value: `$${(totalMarketCap / 1e9).toFixed(1)}B` },
+        { label: "Dominant Stablecoin", value: `${dominantCoin.symbol} (${((dominantCoin.marketCap / totalMarketCap) * 100).toFixed(0)}%)` },
+        { label: "Aggregate 30d Growth", value: `${(aggregateChange * 100).toFixed(1)}%` },
+        { label: "Growth Momentum", value: recentMomentum > 1 ? "Accelerating" : recentMomentum > 0.5 ? "Steady" : "Decelerating" },
+        { label: "Market Concentration", value: `HHI: ${(hhi * 10000).toFixed(0)}` },
+        { label: "Supply Growth Percentile", value: `${(supplyPercentile * 100).toFixed(0)}%` },
+        { label: "Component Scores", value: `Supply: ${supplyScore}, Momentum: ${momentumScore}, Concentration: ${concentrationRiskScore}` }
       ]
     };
   } catch (error) {

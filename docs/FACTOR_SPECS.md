@@ -16,12 +16,15 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 - **Aggregation**: Weighted composite of three percentile-ranked components
 
 ### Stablecoins (15% weight)
-- **Data Source**: CoinGecko USDC market cap
+- **Data Source**: CoinGecko multi-stablecoin data (USDT, USDC, DAI)
 - **Window**: 90 days of daily data
-- **Transform**: 30-day percentage change in USDC market cap
-- **Mapping**: Higher supply growth = Lower risk (inverted)
+- **Transform**: Multi-factor composite (Supply Growth 50%, Momentum 30%, Concentration 20%)
+  - **Aggregate Supply Growth**: Market-cap weighted 30-day change across major stablecoins
+  - **Growth Momentum**: 7-day vs 30-day trend acceleration/deceleration
+  - **Market Concentration**: Herfindahl-Hirschman Index for diversification risk
+- **Mapping**: Higher aggregate supply growth + lower concentration = Lower risk
 - **Staleness TTL**: 1 day
-- **Aggregation**: Current 30d change percentile vs. historical 30d changes
+- **Aggregation**: Weighted composite of three components with market-share weighting
 
 ### ETF Flows (10% weight)
 - **Data Source**: Farside Investors HTML scraping
