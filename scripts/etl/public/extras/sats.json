@@ -1,0 +1,15 @@
+{
+  "updated_at": "2025-09-19T13:55:47.424Z",
+  "date": "2025-09-19",
+  "btc_close_usd": 116470.54,
+  "sats_per_usd": 858.5862141619675,
+  "usd_per_sat": 0.0011647054,
+  "provenance": [
+    {
+      "name": "BTC daily close (Coinbase)",
+      "ok": true,
+      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400",
+      "ms": null
+    }
+  ]
+}
