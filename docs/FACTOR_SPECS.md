@@ -27,12 +27,15 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 - **Aggregation**: Weighted composite of three components with market-share weighting
 
 ### ETF Flows (10% weight)
-- **Data Source**: Farside Investors HTML scraping
-- **Window**: 21-day rolling sum
-- **Transform**: Sum of daily Bitcoin ETF flows over 21 days
-- **Mapping**: Higher flows = Lower risk (inverted)
+- **Data Source**: Farside Investors HTML scraping with individual ETF breakdown
+- **Window**: 21-day rolling sum with acceleration analysis
+- **Transform**: Multi-factor composite (21-day Sum 40%, Acceleration 30%, Diversification 30%)
+  - **21-day Rolling Sum**: Primary momentum indicator from all Bitcoin ETFs
+  - **Flow Acceleration**: 7-day recent vs previous 7-day comparison
+  - **ETF Diversification**: HHI concentration risk across individual ETFs (IBIT, FBTC, etc.)
+- **Mapping**: Higher flows + positive acceleration + lower concentration = Lower risk
 - **Staleness TTL**: 5 days
-- **Aggregation**: Current 21d sum percentile vs. historical baseline (274 data points)
+- **Aggregation**: Weighted composite with historical baseline percentile ranking
 
 ### On-chain Activity (5% weight, counts toward Momentum)
 - **Data Source**: Blockchain.info (transaction fees, transaction count, hash rate)

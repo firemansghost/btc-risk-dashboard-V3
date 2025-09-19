@@ -629,8 +629,49 @@ async function computeEtfFlows() {
       console.warn(`ETF Flows: Extreme 21-day sum change detected (z-score: ${zScore21d.toFixed(2)}). Latest: $${latest21d.toLocaleString()}, Mean: $${mean21d.toLocaleString()}, StdDev: $${stdDev21d.toLocaleString()}`);
     }
     
-    // Higher inflows = lower risk (invert percentile)
-    const score = riskFromPercentile(percentile, { invert: true, k: 3 });
+    // Multi-factor ETF Flows analysis
+    // 1. 21-day Rolling Sum (40% weight) - primary momentum indicator
+    const score21d = riskFromPercentile(percentile, { invert: true, k: 3 });
+    
+    // 2. Recent Acceleration (30% weight) - 7d vs 21d trend
+    const flows7d = flows.slice(-7).reduce((sum, f) => sum + f.flow, 0);
+    const flows14d = flows.slice(-14, -7).reduce((sum, f) => sum + f.flow, 0);
+    const acceleration = flows7d - flows14d; // Recent vs previous week
+    
+    // Build acceleration series for percentile ranking
+    const accelSeries = [];
+    for (let i = 14; i < flows.length - 7; i++) {
+      const recent = flows.slice(i, i + 7).reduce((sum, f) => sum + f.flow, 0);
+      const previous = flows.slice(i - 7, i).reduce((sum, f) => sum + f.flow, 0);
+      accelSeries.push(recent - previous);
+    }
+    
+    const accelPercentile = accelSeries.length > 0 ? percentileRank(accelSeries, acceleration) : 0.5;
+    const accelScore = riskFromPercentile(accelPercentile, { invert: true, k: 3 });
+    
+    // 3. ETF Diversification (30% weight) - concentration risk
+    let diversificationScore = 50; // neutral default
+    if (Object.keys(latestIndividualFlows).length > 0) {
+      const totalAbsFlow = Object.values(latestIndividualFlows)
+        .reduce((sum, flow) => sum + Math.abs(flow), 0);
+      
+      if (totalAbsFlow > 0) {
+        // Calculate Herfindahl-Hirschman Index for flow concentration
+        const hhi = Object.values(latestIndividualFlows)
+          .map(flow => Math.abs(flow) / totalAbsFlow)
+          .reduce((sum, share) => sum + Math.pow(share, 2), 0);
+        
+        // Lower concentration = lower risk
+        diversificationScore = Math.min(hhi * 100, 100);
+      }
+    }
+
+    // Composite score (weighted blend)
+    const score = Math.round(
+      score21d * 0.4 + 
+      accelScore * 0.3 + 
+      diversificationScore * 0.3
+    );
     
     // Format details with explicit units and tooltips
     const latestFlow = flows[flows.length - 1];
@@ -651,23 +692,23 @@ async function computeEtfFlows() {
           value: formatCurrencyWithTooltip(latest21d),
           tooltip: `Exact: $${latest21d.toLocaleString()} (21-day momentum)`
         },
+        { label: "7-day Recent Flows", value: formatCurrencyWithTooltip(flows7d) },
+        { label: "Flow Acceleration", value: acceleration >= 0 ? `+${formatCurrencyWithTooltip(acceleration)}` : formatCurrencyWithTooltip(acceleration) },
+        { label: "Diversification (HHI)", value: diversificationScore < 50 ? "High" : diversificationScore < 70 ? "Medium" : "Low" },
         { label: "21-day Percentile", value: `${(percentile * 100).toFixed(0)}%` },
         { 
           label: "21-day Z-Score", 
           value: `${zScore21d.toFixed(2)}σ`,
           tooltip: isExtremeChange ? `EXTREME: ${zScore21d.toFixed(2)}σ from mean (${mean21d.toLocaleString()})` : `Normal: ${zScore21d.toFixed(2)}σ from mean`
         },
+        { label: "Component Scores", value: `21d: ${score21d}, Accel: ${accelScore}, Diversif: ${diversificationScore}` },
         { 
           label: "Total Flows (all time)", 
           value: formatCurrencyWithTooltip(totalFlows),
           tooltip: `Exact: $${totalFlows.toLocaleString()} (since ETF inception)`
         },
         { label: "Data Points", value: flows.length.toString() },
-        { label: "Last Update", value: `${daysSinceUpdate.toFixed(1)} days ago` },
-        { label: "Source", value: "Farside Investors" },
-        { label: "Data Source", value: fromCache ? "Cache" : "Live" },
-        { label: "Baseline", value: historicalBaseline ? `Historical (${historicalBaseline.length} points)` : "Current data only" },
-        { label: "Individual ETF Flows", value: Object.keys(latestIndividualFlows).length > 0 ? "Available" : "Not available" }
+        { label: "Last Update", value: `${daysSinceUpdate.toFixed(1)} days ago` }
       ]
     };
   } catch (error) {

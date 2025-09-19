@@ -67,17 +67,18 @@ export const factorContent: FactorContent[] = [
     key: 'etf_flows',
     pillar: 'Liquidity / Flows',
     what: [
-      'US spot BTC ETF net creations/redemptions',
-      '21-day flow momentum'
+      '21-day Rolling Sum (all ETFs combined) - 40% weight',
+      'Flow Acceleration (7d recent vs previous 7d) - 30% weight',
+      'ETF Diversification (HHI concentration risk) - 30% weight'
     ],
-    why: 'Proxies institutional demand via regulated vehicles.',
-    affects: '↑ sustained inflows ⇒ ↓ risk; persistent outflows ⇒ ↑ risk',
-    cadence: 'Business days; stale >72h',
+    why: 'Multi-dimensional institutional demand analysis. Rolling sum captures sustained momentum, acceleration shows trend changes, and diversification measures systemic risk from single ETF dominance.',
+    affects: '↑ sustained inflows + ↑ acceleration + ↑ diversification ⇒ ↓ risk; concentrated outflows ⇒ ↑ risk',
+    cadence: 'Business days; stale >5 days',
     sources: [
-      { label: 'Farside', url: 'https://farside.co.uk/' },
-      { label: 'Provider CSVs', url: 'https://farside.co.uk/' }
+      { label: 'Farside Investors (all ETFs)', url: 'https://farside.co.uk/' },
+      { label: 'Individual ETF breakdown', url: 'https://farside.co.uk/' }
     ],
-    caveats: 'Holidays/reporting lags.'
+    caveats: 'Holidays/reporting lags. HHI reflects current ETF market structure. Schema changes may affect data parsing.'
   },
   {
     key: 'term_leverage',
