@@ -193,14 +193,21 @@ export default function RealDashboard() {
             <div key={factor.key} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {factor.score !== null ? factor.score.toFixed(0) : 'N/A'}
+                    </span>
+                  </div>
                   <div className="text-sm text-gray-600 mt-1">
                     <span className="font-medium text-gray-700">
                       {factor.pillar ? factor.pillar.charAt(0).toUpperCase() + factor.pillar.slice(1) : 'Unknown'} Pillar
                     </span>
                     {factor.weight_pct && (
                       <span className="ml-2 text-gray-500">
-                        (Weight: {factor.weight_pct}%)
+                        • Weight: {factor.weight_pct}%
                       </span>
                     )}
                     {factor.counts_toward && factor.counts_toward !== factor.pillar && (
@@ -223,56 +230,87 @@ export default function RealDashboard() {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {factor.score !== null ? factor.score.toFixed(0) : 'N/A'}
-                  </span>
-                  <button
-                    onClick={() => toggleFactorExpansion(factor.key)}
-                    className="text-gray-400 hover:text-gray-600 text-lg font-bold"
-                  >
-                    {expandedFactors.has(factor.key) ? '−' : '+'}
-                  </button>
-                </div>
               </div>
 
-              {expandedFactors.has(factor.key) && (
-                <div className="border-t border-gray-200 pt-4">
-                  {/* Factor Details */}
-                  {factor.details && factor.details.length > 0 && (
-                    <div className="mb-4">
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Details:</h4>
-                      <div className="space-y-1">
-                        {factor.details.slice(0, 3).map((detail: any, idx: number) => (
-                          <div key={idx} className="text-sm text-gray-600">
-                            <span className="font-medium">{detail.label}:</span> {detail.value}
-                          </div>
-                        ))}
+              {/* Always show first 3 details */}
+              {factor.details && factor.details.length > 0 && (
+                <div className="mb-4">
+                  <div className="space-y-2">
+                    {factor.details.slice(0, 3).map((detail: any, idx: number) => (
+                      <div key={idx} className="flex justify-between items-center text-sm">
+                        <span className="text-gray-600">{detail.label}:</span>
+                        <span className="font-medium text-gray-900">{detail.value}</span>
                       </div>
+                    ))}
+                  </div>
+                  
+                  {/* Show "+X more..." if there are more details */}
+                  {factor.details.length > 3 && (
+                    <div className="mt-2">
+                      <button
+                        onClick={() => toggleFactorExpansion(factor.key)}
+                        className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                      >
+                        {expandedFactors.has(factor.key) 
+                          ? '- Show less' 
+                          : `+${factor.details.length - 3} more...`}
+                      </button>
                     </div>
                   )}
-                  
-                  {/* Action Buttons */}
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => openHistoryModal({key: factor.key, label: factor.label})}
-                      className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
-                    >
-                      History
-                    </button>
-                    {factor.key === 'etf_flows' && (
-                      <button
-                        onClick={openEtfBreakdown}
-                        className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
-                      >
-                        By ETF
-                      </button>
+
+                  {/* Show additional details when expanded */}
+                  {expandedFactors.has(factor.key) && factor.details.length > 3 && (
+                    <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                      {factor.details.slice(3).map((detail: any, idx: number) => (
+                        <div key={idx + 3} className="flex justify-between items-center text-sm">
+                          <span className="text-gray-600">{detail.label}:</span>
+                          <span className="font-medium text-gray-900">{detail.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Factor with no details (excluded factors) */}
+              {(!factor.details || factor.details.length === 0) && factor.status === 'excluded' && (
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                  <div className="text-sm text-gray-600">
+                    This factor is currently excluded due to missing configuration.
+                    {factor.reason === 'missing_fred_api_key' && (
+                      <span className="block mt-1 text-xs text-gray-500">
+                        Requires FRED API key for economic data access.
+                      </span>
                     )}
                   </div>
                 </div>
               )}
+              
+              {/* Action Buttons */}
+              <div className="flex justify-between items-center">
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => openHistoryModal({key: factor.key, label: factor.label})}
+                    className="text-sm text-gray-600 hover:text-emerald-600 font-medium"
+                  >
+                    History
+                  </button>
+                  {factor.key === 'etf_flows' && (
+                    <button
+                      onClick={openEtfBreakdown}
+                      className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      By ETF
+                    </button>
+                  )}
+                </div>
+                <a 
+                  href="/methodology" 
+                  className="text-sm text-gray-600 hover:text-emerald-600 font-medium"
+                >
+                  What's this?
+                </a>
+              </div>
             </div>
           ))}
         </div>
