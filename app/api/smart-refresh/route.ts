@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       console.log('Smart refresh: Bitcoin price fetched:', latestBtcPrice);
     } catch (btcError) {
       console.error('Smart refresh: Bitcoin price fetch failed:', btcError);
-      throw new Error(`Failed to fetch Bitcoin price: ${btcError.message}`);
+      throw new Error(`Failed to fetch Bitcoin price: ${btcError instanceof Error ? btcError.message : String(btcError)}`);
     }
     
     // Fetch fresh gold price from Stooq
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
       }
     } catch (goldError) {
       console.error('Smart refresh: Gold price fetch failed:', goldError);
-      throw new Error(`Failed to fetch gold price: ${goldError.message}`);
+      throw new Error(`Failed to fetch gold price: ${goldError instanceof Error ? goldError.message : String(goldError)}`);
     }
     
     // Load existing ETL data
