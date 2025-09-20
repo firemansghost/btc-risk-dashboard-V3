@@ -135,13 +135,25 @@ export default function RealDashboard() {
                     })
                     .then((data) => {
                       console.log('Smart refresh success:', data);
-                      setRefreshMessage(`✅ Fresh prices: BTC $${data.data?.btc_price?.toLocaleString() || 'N/A'}`);
-                      // Reload data to show updated prices and composite score
-                      setTimeout(() => {
-                        load();
-                        setRefreshing(false);
-                        setTimeout(() => setRefreshMessage(null), 5000);
-                      }, 1000);
+                      const freshBtcPrice = data.data?.btc_price;
+                      setRefreshMessage(`✅ Fresh prices: BTC $${freshBtcPrice?.toLocaleString() || 'N/A'}`);
+                      
+                      // Update the Bitcoin price in the current data immediately
+                      if (freshBtcPrice && latest) {
+                        const updatedLatest = {
+                          ...latest,
+                          btc: {
+                            ...latest.btc,
+                            spot_usd: freshBtcPrice,
+                            as_of_utc: data.data.updated_at
+                          }
+                        };
+                        setLatest(updatedLatest);
+                        console.log('Updated Bitcoin price in UI:', freshBtcPrice);
+                      }
+                      
+                      setRefreshing(false);
+                      setTimeout(() => setRefreshMessage(null), 5000);
                     })
                     .catch((error) => {
                       console.error('Smart refresh failed:', error);

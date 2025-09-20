@@ -413,11 +413,27 @@ export default function SimpleDashboard() {
               // Use simple refresh API to fetch fresh prices (Vercel-compatible)
               fetch('/api/smart-refresh-simple', { method: 'POST' })
                 .then(res => res.ok ? res.json() : Promise.reject())
-                .then((data) => {
-                  console.log('Smart refresh success:', data);
-                  setRefreshMessage('✅ Prices updated! Reloading page...');
-                  // Reload page to show updated prices and composite score
-                  setTimeout(() => window.location.reload(), 1000);
+                .then((refreshData) => {
+                  console.log('Smart refresh success:', refreshData);
+                  const freshBtcPrice = refreshData.data?.btc_price;
+                  setRefreshMessage(`✅ Fresh prices: BTC $${freshBtcPrice?.toLocaleString() || 'N/A'}`);
+                  
+                  // Update the Bitcoin price in the current data immediately
+                  if (freshBtcPrice && data) {
+                    const updatedData = {
+                      ...data,
+                      btc: {
+                        ...data.btc,
+                        spot_usd: freshBtcPrice,
+                        as_of_utc: refreshData.data.updated_at
+                      }
+                    };
+                    setData(updatedData);
+                    console.log('Updated Bitcoin price in SimpleDashboard:', freshBtcPrice);
+                  }
+                  
+                  setRefreshing(false);
+                  setTimeout(() => setRefreshMessage(null), 5000);
                 })
                 .catch((error) => {
                   console.error('Smart refresh failed:', error);

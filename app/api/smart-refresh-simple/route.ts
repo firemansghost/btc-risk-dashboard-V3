@@ -27,40 +27,9 @@ export async function POST(req: Request) {
     
     console.log('Simple refresh: Bitcoin price:', currentBtcPrice);
     
-    // Fetch gold price using Stooq (more reliable for our use case)
-    console.log('Simple refresh: Fetching gold price from Stooq...');
+    // Skip gold price for now (Stooq timing out on Vercel)
+    console.log('Simple refresh: Skipping gold price (focus on Bitcoin refresh)');
     let goldPrice = null;
-    
-    try {
-      const stooqResponse = await fetch('https://stooq.com/q/d/l/?s=xauusd&i=d', {
-        headers: { "User-Agent": "btc-risk-dashboard" }
-      });
-      
-      if (stooqResponse.ok) {
-        const csv = await stooqResponse.text();
-        console.log('Simple refresh: Stooq CSV response length:', csv.length);
-        
-        const lines = csv.split('\n').filter(line => line.trim());
-        if (lines.length > 1) {
-          const lastLine = lines[lines.length - 1];
-          const columns = lastLine.split(',');
-          console.log('Simple refresh: CSV columns count:', columns.length);
-          
-          if (columns.length >= 5) {
-            goldPrice = parseFloat(columns[4]);
-            console.log('Simple refresh: Gold price from Stooq:', goldPrice);
-          } else {
-            console.warn('Simple refresh: Invalid CSV format, not enough columns');
-          }
-        } else {
-          console.warn('Simple refresh: Invalid CSV format, not enough lines');
-        }
-      } else {
-        console.warn('Simple refresh: Stooq API failed:', stooqResponse.status, stooqResponse.statusText);
-      }
-    } catch (goldError) {
-      console.error('Simple refresh: Gold price fetch error:', goldError);
-    }
     
     // Calculate Bitcoin⇄Gold ratio if we have gold price
     let btcPerOz = null;
