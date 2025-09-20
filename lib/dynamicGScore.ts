@@ -30,14 +30,14 @@ interface DashboardData {
 }
 
 // Risk band calculation (matches ETL logic)
-function getRiskBand(score: number) {
-  if (score >= 0 && score <= 15) return { key: "maximum_buying", label: "Maximum Buying", range: [0, 15], color: "#059669", recommendation: "Maximum Buying" };
-  if (score >= 16 && score <= 25) return { key: "buying", label: "Buying", range: [16, 25], color: "#16A34A", recommendation: "Buying" };
-  if (score >= 26 && score <= 34) return { key: "accumulate", label: "Accumulate", range: [26, 34], color: "#65A30D", recommendation: "Accumulate" };
-  if (score >= 35 && score <= 55) return { key: "hold_neutral", label: "Hold/Neutral", range: [35, 55], color: "#6B7280", recommendation: "Hold/Neutral" };
-  if (score >= 56 && score <= 70) return { key: "reduce", label: "Reduce", range: [56, 70], color: "#CA8A04", recommendation: "Reduce" };
-  if (score >= 71 && score <= 84) return { key: "selling", label: "Selling", range: [71, 84], color: "#DC2626", recommendation: "Selling" };
-  return { key: "maximum_selling", label: "Maximum Selling", range: [85, 100], color: "#991B1B", recommendation: "Maximum Selling" };
+function getRiskBand(score: number): { key: string; label: string; range: [number, number]; color: string; recommendation: string } {
+  if (score >= 0 && score <= 15) return { key: "maximum_buying", label: "Maximum Buying", range: [0, 15] as [number, number], color: "#059669", recommendation: "Maximum Buying" };
+  if (score >= 16 && score <= 25) return { key: "buying", label: "Buying", range: [16, 25] as [number, number], color: "#16A34A", recommendation: "Buying" };
+  if (score >= 26 && score <= 34) return { key: "accumulate", label: "Accumulate", range: [26, 34] as [number, number], color: "#65A30D", recommendation: "Accumulate" };
+  if (score >= 35 && score <= 55) return { key: "hold_neutral", label: "Hold/Neutral", range: [35, 55] as [number, number], color: "#6B7280", recommendation: "Hold/Neutral" };
+  if (score >= 56 && score <= 70) return { key: "reduce", label: "Reduce", range: [56, 70] as [number, number], color: "#CA8A04", recommendation: "Reduce" };
+  if (score >= 71 && score <= 84) return { key: "selling", label: "Selling", range: [71, 84] as [number, number], color: "#DC2626", recommendation: "Selling" };
+  return { key: "maximum_selling", label: "Maximum Selling", range: [85, 100] as [number, number], color: "#991B1B", recommendation: "Maximum Selling" };
 }
 
 // Simple percentile rank calculation
