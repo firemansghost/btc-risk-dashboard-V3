@@ -46,6 +46,7 @@ export default function MethodologyPage() {
       <div className="mb-8">
         <nav className="flex flex-wrap gap-4">
           <a href="#overview" className="text-blue-600 hover:text-blue-800 underline">Overview</a>
+          <a href="#g-score" className="text-blue-600 hover:text-blue-800 underline">BTC G-Score</a>
           <a href="#bands" className="text-blue-600 hover:text-blue-800 underline">Risk Bands</a>
           <a href="#factors" className="text-blue-600 hover:text-blue-800 underline">Risk Factors</a>
           <a href="#sources" className="text-blue-600 hover:text-blue-800 underline">Data Sources</a>
@@ -65,6 +66,77 @@ export default function MethodologyPage() {
             social sentiment, and macro overlays. The system is updated daily with transparent, documented data sources and 
             provides clear guidance through risk bands that translate scores into actionable insights.
           </p>
+        </div>
+      </section>
+
+      {/* BTC G-Score */}
+      <section id="g-score" className="mb-12">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">What is the BTC G-Score?</h2>
+        <div className="bg-white rounded-xl border p-6">
+          <div className="space-y-4">
+            <p className="text-gray-700 leading-relaxed">
+              The <strong>BTC G-Score</strong> is a composite risk assessment score ranging from 0 to 100, where:
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">
+              <li><strong>Lower scores (0-35)</strong> indicate lower risk and potentially better buying opportunities</li>
+              <li><strong>Middle scores (35-55)</strong> suggest neutral conditions where holding is appropriate</li>
+              <li><strong>Higher scores (55-100)</strong> indicate elevated risk and potential selling opportunities</li>
+            </ul>
+            
+            <h3 className="text-lg font-semibold text-gray-900 mt-6 mb-3">Score Calculation</h3>
+            <p className="text-gray-700 leading-relaxed">
+              The G-Score is calculated by taking a weighted average of multiple risk factors across five pillars:
+            </p>
+            <ul className="list-disc list-inside space-y-1 text-gray-700 ml-4">
+              <li><strong>Liquidity/Flows (50%)</strong>: ETF flows, stablecoin supply, net liquidity</li>
+              <li><strong>Momentum/Valuation (30%)</strong>: Price trends, on-chain activity</li>
+              <li><strong>Leverage (20%)</strong>: Derivatives and funding rates</li>
+              <li><strong>Social/Attention (5%)</strong>: Social sentiment indicators</li>
+              <li><strong>Macro Overlay (5%)</strong>: Macroeconomic conditions</li>
+            </ul>
+
+            <h3 className="text-lg font-semibold text-gray-900 mt-6 mb-3">Adjustments</h3>
+            <p className="text-gray-700 leading-relaxed mb-4">
+              The base factor score may include small adjustments to account for market context:
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 mb-2">
+                  <span className="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 border border-slate-200 mr-2">
+                    Cycle
+                  </span>
+                  Adjustment
+                </h4>
+                <p className="text-sm text-gray-700">
+                  A gentle context nudge derived from a long-term power-law residual of Bitcoin's price trend. 
+                  Interprets "where we are in the cycle." Small magnitude (capped), e.g., +1.2 or −0.8. 
+                  It doesn't replace factor signals—just a slight tilt.
+                </p>
+              </div>
+              
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 mb-2">
+                  <span className="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 border border-slate-200 mr-2">
+                    Spike
+                  </span>
+                  Adjustment
+                </h4>
+                <p className="text-sm text-gray-700">
+                  A fast-path nudge when the recent daily move is a large outlier versus short-term volatility (EWMA). 
+                  Large up-spikes → small risk increase; large down-spikes → small risk decrease. Also capped.
+                </p>
+              </div>
+            </div>
+            
+            <div className="bg-blue-50 rounded-lg p-4 mt-4">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> Both adjustments are transparent and additive to the factor-blended composite. 
+                They are displayed as signed numbers with 1 decimal precision (e.g., +1.3, −0.7). 
+                If not present or zero, they show "—".
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 

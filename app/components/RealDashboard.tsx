@@ -26,6 +26,18 @@ function formatSignedNumber(value: number): string {
   return value > 0 ? `+${value.toFixed(1)}` : value.toFixed(1);
 }
 
+// Get correct band color classes (matching RiskBandLegend)
+function getBandColorClasses(color: string): string {
+  switch (color) {
+    case 'green': return 'bg-emerald-500 text-white';
+    case 'blue': return 'bg-sky-500 text-white';
+    case 'yellow': return 'bg-yellow-500 text-white';
+    case 'orange': return 'bg-orange-500 text-white';
+    case 'red': return 'bg-rose-500 text-white';
+    default: return 'bg-slate-500 text-white';
+  }
+}
+
 export default function RealDashboard() {
   console.log('RealDashboard: component mounting');
   
@@ -218,15 +230,19 @@ export default function RealDashboard() {
             <div className="text-3xl font-bold text-gray-900 mb-1">{latest?.composite_score ?? '—'}</div>
             
             {/* Risk Band with Colorized Box */}
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs text-gray-600">Band:</span>
-              {latest?.band && (
-                <span 
-                  className="px-2 py-1 rounded text-xs font-medium text-white"
-                  style={{ backgroundColor: latest.band.color }}
-                >
-                  {latest.band.label}
-                </span>
+            <div className="mb-3">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs text-gray-600">Band:</span>
+                {latest?.band && (
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${getBandColorClasses(latest.band.color)}`}>
+                    {latest.band.label}
+                  </span>
+                )}
+              </div>
+              {latest?.band?.recommendation && (
+                <div className="text-xs text-gray-600 ml-10">
+                  {latest.band.recommendation}
+                </div>
               )}
             </div>
             
