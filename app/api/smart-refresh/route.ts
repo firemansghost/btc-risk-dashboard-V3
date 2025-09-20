@@ -8,35 +8,69 @@ export async function POST(req: Request) {
   try {
     console.log('Smart refresh: Starting fresh price fetch...');
     
-    // Use the same CoinGecko client as the ETL with rate limiting
-    const { coinGecko } = await import('../../../scripts/etl/coinGeckoCache.mjs');
-    
-    // Fetch fresh Bitcoin price using the cached client
+    // Fetch fresh Bitcoin price directly from CoinGecko with retry logic
     console.log('Smart refresh: Fetching Bitcoin price from CoinGecko...');
-    const btcData = await coinGecko.getMarketChart(2, 'daily') as any;
-    const btcPrices = btcData.prices;
-    const latestBtcPrice = btcPrices[btcPrices.length - 1][1]; // Latest price
-    console.log('Smart refresh: Bitcoin price fetched:', latestBtcPrice);
+    let btcData, latestBtcPrice;
+    
+    try {
+      const btcResponse = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=2&interval=daily', {
+        headers: { "User-Agent": "btc-risk-dashboard-smart-refresh" }
+      });
+      
+      if (!btcResponse.ok) {
+        throw new Error(`CoinGecko API error: ${btcResponse.status} ${btcResponse.statusText}`);
+      }
+      
+      btcData = await btcResponse.json();
+      const btcPrices = btcData.prices;
+      
+      if (!btcPrices || !Array.isArray(btcPrices) || btcPrices.length === 0) {
+        throw new Error('Invalid Bitcoin price data from CoinGecko');
+      }
+      
+      latestBtcPrice = btcPrices[btcPrices.length - 1][1]; // Latest price
+      console.log('Smart refresh: Bitcoin price fetched:', latestBtcPrice);
+    } catch (btcError) {
+      console.error('Smart refresh: Bitcoin price fetch failed:', btcError);
+      throw new Error(`Failed to fetch Bitcoin price: ${btcError.message}`);
+    }
     
     // Fetch fresh gold price from Stooq
     console.log('Smart refresh: Fetching gold price from Stooq...');
-    const goldResponse = await fetch('https://stooq.com/q/d/l/?s=xauusd&i=d', {
-      headers: { "User-Agent": "btc-risk-dashboard-smart-refresh" }
-    });
+    let latestGoldPrice;
     
-    if (!goldResponse.ok) {
-      throw new Error(`Stooq API error: ${goldResponse.status}`);
-    }
-    
-    const goldCsv = await goldResponse.text();
-    const goldLines = goldCsv.split('\n').filter(line => line.trim());
-    const lastGoldLine = goldLines[goldLines.length - 1];
-    const goldColumns = lastGoldLine.split(',');
-    const latestGoldPrice = parseFloat(goldColumns[4]); // Close price
-    console.log('Smart refresh: Gold price fetched:', latestGoldPrice);
-    
-    if (!latestGoldPrice || isNaN(latestGoldPrice)) {
-      throw new Error('Failed to parse gold price from Stooq');
+    try {
+      const goldResponse = await fetch('https://stooq.com/q/d/l/?s=xauusd&i=d', {
+        headers: { "User-Agent": "btc-risk-dashboard-smart-refresh" }
+      });
+      
+      if (!goldResponse.ok) {
+        throw new Error(`Stooq API error: ${goldResponse.status} ${goldResponse.statusText}`);
+      }
+      
+      const goldCsv = await goldResponse.text();
+      const goldLines = goldCsv.split('\n').filter(line => line.trim());
+      
+      if (goldLines.length < 2) {
+        throw new Error('Invalid CSV data from Stooq');
+      }
+      
+      const lastGoldLine = goldLines[goldLines.length - 1];
+      const goldColumns = lastGoldLine.split(',');
+      
+      if (goldColumns.length < 5) {
+        throw new Error('Invalid CSV format from Stooq');
+      }
+      
+      latestGoldPrice = parseFloat(goldColumns[4]); // Close price
+      console.log('Smart refresh: Gold price fetched:', latestGoldPrice);
+      
+      if (!latestGoldPrice || isNaN(latestGoldPrice)) {
+        throw new Error('Failed to parse gold price from Stooq CSV');
+      }
+    } catch (goldError) {
+      console.error('Smart refresh: Gold price fetch failed:', goldError);
+      throw new Error(`Failed to fetch gold price: ${goldError.message}`);
     }
     
     // Load existing ETL data
@@ -135,9 +169,11 @@ export async function POST(req: Request) {
     
   } catch (error) {
     console.error('Smart refresh error:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json({
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
+      details: error instanceof Error ? error.stack : 'No details available'
     }, { status: 500 });
   }
 }
