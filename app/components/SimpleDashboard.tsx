@@ -399,7 +399,21 @@ export default function SimpleDashboard() {
 
         <div className="mt-6 text-center">
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              // Use smart refresh API to fetch fresh prices
+              fetch('/api/smart-refresh', { method: 'POST' })
+                .then(res => res.ok ? res.json() : Promise.reject())
+                .then((data) => {
+                  console.log('Smart refresh success:', data);
+                  // Reload page to show updated prices and composite score
+                  setTimeout(() => window.location.reload(), 500);
+                })
+                .catch((error) => {
+                  console.error('Smart refresh failed:', error);
+                  // Fallback to page reload
+                  window.location.reload();
+                });
+            }}
             className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
           >
             Refresh Dashboard

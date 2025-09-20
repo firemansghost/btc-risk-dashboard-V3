@@ -112,15 +112,17 @@ export default function RealDashboard() {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => {
-                  // Try to refresh via API first, fallback to data reload
-                  fetch('/api/refresh', { method: 'POST' })
+                  // Use smart refresh API to fetch fresh prices
+                  fetch('/api/smart-refresh', { method: 'POST' })
                     .then(res => res.ok ? res.json() : Promise.reject())
-                    .then(() => {
-                      // Wait a moment then reload data
-                      setTimeout(() => load(), 1000);
+                    .then((data) => {
+                      console.log('Smart refresh success:', data);
+                      // Reload data to show updated prices and composite score
+                      setTimeout(() => load(), 500);
                     })
-                    .catch(() => {
-                      // Fallback to just reloading data
+                    .catch((error) => {
+                      console.error('Smart refresh failed:', error);
+                      // Fallback to just reloading existing data
                       load();
                     });
                 }}
