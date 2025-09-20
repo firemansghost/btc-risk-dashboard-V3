@@ -64,7 +64,7 @@ export async function POST(req: Request) {
       btc: {
         ...existingData.btc,
         spot_usd: latestBtcPrice,
-        last_utc: new Date().toISOString()
+        as_of_utc: new Date().toISOString()
       },
       // Update gold cross rates
       gold_cross: {

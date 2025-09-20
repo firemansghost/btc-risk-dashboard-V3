@@ -14,6 +14,8 @@ export default function SimpleDashboard() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshMessage, setRefreshMessage] = useState<string | null>(null);
   const [expandedFactors, setExpandedFactors] = useState<Set<string>>(new Set());
   const [expandedDetails, setExpandedDetails] = useState<Set<string>>(new Set());
   const [showAdj, setShowAdj] = useState(false);
@@ -398,25 +400,43 @@ export default function SimpleDashboard() {
         )}
 
         <div className="mt-6 text-center">
+          {refreshMessage && (
+            <div className="mb-4 text-sm text-gray-600 bg-gray-100 px-4 py-2 rounded-md inline-block">
+              {refreshMessage}
+            </div>
+          )}
           <button
             onClick={() => {
+              setRefreshing(true);
+              setRefreshMessage('Fetching fresh prices...');
+              
               // Use smart refresh API to fetch fresh prices
               fetch('/api/smart-refresh', { method: 'POST' })
                 .then(res => res.ok ? res.json() : Promise.reject())
                 .then((data) => {
                   console.log('Smart refresh success:', data);
+                  setRefreshMessage('✅ Prices updated! Reloading page...');
                   // Reload page to show updated prices and composite score
-                  setTimeout(() => window.location.reload(), 500);
+                  setTimeout(() => window.location.reload(), 1000);
                 })
                 .catch((error) => {
                   console.error('Smart refresh failed:', error);
+                  setRefreshMessage('❌ Refresh failed, reloading page...');
                   // Fallback to page reload
-                  window.location.reload();
+                  setTimeout(() => window.location.reload(), 1000);
                 });
             }}
-            className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+            disabled={refreshing}
+            className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 mx-auto"
           >
-            Refresh Dashboard
+            {refreshing ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>Refreshing...</span>
+              </>
+            ) : (
+              <span>Refresh Dashboard</span>
+            )}
           </button>
         </div>
 

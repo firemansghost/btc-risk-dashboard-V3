@@ -26,6 +26,8 @@ export default function RealDashboard() {
   const [status, setStatus] = useState<any|null>(null);
   const [error, setError] = useState<string|null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshMessage, setRefreshMessage] = useState<string|null>(null);
   const startedAt = useRef(0);
 
   // Modals
@@ -110,26 +112,46 @@ export default function RealDashboard() {
               </p>
             </div>
             <div className="flex items-center space-x-4">
+              {refreshMessage && (
+                <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-md">
+                  {refreshMessage}
+                </div>
+              )}
               <button
                 onClick={() => {
+                  setRefreshing(true);
+                  setRefreshMessage('Fetching fresh prices...');
+                  
                   // Use smart refresh API to fetch fresh prices
                   fetch('/api/smart-refresh', { method: 'POST' })
                     .then(res => res.ok ? res.json() : Promise.reject())
                     .then((data) => {
                       console.log('Smart refresh success:', data);
+                      setRefreshMessage('Prices updated! Reloading data...');
                       // Reload data to show updated prices and composite score
-                      setTimeout(() => load(), 500);
+                      setTimeout(() => {
+                        load();
+                        setRefreshing(false);
+                        setRefreshMessage('✅ Prices refreshed successfully!');
+                        setTimeout(() => setRefreshMessage(null), 3000);
+                      }, 500);
                     })
                     .catch((error) => {
                       console.error('Smart refresh failed:', error);
+                      setRefreshMessage('❌ Refresh failed, reloading existing data...');
                       // Fallback to just reloading existing data
-                      load();
+                      setTimeout(() => {
+                        load();
+                        setRefreshing(false);
+                        setRefreshMessage('⚠️ Using existing data');
+                        setTimeout(() => setRefreshMessage(null), 3000);
+                      }, 500);
                     });
                 }}
-                disabled={loading}
+                disabled={loading || refreshing}
                 className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
               >
-                {loading ? (
+                {refreshing ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                     <span>Refreshing...</span>
