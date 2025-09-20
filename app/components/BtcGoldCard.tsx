@@ -156,9 +156,9 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
       }
     }
 
-    window.addEventListener('btc-price-updated', handleBtcPriceUpdate as EventListener);
+    window.addEventListener('btc-price-updated', handleBtcPriceUpdate as unknown as EventListener);
     return () => {
-      window.removeEventListener('btc-price-updated', handleBtcPriceUpdate as EventListener);
+      window.removeEventListener('btc-price-updated', handleBtcPriceUpdate as unknown as EventListener);
     };
   }, [goldData]);
 
