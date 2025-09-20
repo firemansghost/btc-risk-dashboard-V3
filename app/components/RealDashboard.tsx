@@ -150,6 +150,12 @@ export default function RealDashboard() {
                         };
                         setLatest(updatedLatest);
                         console.log('Updated Bitcoin price in UI:', freshBtcPrice);
+                        
+                        // Force refresh of Bitcoin⇄Gold and Satoshis cards by triggering a re-render
+                        // This will cause them to recalculate with the fresh Bitcoin price
+                        window.dispatchEvent(new CustomEvent('btc-price-updated', { 
+                          detail: { btc_price: freshBtcPrice, updated_at: data.data.updated_at } 
+                        }));
                       }
                       
                       setRefreshing(false);

@@ -53,6 +53,29 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
     fetchGoldData();
   }, []);
 
+  // Listen for Bitcoin price updates and recalculate ratios
+  useEffect(() => {
+    function handleBtcPriceUpdate(event: CustomEvent) {
+      const { btc_price, updated_at } = event.detail;
+      if (goldData && btc_price) {
+        const updatedGoldData = {
+          ...goldData,
+          btc_close_usd: btc_price,
+          btc_per_oz: btc_price / goldData.xau_close_usd,
+          oz_per_btc: goldData.xau_close_usd / btc_price,
+          updated_at: updated_at
+        };
+        setGoldData(updatedGoldData);
+        console.log('BtcGoldCard: Updated with fresh Bitcoin price:', btc_price);
+      }
+    }
+
+    window.addEventListener('btc-price-updated', handleBtcPriceUpdate as EventListener);
+    return () => {
+      window.removeEventListener('btc-price-updated', handleBtcPriceUpdate as EventListener);
+    };
+  }, [goldData]);
+
   if (loading) {
     return (
       <div className={`bg-white rounded-lg border border-gray-200 p-4 ${className}`}>

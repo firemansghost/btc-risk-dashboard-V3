@@ -51,6 +51,32 @@ export default function SatoshisPerDollarCard({ className = '' }: SatoshisPerDol
     fetchSatsData();
   }, []);
 
+  // Listen for Bitcoin price updates and recalculate satoshis
+  useEffect(() => {
+    function handleBtcPriceUpdate(event: CustomEvent) {
+      const { btc_price, updated_at } = event.detail;
+      if (satsData && btc_price) {
+        const satsPerUsd = 100000000 / btc_price; // 100M satoshis per Bitcoin
+        const usdPerSat = btc_price / 100000000;
+        
+        const updatedSatsData = {
+          ...satsData,
+          btc_close_usd: btc_price,
+          sats_per_usd: satsPerUsd,
+          usd_per_sat: usdPerSat,
+          updated_at: updated_at
+        };
+        setSatsData(updatedSatsData);
+        console.log('SatoshisPerDollarCard: Updated with fresh Bitcoin price:', btc_price);
+      }
+    }
+
+    window.addEventListener('btc-price-updated', handleBtcPriceUpdate as EventListener);
+    return () => {
+      window.removeEventListener('btc-price-updated', handleBtcPriceUpdate as EventListener);
+    };
+  }, [satsData]);
+
   if (loading) {
     return (
       <div className={`bg-white rounded-lg border border-gray-200 p-4 ${className}`}>
