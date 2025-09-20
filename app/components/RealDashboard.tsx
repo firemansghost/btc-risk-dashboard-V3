@@ -28,6 +28,16 @@ function formatSignedNumber(value: number): string {
 
 // Get correct band color classes (matching RiskBandLegend)
 function getBandColorClasses(color: string): string {
+  // Handle both semantic color names and hex colors
+  if (color === '#059669' || color === 'green') return 'bg-emerald-500 text-white';
+  if (color === '#16A34A' || color === 'green') return 'bg-emerald-500 text-white';
+  if (color === '#65A30D' || color === 'green') return 'bg-emerald-500 text-white';
+  if (color === '#6B7280' || color === 'blue') return 'bg-sky-500 text-white';  // Hold/Neutral
+  if (color === '#CA8A04' || color === 'yellow') return 'bg-yellow-500 text-white';
+  if (color === '#DC2626' || color === 'orange') return 'bg-orange-500 text-white';
+  if (color === '#991B1B' || color === 'red') return 'bg-rose-500 text-white';
+  
+  // Fallback to semantic names
   switch (color) {
     case 'green': return 'bg-emerald-500 text-white';
     case 'blue': return 'bg-sky-500 text-white';
@@ -36,6 +46,29 @@ function getBandColorClasses(color: string): string {
     case 'red': return 'bg-rose-500 text-white';
     default: return 'bg-slate-500 text-white';
   }
+}
+
+// Get proper recommendation text based on band key or label
+function getBandRecommendation(band: any): string {
+  // If we already have a proper recommendation, use it
+  if (band?.recommendation && band.recommendation !== band.label) {
+    return band.recommendation;
+  }
+  
+  // Map band keys/labels to proper recommendations
+  const key = band?.key || band?.label?.toLowerCase().replace(/\s+/g, '_');
+  const label = band?.label;
+  
+  if (key === 'maximum_buying' || label === 'Maximum Buying') return 'Maximum allocation';
+  if (key === 'buying' || label === 'Buying') return 'Continue regular purchases';
+  if (key === 'accumulate' || label === 'Accumulate') return 'Continue regular purchases';
+  if (key === 'hold_neutral' || label === 'Hold/Neutral') return 'Maintain positions, selective buying';
+  if (key === 'reduce' || label === 'Reduce') return 'Take some profits';
+  if (key === 'selling' || label === 'Selling') return 'Accelerate profit taking';
+  if (key === 'maximum_selling' || label === 'Maximum Selling') return 'Exit most/all positions';
+  
+  // Fallback to the band label if no mapping found
+  return band?.label || 'Unknown';
 }
 
 export default function RealDashboard() {
@@ -239,11 +272,9 @@ export default function RealDashboard() {
                   </span>
                 )}
               </div>
-              {latest?.band?.recommendation && (
-                <div className="text-xs text-gray-600 ml-10">
-                  {latest.band.recommendation}
-                </div>
-              )}
+              <div className="text-xs text-gray-600 ml-10">
+                {getBandRecommendation(latest?.band)}
+              </div>
             </div>
             
             {/* Tune Weights Button */}
