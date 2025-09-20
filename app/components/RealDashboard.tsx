@@ -26,25 +26,25 @@ function formatSignedNumber(value: number): string {
   return value > 0 ? `+${value.toFixed(1)}` : value.toFixed(1);
 }
 
-// Get correct band color classes (matching RiskBandLegend)
+// Get correct band color classes (matching RiskBandLegend exactly)
 function getBandColorClasses(color: string): string {
   // Handle both semantic color names and hex colors
-  if (color === '#059669' || color === 'green') return 'bg-emerald-500 text-white';
-  if (color === '#16A34A' || color === 'green') return 'bg-emerald-500 text-white';
-  if (color === '#65A30D' || color === 'green') return 'bg-emerald-500 text-white';
-  if (color === '#6B7280' || color === 'blue') return 'bg-sky-500 text-white';  // Hold/Neutral
-  if (color === '#CA8A04' || color === 'yellow') return 'bg-yellow-500 text-white';
-  if (color === '#DC2626' || color === 'orange') return 'bg-orange-500 text-white';
-  if (color === '#991B1B' || color === 'red') return 'bg-rose-500 text-white';
+  if (color === '#059669' || color === 'green') return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+  if (color === '#16A34A' || color === 'green') return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+  if (color === '#65A30D' || color === 'green') return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+  if (color === '#6B7280' || color === 'blue') return 'bg-sky-100 text-sky-800 border-sky-200';  // Hold/Neutral
+  if (color === '#CA8A04' || color === 'yellow') return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+  if (color === '#DC2626' || color === 'orange') return 'bg-orange-100 text-orange-800 border-orange-200';
+  if (color === '#991B1B' || color === 'red') return 'bg-rose-100 text-rose-800 border-rose-200';
   
   // Fallback to semantic names
   switch (color) {
-    case 'green': return 'bg-emerald-500 text-white';
-    case 'blue': return 'bg-sky-500 text-white';
-    case 'yellow': return 'bg-yellow-500 text-white';
-    case 'orange': return 'bg-orange-500 text-white';
-    case 'red': return 'bg-rose-500 text-white';
-    default: return 'bg-slate-500 text-white';
+    case 'green': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+    case 'blue': return 'bg-sky-100 text-sky-800 border-sky-200';
+    case 'yellow': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    case 'orange': return 'bg-orange-100 text-orange-800 border-orange-200';
+    case 'red': return 'bg-rose-100 text-rose-800 border-rose-200';
+    default: return 'bg-slate-100 text-slate-800 border-slate-200';
   }
 }
 
@@ -267,7 +267,7 @@ export default function RealDashboard() {
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xs text-gray-600">Band:</span>
                 {latest?.band && (
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${getBandColorClasses(latest.band.color)}`}>
+                  <span className={`px-2 py-1 rounded border text-xs font-medium ${getBandColorClasses(latest.band.color)}`}>
                     {latest.band.label}
                   </span>
                 )}
