@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     
     // Fetch fresh Bitcoin price using the cached client
     console.log('Smart refresh: Fetching Bitcoin price from CoinGecko...');
-    const btcData = await coinGecko.getMarketChart(2, 'daily');
+    const btcData = await coinGecko.getMarketChart(2, 'daily') as any;
     const btcPrices = btcData.prices;
     const latestBtcPrice = btcPrices[btcPrices.length - 1][1]; // Latest price
     console.log('Smart refresh: Bitcoin price fetched:', latestBtcPrice);
