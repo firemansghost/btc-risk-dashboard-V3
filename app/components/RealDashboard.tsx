@@ -122,8 +122,8 @@ export default function RealDashboard() {
                   setRefreshing(true);
                   setRefreshMessage('Fetching fresh prices...');
                   
-                  // Use smart refresh API to fetch fresh prices
-                  fetch('/api/smart-refresh', { method: 'POST' })
+                  // Use simple refresh API to fetch fresh prices (Vercel-compatible)
+                  fetch('/api/smart-refresh-simple', { method: 'POST' })
                     .then(res => res.ok ? res.json() : Promise.reject())
                     .then((data) => {
                       console.log('Smart refresh success:', data);
