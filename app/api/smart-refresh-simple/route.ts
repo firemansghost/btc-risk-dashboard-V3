@@ -71,7 +71,7 @@ export async function POST(req: Request) {
         updated_at: new Date().toISOString(),
         sources: {
           bitcoin: 'CoinGecko',
-          gold: goldPrice ? 'Stooq' : 'unavailable'
+          gold: goldPrice ? 'Alpha Vantage' : 'unavailable'
         }
       }
     });

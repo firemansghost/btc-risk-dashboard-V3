@@ -31,7 +31,43 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
   useEffect(() => {
     async function fetchGoldData() {
       try {
-        // Force fresh read with cache: 'no-store' to prevent stale data
+        // Try to get fresh data from smart refresh first
+        const refreshResponse = await fetch('/api/smart-refresh-simple', { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (refreshResponse.ok) {
+          const refreshData = await refreshResponse.json();
+          if (refreshData.success && refreshData.data.gold_price) {
+            // Use fresh Alpha Vantage data
+            const freshGoldPrice = refreshData.data.gold_price;
+            const freshBtcPrice = refreshData.data.btc_price;
+            const btcPerOz = freshBtcPrice / freshGoldPrice;
+            const ozPerBtc = freshGoldPrice / freshBtcPrice;
+            
+            const freshGoldData = {
+              updated_at: refreshData.data.updated_at,
+              date: new Date().toISOString().split('T')[0],
+              btc_close_usd: freshBtcPrice,
+              xau_close_usd: freshGoldPrice,
+              btc_per_oz: btcPerOz,
+              oz_per_btc: ozPerBtc,
+              provenance: [{
+                name: 'Alpha Vantage',
+                ok: true,
+                url: 'https://www.alphavantage.co/',
+                ms: 0,
+                fallback: false
+              }]
+            };
+            setGoldData(freshGoldData);
+            setLoading(false);
+            return;
+          }
+        }
+        
+        // Fallback to static file if smart refresh fails
         const response = await fetch('/extras/gold_cross.json', { 
           cache: 'no-store',
           headers: {
