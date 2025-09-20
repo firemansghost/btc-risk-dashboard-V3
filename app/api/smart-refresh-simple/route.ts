@@ -27,37 +27,39 @@ export async function POST(req: Request) {
     
     console.log('Simple refresh: Bitcoin price:', currentBtcPrice);
     
-    // Fetch gold price from a simpler API
-    console.log('Simple refresh: Fetching gold price...');
-    const goldResponse = await fetch('https://api.metals.live/v1/spot/gold', {
-      headers: { "User-Agent": "btc-risk-dashboard" }
-    });
-    
+    // Fetch gold price using Stooq (more reliable for our use case)
+    console.log('Simple refresh: Fetching gold price from Stooq...');
     let goldPrice = null;
-    if (goldResponse.ok) {
-      const goldData = await goldResponse.json();
-      goldPrice = goldData.price;
-      console.log('Simple refresh: Gold price:', goldPrice);
-    } else {
-      console.warn('Simple refresh: Gold API failed, will use fallback');
-      // Try Stooq as fallback
-      try {
-        const stooqResponse = await fetch('https://stooq.com/q/d/l/?s=xauusd&i=d');
-        if (stooqResponse.ok) {
-          const csv = await stooqResponse.text();
-          const lines = csv.split('\n').filter(line => line.trim());
-          if (lines.length > 1) {
-            const lastLine = lines[lines.length - 1];
-            const columns = lastLine.split(',');
-            if (columns.length >= 5) {
-              goldPrice = parseFloat(columns[4]);
-              console.log('Simple refresh: Gold price from Stooq:', goldPrice);
-            }
+    
+    try {
+      const stooqResponse = await fetch('https://stooq.com/q/d/l/?s=xauusd&i=d', {
+        headers: { "User-Agent": "btc-risk-dashboard" }
+      });
+      
+      if (stooqResponse.ok) {
+        const csv = await stooqResponse.text();
+        console.log('Simple refresh: Stooq CSV response length:', csv.length);
+        
+        const lines = csv.split('\n').filter(line => line.trim());
+        if (lines.length > 1) {
+          const lastLine = lines[lines.length - 1];
+          const columns = lastLine.split(',');
+          console.log('Simple refresh: CSV columns count:', columns.length);
+          
+          if (columns.length >= 5) {
+            goldPrice = parseFloat(columns[4]);
+            console.log('Simple refresh: Gold price from Stooq:', goldPrice);
+          } else {
+            console.warn('Simple refresh: Invalid CSV format, not enough columns');
           }
+        } else {
+          console.warn('Simple refresh: Invalid CSV format, not enough lines');
         }
-      } catch (e) {
-        console.warn('Simple refresh: Stooq fallback also failed');
+      } else {
+        console.warn('Simple refresh: Stooq API failed:', stooqResponse.status, stooqResponse.statusText);
       }
+    } catch (goldError) {
+      console.error('Simple refresh: Gold price fetch error:', goldError);
     }
     
     // Calculate Bitcoin⇄Gold ratio if we have gold price
@@ -66,16 +68,20 @@ export async function POST(req: Request) {
       btcPerOz = currentBtcPrice / goldPrice;
     }
     
-    console.log('Simple refresh: Success!');
+    console.log('Simple refresh: Success! BTC:', currentBtcPrice, 'Gold:', goldPrice);
     
     return NextResponse.json({
       success: true,
-      message: 'Prices fetched successfully',
+      message: goldPrice ? 'Prices fetched successfully' : 'Bitcoin price fetched, gold price unavailable',
       data: {
         btc_price: currentBtcPrice,
         gold_price: goldPrice,
         btc_per_oz: btcPerOz,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        sources: {
+          bitcoin: 'CoinGecko',
+          gold: goldPrice ? 'Stooq' : 'unavailable'
+        }
       }
     });
     
