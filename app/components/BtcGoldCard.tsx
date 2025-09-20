@@ -31,15 +31,22 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
   useEffect(() => {
     async function fetchGoldData() {
       try {
+        console.log('BtcGoldCard: Attempting to fetch fresh Alpha Vantage data...');
+        
         // Try to get fresh data from smart refresh first
         const refreshResponse = await fetch('/api/smart-refresh-simple', { 
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         });
         
+        console.log('BtcGoldCard: Smart refresh response status:', refreshResponse.status);
+        
         if (refreshResponse.ok) {
           const refreshData = await refreshResponse.json();
+          console.log('BtcGoldCard: Smart refresh data:', refreshData);
+          
           if (refreshData.success && refreshData.data.gold_price) {
+            console.log('BtcGoldCard: Using fresh Alpha Vantage data');
             // Use fresh Alpha Vantage data
             const freshGoldPrice = refreshData.data.gold_price;
             const freshBtcPrice = refreshData.data.btc_price;
@@ -64,10 +71,15 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
             setGoldData(freshGoldData);
             setLoading(false);
             return;
+          } else {
+            console.log('BtcGoldCard: Smart refresh failed or no gold price, falling back to static file');
           }
+        } else {
+          console.log('BtcGoldCard: Smart refresh failed with status:', refreshResponse.status);
         }
         
         // Fallback to static file if smart refresh fails
+        console.log('BtcGoldCard: Loading from static file...');
         const response = await fetch('/extras/gold_cross.json', { 
           cache: 'no-store',
           headers: {
@@ -78,8 +90,10 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
           throw new Error(`HTTP ${response.status}`);
         }
         const data = await response.json();
+        console.log('BtcGoldCard: Static file data:', data);
         setGoldData(data);
       } catch (err) {
+        console.error('BtcGoldCard: Error loading gold data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load gold data');
       } finally {
         setLoading(false);
