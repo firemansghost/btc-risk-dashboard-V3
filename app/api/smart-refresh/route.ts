@@ -8,20 +8,18 @@ export async function POST(req: Request) {
   try {
     console.log('Smart refresh: Starting fresh price fetch...');
     
-    // Fetch fresh Bitcoin price from CoinGecko
-    const btcResponse = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=2&interval=daily', {
-      headers: { "User-Agent": "btc-risk-dashboard-smart-refresh" }
-    });
+    // Use the same CoinGecko client as the ETL with rate limiting
+    const { coinGecko } = await import('../../../scripts/etl/coinGeckoCache.mjs');
     
-    if (!btcResponse.ok) {
-      throw new Error(`CoinGecko API error: ${btcResponse.status}`);
-    }
-    
-    const btcData = await btcResponse.json();
+    // Fetch fresh Bitcoin price using the cached client
+    console.log('Smart refresh: Fetching Bitcoin price from CoinGecko...');
+    const btcData = await coinGecko.getMarketChart(2, 'daily');
     const btcPrices = btcData.prices;
     const latestBtcPrice = btcPrices[btcPrices.length - 1][1]; // Latest price
+    console.log('Smart refresh: Bitcoin price fetched:', latestBtcPrice);
     
     // Fetch fresh gold price from Stooq
+    console.log('Smart refresh: Fetching gold price from Stooq...');
     const goldResponse = await fetch('https://stooq.com/q/d/l/?s=xauusd&i=d', {
       headers: { "User-Agent": "btc-risk-dashboard-smart-refresh" }
     });
@@ -35,12 +33,14 @@ export async function POST(req: Request) {
     const lastGoldLine = goldLines[goldLines.length - 1];
     const goldColumns = lastGoldLine.split(',');
     const latestGoldPrice = parseFloat(goldColumns[4]); // Close price
+    console.log('Smart refresh: Gold price fetched:', latestGoldPrice);
     
     if (!latestGoldPrice || isNaN(latestGoldPrice)) {
       throw new Error('Failed to parse gold price from Stooq');
     }
     
     // Load existing ETL data
+    console.log('Smart refresh: Loading existing ETL data...');
     const { promises: fs } = await import('node:fs');
     const path = await import('node:path');
     
@@ -49,7 +49,9 @@ export async function POST(req: Request) {
       const dataPath = path.join(process.cwd(), 'public', 'data', 'latest.json');
       const content = await fs.readFile(dataPath, 'utf8');
       existingData = JSON.parse(content);
+      console.log('Smart refresh: Existing data loaded successfully');
     } catch (error) {
+      console.error('Smart refresh: Failed to load existing data:', error);
       throw new Error('Could not load existing ETL data');
     }
     
