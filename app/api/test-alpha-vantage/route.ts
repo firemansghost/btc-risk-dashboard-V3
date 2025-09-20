@@ -17,45 +17,58 @@ export async function GET() {
       });
     }
     
-    // Test Alpha Vantage API call
+    // Test Alpha Vantage API call with different functions
     console.log('Alpha Vantage Test: Making API call...');
-    const response = await fetch(
-      `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=XAU&to_currency=USD&apikey=${process.env.ALPHAVANTAGE_API_KEY}`,
-      { headers: { "User-Agent": "btc-risk-dashboard-test" } }
-    );
     
-    console.log('Alpha Vantage Test: Response status:', response.status);
+    // Try different Alpha Vantage functions for gold
+    const testFunctions = [
+      {
+        name: 'CURRENCY_EXCHANGE_RATE',
+        url: `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=XAU&to_currency=USD&apikey=${process.env.ALPHAVANTAGE_API_KEY}`
+      },
+      {
+        name: 'DIGITAL_CURRENCY_DAILY',
+        url: `https://www.alphavantage.co/query?function=DIGITAL_CURRENCY_DAILY&symbol=BTC&market=USD&apikey=${process.env.ALPHAVANTAGE_API_KEY}`
+      },
+      {
+        name: 'TIME_SERIES_DAILY',
+        url: `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=GOLD&apikey=${process.env.ALPHAVANTAGE_API_KEY}`
+      }
+    ];
     
-    if (!response.ok) {
-      return NextResponse.json({
-        success: false,
-        error: `Alpha Vantage API returned ${response.status}: ${response.statusText}`,
-        hasApiKey: true,
-        responseStatus: response.status
-      });
+    const results = [];
+    
+    for (const testFunc of testFunctions) {
+      try {
+        console.log(`Alpha Vantage Test: Testing ${testFunc.name}...`);
+        const response = await fetch(testFunc.url, {
+          headers: { "User-Agent": "btc-risk-dashboard-test" }
+        });
+        
+        const data = await response.json();
+        results.push({
+          function: testFunc.name,
+          status: response.status,
+          success: response.ok,
+          data: data,
+          hasError: !!data['Error Message']
+        });
+        
+        console.log(`Alpha Vantage Test: ${testFunc.name} result:`, data);
+      } catch (error) {
+        results.push({
+          function: testFunc.name,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
     }
     
-    const data = await response.json();
-    console.log('Alpha Vantage Test: Response data:', data);
-    
-    const exchangeRate = data['Realtime Currency Exchange Rate'];
-    if (exchangeRate && exchangeRate['5. Exchange Rate']) {
-      const goldPrice = parseFloat(exchangeRate['5. Exchange Rate']);
-      return NextResponse.json({
-        success: true,
-        hasApiKey: true,
-        goldPrice: goldPrice,
-        exchangeRate: exchangeRate,
-        rawResponse: data
-      });
-    } else {
-      return NextResponse.json({
-        success: false,
-        error: 'No exchange rate found in Alpha Vantage response',
-        hasApiKey: true,
-        rawResponse: data
-      });
-    }
+    return NextResponse.json({
+      success: true,
+      hasApiKey: true,
+      results: results,
+      message: 'Tested multiple Alpha Vantage functions'
+    });
     
   } catch (error) {
     console.error('Alpha Vantage Test: Error:', error);
