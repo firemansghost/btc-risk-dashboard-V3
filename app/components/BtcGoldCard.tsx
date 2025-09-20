@@ -197,27 +197,34 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
         )}
       </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">1 Bitcoin =</span>
-          <span 
-            className="text-lg font-semibold text-gray-900"
-            title={`Exact: ${goldData.btc_per_oz.toFixed(6)} oz`}
-          >
-            {goldData.btc_per_oz.toFixed(2)} oz
-          </span>
-        </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Gold Price</span>
+                  <span className="text-lg font-semibold text-gray-900">
+                    ${goldData.xau_close_usd.toLocaleString()}
+                  </span>
+                </div>
 
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">1 oz =</span>
-          <span 
-            className="text-lg font-semibold text-gray-900"
-            title={`Exact: ${goldData.oz_per_btc.toFixed(6)} Bitcoin`}
-          >
-            {goldData.oz_per_btc.toFixed(4)} Bitcoin
-          </span>
-        </div>
-      </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">1 Bitcoin =</span>
+                  <span
+                    className="text-lg font-semibold text-gray-900"
+                    title={`Exact: ${goldData.btc_per_oz.toFixed(6)} oz`}
+                  >
+                    {goldData.btc_per_oz.toFixed(2)} oz
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">1 oz =</span>
+                  <span
+                    className="text-lg font-semibold text-gray-900"
+                    title={`Exact: ${goldData.oz_per_btc.toFixed(6)} Bitcoin`}
+                  >
+                    {goldData.oz_per_btc.toFixed(4)} Bitcoin
+                  </span>
+                </div>
+              </div>
 
       <div className="mt-3 pt-3 border-t border-gray-100">
         <div className="flex items-center justify-between text-xs text-gray-500">

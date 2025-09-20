@@ -7,25 +7,62 @@ export async function POST(req: Request) {
   try {
     console.log('Simple refresh: Starting...');
     
-    // Fetch fresh Bitcoin price from CoinGecko
+    // Fetch fresh Bitcoin price with multiple sources
     console.log('Simple refresh: Fetching Bitcoin price...');
-    const btcResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', {
-      headers: { "User-Agent": "btc-risk-dashboard" }
-    });
+    let currentBtcPrice = null;
+    let btcSource = 'unavailable';
     
-    if (!btcResponse.ok) {
-      console.error('Simple refresh: CoinGecko failed:', btcResponse.status, btcResponse.statusText);
-      throw new Error(`CoinGecko API error: ${btcResponse.status}`);
+    // Try CoinGecko first (primary source)
+    try {
+      console.log('Simple refresh: Trying CoinGecko for Bitcoin price...');
+      const btcResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', {
+        headers: { "User-Agent": "btc-risk-dashboard" }
+      });
+      
+      if (btcResponse.ok) {
+        const btcData = await btcResponse.json();
+        if (btcData.bitcoin?.usd) {
+          currentBtcPrice = btcData.bitcoin.usd;
+          btcSource = 'CoinGecko';
+          console.log('Simple refresh: Bitcoin price from CoinGecko:', currentBtcPrice);
+        }
+      }
+    } catch (coinGeckoError) {
+      console.warn('Simple refresh: CoinGecko Bitcoin fetch failed:', coinGeckoError);
     }
     
-    const btcData = await btcResponse.json();
-    const currentBtcPrice = btcData.bitcoin?.usd;
+    // Fallback to Alpha Vantage if CoinGecko fails
+    if (!currentBtcPrice && process.env.ALPHAVANTAGE_API_KEY) {
+      console.log('Simple refresh: Trying Alpha Vantage for Bitcoin price...');
+      try {
+        const btcResponse = await fetch(
+          `https://www.alphavantage.co/query?function=DIGITAL_CURRENCY_DAILY&symbol=BTC&market=USD&apikey=${process.env.ALPHAVANTAGE_API_KEY}`,
+          { headers: { "User-Agent": "btc-risk-dashboard" } }
+        );
+        
+        if (btcResponse.ok) {
+          const btcData = await btcResponse.json();
+          const timeSeries = btcData['Time Series (Digital Currency Daily)'];
+          if (timeSeries) {
+            const latestDate = Object.keys(timeSeries)[0];
+            const latestData = timeSeries[latestDate];
+            if (latestData && latestData['4. close']) {
+              currentBtcPrice = parseFloat(latestData['4. close']);
+              btcSource = 'Alpha Vantage';
+              console.log('Simple refresh: Bitcoin price from Alpha Vantage:', currentBtcPrice);
+            }
+          }
+        }
+      } catch (alphaError) {
+        console.warn('Simple refresh: Alpha Vantage Bitcoin fetch failed:', alphaError);
+      }
+    }
     
     if (!currentBtcPrice) {
-      throw new Error('Invalid Bitcoin price data');
+      throw new Error('Failed to fetch Bitcoin price from any source');
     }
     
-    console.log('Simple refresh: Bitcoin price:', currentBtcPrice);
+    console.log('Simple refresh: Bitcoin price:', currentBtcPrice, 'from', btcSource);
     
     // Fetch gold price using multiple sources
     console.log('Simple refresh: Fetching gold price...');
@@ -102,7 +139,7 @@ export async function POST(req: Request) {
         btc_per_oz: btcPerOz,
         updated_at: new Date().toISOString(),
         sources: {
-          bitcoin: 'CoinGecko',
+          bitcoin: btcSource,
           gold: goldSource
         }
       }
