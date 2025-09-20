@@ -114,7 +114,7 @@ const DEFAULT_CONFIG: RiskConfig = {
     { key: 'stablecoins', label: 'Stablecoins', pillar: 'liquidity', weight: 15, enabled: true },
     { key: 'etf_flows', label: 'ETF Flows', pillar: 'liquidity', weight: 10, enabled: true },
     { key: 'term_leverage', label: 'Term Structure & Leverage', pillar: 'leverage', weight: 20, enabled: true },
-    { key: 'onchain', label: 'On-chain Activity', pillar: 'social', weight: 5, counts_toward: 'momentum', enabled: true },
+    { key: 'onchain', label: 'On-chain Activity', pillar: 'momentum', weight: 5, enabled: true },
     { key: 'social_interest', label: 'Social Interest', pillar: 'social', weight: 5, enabled: true },
     { key: 'macro_overlay', label: 'Macro Overlay', pillar: 'macro', weight: 5, enabled: true }
   ],

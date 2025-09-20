@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { fmtUsd0 } from '@/lib/format';
 import { getBandTextColor } from '@/lib/band-colors';
+import { getPillarBadgeClasses, getPillarLabel } from '@/lib/pillar-colors';
 import SystemStatusCard from './SystemStatusCard';
 import RiskBandLegend from './RiskBandLegend';
 import WhatIfWeightsModal from './WhatIfWeightsModal';
@@ -195,7 +196,12 @@ export default function RealDashboard() {
               <div className="mb-4">
                 {/* Header Row with Title, Weight, and Score */}
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
+                  <div className="flex items-center space-x-3">
+                    <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPillarBadgeClasses(factor.pillar)}`}>
+                      {getPillarLabel(factor.pillar)}
+                    </span>
+                  </div>
                   <div className="flex items-center space-x-3">
                     {factor.weight_pct && (
                       <span className="text-sm text-gray-600 font-medium">

@@ -6,6 +6,7 @@ import SatoshisPerDollarCard from './SatoshisPerDollarCard';
 import AdjustmentsModal from './AdjustmentsModal';
 import RiskBandLegend from './RiskBandLegend';
 import SystemStatusCard from './SystemStatusCard';
+import { getPillarBadgeClasses, getPillarLabel } from '@/lib/pillar-colors';
 
 export default function SimpleDashboard() {
   console.log('SimpleDashboard: component mounting');
