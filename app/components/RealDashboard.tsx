@@ -124,28 +124,34 @@ export default function RealDashboard() {
                   
                   // Use simple refresh API to fetch fresh prices (Vercel-compatible)
                   fetch('/api/smart-refresh-simple', { method: 'POST' })
-                    .then(res => res.ok ? res.json() : Promise.reject())
+                    .then(async (res) => {
+                      console.log('Refresh response status:', res.status, res.statusText);
+                      if (!res.ok) {
+                        const errorText = await res.text();
+                        console.error('Refresh API error response:', errorText);
+                        throw new Error(`API Error ${res.status}: ${errorText}`);
+                      }
+                      return res.json();
+                    })
                     .then((data) => {
                       console.log('Smart refresh success:', data);
-                      setRefreshMessage('Prices updated! Reloading data...');
+                      setRefreshMessage(`✅ Fresh prices: BTC $${data.data?.btc_price?.toLocaleString() || 'N/A'}`);
                       // Reload data to show updated prices and composite score
                       setTimeout(() => {
                         load();
                         setRefreshing(false);
-                        setRefreshMessage('✅ Prices refreshed successfully!');
-                        setTimeout(() => setRefreshMessage(null), 3000);
-                      }, 500);
+                        setTimeout(() => setRefreshMessage(null), 5000);
+                      }, 1000);
                     })
                     .catch((error) => {
                       console.error('Smart refresh failed:', error);
-                      setRefreshMessage('❌ Refresh failed, reloading existing data...');
+                      setRefreshMessage(`❌ Failed: ${error.message}`);
                       // Fallback to just reloading existing data
                       setTimeout(() => {
                         load();
                         setRefreshing(false);
-                        setRefreshMessage('⚠️ Using existing data');
-                        setTimeout(() => setRefreshMessage(null), 3000);
-                      }, 500);
+                        setTimeout(() => setRefreshMessage(null), 5000);
+                      }, 1000);
                     });
                 }}
                 disabled={loading || refreshing}
