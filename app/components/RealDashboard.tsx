@@ -20,6 +20,12 @@ function ErrorView({ msg, onRetry }: { msg: string; onRetry: () => void }) {
   return <div style={{ padding: 16 }}><p>{msg}</p><button onClick={onRetry} style={{ marginTop: 8 }}>Retry</button></div>;
 }
 
+// Format signed numbers for cycle/spike adjustments
+function formatSignedNumber(value: number): string {
+  if (value === 0) return '—';
+  return value > 0 ? `+${value.toFixed(1)}` : value.toFixed(1);
+}
+
 export default function RealDashboard() {
   console.log('RealDashboard: component mounting');
   
@@ -210,7 +216,45 @@ export default function RealDashboard() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">BTC G-Score</h3>
             <div className="text-3xl font-bold text-gray-900 mb-1">{latest?.composite_score ?? '—'}</div>
-            <div className="text-xs text-gray-600">Band: {latest?.band?.label || '—'}</div>
+            
+            {/* Risk Band with Colorized Box */}
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs text-gray-600">Band:</span>
+              {latest?.band && (
+                <span 
+                  className="px-2 py-1 rounded text-xs font-medium text-white"
+                  style={{ backgroundColor: latest.band.color }}
+                >
+                  {latest.band.label}
+                </span>
+              )}
+            </div>
+            
+            {/* Tune Weights Button */}
+            <div className="flex items-center gap-2 mb-3">
+              <button 
+                onClick={() => setWhatIfModalOpen(true)}
+                className="text-xs text-blue-600 hover:text-blue-700 font-medium border-b border-blue-200 hover:border-blue-300 transition-colors"
+              >
+                Tune weights
+              </button>
+            </div>
+            
+            {/* Cycle & Spike Adjustments */}
+            <div className="flex items-center gap-2">
+              <span 
+                className="px-2 py-0.5 text-[11px] rounded bg-slate-100 text-slate-700 border border-slate-200"
+                title="Cycle adjustment: A gentle context nudge derived from a long-term power-law residual of Bitcoin's price trend. Interprets 'where we are in the cycle.'"
+              >
+                Cycle: {formatSignedNumber(latest?.cycle_adjustment?.adj_pts ?? latest?.adjustments?.cycle_nudge ?? 0)}
+              </span>
+              <span 
+                className="px-2 py-0.5 text-[11px] rounded bg-slate-100 text-slate-700 border border-slate-200"
+                title="Spike adjustment: A fast-path nudge when the recent daily move is a large outlier versus short-term volatility. Large up-spikes → small risk increase; large down-spikes → small risk decrease."
+              >
+                Spike: {formatSignedNumber(latest?.spike_adjustment?.adj_pts ?? latest?.adjustments?.spike_nudge ?? 0)}
+              </span>
+            </div>
           </div>
 
           {/* Bitcoin Price */}
