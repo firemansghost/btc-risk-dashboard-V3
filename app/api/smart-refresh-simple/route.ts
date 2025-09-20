@@ -32,19 +32,28 @@ export async function POST(req: Request) {
     let goldPrice = null;
     
     if (process.env.ALPHAVANTAGE_API_KEY) {
+      console.log('Simple refresh: ALPHAVANTAGE_API_KEY found, attempting to fetch gold price...');
       try {
         const goldResponse = await fetch(
           `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=XAU&to_currency=USD&apikey=${process.env.ALPHAVANTAGE_API_KEY}`,
           { headers: { "User-Agent": "btc-risk-dashboard" } }
         );
         
+        console.log('Simple refresh: Alpha Vantage response status:', goldResponse.status);
+        
         if (goldResponse.ok) {
           const goldData = await goldResponse.json();
+          console.log('Simple refresh: Alpha Vantage response data:', goldData);
+          
           const exchangeRate = goldData['Realtime Currency Exchange Rate'];
           if (exchangeRate && exchangeRate['5. Exchange Rate']) {
             goldPrice = parseFloat(exchangeRate['5. Exchange Rate']);
             console.log('Simple refresh: Gold price from Alpha Vantage:', goldPrice);
+          } else {
+            console.log('Simple refresh: No exchange rate found in Alpha Vantage response');
           }
+        } else {
+          console.log('Simple refresh: Alpha Vantage response not OK:', goldResponse.status, goldResponse.statusText);
         }
       } catch (goldError) {
         console.warn('Simple refresh: Alpha Vantage gold fetch failed:', goldError);

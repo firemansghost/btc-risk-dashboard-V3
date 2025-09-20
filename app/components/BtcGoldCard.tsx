@@ -31,54 +31,52 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
   useEffect(() => {
     async function fetchGoldData() {
       try {
+        // Try to get fresh Alpha Vantage data first
         console.log('BtcGoldCard: Attempting to fetch fresh Alpha Vantage data...');
         
-        // Try to get fresh data from smart refresh first
-        const refreshResponse = await fetch('/api/smart-refresh-simple', { 
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        
-        console.log('BtcGoldCard: Smart refresh response status:', refreshResponse.status);
-        
-        if (refreshResponse.ok) {
-          const refreshData = await refreshResponse.json();
-          console.log('BtcGoldCard: Smart refresh data:', refreshData);
+        try {
+          const refreshResponse = await fetch('/api/smart-refresh-simple', { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
           
-          if (refreshData.success && refreshData.data.gold_price) {
-            console.log('BtcGoldCard: Using fresh Alpha Vantage data');
-            // Use fresh Alpha Vantage data
-            const freshGoldPrice = refreshData.data.gold_price;
-            const freshBtcPrice = refreshData.data.btc_price;
-            const btcPerOz = freshBtcPrice / freshGoldPrice;
-            const ozPerBtc = freshGoldPrice / freshBtcPrice;
+          if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            console.log('BtcGoldCard: Smart refresh response:', refreshData);
             
-            const freshGoldData = {
-              updated_at: refreshData.data.updated_at,
-              date: new Date().toISOString().split('T')[0],
-              btc_close_usd: freshBtcPrice,
-              xau_close_usd: freshGoldPrice,
-              btc_per_oz: btcPerOz,
-              oz_per_btc: ozPerBtc,
-              provenance: [{
-                name: 'Alpha Vantage',
-                ok: true,
-                url: 'https://www.alphavantage.co/',
-                ms: 0,
-                fallback: false
-              }]
-            };
-            setGoldData(freshGoldData);
-            setLoading(false);
-            return;
-          } else {
-            console.log('BtcGoldCard: Smart refresh failed or no gold price, falling back to static file');
+            if (refreshData.success && refreshData.data.gold_price) {
+              console.log('BtcGoldCard: Using fresh Alpha Vantage data');
+              // Use fresh Alpha Vantage data
+              const freshGoldPrice = refreshData.data.gold_price;
+              const freshBtcPrice = refreshData.data.btc_price;
+              const btcPerOz = freshBtcPrice / freshGoldPrice;
+              const ozPerBtc = freshGoldPrice / freshBtcPrice;
+              
+              const freshGoldData = {
+                updated_at: refreshData.data.updated_at,
+                date: new Date().toISOString().split('T')[0],
+                btc_close_usd: freshBtcPrice,
+                xau_close_usd: freshGoldPrice,
+                btc_per_oz: btcPerOz,
+                oz_per_btc: ozPerBtc,
+                provenance: [{
+                  name: 'Alpha Vantage',
+                  ok: true,
+                  url: 'https://www.alphavantage.co/',
+                  ms: 0,
+                  fallback: false
+                }]
+              };
+              setGoldData(freshGoldData);
+              setLoading(false);
+              return;
+            }
           }
-        } else {
-          console.log('BtcGoldCard: Smart refresh failed with status:', refreshResponse.status);
+        } catch (apiError) {
+          console.warn('BtcGoldCard: Alpha Vantage API failed, falling back to static file:', apiError);
         }
         
-        // Fallback to static file if smart refresh fails
+        // Fallback to static file if Alpha Vantage fails
         console.log('BtcGoldCard: Loading from static file...');
         const response = await fetch('/extras/gold_cross.json', { 
           cache: 'no-store',
@@ -90,10 +88,8 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
           throw new Error(`HTTP ${response.status}`);
         }
         const data = await response.json();
-        console.log('BtcGoldCard: Static file data:', data);
         setGoldData(data);
       } catch (err) {
-        console.error('BtcGoldCard: Error loading gold data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load gold data');
       } finally {
         setLoading(false);
@@ -105,9 +101,49 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
 
   // Listen for Bitcoin price updates and recalculate ratios
   useEffect(() => {
-    function handleBtcPriceUpdate(event: CustomEvent) {
+    async function handleBtcPriceUpdate(event: CustomEvent) {
       const { btc_price, updated_at } = event.detail;
       if (goldData && btc_price) {
+        // Try to get fresh gold price from Alpha Vantage
+        try {
+          const refreshResponse = await fetch('/api/smart-refresh-simple', { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          
+          if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            if (refreshData.success && refreshData.data.gold_price) {
+              // Use fresh Alpha Vantage gold price
+              const freshGoldPrice = refreshData.data.gold_price;
+              const btcPerOz = btc_price / freshGoldPrice;
+              const ozPerBtc = freshGoldPrice / btc_price;
+              
+              const updatedGoldData = {
+                ...goldData,
+                btc_close_usd: btc_price,
+                xau_close_usd: freshGoldPrice,
+                btc_per_oz: btcPerOz,
+                oz_per_btc: ozPerBtc,
+                updated_at: updated_at,
+                provenance: [{
+                  name: 'Alpha Vantage',
+                  ok: true,
+                  url: 'https://www.alphavantage.co/',
+                  ms: 0,
+                  fallback: false
+                }]
+              };
+              setGoldData(updatedGoldData);
+              console.log('BtcGoldCard: Updated with fresh Alpha Vantage gold price:', freshGoldPrice);
+              return;
+            }
+          }
+        } catch (error) {
+          console.warn('BtcGoldCard: Failed to fetch fresh gold price, using existing:', error);
+        }
+        
+        // Fallback to existing gold price with new Bitcoin price
         const updatedGoldData = {
           ...goldData,
           btc_close_usd: btc_price,
@@ -116,7 +152,7 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
           updated_at: updated_at
         };
         setGoldData(updatedGoldData);
-        console.log('BtcGoldCard: Updated with fresh Bitcoin price:', btc_price);
+        console.log('BtcGoldCard: Updated with fresh Bitcoin price (existing gold price):', btc_price);
       }
     }
 
