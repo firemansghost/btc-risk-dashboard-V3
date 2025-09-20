@@ -27,39 +27,62 @@ export async function POST(req: Request) {
     
     console.log('Simple refresh: Bitcoin price:', currentBtcPrice);
     
-    // Fetch gold price using Alpha Vantage API if available
+    // Fetch gold price using multiple sources
     console.log('Simple refresh: Fetching gold price...');
     let goldPrice = null;
+    let goldSource = 'unavailable';
     
-    if (process.env.ALPHAVANTAGE_API_KEY) {
-      console.log('Simple refresh: ALPHAVANTAGE_API_KEY found, attempting to fetch gold price...');
+    // Try Yahoo Finance first (more reliable)
+    try {
+      console.log('Simple refresh: Trying Yahoo Finance for gold price...');
+      const yahooResponse = await fetch(
+        'https://query1.finance.yahoo.com/v8/finance/chart/GC=F',
+        { headers: { "User-Agent": "btc-risk-dashboard" } }
+      );
+      
+      if (yahooResponse.ok) {
+        const yahooData = await yahooResponse.json();
+        const result = yahooData.chart?.result?.[0];
+        if (result?.meta?.regularMarketPrice) {
+          goldPrice = result.meta.regularMarketPrice;
+          goldSource = 'Yahoo Finance';
+          console.log('Simple refresh: Gold price from Yahoo Finance:', goldPrice);
+        }
+      }
+    } catch (yahooError) {
+      console.warn('Simple refresh: Yahoo Finance gold fetch failed:', yahooError);
+    }
+    
+    // Fallback to Alpha Vantage if Yahoo Finance fails
+    if (!goldPrice && process.env.ALPHAVANTAGE_API_KEY) {
+      console.log('Simple refresh: Trying Alpha Vantage for gold price...');
       try {
+        // Try the DIGITAL_CURRENCY_DAILY function that we know works
         const goldResponse = await fetch(
-          `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=XAU&to_currency=USD&apikey=${process.env.ALPHAVANTAGE_API_KEY}`,
+          `https://www.alphavantage.co/query?function=DIGITAL_CURRENCY_DAILY&symbol=GOLD&market=USD&apikey=${process.env.ALPHAVANTAGE_API_KEY}`,
           { headers: { "User-Agent": "btc-risk-dashboard" } }
         );
         
-        console.log('Simple refresh: Alpha Vantage response status:', goldResponse.status);
-        
         if (goldResponse.ok) {
           const goldData = await goldResponse.json();
-          console.log('Simple refresh: Alpha Vantage response data:', goldData);
-          
-          const exchangeRate = goldData['Realtime Currency Exchange Rate'];
-          if (exchangeRate && exchangeRate['5. Exchange Rate']) {
-            goldPrice = parseFloat(exchangeRate['5. Exchange Rate']);
-            console.log('Simple refresh: Gold price from Alpha Vantage:', goldPrice);
-          } else {
-            console.log('Simple refresh: No exchange rate found in Alpha Vantage response');
+          const timeSeries = goldData['Time Series (Digital Currency Daily)'];
+          if (timeSeries) {
+            const latestDate = Object.keys(timeSeries)[0];
+            const latestData = timeSeries[latestDate];
+            if (latestData && latestData['4. close']) {
+              goldPrice = parseFloat(latestData['4. close']);
+              goldSource = 'Alpha Vantage';
+              console.log('Simple refresh: Gold price from Alpha Vantage:', goldPrice);
+            }
           }
-        } else {
-          console.log('Simple refresh: Alpha Vantage response not OK:', goldResponse.status, goldResponse.statusText);
         }
-      } catch (goldError) {
-        console.warn('Simple refresh: Alpha Vantage gold fetch failed:', goldError);
+      } catch (alphaError) {
+        console.warn('Simple refresh: Alpha Vantage gold fetch failed:', alphaError);
       }
-    } else {
-      console.log('Simple refresh: No ALPHAVANTAGE_API_KEY, skipping gold price');
+    }
+    
+    if (!goldPrice) {
+      console.log('Simple refresh: No gold price available from any source');
     }
     
     // Calculate Bitcoin⇄Gold ratio if we have gold price
@@ -80,7 +103,7 @@ export async function POST(req: Request) {
         updated_at: new Date().toISOString(),
         sources: {
           bitcoin: 'CoinGecko',
-          gold: goldPrice ? 'Alpha Vantage' : 'unavailable'
+          gold: goldSource
         }
       }
     });
