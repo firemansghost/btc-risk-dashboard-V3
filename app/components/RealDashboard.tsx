@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { fmtUsd0 } from '@/lib/format';
 import { getBandTextColor } from '@/lib/band-colors';
 import { getPillarBadgeClasses, getPillarLabel } from '@/lib/pillar-colors';
+import { recalculateGScoreWithFreshPrice } from '@/lib/dynamicGScore';
 import SystemStatusCard from './SystemStatusCard';
 import RiskBandLegend from './RiskBandLegend';
 import WhatIfWeightsModal from './WhatIfWeightsModal';
@@ -138,24 +139,36 @@ export default function RealDashboard() {
                       const freshBtcPrice = data.data?.btc_price;
                       setRefreshMessage(`✅ Fresh prices: BTC $${freshBtcPrice?.toLocaleString() || 'N/A'}`);
                       
-                      // Update the Bitcoin price in the current data immediately
+                      // Update the Bitcoin price and recalculate G-Score
                       if (freshBtcPrice && latest) {
-                        const updatedLatest = {
-                          ...latest,
-                          btc: {
-                            ...latest.btc,
-                            spot_usd: freshBtcPrice,
-                            as_of_utc: data.data.updated_at
-                          }
-                        };
-                        setLatest(updatedLatest);
-                        console.log('Updated Bitcoin price in UI:', freshBtcPrice);
-                        
-                        // Force refresh of Bitcoin⇄Gold and Satoshis cards by triggering a re-render
-                        // This will cause them to recalculate with the fresh Bitcoin price
-                        window.dispatchEvent(new CustomEvent('btc-price-updated', { 
-                          detail: { btc_price: freshBtcPrice, updated_at: data.data.updated_at } 
-                        }));
+                        // Recalculate G-Score with fresh Bitcoin price
+                        recalculateGScoreWithFreshPrice(latest, freshBtcPrice)
+                          .then(updatedData => {
+                            setLatest(updatedData);
+                            console.log('Updated G-Score with fresh Bitcoin price:', updatedData.composite_score);
+                            
+                            // Force refresh of Bitcoin⇄Gold and Satoshis cards
+                            window.dispatchEvent(new CustomEvent('btc-price-updated', { 
+                              detail: { btc_price: freshBtcPrice, updated_at: data.data.updated_at } 
+                            }));
+                          })
+                          .catch(error => {
+                            console.error('Error recalculating G-Score:', error);
+                            // Fallback to simple price update
+                            const updatedLatest = {
+                              ...latest,
+                              btc: {
+                                ...latest.btc,
+                                spot_usd: freshBtcPrice,
+                                as_of_utc: data.data.updated_at
+                              }
+                            };
+                            setLatest(updatedLatest);
+                            
+                            window.dispatchEvent(new CustomEvent('btc-price-updated', { 
+                              detail: { btc_price: freshBtcPrice, updated_at: data.data.updated_at } 
+                            }));
+                          });
                       }
                       
                       setRefreshing(false);

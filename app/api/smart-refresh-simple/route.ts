@@ -27,9 +27,31 @@ export async function POST(req: Request) {
     
     console.log('Simple refresh: Bitcoin price:', currentBtcPrice);
     
-    // Skip gold price for now (Stooq timing out on Vercel)
-    console.log('Simple refresh: Skipping gold price (focus on Bitcoin refresh)');
+    // Fetch gold price using Alpha Vantage API if available
+    console.log('Simple refresh: Fetching gold price...');
     let goldPrice = null;
+    
+    if (process.env.ALPHAVANTAGE_API_KEY) {
+      try {
+        const goldResponse = await fetch(
+          `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=XAU&to_currency=USD&apikey=${process.env.ALPHAVANTAGE_API_KEY}`,
+          { headers: { "User-Agent": "btc-risk-dashboard" } }
+        );
+        
+        if (goldResponse.ok) {
+          const goldData = await goldResponse.json();
+          const exchangeRate = goldData['Realtime Currency Exchange Rate'];
+          if (exchangeRate && exchangeRate['5. Exchange Rate']) {
+            goldPrice = parseFloat(exchangeRate['5. Exchange Rate']);
+            console.log('Simple refresh: Gold price from Alpha Vantage:', goldPrice);
+          }
+        }
+      } catch (goldError) {
+        console.warn('Simple refresh: Alpha Vantage gold fetch failed:', goldError);
+      }
+    } else {
+      console.log('Simple refresh: No ALPHAVANTAGE_API_KEY, skipping gold price');
+    }
     
     // Calculate Bitcoin⇄Gold ratio if we have gold price
     let btcPerOz = null;
