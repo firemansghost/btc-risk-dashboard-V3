@@ -1,9 +1,9 @@
 {
   "ok": true,
   "version": "v3.1.0",
-  "as_of_utc": "2025-09-21T02:36:08.017Z",
-  "composite_score": 46,
-  "composite_raw": 46,
+  "as_of_utc": "2025-09-21T11:16:52.465Z",
+  "composite_score": 47,
+  "composite_raw": 47,
   "band": {
     "key": "hold_neutral",
     "label": "Hold/Neutral",
@@ -24,7 +24,7 @@
       "score": 50,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-09-21T02:36:04.771Z",
+      "last_utc": "2025-09-21T11:16:50.103Z",
       "details": [
         {
           "label": "Price vs 200-day SMA (Mayer)",
@@ -63,7 +63,7 @@
       "weight": 15,
       "score": 59,
       "status": "fresh",
-      "reason": "fresh (98.6h old)",
+      "reason": "fresh (107.3h old)",
       "last_utc": "2025-09-17T00:00:00.000Z",
       "details": [
         {
@@ -108,11 +108,11 @@
       "score": 32,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-09-21T02:36:05.066Z",
+      "last_utc": "2025-09-21T11:16:50.364Z",
       "details": [
         {
           "label": "Total Market Cap",
-          "value": "$250.1B"
+          "value": "$250.6B"
         },
         {
           "label": "Dominant Stablecoin",
@@ -120,7 +120,7 @@
         },
         {
           "label": "Aggregate 30d Growth",
-          "value": "4.9%"
+          "value": "5.1%"
         },
         {
           "label": "Growth Momentum",
@@ -128,7 +128,7 @@
         },
         {
           "label": "Market Concentration",
-          "value": "HHI: 5581"
+          "value": "HHI: 5586"
         },
         {
           "label": "Supply Growth Percentile",
@@ -136,7 +136,7 @@
         },
         {
           "label": "Component Scores",
-          "value": "Supply: 5, Momentum: 70, Concentration: 55.80967430772284"
+          "value": "Supply: 5, Momentum: 70, Concentration: 55.85675907420128"
         }
       ]
     },
@@ -147,7 +147,7 @@
       "weight": 5,
       "score": 66,
       "status": "fresh",
-      "reason": "fresh (34.6h old)",
+      "reason": "fresh (43.3h old)",
       "last_utc": "2025-09-19T16:00:00.000Z",
       "details": [
         {
@@ -196,7 +196,7 @@
         },
         {
           "label": "Last Update",
-          "value": "2.1 days ago"
+          "value": "2.5 days ago"
         }
       ],
       "individualEtfFlows": [
@@ -6991,10 +6991,10 @@
       "label": "Term Structure & Leverage",
       "pillar": "leverage",
       "weight": 20,
-      "score": 51,
+      "score": 53,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-09-21T02:36:05.368Z",
+      "last_utc": "2025-09-21T11:16:50.476Z",
       "details": [
         {
           "label": "Current Funding Rate",
@@ -7026,7 +7026,7 @@
         },
         {
           "label": "Component Scores",
-          "value": "Funding: 27, Vol: 76, Stress: 54"
+          "value": "Funding: 27, Vol: 81, Stress: 54"
         }
       ]
     },
@@ -7038,7 +7038,7 @@
       "score": 33,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-09-21T02:36:05.759Z",
+      "last_utc": "2025-09-21T11:16:51.057Z",
       "details": [
         {
           "label": "Current Transaction Fees",
@@ -7082,7 +7082,7 @@
       "score": 49,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-09-21T02:36:04.807Z",
+      "last_utc": "2025-09-21T11:16:50.098Z",
       "details": [
         {
           "label": "Search Attention",
@@ -7122,7 +7122,7 @@
       "score": 27,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-09-21T02:36:05.511Z",
+      "last_utc": "2025-09-21T11:16:50.705Z",
       "details": [
         {
           "label": "Macro Regime",
@@ -7160,8 +7160,8 @@
     }
   ],
   "btc": {
-    "spot_usd": 115673.46,
-    "as_of_utc": "2025-09-21T02:36:08.017Z",
+    "spot_usd": 115687.05,
+    "as_of_utc": "2025-09-21T11:16:52.465Z",
     "source": "Coinbase"
   },
   "provenance": [],
@@ -7174,7 +7174,7 @@
   "cycle_adjustment": {
     "adj_pts": 0,
     "residual_z": null,
-    "last_utc": "2025-09-21T02:36:08.017Z",
+    "last_utc": "2025-09-21T11:16:52.465Z",
     "source": "ETL fallback",
     "reason": "disabled"
   },
@@ -7183,9 +7183,9 @@
     "r_1d": 0,
     "sigma": 0,
     "z": 0,
-    "ref_close": 115673.46,
-    "spot": 115673.46,
-    "last_utc": "2025-09-21T02:36:08.017Z",
+    "ref_close": 115687.05,
+    "spot": 115687.05,
+    "last_utc": "2025-09-21T11:16:52.465Z",
     "source": "ETL fallback",
     "reason": "disabled"
   },
