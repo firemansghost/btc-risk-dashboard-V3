@@ -87,13 +87,21 @@ export default function MethodologyPage() {
                     <p className="text-gray-700 leading-relaxed">
                       The G-Score is calculated by taking a weighted average of multiple risk factors across five pillars:
                     </p>
-                    <ul className="list-disc list-inside space-y-1 text-gray-700 ml-4">
-                      <li><strong>Liquidity/Flows (35%)</strong>: ETF flows, stablecoin supply, net liquidity</li>
-                      <li><strong>Momentum/Valuation (30%)</strong>: Price trends, on-chain activity</li>
-                      <li><strong>Leverage (20%)</strong>: Derivatives and funding rates</li>
-                      <li><strong>Social/Attention (5%)</strong>: Social sentiment indicators</li>
-                      <li><strong>Macro Overlay (5%)</strong>: Macroeconomic conditions</li>
-                    </ul>
+                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                      <p className="text-sm text-gray-600 mb-3">
+                        Pillar and factor weights are configurable and sum to 100%. Live defaults are shown below:
+                      </p>
+                      <ul className="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                        <li><strong>Liquidity/Flows (35%)</strong>: ETF flows, stablecoin supply, net liquidity</li>
+                        <li><strong>Momentum/Valuation (25%)</strong>: Price trends, on-chain activity</li>
+                        <li><strong>Term Structure/Leverage (20%)</strong>: Derivatives and funding rates</li>
+                        <li><strong>Macro Overlay (10%)</strong>: Macroeconomic conditions</li>
+                        <li><strong>Social/Attention (10%)</strong>: Social sentiment indicators</li>
+                      </ul>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Note: On-chain Activity contributes to Momentum rather than standing alone.
+                      </p>
+                    </div>
                     
                     <div className="bg-blue-50 rounded-lg p-4 mt-4">
                       <p className="text-sm text-blue-800">

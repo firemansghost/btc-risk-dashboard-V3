@@ -1590,14 +1590,14 @@ export async function computeAllFactors() {
   ]);
 
   const factors = [
-    { key: 'trend_valuation', label: 'Trend & Valuation', pillar: 'momentum', weight: 25 },
-    { key: 'net_liquidity', label: 'Net Liquidity (FRED)', pillar: 'liquidity', weight: 10 },
+    { key: 'trend_valuation', label: 'Trend & Valuation', pillar: 'momentum', weight: 20 },
+    { key: 'net_liquidity', label: 'Net Liquidity (FRED)', pillar: 'liquidity', weight: 15 },
     { key: 'stablecoins', label: 'Stablecoins', pillar: 'liquidity', weight: 15 },
-    { key: 'etf_flows', label: 'ETF Flows', pillar: 'liquidity', weight: 10 },
+    { key: 'etf_flows', label: 'ETF Flows', pillar: 'liquidity', weight: 5 },
     { key: 'term_leverage', label: 'Term Structure & Leverage', pillar: 'leverage', weight: 20 },
     { key: 'onchain', label: 'On-chain Activity', pillar: 'momentum', weight: 5 },
-    { key: 'social_interest', label: 'Social Interest', pillar: 'social', weight: 5 },
-    { key: 'macro_overlay', label: 'Macro Overlay', pillar: 'macro', weight: 5 }
+    { key: 'social_interest', label: 'Social Interest', pillar: 'social', weight: 10 },
+    { key: 'macro_overlay', label: 'Macro Overlay', pillar: 'macro', weight: 10 }
   ];
 
   const factorResults = [];
