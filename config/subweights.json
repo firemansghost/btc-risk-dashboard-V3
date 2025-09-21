@@ -1,0 +1,50 @@
+{
+  "version": "v1.0.0",
+  "lastModified": "2025-01-20T00:00:00.000Z",
+  "description": "Sub-factor weights within each factor. Each factor's sub-weights must sum to 1.0",
+  "subweights": {
+    "trend_valuation": {
+      "bmsb_distance": 0.60,
+      "mayer_stretch": 0.30,
+      "weekly_rsi": 0.10
+    },
+    "net_liquidity": {
+      "level": 0.15,
+      "rate_of_change": 0.40,
+      "momentum": 0.45
+    },
+    "stablecoins": {
+      "supply_growth": 0.55,
+      "momentum": 0.30,
+      "concentration": 0.15
+    },
+    "etf_flows": {
+      "sum_21d": 0.30,
+      "acceleration": 0.30,
+      "diversification": 0.40
+    },
+    "term_leverage": {
+      "funding_7d": 0.40,
+      "basis_front": 0.35,
+      "oi_mcap": 0.25
+    },
+    "macro_overlay": {
+      "dxy_20d": 0.40,
+      "us2y_20d": 0.35,
+      "vix_pct": 0.25
+    },
+    "social_interest": {
+      "google_trends": 0.70,
+      "fear_greed": 0.30
+    },
+    "onchain": {
+      "fees_usd_7d": 0.60,
+      "mempool_7d": 0.40,
+      "nvt": 0.00
+    }
+  },
+  "validation": {
+    "tolerance": 1e-6,
+    "enforceStrictSum": true
+  }
+}

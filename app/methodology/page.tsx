@@ -83,17 +83,23 @@ export default function MethodologyPage() {
               <li><strong>Higher scores (55-100)</strong> indicate elevated risk and potential selling opportunities</li>
             </ul>
             
-            <h3 className="text-lg font-semibold text-gray-900 mt-6 mb-3">Score Calculation</h3>
-            <p className="text-gray-700 leading-relaxed">
-              The G-Score is calculated by taking a weighted average of multiple risk factors across five pillars:
-            </p>
-            <ul className="list-disc list-inside space-y-1 text-gray-700 ml-4">
-              <li><strong>Liquidity/Flows (50%)</strong>: ETF flows, stablecoin supply, net liquidity</li>
-              <li><strong>Momentum/Valuation (30%)</strong>: Price trends, on-chain activity</li>
-              <li><strong>Leverage (20%)</strong>: Derivatives and funding rates</li>
-              <li><strong>Social/Attention (5%)</strong>: Social sentiment indicators</li>
-              <li><strong>Macro Overlay (5%)</strong>: Macroeconomic conditions</li>
-            </ul>
+                    <h3 className="text-lg font-semibold text-gray-900 mt-6 mb-3">Score Calculation</h3>
+                    <p className="text-gray-700 leading-relaxed">
+                      The G-Score is calculated by taking a weighted average of multiple risk factors across five pillars:
+                    </p>
+                    <ul className="list-disc list-inside space-y-1 text-gray-700 ml-4">
+                      <li><strong>Liquidity/Flows (35%)</strong>: ETF flows, stablecoin supply, net liquidity</li>
+                      <li><strong>Momentum/Valuation (30%)</strong>: Price trends, on-chain activity</li>
+                      <li><strong>Leverage (20%)</strong>: Derivatives and funding rates</li>
+                      <li><strong>Social/Attention (5%)</strong>: Social sentiment indicators</li>
+                      <li><strong>Macro Overlay (5%)</strong>: Macroeconomic conditions</li>
+                    </ul>
+                    
+                    <div className="bg-blue-50 rounded-lg p-4 mt-4">
+                      <p className="text-sm text-blue-800">
+                        <strong>Next-Level Cowen Approach:</strong> Inside Trend & Valuation, Distance to the Bull Market Support Band carries the largest weight by design, reflecting where Bitcoin sits in the broader cycle. Long-trend stretch (Mayer Multiple) and weekly momentum contribute the rest.
+                      </p>
+                    </div>
 
             <h3 className="text-lg font-semibold text-gray-900 mt-6 mb-3">Adjustments</h3>
             <p className="text-gray-700 leading-relaxed mb-4">
