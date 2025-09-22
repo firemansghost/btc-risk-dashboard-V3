@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-09-21T11:16:52.467Z",
+  "updated_at": "2025-09-22T11:20:01.321Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -29,10 +29,52 @@
       "name": "Stooq",
       "ok": true,
       "url": "https://stooq.com/",
-      "ms": 940,
+      "ms": 1142,
       "fallback": true,
       "cache_used": false,
       "fallback_used": true
+    },
+    {
+      "name": "History: trend_valuation",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 6
+    },
+    {
+      "name": "History: net_liquidity",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 6
+    },
+    {
+      "name": "History: stablecoins",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 6
+    },
+    {
+      "name": "History: etf_flows",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 6
+    },
+    {
+      "name": "History: term_leverage",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 6
+    },
+    {
+      "name": "History: social_interest",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 6
+    },
+    {
+      "name": "History: macro_overlay",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 6
     }
   ],
   "factors_computed": 8,
@@ -41,7 +83,7 @@
     "status": "success",
     "source": "Stooq",
     "fallback_used": true,
-    "latency_ms": 940
+    "latency_ms": 1142
   },
   "satoshis_per_dollar": {
     "status": "success",
@@ -49,5 +91,5 @@
     "derived": true
   },
   "etf_schema_hash": "cd3800",
-  "etf_schema_last_check": "2025-09-21T11:16:50.077Z"
+  "etf_schema_last_check": "2025-09-22T11:19:59.379Z"
 }
