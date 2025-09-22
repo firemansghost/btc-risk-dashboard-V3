@@ -1,4 +1,5 @@
-import subweightsConfig from '../config/subweights.json';
+import { getDashboardConfig, getSubWeights as getConfigSubWeights } from './config-loader';
+import type { FactorKey } from './riskConfig';
 
 export interface SubWeightConfig {
   [factorKey: string]: {
@@ -13,21 +14,24 @@ export interface SubWeightValidation {
 }
 
 /**
- * Load and validate sub-weights configuration
+ * Load and validate sub-weights configuration from single source of truth
  */
-export function loadSubWeights(): SubWeightConfig {
-  return subweightsConfig.subweights;
+export async function loadSubWeights(): Promise<SubWeightConfig> {
+  const config = await getDashboardConfig();
+  return config.subweights;
 }
 
 /**
  * Validate that all sub-weights sum to 1.0 within each factor
  */
-export function validateSubWeights(config: SubWeightConfig): SubWeightValidation {
+export async function validateSubWeights(config?: SubWeightConfig): Promise<SubWeightValidation> {
   const errors: string[] = [];
   const warnings: string[] = [];
-  const tolerance = subweightsConfig.validation.tolerance;
+  const dashboardConfig = await getDashboardConfig();
+  const tolerance = dashboardConfig.meta.tolerance;
+  const subWeightsToValidate = config || dashboardConfig.subweights;
   
-  for (const [factorKey, subWeights] of Object.entries(config)) {
+  for (const [factorKey, subWeights] of Object.entries(subWeightsToValidate)) {
     const sum = Object.values(subWeights).reduce((total, weight) => total + weight, 0);
     const difference = Math.abs(sum - 1.0);
     

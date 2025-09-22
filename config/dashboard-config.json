@@ -1,0 +1,263 @@
+{
+  "version": "2.0.0",
+  "lastModified": "2025-01-20T12:00:00.000Z",
+  "description": "SINGLE SOURCE OF TRUTH for all dashboard configuration - pillars, factors, weights, bands, and sub-weights",
+  
+  "meta": {
+    "approach": "next-level-cowen",
+    "totalWeightsMustSum": 1.0,
+    "tolerance": 1e-6,
+    "enforceStrictValidation": true
+  },
+
+  "pillars": {
+    "liquidity": {
+      "label": "Liquidity / Flows",
+      "weight": 0.35,
+      "color": "bg-blue-100 text-blue-800 border-blue-200",
+      "description": "ETF flows, stablecoin supply, net liquidity",
+      "order": 1
+    },
+    "momentum": {
+      "label": "Momentum / Valuation", 
+      "weight": 0.25,
+      "color": "bg-green-100 text-green-800 border-green-200",
+      "description": "Price trends, on-chain activity",
+      "order": 2
+    },
+    "leverage": {
+      "label": "Term Structure / Leverage",
+      "weight": 0.20,
+      "color": "bg-orange-100 text-orange-800 border-orange-200", 
+      "description": "Derivatives and funding rates",
+      "order": 3
+    },
+    "macro": {
+      "label": "Macro Overlay",
+      "weight": 0.10,
+      "color": "bg-gray-100 text-gray-800 border-gray-200",
+      "description": "Macroeconomic conditions",
+      "order": 4
+    },
+    "social": {
+      "label": "Social / Attention",
+      "weight": 0.10,
+      "color": "bg-purple-100 text-purple-800 border-purple-200",
+      "description": "Social sentiment indicators",
+      "order": 5
+    }
+  },
+
+  "factors": {
+    "trend_valuation": {
+      "label": "Trend & Valuation",
+      "pillar": "momentum",
+      "weight": 0.20,
+      "enabled": true,
+      "order": 1,
+      "description": "BMSB-dominant cycle positioning with Mayer Multiple and RSI",
+      "staleness": {
+        "ttl_hours": 6,
+        "market_dependent": true,
+        "business_days_only": false
+      }
+    },
+    "onchain": {
+      "label": "On-chain Activity", 
+      "pillar": "momentum",
+      "weight": 0.05,
+      "enabled": true,
+      "order": 2,
+      "description": "Network fees and mempool congestion",
+      "staleness": {
+        "ttl_hours": 6,
+        "market_dependent": false,
+        "business_days_only": false
+      }
+    },
+    "stablecoins": {
+      "label": "Stablecoins",
+      "pillar": "liquidity", 
+      "weight": 0.15,
+      "enabled": true,
+      "order": 3,
+      "description": "Stablecoin supply growth and momentum",
+      "staleness": {
+        "ttl_hours": 24,
+        "market_dependent": false,
+        "business_days_only": false
+      }
+    },
+    "net_liquidity": {
+      "label": "Net Liquidity (FRED)",
+      "pillar": "liquidity",
+      "weight": 0.15, 
+      "enabled": true,
+      "order": 4,
+      "description": "Fed balance sheet minus RRP and TGA",
+      "staleness": {
+        "ttl_hours": 48,
+        "market_dependent": false,
+        "business_days_only": true
+      }
+    },
+    "etf_flows": {
+      "label": "ETF Flows",
+      "pillar": "liquidity",
+      "weight": 0.05,
+      "enabled": true,
+      "order": 5,
+      "description": "Bitcoin ETF flow momentum and diversification",
+      "staleness": {
+        "ttl_hours": 24,
+        "market_dependent": false,
+        "business_days_only": true
+      }
+    },
+    "term_leverage": {
+      "label": "Term Structure & Leverage",
+      "pillar": "leverage",
+      "weight": 0.20,
+      "enabled": true,
+      "order": 6,
+      "description": "Funding rates, basis, and open interest",
+      "staleness": {
+        "ttl_hours": 6,
+        "market_dependent": true,
+        "business_days_only": false
+      }
+    },
+    "macro_overlay": {
+      "label": "Macro Overlay",
+      "pillar": "macro",
+      "weight": 0.10,
+      "enabled": true,
+      "order": 7,
+      "description": "DXY, 2Y rates, and VIX",
+      "staleness": {
+        "ttl_hours": 24,
+        "market_dependent": true,
+        "business_days_only": true
+      }
+    },
+    "social_interest": {
+      "label": "Social Interest",
+      "pillar": "social", 
+      "weight": 0.10,
+      "enabled": true,
+      "order": 8,
+      "description": "Google Trends and Fear & Greed Index",
+      "staleness": {
+        "ttl_hours": 24,
+        "market_dependent": false,
+        "business_days_only": false
+      }
+    }
+  },
+
+  "subweights": {
+    "trend_valuation": {
+      "bmsb_distance": 0.60,
+      "mayer_stretch": 0.30,
+      "weekly_rsi": 0.10
+    },
+    "onchain": {
+      "fees_usd_7d": 0.60,
+      "mempool_7d": 0.40,
+      "nvt": 0.00
+    },
+    "stablecoins": {
+      "supply_growth": 0.55,
+      "momentum": 0.30,
+      "concentration": 0.15
+    },
+    "net_liquidity": {
+      "level": 0.15,
+      "rate_of_change": 0.40,
+      "momentum": 0.45
+    },
+    "etf_flows": {
+      "sum_21d": 0.30,
+      "acceleration": 0.30,
+      "diversification": 0.40
+    },
+    "term_leverage": {
+      "funding_7d": 0.40,
+      "basis_front": 0.35,
+      "oi_mcap": 0.25
+    },
+    "macro_overlay": {
+      "dxy_20d": 0.40,
+      "us2y_20d": 0.35,
+      "vix_pct": 0.25
+    },
+    "social_interest": {
+      "google_trends": 0.70,
+      "fear_greed": 0.30
+    }
+  },
+
+  "bands": [
+    { 
+      "key": "aggressive_buy", 
+      "label": "Aggressive Buying", 
+      "range": [0, 15], 
+      "color": "green", 
+      "recommendation": "Max allocation",
+      "order": 1
+    },
+    { 
+      "key": "dca_buy", 
+      "label": "Regular DCA Buying", 
+      "range": [15, 35], 
+      "color": "green", 
+      "recommendation": "Continue regular purchases",
+      "order": 2
+    },
+    { 
+      "key": "moderate_buy", 
+      "label": "Moderate Buying", 
+      "range": [35, 50], 
+      "color": "yellow", 
+      "recommendation": "Reduce position size",
+      "order": 3
+    },
+    { 
+      "key": "hold_wait", 
+      "label": "Hold & Wait", 
+      "range": [50, 65], 
+      "color": "orange", 
+      "recommendation": "Hold existing positions",
+      "order": 4
+    },
+    { 
+      "key": "reduce_risk", 
+      "label": "Reduce Risk", 
+      "range": [65, 80], 
+      "color": "red", 
+      "recommendation": "Consider taking profits",
+      "order": 5
+    },
+    { 
+      "key": "high_risk", 
+      "label": "High Risk", 
+      "range": [80, 100], 
+      "color": "red", 
+      "recommendation": "Significant risk of correction",
+      "order": 6
+    }
+  ],
+
+  "adjustments": {
+    "cycle": {
+      "enabled": true,
+      "description": "Long-term cycle positioning adjustment based on halving cycles and macro conditions",
+      "range": [-10, 10]
+    },
+    "spike": {
+      "enabled": true,
+      "description": "Short-term volatility spike adjustment for rapid price movements",
+      "range": [-5, 5]
+    }
+  }
+}
