@@ -15,13 +15,19 @@ The Bitcoin Risk Dashboard provides institutional-grade risk assessment for Bitc
 
 ## Five-Pillar Framework
 
-### Default Weights
-- **Liquidity (40%)**: Net Liquidity (10%), Stablecoins (15%), ETF Flows (10%), On-chain Activity (5%)
+### Current Weights (Single Source of Truth: `config/dashboard-config.json`)
+- **Liquidity/Flows (35%)**: Stablecoins (15%), Net Liquidity (15%), ETF Flows (5%)
   - *ETF Flows includes per-ETF breakdown with individual fund flows, 21-day rolling sums, and cumulative totals*
-- **Momentum (25%)**: Trend & Valuation (25%)
-- **Leverage (20%)**: Term Structure & Leverage (20%)
-- **Social (5%)**: Social Interest (5%)
-- **Macro (5%)**: Macro Overlay (5%)
+- **Momentum/Valuation (25%)**: Trend & Valuation (20%), On-chain Activity (5%)
+- **Term Structure/Leverage (20%)**: Term Structure & Leverage (20%)
+- **Macro Overlay (10%)**: Macro Overlay (10%)
+- **Social/Attention (10%)**: Social Interest (10%)
+
+**Configuration Architecture:**
+- All weights are dynamically loaded from `config/dashboard-config.json`
+- ETL and frontend use identical configuration (guaranteed consistency)
+- Comprehensive validation ensures weights sum to 100%
+- Sub-factor weights defined with "next-level Cowen" approach
 
 ### Risk Calculation Pipeline
 
@@ -60,7 +66,13 @@ The Bitcoin Risk Dashboard provides institutional-grade risk assessment for Bitc
 
 - **Frontend**: Next.js 15 with TypeScript, deployed on Vercel
 - **ETL Pipeline**: Node.js scripts with GitHub Actions scheduling
+- **Configuration**: Single source of truth in `config/dashboard-config.json`
+  - Dynamic loading in both Node.js (ETL) and browser (frontend) environments
+  - Comprehensive validation with weight sum checks and tolerance controls
+  - Automatic cache clearing and consistency guarantees
 - **Data Storage**: JSON artifacts in public directory (read-only in production)
+  - `latest.json`: Computed G-Score results and factor outputs
+  - `status.json`: ETL execution status and timestamps
 - **APIs**: RESTful endpoints for data access and real-time refresh
 - **Caching**: Intelligent caching with staleness detection and fallback mechanisms
 
