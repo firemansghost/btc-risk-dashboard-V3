@@ -72,3 +72,38 @@ export function formatLocalRefreshTime(date: Date | string | number): string {
   
   return `${hours}:${minutes}:${seconds} (local)`;
 }
+
+/**
+ * Calculate delta from yesterday's score
+ * @param currentScore - Today's composite score
+ * @param data - Latest data object that might contain history
+ * @returns Object with delta value and display info, or null if not available
+ */
+export function calculateYesterdayDelta(currentScore: number | null, data: any): {
+  delta: number;
+  displayText: string;
+  glyph: string;
+} | null {
+  if (!currentScore || !data) return null;
+  
+  // Try to find yesterday's score in history or previous data
+  // This is a simplified approach - in a real implementation you might
+  // need to access historical data from a different source
+  const history = data.history || data.factor_history;
+  if (!history || !Array.isArray(history) || history.length < 2) return null;
+  
+  // Get the previous day's score (assuming history is sorted by date desc)
+  const previousScore = history[1]?.composite_score || history[1]?.score;
+  if (typeof previousScore !== 'number') return null;
+  
+  const delta = currentScore - previousScore;
+  
+  // Only show if delta is significant (≥ 0.1)
+  if (Math.abs(delta) < 0.1) return null;
+  
+  const glyph = delta > 0 ? '↑' : '↓';
+  const sign = delta > 0 ? '+' : '';
+  const displayText = `Δ ${sign}${delta.toFixed(1)} vs yesterday`;
+  
+  return { delta, displayText, glyph };
+}

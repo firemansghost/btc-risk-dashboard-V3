@@ -5,8 +5,9 @@ import { fmtUsd0 } from '@/lib/format';
 import { getBandTextColor } from '@/lib/band-colors';
 import { getPillarBadgeClasses, getPillarLabel } from '@/lib/pillar-colors';
 import { recalculateGScoreWithFreshPrice } from '@/lib/dynamicGScore';
-import { formatFriendlyTimestamp, calculateFreshness, formatLocalRefreshTime } from '@/lib/dateUtils';
+import { formatFriendlyTimestamp, calculateFreshness, formatLocalRefreshTime, calculateYesterdayDelta } from '@/lib/dateUtils';
 import { getBandTextColorFromLabel } from '@/lib/bandTextColors';
+import { formatSourceTimestamp } from '@/lib/sourceUtils';
 import SystemStatusCard from './SystemStatusCard';
 import RiskBandLegend from './RiskBandLegend';
 import WhatIfWeightsModal from './WhatIfWeightsModal';
@@ -162,8 +163,20 @@ export default function RealDashboard() {
               </div>
               <h1 className="text-xl md:text-2xl font-medium text-gray-900 mt-1" aria-label={`Bitcoin G-Score ${latest?.composite_score ?? '—'}, band ${latest?.band?.label ?? '—'}`}>
                 Bitcoin G-Score: <span className={getBandTextColorFromLabel(latest?.band?.label ?? '')}>{latest?.composite_score ?? '—'} — {latest?.band?.label ?? '—'}</span>
+                {(() => {
+                  const delta = calculateYesterdayDelta(latest?.composite_score, latest);
+                  if (!delta) return null;
+                  return (
+                    <span 
+                      className="ml-3 px-2 py-0.5 text-xs text-gray-600 bg-gray-100 rounded-full border border-gray-200"
+                      title="Change in headline G-Score since the previous daily close"
+                    >
+                      {delta.glyph} {delta.displayText}
+                    </span>
+                  );
+                })()}
               </h1>
-              <div className="flex items-center gap-3 mt-1">
+              <div className="flex items-center gap-2 mt-3 mb-4">
                 <p className="text-sm text-gray-600">
                   Daily 0–100 risk score for Bitcoin (GRS v3). As of {latest?.as_of_utc ? formatFriendlyTimestamp(latest.as_of_utc) : '—'} · <a href="/methodology" className="text-emerald-600 hover:text-emerald-700">Methodology</a>
                 </p>
@@ -193,6 +206,9 @@ export default function RealDashboard() {
                   );
                 })()}
               </div>
+              <p className="text-sm text-gray-500 mt-2">
+                <a href="/methodology#btc-g-score" className="text-emerald-600 hover:text-emerald-700 underline">New here? What the G-Score means →</a>
+              </p>
             </div>
             <div className="flex items-center space-x-4">
               {refreshMessage && (
@@ -286,8 +302,8 @@ export default function RealDashboard() {
                 >
                 {refreshing ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Refreshing...</span>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
+                    <span>Refreshing…</span>
                   </>
                 ) : (
                   <span>Refresh Dashboard</span>
@@ -417,7 +433,9 @@ export default function RealDashboard() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Bitcoin Price</h3>
             <div className="text-3xl font-bold text-gray-900 mb-1">{latest?.btc?.spot_usd ? fmtUsd0(latest.btc.spot_usd) : 'N/A'}</div>
-            <div className="text-xs text-gray-600">As of {latest?.btc?.as_of_utc ? formatFriendlyTimestamp(latest.btc.as_of_utc) : '—'}</div>
+            <div className="text-xs text-gray-500">
+              {formatSourceTimestamp('Coinbase (daily close)', latest?.btc?.as_of_utc || '—')}
+            </div>
           </div>
 
           {/* Model Version */}

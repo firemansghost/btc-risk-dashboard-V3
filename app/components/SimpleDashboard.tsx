@@ -139,8 +139,20 @@ export default function SimpleDashboard() {
               <h1 className="text-3xl font-bold text-gray-900">GhostGauge — Bitcoin Risk Dashboard</h1>
               <div className="mt-1 text-lg text-gray-800">
                 Bitcoin G-Score: <span className={`font-semibold ${getBandTextColorFromLabel(data?.band?.label ?? '')}`}>{data?.composite_score ?? '—'} — {data?.band?.label || '—'}</span>
+                {(() => {
+                  const delta = calculateYesterdayDelta(data?.composite_score, data);
+                  if (!delta) return null;
+                  return (
+                    <span 
+                      className="ml-3 px-2 py-0.5 text-xs text-gray-600 bg-gray-100 rounded-full border border-gray-200"
+                      title="Change in headline G-Score since the previous daily close"
+                    >
+                      {delta.glyph} {delta.displayText}
+                    </span>
+                  );
+                })()}
             </div>
-              <div className="flex items-center gap-3 mt-2">
+              <div className="flex items-center gap-2 mt-3 mb-4">
                 <p className="text-sm text-gray-600">
                   Daily 0–100 risk score for Bitcoin (GRS v3). As of {data?.as_of_utc ? formatFriendlyTimestamp(data.as_of_utc) : 'Unknown'} ·
                   <a href="/methodology" className="ml-1 underline text-emerald-600 hover:text-emerald-700">Methodology</a>
@@ -166,6 +178,9 @@ export default function SimpleDashboard() {
                   );
                 })()}
               </div>
+              <p className="text-sm text-gray-500 mt-2">
+                <a href="/methodology#btc-g-score" className="text-emerald-600 hover:text-emerald-700 underline">New here? What the G-Score means →</a>
+              </p>
             </div>
             <div className="flex items-center space-x-4">
               <div className="hidden md:flex items-center text-sm text-gray-500">

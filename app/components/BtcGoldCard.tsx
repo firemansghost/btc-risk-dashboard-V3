@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { formatFriendlyTimestamp } from '@/lib/dateUtils';
+import { formatSourceTimestamp, getStandardizedSourceName } from '@/lib/sourceUtils';
 
 interface GoldCrossData {
   updated_at: string;
@@ -229,7 +230,7 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
 
       <div className="mt-3 pt-3 border-t border-gray-100">
         <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>As of {formatFriendlyTimestamp(goldData.updated_at)}</span>
+          <span>{formatSourceTimestamp(getStandardizedSourceName(goldData.provenance), goldData.updated_at)}</span>
           <Link 
             href="/xau" 
             className="text-emerald-600 hover:text-emerald-700 font-medium"
@@ -239,12 +240,11 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
         </div>
       </div>
 
-      <div className="mt-2 text-xs text-gray-400">
-        Source: {sourceName}
-        {isFallback && (
-          <span className="ml-1 text-yellow-600">• Using fallback source</span>
-        )}
-      </div>
+      {isFallback && (
+        <div className="mt-2 text-xs text-yellow-600">
+          • Using fallback source
+        </div>
+      )}
     </div>
   );
 }

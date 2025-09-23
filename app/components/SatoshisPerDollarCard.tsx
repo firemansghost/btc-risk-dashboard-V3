@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { formatFriendlyTimestamp } from '@/lib/dateUtils';
+import { formatSourceTimestamp, getStandardizedSourceName } from '@/lib/sourceUtils';
 
 interface SatsData {
   updated_at: string;
@@ -139,7 +140,7 @@ export default function SatoshisPerDollarCard({ className = '' }: SatoshisPerDol
 
       <div className="mt-3 pt-3 border-t border-gray-100">
         <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>As of {formatFriendlyTimestamp(satsData.updated_at)}</span>
+          <span>{formatSourceTimestamp('BTC daily close (Coinbase)', satsData.updated_at)}</span>
           <Link 
             href="/sats" 
             className="text-emerald-600 hover:text-emerald-700 font-medium"
@@ -149,9 +150,6 @@ export default function SatoshisPerDollarCard({ className = '' }: SatoshisPerDol
         </div>
       </div>
 
-      <div className="mt-2 text-xs text-gray-400">
-        Source: {sourceName}
-      </div>
     </div>
   );
 }
