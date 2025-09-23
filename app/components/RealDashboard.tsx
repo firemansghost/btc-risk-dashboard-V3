@@ -8,7 +8,7 @@ import { recalculateGScoreWithFreshPrice } from '@/lib/dynamicGScore';
 import { formatFriendlyTimestamp, calculateFreshness, formatLocalRefreshTime, calculateYesterdayDelta } from '@/lib/dateUtils';
 import { getBandTextColorFromLabel } from '@/lib/bandTextColors';
 import { formatSourceTimestamp } from '@/lib/sourceUtils';
-import { calculateContribution, getFactorStaleness, getFactorSubSignals, sortFactorsByContribution } from '@/lib/factorUtils';
+import { calculateContribution, getFactorStaleness, getFactorSubSignals, sortFactorsByContribution, getFactorTTL } from '@/lib/factorUtils';
 import SystemStatusCard from './SystemStatusCard';
 import RiskBandLegend from './RiskBandLegend';
 import WhatIfWeightsModal from './WhatIfWeightsModal';
@@ -480,7 +480,8 @@ export default function RealDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {sortFactorsByContribution(latest?.factors || []).map((factor: any) => {
             const contribution = calculateContribution(factor.score, factor.weight_pct);
-            const staleness = getFactorStaleness(factor.last_utc || factor.as_of_utc);
+            const factorTTL = getFactorTTL(factor.key);
+            const staleness = getFactorStaleness(factor.last_utc || factor.as_of_utc, factorTTL);
             const subSignals = getFactorSubSignals(factor.key);
             
             return (

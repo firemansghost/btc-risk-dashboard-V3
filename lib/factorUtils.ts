@@ -82,6 +82,27 @@ export function getFactorSubSignals(factorKey: string): string[] {
 }
 
 /**
+ * Get the correct TTL for a factor from the dashboard config
+ * @param factorKey - Factor key (e.g., 'trend_valuation', 'onchain')
+ * @returns TTL in hours
+ */
+export function getFactorTTL(factorKey: string): number {
+  // TTL values from dashboard-config.json
+  const factorTTLs: Record<string, number> = {
+    'trend_valuation': 6,
+    'onchain': 72,
+    'stablecoins': 24,
+    'etf_flows': 24,
+    'net_liquidity': 168, // 7 days
+    'term_structure': 24,
+    'macro_overlay': 24,
+    'social_interest': 24
+  };
+
+  return factorTTLs[factorKey] || 24; // Default to 24h if not found
+}
+
+/**
  * Sort factors by contribution (descending), then by weight, then by label
  * @param factors - Array of factor objects
  * @returns Sorted array of factors
