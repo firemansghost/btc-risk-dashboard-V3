@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import type { FactorSummary } from '@/lib/types';
+import { checkClockSkew } from '@/lib/factorUtils';
 
 interface SystemStatusCardProps {
   factors: FactorSummary[];
@@ -40,6 +41,9 @@ export default function SystemStatusCard({ factors, provenance, asOfUtc, onOpenW
     note: factor.reason,
   }));
 
+  // Check for clock skew issues
+  const clockSkew = checkClockSkew(asOfUtc || null);
+
   return (
     <div className="rounded-xl border p-4 bg-white">
       <div className="flex items-center justify-between mb-3">
@@ -65,6 +69,16 @@ export default function SystemStatusCard({ factors, provenance, asOfUtc, onOpenW
           </button>
         </div>
       </div>
+      
+      {/* Clock Skew Warning */}
+      {clockSkew.hasSkew && (
+        <div className="mb-3 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+            <span className="text-sm text-amber-800">{clockSkew.warning}</span>
+          </div>
+        </div>
+      )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {sources.map((source, index) => (

@@ -8,7 +8,7 @@ import { recalculateGScoreWithFreshPrice } from '@/lib/dynamicGScore';
 import { formatFriendlyTimestamp, calculateFreshness, formatLocalRefreshTime, calculateYesterdayDelta } from '@/lib/dateUtils';
 import { getBandTextColorFromLabel } from '@/lib/bandTextColors';
 import { formatSourceTimestamp } from '@/lib/sourceUtils';
-import { calculateContribution, getFactorStaleness, getFactorSubSignals, sortFactorsByContribution, getFactorTTL } from '@/lib/factorUtils';
+import { calculateContribution, getFactorStaleness, getFactorSubSignals, sortFactorsByContribution, getFactorTTL, getFactorCadence } from '@/lib/factorUtils';
 import SystemStatusCard from './SystemStatusCard';
 import RiskBandLegend from './RiskBandLegend';
 import WhatIfWeightsModal from './WhatIfWeightsModal';
@@ -481,33 +481,34 @@ export default function RealDashboard() {
           {sortFactorsByContribution(latest?.factors || []).map((factor: any) => {
             const contribution = calculateContribution(factor.score, factor.weight_pct);
             const factorTTL = getFactorTTL(factor.key);
-            const staleness = getFactorStaleness(factor.last_utc || factor.as_of_utc, factorTTL);
+            const staleness = getFactorStaleness(factor.last_utc || factor.as_of_utc, factorTTL, factor.key);
             const subSignals = getFactorSubSignals(factor.key);
+            const cadence = getFactorCadence(factor.key);
             
             return (
             <div key={factor.key} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 relative">
-              <div className="mb-4">
-                {/* Header Row with Title and Chips */}
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center space-x-3">
-                    <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPillarBadgeClasses(factor.pillar)}`}>
-                      {getPillarLabel(factor.pillar)}
-                    </span>
-                  </div>
-                  
-                  {/* Staleness Badge - positioned in top right */}
-                  <div className="absolute top-2 right-2">
-                    <span 
-                      className={`px-2 py-1 rounded text-xs font-medium border ${staleness.className}`}
-                      title={staleness.tooltip}
-                    >
-                      {staleness.level}
-                    </span>
-                  </div>
-                  
-                  {/* Score, Weight, Contribution Chips */}
-                  <div className="flex items-center space-x-2 flex-wrap">
+              {/* Reserved Badge Lane - Top Right */}
+              <div className="absolute top-4 right-4 flex flex-col gap-1 items-end">
+                <span 
+                  className={`px-2 py-1 rounded text-xs font-medium border ${staleness.className}`}
+                  title={staleness.tooltip}
+                >
+                  {staleness.level}
+                </span>
+                {/* Space for additional badges if needed */}
+              </div>
+              
+              <div className="mb-4 pr-20"> {/* Add right padding to avoid badge lane */}
+                {/* Header Row - Title and Pillar */}
+                <div className="flex items-center space-x-3 mb-3">
+                  <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPillarBadgeClasses(factor.pillar)}`}>
+                    {getPillarLabel(factor.pillar)}
+                  </span>
+                </div>
+                
+                {/* Score Row - Dedicated flex container with controlled wrapping */}
+                <div className="flex items-center gap-2 flex-wrap min-h-[32px]">
                     {/* Score Chip (Primary) */}
                     <span 
                       className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -534,7 +535,6 @@ export default function RealDashboard() {
                       C: {contribution !== null ? contribution.toFixed(1) : '—'}
                     </span>
                   </div>
-                </div>
                 
                 {/* Pillar Row with Links */}
                 <div className="flex items-center justify-between mb-1">
@@ -590,9 +590,14 @@ export default function RealDashboard() {
                       </li>
                     ))}
                   </ul>
+                  
+                  {/* Cadence Information */}
+                  <div className="mt-2 text-xs text-gray-500" title={cadence.description}>
+                    Cadence: {cadence.label} (TTL {cadence.ttlHours < 24 ? `${cadence.ttlHours}h` : `${cadence.ttlHours / 24}d`})
+                  </div>
                 </div>
               </div>
-
+              
               {/* Excluded Factor State */}
               {staleness.level === 'excluded' ? (
                 <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
