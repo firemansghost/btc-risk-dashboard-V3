@@ -1,7 +1,7 @@
 {
   "ok": true,
   "version": "v3.1.0",
-  "as_of_utc": "2025-09-23T18:58:24.404Z",
+  "as_of_utc": "2025-09-23T19:57:04.886Z",
   "composite_score": 44,
   "composite_raw": 44,
   "band": {
@@ -25,7 +25,7 @@
       "score": 50,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-09-23T18:58:22.346Z",
+      "last_utc": "2025-09-23T19:57:01.875Z",
       "details": [
         {
           "label": "Price vs 200-day SMA (Mayer)",
@@ -111,7 +111,7 @@
       "score": 32,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-09-23T18:58:22.552Z",
+      "last_utc": "2025-09-23T19:57:02.060Z",
       "details": [
         {
           "label": "Total Market Cap",
@@ -139,7 +139,7 @@
         },
         {
           "label": "Component Scores",
-          "value": "Supply: 5, Momentum: 70, Concentration: 55.902392134881715"
+          "value": "Supply: 5, Momentum: 70, Concentration: 55.901669859409786"
         }
       ]
     },
@@ -151,7 +151,7 @@
       "weight_pct": 9,
       "score": 60,
       "status": "fresh",
-      "reason": "fresh (27.0h old)",
+      "reason": "fresh (28.0h old)",
       "last_utc": "2025-09-22T16:00:00.000Z",
       "details": [
         {
@@ -7015,7 +7015,7 @@
       "score": 32,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-09-23T18:58:22.772Z",
+      "last_utc": "2025-09-23T19:57:02.209Z",
       "details": [
         {
           "label": "Current Funding Rate",
@@ -7057,10 +7057,24 @@
       "pillar": "leverage",
       "weight": 20,
       "weight_pct": 20,
-      "score": null,
-      "status": "excluded",
-      "reason": "error: Unknown file extension \".ts\" for /home/runner/work/btc-risk-dashboard-V3/btc-risk-dashboard-V3/lib/factors/onchain.ts",
-      "last_utc": null
+      "score": 82,
+      "status": "stale",
+      "reason": "success -> stale_beyond_ttl (1.8d old)",
+      "last_utc": "2025-09-22T00:00:00.000Z",
+      "details": [
+        {
+          "label": "Fees 7d avg (USD)",
+          "value": "$410,026"
+        },
+        {
+          "label": "Mempool 7d avg (MB)",
+          "value": "1034874 MB"
+        },
+        {
+          "label": "Puell Multiple",
+          "value": "1.192"
+        }
+      ]
     },
     {
       "key": "macro_overlay",
@@ -7071,7 +7085,7 @@
       "score": 49,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-09-23T18:58:22.349Z",
+      "last_utc": "2025-09-23T19:57:01.877Z",
       "details": [
         {
           "label": "Search Attention",
@@ -7112,7 +7126,7 @@
       "score": 42,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-09-23T18:58:22.795Z",
+      "last_utc": "2025-09-23T19:57:02.115Z",
       "details": [
         {
           "label": "Macro Regime",
@@ -7150,8 +7164,8 @@
     }
   ],
   "btc": {
-    "spot_usd": 111812,
-    "as_of_utc": "2025-09-23T18:58:24.404Z",
+    "spot_usd": 111584.76,
+    "as_of_utc": "2025-09-23T19:57:04.886Z",
     "source": "Coinbase"
   },
   "provenance": [],
@@ -7164,7 +7178,7 @@
   "cycle_adjustment": {
     "adj_pts": 0,
     "residual_z": null,
-    "last_utc": "2025-09-23T18:58:24.404Z",
+    "last_utc": "2025-09-23T19:57:04.886Z",
     "source": "ETL fallback",
     "reason": "disabled"
   },
@@ -7173,15 +7187,15 @@
     "r_1d": 0,
     "sigma": 0,
     "z": 0,
-    "ref_close": 111812,
-    "spot": 111812,
-    "last_utc": "2025-09-23T18:58:24.404Z",
+    "ref_close": 111584.76,
+    "spot": 111584.76,
+    "last_utc": "2025-09-23T19:57:04.886Z",
     "source": "ETL fallback",
     "reason": "disabled"
   },
   "config_digest": "etl_real_factors",
   "cross": {
-    "btc_per_oz": 30.747216995434922,
-    "oz_per_btc": 0.03252326869610577
+    "btc_per_oz": 30.71390247847637,
+    "oz_per_btc": 0.03255854578234655
   }
 }
