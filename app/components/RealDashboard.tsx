@@ -722,11 +722,10 @@ export default function RealDashboard() {
                       Last updated: {latest?.as_of_utc ? new Date(latest.as_of_utc).toLocaleString() + ' UTC' : 'Unknown'}
                     </div>
                   </div>
-                </div>
                 </>
               )}
             </div>
-            );
+          );
           })}
         </div>
 
