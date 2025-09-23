@@ -6,18 +6,9 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 
 ## Liquidity/Flows Pillar (35% total weight)
 
-### Net Liquidity (15% weight)
-- **Data Source**: FRED API (WALCL, RRPONTSYD, WTREGEN)
-- **Window**: 1 year of weekly data
-- **Transform**: Multi-factor composite (Level 15%, Rate of Change 40%, Momentum 45%)
-  - **Net Liquidity**: Fed Balance Sheet - Reverse Repo - Treasury General Account
-  - **4-week Rate of Change**: Short-term liquidity trend (more predictive)
-  - **12-week Momentum**: Acceleration/deceleration analysis
-- **Mapping**: Higher liquidity growth = Lower risk (inverted)
-- **Staleness TTL**: 7 days
-- **Aggregation**: Weighted composite of three percentile-ranked components
+*Prioritizes crypto-native flows (stablecoins, ETF creations/redemptions) over laggy Fed liquidity for better signal and less overlap with Macro inputs.*
 
-### Stablecoins (15% weight)
+### Stablecoins (21% weight)
 - **Data Source**: CoinGecko multi-stablecoin data (USDT, USDC, DAI)
 - **Window**: 90 days of daily data
 - **Transform**: Multi-factor composite (Supply Growth 55%, Momentum 30%, Concentration 15%)
@@ -28,7 +19,7 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 - **Staleness TTL**: 1 day
 - **Aggregation**: Weighted composite of three components with market-share weighting
 
-### ETF Flows (5% weight)
+### ETF Flows (9% weight)
 - **Data Source**: Farside Investors HTML scraping with individual ETF breakdown
 - **Window**: 21-day rolling sum with acceleration analysis
 - **Transform**: Multi-factor composite (21-day Sum 30%, Acceleration 30%, Diversification 40%)
@@ -38,6 +29,19 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 - **Mapping**: Higher flows + positive acceleration + lower concentration = Lower risk
 - **Staleness TTL**: 5 days
 - **Aggregation**: Weighted composite with historical baseline percentile ranking
+
+### Net Liquidity (5% weight)
+- **Data Source**: FRED API (WALCL, RRPONTSYD, WTREGEN)
+- **Window**: 1 year of weekly data
+- **Transform**: Multi-factor composite (Level 15%, Rate of Change 40%, Momentum 45%)
+  - **Net Liquidity**: Fed Balance Sheet - Reverse Repo - Treasury General Account
+  - **4-week Rate of Change**: Short-term liquidity trend (more predictive)
+  - **12-week Momentum**: Acceleration/deceleration analysis
+- **Mapping**: Higher liquidity growth = Lower risk (inverted)
+- **Staleness TTL**: 7 days
+- **Aggregation**: Weighted composite of three percentile-ranked components
+- **Context Display**: Also appears in Macro Overlay as context only (not double-counted in composite score)
+
 
 ### On-chain Activity (5% weight, within Momentum pillar)
 - **Data Source**: Blockchain.info + CoinGecko (fees, transactions, hash rate, prices, volumes)

@@ -16,11 +16,14 @@ The Bitcoin Risk Dashboard provides institutional-grade risk assessment for Bitc
 ## Five-Pillar Framework
 
 ### Current Weights (Single Source of Truth: `config/dashboard-config.json`)
-- **Liquidity/Flows (35%)**: Stablecoins (15%), Net Liquidity (15%), ETF Flows (5%)
+- **Liquidity/Flows (35%)**: Stablecoins (21%), ETF Flows (9%), Net Liquidity (5%)
+  - *Prioritizes crypto-native flows (stablecoins, ETF creations/redemptions) over laggy Fed liquidity*
   - *ETF Flows includes per-ETF breakdown with individual fund flows, 21-day rolling sums, and cumulative totals*
 - **Momentum/Valuation (25%)**: Trend & Valuation (20%), On-chain Activity (5%)
+  - *Maintains pillar orthogonality while keeping trend analysis strong*
 - **Term Structure/Leverage (20%)**: Term Structure & Leverage (20%)
 - **Macro Overlay (10%)**: Macro Overlay (10%)
+  - *Net Liquidity also appears here as context only (not double-counted)*
 - **Social/Attention (10%)**: Social Interest (10%)
 
 **Configuration Architecture:**

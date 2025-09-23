@@ -78,40 +78,45 @@
     "stablecoins": {
       "label": "Stablecoins",
       "pillar": "liquidity", 
-      "weight": 0.15,
+      "weight": 0.21,
       "enabled": true,
       "order": 3,
-      "description": "Stablecoin supply growth and momentum",
+      "description": "Stablecoin supply growth and momentum - crypto-native liquidity signal",
       "staleness": {
         "ttl_hours": 24,
         "market_dependent": false,
         "business_days_only": false
       }
     },
-    "net_liquidity": {
-      "label": "Net Liquidity (FRED)",
-      "pillar": "liquidity",
-      "weight": 0.15, 
-      "enabled": true,
-      "order": 4,
-      "description": "Fed balance sheet minus RRP and TGA",
-      "staleness": {
-        "ttl_hours": 48,
-        "market_dependent": false,
-        "business_days_only": true
-      }
-    },
     "etf_flows": {
       "label": "ETF Flows",
       "pillar": "liquidity",
-      "weight": 0.05,
+      "weight": 0.09,
       "enabled": true,
-      "order": 5,
+      "order": 4,
       "description": "Bitcoin ETF flow momentum and diversification",
       "staleness": {
         "ttl_hours": 24,
         "market_dependent": false,
         "business_days_only": true
+      }
+    },
+    "net_liquidity": {
+      "label": "Net Liquidity (FRED)",
+      "pillar": "liquidity",
+      "weight": 0.05, 
+      "enabled": true,
+      "order": 5,
+      "description": "Fed balance sheet minus RRP and TGA - backdrop liquidity",
+      "staleness": {
+        "ttl_hours": 48,
+        "market_dependent": false,
+        "business_days_only": true
+      },
+      "context_display": {
+        "also_show_in": "macro",
+        "context_label": "Context only — scored under Liquidity (5%)",
+        "rationale": "Provides macro context without double-counting in composite score"
       }
     },
     "term_leverage": {

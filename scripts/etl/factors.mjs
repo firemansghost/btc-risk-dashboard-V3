@@ -1671,6 +1671,23 @@ export async function computeAllFactors() {
   const excludedCount = factorResults.filter(f => f.status === 'excluded').length;
   console.log(`Factor staleness: ${freshCount} fresh, ${staleCount} stale, ${excludedCount} excluded`);
 
+  // Validate composite calculation
+  try {
+    const { validateCompositeScore, logValidationResult } = await import('../../lib/composite-validator.mjs');
+    const validation = validateCompositeScore(
+      factorResults, 
+      composite, 
+      { cycle: 0, spike: 0 } // No adjustments currently applied
+    );
+    
+    const passed = logValidationResult(validation, 'ETL Composite Validation');
+    if (!passed) {
+      console.warn('⚠️  Composite validation failed - check calculation logic');
+    }
+  } catch (validationError) {
+    console.warn('⚠️  Could not validate composite score:', validationError.message);
+  }
+
   return {
     factors: factorResults,
     composite,
