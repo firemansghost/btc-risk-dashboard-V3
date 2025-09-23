@@ -4,7 +4,7 @@
   "description": "SINGLE SOURCE OF TRUTH for all dashboard configuration - pillars, factors, weights, bands, and sub-weights",
   
   "meta": {
-    "approach": "next-level-cowen",
+    "approach": "cycle-anchored-trend",
     "totalWeightsMustSum": 1.0,
     "tolerance": 1e-6,
     "enforceStrictValidation": true
@@ -55,7 +55,7 @@
       "weight": 0.20,
       "enabled": true,
       "order": 1,
-      "description": "BMSB-dominant cycle positioning with Mayer Multiple and RSI",
+      "description": "Cycle-Anchored Trend (BMSB-led) with Mayer Multiple and RSI",
       "staleness": {
         "ttl_hours": 6,
         "market_dependent": true,

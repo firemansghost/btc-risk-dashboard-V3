@@ -186,6 +186,7 @@ GhostGauge is a daily market risk dashboard that compresses diverse market data 
 • **No calls**: Avoid directional predictions or trade language.
 • **Consistency**: Use G-Score in UI/posts; reserve GRS for methods.
 • **Tone**: Calm, precise, repeatable. Save persona noir lines for social/newsletter.
+• **Neutral methodology**: Avoid personal names or vendor marks in core methodology. Use neutral descriptors (e.g., 'Cycle-Anchored Trend', 'BMSB distance').
 
 ## "What to show" checklist for any page/post
 

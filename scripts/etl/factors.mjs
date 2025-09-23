@@ -135,7 +135,7 @@ async function computeTrendValuation() {
     const sBmsb = Number.isFinite(prBmsb) ? riskFromPercentile(prBmsb, { invert: true, k: 3 }) : null;
     const sRsi = Number.isFinite(prRsi) ? riskFromPercentile(prRsi, { invert: false, k: 3 }) : null; // RSI: higher = more overbought = higher risk
     
-    // Weighted blend: BMSB 60%, Mayer 30%, RSI 10% (next-level Cowen)
+    // Weighted blend: BMSB 60%, Mayer 30%, RSI 10% (Cycle-Anchored Trend)
     const parts = [sBmsb, sMayer, sRsi].filter(v => v !== null && Number.isFinite(v));
     const weights = [0.6, 0.3, 0.1]; // BMSB dominant, Mayer secondary, RSI seasoning
     const validWeights = weights.slice(0, parts.length);
@@ -294,7 +294,7 @@ async function computeSocialInterest() {
       }
     }
 
-    // Composite score (weighted blend) - updated for next-level Cowen
+    // Composite score (weighted blend) - BMSB-dominant Trend & Valuation
     const compositeScore = Math.round(
       searchScore * 0.70 + 
       momentumScore * 0.30 + 
@@ -447,7 +447,7 @@ async function computeNetLiquidity() {
       }
     }
 
-    // Composite score (weighted blend) - updated for next-level Cowen
+    // Composite score (weighted blend) - BMSB-dominant Trend & Valuation
     const compositeScore = Math.round(
       levelScore * 0.15 + 
       rocScore * 0.40 + 
@@ -579,7 +579,7 @@ async function computeStablecoins() {
     const momentumScore = recentMomentum > 1 ? 30 : recentMomentum > 0.5 ? 50 : 70; // Lower momentum = higher risk
     const concentrationRiskScore = concentrationScore; // Direct mapping
 
-    // Composite score (weighted blend) - updated for next-level Cowen
+    // Composite score (weighted blend) - BMSB-dominant Trend & Valuation
     const compositeScore = Math.round(
       supplyScore * 0.55 + 
       momentumScore * 0.30 + 
@@ -783,7 +783,7 @@ async function computeEtfFlows() {
       }
     }
 
-    // Composite score (weighted blend) - updated for next-level Cowen
+    // Composite score (weighted blend) - BMSB-dominant Trend & Valuation
     const score = Math.round(
       score21d * 0.30 + 
       accelScore * 0.30 + 
@@ -1213,7 +1213,7 @@ async function computeTermLeverage() {
     const stressPercentile = stressSeries.length > 0 ? percentileRank(stressSeries, stressIndicator) : 0.5;
     const stressScore = riskFromPercentile(stressPercentile, { invert: false, k: 3 });
 
-    // Composite score (weighted blend) - updated for next-level Cowen
+    // Composite score (weighted blend) - BMSB-dominant Trend & Valuation
     const compositeScore = Math.round(
       fundingScore * 0.40 + 
       volScore * 0.35 + 
@@ -1359,7 +1359,7 @@ async function computeOnchain() {
       securityScore = riskFromPercentile(hashPercentile, { invert: true, k: 3 }); // Higher hash rate = lower risk
     }
 
-    // Composite score (weighted blend) - updated for next-level Cowen
+    // Composite score (weighted blend) - BMSB-dominant Trend & Valuation
     const compositeScore = Math.round(
       congestionScore * 0.60 + 
       activityScore * 0.40 + 
@@ -1522,7 +1522,7 @@ async function computeMacroOverlay() {
       }
     }
 
-    // Composite score (weighted blend) - updated for next-level Cowen
+    // Composite score (weighted blend) - BMSB-dominant Trend & Valuation
     const compositeScore = Math.round(
       dollarScore * 0.40 + 
       ratesScore * 0.35 + 

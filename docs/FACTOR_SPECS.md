@@ -60,7 +60,7 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 ### Trend & Valuation (20% weight)
 - **Data Source**: CoinGecko Bitcoin price data
 - **Window**: 365 days of daily data
-- **Transform**: Multi-factor composite (BMSB 60%, Mayer Multiple 30%, Weekly RSI 10%)
+- **Transform**: Cycle-Anchored Trend composite (BMSB 60%, Mayer Multiple 30%, Weekly RSI 10%)
   - **Mayer Multiple**: Price / 200-day SMA
   - **Bull Market Support Band (BMSB)**: Distance from 200-day SMA (proxy)
   - **Weekly RSI**: RSI(14) calculated on weekly price samples (every 7th day)

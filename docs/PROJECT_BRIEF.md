@@ -30,7 +30,7 @@ The Bitcoin Risk Dashboard provides institutional-grade risk assessment for Bitc
 - All weights are dynamically loaded from `config/dashboard-config.json`
 - ETL and frontend use identical configuration (guaranteed consistency)
 - Comprehensive validation ensures weights sum to 100%
-- Sub-factor weights defined with "next-level Cowen" approach
+- Sub-factor weights defined with Cycle-Anchored Trend (BMSB-led) approach
 
 ### Risk Calculation Pipeline
 

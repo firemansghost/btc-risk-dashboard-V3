@@ -184,3 +184,36 @@ Key technical choices and rationale for the Bitcoin Risk Dashboard.
 - Increased complexity in calculation
 - More API calls required
 - Potential for data inconsistency across metrics
+
+## 2025-01-20: Standardized Trend & Valuation Methodology Language
+
+**Decision**: Replaced vendor-/person-referencing phrasing with neutral "Cycle-Anchored Trend (BMSB-led)" language
+
+**Context**: Historical references to "Next-Level Cowen" created legal, attribution, and expectation risks while being less clear to new users
+
+**Options Considered**:
+1. Keep existing "Next-Level Cowen" terminology
+2. Replace with generic "trend analysis" language
+3. Use descriptive "Cycle-Anchored Trend" terminology
+
+**Chosen Solution**: Cycle-Anchored Trend (BMSB-led) approach
+
+**Implementation**:
+- Updated all references in app, docs, and config files
+- Maintained exact same mathematics (BMSB 60%, Mayer 30%, RSI 10%)
+- Added clear explanations of BMSB as cycle anchor
+- Updated brand guidelines to avoid personal names
+
+**Rationale**:
+- **Clarity**: Plain-English explanation of BMSB distance as cycle anchor
+- **Neutrality**: Avoids personal names and implied endorsements
+- **Brand hygiene**: Reduces legal and trademark risks
+- **Transparency**: Keeps mathematical approach and weights visible
+- **Consistency**: Aligns language across all product touchpoints
+
+**No Model Changes**: This is purely a copy/language update - all calculations, weights, and mathematical approaches remain identical
+
+**Trade-offs**:
+- Need to update documentation and user communications
+- Loss of historical terminology familiarity
+- Requires consistent application across all materials

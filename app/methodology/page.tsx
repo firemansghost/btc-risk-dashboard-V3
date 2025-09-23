@@ -105,7 +105,7 @@ export default function MethodologyPage() {
                     
                     <div className="bg-blue-50 rounded-lg p-4 mt-4">
                       <p className="text-sm text-blue-800">
-                        <strong>Next-Level Cowen Approach:</strong> Inside Trend & Valuation, Distance to the Bull Market Support Band carries the largest weight by design, reflecting where Bitcoin sits in the broader cycle. Long-trend stretch (Mayer Multiple) and weekly momentum contribute the rest.
+                        <strong>Cycle-Anchored Trend Approach:</strong> Inside Trend & Valuation, Distance to the Bull Market Support Band carries the largest weight by design (60%), reflecting where Bitcoin sits in the broader cycle. Long-trend stretch (Mayer Multiple, 30%) and weekly momentum (RSI, 10%) contribute the rest.
                       </p>
                     </div>
 
