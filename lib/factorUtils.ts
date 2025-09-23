@@ -68,14 +68,14 @@ export function getFactorStaleness(lastUtc: string | null, ttlHours: number = 24
  */
 export function getFactorSubSignals(factorKey: string): string[] {
   const subSignals: Record<string, string[]> = {
-    'trend_valuation': ['Cycle-Anchored Trend (BMSB)', 'Mayer Multiple', 'Weekly RSI'],
-    'stablecoins': ['Stablecoin growth', 'USDT/USDC flows', 'Supply changes'],
-    'etf_flows': ['ETF 21-day flows', 'Institutional demand', 'Flow momentum'],
-    'net_liquidity': ['Fed balance sheet', 'RRP changes', 'TGA movements'],
-    'term_structure': ['Funding (7-day)', 'Front-month basis', 'OI/MarketCap'],
-    'macro_overlay': ['DXY moves', '2Y yield changes', 'VIX levels'],
-    'onchain': ['Transaction fees', 'Mempool size', 'Network activity'],
-    'social': ['Google Trends', 'Fear & Greed Index', 'Social sentiment']
+    'trend_valuation': ['Distance to Bull Market Support Band', 'Price vs 200-day SMA (Mayer)', 'Weekly momentum (RSI proxy)'],
+    'stablecoins': ['Total market cap', 'Dominant stablecoin composition', 'Aggregate 30-day growth'],
+    'etf_flows': ['Latest daily flow', '21-day rolling sum', 'Flow momentum'],
+    'net_liquidity': ['Fed Balance Sheet (WALCL)', 'Reverse Repo (RRP)', 'Treasury General Account'],
+    'term_structure': ['Current funding rate', '30-day average', 'Funding volatility'],
+    'macro_overlay': ['Macro regime', 'Dollar trend (20d)', 'Rate environment'],
+    'onchain': ['Transaction fees (7d avg)', 'Mempool size (7d avg)', 'Puell Multiple'],
+    'social_interest': ['Search attention', 'Bitcoin trending rank', 'Price signal (7d)']
   };
 
   return subSignals[factorKey] || ['Sub-signals available', 'Check methodology', 'for details'];
@@ -87,16 +87,16 @@ export function getFactorSubSignals(factorKey: string): string[] {
  * @returns TTL in hours
  */
 export function getFactorTTL(factorKey: string): number {
-  // TTL values from dashboard-config.json
+  // TTL values matching ETL stalenessUtils.mjs (the actual source of truth)
   const factorTTLs: Record<string, number> = {
-    'trend_valuation': 6,
-    'onchain': 72,
-    'stablecoins': 24,
-    'etf_flows': 24,
+    'trend_valuation': 24, // 1 day
+    'onchain': 72, // 3 days
+    'stablecoins': 24, // 1 day
+    'etf_flows': 120, // 5 days
     'net_liquidity': 168, // 7 days
-    'term_structure': 24,
-    'macro_overlay': 24,
-    'social_interest': 24
+    'term_structure': 24, // 1 day (mapped from term_leverage in ETL)
+    'macro_overlay': 24, // 1 day
+    'social_interest': 24 // 1 day
   };
 
   return factorTTLs[factorKey] || 24; // Default to 24h if not found

@@ -252,7 +252,7 @@ export async function computeOnchain() {
   // Build details with partial data indication
   const details = [
     { label: "Fees 7d avg (USD)", value: Number.isFinite(feesUSDLast) ? `$${Math.round(feesUSDLast).toLocaleString("en-US")}` : "—" },
-    { label: "Mempool 7d avg (MB)", value: Number.isFinite(memLast) ? `${Math.round(memLast)} MB` : "—" },
+    { label: "Mempool 7d avg (MB)", value: Number.isFinite(memLast) ? `${Math.round(memLast / 1_000_000)} MB` : "—" },
     { label: "Puell Multiple", value: Number.isFinite(puellLast) ? puellLast.toFixed(3) : "—" },
   ];
 
