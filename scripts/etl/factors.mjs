@@ -1454,14 +1454,14 @@ export async function computeAllFactors() {
   console.log("Computing risk factors...");
   
   const results = await Promise.allSettled([
-    computeTrendValuation(),
-    computeNetLiquidity(),
-    computeStablecoins(),
-    computeEtfFlows(),
-    computeTermLeverage(),
-    computeOnchain(),
-    computeSocialInterest(),
-    computeMacroOverlay()
+    computeTrendValuation(),    // order: 1
+    computeOnchain(),           // order: 2  
+    computeStablecoins(),       // order: 3
+    computeEtfFlows(),          // order: 4
+    computeNetLiquidity(),      // order: 5
+    computeTermLeverage(),      // order: 6
+    computeMacroOverlay(),      // order: 7
+    computeSocialInterest()     // order: 8
   ]);
 
   // Load configuration from single source of truth

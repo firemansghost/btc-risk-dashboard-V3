@@ -221,10 +221,10 @@ export const STALENESS_CONFIG = {
     description: 'BitMEX funding rates 24/7, 1-day TTL'
   },
   onchain: {
-    ttlHours: 24, // 1 day
+    ttlHours: 72, // 3 days
     marketDependent: false, // Blockchain data is 24/7
     businessDaysOnly: false,
-    description: 'Blockchain.info 24/7 data, 1-day TTL'
+    description: 'Blockchain.info 24/7 data, 3-day TTL'
   },
   social_interest: {
     ttlHours: 24, // 1 day
