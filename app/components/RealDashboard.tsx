@@ -5,6 +5,8 @@ import { fmtUsd0 } from '@/lib/format';
 import { getBandTextColor } from '@/lib/band-colors';
 import { getPillarBadgeClasses, getPillarLabel } from '@/lib/pillar-colors';
 import { recalculateGScoreWithFreshPrice } from '@/lib/dynamicGScore';
+import { formatFriendlyTimestamp, calculateFreshness, formatLocalRefreshTime } from '@/lib/dateUtils';
+import { getBandTextColorFromLabel } from '@/lib/bandTextColors';
 import SystemStatusCard from './SystemStatusCard';
 import RiskBandLegend from './RiskBandLegend';
 import WhatIfWeightsModal from './WhatIfWeightsModal';
@@ -80,6 +82,8 @@ export default function RealDashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState<string|null>(null);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
   const startedAt = useRef(0);
 
   // Modals
@@ -157,11 +161,38 @@ export default function RealDashboard() {
                 <a href="/" className="hover:text-emerald-600 transition-colors">GhostGauge</a>
               </div>
               <h1 className="text-xl md:text-2xl font-medium text-gray-900 mt-1" aria-label={`Bitcoin G-Score ${latest?.composite_score ?? '—'}, band ${latest?.band?.label ?? '—'}`}>
-                Bitcoin G-Score: <span className={getBandTextColor(latest?.band?.label ?? '—')}>{latest?.composite_score ?? '—'} — {latest?.band?.label ?? '—'}</span>
+                Bitcoin G-Score: <span className={getBandTextColorFromLabel(latest?.band?.label ?? '')}>{latest?.composite_score ?? '—'} — {latest?.band?.label ?? '—'}</span>
               </h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Daily 0–100 risk score for Bitcoin (GRS v3). As of {latest?.as_of_utc ? new Date(latest.as_of_utc).toLocaleString() + ' UTC' : '—'} · <a href="/methodology" className="text-emerald-600 hover:text-emerald-700">Methodology</a>
-              </p>
+              <div className="flex items-center gap-3 mt-1">
+                <p className="text-sm text-gray-600">
+                  Daily 0–100 risk score for Bitcoin (GRS v3). As of {latest?.as_of_utc ? formatFriendlyTimestamp(latest.as_of_utc) : '—'} · <a href="/methodology" className="text-emerald-600 hover:text-emerald-700">Methodology</a>
+                </p>
+                {latest?.as_of_utc && (() => {
+                  const freshness = calculateFreshness(latest.as_of_utc);
+                  return (
+                    <div className="group relative">
+                      <span 
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${freshness.className}`}
+                        tabIndex={0}
+                        role="button"
+                        aria-label={`Data freshness: ${freshness.level}`}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            // Tooltip will show on focus
+                          }
+                        }}
+                      >
+                        {freshness.level}
+                      </span>
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                        Artifacts updated {latest.as_of_utc} ({formatFriendlyTimestamp(latest.as_of_utc)}); most inputs refresh daily.
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               {refreshMessage && (
@@ -169,76 +200,90 @@ export default function RealDashboard() {
                   {refreshMessage}
                 </div>
               )}
-              <button
-                onClick={() => {
-                  setRefreshing(true);
-                  setRefreshMessage('Fetching fresh prices...');
-                  
-                  // Use simple refresh API to fetch fresh prices (Vercel-compatible)
-                  fetch('/api/smart-refresh-simple', { method: 'POST' })
-                    .then(async (res) => {
-                      console.log('Refresh response status:', res.status, res.statusText);
-                      if (!res.ok) {
-                        const errorText = await res.text();
-                        console.error('Refresh API error response:', errorText);
-                        throw new Error(`API Error ${res.status}: ${errorText}`);
-                      }
-                      return res.json();
-                    })
-                    .then((data) => {
-                      console.log('Smart refresh success:', data);
-                      const freshBtcPrice = data.data?.btc_price;
-                      setRefreshMessage(`✅ Fresh prices: BTC $${freshBtcPrice?.toLocaleString() || 'N/A'}`);
-                      
-                      // Update the Bitcoin price and recalculate G-Score
-                      if (freshBtcPrice && latest) {
-                        // Recalculate G-Score with fresh Bitcoin price
-                        recalculateGScoreWithFreshPrice(latest, freshBtcPrice)
-                          .then(updatedData => {
-                            setLatest(updatedData);
-                            console.log('Updated G-Score with fresh Bitcoin price:', updatedData.composite_score);
-                            
-                            // Force refresh of Bitcoin⇄Gold and Satoshis cards
-                            window.dispatchEvent(new CustomEvent('btc-price-updated', { 
-                              detail: { btc_price: freshBtcPrice, updated_at: data.data.updated_at } 
-                            }));
-                          })
-                          .catch(error => {
-                            console.error('Error recalculating G-Score:', error);
-                            // Fallback to simple price update
-                            const updatedLatest = {
-                              ...latest,
-                              btc: {
-                                ...latest.btc,
-                                spot_usd: freshBtcPrice,
-                                as_of_utc: data.data.updated_at
-                              }
-                            };
-                            setLatest(updatedLatest);
-                            
-                            window.dispatchEvent(new CustomEvent('btc-price-updated', { 
-                              detail: { btc_price: freshBtcPrice, updated_at: data.data.updated_at } 
-                            }));
-                          });
-                      }
-                      
-                      setRefreshing(false);
-                      setTimeout(() => setRefreshMessage(null), 5000);
-                    })
-                    .catch((error) => {
-                      console.error('Smart refresh failed:', error);
-                      setRefreshMessage(`❌ Failed: ${error.message}`);
-                      // Fallback to just reloading existing data
-                      setTimeout(() => {
-                        load();
+              {refreshError && (
+                <div className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-md max-w-md">
+                  {refreshError}
+                </div>
+              )}
+              <div className="flex flex-col items-end">
+                {lastRefreshedAt && (
+                  <div className="text-xs text-gray-500 mb-1">
+                    Last refreshed {formatLocalRefreshTime(lastRefreshedAt)}
+                  </div>
+                )}
+                <button
+                  onClick={() => {
+                    setRefreshing(true);
+                    setRefreshMessage('Fetching fresh prices...');
+                    setRefreshError(null);
+                    
+                    // Use simple refresh API to fetch fresh prices (Vercel-compatible)
+                    fetch('/api/smart-refresh-simple', { method: 'POST' })
+                      .then(async (res) => {
+                        console.log('Refresh response status:', res.status, res.statusText);
+                        if (!res.ok) {
+                          const errorText = await res.text();
+                          console.error('Refresh API error response:', errorText);
+                          throw new Error(`API Error ${res.status}: ${errorText}`);
+                        }
+                        return res.json();
+                      })
+                      .then((data) => {
+                        console.log('Smart refresh success:', data);
+                        const freshBtcPrice = data.data?.btc_price;
+                        setRefreshMessage(`✅ Fresh prices: BTC $${freshBtcPrice?.toLocaleString() || 'N/A'}`);
+                        setLastRefreshedAt(new Date());
+                        
+                        // Update the Bitcoin price and recalculate G-Score
+                        if (freshBtcPrice && latest) {
+                          // Recalculate G-Score with fresh Bitcoin price
+                          recalculateGScoreWithFreshPrice(latest, freshBtcPrice)
+                            .then(updatedData => {
+                              setLatest(updatedData);
+                              console.log('Updated G-Score with fresh Bitcoin price:', updatedData.composite_score);
+                              
+                              // Force refresh of Bitcoin⇄Gold and Satoshis cards
+                              window.dispatchEvent(new CustomEvent('btc-price-updated', { 
+                                detail: { btc_price: freshBtcPrice, updated_at: data.data.updated_at } 
+                              }));
+                            })
+                            .catch(error => {
+                              console.error('Error recalculating G-Score:', error);
+                              // Fallback to simple price update
+                              const updatedLatest = {
+                                ...latest,
+                                btc: {
+                                  ...latest.btc,
+                                  spot_usd: freshBtcPrice,
+                                  as_of_utc: data.data.updated_at
+                                }
+                              };
+                              setLatest(updatedLatest);
+                              
+                              window.dispatchEvent(new CustomEvent('btc-price-updated', { 
+                                detail: { btc_price: freshBtcPrice, updated_at: data.data.updated_at } 
+                              }));
+                            });
+                        }
+                        
                         setRefreshing(false);
                         setTimeout(() => setRefreshMessage(null), 5000);
-                      }, 1000);
-                    });
-                }}
-                disabled={loading || refreshing}
-                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-              >
+                      })
+                      .catch((error) => {
+                        console.error('Smart refresh failed:', error);
+                        const errorMsg = `Couldn't refresh. Using last good snapshot from ${latest?.as_of_utc ? formatFriendlyTimestamp(latest.as_of_utc) : 'unknown time'}. Try again.`;
+                        setRefreshError(errorMsg);
+                        setRefreshMessage(null);
+                        setRefreshing(false);
+                        
+                        // Show error toast
+                        setTimeout(() => setRefreshError(null), 8000);
+                      });
+                  }}
+                  disabled={loading || refreshing}
+                  aria-busy={refreshing}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                >
                 {refreshing ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -248,6 +293,18 @@ export default function RealDashboard() {
                   <span>Refresh Dashboard</span>
                 )}
               </button>
+              </div>
+              {/* Aria-live region for screen readers */}
+              <div 
+                aria-live="polite" 
+                aria-atomic="true" 
+                className="sr-only"
+                role="status"
+              >
+                {refreshing && "Refreshing dashboard data"}
+                {refreshMessage && refreshMessage.includes('✅') && "Dashboard refreshed successfully"}
+                {refreshError && `Error: ${refreshError}`}
+              </div>
             </div>
           </div>
         </div>
@@ -289,18 +346,70 @@ export default function RealDashboard() {
             
             {/* Cycle & Spike Adjustments */}
             <div className="flex items-center gap-2">
-              <span 
-                className="px-2 py-0.5 text-[11px] rounded bg-slate-100 text-slate-700 border border-slate-200"
-                title="Cycle adjustment: A gentle context nudge derived from a long-term power-law residual of Bitcoin's price trend. Interprets 'where we are in the cycle.'"
-              >
-                Cycle: {formatSignedNumber(latest?.cycle_adjustment?.adj_pts ?? latest?.adjustments?.cycle_nudge ?? 0)}
-              </span>
-              <span 
-                className="px-2 py-0.5 text-[11px] rounded bg-slate-100 text-slate-700 border border-slate-200"
-                title="Spike adjustment: A fast-path nudge when the recent daily move is a large outlier versus short-term volatility. Large up-spikes → small risk increase; large down-spikes → small risk decrease."
-              >
-                Spike: {formatSignedNumber(latest?.spike_adjustment?.adj_pts ?? latest?.adjustments?.spike_nudge ?? 0)}
-              </span>
+              {(() => {
+                const cycleValue = latest?.cycle_adjustment?.adj_pts ?? latest?.adjustments?.cycle_nudge ?? 0;
+                const hasValue = cycleValue !== 0 && cycleValue != null;
+                return (
+                  <div className="group relative">
+                    <span 
+                      className={`px-2 py-0.5 text-[11px] rounded border ${
+                        hasValue 
+                          ? 'bg-slate-100 text-slate-700 border-slate-200' 
+                          : 'bg-gray-50 text-gray-400 border-gray-200'
+                      }`}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`Cycle adjustment: ${hasValue ? formatSignedNumber(cycleValue) : 'disabled'}`}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                        }
+                        if (e.key === 'Escape') {
+                          e.currentTarget.blur();
+                        }
+                      }}
+                    >
+                      Cycle: {formatSignedNumber(cycleValue)}
+                    </span>
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                      Small cycle-context nudge based on long-trend residuals. Usually ±0–2 pts; may be disabled.
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                    </div>
+                  </div>
+                );
+              })()}
+              {(() => {
+                const spikeValue = latest?.spike_adjustment?.adj_pts ?? latest?.adjustments?.spike_nudge ?? 0;
+                const hasValue = spikeValue !== 0 && spikeValue != null;
+                return (
+                  <div className="group relative">
+                    <span 
+                      className={`px-2 py-0.5 text-[11px] rounded border ${
+                        hasValue 
+                          ? 'bg-slate-100 text-slate-700 border-slate-200' 
+                          : 'bg-gray-50 text-gray-400 border-gray-200'
+                      }`}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`Spike adjustment: ${hasValue ? formatSignedNumber(spikeValue) : 'disabled'}`}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                        }
+                        if (e.key === 'Escape') {
+                          e.currentTarget.blur();
+                        }
+                      }}
+                    >
+                      Spike: {formatSignedNumber(spikeValue)}
+                    </span>
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                      One-day move vs recent volatility. Nudges the score a few points when markets jump.
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
 
@@ -308,7 +417,7 @@ export default function RealDashboard() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Bitcoin Price</h3>
             <div className="text-3xl font-bold text-gray-900 mb-1">{latest?.btc?.spot_usd ? fmtUsd0(latest.btc.spot_usd) : 'N/A'}</div>
-            <div className="text-xs text-gray-600">as of {latest?.btc?.as_of_utc ? new Date(latest.btc.as_of_utc).toISOString().replace('T', ' ').replace('Z', 'Z') : '—'}</div>
+            <div className="text-xs text-gray-600">As of {latest?.btc?.as_of_utc ? formatFriendlyTimestamp(latest.btc.as_of_utc) : '—'}</div>
           </div>
 
           {/* Model Version */}

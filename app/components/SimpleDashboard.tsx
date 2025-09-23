@@ -7,6 +7,8 @@ import AdjustmentsModal from './AdjustmentsModal';
 import RiskBandLegend from './RiskBandLegend';
 import SystemStatusCard from './SystemStatusCard';
 import { getPillarBadgeClasses, getPillarLabel } from '@/lib/pillar-colors';
+import { formatFriendlyTimestamp, calculateFreshness, formatLocalRefreshTime } from '@/lib/dateUtils';
+import { getBandTextColorFromLabel } from '@/lib/bandTextColors';
 
 export default function SimpleDashboard() {
   console.log('SimpleDashboard: component mounting');
@@ -16,6 +18,8 @@ export default function SimpleDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState<string | null>(null);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
   const [expandedFactors, setExpandedFactors] = useState<Set<string>>(new Set());
   const [expandedDetails, setExpandedDetails] = useState<Set<string>>(new Set());
   const [showAdj, setShowAdj] = useState(false);
@@ -134,13 +138,34 @@ export default function SimpleDashboard() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">GhostGauge — Bitcoin Risk Dashboard</h1>
               <div className="mt-1 text-lg text-gray-800">
-                Bitcoin G-Score: <span className="font-semibold">{data?.composite_score ?? '—'}</span> — {data?.band?.label || '—'}
+                Bitcoin G-Score: <span className={`font-semibold ${getBandTextColorFromLabel(data?.band?.label ?? '')}`}>{data?.composite_score ?? '—'} — {data?.band?.label || '—'}</span>
             </div>
-              <p className="text-sm text-gray-600 mt-2">
-                Daily 0–100 risk score for Bitcoin (GRS v3). As of {data?.as_of_utc ? new Date(data.as_of_utc).toISOString() : 'Unknown'} ·
-                <a href="/methodology" className="ml-1 underline text-gray-700 hover:text-gray-900">Methodology</a>
-                <span className="ml-3 text-gray-500">Data source:</span> <span className="ml-1 text-gray-700">ETL</span>
-              </p>
+              <div className="flex items-center gap-3 mt-2">
+                <p className="text-sm text-gray-600">
+                  Daily 0–100 risk score for Bitcoin (GRS v3). As of {data?.as_of_utc ? formatFriendlyTimestamp(data.as_of_utc) : 'Unknown'} ·
+                  <a href="/methodology" className="ml-1 underline text-emerald-600 hover:text-emerald-700">Methodology</a>
+                  <span className="ml-3 text-gray-500">Data source:</span> <span className="ml-1 text-gray-700">ETL</span>
+                </p>
+                {data?.as_of_utc && (() => {
+                  const freshness = calculateFreshness(data.as_of_utc);
+                  return (
+                    <div className="group relative">
+                      <span 
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${freshness.className}`}
+                        tabIndex={0}
+                        role="button"
+                        aria-label={`Data freshness: ${freshness.level}`}
+                      >
+                        {freshness.level}
+                      </span>
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                        Artifacts updated {data.as_of_utc} ({formatFriendlyTimestamp(data.as_of_utc)}); most inputs refresh daily.
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="hidden md:flex items-center text-sm text-gray-500">

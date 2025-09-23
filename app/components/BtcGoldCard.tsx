@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { formatFriendlyTimestamp } from '@/lib/dateUtils';
 
 interface GoldCrossData {
   updated_at: string;
@@ -228,10 +229,10 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
 
       <div className="mt-3 pt-3 border-t border-gray-100">
         <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>As of {new Date(goldData.updated_at).toLocaleDateString()}</span>
+          <span>As of {formatFriendlyTimestamp(goldData.updated_at)}</span>
           <Link 
             href="/xau" 
-            className="text-blue-600 hover:text-blue-800 font-medium"
+            className="text-emerald-600 hover:text-emerald-700 font-medium"
           >
             View details →
           </Link>
