@@ -1253,18 +1253,18 @@ async function computeTermLeverage() {
   }
 }
 
-// 7. ON-CHAIN ACTIVITY (Uses lib/factors/onchain.ts)
+// 7. ON-CHAIN ACTIVITY (Pure JS implementation)
 async function computeOnchain() {
   try {
-    // Import the proper onchain implementation
-    const { computeOnchain: libComputeOnchain } = await import('../../lib/factors/onchain.ts');
-    const result = await libComputeOnchain();
+    // Import the JS onchain implementation
+    const { computeOnchain: jsComputeOnchain } = await import('./factors/onchain.mjs');
+    const result = await jsComputeOnchain();
     
-    // Convert to expected ETL format
+    // Return in expected ETL format
     return {
       score: result.score,
-      reason: result.score !== null ? "success" : "failed",
-      lastUpdated: result.last_utc,
+      reason: result.reason,
+      lastUpdated: result.lastUpdated,
       details: result.details,
       provenance: result.provenance
     };
