@@ -509,14 +509,14 @@ export default function RealDashboard() {
                 
                 {/* Score Row - Dedicated flex container with controlled wrapping */}
                 <div className="flex items-center gap-2 flex-wrap min-h-[32px]">
-                    {/* Score Chip (Primary) */}
+                    {/* Risk Score Chip (Primary) */}
                     <span 
                       className={`px-3 py-1 rounded-full text-sm font-medium ${
                         factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
                       }`}
-                      aria-label={`Score: ${factor.score !== null ? factor.score.toFixed(0) : 'N/A'}`}
+                      aria-label={`Risk score: ${factor.score !== null ? factor.score.toFixed(0) : 'N/A'}`}
                     >
-                      {factor.score !== null ? factor.score.toFixed(0) : 'N/A'}
+                      Risk: {factor.score !== null ? factor.score.toFixed(0) : 'N/A'}
                     </span>
                     
                     {/* Weight Chip (Muted) */}
