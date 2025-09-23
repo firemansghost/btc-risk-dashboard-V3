@@ -70,7 +70,7 @@
       "order": 2,
       "description": "Network fees and mempool congestion",
       "staleness": {
-        "ttl_hours": 6,
+        "ttl_hours": 72,
         "market_dependent": false,
         "business_days_only": false
       }

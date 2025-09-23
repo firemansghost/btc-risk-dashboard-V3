@@ -55,34 +55,38 @@ export async function computeOnchain() {
     sourcesUsed.push("blockchain.info • mempool-size");
   }
 
-  // --- fees: usd preferred; fallback btc × spot ---
+  // --- fees: transaction-fees preferred (more reliable), fallback to fees-usd ---
   let feesUSDLast: number | null = null;
   let feesSeries: number[] = [];
   let feesSource = "";
+  let feesPartial = false;
 
-  const feesUsd = await fetchChart("fees-usd", provenance);
-  if (feesUsd?.values?.length) {
-    feesSeries = sma(feesUsd.values, 7);
-    const last = feesSeries.at(-1);
-    if (Number.isFinite(last)) {
-      feesUSDLast = last as number;
-      feesSource = "blockchain.info • fees-usd";
+  // Try transaction-fees first (more reliable endpoint)
+  const feesBtc = await fetchChart("transaction-fees", provenance);
+  if (feesBtc?.values?.length) {
+    const maBTC = sma(feesBtc.values, 7);
+    const lastBTC = maBTC.at(-1);
+    if (Number.isFinite(lastBTC)) {
+      const spot = await fetchCoinbaseSpot().catch(() => ({ usd: NaN }));
+      if (Number.isFinite(spot?.usd)) {
+        feesUSDLast = (lastBTC as number) * (spot.usd as number);
+        // Build a comparable series just for percentile calc (scale BTC→USD by current spot)
+        feesSeries = maBTC.map(v => Number.isFinite(v) ? (v as number) * (spot.usd as number) : NaN);
+        feesSource = "blockchain.info • transaction-fees × spot";
+      }
     }
   }
 
+  // Fallback to fees-usd if transaction-fees failed
   if (!Number.isFinite(feesUSDLast as number)) {
-    const feesBtc = await fetchChart("transaction-fees", provenance);
-    if (feesBtc?.values?.length) {
-      const maBTC = sma(feesBtc.values, 7);
-      const lastBTC = maBTC.at(-1);
-      if (Number.isFinite(lastBTC)) {
-        const spot = await fetchCoinbaseSpot().catch(() => ({ usd: NaN }));
-        if (Number.isFinite(spot?.usd)) {
-          feesUSDLast = (lastBTC as number) * (spot.usd as number);
-          // Build a comparable series just for percentile calc (scale BTC→USD by current spot)
-          feesSeries = maBTC.map(v => Number.isFinite(v) ? (v as number) * (spot.usd as number) : NaN);
-          feesSource = "blockchain.info • transaction-fees × spot";
-        }
+    const feesUsd = await fetchChart("fees-usd", provenance);
+    if (feesUsd?.values?.length) {
+      feesSeries = sma(feesUsd.values, 7);
+      const last = feesSeries.at(-1);
+      if (Number.isFinite(last)) {
+        feesUSDLast = last as number;
+        feesSource = "blockchain.info • fees-usd (fallback)";
+        feesPartial = true;
       }
     }
   }
@@ -123,27 +127,77 @@ export async function computeOnchain() {
     }
   }
 
-  // --- combine parts: Puell (50%) + fee/mempool (50%) ---
-  const feeMempoolParts = [s_fees, s_mempool].filter(Number.isFinite) as number[];
-  const s_feeMempool = feeMempoolParts.length ? Math.round(mean(feeMempoolParts)) : null;
-  
-  const finalParts = [s_puell, s_feeMempool].filter(Number.isFinite) as number[];
-  const score = finalParts.length ? Math.round(mean(finalParts)) : null;
+  // --- Partial data handling with re-normalized weights ---
+  const availableComponents = [];
+  const componentWeights = [];
+  const componentNames = [];
 
-  // Timestamp from mempool (fallback to now)
-  const lastTs = mem?.timestamps?.at(-1) ?? Date.now();
-  const last_utc = new Date(lastTs).toISOString().slice(0, 19) + "Z";
+  // Fees component (60% base weight)
+  if (Number.isFinite(s_fees)) {
+    availableComponents.push(s_fees as number);
+    componentWeights.push(0.6);
+    componentNames.push("fees");
+  }
+
+  // Mempool component (40% base weight)
+  if (Number.isFinite(s_mempool)) {
+    availableComponents.push(s_mempool as number);
+    componentWeights.push(0.4);
+    componentNames.push("mempool");
+  }
+
+  // Calculate score with re-normalized weights
+  let score: number | null = null;
+  let partialDataNote = "";
+  
+  if (availableComponents.length > 0) {
+    // Re-normalize weights to sum to 1.0
+    const weightSum = componentWeights.reduce((sum, w) => sum + w, 0);
+    const normalizedWeights = componentWeights.map(w => w / weightSum);
+    
+    // Calculate weighted average
+    const weightedSum = availableComponents.reduce((sum, component, i) => 
+      sum + (component * normalizedWeights[i]), 0);
+    score = Math.round(weightedSum);
+    
+    // Add partial data note if not all components available
+    const missingComponents = [];
+    if (!componentNames.includes("fees")) missingComponents.push("fees");
+    if (!componentNames.includes("mempool")) missingComponents.push("mempool");
+    
+    if (missingComponents.length > 0) {
+      partialDataNote = `Partial data (${missingComponents.join(", ")} unavailable)`;
+    }
+  }
+
+  // Timestamp: use minimum of available data timestamps (youngest common denominator)
+  const availableTimestamps = [];
+  if (mem?.timestamps?.length) availableTimestamps.push(mem.timestamps.at(-1) as number);
+  if (feesBtc?.timestamps?.length) availableTimestamps.push(feesBtc.timestamps.at(-1) as number);
+  if (revenue?.timestamps?.length) availableTimestamps.push(revenue.timestamps.at(-1) as number);
+  
+  const lastTs = availableTimestamps.length > 0 
+    ? Math.min(...availableTimestamps) 
+    : Date.now();
+  const last_utc = new Date(lastTs).toISOString();
+
+  // Build details with partial data indication
+  const details = [
+    { label: "Fees 7d avg (USD)", value: Number.isFinite(feesUSDLast as number) ? `$${Math.round(feesUSDLast as number).toLocaleString("en-US")}` : "—" },
+    { label: "Mempool 7d avg (MB)", value: Number.isFinite(memLast as number) ? `${Math.round(memLast as number)} MB` : "—" },
+    { label: "Puell Multiple", value: Number.isFinite(puellLast as number) ? (puellLast as number).toFixed(3) : "—" },
+  ];
+
+  // Add partial data note if applicable
+  if (partialDataNote) {
+    details.push({ label: "Note", value: partialDataNote });
+  }
 
   return {
     score,
     last_utc,
     source: sourcesUsed.join(" + ") || "blockchain.info",
-    details: [
-      { label: "Puell Multiple", value: Number.isFinite(puellLast as number) ? (puellLast as number).toFixed(3) : "—" },
-      { label: "Puell pct (3y)", value: Number.isFinite(puellPercentile as number) ? `${Math.round((puellPercentile as number) * 100)}%` : "—" },
-      { label: "Fees 7d avg (USD)", value: Number.isFinite(feesUSDLast as number) ? Math.round(feesUSDLast as number).toLocaleString("en-US") : "—" },
-      { label: "Mempool 7d avg (MB)", value: Number.isFinite(memLast as number) ? Math.round(memLast as number) : "—" },
-    ],
+    details,
     provenance,
   };
 }

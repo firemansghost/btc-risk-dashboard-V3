@@ -1253,148 +1253,23 @@ async function computeTermLeverage() {
   }
 }
 
-// 7. ON-CHAIN ACTIVITY (Multi-source comprehensive analysis)
+// 7. ON-CHAIN ACTIVITY (Uses lib/factors/onchain.ts)
 async function computeOnchain() {
   try {
-    // Fetch multiple metrics from various sources for comprehensive analysis
-    const [feesRes, txCountRes, hashRateRes, tvlRes, pricesData] = await Promise.all([
-      fetch("https://api.blockchain.info/charts/transaction-fees?timespan=30days&format=json", { headers: { "User-Agent": "btc-risk-etl" } }),
-      fetch("https://api.blockchain.info/charts/n-transactions?timespan=30days&format=json", { headers: { "User-Agent": "btc-risk-etl" } }),
-      fetch("https://api.blockchain.info/charts/hash-rate?timespan=30days&format=json", { headers: { "User-Agent": "btc-risk-etl" } }),
-      fetch("https://api.blockchain.info/charts/total-bitcoins?timespan=30days&format=json", { headers: { "User-Agent": "btc-risk-etl" } }),
-      coinGecko.getMarketChart(30, 'daily').catch(() => null)
-    ]);
+    // Import the proper onchain implementation
+    const { computeOnchain: libComputeOnchain } = await import('../../lib/factors/onchain.ts');
+    const result = await libComputeOnchain();
     
-    if (!feesRes.ok) throw new Error(`Blockchain.info fees ${feesRes.status}`);
-    if (!txCountRes.ok) throw new Error(`Blockchain.info tx count ${txCountRes.status}`);
-    if (!hashRateRes.ok) throw new Error(`Blockchain.info hash rate ${hashRateRes.status}`);
-    
-    const [feesData, txCountData, hashRateData, tvlData] = await Promise.all([
-      feesRes.json(),
-      txCountRes.json(),
-      hashRateRes.json(),
-      tvlRes.ok ? tvlRes.json() : null
-    ]);
-    
-    // Process transaction fees
-    if (!feesData.values || !Array.isArray(feesData.values) || feesData.values.length === 0) {
-      return { score: null, reason: "no_fee_data" };
-    }
-    
-    const fees = feesData.values.map(item => Number(item.y)).filter(Number.isFinite);
-    if (fees.length === 0) {
-      return { score: null, reason: "no_valid_fee_data" };
-    }
-    
-    // Process transaction counts
-    const txCounts = txCountData.values?.map(item => Number(item.y)).filter(Number.isFinite) || [];
-    
-    // Process hash rate
-    const hashRates = hashRateData.values?.map(item => Number(item.y)).filter(Number.isFinite) || [];
-    
-    // Process price data for NVT-like calculations
-    const prices = pricesData?.prices?.map(([timestamp, price]) => price).filter(Number.isFinite) || [];
-    const volumes = pricesData?.total_volumes?.map(([timestamp, volume]) => volume).filter(Number.isFinite) || [];
-    
-    // Multi-factor analysis
-    // 1. Network Congestion (35% weight) - fees relative to activity
-    const latestFee = fees[fees.length - 1];
-    const avgFee = fees.reduce((sum, fee) => sum + fee, 0) / fees.length;
-    const maxFee = Math.max(...fees);
-    const minFee = Math.min(...fees);
-    
-    const feePercentile = percentileRank(fees, latestFee);
-    const congestionScore = riskFromPercentile(feePercentile, { invert: false, k: 3 });
-
-    // 2. Transaction Activity (30% weight) - normalized transaction count
-    let activityScore = 50; // neutral default
-    let latestTxCount = 0;
-    let avgTxCount = 0;
-    
-    if (txCounts.length > 0) {
-      latestTxCount = txCounts[txCounts.length - 1];
-      avgTxCount = txCounts.reduce((sum, count) => sum + count, 0) / txCounts.length;
-      const txPercentile = percentileRank(txCounts, latestTxCount);
-      activityScore = riskFromPercentile(txPercentile, { invert: false, k: 3 });
-    }
-
-    // 3. Network Value to Transactions (NVT) Proxy (35% weight)
-    let nvtScore = 50; // neutral default
-    let nvtRatio = 0;
-    
-    if (prices.length > 0 && volumes.length > 0 && txCounts.length > 0) {
-      const latestPrice = prices[prices.length - 1];
-      const latestVolume = volumes[volumes.length - 1];
-      
-      // Simple NVT proxy: Market Cap / Transaction Volume
-      const marketCap = latestPrice * 21000000; // Approximate circulating supply
-      nvtRatio = latestVolume > 0 ? marketCap / latestVolume : 0;
-      
-      // Build NVT series for percentile ranking
-      const nvtSeries = [];
-      const minLength = Math.min(prices.length, volumes.length, txCounts.length);
-      for (let i = 0; i < minLength; i++) {
-        const mc = prices[i] * 21000000;
-        const vol = volumes[i];
-        if (vol > 0) nvtSeries.push(mc / vol);
-      }
-      
-      if (nvtSeries.length > 0) {
-        const nvtPercentile = percentileRank(nvtSeries, nvtRatio);
-        nvtScore = riskFromPercentile(nvtPercentile, { invert: false, k: 3 }); // Higher NVT = higher risk
-      }
-    }
-
-    // 4. Hash Rate Security (bonus factor) - network security
-    let securityScore = 50; // neutral default
-    let latestHashRate = 0;
-    let hashRateGrowth = 0;
-    
-    if (hashRates.length > 7) {
-      latestHashRate = hashRates[hashRates.length - 1];
-      const weekAgoHashRate = hashRates[hashRates.length - 8];
-      hashRateGrowth = ((latestHashRate - weekAgoHashRate) / weekAgoHashRate) * 100;
-      
-      const hashPercentile = percentileRank(hashRates, latestHashRate);
-      securityScore = riskFromPercentile(hashPercentile, { invert: true, k: 3 }); // Higher hash rate = lower risk
-    }
-
-    // Composite score (weighted blend) - BMSB-dominant Trend & Valuation
-    const compositeScore = Math.round(
-      congestionScore * 0.60 + 
-      activityScore * 0.40 + 
-      nvtScore * 0.00  // Parked for now
-    );
-    
-    // Apply security adjustment (±5 points max)
-    const securityAdjustment = Math.round((securityScore - 50) * 0.1);
-    const finalScore = Math.max(0, Math.min(100, compositeScore + securityAdjustment));
-    
-    // Determine network state
-    let networkState = "Normal";
-    if (latestFee > avgFee * 2) networkState = "Congested";
-    else if (latestFee < avgFee * 0.5) networkState = "Quiet";
-    
-    let activityLevel = "Moderate";
-    if (activityScore > 70) activityLevel = "High";
-    else if (activityScore < 30) activityLevel = "Low";
-    
-    return { 
-      score: finalScore, 
-      reason: "success",
-      lastUpdated: new Date().toISOString(),
-      details: [
-        { label: "Current Transaction Fees", value: `$${latestFee.toFixed(2)}` },
-        { label: "Fee vs 30d Average", value: `${((latestFee / avgFee - 1) * 100).toFixed(1)}%` },
-        { label: "Daily Transactions", value: latestTxCount > 0 ? latestTxCount.toLocaleString() : "N/A" },
-        { label: "Hash Rate (7d growth)", value: latestHashRate > 0 ? `${hashRateGrowth.toFixed(1)}%` : "N/A" },
-        { label: "Network State", value: networkState },
-        { label: "Activity Level", value: activityLevel },
-        { label: "NVT Ratio", value: nvtRatio > 0 ? nvtRatio.toFixed(0) : "N/A" },
-        { label: "Component Scores", value: `Congestion: ${congestionScore}, Activity: ${activityScore}, NVT: ${nvtScore}` }
-      ]
+    // Convert to expected ETL format
+    return {
+      score: result.score,
+      reason: result.score !== null ? "success" : "failed",
+      lastUpdated: result.last_utc,
+      details: result.details,
+      provenance: result.provenance
     };
   } catch (error) {
+    console.error('On-chain computation failed:', error);
     return { score: null, reason: `error: ${error.message}` };
   }
 }
