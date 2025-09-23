@@ -7,7 +7,7 @@ import AdjustmentsModal from './AdjustmentsModal';
 import RiskBandLegend from './RiskBandLegend';
 import SystemStatusCard from './SystemStatusCard';
 import { getPillarBadgeClasses, getPillarLabel } from '@/lib/pillar-colors';
-import { formatFriendlyTimestamp, calculateFreshness, formatLocalRefreshTime } from '@/lib/dateUtils';
+import { formatFriendlyTimestamp, calculateFreshness, formatLocalRefreshTime, calculateYesterdayDelta } from '@/lib/dateUtils';
 import { getBandTextColorFromLabel } from '@/lib/bandTextColors';
 
 export default function SimpleDashboard() {
