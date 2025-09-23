@@ -8,6 +8,7 @@ import { recalculateGScoreWithFreshPrice } from '@/lib/dynamicGScore';
 import { formatFriendlyTimestamp, calculateFreshness, formatLocalRefreshTime, calculateYesterdayDelta } from '@/lib/dateUtils';
 import { getBandTextColorFromLabel } from '@/lib/bandTextColors';
 import { formatSourceTimestamp } from '@/lib/sourceUtils';
+import { calculateContribution, getFactorStaleness, getFactorSubSignals, sortFactorsByContribution } from '@/lib/factorUtils';
 import SystemStatusCard from './SystemStatusCard';
 import RiskBandLegend from './RiskBandLegend';
 import WhatIfWeightsModal from './WhatIfWeightsModal';
@@ -469,28 +470,67 @@ export default function RealDashboard() {
         </div>
 
         {/* Factor Cards */}
+        <div className="mb-6">
+          {/* Factor Summary */}
+          <div className="text-sm text-gray-600 mb-4">
+            Sorted by contribution · Liquidity 35% · Momentum 25% · Term 20% · Macro 10% · Social 10%
+          </div>
+        </div>
+        
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {latest?.factors?.map((factor: any) => (
-            <div key={factor.key} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          {sortFactorsByContribution(latest?.factors || []).map((factor: any) => {
+            const contribution = calculateContribution(factor.score, factor.weight_pct);
+            const staleness = getFactorStaleness(factor.last_utc || factor.as_of_utc);
+            const subSignals = getFactorSubSignals(factor.key);
+            
+            return (
+            <div key={factor.key} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 relative">
               <div className="mb-4">
-                {/* Header Row with Title, Weight, and Score */}
-                <div className="flex items-center justify-between mb-2">
+                {/* Header Row with Title and Chips */}
+                <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center space-x-3">
                     <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPillarBadgeClasses(factor.pillar)}`}>
                       {getPillarLabel(factor.pillar)}
                     </span>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    {factor.weight_pct && (
-                      <span className="text-sm text-gray-600 font-medium">
-                        Weight: {factor.weight_pct}%
-                      </span>
-                    )}
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      Score: {factor.score !== null ? factor.score.toFixed(0) : 'N/A'}
+                  
+                  {/* Staleness Badge - positioned in top right */}
+                  <div className="absolute top-2 right-2">
+                    <span 
+                      className={`px-2 py-1 rounded text-xs font-medium border ${staleness.className}`}
+                      title={staleness.tooltip}
+                    >
+                      {staleness.level}
+                    </span>
+                  </div>
+                  
+                  {/* Score, Weight, Contribution Chips */}
+                  <div className="flex items-center space-x-2 flex-wrap">
+                    {/* Score Chip (Primary) */}
+                    <span 
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
+                      }`}
+                      aria-label={`Score: ${factor.score !== null ? factor.score.toFixed(0) : 'N/A'}`}
+                    >
+                      {factor.score !== null ? factor.score.toFixed(0) : 'N/A'}
+                    </span>
+                    
+                    {/* Weight Chip (Muted) */}
+                    <span 
+                      className="px-2 py-1 rounded text-xs text-gray-600 bg-gray-50 border border-gray-200"
+                      aria-label={`Weight: ${factor.weight_pct ? `${factor.weight_pct}%` : 'unknown'}`}
+                    >
+                      W: {factor.weight_pct ? `${factor.weight_pct}%` : '—'}
+                    </span>
+                    
+                    {/* Contribution Chip (Muted) */}
+                    <span 
+                      className="px-2 py-1 rounded text-xs text-gray-600 bg-gray-50 border border-gray-200"
+                      aria-label={`Contribution: ${contribution !== null ? contribution.toFixed(1) : 'unknown'}`}
+                    >
+                      C: {contribution !== null ? contribution.toFixed(1) : '—'}
                     </span>
                   </div>
                 </div>
@@ -531,16 +571,42 @@ export default function RealDashboard() {
                     factor.status === 'excluded' ? 'text-gray-600' : 
                     'text-red-600'
                   }`}>
-                    {factor.status || 'Unknown'}
+                    {factor.status || staleness.level}
                   </span>
                   {factor.status === 'excluded' && factor.reason && (
                     <span className="ml-2 text-xs text-gray-500">({factor.reason})</span>
                   )}
                 </div>
+                
+                {/* What's Inside Bullets */}
+                <div className="mt-3 text-sm text-gray-600">
+                  <div className="font-medium text-gray-700 mb-1">What's inside:</div>
+                  <ul className="space-y-1">
+                    {subSignals.slice(0, 3).map((signal, idx) => (
+                      <li key={idx} className="flex items-start">
+                        <span className="text-gray-400 mr-2">•</span>
+                        <span>{signal}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
 
-              {/* Always show first 3 details */}
-              {factor.details && factor.details.length > 0 && (
+              {/* Excluded Factor State */}
+              {staleness.level === 'excluded' ? (
+                <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="text-sm text-gray-600">
+                    <span className="font-medium text-gray-700">Temporarily excluded from today's G-Score.</span>
+                    <br />
+                    <span className="text-xs">
+                      Reason: {factor.reason || factor.status || 'stale data'}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Always show first 3 details */}
+                  {factor.details && factor.details.length > 0 && (
                 <div className="mb-4">
                   <div className="space-y-2">
                     {factor.details.slice(0, 3).map((detail: any, idx: number) => (
@@ -657,8 +723,12 @@ export default function RealDashboard() {
                     </div>
                   </div>
                 </div>
-              ))}
+                </>
+              )}
             </div>
+            );
+          })}
+        </div>
 
         {/* History Chart */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">

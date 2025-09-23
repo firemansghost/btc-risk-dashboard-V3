@@ -168,6 +168,62 @@ export default function EtfBreakdownModal({ isOpen, onClose }: EtfBreakdownModal
 
           {!loading && !error && (
             <>
+              {/* Mini-Insights Row */}
+              {(() => {
+                const filteredData = selectedSymbol === 'All' ? data : data.filter(d => d.symbol === selectedSymbol);
+                
+                // Calculate insights
+                const topInflow = Math.max(...filteredData.map(d => d.sum21_usd));
+                const positiveCount = filteredData.filter(d => d.sum21_usd > 0).length;
+                const totalCount = new Set(filteredData.map(d => d.symbol)).size;
+                
+                // Calculate HHI (Herfindahl Index) for diversification
+                const symbolTotals = filteredData.reduce((acc, d) => {
+                  acc[d.symbol] = (acc[d.symbol] || 0) + Math.abs(d.sum21_usd);
+                  return acc;
+                }, {} as Record<string, number>);
+                
+                const totalVolume = Object.values(symbolTotals).reduce((sum, vol) => sum + vol, 0);
+                const hhi = totalVolume > 0 
+                  ? Object.values(symbolTotals).reduce((sum, vol) => sum + Math.pow(vol / totalVolume, 2), 0)
+                  : 0;
+                
+                return (
+                  <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-6">
+                        <div>
+                          <span className="text-gray-600">Top inflow (21d):</span>
+                          <span className="ml-2 font-medium text-gray-900">
+                            ${topInflow > 0 ? (topInflow / 1e6).toFixed(1) : '0.0'}M
+                          </span>
+                        </div>
+                        
+                        <div>
+                          <span className="text-gray-600">Breadth (21d):</span>
+                          <span className="ml-2 font-medium text-gray-900">
+                            {positiveCount} of {totalCount} ETFs positive
+                          </span>
+                        </div>
+                        
+                        {hhi > 0 && hhi < 1 && (
+                          <div className="group relative">
+                            <span className="text-gray-600">Herfindahl (HHI):</span>
+                            <span className="ml-2 font-medium text-gray-900">
+                              {hhi.toFixed(2)}
+                            </span>
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                              Lower = more diversified flows
+                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+              
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex items-center gap-2">
                   <label htmlFor="symbol-filter" className="text-sm font-medium text-gray-700">

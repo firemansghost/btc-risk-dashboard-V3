@@ -224,39 +224,89 @@ export default function FactorHistoryModal({ isOpen, onClose, factorKey, factorL
 
           {!loading && !error && historyData.length > 0 && (
             <>
-              {getChangeChips()}
-              {renderSparkline()}
+              {/* Caption */}
+              <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-800">
+                  History is computed from ETL artifacts; values reflect the factor's normalized 0–100 scale.
+                </p>
+              </div>
               
+              {/* Download CSV Link */}
+              <div className="mb-4 flex justify-between items-center">
+                <h3 className="text-lg font-medium text-gray-900">Factor History (Latest 30 days)</h3>
+                <a
+                  href={`/data/factor_history/${factorKey}.csv`}
+                  download
+                  className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                >
+                  Download CSV →
+                </a>
+              </div>
+              
+              {/* Enhanced Table */}
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      {Object.keys(historyData[0]).map((header) => (
-                        <th key={header} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          {header.replace(/_/g, ' ')}
-                        </th>
-                      ))}
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Date (UTC)
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Score
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Δ vs Prior
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        30-day Avg
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {historyData.slice(0, 30).map((row, idx) => (
-                      <tr key={idx} className={idx === 0 ? 'bg-blue-50' : ''}>
-                        {Object.entries(row).map(([key, value]) => (
-                          <td key={key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {key === 'date' ? value : 
-                             key === 'score' ? (
-                               <span className={`px-2 py-1 text-xs rounded-full ${
-                                 Number(value) >= 70 ? 'bg-red-100 text-red-800' :
-                                 Number(value) >= 50 ? 'bg-yellow-100 text-yellow-800' :
-                                 'bg-green-100 text-green-800'
-                               }`}>
-                                 {value}
-                               </span>
-                             ) : value}
+                    {historyData.slice(0, 30).map((row, idx) => {
+                      const currentScore = Number(row.score);
+                      const priorScore = idx < historyData.length - 1 ? Number(historyData[idx + 1].score) : null;
+                      const delta = priorScore !== null ? currentScore - priorScore : null;
+                      
+                      // Calculate 30-day average
+                      const thirtyDaySlice = historyData.slice(idx, Math.min(idx + 30, historyData.length));
+                      const thirtyDayAvg = thirtyDaySlice.length >= 30 
+                        ? thirtyDaySlice.reduce((sum, d) => sum + Number(d.score), 0) / thirtyDaySlice.length
+                        : null;
+                      
+                      return (
+                        <tr key={idx} className={idx === 0 ? 'bg-blue-50' : ''}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {new Date(row.date).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric', 
+                              year: 'numeric' 
+                            })}
                           </td>
-                        ))}
-                      </tr>
-                    ))}
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span className={`px-2 py-1 text-xs rounded-full font-medium ${
+                              currentScore >= 70 ? 'bg-red-100 text-red-800' :
+                              currentScore >= 50 ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-green-100 text-green-800'
+                            }`}>
+                              {currentScore.toFixed(1)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {delta !== null ? (
+                              <span className={`font-medium ${
+                                delta > 0 ? 'text-red-600' : delta < 0 ? 'text-green-600' : 'text-gray-600'
+                              }`}>
+                                {delta > 0 ? '+' : ''}{delta.toFixed(1)}
+                              </span>
+                            ) : '—'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {thirtyDayAvg !== null ? thirtyDayAvg.toFixed(1) : 'n/a'}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -267,6 +317,18 @@ export default function FactorHistoryModal({ isOpen, onClose, factorKey, factorL
                 </p>
               )}
             </>
+          )}
+          
+          {!loading && !error && historyData.length === 0 && (
+            <div className="text-center py-8">
+              <div className="text-gray-400 mb-2">
+                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p className="text-gray-500">No rows available for this period</p>
+              <p className="text-xs text-gray-400 mt-1">Factor may be excluded or historical data unavailable</p>
+            </div>
           )}
         </div>
       </div>
