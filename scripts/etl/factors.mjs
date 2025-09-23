@@ -1651,6 +1651,7 @@ export async function computeAllFactors() {
       label: factor.label,
       pillar: factor.pillar,
       weight: factor.weight,
+      weight_pct: factor.weight, // Absolute percentage for UI display (21, 9, 5, etc.)
       score,
       status,
       reason,
@@ -1673,16 +1674,20 @@ export async function computeAllFactors() {
 
   // Validate composite calculation
   try {
-    const { validateCompositeScore, logValidationResult } = await import('../../lib/composite-validator.mjs');
+    const { validateCompositeScore } = await import('../../lib/composite-validator.mjs');
     const validation = validateCompositeScore(
       factorResults, 
       composite, 
       { cycle: 0, spike: 0 } // No adjustments currently applied
     );
     
-    const passed = logValidationResult(validation, 'ETL Composite Validation');
-    if (!passed) {
+    // Log one-line result for dev/CI visibility
+    const statusIcon = validation.valid ? '✅' : '❌';
+    console.log(`Composite check: expected ${validation.expected.toFixed(1)}, recomputed ${validation.actual.toFixed(1)}, Δ = ${validation.delta.toFixed(1)} ${statusIcon}`);
+    
+    if (!validation.valid) {
       console.warn('⚠️  Composite validation failed - check calculation logic');
+      console.warn(`   Tolerance exceeded: ${validation.delta.toFixed(3)} > 0.5`);
     }
   } catch (validationError) {
     console.warn('⚠️  Could not validate composite score:', validationError.message);

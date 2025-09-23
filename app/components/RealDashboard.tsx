@@ -449,6 +449,51 @@ export default function RealDashboard() {
                       ))}
                     </div>
                   )}
+
+                  {/* Macro-specific: Add Net Liquidity context */}
+                  {factor.key === 'macro_overlay' && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <div className="mb-2">
+                        <h4 className="text-xs font-medium text-gray-700 uppercase tracking-wide">Context</h4>
+                      </div>
+                      {(() => {
+                        // Find Net Liquidity factor for context display
+                        const netLiquidityFactor = latest?.factors?.find((f: any) => f.key === 'net_liquidity');
+                        if (!netLiquidityFactor) return null;
+                        
+                        return (
+                          <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-gray-900">Net Liquidity (FRED)</span>
+                                <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
+                                  Context only — scored under Liquidity (5%)
+                                </span>
+                              </div>
+                              <span className="text-sm font-medium text-gray-900">
+                                {netLiquidityFactor.score !== null ? netLiquidityFactor.score.toFixed(0) : 'N/A'}
+                              </span>
+                            </div>
+                            {netLiquidityFactor.details && netLiquidityFactor.details.length > 0 && (
+                              <div className="space-y-1">
+                                {netLiquidityFactor.details.slice(0, 2).map((detail: any, idx: number) => (
+                                  <div key={idx} className="flex justify-between items-center text-xs">
+                                    <span className="text-gray-600">{detail.label}:</span>
+                                    <span className="font-medium text-gray-800">{detail.value}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            <div className="mt-2 text-xs text-gray-600">
+                              <span title="Shown for context; Net Liquidity is scored under Liquidity (5%) to avoid double-counting macro effects">
+                                Provides macro context without double-counting in composite score
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -92,10 +92,10 @@ export default function MethodologyPage() {
                         Pillar and factor weights are configurable and sum to 100%. Live defaults are shown below:
                       </p>
                       <ul className="list-disc list-inside space-y-1 text-gray-700 ml-4">
-                        <li><strong>Liquidity/Flows (35%)</strong>: ETF flows, stablecoin supply, net liquidity</li>
-                        <li><strong>Momentum/Valuation (25%)</strong>: Price trends, on-chain activity</li>
+                        <li><strong>Liquidity/Flows (35%)</strong>: Defaults: Stablecoins 21%, ETF Flows 9%, Net Liquidity 5% (pillar total 35%)</li>
+                        <li><strong>Momentum/Valuation (25%)</strong>: Defaults: Trend & Valuation 20%, On-chain Activity 5% (pillar total 25%)</li>
                         <li><strong>Term Structure/Leverage (20%)</strong>: Derivatives and funding rates</li>
-                        <li><strong>Macro Overlay (10%)</strong>: Macroeconomic conditions</li>
+                        <li><strong>Macro Overlay (10%)</strong>: Macroeconomic conditions. We display Net Liquidity here as context; it is scored lightly under Liquidity (5%) to avoid double-counting</li>
                         <li><strong>Social/Attention (10%)</strong>: Social sentiment indicators</li>
                       </ul>
                       <p className="text-xs text-gray-500 mt-2">
