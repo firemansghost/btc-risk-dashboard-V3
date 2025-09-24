@@ -95,29 +95,16 @@ export async function savePriceHistory(records) {
 }
 
 /**
- * Fetch historical data from Alpha Vantage (one-time backfill)
+ * Fetch extended historical data from Coinbase (replaces Alpha Vantage backfill)
+ * Coinbase has data going back to ~2015, which is sufficient for our needs
  * @param {number} days - Number of days to fetch (minimum 700)
  * @returns {Object} {success, data, provenance}
  */
-export async function fetchAlphaVantageBackfill(days = 730) {
+export async function fetchCoinbaseHistoricalBackfill(days = 730) {
   const startTime = Date.now();
-  const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
-  
-  if (!apiKey) {
-    return {
-      success: false,
-      reason: 'ALPHA_VANTAGE_API_KEY not provided',
-      data: [],
-      provenance: null
-    };
-  }
-
-  // Alpha Vantage Daily Adjusted endpoint
-  const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=BTC&market=USD&apikey=${apiKey}&outputsize=full`;
   
   const provenance = {
-    endpoint: 'TIME_SERIES_DAILY_ADJUSTED',
-    url_masked: url.replace(apiKey, 'API_KEY_MASKED'),
+    endpoint: 'coinbase_historical_backfill',
     requested_days: days,
     ok: false,
     status: 0,
@@ -126,69 +113,102 @@ export async function fetchAlphaVantageBackfill(days = 730) {
   };
 
   try {
-    console.log(`Alpha Vantage: Fetching ${days}+ days of BTC price history...`);
+    console.log(`Coinbase: Fetching ${days}+ days of historical BTC price data...`);
     
-    const response = await fetch(url, {
-      headers: { 'User-Agent': 'btc-risk-dashboard-price-backfill' }
-    });
+    // Calculate date range
+    const endDate = new Date();
+    const startDate = new Date(endDate.getTime() - (days + 30) * 86400000); // Add 30 day buffer
+    
+    // Coinbase API has a 300 candle limit, so we need to make multiple requests
+    const allRecords = [];
+    let currentStart = startDate;
+    let requestCount = 0;
+    const maxRequests = 10; // Safety limit
+    
+    while (currentStart < endDate && requestCount < maxRequests) {
+      // Calculate end date for this chunk (300 days max per request)
+      const chunkEnd = new Date(Math.min(
+        currentStart.getTime() + 299 * 86400000, // 299 days (under 300 limit)
+        endDate.getTime()
+      ));
+      
+      console.log(`Coinbase: Fetching chunk ${requestCount + 1} (${currentStart.toISOString().split('T')[0]} to ${chunkEnd.toISOString().split('T')[0]})...`);
+      
+      const url = new URL("https://api.exchange.coinbase.com/products/BTC-USD/candles");
+      url.searchParams.set("granularity", "86400"); // Daily candles
+      url.searchParams.set("start", currentStart.toISOString());
+      url.searchParams.set("end", chunkEnd.toISOString());
 
-    provenance.status = response.status;
-    provenance.ms = Date.now() - startTime;
+      const response = await fetch(url.toString(), { 
+        headers: { "User-Agent": "btc-risk-dashboard-historical-backfill" } 
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Alpha Vantage API ${response.status}: ${errorText}`);
-    }
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Coinbase API ${response.status}: ${errorText}`);
+      }
 
-    const data = await response.json();
-    provenance.ok = true;
-
-    // Check for API error responses
-    if (data['Error Message']) {
-      throw new Error(`Alpha Vantage Error: ${data['Error Message']}`);
-    }
-
-    if (data['Note']) {
-      throw new Error(`Alpha Vantage Rate Limit: ${data['Note']}`);
-    }
-
-    const timeSeries = data['Time Series (Daily)'];
-    if (!timeSeries) {
-      throw new Error('No time series data in Alpha Vantage response');
-    }
-
-    // Convert to our format
-    const records = [];
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - days);
-    const cutoffDateStr = cutoffDate.toISOString().split('T')[0];
-
-    for (const [dateStr, dayData] of Object.entries(timeSeries)) {
-      // Only include data older than our cutoff (avoid recent overlap with Coinbase)
-      if (dateStr >= cutoffDateStr) {
-        const close = parseFloat(dayData['4. close']);
+      const candles = await response.json();
+      
+      // Convert Coinbase candles to our format
+      // Coinbase format: [timestamp, low, high, open, close, volume]
+      for (const candle of candles) {
+        const [timestamp, , , , close] = candle;
+        const date = new Date(timestamp * 1000);
+        const dateStr = date.toISOString().split('T')[0];
+        
         if (Number.isFinite(close) && close > 0) {
-          records.push({
+          allRecords.push({
             date_utc: dateStr,
             close_usd: close,
-            source: 'alpha_vantage_backfill',
+            source: 'coinbase_historical',
             ingested_at_utc: new Date().toISOString()
           });
         }
       }
+      
+      console.log(`Coinbase: Chunk ${requestCount + 1} returned ${candles.length} records`);
+      
+      // Move to next chunk
+      currentStart = new Date(chunkEnd.getTime() + 86400000); // Next day
+      requestCount++;
+      
+      // Add small delay between requests to be respectful
+      if (currentStart < endDate) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
     }
 
-    // Sort by date ascending
-    records.sort((a, b) => a.date_utc.localeCompare(b.date_utc));
+    // Remove duplicates and sort by date
+    const uniqueRecords = new Map();
+    for (const record of allRecords) {
+      if (!uniqueRecords.has(record.date_utc) || 
+          uniqueRecords.get(record.date_utc).close_usd === 0) {
+        uniqueRecords.set(record.date_utc, record);
+      }
+    }
     
-    provenance.rows_fetched = records.length;
+    const sortedRecords = Array.from(uniqueRecords.values())
+      .sort((a, b) => a.date_utc.localeCompare(b.date_utc));
     
-    console.log(`Alpha Vantage: Successfully fetched ${records.length} historical records`);
-    console.log(`Date range: ${records[0]?.date_utc} to ${records[records.length - 1]?.date_utc}`);
+    // Filter to requested timeframe
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    const cutoffDateStr = cutoffDate.toISOString().split('T')[0];
+    
+    const filteredRecords = sortedRecords.filter(record => record.date_utc >= cutoffDateStr);
+    
+    provenance.ok = true;
+    provenance.status = 200;
+    provenance.ms = Date.now() - startTime;
+    provenance.rows_fetched = filteredRecords.length;
+    
+    console.log(`Coinbase: Successfully fetched ${filteredRecords.length} historical records`);
+    console.log(`Date range: ${filteredRecords[0]?.date_utc} to ${filteredRecords[filteredRecords.length - 1]?.date_utc}`);
 
     return {
       success: true,
-      data: records,
+      data: filteredRecords,
       provenance
     };
 
@@ -196,7 +216,7 @@ export async function fetchAlphaVantageBackfill(days = 730) {
     provenance.error = error.message;
     provenance.ms = Date.now() - startTime;
     
-    console.error('Alpha Vantage backfill failed:', error.message);
+    console.error('Coinbase historical backfill failed:', error.message);
     
     return {
       success: false,
@@ -392,9 +412,8 @@ export async function managePriceHistory() {
   
   const results = {
     existing_rows: 0,
-    alpha_vantage_backfill: null,
+    coinbase_historical_backfill: null,
     coinbase_daily_update: null,
-    drift_check: null,
     final_stats: null
   };
   
@@ -404,23 +423,21 @@ export async function managePriceHistory() {
   
   console.log(`Price History: Loaded ${existingRecords.length} existing records`);
   
-  // 2. Determine if we need Alpha Vantage backfill
+  // 2. Determine if we need historical backfill
   const needsBackfill = existingRecords.length < 500; // Target ≥700, minimum 500
   let allRecords = [...existingRecords];
   
-  if (needsBackfill && process.env.ALPHA_VANTAGE_API_KEY) {
-    console.log('Price History: Insufficient data, performing Alpha Vantage backfill...');
+  if (needsBackfill) {
+    console.log('Price History: Insufficient data, performing Coinbase historical backfill...');
     
-    const backfillResult = await fetchAlphaVantageBackfill(730);
-    results.alpha_vantage_backfill = backfillResult;
+    const backfillResult = await fetchCoinbaseHistoricalBackfill(730);
+    results.coinbase_historical_backfill = backfillResult;
     
     if (backfillResult.success) {
       // Add backfill data to our records
       allRecords = [...allRecords, ...backfillResult.data];
-      console.log(`Price History: Added ${backfillResult.data.length} backfill records`);
+      console.log(`Price History: Added ${backfillResult.data.length} historical backfill records`);
     }
-  } else if (needsBackfill) {
-    console.log('Price History: Backfill needed but ALPHA_VANTAGE_API_KEY not available');
   } else {
     console.log('Price History: Sufficient data exists, skipping backfill');
   }
@@ -431,23 +448,6 @@ export async function managePriceHistory() {
   results.coinbase_daily_update = coinbaseResult;
   
   if (coinbaseResult.success) {
-    // Perform drift check if we have both AV and Coinbase data
-    if (results.alpha_vantage_backfill?.success) {
-      results.drift_check = performDriftCheck(
-        results.alpha_vantage_backfill.data,
-        coinbaseResult.data
-      );
-      
-      // Remove discarded AV dates if drift is too high
-      if (results.drift_check.discarded_av_dates.length > 0) {
-        const discardSet = new Set(results.drift_check.discarded_av_dates);
-        allRecords = allRecords.filter(record => 
-          !(record.source === 'alpha_vantage_backfill' && discardSet.has(record.date_utc))
-        );
-        console.log(`Price History: Discarded ${results.drift_check.discarded_av_dates.length} AV records due to drift`);
-      }
-    }
-    
     // Add Coinbase data to our records
     allRecords = [...allRecords, ...coinbaseResult.data];
     console.log(`Price History: Added ${coinbaseResult.data.length} Coinbase records`);
