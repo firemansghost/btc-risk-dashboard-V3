@@ -122,76 +122,58 @@ function riskFromPercentile(percentile, options = {}) {
 }
 
 /**
- * Fetch Coinbase daily candles for historical price data
- * @param {number} days - Number of days to fetch
+ * Load price history from unified CSV
  * @returns {Object} {candles, provenance}
  */
-async function fetchCoinbaseCandles(days = 300) {
+async function loadPriceHistoryForTrend() {
   const startTime = Date.now();
-  const now = new Date();
-  const startDate = new Date(now.getTime() - days * 86400000);
   
   const provenance = {
-    url: `https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=${startDate.toISOString()}&end=${now.toISOString()}`,
+    source: 'btc_price_history_csv',
+    file_path: '../../public/data/btc_price_history.csv',
     ok: false,
-    status: 0,
-    ms: 0
+    ms: 0,
+    rows_loaded: 0
   };
   
   try {
-    // Use the same URL construction pattern as the working ETL code
-    const url = new URL("https://api.exchange.coinbase.com/products/BTC-USD/candles");
-    url.searchParams.set("granularity", "86400");
-    url.searchParams.set("start", startDate.toISOString());
-    url.searchParams.set("end", now.toISOString());
-
-    const response = await fetch(url.toString(), { 
-      headers: { "User-Agent": "btc-risk-dashboard-trend-valuation" } 
-    });
-
-    provenance.status = response.status;
+    // Import the price history manager
+    const { loadPriceHistory } = await import('../priceHistory.mjs');
+    
+    const priceRecords = await loadPriceHistory();
     provenance.ms = Date.now() - startTime;
-    provenance.url = url.toString();
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Coinbase API ${response.status}: ${errorText}`);
-    }
-
-    const rawCandles = await response.json();
     provenance.ok = true;
+    provenance.rows_loaded = priceRecords.length;
 
-    // Validate response
-    if (!Array.isArray(rawCandles) || rawCandles.length === 0) {
-      throw new Error('Invalid or empty response from Coinbase API');
+    if (priceRecords.length === 0) {
+      throw new Error('No price history data available');
     }
 
-    // Convert Coinbase format [timestamp, low, high, open, close, volume] to our format
-    // Sort oldest-first for consistent processing
-    const candles = rawCandles
-      .map(candle => {
-        if (!Array.isArray(candle) || candle.length < 6) {
-          return null; // Skip invalid candles
-        }
-        return {
-          timestamp: candle[0] * 1000, // Convert to milliseconds
-          open: Number(candle[3]),
-          high: Number(candle[2]),
-          low: Number(candle[1]),
-          close: Number(candle[4]),
-          volume: Number(candle[5])
-        };
-      })
-      .filter(candle => candle !== null && Number.isFinite(candle.close))
-      .sort((a, b) => a.timestamp - b.timestamp);
+    // Convert price records to candle format for compatibility
+    const candles = priceRecords.map(record => {
+      const date = new Date(record.date_utc + 'T00:00:00.000Z');
+      return {
+        timestamp: date.getTime(),
+        open: record.close_usd,    // We only have close prices
+        high: record.close_usd,    // Use close as OHLC
+        low: record.close_usd,
+        close: record.close_usd,
+        volume: 0,                 // Not available in our CSV
+        date_utc: record.date_utc,
+        source: record.source
+      };
+    }).sort((a, b) => a.timestamp - b.timestamp);
 
-    console.log(`Fetched ${candles.length} daily candles from Coinbase`);
+    console.log(`Loaded ${candles.length} daily prices from unified CSV`);
+    console.log(`Date range: ${priceRecords[0]?.date_utc} to ${priceRecords[priceRecords.length - 1]?.date_utc}`);
+    console.log(`Sources: ${[...new Set(priceRecords.map(r => r.source))].join(', ')}`);
+    
     return { candles, provenance };
 
   } catch (error) {
     provenance.error = error.message;
     provenance.ms = Date.now() - startTime;
-    console.error('Coinbase candles fetch failed:', error.message);
+    console.error('Price history CSV load failed:', error.message);
     return { candles: [], provenance };
   }
 }
@@ -320,8 +302,8 @@ function calculateBMSB(weeklyCloses) {
  */
 export async function computeTrendValuation(dailyClose = null) {
   try {
-    // Fetch Coinbase daily candles (300 days - Coinbase API limit)
-    const { candles, provenance } = await fetchCoinbaseCandles(300);
+    // Load price history from unified CSV (Alpha Vantage backfill + Coinbase primary)
+    const { candles, provenance } = await loadPriceHistoryForTrend();
     
     if (candles.length < 200) {
       return { 
@@ -460,7 +442,12 @@ export async function computeTrendValuation(dailyClose = null) {
       );
     }
 
-    // Prepare detailed results
+    // Prepare detailed results with hybrid source information
+    const latestCandle = candles[candles.length - 1];
+    const sourceInfo = latestCandle.source === 'coinbase' ? 'Coinbase (daily close)' : 
+                       latestCandle.source === 'alpha_vantage_backfill' ? 'Coinbase (daily close) — historical backfill via Alpha Vantage' :
+                       'Coinbase (daily close)';
+    
     const details = [
       { label: "Price vs 200-day SMA (Mayer)", value: mayerMultiple.toFixed(2) },
       { 
@@ -472,7 +459,9 @@ export async function computeTrendValuation(dailyClose = null) {
       { label: "Weekly momentum (RSI)", value: latestWeeklyRSI.toFixed(1) },
       { label: "BTC Price (daily close)", value: `$${currentPrice.toLocaleString()}` },
       { label: "200-day SMA", value: `$${latestSMA200.toLocaleString()}` },
-      { label: "Weekly Close (for BMSB)", value: `$${latestWeeklyClose.toLocaleString()}` }
+      { label: "Weekly Close (for BMSB)", value: `$${latestWeeklyClose.toLocaleString()}` },
+      { label: "Price source", value: sourceInfo },
+      { label: "Historical data points", value: `${candles.length} days` }
     ];
 
     // Add BMSB band details if available

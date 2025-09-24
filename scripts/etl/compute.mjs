@@ -253,6 +253,17 @@ async function main() {
     console.warn('Could not clean cache files:', error.message);
   }
 
+  // 0) Manage unified price history (Alpha Vantage backfill + Coinbase primary)
+  console.log("Managing unified BTC price history...");
+  let priceHistoryResults = null;
+  try {
+    const { managePriceHistory } = await import('./priceHistory.mjs');
+    priceHistoryResults = await managePriceHistory();
+  } catch (error) {
+    console.warn('Price history management failed:', error.message);
+    // Continue with fallback approach
+  }
+
   // 1) Get yesterday's close (Coinbase → CG fallback)
   let y;
   try { y = await getCoinbaseCloseForYesterday(); }
@@ -715,6 +726,29 @@ async function main() {
       status: "success",
       source: "BTC daily close (derived)",
       derived: true
+    },
+    // Add price history management results
+    price_history: priceHistoryResults ? {
+      total_rows: priceHistoryResults.final_stats?.total_rows || 0,
+      oldest_date: priceHistoryResults.final_stats?.oldest_date,
+      newest_date: priceHistoryResults.final_stats?.newest_date,
+      alpha_vantage_backfill: priceHistoryResults.alpha_vantage_backfill ? {
+        status: priceHistoryResults.alpha_vantage_backfill.success ? "success" : "failed",
+        rows_fetched: priceHistoryResults.alpha_vantage_backfill.provenance?.rows_fetched || 0,
+        endpoint: priceHistoryResults.alpha_vantage_backfill.provenance?.endpoint,
+        ms: priceHistoryResults.alpha_vantage_backfill.provenance?.ms,
+        reason: priceHistoryResults.alpha_vantage_backfill.reason
+      } : null,
+      coinbase_daily_update: priceHistoryResults.coinbase_daily_update ? {
+        status: priceHistoryResults.coinbase_daily_update.success ? "success" : "failed",
+        rows_fetched: priceHistoryResults.coinbase_daily_update.provenance?.rows_fetched || 0,
+        ms: priceHistoryResults.coinbase_daily_update.provenance?.ms,
+        reason: priceHistoryResults.coinbase_daily_update.reason
+      } : null,
+      drift_check: priceHistoryResults.drift_check || null
+    } : {
+      status: "failed",
+      reason: "Price history management not available"
     }
   };
   await fs.writeFile("public/data/status.json", JSON.stringify(status, null, 2));
