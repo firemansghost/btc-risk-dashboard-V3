@@ -86,83 +86,12 @@ function riskFromPercentile(percentile, options = {}) {
 
 import { coinGecko } from './coinGeckoCache.mjs';
 
-// 1. TREND & VALUATION (Multi-factor: BMSB 40%, Mayer 40%, RSI 20%)
-async function computeTrendValuation() {
-  try {
-    // Use centralized CoinGecko client with caching and rate limiting
-    const data = await coinGecko.getMarketChart(365, 'daily');
-    if (!data.prices || !Array.isArray(data.prices) || data.prices.length < 200) {
-      return { score: null, reason: "insufficient_data" };
-    }
+// 1. TREND & VALUATION (Multi-factor: BMSB 60%, Mayer 30%, RSI 10%)
+// Import the new implementation with true BMSB and unified Coinbase price source
+import { computeTrendValuation as computeTrendValuationNew } from './factors/trendValuation.mjs';
 
-    // Extract closes (oldest first)
-    const closes = data.prices.map(([timestamp, price]) => price).filter(Number.isFinite);
-    if (closes.length < 200) return { score: null, reason: "insufficient_data" };
-
-    // Calculate SMA200 and Mayer Multiple
-    const sma200 = sma(closes, 200);
-    const mayerSeries = closes.map((price, i) => price / sma200[i]).filter(Number.isFinite);
-    
-    if (mayerSeries.length === 0) return { score: null, reason: "calculation_failed" };
-
-    // Use weekly sampling (every 7th day) for true weekly momentum
-    const weeklyPrices = closes.filter((_, index) => index % 7 === 0);
-    
-    // Calculate RSI(14) on weekly price samples for weekly momentum
-    const rsi = calculateRSI(weeklyPrices, 14);
-    const rsiSeries = rsi.filter(Number.isFinite);
-    
-    if (rsiSeries.length === 0) return { score: null, reason: "calculation_failed" };
-
-    // Get latest values
-    const latestPrice = closes[closes.length - 1];
-    const latestSma200 = sma200[sma200.length - 1];
-    const latestMayer = mayerSeries[mayerSeries.length - 1];
-    const latestRsi = rsiSeries[rsiSeries.length - 1];
-    const latestWeeklyPrice = weeklyPrices[weeklyPrices.length - 1];
-    
-    // Calculate Bull Market Support Band (BMSB) - using SMA200 as proxy
-    const bmsbStatus = latestPrice > latestSma200 ? 'above' : 'below';
-    const bmsbDistance = ((latestPrice - latestSma200) / latestSma200) * 100;
-    
-    // Calculate percentile ranks for scoring
-    const prMayer = percentileRank(mayerSeries, latestMayer);
-    const prBmsb = percentileRank(mayerSeries, latestMayer); // Using Mayer as BMSB proxy for now
-    const prRsi = percentileRank(rsiSeries, latestRsi);
-    
-    // Convert to individual risk scores (higher values = higher risk)
-    const sMayer = Number.isFinite(prMayer) ? riskFromPercentile(prMayer, { invert: true, k: 3 }) : null;
-    const sBmsb = Number.isFinite(prBmsb) ? riskFromPercentile(prBmsb, { invert: true, k: 3 }) : null;
-    const sRsi = Number.isFinite(prRsi) ? riskFromPercentile(prRsi, { invert: false, k: 3 }) : null; // RSI: higher = more overbought = higher risk
-    
-    // Weighted blend: BMSB 60%, Mayer 30%, RSI 10% (Cycle-Anchored Trend)
-    const parts = [sBmsb, sMayer, sRsi].filter(v => v !== null && Number.isFinite(v));
-    const weights = [0.6, 0.3, 0.1]; // BMSB dominant, Mayer secondary, RSI seasoning
-    const validWeights = weights.slice(0, parts.length);
-    const weightSum = validWeights.reduce((s, w) => s + w, 0);
-    
-    let score = null;
-    if (parts.length > 0 && weightSum > 0) {
-      score = Math.round(parts.reduce((s, v, i) => s + v * (validWeights[i] / weightSum), 0));
-    }
-    
-    return { 
-      score, 
-      reason: "success",
-      lastUpdated: new Date().toISOString(),
-      details: [
-        { label: "Price vs 200-day SMA (Mayer)", value: latestMayer.toFixed(2) },
-        { label: "Distance to Bull Market Support Band", value: `${bmsbDistance.toFixed(1)}%` },
-        { label: "Weekly momentum (RSI proxy)", value: latestRsi.toFixed(1) },
-        { label: "Current Price", value: `$${latestPrice.toLocaleString()}` },
-        { label: "200-day SMA", value: `$${latestSma200.toLocaleString()}` },
-        { label: "Latest Weekly Sample", value: `$${latestWeeklyPrice.toLocaleString()}` },
-        { label: "Component Scores", value: `BMSB: ${sBmsb || 'N/A'}, Mayer: ${sMayer || 'N/A'}, RSI: ${sRsi || 'N/A'}` }
-      ]
-    };
-  } catch (error) {
-    return { score: null, reason: `error: ${error.message}` };
-  }
+async function computeTrendValuation(dailyClose = null) {
+  return await computeTrendValuationNew(dailyClose);
 }
 
 // 2. SOCIAL INTEREST (Search trends and social sentiment)
@@ -1450,11 +1379,11 @@ async function computeMacroOverlay() {
 
 import { getStalenessStatus, getStalenessConfig } from './stalenessUtils.mjs';
 
-export async function computeAllFactors() {
+export async function computeAllFactors(dailyClose = null) {
   console.log("Computing risk factors...");
   
   const results = await Promise.allSettled([
-    computeTrendValuation(),    // order: 1
+    computeTrendValuation(dailyClose),    // order: 1 - pass daily close for price consistency
     computeOnchain(),           // order: 2  
     computeStablecoins(),       // order: 3
     computeEtfFlows(),          // order: 4

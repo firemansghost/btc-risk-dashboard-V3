@@ -260,7 +260,7 @@ async function main() {
 
   // 2) Compute real risk factors
   console.log("Computing real risk factors...");
-  const factorResults = await computeAllFactors();
+  const factorResults = await computeAllFactors(y.close);
   const composite = factorResults.composite;
   const band = riskBand(composite);
 
