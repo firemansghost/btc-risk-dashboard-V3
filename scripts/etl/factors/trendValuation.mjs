@@ -367,8 +367,35 @@ export async function computeTrendValuation(dailyClose = null) {
     // Calculate true BMSB (20-week SMA + 21-week EMA)
     const bmsb = calculateBMSB(weeklyCloses);
     
-    // Calculate Weekly RSI(14) using weekly closes
+    // Calculate 50-week SMA diagnostic (display-only, not part of score)
     const weeklyClosePrices = weeklyCloses.map(w => w.close);
+    let sma50wDiagnostic = null;
+    
+    if (weeklyClosePrices.length >= 50) {
+      const sma50Series = sma(weeklyClosePrices, 50);
+      const latestSMA50 = sma50Series[sma50Series.length - 1];
+      const currentWeeklyClose = weeklyClosePrices[weeklyClosePrices.length - 1];
+      
+      // Check if below 50W SMA for ≥2 consecutive weeks
+      let consecutiveWeeksBelow = 0;
+      for (let i = Math.max(0, sma50Series.length - 10); i < sma50Series.length; i++) {
+        if (weeklyClosePrices[i + 49] < sma50Series[i]) { // +49 because sma50Series starts at index 49
+          consecutiveWeeksBelow++;
+        } else {
+          consecutiveWeeksBelow = 0; // Reset counter if not below
+        }
+      }
+      
+      sma50wDiagnostic = {
+        sma50: latestSMA50,
+        currentClose: currentWeeklyClose,
+        isBelow: currentWeeklyClose < latestSMA50,
+        consecutiveWeeksBelow: consecutiveWeeksBelow,
+        showWarning: consecutiveWeeksBelow >= 2
+      };
+    }
+    
+    // Calculate Weekly RSI(14) using weekly closes
     const weeklyRSI = calculateRSI(weeklyClosePrices, 14);
     
     if (weeklyRSI.length === 0) {
@@ -456,6 +483,16 @@ export async function computeTrendValuation(dailyClose = null) {
       });
     }
 
+    // Add 50W SMA diagnostic if available
+    if (sma50wDiagnostic) {
+      details.push({
+        label: "50-week SMA diagnostic",
+        value: sma50wDiagnostic.showWarning 
+          ? `Below 50W SMA (${sma50wDiagnostic.consecutiveWeeksBelow} weeks)`
+          : `Above 50W SMA ($${sma50wDiagnostic.sma50.toLocaleString()})`
+      });
+    }
+
     // Add component scores
     details.push({
       label: "Component Scores",
@@ -470,6 +507,7 @@ export async function computeTrendValuation(dailyClose = null) {
       bmsb,
       weeklyClose: latestWeeklyClose,
       weekEnd: weeklyCloses[weeklyCloses.length - 1].weekEnd,
+      sma50wDiagnostic,
       provenance: [provenance]
     };
 

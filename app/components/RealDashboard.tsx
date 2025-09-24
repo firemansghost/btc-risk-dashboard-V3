@@ -487,16 +487,27 @@ export default function RealDashboard() {
             
             return (
             <div key={factor.key} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 relative">
-              {/* Reserved Badge Lane - Top Right */}
-              <div className="absolute top-4 right-4 flex flex-col gap-1 items-end">
-                <span 
-                  className={`px-2 py-1 rounded text-xs font-medium border ${staleness.className}`}
-                  title={staleness.tooltip}
-                >
-                  {staleness.level}
-                </span>
-                {/* Space for additional badges if needed */}
-              </div>
+          {/* Reserved Badge Lane - Top Right */}
+          <div className="absolute top-4 right-4 flex flex-col gap-1 items-end">
+            <span 
+              className={`px-2 py-1 rounded text-xs font-medium border ${staleness.className}`}
+              title={staleness.tooltip}
+            >
+              {staleness.level}
+            </span>
+            
+            {/* 50W SMA Diagnostic Pill (Trend & Valuation only) */}
+            {factor.key === 'trend_valuation' && factor.sma50wDiagnostic?.showWarning && (
+              <span 
+                className="px-2 py-1 rounded text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200"
+                title="Historical caution marker; display-only, not part of the score"
+              >
+                Below 50W SMA ({factor.sma50wDiagnostic.consecutiveWeeksBelow}+ weeks)
+              </span>
+            )}
+            
+            {/* Space for additional badges if needed */}
+          </div>
               
               <div className="mb-4 pr-20"> {/* Add right padding to avoid badge lane */}
                 {/* Header Row - Title and Pillar */}
