@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-09-24T21:08:05.657Z",
+  "updated_at": "2025-09-24T21:59:19.696Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -29,25 +29,19 @@
       "name": "Stooq",
       "ok": true,
       "url": "https://stooq.com/",
-      "ms": 976,
+      "ms": 923,
       "fallback": true,
       "cache_used": false,
       "fallback_used": true
-    },
-    {
-      "name": "History: net_liquidity",
-      "ok": true,
-      "rows_appended": 1,
-      "total_rows": 8
     }
   ],
   "factors_computed": 8,
-  "factors_successful": 8,
+  "factors_successful": 5,
   "gold_cross_rates": {
     "status": "success",
     "source": "Stooq",
     "fallback_used": true,
-    "latency_ms": 976
+    "latency_ms": 923
   },
   "satoshis_per_dollar": {
     "status": "success",
@@ -55,5 +49,17 @@
     "derived": true
   },
   "etf_schema_hash": "cd3800",
-  "etf_schema_last_check": "2025-09-24T21:08:02.537Z"
+  "etf_schema_last_check": "2025-09-24T21:59:16.432Z",
+  "price_history": {
+    "total_rows": 14,
+    "oldest_date": "2025-09-11",
+    "newest_date": "2025-09-24",
+    "alpha_vantage_backfill": null,
+    "coinbase_daily_update": {
+      "status": "success",
+      "rows_fetched": 14,
+      "ms": 163
+    },
+    "drift_check": null
+  }
 }
