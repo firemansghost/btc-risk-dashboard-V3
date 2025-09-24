@@ -109,7 +109,7 @@
       "order": 5,
       "description": "Fed balance sheet minus RRP and TGA - backdrop liquidity",
       "staleness": {
-        "ttl_hours": 48,
+        "ttl_hours": 240,
         "market_dependent": false,
         "business_days_only": true
       },

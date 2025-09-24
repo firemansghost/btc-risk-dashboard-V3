@@ -191,10 +191,10 @@ export function getStalenessStatus(factorResult, ttlHours, options = {}) {
  */
 export const STALENESS_CONFIG = {
   net_liquidity: {
-    ttlHours: 7 * 24, // 7 days
+    ttlHours: 10 * 24, // 10 days (240 hours)
     marketDependent: false, // FRED data updates on its own schedule
     businessDaysOnly: false,
-    description: 'FRED weekly data, 7-day TTL'
+    description: 'FRED weekly data, 10-day TTL for delayed releases'
   },
   stablecoins: {
     ttlHours: 24, // 1 day

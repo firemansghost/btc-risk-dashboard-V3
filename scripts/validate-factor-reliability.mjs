@@ -42,7 +42,7 @@ async function testFreshnessParity() {
       'onchain': 72,
       'stablecoins': 24,
       'etf_flows': 120,
-      'net_liquidity': 168,
+      'net_liquidity': 240,
       'term_structure': 24,
       'macro_overlay': 24,
       'social_interest': 24

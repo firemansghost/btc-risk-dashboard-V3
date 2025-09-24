@@ -129,7 +129,7 @@ export function getFactorTTL(factorKey: string): number {
     'onchain': 72, // 3 days
     'stablecoins': 24, // 1 day
     'etf_flows': 120, // 5 days
-    'net_liquidity': 168, // 7 days
+    'net_liquidity': 240, // 10 days
     'term_structure': 24, // 1 day (mapped from term_leverage in ETL)
     'macro_overlay': 24, // 1 day
     'social_interest': 24 // 1 day
@@ -151,7 +151,7 @@ export function getFactorCadence(factorKey: string): {
   const ttlHours = getFactorTTL(factorKey);
   
   const cadenceMap: Record<string, { label: string; description: string }> = {
-    'net_liquidity': { label: 'Weekly', description: 'FRED data updates weekly' },
+    'net_liquidity': { label: 'Weekly', description: 'FRED data updates weekly (TTL 10d)' },
     'etf_flows': { label: 'Business days', description: 'ETF markets closed weekends' },
     'onchain': { label: 'Daily', description: 'Blockchain data 24/7' },
     'trend_valuation': { label: 'Daily', description: 'Price data 24/7' },
