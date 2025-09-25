@@ -50,6 +50,7 @@ export default function MethodologyPage() {
           <a href="#bands" className="text-blue-600 hover:text-blue-800 underline">Risk Bands</a>
           <a href="#factors" className="text-blue-600 hover:text-blue-800 underline">Risk Factors</a>
           <a href="#sources" className="text-blue-600 hover:text-blue-800 underline">Data Sources</a>
+          <a href="#price-history" className="text-blue-600 hover:text-blue-800 underline">Price History</a>
           <a href="#freshness" className="text-blue-600 hover:text-blue-800 underline">Freshness Rules</a>
           <a href="#glossary" className="text-blue-600 hover:text-blue-800 underline">Glossary</a>
           <a href="#faq" className="text-blue-600 hover:text-blue-800 underline">FAQ</a>
@@ -219,9 +220,9 @@ export default function MethodologyPage() {
               <tbody className="text-gray-600">
                 <tr className="border-b">
                   <td className="py-2">Coinbase</td>
-                  <td className="py-2">Spot price, daily candles</td>
+                  <td className="py-2">Spot price, daily candles, historical backfill</td>
                   <td className="py-2">Real-time</td>
-                  <td className="py-2">Primary price source</td>
+                  <td className="py-2">Primary price source for all calculations (700+ days)</td>
                 </tr>
                 <tr className="border-b">
                   <td className="py-2">FRED (St. Louis Fed)</td>
@@ -275,6 +276,67 @@ export default function MethodologyPage() {
             >
               View Current Config
             </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Price History System */}
+      <section id="price-history" className="mb-12">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Price History & Technical Indicators</h2>
+        <div className="bg-white rounded-xl border p-6">
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Unified Price History System</h3>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                Price history is maintained in a local CSV file with daily UTC close prices. The system fetches 700+ days 
+                of historical data from Coinbase's public API using chunked requests to handle their 300-record limit. 
+                Daily operations append recent Coinbase candles and deduplicate existing records.
+              </p>
+              <div className="bg-blue-50 rounded-lg p-4">
+                <p className="text-sm text-blue-800">
+                  <strong>Benefits:</strong> No external API keys required, reliable data source with 2+ years of history, 
+                  consistent price calculations across all factors, and automatic daily updates.
+                </p>
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Technical Indicators</h3>
+              <div className="space-y-4">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-2">Bull Market Support Band (BMSB)</h4>
+                  <p className="text-sm text-gray-700 mb-2">
+                    Calculated using 20-week Simple Moving Average and 21-week Exponential Moving Average of weekly closes. 
+                    The band represents key support levels during bull markets and is the primary component (60% weight) 
+                    of the Trend & Valuation factor.
+                  </p>
+                </div>
+                
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-2">50-Week SMA Diagnostic</h4>
+                  <p className="text-sm text-gray-700 mb-2">
+                    A display-only indicator that shows Bitcoin's position relative to its 50-week Simple Moving Average. 
+                    This appears as a pill on the Trend & Valuation factor card:
+                  </p>
+                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-700 ml-4">
+                    <li><strong>Above 50W SMA:</strong> Gray pill shows current SMA value (e.g., "Above 50W SMA ($99k)")</li>
+                    <li><strong>Below 50W SMA:</strong> Amber warning pill after 2+ consecutive weeks (e.g., "Below 50W SMA (3+ weeks)")</li>
+                  </ul>
+                  <p className="text-xs text-gray-500 mt-2">
+                    <em>Note: This diagnostic is educational only and does not affect the risk score calculation.</em>
+                  </p>
+                </div>
+                
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-2">Other Technical Calculations</h4>
+                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
+                    <li><strong>Mayer Multiple:</strong> Current price divided by 200-day Simple Moving Average</li>
+                    <li><strong>Weekly RSI:</strong> 14-period Relative Strength Index calculated on weekly closes</li>
+                    <li><strong>Weekly Resampling:</strong> Daily prices converted to weekly using ISO week boundaries (Sunday close)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -386,6 +448,22 @@ export default function MethodologyPage() {
               <p className="text-gray-600 text-sm">
                 Weights are configurable but typically remain stable. You can use the "Weights" tool to preview how 
                 different weightings would affect the composite score without changing the actual configuration.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900 mb-2">Why does the 50W SMA pill always show?</h3>
+              <p className="text-gray-600 text-sm">
+                The 50-week SMA diagnostic is always visible for educational transparency. When BTC is above the 50W SMA, 
+                it shows as a gray informational pill. When below for 2+ consecutive weeks, it becomes an amber warning. 
+                This helps users understand Bitcoin's position relative to this key technical level.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900 mb-2">What happened to Alpha Vantage data?</h3>
+              <p className="text-gray-600 text-sm">
+                The system now uses Coinbase exclusively for all price data. This provides more reliable access without 
+                API key dependencies and ensures consistent calculations across all factors using a single, authoritative 
+                price source with 700+ days of history.
               </p>
             </div>
           </div>
