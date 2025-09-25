@@ -1,5 +1,5 @@
 // scripts/etl/priceHistory.mjs
-// Unified BTC price history management with Alpha Vantage backfill + Coinbase primary
+// Unified BTC price history management with Coinbase as primary source
 
 import { promises as fs } from 'node:fs';
 import { createReadStream } from 'node:fs';
@@ -95,7 +95,7 @@ export async function savePriceHistory(records) {
 }
 
 /**
- * Fetch extended historical data from Coinbase (replaces Alpha Vantage backfill)
+ * Fetch extended historical data from Coinbase
  * Coinbase has data going back to ~2015, which is sufficient for our needs
  * @param {number} days - Number of days to fetch (minimum 700)
  * @returns {Object} {success, data, provenance}
@@ -330,78 +330,6 @@ export async function fetchRecentCoinbaseData(days = 14) {
   }
 }
 
-/**
- * Perform drift check between Alpha Vantage and Coinbase data
- * @param {Array} alphaVantageData - AV records
- * @param {Array} coinbaseData - Coinbase records
- * @returns {Object} Drift analysis results
- */
-export function performDriftCheck(alphaVantageData, coinbaseData) {
-  const avMap = new Map();
-  const cbMap = new Map();
-  
-  // Create lookup maps
-  for (const record of alphaVantageData) {
-    avMap.set(record.date_utc, record.close_usd);
-  }
-  
-  for (const record of coinbaseData) {
-    cbMap.set(record.date_utc, record.close_usd);
-  }
-  
-  // Find overlapping dates
-  const overlappingDates = [];
-  for (const date of avMap.keys()) {
-    if (cbMap.has(date)) {
-      overlappingDates.push(date);
-    }
-  }
-  
-  if (overlappingDates.length === 0) {
-    return {
-      window_days: 0,
-      overlapping_dates: 0,
-      mean_abs_pct_diff: 0,
-      max_abs_pct_diff: 0,
-      drift_acceptable: true,
-      discarded_av_dates: []
-    };
-  }
-  
-  // Calculate percentage differences
-  const pctDiffs = [];
-  const discardedDates = [];
-  
-  for (const date of overlappingDates) {
-    const avPrice = avMap.get(date);
-    const cbPrice = cbMap.get(date);
-    
-    const pctDiff = Math.abs((avPrice - cbPrice) / cbPrice) * 100;
-    pctDiffs.push(pctDiff);
-    
-    // If drift > 0.5%, mark AV date for discard
-    if (pctDiff > 0.5) {
-      discardedDates.push(date);
-    }
-  }
-  
-  const meanAbsPctDiff = pctDiffs.reduce((sum, diff) => sum + diff, 0) / pctDiffs.length;
-  const maxAbsPctDiff = Math.max(...pctDiffs);
-  const driftAcceptable = meanAbsPctDiff <= 0.5;
-  
-  if (discardedDates.length > 0) {
-    console.warn(`Drift check: Discarding ${discardedDates.length} AV dates due to >0.5% drift`);
-  }
-  
-  return {
-    window_days: overlappingDates.length,
-    overlapping_dates: overlappingDates.length,
-    mean_abs_pct_diff: meanAbsPctDiff,
-    max_abs_pct_diff: maxAbsPctDiff,
-    drift_acceptable: driftAcceptable,
-    discarded_av_dates: discardedDates
-  };
-}
 
 /**
  * Main function to manage price history (backfill + daily updates)
