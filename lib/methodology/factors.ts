@@ -17,30 +17,31 @@ export const factorContent: FactorContent[] = [
     key: 'trend_valuation',
     pillar: 'Momentum / Valuation',
     what: [
-      'Price vs 200-day SMA (Mayer Multiple) - 40% weight',
-      'Distance to Bull Market Support Band (BMSB proxy) - 40% weight',
-      'Weekly momentum (RSI-14 on weekly samples) - 20% weight'
+      'Bull Market Support Band (BMSB) distance - 60% weight',
+      'Price vs 200-day SMA (Mayer Multiple) - 30% weight',
+      'Weekly momentum (RSI-14 on weekly samples) - 10% weight'
     ],
-    why: 'Multi-factor approach captures both valuation stretch and momentum persistence. Combines price vs trend (Mayer), technical support levels (BMSB), and sustained directional moves (weekly RSI).',
-    affects: '↑ Mayer Multiple + ↑ BMSB distance + ↑ weekly RSI ⇒ ↑ risk; below trend with weak momentum ⇒ ↓ risk',
-    cadence: 'Daily updates; stale >48h',
+    why: 'BMSB-led approach captures cycle-aware trend analysis. BMSB (20W SMA / 21W EMA) provides dynamic support levels that adapt to market cycles, while Mayer Multiple adds valuation context and weekly RSI confirms momentum.',
+    affects: '↑ BMSB distance + ↑ Mayer Multiple + ↑ weekly RSI ⇒ ↑ risk; price near/below BMSB with weak momentum ⇒ ↓ risk',
+    cadence: 'Daily updates; stale >6h',
     sources: [
-      { label: 'CoinGecko Bitcoin prices', url: 'https://www.coingecko.com/' },
-      { label: '365-day price history for calculations', url: 'https://www.coingecko.com/' }
+      { label: 'Coinbase BTC-USD daily candles (primary)', url: 'https://api.exchange.coinbase.com/' },
+      { label: 'CoinGecko Bitcoin prices (fallback)', url: 'https://www.coingecko.com/' },
+      { label: 'Unified price history CSV (700+ days)', url: '/methodology#price-history' }
     ],
-    caveats: 'Weekly RSI uses every 7th day sampling to avoid smoothing artifacts. Trend can stay elevated in strong markets.'
+    caveats: 'True BMSB calculation using weekly resampling. Weekly RSI samples every 7th day. Requires 50+ weeks of data for full calculation.'
   },
   {
     key: 'net_liquidity',
     pillar: 'Liquidity / Flows',
     what: [
-      'Net Liquidity Level (WALCL - RRPONTSYD - WTREGEN) - 30% weight',
+      'Net Liquidity Level (WALCL - RRPONTSYD - WTREGEN) - 15% weight',
       '4-week Rate of Change (short-term trend) - 40% weight', 
-      '12-week Momentum/Acceleration (trend strength) - 30% weight'
+      '12-week Momentum/Acceleration (trend strength) - 45% weight'
     ],
-    why: 'Multi-factor approach captures both absolute liquidity and directional changes. Rate of change is more predictive than levels alone, while momentum shows trend sustainability.',
-    affects: '↑ net liquidity + ↑ growth rate + ↑ acceleration ⇒ ↓ risk; contracting liquidity ⇒ ↑ risk',
-    cadence: 'Weekly updates; stale >8 days',
+    why: 'Momentum-focused approach emphasizes directional changes over absolute levels. Rate of change captures short-term liquidity trends, while momentum shows acceleration/deceleration patterns that often precede market moves.',
+    affects: '↑ net liquidity + ↑ growth rate + ↑ acceleration ⇒ ↓ risk; contracting liquidity momentum ⇒ ↑ risk',
+    cadence: 'Weekly updates; stale >10 days',
     sources: [
       { label: 'St. Louis Fed (FRED)', url: 'https://fred.stlouisfed.org/' }
     ],
@@ -67,13 +68,13 @@ export const factorContent: FactorContent[] = [
     key: 'etf_flows',
     pillar: 'Liquidity / Flows',
     what: [
-      '21-day Rolling Sum (all ETFs combined) - 40% weight',
+      '21-day Rolling Sum (all ETFs combined) - 30% weight',
       'Flow Acceleration (7d recent vs previous 7d) - 30% weight',
-      'ETF Diversification (HHI concentration risk) - 30% weight'
+      'ETF Diversification (HHI concentration risk) - 40% weight'
     ],
-    why: 'Multi-dimensional institutional demand analysis. Rolling sum captures sustained momentum, acceleration shows trend changes, and diversification measures systemic risk from single ETF dominance.',
-    affects: '↑ sustained inflows + ↑ acceleration + ↑ diversification ⇒ ↓ risk; concentrated outflows ⇒ ↑ risk',
-    cadence: 'Business days; stale >5 days',
+    why: 'Diversification-focused institutional demand analysis. Rolling sum captures sustained momentum, acceleration shows trend changes, and diversification measures systemic risk from single ETF dominance (most important factor).',
+    affects: '↑ sustained inflows + ↑ acceleration + ↑ diversification ⇒ ↓ risk; concentrated outflows or single ETF dominance ⇒ ↑ risk',
+    cadence: 'Business days; stale >1 day',
     sources: [
       { label: 'Farside Investors (all ETFs)', url: 'https://farside.co.uk/' },
       { label: 'Individual ETF breakdown', url: 'https://farside.co.uk/' }
@@ -99,54 +100,52 @@ export const factorContent: FactorContent[] = [
   },
   {
     key: 'onchain',
-    pillar: 'Social / Attention (counts toward momentum)',
+    pillar: 'Momentum / Valuation',
     what: [
-      'Network Congestion (transaction fees vs history) - 35% weight',
-      'Transaction Activity (daily transaction count) - 30% weight',
-      'NVT Ratio (Network Value to Transactions proxy) - 35% weight',
-      'Hash Rate Security (network security adjustment) - ±5 points'
+      'Network Congestion (transaction fees vs history) - 60% weight',
+      'Mempool Activity (7-day avg mempool size in MB) - 40% weight',
+      'NVT Ratio (Network Value to Transactions proxy) - disabled',
+      'Hash Rate Security (network security context) - informational only'
     ],
-    why: 'Multi-dimensional on-chain analysis captures network usage patterns and valuation metrics. Congestion shows demand pressure, activity reflects adoption, NVT indicates overvaluation, and hash rate provides security context.',
-    affects: '↑ congestion + ↑ activity + ↑ NVT ⇒ ↑ risk; ↑ hash rate security ⇒ slight ↓ risk adjustment',
-    cadence: 'Daily updates; stale >24h',
+    why: 'Focused on-chain congestion analysis. Transaction fees capture demand pressure and network stress, while mempool size shows pending transaction volume. NVT proxy was unreliable and has been disabled.',
+    affects: '↑ transaction fees + ↑ mempool congestion ⇒ ↑ risk (network stress); low fees + small mempool ⇒ ↓ risk',
+    cadence: 'Daily updates; stale >3 days',
     sources: [
       { label: 'Blockchain.info (fees, transactions, hash rate)', url: 'https://blockchain.info/' },
       { label: 'CoinGecko (prices, volumes)', url: 'https://www.coingecko.com/' }
     ],
-    caveats: 'NVT proxy uses trading volume instead of transaction volume. Hash rate spikes can be temporary. Fee spikes may be event-driven (ordinals, etc.).'
+    caveats: 'Fee spikes may be event-driven (ordinals, congestion). Mempool data converted from bytes to MB. Hash rate provides context but not scored.'
   },
   {
     key: 'social_interest',
     pillar: 'Social / Attention',
     what: [
-      'Search Attention (Bitcoin trending rank) - 40% weight',
-      'Price Momentum Signal (7d vs 7d performance) - 35% weight',
-      'Volatility Social Signal (14-day price volatility) - 25% weight'
+      'Google Trends Bitcoin interest (proxy via available data) - 70% weight',
+      'Fear & Greed Index sentiment - 30% weight'
     ],
-    why: 'Social sentiment proxy using available data sources. Search attention captures retail interest spikes, price momentum reflects social sentiment (bullish/bearish), and volatility indicates attention-driving market activity.',
-    affects: '↑ search attention + ↑ bullish momentum + ↑ volatility ⇒ ↑ risk; low attention + bearish/neutral momentum + low volatility ⇒ ↓ risk',
-    cadence: 'Daily updates; stale >48h',
+    why: 'Social sentiment analysis using available free APIs. Google Trends captures retail interest and search volume spikes, while Fear & Greed Index provides market sentiment context from multiple data sources.',
+    affects: '↑ search interest + ↑ fear/greed extremes ⇒ ↑ risk; low interest + neutral sentiment ⇒ ↓ risk',
+    cadence: 'Daily updates; stale >1 day',
     sources: [
-      { label: 'CoinGecko trending searches', url: 'https://www.coingecko.com/' },
-      { label: 'CoinGecko Bitcoin price data', url: 'https://www.coingecko.com/' }
+      { label: 'CoinGecko trending searches (Google Trends proxy)', url: 'https://www.coingecko.com/' },
+      { label: 'Alternative.me Fear & Greed Index', url: 'https://alternative.me/crypto/fear-and-greed-index/' }
     ],
-    caveats: 'Limited to available free APIs. Price-based sentiment is indirect. Trending searches may not fully capture broader social sentiment. No direct social media or Google Trends integration.'
+    caveats: 'Limited to available free APIs. No direct Google Trends or social media integration. Fear & Greed Index aggregates multiple sentiment sources.'
   },
   {
     key: 'macro_overlay',
     pillar: 'Macro Overlay',
     what: [
-      'Dollar Strength Pressure (DXY momentum analysis) - 35% weight',
-      'Interest Rate Environment (yield changes + curve shape) - 30% weight',
-      'Risk Appetite Gauge (VIX level + momentum) - 25% weight',
-      'Real Rate Pressure (10Y TIPS real yield changes) - 10% weight'
+      'Dollar Strength (DXY 20-day momentum) - 40% weight',
+      '2-Year Treasury Yield (20-day momentum) - 35% weight',
+      'VIX Risk Appetite (percentile level) - 25% weight'
     ],
-    why: 'Multi-dimensional macro environment analysis captures key risk factors for Bitcoin: dollar strength pressures international flows, rising rates compete with risk assets, market fear drives flight-to-quality, and real rates affect discount rates for growth assets.',
-    affects: '↑ dollar strength + ↑ rising rates + ↑ market fear + ↑ real rate pressure ⇒ ↑ risk; yield curve inversion adds recession risk premium',
-    cadence: 'Daily updates; stale >48h',
+    why: 'Simplified macro environment analysis focuses on three key Bitcoin risk factors: dollar strength affects international flows, rising short-term rates compete with risk assets, and VIX spikes indicate flight-to-quality away from risk assets.',
+    affects: '↑ dollar strength + ↑ rising rates + ↑ VIX fear ⇒ ↑ risk; weak dollar + falling rates + low VIX ⇒ ↓ risk',
+    cadence: 'Daily updates; stale >1 day',
     sources: [
-      { label: 'FRED Economic Data (DXY, Treasury yields, VIX, TIPS)', url: 'https://fred.stlouisfed.org/' }
+      { label: 'FRED Economic Data (DXY, 2Y Treasury, VIX)', url: 'https://fred.stlouisfed.org/' }
     ],
-    caveats: 'Real rates (TIPS) may have data gaps. VIX momentum can be volatile. Dollar strength effects vary by global liquidity conditions. Yield curve inversions are rare but high-impact events.'
+    caveats: 'VIX can be volatile during market stress. Dollar strength effects vary by global liquidity conditions. FRED data may have reporting delays.'
   }
 ];
