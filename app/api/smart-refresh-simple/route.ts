@@ -119,7 +119,7 @@ export async function POST(req: Request) {
       }
     }
     
-    // Source 3: Stooq CSV (no key required, fallback) - matches ETL fallback
+    // Source 3: Stooq CSV (no key required, reliable free source) - matches ETL
     if (!goldPrice) {
       console.log('Simple refresh: Trying Stooq for gold price...');
       try {
@@ -177,7 +177,7 @@ export async function POST(req: Request) {
                goldSource === 'Alpha Vantage' ? 'https://www.alphavantage.co/' : 
                'https://stooq.com/',
           ms: 0,
-          fallback: goldSource === 'Stooq'
+          fallback: false // All gold sources are considered reliable primary sources
         }]
       }
     });

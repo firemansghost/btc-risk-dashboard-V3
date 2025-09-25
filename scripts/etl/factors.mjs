@@ -1581,7 +1581,7 @@ async function computeBtcGoldRates() {
       }
     }
 
-    // Source 3: Stooq CSV (no key required, fallback)
+    // Source 3: Stooq CSV (no key required, reliable free source)
     if (!goldPrice) {
       try {
         const startTime = Date.now();
@@ -1599,12 +1599,12 @@ async function computeBtcGoldRates() {
             if (columns.length >= 5) {
               goldPrice = parseFloat(columns[4]); // Close price
               goldSource = "Stooq";
-              goldFallback = true;
+              goldFallback = false; // Stooq is a reliable primary source, not a fallback
             }
           }
         }
       } catch (error) {
-        console.warn('Stooq fallback failed:', error.message);
+        console.warn('Stooq failed:', error.message);
       }
     }
 
