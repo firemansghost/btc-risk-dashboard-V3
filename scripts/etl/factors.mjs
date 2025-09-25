@@ -1461,7 +1461,8 @@ export async function computeAllFactors(dailyClose = null) {
       reason,
       last_utc: lastUpdated, // Add timestamp for SystemStatusCard
       details: result.status === 'fulfilled' ? result.value.details : undefined,
-      individualEtfFlows: result.status === 'fulfilled' && result.value.individualEtfFlows ? result.value.individualEtfFlows : undefined
+      individualEtfFlows: result.status === 'fulfilled' && result.value.individualEtfFlows ? result.value.individualEtfFlows : undefined,
+      sma50wDiagnostic: result.status === 'fulfilled' && result.value.sma50wDiagnostic ? result.value.sma50wDiagnostic : undefined
     });
 
     console.log(`${factor.key}: ${score !== null ? score : 'null'} (${status}) - ${reason}`);

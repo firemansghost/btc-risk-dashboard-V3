@@ -497,12 +497,23 @@ export default function RealDashboard() {
             </span>
             
             {/* 50W SMA Diagnostic Pill (Trend & Valuation only) */}
-            {factor.key === 'trend_valuation' && factor.sma50wDiagnostic?.showWarning && (
+            {factor.key === 'trend_valuation' && factor.sma50wDiagnostic && (
               <span 
-                className="px-2 py-1 rounded text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200"
-                title="Historical caution marker; display-only, not part of the score"
+                className={`px-2 py-1 rounded text-xs font-medium border ${
+                  factor.sma50wDiagnostic.showWarning 
+                    ? 'bg-amber-100 text-amber-800 border-amber-200' 
+                    : 'bg-gray-50 text-gray-600 border-gray-200'
+                }`}
+                title={
+                  factor.sma50wDiagnostic.showWarning
+                    ? "Historical caution marker; display-only, not part of the score"
+                    : "50-week SMA status; display-only, not part of the score"
+                }
               >
-                Below 50W SMA ({factor.sma50wDiagnostic.consecutiveWeeksBelow}+ weeks)
+                {factor.sma50wDiagnostic.showWarning 
+                  ? `Below 50W SMA (${factor.sma50wDiagnostic.consecutiveWeeksBelow}+ weeks)`
+                  : `Above 50W SMA ($${Math.round(factor.sma50wDiagnostic.sma50 / 1000)}k)`
+                }
               </span>
             )}
             
