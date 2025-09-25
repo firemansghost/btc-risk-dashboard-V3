@@ -61,7 +61,7 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
                 xau_close_usd: freshGoldPrice,
                 btc_per_oz: btcPerOz,
                 oz_per_btc: ozPerBtc,
-                provenance: [{
+                provenance: refreshData.data.provenance || [{
                   name: 'Alpha Vantage',
                   ok: true,
                   url: 'https://www.alphavantage.co/',

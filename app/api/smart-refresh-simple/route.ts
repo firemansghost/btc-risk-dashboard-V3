@@ -64,50 +64,51 @@ export async function POST(req: Request) {
     
     console.log('Simple refresh: Bitcoin price:', currentBtcPrice, 'from', btcSource);
     
-    // Fetch gold price using multiple sources
+    // Fetch gold price using the same fallback chain as ETL
     console.log('Simple refresh: Fetching gold price...');
     let goldPrice = null;
     let goldSource = 'unavailable';
     
-    // Try Yahoo Finance first (more reliable)
-    try {
-      console.log('Simple refresh: Trying Yahoo Finance for gold price...');
-      const yahooResponse = await fetch(
-        'https://query1.finance.yahoo.com/v8/finance/chart/GC=F',
-        { headers: { "User-Agent": "btc-risk-dashboard" } }
-      );
-      
-      if (yahooResponse.ok) {
-        const yahooData = await yahooResponse.json();
-        const result = yahooData.chart?.result?.[0];
-        if (result?.meta?.regularMarketPrice) {
-          goldPrice = result.meta.regularMarketPrice;
-          goldSource = 'Yahoo Finance';
-          console.log('Simple refresh: Gold price from Yahoo Finance:', goldPrice);
-        }
-      }
-    } catch (yahooError) {
-      console.warn('Simple refresh: Yahoo Finance gold fetch failed:', yahooError);
-    }
-    
-    // Fallback to Alpha Vantage if Yahoo Finance fails
-    if (!goldPrice && process.env.ALPHAVANTAGE_API_KEY) {
-      console.log('Simple refresh: Trying Alpha Vantage for gold price...');
+    // Source 1: Metals API (requires API key) - matches ETL priority
+    if (!goldPrice && process.env.METALS_API_KEY) {
+      console.log('Simple refresh: Trying Metals API for gold price...');
       try {
-        // Try the DIGITAL_CURRENCY_DAILY function that we know works
         const goldResponse = await fetch(
-          `https://www.alphavantage.co/query?function=DIGITAL_CURRENCY_DAILY&symbol=GOLD&market=USD&apikey=${process.env.ALPHAVANTAGE_API_KEY}`,
+          `https://metals-api.com/api/latest?access_key=${process.env.METALS_API_KEY}&base=USD&symbols=XAU`,
           { headers: { "User-Agent": "btc-risk-dashboard" } }
         );
         
         if (goldResponse.ok) {
           const goldData = await goldResponse.json();
-          const timeSeries = goldData['Time Series (Digital Currency Daily)'];
-          if (timeSeries) {
-            const latestDate = Object.keys(timeSeries)[0];
-            const latestData = timeSeries[latestDate];
-            if (latestData && latestData['4. close']) {
-              goldPrice = parseFloat(latestData['4. close']);
+          if (goldData.success && goldData.rates && goldData.rates.XAU) {
+            goldPrice = goldData.rates.XAU;
+            goldSource = 'Metals API';
+            console.log('Simple refresh: Gold price from Metals API:', goldPrice);
+          }
+        }
+      } catch (metalsError) {
+        console.warn('Simple refresh: Metals API gold fetch failed:', metalsError);
+      }
+    }
+    
+    // Source 2: Alpha Vantage (free tier) - matches ETL secondary
+    if (!goldPrice && process.env.ALPHAVANTAGE_API_KEY) {
+      console.log('Simple refresh: Trying Alpha Vantage for gold price...');
+      try {
+        const goldResponse = await fetch(
+          `https://www.alphavantage.co/query?function=FX_DAILY&from_symbol=XAU&to_symbol=USD&apikey=${process.env.ALPHAVANTAGE_API_KEY}`,
+          { headers: { "User-Agent": "btc-risk-dashboard" } }
+        );
+        
+        if (goldResponse.ok) {
+          const goldData = await goldResponse.json();
+          if (goldData["Time Series (FX)"]) {
+            const timeSeries = goldData["Time Series (FX)"];
+            const dates = Object.keys(timeSeries).sort().reverse();
+            if (dates.length > 0) {
+              const latestDate = dates[0];
+              const latestData = timeSeries[latestDate];
+              goldPrice = parseFloat(latestData["4. close"]);
               goldSource = 'Alpha Vantage';
               console.log('Simple refresh: Gold price from Alpha Vantage:', goldPrice);
             }
@@ -115,6 +116,33 @@ export async function POST(req: Request) {
         }
       } catch (alphaError) {
         console.warn('Simple refresh: Alpha Vantage gold fetch failed:', alphaError);
+      }
+    }
+    
+    // Source 3: Stooq CSV (no key required, fallback) - matches ETL fallback
+    if (!goldPrice) {
+      console.log('Simple refresh: Trying Stooq for gold price...');
+      try {
+        const goldResponse = await fetch(
+          'https://stooq.com/q/d/l/?s=xauusd&i=d',
+          { headers: { "User-Agent": "btc-risk-dashboard" } }
+        );
+        
+        if (goldResponse.ok) {
+          const csvText = await goldResponse.text();
+          const lines = csvText.split('\n').filter(line => line.trim());
+          if (lines.length > 1) {
+            const lastLine = lines[lines.length - 1];
+            const columns = lastLine.split(',');
+            if (columns.length >= 5) {
+              goldPrice = parseFloat(columns[4]); // Close price
+              goldSource = 'Stooq';
+              console.log('Simple refresh: Gold price from Stooq:', goldPrice);
+            }
+          }
+        }
+      } catch (stooqError) {
+        console.warn('Simple refresh: Stooq gold fetch failed:', stooqError);
       }
     }
     
@@ -141,7 +169,16 @@ export async function POST(req: Request) {
         sources: {
           bitcoin: btcSource,
           gold: goldSource
-        }
+        },
+        provenance: [{
+          name: goldSource,
+          ok: goldPrice !== null,
+          url: goldSource === 'Metals API' ? 'https://metals-api.com/' : 
+               goldSource === 'Alpha Vantage' ? 'https://www.alphavantage.co/' : 
+               'https://stooq.com/',
+          ms: 0,
+          fallback: goldSource === 'Stooq'
+        }]
       }
     });
     
