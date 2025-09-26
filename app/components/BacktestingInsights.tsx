@@ -19,8 +19,8 @@ export default function BacktestingInsights() {
     },
     {
       category: 'Risk Management',
-      title: 'Risk-Based Strategies Work',
-      description: 'Risk-based DCA outperformed regular DCA by 5.94% while maintaining better risk-adjusted returns.',
+      title: 'Bitcoin G-Score Risk-Based Strategies Work',
+      description: 'Bitcoin G-Score risk-based DCA outperformed regular DCA by 5.94% while maintaining better risk-adjusted returns.',
       metrics: {
         outperformance: '5.94%',
         sharpe: '0.77',
@@ -32,8 +32,8 @@ export default function BacktestingInsights() {
     },
     {
       category: 'Risk Bands',
-      title: 'Buying Signals Show Higher Returns',
-      description: 'Begin Scaling In signals had 69.6% win rate with 9.18% average 30-day returns, validating our risk bands.',
+      title: 'Bitcoin G-Score Buying Signals Show Higher Returns',
+      description: 'Bitcoin G-Score Begin Scaling In signals had 69.6% win rate with 9.18% average 30-day returns, validating our risk bands.',
       metrics: {
         winRate: '69.6%',
         avgReturn: '9.18%',
@@ -45,8 +45,8 @@ export default function BacktestingInsights() {
     },
     {
       category: 'Market Timing',
-      title: 'Current Strategy May Be Too Conservative',
-      description: 'Risk-based strategy underperformed buy-and-hold by 77.93%, suggesting we may be missing bull market opportunities.',
+      title: 'Bitcoin G-Score Strategy May Be Too Conservative',
+      description: 'Bitcoin G-Score risk-based strategy underperformed buy-and-hold by 77.93%, suggesting we may be missing bull market opportunities.',
       metrics: {
         underperformance: '77.93%',
         buyAndHold: '314.92%',
@@ -92,9 +92,9 @@ export default function BacktestingInsights() {
     <div className="space-y-8">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-lg p-8 text-white">
-        <h2 className="text-2xl font-bold mb-4">🔍 Key Backtesting Insights</h2>
+        <h2 className="text-2xl font-bold mb-4">🔍 Bitcoin G-Score Key Backtesting Insights</h2>
         <p className="text-lg mb-6">
-          Our comprehensive analysis of 731 data points reveals powerful insights about Bitcoin investment strategies.
+          Our comprehensive Bitcoin G-Score analysis of 731 data points reveals powerful insights about Bitcoin investment strategies.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white/20 rounded-lg p-4">
