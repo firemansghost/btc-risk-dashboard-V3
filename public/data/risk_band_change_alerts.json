@@ -1,0 +1,2061 @@
+[
+  {
+    "id": "risk_band_alert_2024-11-02_1758903683755",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-11-02",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling In (46 → 37)",
+    "data": {
+      "previousScore": 46,
+      "currentScore": 37,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling In",
+      "change": -9,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for trend confirmation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-11-03_1758903683755",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-11-03",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Begin Scaling In → Hold/Neutral (37 → 43)",
+    "data": {
+      "previousScore": 37,
+      "currentScore": 43,
+      "previousBand": "Begin Scaling In",
+      "currentBand": "Hold/Neutral",
+      "change": 6,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-11-05_1758903683755",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-11-05",
+    "title": "📊 MEDIUM: Risk Level Fell",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling In (48 → 38)",
+    "data": {
+      "previousScore": 48,
+      "currentScore": 38,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling In",
+      "change": -10,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for trend confirmation",
+      "Review entry strategies"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-11-06_1758903683755",
+    "type": "risk_band_change",
+    "severity": "critical",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-11-06",
+    "title": "🚨 CRITICAL: Risk Level Spiked",
+    "message": "Risk band changed: Begin Scaling In → Begin Scaling Out (38 → 60)",
+    "data": {
+      "previousScore": 38,
+      "currentScore": 60,
+      "previousBand": "Begin Scaling In",
+      "currentBand": "Begin Scaling Out",
+      "change": 22,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Consider scaling out of positions",
+      "Review risk management",
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-11-07_1758903683755",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-11-07",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (60 → 58)",
+    "data": {
+      "previousScore": 60,
+      "currentScore": 58,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -2,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-11-09_1758903683755",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-11-09",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (58 → 66)",
+    "data": {
+      "previousScore": 58,
+      "currentScore": 66,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 8,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-11-10_1758903683755",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-11-10",
+    "title": "📊 MEDIUM: Risk Level Rose",
+    "message": "Risk band changed: Begin Scaling Out → Increase Selling (66 → 85)",
+    "data": {
+      "previousScore": 66,
+      "currentScore": 85,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Increase Selling",
+      "change": 19,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor market conditions",
+      "Review risk management"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-11-11_1758903683755",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-11-11",
+    "title": "📊 MEDIUM: Notable G-Score Change",
+    "message": "Significant score change: 85 → 100 (Increase Selling)",
+    "data": {
+      "previousScore": 85,
+      "currentScore": 100,
+      "previousBand": "Increase Selling",
+      "currentBand": "Increase Selling",
+      "change": 15,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Analyze score drivers",
+      "Review risk management",
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-11-24_1758903683755",
+    "type": "risk_band_change",
+    "severity": "high",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-11-24",
+    "title": "⚠️ HIGH: Risk Level Decreased",
+    "message": "Risk band changed: Increase Selling → Begin Scaling Out (100 → 79)",
+    "data": {
+      "previousScore": 100,
+      "currentScore": 79,
+      "previousBand": "Increase Selling",
+      "currentBand": "Begin Scaling Out",
+      "change": -21,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for trend continuation",
+      "Review risk management",
+      "Consider scaling out"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-11-25_1758903683755",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-11-25",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Begin Scaling Out → Increase Selling (79 → 85)",
+    "data": {
+      "previousScore": 79,
+      "currentScore": 85,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Increase Selling",
+      "change": 6,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-11-30_1758903683755",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-11-30",
+    "title": "📊 MEDIUM: Risk Level Fell",
+    "message": "Risk band changed: Increase Selling → Begin Scaling Out (80 → 65)",
+    "data": {
+      "previousScore": 80,
+      "currentScore": 65,
+      "previousBand": "Increase Selling",
+      "currentBand": "Begin Scaling Out",
+      "change": -15,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for trend continuation",
+      "Review risk parameters"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-12-05_1758903683755",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-12-05",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (62 → 59)",
+    "data": {
+      "previousScore": 62,
+      "currentScore": 59,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -3,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-12-06_1758903683755",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-12-06",
+    "title": "📊 MEDIUM: Risk Level Rose",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (59 → 69)",
+    "data": {
+      "previousScore": 59,
+      "currentScore": 69,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 10,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation",
+      "Review risk parameters"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-12-09_1758903683755",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-12-09",
+    "title": "📊 MEDIUM: Risk Level Fell",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (72 → 59)",
+    "data": {
+      "previousScore": 72,
+      "currentScore": 59,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -13,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions",
+      "Assess trend direction"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-12-10_1758903683755",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-12-10",
+    "title": "📊 MEDIUM: Risk Level Rose",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (59 → 74)",
+    "data": {
+      "previousScore": 59,
+      "currentScore": 74,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 15,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation",
+      "Review risk parameters"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-12-11_1758903683755",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-12-11",
+    "title": "ℹ️ INFO: G-Score Change",
+    "message": "Significant score change: 74 → 60 (Begin Scaling Out)",
+    "data": {
+      "previousScore": 74,
+      "currentScore": 60,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Begin Scaling Out",
+      "change": -14,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for follow-up changes",
+      "Assess market sentiment"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-12-13_1758903683755",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-12-13",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (60 → 58)",
+    "data": {
+      "previousScore": 60,
+      "currentScore": 58,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -2,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-12-14_1758903683755",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-12-14",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (58 → 64)",
+    "data": {
+      "previousScore": 58,
+      "currentScore": 64,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 6,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-12-24_1758903683755",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-12-24",
+    "title": "ℹ️ INFO: G-Score Change",
+    "message": "Significant score change: 75 → 62 (Begin Scaling Out)",
+    "data": {
+      "previousScore": 75,
+      "currentScore": 62,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Begin Scaling Out",
+      "change": -13,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for follow-up changes",
+      "Assess market sentiment"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-12-26_1758903683755",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-12-26",
+    "title": "ℹ️ INFO: G-Score Change",
+    "message": "Significant score change: 66 → 76 (Begin Scaling Out)",
+    "data": {
+      "previousScore": 66,
+      "currentScore": 76,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Begin Scaling Out",
+      "change": 10,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for follow-up changes",
+      "Assess market sentiment"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-12-27_1758903683755",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-12-27",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Begin Scaling Out → Increase Selling (76 → 83)",
+    "data": {
+      "previousScore": 76,
+      "currentScore": 83,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Increase Selling",
+      "change": 7,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-12-28_1758903683755",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-12-28",
+    "title": "📊 MEDIUM: Risk Level Fell",
+    "message": "Risk band changed: Increase Selling → Begin Scaling Out (83 → 69)",
+    "data": {
+      "previousScore": 83,
+      "currentScore": 69,
+      "previousBand": "Increase Selling",
+      "currentBand": "Begin Scaling Out",
+      "change": -14,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for trend continuation",
+      "Review risk parameters"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2024-12-31_1758903683755",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2024-12-31",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Begin Scaling Out → Increase Selling (75 → 83)",
+    "data": {
+      "previousScore": 75,
+      "currentScore": 83,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Increase Selling",
+      "change": 8,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-01-02_1758903683755",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2025-01-02",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Increase Selling → Begin Scaling Out (86 → 77)",
+    "data": {
+      "previousScore": 86,
+      "currentScore": 77,
+      "previousBand": "Increase Selling",
+      "currentBand": "Begin Scaling Out",
+      "change": -9,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-01-03_1758903683755",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2025-01-03",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Begin Scaling Out → Increase Selling (77 → 80)",
+    "data": {
+      "previousScore": 77,
+      "currentScore": 80,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Increase Selling",
+      "change": 3,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-01-06_1758903683755",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2025-01-06",
+    "title": "📊 MEDIUM: Risk Level Fell",
+    "message": "Risk band changed: Increase Selling → Begin Scaling Out (84 → 66)",
+    "data": {
+      "previousScore": 84,
+      "currentScore": 66,
+      "previousBand": "Increase Selling",
+      "currentBand": "Begin Scaling Out",
+      "change": -18,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for trend continuation",
+      "Review risk parameters"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-01-11_1758903683755",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.755Z",
+    "date": "2025-01-11",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (61 → 59)",
+    "data": {
+      "previousScore": 61,
+      "currentScore": 59,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -2,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-01-12_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-01-12",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (59 → 66)",
+    "data": {
+      "previousScore": 59,
+      "currentScore": 66,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 7,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-01-17_1758903683756",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-01-17",
+    "title": "📊 MEDIUM: Notable G-Score Change",
+    "message": "Significant score change: 60 → 75 (Begin Scaling Out)",
+    "data": {
+      "previousScore": 60,
+      "currentScore": 75,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Begin Scaling Out",
+      "change": 15,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Analyze score drivers",
+      "Review risk management",
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-01-22_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-01-22",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (63 → 57)",
+    "data": {
+      "previousScore": 63,
+      "currentScore": 57,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -6,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-01-24_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-01-24",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (58 → 60)",
+    "data": {
+      "previousScore": 58,
+      "currentScore": 60,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 2,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-01-26_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-01-26",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (60 → 58)",
+    "data": {
+      "previousScore": 60,
+      "currentScore": 58,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -2,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-01-27_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-01-27",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (58 → 60)",
+    "data": {
+      "previousScore": 58,
+      "currentScore": 60,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 2,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-02-02_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-02-02",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (63 → 54)",
+    "data": {
+      "previousScore": 63,
+      "currentScore": 54,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -9,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-02-03_1758903683756",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-02-03",
+    "title": "📊 MEDIUM: Risk Level Rose",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (54 → 64)",
+    "data": {
+      "previousScore": 54,
+      "currentScore": 64,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 10,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation",
+      "Review risk parameters"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-02-04_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-02-04",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (64 → 57)",
+    "data": {
+      "previousScore": 64,
+      "currentScore": 57,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -7,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-02-05_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-02-05",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (57 → 65)",
+    "data": {
+      "previousScore": 57,
+      "currentScore": 65,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 8,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-02-07_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-02-07",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (65 → 59)",
+    "data": {
+      "previousScore": 65,
+      "currentScore": 59,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -6,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-02-08_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-02-08",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (59 → 62)",
+    "data": {
+      "previousScore": 59,
+      "currentScore": 62,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 3,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-02-24_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-02-24",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (63 → 56)",
+    "data": {
+      "previousScore": 63,
+      "currentScore": 56,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -7,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-02-25_1758903683756",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-02-25",
+    "title": "📊 MEDIUM: Risk Level Rose",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (56 → 66)",
+    "data": {
+      "previousScore": 56,
+      "currentScore": 66,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 10,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation",
+      "Review risk parameters"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-03-02_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-03-02",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (63 → 58)",
+    "data": {
+      "previousScore": 63,
+      "currentScore": 58,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -5,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-03-03_1758903683756",
+    "type": "risk_band_change",
+    "severity": "high",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-03-03",
+    "title": "⚠️ HIGH: Risk Level Increased",
+    "message": "Risk band changed: Hold/Neutral → Increase Selling (58 → 86)",
+    "data": {
+      "previousScore": 58,
+      "currentScore": 86,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Increase Selling",
+      "change": 28,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Review portfolio risk",
+      "Consider position sizing",
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-03-05_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-03-05",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Increase Selling → Begin Scaling Out (83 → 77)",
+    "data": {
+      "previousScore": 83,
+      "currentScore": 77,
+      "previousBand": "Increase Selling",
+      "currentBand": "Begin Scaling Out",
+      "change": -6,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-03-07_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-03-07",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Begin Scaling Out → Increase Selling (78 → 86)",
+    "data": {
+      "previousScore": 78,
+      "currentScore": 86,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Increase Selling",
+      "change": 8,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-03-09_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-03-09",
+    "title": "ℹ️ INFO: G-Score Change",
+    "message": "Significant score change: 87 → 100 (Increase Selling)",
+    "data": {
+      "previousScore": 87,
+      "currentScore": 100,
+      "previousBand": "Increase Selling",
+      "currentBand": "Increase Selling",
+      "change": 13,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for follow-up changes",
+      "Assess market sentiment"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-03-17_1758903683756",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-03-17",
+    "title": "📊 MEDIUM: Notable G-Score Change",
+    "message": "Significant score change: 99 → 80 (Increase Selling)",
+    "data": {
+      "previousScore": 99,
+      "currentScore": 80,
+      "previousBand": "Increase Selling",
+      "currentBand": "Increase Selling",
+      "change": -19,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Analyze score drivers",
+      "Review risk management",
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-03-19_1758903683756",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-03-19",
+    "title": "📊 MEDIUM: Risk Level Fell",
+    "message": "Risk band changed: Increase Selling → Begin Scaling Out (83 → 68)",
+    "data": {
+      "previousScore": 83,
+      "currentScore": 68,
+      "previousBand": "Increase Selling",
+      "currentBand": "Begin Scaling Out",
+      "change": -15,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for trend continuation",
+      "Review risk parameters"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-03-20_1758903683756",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-03-20",
+    "title": "📊 MEDIUM: Risk Level Rose",
+    "message": "Risk band changed: Begin Scaling Out → Increase Selling (68 → 85)",
+    "data": {
+      "previousScore": 68,
+      "currentScore": 85,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Increase Selling",
+      "change": 17,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor market conditions",
+      "Review risk management"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-03-21_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-03-21",
+    "title": "ℹ️ INFO: G-Score Change",
+    "message": "Significant score change: 85 → 96 (Increase Selling)",
+    "data": {
+      "previousScore": 85,
+      "currentScore": 96,
+      "previousBand": "Increase Selling",
+      "currentBand": "Increase Selling",
+      "change": 11,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for follow-up changes",
+      "Assess market sentiment"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-03-22_1758903683756",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-03-22",
+    "title": "📊 MEDIUM: Risk Level Fell",
+    "message": "Risk band changed: Increase Selling → Begin Scaling Out (96 → 77)",
+    "data": {
+      "previousScore": 96,
+      "currentScore": 77,
+      "previousBand": "Increase Selling",
+      "currentBand": "Begin Scaling Out",
+      "change": -19,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for trend continuation",
+      "Review risk parameters"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-03-23_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-03-23",
+    "title": "ℹ️ INFO: G-Score Change",
+    "message": "Significant score change: 77 → 67 (Begin Scaling Out)",
+    "data": {
+      "previousScore": 77,
+      "currentScore": 67,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Begin Scaling Out",
+      "change": -10,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for follow-up changes",
+      "Assess market sentiment"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-03-26_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-03-26",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (60 → 53)",
+    "data": {
+      "previousScore": 60,
+      "currentScore": 53,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -7,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-03-30_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-03-30",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (56 → 65)",
+    "data": {
+      "previousScore": 56,
+      "currentScore": 65,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 9,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-04-02_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-04-02",
+    "title": "ℹ️ INFO: G-Score Change",
+    "message": "Significant score change: 62 → 74 (Begin Scaling Out)",
+    "data": {
+      "previousScore": 62,
+      "currentScore": 74,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Begin Scaling Out",
+      "change": 12,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for follow-up changes",
+      "Assess market sentiment"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-04-08_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-04-08",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Begin Scaling Out → Increase Selling (78 → 80)",
+    "data": {
+      "previousScore": 78,
+      "currentScore": 80,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Increase Selling",
+      "change": 2,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-04-19_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-04-19",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Increase Selling → Begin Scaling Out (81 → 79)",
+    "data": {
+      "previousScore": 81,
+      "currentScore": 79,
+      "previousBand": "Increase Selling",
+      "currentBand": "Begin Scaling Out",
+      "change": -2,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-04-23_1758903683756",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-04-23",
+    "title": "📊 MEDIUM: Risk Level Fell",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (77 → 59)",
+    "data": {
+      "previousScore": 77,
+      "currentScore": 59,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -18,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions",
+      "Assess trend direction"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-04-26_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-04-26",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (58 → 64)",
+    "data": {
+      "previousScore": 58,
+      "currentScore": 64,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 6,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-05-02_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-05-02",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (63 → 57)",
+    "data": {
+      "previousScore": 63,
+      "currentScore": 57,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -6,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-05-03_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-05-03",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (57 → 60)",
+    "data": {
+      "previousScore": 57,
+      "currentScore": 60,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 3,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-05-04_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-05-04",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (60 → 56)",
+    "data": {
+      "previousScore": 60,
+      "currentScore": 56,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -4,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-05-05_1758903683756",
+    "type": "risk_band_change",
+    "severity": "high",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-05-05",
+    "title": "⚠️ HIGH: Risk Level Increased",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (56 → 79)",
+    "data": {
+      "previousScore": 56,
+      "currentScore": 79,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 23,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation",
+      "Review risk management",
+      "Consider scaling out"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-05-06_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-05-06",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Begin Scaling Out → Increase Selling (79 → 80)",
+    "data": {
+      "previousScore": 79,
+      "currentScore": 80,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Increase Selling",
+      "change": 1,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-05-07_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-05-07",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Increase Selling → Begin Scaling Out (80 → 79)",
+    "data": {
+      "previousScore": 80,
+      "currentScore": 79,
+      "previousBand": "Increase Selling",
+      "currentBand": "Begin Scaling Out",
+      "change": -1,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-05-08_1758903683756",
+    "type": "risk_band_change",
+    "severity": "high",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-05-08",
+    "title": "⚠️ HIGH: Risk Level Decreased",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (79 → 53)",
+    "data": {
+      "previousScore": 79,
+      "currentScore": 53,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -26,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions",
+      "Review risk parameters",
+      "Assess trend direction"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-05-11_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-05-11",
+    "title": "ℹ️ INFO: G-Score Change",
+    "message": "Significant score change: 53 → 42 (Hold/Neutral)",
+    "data": {
+      "previousScore": 53,
+      "currentScore": 42,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Hold/Neutral",
+      "change": -11,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for follow-up changes",
+      "Assess market sentiment"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-05-21_1758903683756",
+    "type": "risk_band_change",
+    "severity": "high",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-05-21",
+    "title": "⚠️ HIGH: Risk Level Increased",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (41 → 68)",
+    "data": {
+      "previousScore": 41,
+      "currentScore": 68,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 27,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation",
+      "Review risk management",
+      "Consider scaling out"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-05-23_1758903683756",
+    "type": "risk_band_change",
+    "severity": "high",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-05-23",
+    "title": "⚠️ HIGH: Risk Level Decreased",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (76 → 53)",
+    "data": {
+      "previousScore": 76,
+      "currentScore": 53,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -23,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions",
+      "Review risk parameters",
+      "Assess trend direction"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-05-27_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-05-27",
+    "title": "ℹ️ INFO: G-Score Change",
+    "message": "Significant score change: 54 → 40 (Hold/Neutral)",
+    "data": {
+      "previousScore": 54,
+      "currentScore": 40,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Hold/Neutral",
+      "change": -14,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for follow-up changes",
+      "Assess market sentiment"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-05-28_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-05-28",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling In (40 → 36)",
+    "data": {
+      "previousScore": 40,
+      "currentScore": 36,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling In",
+      "change": -4,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for trend confirmation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-05-29_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-05-29",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Begin Scaling In → Hold/Neutral (36 → 42)",
+    "data": {
+      "previousScore": 36,
+      "currentScore": 42,
+      "previousBand": "Begin Scaling In",
+      "currentBand": "Hold/Neutral",
+      "change": 6,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-06-05_1758903683756",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-06-05",
+    "title": "📊 MEDIUM: Risk Level Rose",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (58 → 69)",
+    "data": {
+      "previousScore": 58,
+      "currentScore": 69,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 11,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation",
+      "Review risk parameters"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-06-07_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-06-07",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (62 → 56)",
+    "data": {
+      "previousScore": 62,
+      "currentScore": 56,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -6,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-06-09_1758903683756",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-06-09",
+    "title": "📊 MEDIUM: Notable G-Score Change",
+    "message": "Significant score change: 58 → 40 (Hold/Neutral)",
+    "data": {
+      "previousScore": 58,
+      "currentScore": 40,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Hold/Neutral",
+      "change": -18,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Analyze score drivers",
+      "Review risk management",
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-06-20_1758903683756",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.756Z",
+    "date": "2025-06-20",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (53 → 60)",
+    "data": {
+      "previousScore": 53,
+      "currentScore": 60,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 7,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-06-22_1758903683757",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-06-22",
+    "title": "ℹ️ INFO: G-Score Change",
+    "message": "Significant score change: 64 → 78 (Begin Scaling Out)",
+    "data": {
+      "previousScore": 64,
+      "currentScore": 78,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Begin Scaling Out",
+      "change": 14,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for follow-up changes",
+      "Assess market sentiment"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-06-23_1758903683757",
+    "type": "risk_band_change",
+    "severity": "high",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-06-23",
+    "title": "⚠️ HIGH: Risk Level Decreased",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (78 → 49)",
+    "data": {
+      "previousScore": 78,
+      "currentScore": 49,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -29,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions",
+      "Review risk parameters",
+      "Assess trend direction"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-07-02_1758903683757",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-07-02",
+    "title": "ℹ️ INFO: G-Score Change",
+    "message": "Significant score change: 56 → 42 (Hold/Neutral)",
+    "data": {
+      "previousScore": 56,
+      "currentScore": 42,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Hold/Neutral",
+      "change": -14,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for follow-up changes",
+      "Assess market sentiment"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-07-10_1758903683757",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-07-10",
+    "title": "📊 MEDIUM: Risk Level Rose",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (53 → 63)",
+    "data": {
+      "previousScore": 53,
+      "currentScore": 63,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 10,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation",
+      "Review risk parameters"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-07-12_1758903683757",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-07-12",
+    "title": "ℹ️ INFO: G-Score Change",
+    "message": "Significant score change: 71 → 60 (Begin Scaling Out)",
+    "data": {
+      "previousScore": 71,
+      "currentScore": 60,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Begin Scaling Out",
+      "change": -11,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for follow-up changes",
+      "Assess market sentiment"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-07-21_1758903683757",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-07-21",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (63 → 57)",
+    "data": {
+      "previousScore": 63,
+      "currentScore": 57,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -6,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-07-22_1758903683757",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-07-22",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (57 → 63)",
+    "data": {
+      "previousScore": 57,
+      "currentScore": 63,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 6,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-07-25_1758903683757",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-07-25",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (64 → 59)",
+    "data": {
+      "previousScore": 64,
+      "currentScore": 59,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -5,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-07-26_1758903683757",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-07-26",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (59 → 62)",
+    "data": {
+      "previousScore": 59,
+      "currentScore": 62,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 3,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-07-28_1758903683757",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-07-28",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (66 → 57)",
+    "data": {
+      "previousScore": 66,
+      "currentScore": 57,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -9,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-07-30_1758903683757",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-07-30",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (59 → 61)",
+    "data": {
+      "previousScore": 59,
+      "currentScore": 61,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 2,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-08-08_1758903683757",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-08-08",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (60 → 59)",
+    "data": {
+      "previousScore": 60,
+      "currentScore": 59,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -1,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-08-10_1758903683757",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-08-10",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (59 → 63)",
+    "data": {
+      "previousScore": 59,
+      "currentScore": 63,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 4,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-08-12_1758903683757",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-08-12",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (61 → 59)",
+    "data": {
+      "previousScore": 61,
+      "currentScore": 59,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -2,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-08-14_1758903683757",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-08-14",
+    "title": "ℹ️ INFO: G-Score Change",
+    "message": "Significant score change: 59 → 48 (Hold/Neutral)",
+    "data": {
+      "previousScore": 59,
+      "currentScore": 48,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Hold/Neutral",
+      "change": -11,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for follow-up changes",
+      "Assess market sentiment"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-08-22_1758903683757",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-08-22",
+    "title": "📊 MEDIUM: Risk Level Fell",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling In (44 → 32)",
+    "data": {
+      "previousScore": 44,
+      "currentScore": 32,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling In",
+      "change": -12,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor for trend confirmation",
+      "Review entry strategies"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-08-25_1758903683757",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-08-25",
+    "title": "📊 MEDIUM: Risk Level Rose",
+    "message": "Risk band changed: Begin Scaling In → Hold/Neutral (39 → 51)",
+    "data": {
+      "previousScore": 39,
+      "currentScore": 51,
+      "previousBand": "Begin Scaling In",
+      "currentBand": "Hold/Neutral",
+      "change": 12,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor market conditions",
+      "Assess trend direction"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-08-29_1758903683757",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-08-29",
+    "title": "📊 MEDIUM: Risk Level Rose",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (51 → 62)",
+    "data": {
+      "previousScore": 51,
+      "currentScore": 62,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 11,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation",
+      "Review risk parameters"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-09-02_1758903683757",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-09-02",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (63 → 57)",
+    "data": {
+      "previousScore": 63,
+      "currentScore": 57,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -6,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-09-04_1758903683757",
+    "type": "risk_band_change",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-09-04",
+    "title": "📊 MEDIUM: Risk Level Rose",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (54 → 66)",
+    "data": {
+      "previousScore": 54,
+      "currentScore": 66,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 12,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation",
+      "Review risk parameters"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-09-11_1758903683757",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-09-11",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (61 → 56)",
+    "data": {
+      "previousScore": 61,
+      "currentScore": 56,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -5,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-09-22_1758903683757",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-09-22",
+    "title": "ℹ️ INFO: Risk Level Up",
+    "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (52 → 61)",
+    "data": {
+      "previousScore": 52,
+      "currentScore": 61,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Begin Scaling Out",
+      "change": 9,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Monitor for trend continuation"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-09-23_1758903683757",
+    "type": "risk_band_change",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-09-23",
+    "title": "ℹ️ INFO: Risk Level Down",
+    "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (61 → 59)",
+    "data": {
+      "previousScore": 61,
+      "currentScore": 59,
+      "previousBand": "Begin Scaling Out",
+      "currentBand": "Hold/Neutral",
+      "change": -2,
+      "changeDirection": "decreasing"
+    },
+    "actions": [
+      "Monitor market conditions"
+    ]
+  },
+  {
+    "id": "risk_band_alert_2025-09-26_1758903683757",
+    "type": "risk_band_change",
+    "severity": "high",
+    "timestamp": "2025-09-26T16:21:23.757Z",
+    "date": "2025-09-26",
+    "title": "⚠️ HIGH: Risk Level Increased",
+    "message": "Risk band changed: Hold/Neutral → Increase Selling (58 → 85)",
+    "data": {
+      "previousScore": 58,
+      "currentScore": 85,
+      "previousBand": "Hold/Neutral",
+      "currentBand": "Increase Selling",
+      "change": 27,
+      "changeDirection": "increasing"
+    },
+    "actions": [
+      "Review portfolio risk",
+      "Consider position sizing",
+      "Monitor market conditions"
+    ]
+  }
+]

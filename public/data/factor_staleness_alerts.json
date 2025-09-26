@@ -1,0 +1,57 @@
+[
+  {
+    "id": "staleness_alert_onchain_1758903758395",
+    "type": "factor_staleness",
+    "severity": "low",
+    "timestamp": "2025-09-26T16:22:38.395Z",
+    "factor": "On-chain Activity",
+    "factorKey": "onchain",
+    "title": "ℹ️ INFO: On-chain Activity Data Getting Old",
+    "message": "On-chain Activity data is getting old (2d old, TTL: 3d)",
+    "data": {
+      "factor": "On-chain Activity",
+      "factorKey": "onchain",
+      "status": "fresh",
+      "score": 89,
+      "lastUpdate": "2025-09-25T00:00:00.000Z",
+      "ageHours": 40,
+      "ttlHours": 72,
+      "severity": "low"
+    },
+    "actions": [
+      "Monitor for further delays",
+      "Check data source status",
+      "Check blockchain data sources",
+      "Verify mempool data",
+      "Review on-chain metrics"
+    ]
+  },
+  {
+    "id": "staleness_alert_etf_flows_1758903758398",
+    "type": "factor_staleness",
+    "severity": "medium",
+    "timestamp": "2025-09-26T16:22:38.398Z",
+    "factor": "ETF Flows",
+    "factorKey": "etf_flows",
+    "title": "📊 MEDIUM: ETF Flows Data Aging",
+    "message": "ETF Flows data is aging (1d old, TTL: 1d)",
+    "data": {
+      "factor": "ETF Flows",
+      "factorKey": "etf_flows",
+      "status": "fresh",
+      "score": 61,
+      "lastUpdate": "2025-09-25T16:00:00.000Z",
+      "ageHours": 24,
+      "ttlHours": 24,
+      "severity": "medium"
+    },
+    "actions": [
+      "Monitor data source health",
+      "Check for scheduled maintenance",
+      "Review update frequency",
+      "Check Farside website status",
+      "Verify HTML parsing",
+      "Review ETF data sources"
+    ]
+  }
+]

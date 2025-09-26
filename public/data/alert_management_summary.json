@@ -1,0 +1,53 @@
+{
+  "timestamp": "2025-09-26T16:26:24.580Z",
+  "totalAlerts": 202,
+  "recentAlerts": 202,
+  "criticalAlerts": 10,
+  "alertTypes": {
+    "etf_zero_cross": 100,
+    "risk_band_change": 100,
+    "factor_staleness": 2
+  },
+  "severityBreakdown": {
+    "critical": 10,
+    "high": 62,
+    "medium": 62,
+    "low": 68
+  },
+  "dailyBreakdown": {
+    "2025-09-26": 202
+  },
+  "systemHealth": "critical",
+  "recommendations": [
+    {
+      "priority": "high",
+      "category": "critical_alerts",
+      "message": "10 critical alerts require immediate attention",
+      "actions": [
+        "Review critical alerts immediately",
+        "Check system health and data sources",
+        "Consider emergency procedures"
+      ]
+    },
+    {
+      "priority": "medium",
+      "category": "high_volume",
+      "message": "High alert volume: 202 alerts in last 24 hours",
+      "actions": [
+        "Review alert thresholds",
+        "Consider adjusting sensitivity",
+        "Check for system issues"
+      ]
+    },
+    {
+      "priority": "low",
+      "category": "market_volatility",
+      "message": "High ETF flow volatility detected",
+      "actions": [
+        "Monitor market conditions",
+        "Review portfolio allocation",
+        "Consider risk management adjustments"
+      ]
+    }
+  ]
+}
