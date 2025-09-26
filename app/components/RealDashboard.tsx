@@ -16,6 +16,7 @@ import ProvenanceModal from './ProvenanceModal';
 import FactorHistoryModal from './FactorHistoryModal';
 import EnhancedFactorDetails from './EnhancedFactorDetails';
 import EtfBreakdownModal from './EtfBreakdownModal';
+import EtfPerformanceAnalysis from './EtfPerformanceAnalysis';
 import WeightsLauncher from './WeightsLauncher';
 import HistoryChart from './HistoryChart';
 import BtcGoldCard from './BtcGoldCard';
@@ -95,6 +96,7 @@ export default function RealDashboard() {
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [enhancedDetailsOpen, setEnhancedDetailsOpen] = useState(false);
   const [etfBreakdownOpen, setEtfBreakdownOpen] = useState(false);
+  const [etfPerformanceOpen, setEtfPerformanceOpen] = useState(false);
   const [selectedFactor, setSelectedFactor] = useState<{key: string, label: string} | null>(null);
 
   // Factor expansion state
@@ -149,6 +151,10 @@ export default function RealDashboard() {
 
   const openEtfBreakdown = () => {
     setEtfBreakdownOpen(true);
+  };
+
+  const openEtfPerformance = () => {
+    setEtfPerformanceOpen(true);
   };
 
   // Loading/error states with robust timeouts
@@ -745,14 +751,20 @@ export default function RealDashboard() {
                 </div>
               )}
               
-                  {/* ETF-specific action button */}
+                  {/* ETF-specific action buttons */}
                   {factor.key === 'etf_flows' && (
-                    <div className="mt-2">
+                    <div className="mt-2 flex gap-3">
                       <button
                         onClick={openEtfBreakdown}
                         className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                       >
                         By ETF
+                      </button>
+                      <button
+                        onClick={openEtfPerformance}
+                        className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                      >
+                        Performance Analysis
                       </button>
                     </div>
                   )}
@@ -835,6 +847,13 @@ export default function RealDashboard() {
         <EtfBreakdownModal
           isOpen={etfBreakdownOpen}
           onClose={() => setEtfBreakdownOpen(false)}
+        />
+      )}
+
+      {etfPerformanceOpen && (
+        <EtfPerformanceAnalysis
+          isOpen={etfPerformanceOpen}
+          onClose={() => setEtfPerformanceOpen(false)}
         />
       )}
     </div>
