@@ -39,6 +39,7 @@ interface EnhancedFactorDetailsProps {
   factorKey: string;
   factorLabel: string;
   currentScore: number;
+  factorWeight?: number;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -47,6 +48,7 @@ export default function EnhancedFactorDetails({
   factorKey, 
   factorLabel, 
   currentScore, 
+  factorWeight,
   isOpen, 
   onClose 
 }: EnhancedFactorDetailsProps) {
@@ -205,6 +207,35 @@ export default function EnhancedFactorDetails({
 
         {/* Content */}
         <div className="p-6 space-y-8">
+          
+          {/* Factor Weight */}
+          {factorWeight !== undefined && (
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
+              <h3 className="text-lg font-semibold mb-3">⚖️ Factor Weight in G-Score</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <div className="text-3xl font-bold mb-2">{(factorWeight * 100).toFixed(1)}%</div>
+                  <div className="text-blue-100 text-sm">Weight in Composite Score</div>
+                </div>
+                <div>
+                  <div className="text-lg font-semibold mb-2">Impact Calculation</div>
+                  <div className="text-blue-100 text-sm">
+                    This factor contributes {(factorWeight * 100).toFixed(1)}% to the overall Bitcoin G-Score calculation
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 bg-white/20 rounded-lg p-4">
+                <div className="text-sm font-medium mb-2">Weight Context:</div>
+                <div className="text-sm text-blue-100">
+                  {factorWeight >= 0.2 ? 'High Impact' : 
+                   factorWeight >= 0.1 ? 'Medium Impact' : 
+                   'Lower Impact'} - {factorWeight >= 0.2 ? 'This is a major driver of the G-Score' :
+                   factorWeight >= 0.1 ? 'This factor has moderate influence' :
+                   'This factor has smaller but still meaningful influence'}
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* Volatility & Risk Metrics */}
           {factorData ? (

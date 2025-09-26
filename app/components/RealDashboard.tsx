@@ -827,6 +827,7 @@ export default function RealDashboard() {
           factorKey={selectedFactor?.key || ''}
           factorLabel={selectedFactor?.label || ''}
           currentScore={latest?.factors?.find((f: any) => f.key === selectedFactor?.key)?.score || 0}
+          factorWeight={latest?.factors?.find((f: any) => f.key === selectedFactor?.key)?.weight}
         />
       )}
 
