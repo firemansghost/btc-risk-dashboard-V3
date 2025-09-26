@@ -3,16 +3,19 @@
 import React, { useState, useEffect } from 'react';
 
 interface StrategyData {
-  name: string;
-  totalReturn: number;
+  monthlyAmount?: number;
   totalInvested: number;
-  finalValue: number;
   totalBTC: number;
-  avgPrice: number;
-  totalTrades: number;
-  volatility: number;
-  maxDrawdown: number;
-  sharpeRatio: number;
+  finalValue: number;
+  totalReturn: number;
+  trades: Array<{
+    date: string;
+    price: number;
+    amount: number;
+    btcPurchased: number;
+    totalBTC: number;
+    totalInvested: number;
+  }>;
 }
 
 interface ComparisonData {
@@ -190,8 +193,8 @@ export default function StrategyComparisonCard() {
                     <div className="space-y-1">
                       <div className="flex justify-between text-xs">
                         <span className="text-gray-500">Return:</span>
-                        <span className={`font-medium ${getReturnColor(strategy.totalReturn)}`}>
-                          {strategy.totalReturn.toFixed(2)}%
+                        <span className={`font-medium ${getReturnColor(strategy.totalReturn * 100)}`}>
+                          {(strategy.totalReturn * 100).toFixed(2)}%
                         </span>
                       </div>
                       <div className="flex justify-between text-xs">
@@ -203,10 +206,12 @@ export default function StrategyComparisonCard() {
                         <span className="font-medium">${strategy.finalValue.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">Sharpe:</span>
-                        <span className={`font-medium ${getSharpeColor(strategy.sharpeRatio)}`}>
-                          {strategy.sharpeRatio.toFixed(2)}
-                        </span>
+                        <span className="text-gray-500">Total BTC:</span>
+                        <span className="font-medium">{strategy.totalBTC.toFixed(4)}</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-500">Trades:</span>
+                        <span className="font-medium">{strategy.trades.length}</span>
                       </div>
                     </div>
                   </div>
@@ -224,8 +229,8 @@ export default function StrategyComparisonCard() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <div className="text-xs text-gray-500 mb-1">Total Return</div>
-                    <div className={`text-lg font-semibold ${getReturnColor(strategy.totalReturn)}`}>
-                      {strategy.totalReturn.toFixed(2)}%
+                    <div className={`text-lg font-semibold ${getReturnColor(strategy.totalReturn * 100)}`}>
+                      {(strategy.totalReturn * 100).toFixed(2)}%
                     </div>
                   </div>
                   <div>
@@ -247,27 +252,15 @@ export default function StrategyComparisonCard() {
                     </div>
                   </div>
                   <div>
-                    <div className="text-xs text-gray-500 mb-1">Avg Price</div>
-                    <div className="text-lg font-semibold text-gray-900">
-                      ${strategy.avgPrice.toLocaleString()}
-                    </div>
-                  </div>
-                  <div>
                     <div className="text-xs text-gray-500 mb-1">Total Trades</div>
                     <div className="text-lg font-semibold text-gray-900">
-                      {strategy.totalTrades}
+                      {strategy.trades.length}
                     </div>
                   </div>
                   <div>
-                    <div className="text-xs text-gray-500 mb-1">Volatility</div>
+                    <div className="text-xs text-gray-500 mb-1">Avg Price</div>
                     <div className="text-lg font-semibold text-gray-900">
-                      {strategy.volatility.toFixed(2)}%
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">Max Drawdown</div>
-                    <div className="text-lg font-semibold text-gray-900">
-                      {strategy.maxDrawdown.toFixed(2)}%
+                      ${(strategy.totalInvested / strategy.totalBTC).toLocaleString()}
                     </div>
                   </div>
                 </div>
