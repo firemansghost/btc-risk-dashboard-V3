@@ -1,0 +1,655 @@
+{
+  "strategies": {
+    "DCA": {
+      "monthlyAmount": 1000,
+      "totalInvested": 25000,
+      "totalBTC": 0.41756491339337704,
+      "finalValue": 45559.856299086474,
+      "totalReturn": 0.8223942519634589,
+      "trades": [
+        {
+          "date": "2023-09-25",
+          "price": 26296.08,
+          "amount": 1000,
+          "btcPurchased": 0.038028481811737715,
+          "totalBTC": 0.038028481811737715,
+          "totalInvested": 1000
+        },
+        {
+          "date": "2023-10-02",
+          "price": 27504.04,
+          "amount": 1000,
+          "btcPurchased": 0.036358294999570974,
+          "totalBTC": 0.07438677681130869,
+          "totalInvested": 2000
+        },
+        {
+          "date": "2023-11-02",
+          "price": 34950,
+          "amount": 1000,
+          "btcPurchased": 0.02861230329041488,
+          "totalBTC": 0.10299908010172357,
+          "totalInvested": 3000
+        },
+        {
+          "date": "2023-12-02",
+          "price": 39478.95,
+          "amount": 1000,
+          "btcPurchased": 0.02532995431742739,
+          "totalBTC": 0.12832903441915094,
+          "totalInvested": 4000
+        },
+        {
+          "date": "2024-01-02",
+          "price": 44972.8,
+          "amount": 1000,
+          "btcPurchased": 0.022235662444855555,
+          "totalBTC": 0.1505646968640065,
+          "totalInvested": 5000
+        },
+        {
+          "date": "2024-02-02",
+          "price": 43181.66,
+          "amount": 1000,
+          "btcPurchased": 0.023157979568177785,
+          "totalBTC": 0.17372267643218428,
+          "totalInvested": 6000
+        },
+        {
+          "date": "2024-03-02",
+          "price": 62045.78,
+          "amount": 1000,
+          "btcPurchased": 0.016117131576071732,
+          "totalBTC": 0.189839808008256,
+          "totalInvested": 7000
+        },
+        {
+          "date": "2024-04-02",
+          "price": 65464.14,
+          "amount": 1000,
+          "btcPurchased": 0.015275538638405698,
+          "totalBTC": 0.2051153466466617,
+          "totalInvested": 8000
+        },
+        {
+          "date": "2024-05-02",
+          "price": 59071.89,
+          "amount": 1000,
+          "btcPurchased": 0.016928525564358952,
+          "totalBTC": 0.22204387221102065,
+          "totalInvested": 9000
+        },
+        {
+          "date": "2024-06-02",
+          "price": 67735.52,
+          "amount": 1000,
+          "btcPurchased": 0.014763302916992443,
+          "totalBTC": 0.23680717512801308,
+          "totalInvested": 10000
+        },
+        {
+          "date": "2024-07-02",
+          "price": 62040.22,
+          "amount": 1000,
+          "btcPurchased": 0.016118575981838877,
+          "totalBTC": 0.25292575110985194,
+          "totalInvested": 11000
+        },
+        {
+          "date": "2024-08-02",
+          "price": 61418.06,
+          "amount": 1000,
+          "btcPurchased": 0.01628185585803264,
+          "totalBTC": 0.2692076069678846,
+          "totalInvested": 12000
+        },
+        {
+          "date": "2024-09-02",
+          "price": 59139.83,
+          "amount": 1000,
+          "btcPurchased": 0.01690907802744783,
+          "totalBTC": 0.28611668499533244,
+          "totalInvested": 13000
+        },
+        {
+          "date": "2024-10-02",
+          "price": 60631.37,
+          "amount": 1000,
+          "btcPurchased": 0.016493112393798786,
+          "totalBTC": 0.30260979738913124,
+          "totalInvested": 14000
+        },
+        {
+          "date": "2024-11-02",
+          "price": 69358.94,
+          "amount": 1000,
+          "btcPurchased": 0.014417752059071259,
+          "totalBTC": 0.3170275494482025,
+          "totalInvested": 15000
+        },
+        {
+          "date": "2024-12-02",
+          "price": 95862.89,
+          "amount": 1000,
+          "btcPurchased": 0.010431565332528573,
+          "totalBTC": 0.3274591147807311,
+          "totalInvested": 16000
+        },
+        {
+          "date": "2025-01-02",
+          "price": 96903.19,
+          "amount": 1000,
+          "btcPurchased": 0.010319577714624256,
+          "totalBTC": 0.33777869249535536,
+          "totalInvested": 17000
+        },
+        {
+          "date": "2025-02-02",
+          "price": 97676.52,
+          "amount": 1000,
+          "btcPurchased": 0.010237874977527863,
+          "totalBTC": 0.34801656747288323,
+          "totalInvested": 18000
+        },
+        {
+          "date": "2025-03-02",
+          "price": 94265.48,
+          "amount": 1000,
+          "btcPurchased": 0.01060833721952087,
+          "totalBTC": 0.3586249046924041,
+          "totalInvested": 19000
+        },
+        {
+          "date": "2025-04-02",
+          "price": 82490.08,
+          "amount": 1000,
+          "btcPurchased": 0.012122669780414808,
+          "totalBTC": 0.3707475744728189,
+          "totalInvested": 20000
+        },
+        {
+          "date": "2025-05-02",
+          "price": 96929.81,
+          "amount": 1000,
+          "btcPurchased": 0.010316743631293614,
+          "totalBTC": 0.3810643181041125,
+          "totalInvested": 21000
+        },
+        {
+          "date": "2025-06-02",
+          "price": 105904.94,
+          "amount": 1000,
+          "btcPurchased": 0.009442430164258626,
+          "totalBTC": 0.3905067482683711,
+          "totalInvested": 22000
+        },
+        {
+          "date": "2025-07-02",
+          "price": 108888.32,
+          "amount": 1000,
+          "btcPurchased": 0.009183721449646756,
+          "totalBTC": 0.39969046971801786,
+          "totalInvested": 23000
+        },
+        {
+          "date": "2025-08-02",
+          "price": 112542.74,
+          "amount": 1000,
+          "btcPurchased": 0.008885513183702476,
+          "totalBTC": 0.4085759829017203,
+          "totalInvested": 24000
+        },
+        {
+          "date": "2025-09-02",
+          "price": 111247.94,
+          "amount": 1000,
+          "btcPurchased": 0.008988930491656744,
+          "totalBTC": 0.41756491339337704,
+          "totalInvested": 25000
+        }
+      ],
+      "monthlyReturns": [],
+      "metrics": {
+        "totalReturn": 82.23942519634589,
+        "totalInvested": 25000,
+        "finalValue": 45559.856299086474,
+        "totalBTC": 0.41756491339337704,
+        "avgPrice": 59870.93071789811,
+        "totalTrades": 25,
+        "volatility": 26.784552194328427,
+        "maxDrawdown": 10.031610622168209,
+        "sharpeRatio": 0.740437864891704
+      }
+    },
+    "Risk-Based DCA": {
+      "baseMonthlyAmount": 1000,
+      "totalInvested": 23500,
+      "totalBTC": 0.40529519113632445,
+      "finalValue": 44221.12604438619,
+      "totalReturn": 0.8817500444419656,
+      "trades": [
+        {
+          "date": "2023-09-25",
+          "price": 26296.08,
+          "band": "Moderate Buying",
+          "mappedBand": "Begin Scaling In",
+          "amount": 1500,
+          "btcPurchased": 0.057042722717606575,
+          "totalBTC": 0.057042722717606575,
+          "totalInvested": 1500,
+          "multiplier": 1.5
+        },
+        {
+          "date": "2023-10-02",
+          "price": 27504.04,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold/Neutral",
+          "amount": 1000,
+          "btcPurchased": 0.036358294999570974,
+          "totalBTC": 0.09340101771717754,
+          "totalInvested": 2500,
+          "multiplier": 1
+        },
+        {
+          "date": "2023-11-02",
+          "price": 34950,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold/Neutral",
+          "amount": 1000,
+          "btcPurchased": 0.02861230329041488,
+          "totalBTC": 0.12201332100759242,
+          "totalInvested": 3500,
+          "multiplier": 1
+        },
+        {
+          "date": "2023-12-02",
+          "price": 39478.95,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold/Neutral",
+          "amount": 1000,
+          "btcPurchased": 0.02532995431742739,
+          "totalBTC": 0.1473432753250198,
+          "totalInvested": 4500,
+          "multiplier": 1
+        },
+        {
+          "date": "2024-01-02",
+          "price": 44972.8,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold/Neutral",
+          "amount": 1000,
+          "btcPurchased": 0.022235662444855555,
+          "totalBTC": 0.16957893776987537,
+          "totalInvested": 5500,
+          "multiplier": 1
+        },
+        {
+          "date": "2024-02-02",
+          "price": 43181.66,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold/Neutral",
+          "amount": 1000,
+          "btcPurchased": 0.023157979568177785,
+          "totalBTC": 0.19273691733805315,
+          "totalInvested": 6500,
+          "multiplier": 1
+        },
+        {
+          "date": "2024-03-02",
+          "price": 62045.78,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold/Neutral",
+          "amount": 1000,
+          "btcPurchased": 0.016117131576071732,
+          "totalBTC": 0.20885404891412487,
+          "totalInvested": 7500,
+          "multiplier": 1
+        },
+        {
+          "date": "2024-04-02",
+          "price": 65464.14,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold/Neutral",
+          "amount": 1000,
+          "btcPurchased": 0.015275538638405698,
+          "totalBTC": 0.22412958755253057,
+          "totalInvested": 8500,
+          "multiplier": 1
+        },
+        {
+          "date": "2024-05-02",
+          "price": 59071.89,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold/Neutral",
+          "amount": 1000,
+          "btcPurchased": 0.016928525564358952,
+          "totalBTC": 0.24105811311688952,
+          "totalInvested": 9500,
+          "multiplier": 1
+        },
+        {
+          "date": "2024-06-02",
+          "price": 67735.52,
+          "band": "Reduce Risk",
+          "mappedBand": "Begin Scaling Out",
+          "amount": 500,
+          "btcPurchased": 0.007381651458496221,
+          "totalBTC": 0.24843976457538575,
+          "totalInvested": 10000,
+          "multiplier": 0.5
+        },
+        {
+          "date": "2024-07-02",
+          "price": 62040.22,
+          "band": "Reduce Risk",
+          "mappedBand": "Begin Scaling Out",
+          "amount": 500,
+          "btcPurchased": 0.008059287990919439,
+          "totalBTC": 0.2564990525663052,
+          "totalInvested": 10500,
+          "multiplier": 0.5
+        },
+        {
+          "date": "2024-08-02",
+          "price": 61418.06,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold/Neutral",
+          "amount": 1000,
+          "btcPurchased": 0.01628185585803264,
+          "totalBTC": 0.27278090842433783,
+          "totalInvested": 11500,
+          "multiplier": 1
+        },
+        {
+          "date": "2024-09-02",
+          "price": 59139.83,
+          "band": "Reduce Risk",
+          "mappedBand": "Begin Scaling Out",
+          "amount": 500,
+          "btcPurchased": 0.008454539013723915,
+          "totalBTC": 0.2812354474380617,
+          "totalInvested": 12000,
+          "multiplier": 0.5
+        },
+        {
+          "date": "2024-10-02",
+          "price": 60631.37,
+          "band": "Reduce Risk",
+          "mappedBand": "Begin Scaling Out",
+          "amount": 500,
+          "btcPurchased": 0.008246556196899393,
+          "totalBTC": 0.2894820036349611,
+          "totalInvested": 12500,
+          "multiplier": 0.5
+        },
+        {
+          "date": "2024-11-02",
+          "price": 69358.94,
+          "band": "Moderate Buying",
+          "mappedBand": "Begin Scaling In",
+          "amount": 1500,
+          "btcPurchased": 0.02162662808860689,
+          "totalBTC": 0.311108631723568,
+          "totalInvested": 14000,
+          "multiplier": 1.5
+        },
+        {
+          "date": "2024-12-02",
+          "price": 95862.89,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold/Neutral",
+          "amount": 1000,
+          "btcPurchased": 0.010431565332528573,
+          "totalBTC": 0.3215401970560966,
+          "totalInvested": 15000,
+          "multiplier": 1
+        },
+        {
+          "date": "2025-01-02",
+          "price": 96903.19,
+          "band": "Reduce Risk",
+          "mappedBand": "Begin Scaling Out",
+          "amount": 500,
+          "btcPurchased": 0.005159788857312128,
+          "totalBTC": 0.3266999859134087,
+          "totalInvested": 15500,
+          "multiplier": 0.5
+        },
+        {
+          "date": "2025-02-02",
+          "price": 97676.52,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold/Neutral",
+          "amount": 1000,
+          "btcPurchased": 0.010237874977527863,
+          "totalBTC": 0.3369378608909366,
+          "totalInvested": 16500,
+          "multiplier": 1
+        },
+        {
+          "date": "2025-03-02",
+          "price": 94265.48,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold/Neutral",
+          "amount": 1000,
+          "btcPurchased": 0.01060833721952087,
+          "totalBTC": 0.34754619811045745,
+          "totalInvested": 17500,
+          "multiplier": 1
+        },
+        {
+          "date": "2025-04-02",
+          "price": 82490.08,
+          "band": "Reduce Risk",
+          "mappedBand": "Begin Scaling Out",
+          "amount": 500,
+          "btcPurchased": 0.006061334890207404,
+          "totalBTC": 0.35360753300066483,
+          "totalInvested": 18000,
+          "multiplier": 0.5
+        },
+        {
+          "date": "2025-05-02",
+          "price": 96929.81,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold/Neutral",
+          "amount": 1000,
+          "btcPurchased": 0.010316743631293614,
+          "totalBTC": 0.3639242766319584,
+          "totalInvested": 19000,
+          "multiplier": 1
+        },
+        {
+          "date": "2025-06-02",
+          "price": 105904.94,
+          "band": "Moderate Buying",
+          "mappedBand": "Begin Scaling In",
+          "amount": 1500,
+          "btcPurchased": 0.01416364524638794,
+          "totalBTC": 0.3780879218783464,
+          "totalInvested": 20500,
+          "multiplier": 1.5
+        },
+        {
+          "date": "2025-07-02",
+          "price": 108888.32,
+          "band": "Moderate Buying",
+          "mappedBand": "Begin Scaling In",
+          "amount": 1500,
+          "btcPurchased": 0.013775582174470134,
+          "totalBTC": 0.3918635040528165,
+          "totalInvested": 22000,
+          "multiplier": 1.5
+        },
+        {
+          "date": "2025-08-02",
+          "price": 112542.74,
+          "band": "Reduce Risk",
+          "mappedBand": "Begin Scaling Out",
+          "amount": 500,
+          "btcPurchased": 0.004442756591851238,
+          "totalBTC": 0.39630626064466773,
+          "totalInvested": 22500,
+          "multiplier": 0.5
+        },
+        {
+          "date": "2025-09-02",
+          "price": 111247.94,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold/Neutral",
+          "amount": 1000,
+          "btcPurchased": 0.008988930491656744,
+          "totalBTC": 0.40529519113632445,
+          "totalInvested": 23500,
+          "multiplier": 1
+        }
+      ],
+      "allocationMultipliers": {
+        "Begin Scaling In": 1.5,
+        "Hold/Neutral": 1,
+        "Begin Scaling Out": 0.5,
+        "Increase Selling": 0
+      },
+      "metrics": {
+        "totalReturn": 88.17500444419656,
+        "totalInvested": 23500,
+        "finalValue": 44221.12604438619,
+        "totalBTC": 0.40529519113632445,
+        "avgPrice": 57982.4298781171,
+        "totalTrades": 25,
+        "volatility": 22.070021265839696,
+        "maxDrawdown": 11.369491593744579,
+        "sharpeRatio": 0.7747464849019268
+      }
+    },
+    "Value Averaging": {
+      "targetValue": 1000,
+      "totalInvested": 4666.367265729507,
+      "totalBTC": 0.13894787740906672,
+      "finalValue": 15160.386145414512,
+      "totalReturn": 2.2488626124125792,
+      "trades": [
+        {
+          "date": "2023-09-25",
+          "price": 26296.08,
+          "amount": 1000,
+          "btcPurchased": 0.038028481811737715,
+          "totalBTC": 0.038028481811737715,
+          "totalInvested": 1000,
+          "portfolioValue": 1000
+        },
+        {
+          "date": "2023-10-02",
+          "price": 27504.04,
+          "amount": 954.0631151106934,
+          "btcPurchased": 0.034688108187404226,
+          "totalBTC": 0.07271658999914193,
+          "totalInvested": 1954.0631151106934,
+          "portfolioValue": 1999.9999999999998
+        },
+        {
+          "date": "2023-11-02",
+          "price": 34950,
+          "amount": 458.55517952998935,
+          "btcPurchased": 0.0131203198721027,
+          "totalBTC": 0.08583690987124463,
+          "totalInvested": 2412.6182946406825,
+          "portfolioValue": 3000
+        },
+        {
+          "date": "2023-12-02",
+          "price": 39478.95,
+          "amount": 611.2489270386268,
+          "btcPurchased": 0.015482907398464925,
+          "totalBTC": 0.10131981726970957,
+          "totalInvested": 3023.8672216793093,
+          "portfolioValue": 4000
+        },
+        {
+          "date": "2024-01-02",
+          "price": 44972.8,
+          "amount": 443.3641218928051,
+          "btcPurchased": 0.009858494954568206,
+          "totalBTC": 0.11117831222427778,
+          "totalInvested": 3467.2313435721144,
+          "portfolioValue": 5000
+        },
+        {
+          "date": "2024-02-02",
+          "price": 43181.66,
+          "amount": 1199.135922157393,
+          "btcPurchased": 0.027769565184788934,
+          "totalBTC": 0.13894787740906672,
+          "totalInvested": 4666.367265729507,
+          "portfolioValue": 6000.000000000001
+        }
+      ],
+      "portfolioValue": 0,
+      "metrics": {
+        "totalReturn": 224.88626124125793,
+        "totalInvested": 4666.367265729507,
+        "finalValue": 15160.386145414512,
+        "totalBTC": 0.13894787740906672,
+        "avgPrice": 33583.580783976875,
+        "totalTrades": 6,
+        "volatility": 29.013406862651912,
+        "maxDrawdown": 0,
+        "sharpeRatio": 1.5739849815931817
+      }
+    }
+  },
+  "rankings": {
+    "byReturn": [
+      {
+        "rank": 1,
+        "strategy": "Value Averaging",
+        "return": 224.88626124125793
+      },
+      {
+        "rank": 2,
+        "strategy": "Risk-Based DCA",
+        "return": 88.17500444419656
+      },
+      {
+        "rank": 3,
+        "strategy": "DCA",
+        "return": 82.23942519634589
+      }
+    ],
+    "bySharpe": [
+      {
+        "rank": 1,
+        "strategy": "Value Averaging",
+        "sharpeRatio": 1.5739849815931817
+      },
+      {
+        "rank": 2,
+        "strategy": "Risk-Based DCA",
+        "sharpeRatio": 0.7747464849019268
+      },
+      {
+        "rank": 3,
+        "strategy": "DCA",
+        "sharpeRatio": 0.740437864891704
+      }
+    ]
+  },
+  "insights": [
+    {
+      "type": "performance",
+      "message": "Value Averaging had the highest return at 224.89%"
+    },
+    {
+      "type": "risk_adjusted",
+      "message": "Value Averaging had the best risk-adjusted return (Sharpe: 1.57)"
+    },
+    {
+      "type": "outperformance",
+      "message": "Risk-Based DCA outperformed regular DCA by 5.94%"
+    },
+    {
+      "type": "outperformance",
+      "message": "Value Averaging outperformed regular DCA by 142.65%"
+    }
+  ]
+}

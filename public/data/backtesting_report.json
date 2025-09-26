@@ -1,0 +1,5178 @@
+{
+  "timestamp": "2025-09-26T17:08:51.641Z",
+  "dataRange": {
+    "startDate": "2023-09-25",
+    "endDate": "2025-09-26",
+    "totalDays": 731
+  },
+  "bandPerformance": {
+    "Increase Buying": {
+      "signals": [],
+      "performance": {}
+    },
+    "Begin Scaling In": {
+      "signals": [],
+      "performance": {}
+    },
+    "Hold/Neutral": {
+      "signals": [],
+      "performance": {}
+    },
+    "Begin Scaling Out": {
+      "signals": [],
+      "performance": {}
+    },
+    "Increase Selling": {
+      "signals": [],
+      "performance": {}
+    }
+  },
+  "strategyPerformance": {
+    "Risk-Based": {
+      "signals": [
+        {
+          "date": "2023-09-25",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 26296.08,
+          "index": 0
+        },
+        {
+          "date": "2023-09-26",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 26208.44,
+          "index": 1
+        },
+        {
+          "date": "2023-09-27",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 26357.62,
+          "index": 2
+        },
+        {
+          "date": "2023-09-28",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 27027.14,
+          "index": 3
+        },
+        {
+          "date": "2023-09-29",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 26907,
+          "index": 4
+        },
+        {
+          "date": "2023-09-30",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 26961,
+          "index": 5
+        },
+        {
+          "date": "2023-10-01",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 27995.46,
+          "index": 6
+        },
+        {
+          "date": "2023-10-02",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 27504.04,
+          "index": 7
+        },
+        {
+          "date": "2023-10-03",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 27428.96,
+          "index": 8
+        },
+        {
+          "date": "2023-10-04",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 27786.75,
+          "index": 9
+        },
+        {
+          "date": "2023-10-05",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 27412.96,
+          "index": 10
+        },
+        {
+          "date": "2023-10-06",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 27945.17,
+          "index": 11
+        },
+        {
+          "date": "2023-10-07",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 27976.43,
+          "index": 12
+        },
+        {
+          "date": "2023-10-08",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 27933.55,
+          "index": 13
+        },
+        {
+          "date": "2023-10-09",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 27596.67,
+          "index": 14
+        },
+        {
+          "date": "2023-10-10",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 27393.29,
+          "index": 15
+        },
+        {
+          "date": "2023-10-11",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 26869.19,
+          "index": 16
+        },
+        {
+          "date": "2023-10-12",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 26750.51,
+          "index": 17
+        },
+        {
+          "date": "2023-10-13",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 26863.53,
+          "index": 18
+        },
+        {
+          "date": "2023-10-14",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 26851.71,
+          "index": 19
+        },
+        {
+          "date": "2023-10-15",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 27186.13,
+          "index": 20
+        },
+        {
+          "date": "2023-10-16",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 28520.24,
+          "index": 21
+        },
+        {
+          "date": "2023-10-17",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 28408.83,
+          "index": 22
+        },
+        {
+          "date": "2023-10-18",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 28326.51,
+          "index": 23
+        },
+        {
+          "date": "2023-10-19",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 28735.34,
+          "index": 24
+        },
+        {
+          "date": "2023-10-20",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 29684.73,
+          "index": 25
+        },
+        {
+          "date": "2023-10-21",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 29924.84,
+          "index": 26
+        },
+        {
+          "date": "2023-10-22",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 30004.15,
+          "index": 27
+        },
+        {
+          "date": "2023-10-23",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 33087.58,
+          "index": 28
+        },
+        {
+          "date": "2023-10-24",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 33922.52,
+          "index": 29
+        },
+        {
+          "date": "2023-10-25",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 34506.35,
+          "index": 30
+        },
+        {
+          "date": "2023-10-26",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 34154.71,
+          "index": 31
+        },
+        {
+          "date": "2023-10-27",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 33906.09,
+          "index": 32
+        },
+        {
+          "date": "2023-10-28",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 34085.42,
+          "index": 33
+        },
+        {
+          "date": "2023-10-29",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 34534.48,
+          "index": 34
+        },
+        {
+          "date": "2023-10-30",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 34493.79,
+          "index": 35
+        },
+        {
+          "date": "2023-10-31",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 34656.4,
+          "index": 36
+        },
+        {
+          "date": "2023-11-01",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 35440.1,
+          "index": 37
+        },
+        {
+          "date": "2023-11-02",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 34950,
+          "index": 38
+        },
+        {
+          "date": "2023-11-03",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 34731.27,
+          "index": 39
+        },
+        {
+          "date": "2023-11-04",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 35087.01,
+          "index": 40
+        },
+        {
+          "date": "2023-11-05",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 35035.42,
+          "index": 41
+        },
+        {
+          "date": "2023-11-06",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 35059.46,
+          "index": 42
+        },
+        {
+          "date": "2023-11-07",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 35416.28,
+          "index": 43
+        },
+        {
+          "date": "2023-11-08",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 35639.13,
+          "index": 44
+        },
+        {
+          "date": "2023-11-09",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 36706.59,
+          "index": 45
+        },
+        {
+          "date": "2023-11-10",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 37324.83,
+          "index": 46
+        },
+        {
+          "date": "2023-11-11",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 37139.12,
+          "index": 47
+        },
+        {
+          "date": "2023-11-12",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 37086.03,
+          "index": 48
+        },
+        {
+          "date": "2023-11-13",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 36475.67,
+          "index": 49
+        },
+        {
+          "date": "2023-11-14",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 35554.09,
+          "index": 50
+        },
+        {
+          "date": "2023-11-15",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 37885.35,
+          "index": 51
+        },
+        {
+          "date": "2023-11-16",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 36161.15,
+          "index": 52
+        },
+        {
+          "date": "2023-11-17",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 36630.38,
+          "index": 53
+        },
+        {
+          "date": "2023-11-18",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 36594.89,
+          "index": 54
+        },
+        {
+          "date": "2023-11-19",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 37391.19,
+          "index": 55
+        },
+        {
+          "date": "2023-11-20",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 37475.64,
+          "index": 56
+        },
+        {
+          "date": "2023-11-21",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 35751.89,
+          "index": 57
+        },
+        {
+          "date": "2023-11-22",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 37424.31,
+          "index": 58
+        },
+        {
+          "date": "2023-11-23",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 37304.05,
+          "index": 59
+        },
+        {
+          "date": "2023-11-24",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 37745.84,
+          "index": 60
+        },
+        {
+          "date": "2023-11-25",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 37805.99,
+          "index": 61
+        },
+        {
+          "date": "2023-11-26",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 37462.79,
+          "index": 62
+        },
+        {
+          "date": "2023-11-27",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 37241.63,
+          "index": 63
+        },
+        {
+          "date": "2023-11-28",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 37838.26,
+          "index": 64
+        },
+        {
+          "date": "2023-11-29",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 37863.84,
+          "index": 65
+        },
+        {
+          "date": "2023-11-30",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 37732.27,
+          "index": 66
+        },
+        {
+          "date": "2023-12-01",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 38703.54,
+          "index": 67
+        },
+        {
+          "date": "2023-12-02",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 39478.95,
+          "index": 68
+        },
+        {
+          "date": "2023-12-03",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 39984.81,
+          "index": 69
+        },
+        {
+          "date": "2023-12-04",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 41987.24,
+          "index": 70
+        },
+        {
+          "date": "2023-12-05",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 44084.39,
+          "index": 71
+        },
+        {
+          "date": "2023-12-06",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43764.05,
+          "index": 72
+        },
+        {
+          "date": "2023-12-07",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43280.95,
+          "index": 73
+        },
+        {
+          "date": "2023-12-08",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 44192.87,
+          "index": 74
+        },
+        {
+          "date": "2023-12-09",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43723.25,
+          "index": 75
+        },
+        {
+          "date": "2023-12-10",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43793.68,
+          "index": 76
+        },
+        {
+          "date": "2023-12-11",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 41229.61,
+          "index": 77
+        },
+        {
+          "date": "2023-12-12",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 41477.39,
+          "index": 78
+        },
+        {
+          "date": "2023-12-13",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42885.54,
+          "index": 79
+        },
+        {
+          "date": "2023-12-14",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43027.77,
+          "index": 80
+        },
+        {
+          "date": "2023-12-15",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 41933.89,
+          "index": 81
+        },
+        {
+          "date": "2023-12-16",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42237.29,
+          "index": 82
+        },
+        {
+          "date": "2023-12-17",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 41349.59,
+          "index": 83
+        },
+        {
+          "date": "2023-12-18",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42650.01,
+          "index": 84
+        },
+        {
+          "date": "2023-12-19",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42266.22,
+          "index": 85
+        },
+        {
+          "date": "2023-12-20",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43674.77,
+          "index": 86
+        },
+        {
+          "date": "2023-12-21",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43875.32,
+          "index": 87
+        },
+        {
+          "date": "2023-12-22",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 44013.73,
+          "index": 88
+        },
+        {
+          "date": "2023-12-23",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43726.35,
+          "index": 89
+        },
+        {
+          "date": "2023-12-24",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43025.03,
+          "index": 90
+        },
+        {
+          "date": "2023-12-25",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43589.67,
+          "index": 91
+        },
+        {
+          "date": "2023-12-26",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42515.53,
+          "index": 92
+        },
+        {
+          "date": "2023-12-27",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43474.4,
+          "index": 93
+        },
+        {
+          "date": "2023-12-28",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42581.23,
+          "index": 94
+        },
+        {
+          "date": "2023-12-29",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42063.45,
+          "index": 95
+        },
+        {
+          "date": "2023-12-30",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42141.03,
+          "index": 96
+        },
+        {
+          "date": "2023-12-31",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42288.06,
+          "index": 97
+        },
+        {
+          "date": "2024-01-01",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 44220.78,
+          "index": 98
+        },
+        {
+          "date": "2024-01-02",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 44972.8,
+          "index": 99
+        },
+        {
+          "date": "2024-01-03",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42862.44,
+          "index": 100
+        },
+        {
+          "date": "2024-01-04",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 44193.29,
+          "index": 101
+        },
+        {
+          "date": "2024-01-05",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 44186.59,
+          "index": 102
+        },
+        {
+          "date": "2024-01-06",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43992.44,
+          "index": 103
+        },
+        {
+          "date": "2024-01-07",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43950.28,
+          "index": 104
+        },
+        {
+          "date": "2024-01-08",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 46995.1,
+          "index": 105
+        },
+        {
+          "date": "2024-01-09",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 46124.08,
+          "index": 106
+        },
+        {
+          "date": "2024-01-10",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 46666.11,
+          "index": 107
+        },
+        {
+          "date": "2024-01-11",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 46342.66,
+          "index": 108
+        },
+        {
+          "date": "2024-01-12",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42773.03,
+          "index": 109
+        },
+        {
+          "date": "2024-01-13",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42839.33,
+          "index": 110
+        },
+        {
+          "date": "2024-01-14",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 41697.33,
+          "index": 111
+        },
+        {
+          "date": "2024-01-15",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42490.16,
+          "index": 112
+        },
+        {
+          "date": "2024-01-16",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43130.45,
+          "index": 113
+        },
+        {
+          "date": "2024-01-17",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42739.49,
+          "index": 114
+        },
+        {
+          "date": "2024-01-18",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 41293.5,
+          "index": 115
+        },
+        {
+          "date": "2024-01-19",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 41624.07,
+          "index": 116
+        },
+        {
+          "date": "2024-01-20",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 41666.67,
+          "index": 117
+        },
+        {
+          "date": "2024-01-21",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 41554.05,
+          "index": 118
+        },
+        {
+          "date": "2024-01-22",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 39524.27,
+          "index": 119
+        },
+        {
+          "date": "2024-01-23",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 39878.3,
+          "index": 120
+        },
+        {
+          "date": "2024-01-24",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 40077.78,
+          "index": 121
+        },
+        {
+          "date": "2024-01-25",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 39941.66,
+          "index": 122
+        },
+        {
+          "date": "2024-01-26",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 41814.8,
+          "index": 123
+        },
+        {
+          "date": "2024-01-27",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42126.55,
+          "index": 124
+        },
+        {
+          "date": "2024-01-28",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42034.59,
+          "index": 125
+        },
+        {
+          "date": "2024-01-29",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43306.18,
+          "index": 126
+        },
+        {
+          "date": "2024-01-30",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42942.78,
+          "index": 127
+        },
+        {
+          "date": "2024-01-31",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42548.08,
+          "index": 128
+        },
+        {
+          "date": "2024-02-01",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43078.81,
+          "index": 129
+        },
+        {
+          "date": "2024-02-02",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43181.66,
+          "index": 130
+        },
+        {
+          "date": "2024-02-03",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43010.67,
+          "index": 131
+        },
+        {
+          "date": "2024-02-04",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42568.55,
+          "index": 132
+        },
+        {
+          "date": "2024-02-05",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 42657.67,
+          "index": 133
+        },
+        {
+          "date": "2024-02-06",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 43095.79,
+          "index": 134
+        },
+        {
+          "date": "2024-02-07",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 44343.61,
+          "index": 135
+        },
+        {
+          "date": "2024-02-08",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 45305.2,
+          "index": 136
+        },
+        {
+          "date": "2024-02-09",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 47160.41,
+          "index": 137
+        },
+        {
+          "date": "2024-02-10",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 47767.06,
+          "index": 138
+        },
+        {
+          "date": "2024-02-11",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 48316.3,
+          "index": 139
+        },
+        {
+          "date": "2024-02-12",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 49941.81,
+          "index": 140
+        },
+        {
+          "date": "2024-02-13",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 49725.36,
+          "index": 141
+        },
+        {
+          "date": "2024-02-14",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 51858.59,
+          "index": 142
+        },
+        {
+          "date": "2024-02-15",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 51934.29,
+          "index": 143
+        },
+        {
+          "date": "2024-02-16",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 52162.64,
+          "index": 144
+        },
+        {
+          "date": "2024-02-17",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 51666.22,
+          "index": 145
+        },
+        {
+          "date": "2024-02-18",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 52153.63,
+          "index": 146
+        },
+        {
+          "date": "2024-02-19",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 51787.05,
+          "index": 147
+        },
+        {
+          "date": "2024-02-20",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 52277.52,
+          "index": 148
+        },
+        {
+          "date": "2024-02-21",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 51851.67,
+          "index": 149
+        },
+        {
+          "date": "2024-02-22",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 51258.7,
+          "index": 150
+        },
+        {
+          "date": "2024-02-23",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 50747.05,
+          "index": 151
+        },
+        {
+          "date": "2024-02-24",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 51570.65,
+          "index": 152
+        },
+        {
+          "date": "2024-02-25",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 51731,
+          "index": 153
+        },
+        {
+          "date": "2024-02-26",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 54533.48,
+          "index": 154
+        },
+        {
+          "date": "2024-02-27",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 57077.07,
+          "index": 155
+        },
+        {
+          "date": "2024-02-28",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 62518.9,
+          "index": 156
+        },
+        {
+          "date": "2024-02-29",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 61179.03,
+          "index": 157
+        },
+        {
+          "date": "2024-03-01",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 62436.72,
+          "index": 158
+        },
+        {
+          "date": "2024-03-02",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 62045.78,
+          "index": 159
+        },
+        {
+          "date": "2024-03-03",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 63154.49,
+          "index": 160
+        },
+        {
+          "date": "2024-03-04",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 68360.14,
+          "index": 161
+        },
+        {
+          "date": "2024-03-05",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 63800.78,
+          "index": 162
+        },
+        {
+          "date": "2024-03-06",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 66122.28,
+          "index": 163
+        },
+        {
+          "date": "2024-03-07",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 66938.21,
+          "index": 164
+        },
+        {
+          "date": "2024-03-08",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 68289.16,
+          "index": 165
+        },
+        {
+          "date": "2024-03-09",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 68480,
+          "index": 166
+        },
+        {
+          "date": "2024-03-10",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 69032.12,
+          "index": 167
+        },
+        {
+          "date": "2024-03-11",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 72110.98,
+          "index": 168
+        },
+        {
+          "date": "2024-03-12",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 71475.93,
+          "index": 169
+        },
+        {
+          "date": "2024-03-13",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 73135.04,
+          "index": 170
+        },
+        {
+          "date": "2024-03-14",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 71364.58,
+          "index": 171
+        },
+        {
+          "date": "2024-03-15",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 69506.88,
+          "index": 172
+        },
+        {
+          "date": "2024-03-16",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 65254.22,
+          "index": 173
+        },
+        {
+          "date": "2024-03-17",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 68343.64,
+          "index": 174
+        },
+        {
+          "date": "2024-03-18",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 67613.04,
+          "index": 175
+        },
+        {
+          "date": "2024-03-19",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 61906.27,
+          "index": 176
+        },
+        {
+          "date": "2024-03-20",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 67858.8,
+          "index": 177
+        },
+        {
+          "date": "2024-03-21",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 65484.7,
+          "index": 178
+        },
+        {
+          "date": "2024-03-22",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 63814.56,
+          "index": 179
+        },
+        {
+          "date": "2024-03-23",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 63998.86,
+          "index": 180
+        },
+        {
+          "date": "2024-03-24",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 67204.93,
+          "index": 181
+        },
+        {
+          "date": "2024-03-25",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 69890.28,
+          "index": 182
+        },
+        {
+          "date": "2024-03-26",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 69992.4,
+          "index": 183
+        },
+        {
+          "date": "2024-03-27",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 69435.96,
+          "index": 184
+        },
+        {
+          "date": "2024-03-28",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 70801.18,
+          "index": 185
+        },
+        {
+          "date": "2024-03-29",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 69903.75,
+          "index": 186
+        },
+        {
+          "date": "2024-03-30",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 69626.87,
+          "index": 187
+        },
+        {
+          "date": "2024-03-31",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 71288.9,
+          "index": 188
+        },
+        {
+          "date": "2024-04-01",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 69681.82,
+          "index": 189
+        },
+        {
+          "date": "2024-04-02",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 65464.14,
+          "index": 190
+        },
+        {
+          "date": "2024-04-03",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 65987.92,
+          "index": 191
+        },
+        {
+          "date": "2024-04-04",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 68525.23,
+          "index": 192
+        },
+        {
+          "date": "2024-04-05",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 67856.51,
+          "index": 193
+        },
+        {
+          "date": "2024-04-06",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 68919.89,
+          "index": 194
+        },
+        {
+          "date": "2024-04-07",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 69350.34,
+          "index": 195
+        },
+        {
+          "date": "2024-04-08",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 71622.53,
+          "index": 196
+        },
+        {
+          "date": "2024-04-09",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 69117.01,
+          "index": 197
+        },
+        {
+          "date": "2024-04-10",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 70634.04,
+          "index": 198
+        },
+        {
+          "date": "2024-04-11",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 70020.73,
+          "index": 199
+        },
+        {
+          "date": "2024-04-12",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 67148.61,
+          "index": 200
+        },
+        {
+          "date": "2024-04-13",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 64024.77,
+          "index": 201
+        },
+        {
+          "date": "2024-04-14",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 65777.05,
+          "index": 202
+        },
+        {
+          "date": "2024-04-15",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 63452.18,
+          "index": 203
+        },
+        {
+          "date": "2024-04-16",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 63814.94,
+          "index": 204
+        },
+        {
+          "date": "2024-04-17",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 61279.36,
+          "index": 205
+        },
+        {
+          "date": "2024-04-18",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 63513.85,
+          "index": 206
+        },
+        {
+          "date": "2024-04-19",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 63848.37,
+          "index": 207
+        },
+        {
+          "date": "2024-04-20",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 64968.87,
+          "index": 208
+        },
+        {
+          "date": "2024-04-21",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 64952.92,
+          "index": 209
+        },
+        {
+          "date": "2024-04-22",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 66859.17,
+          "index": 210
+        },
+        {
+          "date": "2024-04-23",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 66414.16,
+          "index": 211
+        },
+        {
+          "date": "2024-04-24",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 64255.78,
+          "index": 212
+        },
+        {
+          "date": "2024-04-25",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 64484.44,
+          "index": 213
+        },
+        {
+          "date": "2024-04-26",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 63742.39,
+          "index": 214
+        },
+        {
+          "date": "2024-04-27",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 63422,
+          "index": 215
+        },
+        {
+          "date": "2024-04-28",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 63108.94,
+          "index": 216
+        },
+        {
+          "date": "2024-04-29",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 63844.85,
+          "index": 217
+        },
+        {
+          "date": "2024-04-30",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 60622.1,
+          "index": 218
+        },
+        {
+          "date": "2024-05-01",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 58265.59,
+          "index": 219
+        },
+        {
+          "date": "2024-05-02",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 59071.89,
+          "index": 220
+        },
+        {
+          "date": "2024-05-03",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 62913.03,
+          "index": 221
+        },
+        {
+          "date": "2024-05-04",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 63902.88,
+          "index": 222
+        },
+        {
+          "date": "2024-05-05",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 64023.45,
+          "index": 223
+        },
+        {
+          "date": "2024-05-06",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 63162.24,
+          "index": 224
+        },
+        {
+          "date": "2024-05-07",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 62315.76,
+          "index": 225
+        },
+        {
+          "date": "2024-05-08",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 61169.53,
+          "index": 226
+        },
+        {
+          "date": "2024-05-09",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 63073.57,
+          "index": 227
+        },
+        {
+          "date": "2024-05-10",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 60787.47,
+          "index": 228
+        },
+        {
+          "date": "2024-05-11",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 60814.63,
+          "index": 229
+        },
+        {
+          "date": "2024-05-12",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 61453.02,
+          "index": 230
+        },
+        {
+          "date": "2024-05-13",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 62932.37,
+          "index": 231
+        },
+        {
+          "date": "2024-05-14",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 61539.84,
+          "index": 232
+        },
+        {
+          "date": "2024-05-15",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 66244.69,
+          "index": 233
+        },
+        {
+          "date": "2024-05-16",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 65252.18,
+          "index": 234
+        },
+        {
+          "date": "2024-05-17",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 67046.33,
+          "index": 235
+        },
+        {
+          "date": "2024-05-18",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 66923.87,
+          "index": 236
+        },
+        {
+          "date": "2024-05-19",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 66261.62,
+          "index": 237
+        },
+        {
+          "date": "2024-05-20",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 71432.17,
+          "index": 238
+        },
+        {
+          "date": "2024-05-21",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 70142.84,
+          "index": 239
+        },
+        {
+          "date": "2024-05-22",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 69109.93,
+          "index": 240
+        },
+        {
+          "date": "2024-05-23",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 67940.45,
+          "index": 241
+        },
+        {
+          "date": "2024-05-24",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 68547.8,
+          "index": 242
+        },
+        {
+          "date": "2024-05-25",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 69289.67,
+          "index": 243
+        },
+        {
+          "date": "2024-05-26",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 68473.72,
+          "index": 244
+        },
+        {
+          "date": "2024-05-27",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 69368.72,
+          "index": 245
+        },
+        {
+          "date": "2024-05-28",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 68321.98,
+          "index": 246
+        },
+        {
+          "date": "2024-05-29",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 67569.45,
+          "index": 247
+        },
+        {
+          "date": "2024-05-30",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 68338.58,
+          "index": 248
+        },
+        {
+          "date": "2024-05-31",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 67472.41,
+          "index": 249
+        },
+        {
+          "date": "2024-06-01",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 67719.29,
+          "index": 250
+        },
+        {
+          "date": "2024-06-02",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 67735.52,
+          "index": 251
+        },
+        {
+          "date": "2024-06-03",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 68791,
+          "index": 252
+        },
+        {
+          "date": "2024-06-04",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 70542.32,
+          "index": 253
+        },
+        {
+          "date": "2024-06-05",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 71121.11,
+          "index": 254
+        },
+        {
+          "date": "2024-06-06",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 70773.64,
+          "index": 255
+        },
+        {
+          "date": "2024-06-07",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 69324.53,
+          "index": 256
+        },
+        {
+          "date": "2024-06-08",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 69304.05,
+          "index": 257
+        },
+        {
+          "date": "2024-06-09",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 69637.87,
+          "index": 258
+        },
+        {
+          "date": "2024-06-10",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 69497.73,
+          "index": 259
+        },
+        {
+          "date": "2024-06-11",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 67316.53,
+          "index": 260
+        },
+        {
+          "date": "2024-06-12",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 68248.6,
+          "index": 261
+        },
+        {
+          "date": "2024-06-13",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 66738.85,
+          "index": 262
+        },
+        {
+          "date": "2024-06-14",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 66004.39,
+          "index": 263
+        },
+        {
+          "date": "2024-06-15",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 66192,
+          "index": 264
+        },
+        {
+          "date": "2024-06-16",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 66628.75,
+          "index": 265
+        },
+        {
+          "date": "2024-06-17",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 66481.81,
+          "index": 266
+        },
+        {
+          "date": "2024-06-18",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 65152.8,
+          "index": 267
+        },
+        {
+          "date": "2024-06-19",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 64943.79,
+          "index": 268
+        },
+        {
+          "date": "2024-06-20",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 64840.88,
+          "index": 269
+        },
+        {
+          "date": "2024-06-22",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 64235.01,
+          "index": 270
+        },
+        {
+          "date": "2024-06-23",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 63171.43,
+          "index": 271
+        },
+        {
+          "date": "2024-06-24",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 60263,
+          "index": 272
+        },
+        {
+          "date": "2024-06-25",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 61789.71,
+          "index": 273
+        },
+        {
+          "date": "2024-06-26",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 60816.68,
+          "index": 274
+        },
+        {
+          "date": "2024-06-27",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 61615.39,
+          "index": 275
+        },
+        {
+          "date": "2024-06-28",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 60313.35,
+          "index": 276
+        },
+        {
+          "date": "2024-06-29",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 60885.67,
+          "index": 277
+        },
+        {
+          "date": "2024-06-30",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 62668.26,
+          "index": 278
+        },
+        {
+          "date": "2024-07-01",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 62830.13,
+          "index": 279
+        },
+        {
+          "date": "2024-07-02",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 62040.22,
+          "index": 280
+        },
+        {
+          "date": "2024-07-03",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 60145.01,
+          "index": 281
+        },
+        {
+          "date": "2024-07-04",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 57042.14,
+          "index": 282
+        },
+        {
+          "date": "2024-07-05",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 56639.43,
+          "index": 283
+        },
+        {
+          "date": "2024-07-06",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 58244.75,
+          "index": 284
+        },
+        {
+          "date": "2024-07-07",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 55854.09,
+          "index": 285
+        },
+        {
+          "date": "2024-07-08",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 56699.43,
+          "index": 286
+        },
+        {
+          "date": "2024-07-09",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 58047.86,
+          "index": 287
+        },
+        {
+          "date": "2024-07-10",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 57712.59,
+          "index": 288
+        },
+        {
+          "date": "2024-07-11",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 57340.77,
+          "index": 289
+        },
+        {
+          "date": "2024-07-12",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 57909.03,
+          "index": 290
+        },
+        {
+          "date": "2024-07-13",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 59224.58,
+          "index": 291
+        },
+        {
+          "date": "2024-07-14",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 60808.42,
+          "index": 292
+        },
+        {
+          "date": "2024-07-15",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 64757.16,
+          "index": 293
+        },
+        {
+          "date": "2024-07-16",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 65088.99,
+          "index": 294
+        },
+        {
+          "date": "2024-07-17",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 64085.81,
+          "index": 295
+        },
+        {
+          "date": "2024-07-18",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 63982.86,
+          "index": 296
+        },
+        {
+          "date": "2024-07-19",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 66707.61,
+          "index": 297
+        },
+        {
+          "date": "2024-07-20",
+          "band": "Regular DCA Buying",
+          "signal": "hold",
+          "price": 67163.83,
+          "index": 298
+        },
+        {
+          "date": "2024-07-21",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 68181.28,
+          "index": 299
+        },
+        {
+          "date": "2024-07-22",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 67558.22,
+          "index": 300
+        },
+        {
+          "date": "2024-07-23",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 65939.24,
+          "index": 301
+        },
+        {
+          "date": "2024-07-24",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 65366.4,
+          "index": 302
+        },
+        {
+          "date": "2024-07-25",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 65795.42,
+          "index": 303
+        },
+        {
+          "date": "2024-07-26",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 67924.08,
+          "index": 304
+        },
+        {
+          "date": "2024-07-27",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 67899.41,
+          "index": 305
+        },
+        {
+          "date": "2024-07-28",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 68244.3,
+          "index": 306
+        },
+        {
+          "date": "2024-07-29",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 66771.45,
+          "index": 307
+        },
+        {
+          "date": "2024-07-30",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 66169.68,
+          "index": 308
+        },
+        {
+          "date": "2024-07-31",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 64609.62,
+          "index": 309
+        },
+        {
+          "date": "2024-08-01",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 65288.18,
+          "index": 310
+        },
+        {
+          "date": "2024-08-02",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 61418.06,
+          "index": 311
+        },
+        {
+          "date": "2024-08-03",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 60674.93,
+          "index": 312
+        },
+        {
+          "date": "2024-08-04",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 58130.95,
+          "index": 313
+        },
+        {
+          "date": "2024-08-05",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 54029.12,
+          "index": 314
+        },
+        {
+          "date": "2024-08-06",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 56048.08,
+          "index": 315
+        },
+        {
+          "date": "2024-08-07",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 55148.1,
+          "index": 316
+        },
+        {
+          "date": "2024-08-08",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 61705.58,
+          "index": 317
+        },
+        {
+          "date": "2024-08-09",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 60862.13,
+          "index": 318
+        },
+        {
+          "date": "2024-08-10",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 60935.02,
+          "index": 319
+        },
+        {
+          "date": "2024-08-11",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 58722.49,
+          "index": 320
+        },
+        {
+          "date": "2024-08-12",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 59358.78,
+          "index": 321
+        },
+        {
+          "date": "2024-08-13",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 60603.19,
+          "index": 322
+        },
+        {
+          "date": "2024-08-14",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 58690.62,
+          "index": 323
+        },
+        {
+          "date": "2024-08-15",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 57543.61,
+          "index": 324
+        },
+        {
+          "date": "2024-08-16",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 58888.99,
+          "index": 325
+        },
+        {
+          "date": "2024-08-17",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 59497.49,
+          "index": 326
+        },
+        {
+          "date": "2024-08-18",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 58437.9,
+          "index": 327
+        },
+        {
+          "date": "2024-08-19",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 59452.67,
+          "index": 328
+        },
+        {
+          "date": "2024-08-20",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 59017.59,
+          "index": 329
+        },
+        {
+          "date": "2024-08-21",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 61163.28,
+          "index": 330
+        },
+        {
+          "date": "2024-08-22",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 60383.29,
+          "index": 331
+        },
+        {
+          "date": "2024-08-23",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 64086.72,
+          "index": 332
+        },
+        {
+          "date": "2024-08-24",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 64179.63,
+          "index": 333
+        },
+        {
+          "date": "2024-08-25",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 64251.93,
+          "index": 334
+        },
+        {
+          "date": "2024-08-26",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 62840,
+          "index": 335
+        },
+        {
+          "date": "2024-08-27",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 59439.64,
+          "index": 336
+        },
+        {
+          "date": "2024-08-28",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 59045.88,
+          "index": 337
+        },
+        {
+          "date": "2024-08-29",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 59364.47,
+          "index": 338
+        },
+        {
+          "date": "2024-08-30",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 59112.77,
+          "index": 339
+        },
+        {
+          "date": "2024-08-31",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 58968.37,
+          "index": 340
+        },
+        {
+          "date": "2024-09-01",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 57299,
+          "index": 341
+        },
+        {
+          "date": "2024-09-02",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 59139.83,
+          "index": 342
+        },
+        {
+          "date": "2024-09-03",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 57468.84,
+          "index": 343
+        },
+        {
+          "date": "2024-09-04",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 57971,
+          "index": 344
+        },
+        {
+          "date": "2024-09-05",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 56156.82,
+          "index": 345
+        },
+        {
+          "date": "2024-09-06",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 53950.01,
+          "index": 346
+        },
+        {
+          "date": "2024-09-07",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 54156.33,
+          "index": 347
+        },
+        {
+          "date": "2024-09-08",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 54881.11,
+          "index": 348
+        },
+        {
+          "date": "2024-09-09",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 57053.9,
+          "index": 349
+        },
+        {
+          "date": "2024-09-10",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 57645.59,
+          "index": 350
+        },
+        {
+          "date": "2024-09-11",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 57352.79,
+          "index": 351
+        },
+        {
+          "date": "2024-09-12",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 58137.54,
+          "index": 352
+        },
+        {
+          "date": "2024-09-13",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 60543.35,
+          "index": 353
+        },
+        {
+          "date": "2024-09-14",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 60012.35,
+          "index": 354
+        },
+        {
+          "date": "2024-09-15",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 59122.33,
+          "index": 355
+        },
+        {
+          "date": "2024-09-16",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 58208.75,
+          "index": 356
+        },
+        {
+          "date": "2024-09-17",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 60312.6,
+          "index": 357
+        },
+        {
+          "date": "2024-09-18",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 61769.18,
+          "index": 358
+        },
+        {
+          "date": "2024-09-19",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 62960.14,
+          "index": 359
+        },
+        {
+          "date": "2024-09-20",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 63210.69,
+          "index": 360
+        },
+        {
+          "date": "2024-09-21",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 63362.74,
+          "index": 361
+        },
+        {
+          "date": "2024-09-22",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 63577.66,
+          "index": 362
+        },
+        {
+          "date": "2024-09-23",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 63338.87,
+          "index": 363
+        },
+        {
+          "date": "2024-09-24",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 64272.93,
+          "index": 364
+        },
+        {
+          "date": "2024-09-25",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 63130.89,
+          "index": 365
+        },
+        {
+          "date": "2024-09-26",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 65177.21,
+          "index": 366
+        },
+        {
+          "date": "2024-09-27",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 65789,
+          "index": 367
+        },
+        {
+          "date": "2024-09-28",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 65858.99,
+          "index": 368
+        },
+        {
+          "date": "2024-09-29",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 65600.01,
+          "index": 369
+        },
+        {
+          "date": "2024-09-30",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 63301.25,
+          "index": 370
+        },
+        {
+          "date": "2024-10-01",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 60790,
+          "index": 371
+        },
+        {
+          "date": "2024-10-02",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 60631.37,
+          "index": 372
+        },
+        {
+          "date": "2024-10-03",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 60744.99,
+          "index": 373
+        },
+        {
+          "date": "2024-10-04",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 62090.71,
+          "index": 374
+        },
+        {
+          "date": "2024-10-05",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 62051.29,
+          "index": 375
+        },
+        {
+          "date": "2024-10-06",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 62810.86,
+          "index": 376
+        },
+        {
+          "date": "2024-10-07",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 62200.28,
+          "index": 377
+        },
+        {
+          "date": "2024-10-08",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 62122.02,
+          "index": 378
+        },
+        {
+          "date": "2024-10-09",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 60578.28,
+          "index": 379
+        },
+        {
+          "date": "2024-10-10",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 60279.53,
+          "index": 380
+        },
+        {
+          "date": "2024-10-11",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 62518.75,
+          "index": 381
+        },
+        {
+          "date": "2024-10-12",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 63187.47,
+          "index": 382
+        },
+        {
+          "date": "2024-10-13",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 62845.3,
+          "index": 383
+        },
+        {
+          "date": "2024-10-14",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 66065.65,
+          "index": 384
+        },
+        {
+          "date": "2024-10-15",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 67056.6,
+          "index": 385
+        },
+        {
+          "date": "2024-10-16",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 67608.44,
+          "index": 386
+        },
+        {
+          "date": "2024-10-17",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 67402.33,
+          "index": 387
+        },
+        {
+          "date": "2024-10-18",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 68426.11,
+          "index": 388
+        },
+        {
+          "date": "2024-10-19",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 68363.73,
+          "index": 389
+        },
+        {
+          "date": "2024-10-20",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 69014.86,
+          "index": 390
+        },
+        {
+          "date": "2024-10-21",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 67346.15,
+          "index": 391
+        },
+        {
+          "date": "2024-10-22",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 67380.08,
+          "index": 392
+        },
+        {
+          "date": "2024-10-23",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 66601.11,
+          "index": 393
+        },
+        {
+          "date": "2024-10-24",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 68156.84,
+          "index": 394
+        },
+        {
+          "date": "2024-10-25",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 66564.51,
+          "index": 395
+        },
+        {
+          "date": "2024-10-26",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 67012.56,
+          "index": 396
+        },
+        {
+          "date": "2024-10-27",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 67943.19,
+          "index": 397
+        },
+        {
+          "date": "2024-10-28",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 69924.5,
+          "index": 398
+        },
+        {
+          "date": "2024-10-29",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 72724.35,
+          "index": 399
+        },
+        {
+          "date": "2024-10-30",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 72322.91,
+          "index": 400
+        },
+        {
+          "date": "2024-10-31",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 70197.83,
+          "index": 401
+        },
+        {
+          "date": "2024-11-01",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 69467.29,
+          "index": 402
+        },
+        {
+          "date": "2024-11-02",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 69358.94,
+          "index": 403
+        },
+        {
+          "date": "2024-11-03",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 68738.18,
+          "index": 404
+        },
+        {
+          "date": "2024-11-04",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 67807.48,
+          "index": 405
+        },
+        {
+          "date": "2024-11-05",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 69380.73,
+          "index": 406
+        },
+        {
+          "date": "2024-11-06",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 75646.55,
+          "index": 407
+        },
+        {
+          "date": "2024-11-07",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 75920,
+          "index": 408
+        },
+        {
+          "date": "2024-11-08",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 76566.73,
+          "index": 409
+        },
+        {
+          "date": "2024-11-09",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 76716.06,
+          "index": 410
+        },
+        {
+          "date": "2024-11-10",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 80428.92,
+          "index": 411
+        },
+        {
+          "date": "2024-11-11",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 88770.73,
+          "index": 412
+        },
+        {
+          "date": "2024-11-12",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 88035.43,
+          "index": 413
+        },
+        {
+          "date": "2024-11-13",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 90493.82,
+          "index": 414
+        },
+        {
+          "date": "2024-11-14",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 87340.4,
+          "index": 415
+        },
+        {
+          "date": "2024-11-15",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 91058.36,
+          "index": 416
+        },
+        {
+          "date": "2024-11-16",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 90636.24,
+          "index": 417
+        },
+        {
+          "date": "2024-11-17",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 89886.69,
+          "index": 418
+        },
+        {
+          "date": "2024-11-18",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 90520.3,
+          "index": 419
+        },
+        {
+          "date": "2024-11-19",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 92435.89,
+          "index": 420
+        },
+        {
+          "date": "2024-11-20",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 94393.15,
+          "index": 421
+        },
+        {
+          "date": "2024-11-21",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 98439.09,
+          "index": 422
+        },
+        {
+          "date": "2024-11-22",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 99024.03,
+          "index": 423
+        },
+        {
+          "date": "2024-11-23",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 97778.77,
+          "index": 424
+        },
+        {
+          "date": "2024-11-24",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 98028.18,
+          "index": 425
+        },
+        {
+          "date": "2024-11-25",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 93000.01,
+          "index": 426
+        },
+        {
+          "date": "2024-11-26",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 91929.54,
+          "index": 427
+        },
+        {
+          "date": "2024-11-27",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 95951.19,
+          "index": 428
+        },
+        {
+          "date": "2024-11-28",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 95665.53,
+          "index": 429
+        },
+        {
+          "date": "2024-11-29",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 97490.56,
+          "index": 430
+        },
+        {
+          "date": "2024-11-30",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 96465.42,
+          "index": 431
+        },
+        {
+          "date": "2024-12-01",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 97263.18,
+          "index": 432
+        },
+        {
+          "date": "2024-12-02",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 95862.89,
+          "index": 433
+        },
+        {
+          "date": "2024-12-03",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 95924.52,
+          "index": 434
+        },
+        {
+          "date": "2024-12-04",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 98746.24,
+          "index": 435
+        },
+        {
+          "date": "2024-12-05",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 97044.23,
+          "index": 436
+        },
+        {
+          "date": "2024-12-06",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 99891.35,
+          "index": 437
+        },
+        {
+          "date": "2024-12-07",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 99929.32,
+          "index": 438
+        },
+        {
+          "date": "2024-12-08",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 101174.99,
+          "index": 439
+        },
+        {
+          "date": "2024-12-09",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 97324.81,
+          "index": 440
+        },
+        {
+          "date": "2024-12-10",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 96660.76,
+          "index": 441
+        },
+        {
+          "date": "2024-12-11",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 101202.11,
+          "index": 442
+        },
+        {
+          "date": "2024-12-12",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 100030.47,
+          "index": 443
+        },
+        {
+          "date": "2024-12-13",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 101428.75,
+          "index": 444
+        },
+        {
+          "date": "2024-12-14",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 101399.99,
+          "index": 445
+        },
+        {
+          "date": "2024-12-15",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 104447.76,
+          "index": 446
+        },
+        {
+          "date": "2024-12-16",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 106099.81,
+          "index": 447
+        },
+        {
+          "date": "2024-12-17",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 106136.99,
+          "index": 448
+        },
+        {
+          "date": "2024-12-18",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 100150.73,
+          "index": 449
+        },
+        {
+          "date": "2024-12-19",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 97372.21,
+          "index": 450
+        },
+        {
+          "date": "2024-12-20",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 97765,
+          "index": 451
+        },
+        {
+          "date": "2024-12-21",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 97230.08,
+          "index": 452
+        },
+        {
+          "date": "2024-12-22",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 95087.75,
+          "index": 453
+        },
+        {
+          "date": "2024-12-23",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 94764.56,
+          "index": 454
+        },
+        {
+          "date": "2024-12-24",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 98594.47,
+          "index": 455
+        },
+        {
+          "date": "2024-12-25",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 99346.28,
+          "index": 456
+        },
+        {
+          "date": "2024-12-26",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 95669.49,
+          "index": 457
+        },
+        {
+          "date": "2024-12-27",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 94171.89,
+          "index": 458
+        },
+        {
+          "date": "2024-12-28",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 95130.82,
+          "index": 459
+        },
+        {
+          "date": "2024-12-29",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 93563.35,
+          "index": 460
+        },
+        {
+          "date": "2024-12-30",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 92620.71,
+          "index": 461
+        },
+        {
+          "date": "2024-12-31",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 93354.22,
+          "index": 462
+        },
+        {
+          "date": "2025-01-01",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 94383.59,
+          "index": 463
+        },
+        {
+          "date": "2025-01-02",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 96903.19,
+          "index": 464
+        },
+        {
+          "date": "2025-01-03",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 98136.51,
+          "index": 465
+        },
+        {
+          "date": "2025-01-04",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 98209.85,
+          "index": 466
+        },
+        {
+          "date": "2025-01-05",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 98345.33,
+          "index": 467
+        },
+        {
+          "date": "2025-01-06",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 102279.41,
+          "index": 468
+        },
+        {
+          "date": "2025-01-07",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 96941.98,
+          "index": 469
+        },
+        {
+          "date": "2025-01-08",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 95036.63,
+          "index": 470
+        },
+        {
+          "date": "2025-01-09",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 92547.44,
+          "index": 471
+        },
+        {
+          "date": "2025-01-10",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 94701.18,
+          "index": 472
+        },
+        {
+          "date": "2025-01-11",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 94565.02,
+          "index": 473
+        },
+        {
+          "date": "2025-01-12",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 94509.62,
+          "index": 474
+        },
+        {
+          "date": "2025-01-13",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 94506.45,
+          "index": 475
+        },
+        {
+          "date": "2025-01-14",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 96534.96,
+          "index": 476
+        },
+        {
+          "date": "2025-01-15",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 100510.23,
+          "index": 477
+        },
+        {
+          "date": "2025-01-16",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 99981.78,
+          "index": 478
+        },
+        {
+          "date": "2025-01-17",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 104107,
+          "index": 479
+        },
+        {
+          "date": "2025-01-18",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 104435,
+          "index": 480
+        },
+        {
+          "date": "2025-01-19",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 101211.13,
+          "index": 481
+        },
+        {
+          "date": "2025-01-20",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 102145.43,
+          "index": 482
+        },
+        {
+          "date": "2025-01-21",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 106159.26,
+          "index": 483
+        },
+        {
+          "date": "2025-01-22",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 103667.11,
+          "index": 484
+        },
+        {
+          "date": "2025-01-23",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 103926.36,
+          "index": 485
+        },
+        {
+          "date": "2025-01-24",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 104850.27,
+          "index": 486
+        },
+        {
+          "date": "2025-01-25",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 104733.56,
+          "index": 487
+        },
+        {
+          "date": "2025-01-26",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 102563,
+          "index": 488
+        },
+        {
+          "date": "2025-01-27",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 102062.42,
+          "index": 489
+        },
+        {
+          "date": "2025-01-28",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 101290,
+          "index": 490
+        },
+        {
+          "date": "2025-01-29",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 103747.25,
+          "index": 491
+        },
+        {
+          "date": "2025-01-30",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 104742.64,
+          "index": 492
+        },
+        {
+          "date": "2025-01-31",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 102411.26,
+          "index": 493
+        },
+        {
+          "date": "2025-02-01",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 100623.85,
+          "index": 494
+        },
+        {
+          "date": "2025-02-02",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 97676.52,
+          "index": 495
+        },
+        {
+          "date": "2025-02-03",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 101460.2,
+          "index": 496
+        },
+        {
+          "date": "2025-02-04",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 97795.05,
+          "index": 497
+        },
+        {
+          "date": "2025-02-05",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 96638.33,
+          "index": 498
+        },
+        {
+          "date": "2025-02-06",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 96564.62,
+          "index": 499
+        },
+        {
+          "date": "2025-02-07",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 96537.08,
+          "index": 500
+        },
+        {
+          "date": "2025-02-08",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 96476.25,
+          "index": 501
+        },
+        {
+          "date": "2025-02-09",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 96475.82,
+          "index": 502
+        },
+        {
+          "date": "2025-02-10",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 97444.41,
+          "index": 503
+        },
+        {
+          "date": "2025-02-11",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 95774.08,
+          "index": 504
+        },
+        {
+          "date": "2025-02-12",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 97862.53,
+          "index": 505
+        },
+        {
+          "date": "2025-02-13",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 96625.29,
+          "index": 506
+        },
+        {
+          "date": "2025-02-14",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 97509.03,
+          "index": 507
+        },
+        {
+          "date": "2025-02-15",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 97596.94,
+          "index": 508
+        },
+        {
+          "date": "2025-02-16",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 96119.88,
+          "index": 509
+        },
+        {
+          "date": "2025-02-17",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 95781.8,
+          "index": 510
+        },
+        {
+          "date": "2025-02-18",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 95607.4,
+          "index": 511
+        },
+        {
+          "date": "2025-02-19",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 96632.03,
+          "index": 512
+        },
+        {
+          "date": "2025-02-20",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 98347.2,
+          "index": 513
+        },
+        {
+          "date": "2025-02-21",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 96157.03,
+          "index": 514
+        },
+        {
+          "date": "2025-02-22",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 96582.12,
+          "index": 515
+        },
+        {
+          "date": "2025-02-23",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 96265.98,
+          "index": 516
+        },
+        {
+          "date": "2025-02-24",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 91510.82,
+          "index": 517
+        },
+        {
+          "date": "2025-02-25",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 88583.74,
+          "index": 518
+        },
+        {
+          "date": "2025-02-26",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 84111.78,
+          "index": 519
+        },
+        {
+          "date": "2025-02-27",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 84625.19,
+          "index": 520
+        },
+        {
+          "date": "2025-02-28",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 84297.73,
+          "index": 521
+        },
+        {
+          "date": "2025-03-01",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 86018.76,
+          "index": 522
+        },
+        {
+          "date": "2025-03-02",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 94265.48,
+          "index": 523
+        },
+        {
+          "date": "2025-03-03",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 86161.1,
+          "index": 524
+        },
+        {
+          "date": "2025-03-04",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 87249.96,
+          "index": 525
+        },
+        {
+          "date": "2025-03-05",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 90603.73,
+          "index": 526
+        },
+        {
+          "date": "2025-03-06",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 89921.85,
+          "index": 527
+        },
+        {
+          "date": "2025-03-07",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 86756.98,
+          "index": 528
+        },
+        {
+          "date": "2025-03-08",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 86206.69,
+          "index": 529
+        },
+        {
+          "date": "2025-03-09",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 80699.17,
+          "index": 530
+        },
+        {
+          "date": "2025-03-10",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 78544.71,
+          "index": 531
+        },
+        {
+          "date": "2025-03-11",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 82914.51,
+          "index": 532
+        },
+        {
+          "date": "2025-03-12",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 83659.43,
+          "index": 533
+        },
+        {
+          "date": "2025-03-13",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 81073.43,
+          "index": 534
+        },
+        {
+          "date": "2025-03-14",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 83980.49,
+          "index": 535
+        },
+        {
+          "date": "2025-03-15",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 84351.46,
+          "index": 536
+        },
+        {
+          "date": "2025-03-16",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 82562.57,
+          "index": 537
+        },
+        {
+          "date": "2025-03-17",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 84011.4,
+          "index": 538
+        },
+        {
+          "date": "2025-03-18",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 82698.76,
+          "index": 539
+        },
+        {
+          "date": "2025-03-19",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 86877.96,
+          "index": 540
+        },
+        {
+          "date": "2025-03-20",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 84183.42,
+          "index": 541
+        },
+        {
+          "date": "2025-03-21",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 84061.96,
+          "index": 542
+        },
+        {
+          "date": "2025-03-22",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 83852.03,
+          "index": 543
+        },
+        {
+          "date": "2025-03-23",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 86092.94,
+          "index": 544
+        },
+        {
+          "date": "2025-03-24",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 87523.62,
+          "index": 545
+        },
+        {
+          "date": "2025-03-25",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 87427.88,
+          "index": 546
+        },
+        {
+          "date": "2025-03-26",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 86926.01,
+          "index": 547
+        },
+        {
+          "date": "2025-03-27",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 87217.48,
+          "index": 548
+        },
+        {
+          "date": "2025-03-28",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 84381.8,
+          "index": 549
+        },
+        {
+          "date": "2025-03-29",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 82616.83,
+          "index": 550
+        },
+        {
+          "date": "2025-03-30",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 82379.98,
+          "index": 551
+        },
+        {
+          "date": "2025-03-31",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 82534.32,
+          "index": 552
+        },
+        {
+          "date": "2025-04-01",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 85170.37,
+          "index": 553
+        },
+        {
+          "date": "2025-04-02",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 82490.08,
+          "index": 554
+        },
+        {
+          "date": "2025-04-03",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 83174.33,
+          "index": 555
+        },
+        {
+          "date": "2025-04-04",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 83860.16,
+          "index": 556
+        },
+        {
+          "date": "2025-04-05",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 83498.25,
+          "index": 557
+        },
+        {
+          "date": "2025-04-06",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 78370.75,
+          "index": 558
+        },
+        {
+          "date": "2025-04-07",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 79140.01,
+          "index": 559
+        },
+        {
+          "date": "2025-04-08",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 76251.64,
+          "index": 560
+        },
+        {
+          "date": "2025-04-09",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 82594.75,
+          "index": 561
+        },
+        {
+          "date": "2025-04-10",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 79552.34,
+          "index": 562
+        },
+        {
+          "date": "2025-04-11",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 83380.47,
+          "index": 563
+        },
+        {
+          "date": "2025-04-12",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 85271.01,
+          "index": 564
+        },
+        {
+          "date": "2025-04-13",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 83733.07,
+          "index": 565
+        },
+        {
+          "date": "2025-04-14",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 84590.36,
+          "index": 566
+        },
+        {
+          "date": "2025-04-15",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 83629.78,
+          "index": 567
+        },
+        {
+          "date": "2025-04-16",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 84028.72,
+          "index": 568
+        },
+        {
+          "date": "2025-04-18",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 84466.47,
+          "index": 569
+        },
+        {
+          "date": "2025-04-19",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 85074.99,
+          "index": 570
+        },
+        {
+          "date": "2025-04-20",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 85177.34,
+          "index": 571
+        },
+        {
+          "date": "2025-04-21",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 87522.07,
+          "index": 572
+        },
+        {
+          "date": "2025-04-22",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 93489.1,
+          "index": 573
+        },
+        {
+          "date": "2025-04-23",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 93740.92,
+          "index": 574
+        },
+        {
+          "date": "2025-04-24",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 94021.96,
+          "index": 575
+        },
+        {
+          "date": "2025-04-25",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 94708.79,
+          "index": 576
+        },
+        {
+          "date": "2025-04-26",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 94666.64,
+          "index": 577
+        },
+        {
+          "date": "2025-04-27",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 93780.57,
+          "index": 578
+        },
+        {
+          "date": "2025-04-28",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 95042.57,
+          "index": 579
+        },
+        {
+          "date": "2025-04-29",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 94271.09,
+          "index": 580
+        },
+        {
+          "date": "2025-04-30",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 94182.54,
+          "index": 581
+        },
+        {
+          "date": "2025-05-01",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 96524.98,
+          "index": 582
+        },
+        {
+          "date": "2025-05-02",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 96929.81,
+          "index": 583
+        },
+        {
+          "date": "2025-05-03",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 95861.33,
+          "index": 584
+        },
+        {
+          "date": "2025-05-04",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 94272.55,
+          "index": 585
+        },
+        {
+          "date": "2025-05-05",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 94733.99,
+          "index": 586
+        },
+        {
+          "date": "2025-05-06",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 96839.17,
+          "index": 587
+        },
+        {
+          "date": "2025-05-07",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 97058.32,
+          "index": 588
+        },
+        {
+          "date": "2025-05-08",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 103253.49,
+          "index": 589
+        },
+        {
+          "date": "2025-05-09",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 102986.96,
+          "index": 590
+        },
+        {
+          "date": "2025-05-10",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 104821.19,
+          "index": 591
+        },
+        {
+          "date": "2025-05-11",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 104137.62,
+          "index": 592
+        },
+        {
+          "date": "2025-05-12",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 102800.21,
+          "index": 593
+        },
+        {
+          "date": "2025-05-13",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 104131.06,
+          "index": 594
+        },
+        {
+          "date": "2025-05-14",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 103545.38,
+          "index": 595
+        },
+        {
+          "date": "2025-05-15",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 103786.43,
+          "index": 596
+        },
+        {
+          "date": "2025-05-16",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 103500.03,
+          "index": 597
+        },
+        {
+          "date": "2025-05-17",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 103161.07,
+          "index": 598
+        },
+        {
+          "date": "2025-05-18",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 106473.46,
+          "index": 599
+        },
+        {
+          "date": "2025-05-19",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 105616.18,
+          "index": 600
+        },
+        {
+          "date": "2025-05-20",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 106883.24,
+          "index": 601
+        },
+        {
+          "date": "2025-05-21",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 109699.54,
+          "index": 602
+        },
+        {
+          "date": "2025-05-22",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 111722.53,
+          "index": 603
+        },
+        {
+          "date": "2025-05-23",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 107329.61,
+          "index": 604
+        },
+        {
+          "date": "2025-05-24",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 107794.01,
+          "index": 605
+        },
+        {
+          "date": "2025-05-25",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 109048.68,
+          "index": 606
+        },
+        {
+          "date": "2025-05-26",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 109464.32,
+          "index": 607
+        },
+        {
+          "date": "2025-05-27",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 108978.46,
+          "index": 608
+        },
+        {
+          "date": "2025-05-28",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 107819.29,
+          "index": 609
+        },
+        {
+          "date": "2025-05-29",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 105572.58,
+          "index": 610
+        },
+        {
+          "date": "2025-05-30",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 104033.26,
+          "index": 611
+        },
+        {
+          "date": "2025-05-31",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 104645.87,
+          "index": 612
+        },
+        {
+          "date": "2025-06-01",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 105697.94,
+          "index": 613
+        },
+        {
+          "date": "2025-06-02",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 105904.94,
+          "index": 614
+        },
+        {
+          "date": "2025-06-03",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 105447.82,
+          "index": 615
+        },
+        {
+          "date": "2025-06-04",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 104753.38,
+          "index": 616
+        },
+        {
+          "date": "2025-06-05",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 101570.2,
+          "index": 617
+        },
+        {
+          "date": "2025-06-06",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 104397.99,
+          "index": 618
+        },
+        {
+          "date": "2025-06-07",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 105619.02,
+          "index": 619
+        },
+        {
+          "date": "2025-06-08",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 105784.4,
+          "index": 620
+        },
+        {
+          "date": "2025-06-09",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 110301.15,
+          "index": 621
+        },
+        {
+          "date": "2025-06-10",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 110300.24,
+          "index": 622
+        },
+        {
+          "date": "2025-06-11",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 108669.37,
+          "index": 623
+        },
+        {
+          "date": "2025-06-12",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 105721.05,
+          "index": 624
+        },
+        {
+          "date": "2025-06-13",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 106118.7,
+          "index": 625
+        },
+        {
+          "date": "2025-06-14",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 105465.42,
+          "index": 626
+        },
+        {
+          "date": "2025-06-15",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 105599.25,
+          "index": 627
+        },
+        {
+          "date": "2025-06-16",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 106853.38,
+          "index": 628
+        },
+        {
+          "date": "2025-06-17",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 104590.44,
+          "index": 629
+        },
+        {
+          "date": "2025-06-18",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 104915.6,
+          "index": 630
+        },
+        {
+          "date": "2025-06-19",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 104671.9,
+          "index": 631
+        },
+        {
+          "date": "2025-06-20",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 103317.8,
+          "index": 632
+        },
+        {
+          "date": "2025-06-21",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 102160.03,
+          "index": 633
+        },
+        {
+          "date": "2025-06-22",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 100996.87,
+          "index": 634
+        },
+        {
+          "date": "2025-06-23",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 105419.39,
+          "index": 635
+        },
+        {
+          "date": "2025-06-24",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 106141,
+          "index": 636
+        },
+        {
+          "date": "2025-06-25",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 107400.22,
+          "index": 637
+        },
+        {
+          "date": "2025-06-26",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 107029.64,
+          "index": 638
+        },
+        {
+          "date": "2025-06-27",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 107113.38,
+          "index": 639
+        },
+        {
+          "date": "2025-06-28",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 107352.2,
+          "index": 640
+        },
+        {
+          "date": "2025-06-29",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 108386.44,
+          "index": 641
+        },
+        {
+          "date": "2025-06-30",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 107173.21,
+          "index": 642
+        },
+        {
+          "date": "2025-07-01",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 105711.78,
+          "index": 643
+        },
+        {
+          "date": "2025-07-02",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 108888.32,
+          "index": 644
+        },
+        {
+          "date": "2025-07-03",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 109628.83,
+          "index": 645
+        },
+        {
+          "date": "2025-07-04",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 108028.6,
+          "index": 646
+        },
+        {
+          "date": "2025-07-05",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 108246.65,
+          "index": 647
+        },
+        {
+          "date": "2025-07-06",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 109217.98,
+          "index": 648
+        },
+        {
+          "date": "2025-07-07",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 108269.84,
+          "index": 649
+        },
+        {
+          "date": "2025-07-08",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 108958.04,
+          "index": 650
+        },
+        {
+          "date": "2025-07-09",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 111282.85,
+          "index": 651
+        },
+        {
+          "date": "2025-07-10",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 116031.3,
+          "index": 652
+        },
+        {
+          "date": "2025-07-11",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 117582.16,
+          "index": 653
+        },
+        {
+          "date": "2025-07-12",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 117472.65,
+          "index": 654
+        },
+        {
+          "date": "2025-07-13",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 119130.81,
+          "index": 655
+        },
+        {
+          "date": "2025-07-14",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 119863.71,
+          "index": 656
+        },
+        {
+          "date": "2025-07-15",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 117781.64,
+          "index": 657
+        },
+        {
+          "date": "2025-07-16",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 118681.68,
+          "index": 658
+        },
+        {
+          "date": "2025-07-17",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 119273.69,
+          "index": 659
+        },
+        {
+          "date": "2025-07-18",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 118023.05,
+          "index": 660
+        },
+        {
+          "date": "2025-07-19",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 117914.17,
+          "index": 661
+        },
+        {
+          "date": "2025-07-20",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 117312.7,
+          "index": 662
+        },
+        {
+          "date": "2025-07-21",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 117428.79,
+          "index": 663
+        },
+        {
+          "date": "2025-07-22",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 120026.42,
+          "index": 664
+        },
+        {
+          "date": "2025-07-23",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 118810.44,
+          "index": 665
+        },
+        {
+          "date": "2025-07-24",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 118397.04,
+          "index": 666
+        },
+        {
+          "date": "2025-07-25",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 117633.27,
+          "index": 667
+        },
+        {
+          "date": "2025-07-26",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 117969.63,
+          "index": 668
+        },
+        {
+          "date": "2025-07-27",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 119465.52,
+          "index": 669
+        },
+        {
+          "date": "2025-07-28",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 118070.59,
+          "index": 670
+        },
+        {
+          "date": "2025-07-29",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 117933.39,
+          "index": 671
+        },
+        {
+          "date": "2025-07-30",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 117830.15,
+          "index": 672
+        },
+        {
+          "date": "2025-07-31",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 115761.13,
+          "index": 673
+        },
+        {
+          "date": "2025-08-01",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 113248.73,
+          "index": 674
+        },
+        {
+          "date": "2025-08-02",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 112542.74,
+          "index": 675
+        },
+        {
+          "date": "2025-08-03",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 114215.73,
+          "index": 676
+        },
+        {
+          "date": "2025-08-04",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 115051.85,
+          "index": 677
+        },
+        {
+          "date": "2025-08-05",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 114112.95,
+          "index": 678
+        },
+        {
+          "date": "2025-08-06",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 115028.83,
+          "index": 679
+        },
+        {
+          "date": "2025-08-07",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 117515.49,
+          "index": 680
+        },
+        {
+          "date": "2025-08-08",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 116683.79,
+          "index": 681
+        },
+        {
+          "date": "2025-08-09",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 116492.51,
+          "index": 682
+        },
+        {
+          "date": "2025-08-10",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 119309.37,
+          "index": 683
+        },
+        {
+          "date": "2025-08-11",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 118701.84,
+          "index": 684
+        },
+        {
+          "date": "2025-08-12",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 120113.18,
+          "index": 685
+        },
+        {
+          "date": "2025-08-13",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 123365.63,
+          "index": 686
+        },
+        {
+          "date": "2025-08-14",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 118389.79,
+          "index": 687
+        },
+        {
+          "date": "2025-08-15",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 117436.96,
+          "index": 688
+        },
+        {
+          "date": "2025-08-16",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 117455.68,
+          "index": 689
+        },
+        {
+          "date": "2025-08-17",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 117488.6,
+          "index": 690
+        },
+        {
+          "date": "2025-08-18",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 116286.76,
+          "index": 691
+        },
+        {
+          "date": "2025-08-19",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 112856.19,
+          "index": 692
+        },
+        {
+          "date": "2025-08-20",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 114276,
+          "index": 693
+        },
+        {
+          "date": "2025-08-21",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 112480.3,
+          "index": 694
+        },
+        {
+          "date": "2025-08-22",
+          "band": "Regular DCA Buying",
+          "signal": "hold",
+          "price": 116908.68,
+          "index": 695
+        },
+        {
+          "date": "2025-08-23",
+          "band": "Regular DCA Buying",
+          "signal": "hold",
+          "price": 115383.87,
+          "index": 696
+        },
+        {
+          "date": "2025-08-24",
+          "band": "Moderate Buying",
+          "signal": "hold",
+          "price": 113478,
+          "index": 697
+        },
+        {
+          "date": "2025-08-25",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 110127.74,
+          "index": 698
+        },
+        {
+          "date": "2025-08-26",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 111788.01,
+          "index": 699
+        },
+        {
+          "date": "2025-08-27",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 111253.21,
+          "index": 700
+        },
+        {
+          "date": "2025-08-28",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 112574.85,
+          "index": 701
+        },
+        {
+          "date": "2025-08-29",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 108378.32,
+          "index": 702
+        },
+        {
+          "date": "2025-08-30",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 108827.93,
+          "index": 703
+        },
+        {
+          "date": "2025-08-31",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 108247.95,
+          "index": 704
+        },
+        {
+          "date": "2025-09-01",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 109240.55,
+          "index": 705
+        },
+        {
+          "date": "2025-09-02",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 111247.94,
+          "index": 706
+        },
+        {
+          "date": "2025-09-03",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 111756.41,
+          "index": 707
+        },
+        {
+          "date": "2025-09-04",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 110720.79,
+          "index": 708
+        },
+        {
+          "date": "2025-09-05",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 110670.02,
+          "index": 709
+        },
+        {
+          "date": "2025-09-06",
+          "band": "Reduce Risk",
+          "signal": "hold",
+          "price": 110212.6,
+          "index": 710
+        },
+        {
+          "date": "2025-09-07",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 111129.61,
+          "index": 711
+        },
+        {
+          "date": "2025-09-08",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 112072.57,
+          "index": 712
+        },
+        {
+          "date": "2025-09-09",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 111549.32,
+          "index": 713
+        },
+        {
+          "date": "2025-09-10",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 113983.97,
+          "index": 714
+        },
+        {
+          "date": "2025-09-11",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 115540,
+          "index": 715
+        },
+        {
+          "date": "2025-09-12",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 116106.03,
+          "index": 716
+        },
+        {
+          "date": "2025-09-13",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 115968.35,
+          "index": 717
+        },
+        {
+          "date": "2025-09-14",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 115314.13,
+          "index": 718
+        },
+        {
+          "date": "2025-09-15",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 115309.35,
+          "index": 719
+        },
+        {
+          "date": "2025-09-16",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 115104.12,
+          "index": 720
+        },
+        {
+          "date": "2025-09-17",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 116377.99,
+          "index": 721
+        },
+        {
+          "date": "2025-09-18",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 117293.8,
+          "index": 722
+        },
+        {
+          "date": "2025-09-19",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 116478.28,
+          "index": 723
+        },
+        {
+          "date": "2025-09-20",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 115903.33,
+          "index": 724
+        },
+        {
+          "date": "2025-09-21",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 115673.46,
+          "index": 725
+        },
+        {
+          "date": "2025-09-22",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 112905.38,
+          "index": 726
+        },
+        {
+          "date": "2025-09-23",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 112807.46,
+          "index": 727
+        },
+        {
+          "date": "2025-09-24",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 113116.01,
+          "index": 728
+        },
+        {
+          "date": "2025-09-25",
+          "band": "Hold & Wait",
+          "signal": "hold",
+          "price": 113236.2,
+          "index": 729
+        },
+        {
+          "date": "2025-09-26",
+          "band": "High Risk",
+          "signal": "hold",
+          "price": 109108.44,
+          "index": 730
+        }
+      ],
+      "performance": {
+        "startingValue": 10000,
+        "finalValue": 10000,
+        "totalReturn": 0,
+        "totalTrades": 0,
+        "trades": [],
+        "maxDrawdown": 0,
+        "sharpeRatio": 0
+      }
+    },
+    "Buy-and-Hold": {
+      "performance": {
+        "startingValue": 10000,
+        "finalValue": 41492.283260470766,
+        "totalReturn": 314.9228326047076,
+        "startPrice": 26296.08,
+        "endPrice": 109108.44
+      }
+    }
+  },
+  "summary": {
+    "totalDataPoints": 731,
+    "bandsAnalyzed": 5,
+    "riskBasedReturn": 0,
+    "buyAndHoldReturn": 314.9228326047076,
+    "outperformance": -314.9228326047076
+  }
+}
