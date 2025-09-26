@@ -1,0 +1,90 @@
+{
+  "timestamp": "2025-09-26T12:27:03.519Z",
+  "overall_health": "excellent",
+  "factors": [
+    {
+      "name": "Trend & Valuation",
+      "key": "trend_valuation",
+      "status": "fresh",
+      "score": 51,
+      "last_updated": "2025-09-26T12:17:23.189Z",
+      "staleness": 0,
+      "health_score": 100
+    },
+    {
+      "name": "On-chain Activity",
+      "key": "onchain",
+      "status": "fresh",
+      "score": 89,
+      "last_updated": "2025-09-25T00:00:00.000Z",
+      "staleness": 36,
+      "health_score": 88
+    },
+    {
+      "name": "Stablecoins",
+      "key": "stablecoins",
+      "status": "fresh",
+      "score": 37,
+      "last_updated": "2025-09-26T12:17:33.614Z",
+      "staleness": 0,
+      "health_score": 100
+    },
+    {
+      "name": "ETF Flows",
+      "key": "etf_flows",
+      "status": "fresh",
+      "score": 61,
+      "last_updated": "2025-09-25T16:00:00.000Z",
+      "staleness": 20,
+      "health_score": 100
+    },
+    {
+      "name": "Net Liquidity (FRED)",
+      "key": "net_liquidity",
+      "status": "fresh",
+      "score": 51,
+      "last_updated": "2025-09-24T00:00:00.000Z",
+      "staleness": 60,
+      "health_score": 70
+    },
+    {
+      "name": "Term Structure & Leverage",
+      "key": "term_leverage",
+      "status": "fresh",
+      "score": 46,
+      "last_updated": "2025-09-26T12:17:23.469Z",
+      "staleness": 0,
+      "health_score": 100
+    },
+    {
+      "name": "Macro Overlay",
+      "key": "macro_overlay",
+      "status": "fresh",
+      "score": 49,
+      "last_updated": "2025-09-26T12:17:23.511Z",
+      "staleness": 0,
+      "health_score": 100
+    },
+    {
+      "name": "Social Interest",
+      "key": "social_interest",
+      "status": "fresh",
+      "score": 40,
+      "last_updated": "2025-09-26T12:17:24.726Z",
+      "staleness": 0,
+      "health_score": 100
+    }
+  ],
+  "apis": [],
+  "system": {
+    "composite_score": 67,
+    "model_version": "v3.1.0",
+    "as_of_utc": "2025-09-26T12:17:47.746Z",
+    "total_factors": 8,
+    "fresh_factors": 8,
+    "stale_factors": 0,
+    "excluded_factors": 0,
+    "overall_health_score": 95
+  },
+  "alerts": []
+}

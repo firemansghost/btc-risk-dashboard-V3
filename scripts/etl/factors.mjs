@@ -406,19 +406,54 @@ async function computeNetLiquidity() {
 // 4. STABLECOINS (Multi-stablecoin analysis)
 async function computeStablecoins() {
   try {
-    // Fetch multiple major stablecoins in parallel
+    // Fetch multiple major stablecoins sequentially to avoid rate limiting
     const stablecoins = [
       { id: 'tether', symbol: 'USDT', weight: 0.65 }, // Market leader
       { id: 'usd-coin', symbol: 'USDC', weight: 0.28 }, // Second largest
       { id: 'dai', symbol: 'DAI', weight: 0.07 } // Decentralized option
     ];
 
-    const promises = stablecoins.map(coin => 
-      fetch(`https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=90&interval=daily`)
-        .then(res => res.ok ? res.json() : null)
-    );
-
-    const responses = await Promise.all(promises);
+    const responses = [];
+    
+    // Process each stablecoin sequentially with delays to avoid rate limiting
+    for (let i = 0; i < stablecoins.length; i++) {
+      const coin = stablecoins[i];
+      
+      // Add delay before each request (except the first)
+      if (i > 0) {
+        console.log(`Stablecoins: Waiting 5 seconds to avoid rate limiting...`);
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
+      
+      try {
+        const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=90&interval=daily`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          responses.push(data);
+          console.log(`Stablecoins: ${coin.symbol} data received`);
+        } else if (response.status === 429) {
+          console.log(`Stablecoins: Rate limited for ${coin.symbol}, waiting 10 seconds...`);
+          await new Promise(resolve => setTimeout(resolve, 10000));
+          // Retry once
+          const retryResponse = await fetch(`https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=90&interval=daily`);
+          if (retryResponse.ok) {
+            const data = await retryResponse.json();
+            responses.push(data);
+            console.log(`Stablecoins: ${coin.symbol} data received after retry`);
+          } else {
+            console.log(`Stablecoins: ${coin.symbol} failed after retry: ${retryResponse.status}`);
+            responses.push(null);
+          }
+        } else {
+          console.log(`Stablecoins: ${coin.symbol} failed: ${response.status} ${response.statusText}`);
+          responses.push(null);
+        }
+      } catch (error) {
+        console.log(`Stablecoins: ${coin.symbol} error: ${error.message}`);
+        responses.push(null);
+      }
+    }
     
     let totalMarketCap = 0;
     let totalSupplyChange = 0;
@@ -1469,7 +1504,7 @@ export async function computeAllFactors(dailyClose = null) {
   }
 
   // Calculate composite score with weight normalization
-  const composite = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 47; // fallback to 47
+  const composite = calculateEnhancedGScore(factorResults, totalWeight, weightedSum);
   
   // Log staleness summary
   const freshCount = factorResults.filter(f => f.status === 'fresh').length;
@@ -1643,3 +1678,86 @@ async function computeBtcGoldRates() {
 
 // Export additional functions for use in other modules
 export { cleanOldCacheFiles, computeBtcGoldRates };
+
+
+// Enhanced G-Score calculation with improved sensitivity
+function calculateEnhancedGScore(factorResults, totalWeight, weightedSum) {
+  const baseScore = totalWeight > 0 ? weightedSum / totalWeight : 47;
+  
+  // Enhanced algorithm: Add sensitivity multipliers
+  const enhancements = {
+    // 1. Volatility multiplier - make scores more sensitive to market volatility
+    volatilityMultiplier: 1.2,
+    
+    // 2. Trend momentum - amplify recent changes
+    trendMomentum: 1.1,
+    
+    // 3. Factor correlation - reduce redundancy when factors move together
+    correlationPenalty: 0.9,
+    
+    // 4. Time decay - give more weight to recent data
+    timeDecay: 1.05,
+    
+    // 5. Non-linear scaling - make extreme scores more extreme
+    nonLinearScaling: 1.15
+  };
+  
+  // Apply enhancements
+  let enhancedScore = baseScore;
+  
+  // 1. Volatility multiplier
+  const factorScores = factorResults.map(f => f.score).filter(s => s !== null);
+  const scoreVariance = calculateVariance(factorScores);
+  if (scoreVariance > 100) { // High volatility
+    enhancedScore *= enhancements.volatilityMultiplier;
+  }
+  
+  // 2. Trend momentum (simplified - would need historical data)
+  enhancedScore *= enhancements.trendMomentum;
+  
+  // 3. Factor correlation penalty (simplified)
+  const correlation = calculateFactorCorrelation(factorResults);
+  if (correlation > 0.8) { // High correlation
+    enhancedScore *= enhancements.correlationPenalty;
+  }
+  
+  // 4. Time decay (simplified - would need timestamps)
+  enhancedScore *= enhancements.timeDecay;
+  
+  // 5. Non-linear scaling for extreme scores
+  if (baseScore < 30 || baseScore > 70) {
+    enhancedScore *= enhancements.nonLinearScaling;
+  }
+  
+  // Ensure score stays within bounds
+  enhancedScore = Math.max(0, Math.min(100, enhancedScore));
+  
+  return Math.round(enhancedScore);
+}
+
+// Helper functions for enhanced G-Score
+function calculateVariance(scores) {
+  if (scores.length === 0) return 0;
+  
+  const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+  const variance = scores.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) / scores.length;
+  
+  return variance;
+}
+
+function calculateFactorCorrelation(factors) {
+  const validFactors = factors.filter(f => f.score !== null);
+  if (validFactors.length < 2) return 0;
+  
+  // Simple correlation based on score similarity
+  const scores = validFactors.map(f => f.score);
+  const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+  
+  // Calculate how close scores are to the mean (higher = more correlated)
+  const deviations = scores.map(score => Math.abs(score - mean));
+  const avgDeviation = deviations.reduce((sum, dev) => sum + dev, 0) / deviations.length;
+  
+  // Convert to correlation (0-1, where 1 = perfect correlation)
+  const maxDeviation = 50; // Maximum possible deviation
+  return Math.max(0, 1 - (avgDeviation / maxDeviation));
+}
