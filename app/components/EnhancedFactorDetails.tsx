@@ -8,6 +8,9 @@ interface FactorAnalysisData {
       currentScore: number;
       stdDev: number;
       range: number;
+      min: number;
+      max: number;
+      mean: number;
       coefficientOfVariation: number;
       volatilityLevel: string;
       stabilityLevel: string;
@@ -250,7 +253,7 @@ export default function EnhancedFactorDetails({
                     <div className="text-sm font-medium text-blue-800">Range</div>
                     <div className="text-lg font-bold text-blue-900">{factorData.range} points</div>
                     <div className="text-xs text-blue-700">
-                      {factorData.min} - {factorData.min + factorData.range}
+                      {factorData.min} - {factorData.max}
                     </div>
                   </div>
                   
