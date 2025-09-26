@@ -15,6 +15,7 @@ export default function Navigation() {
   const navItems = [
     { href: '/', label: 'Overview' },
     { href: '/methodology', label: 'Methodology' },
+    { href: '/strategy-analysis', label: 'Strategy Analysis' },
   ];
 
   if (!mounted) {
