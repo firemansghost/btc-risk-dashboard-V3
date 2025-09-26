@@ -1,0 +1,101 @@
+{
+  "timestamp": "2025-09-26T12:39:03.889Z",
+  "factors": [
+    {
+      "factor": "ETF Flows",
+      "status": "info",
+      "score": 50,
+      "dataPoints": 425,
+      "stdDev": 28.85,
+      "range": 100,
+      "trend": 26.3,
+      "isStatic": false,
+      "isRecentlyStatic": false,
+      "message": "Factor showing normal dynamics (strong trend: +26.3 points)"
+    },
+    {
+      "factor": "Funding Rates",
+      "status": "info",
+      "score": 36,
+      "dataPoints": 25,
+      "stdDev": 24.29,
+      "range": 80,
+      "trend": 22.3,
+      "isStatic": false,
+      "isRecentlyStatic": false,
+      "message": "Factor showing normal dynamics (strong trend: +22.3 points)"
+    },
+    {
+      "factor": "Stablecoins",
+      "status": "healthy",
+      "score": 48,
+      "dataPoints": 30,
+      "stdDev": 28.87,
+      "range": 97,
+      "trend": 19.1,
+      "isStatic": false,
+      "isRecentlyStatic": false,
+      "message": "Factor showing normal dynamics"
+    },
+    {
+      "factor": "Net Liquidity",
+      "status": "info",
+      "score": 34,
+      "dataPoints": 81,
+      "stdDev": 34.78,
+      "range": 89,
+      "trend": -32.1,
+      "isStatic": false,
+      "isRecentlyStatic": false,
+      "message": "Factor showing normal dynamics (strong trend: -32.1 points)"
+    },
+    {
+      "factor": "Mayer Multiple",
+      "status": "healthy",
+      "score": 50,
+      "dataPoints": 10,
+      "stdDev": 11.63,
+      "range": 49,
+      "trend": 12.8,
+      "isStatic": false,
+      "isRecentlyStatic": false,
+      "message": "Factor showing normal dynamics"
+    },
+    {
+      "factor": "DXY",
+      "status": "healthy",
+      "score": 37,
+      "dataPoints": 10,
+      "stdDev": 9.07,
+      "range": 23,
+      "trend": 12.6,
+      "isStatic": false,
+      "isRecentlyStatic": false,
+      "message": "Factor showing normal dynamics"
+    },
+    {
+      "factor": "Fear & Greed",
+      "status": "healthy",
+      "score": 38,
+      "dataPoints": 10,
+      "stdDev": 12.69,
+      "range": 39,
+      "trend": 7.2,
+      "isStatic": false,
+      "isRecentlyStatic": false,
+      "message": "Factor showing normal dynamics"
+    }
+  ],
+  "gScore": {
+    "status": "healthy",
+    "dataPoints": 731,
+    "mean": 62.8,
+    "stdDev": 14.57,
+    "range": 68,
+    "isStatic": false,
+    "isRecentlyStatic": false,
+    "message": "G-Score showing good diversity"
+  },
+  "overallHealth": "healthy",
+  "alerts": []
+}
