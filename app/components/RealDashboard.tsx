@@ -826,7 +826,7 @@ export default function RealDashboard() {
           onClose={() => setEnhancedDetailsOpen(false)}
           factorKey={selectedFactor?.key || ''}
           factorLabel={selectedFactor?.label || ''}
-          currentScore={latest?.factors?.find(f => f.key === selectedFactor?.key)?.score || 0}
+          currentScore={latest?.factors?.find((f: any) => f.key === selectedFactor?.key)?.score || 0}
         />
       )}
 
