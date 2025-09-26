@@ -14,6 +14,7 @@ import RiskBandLegend from './RiskBandLegend';
 import WhatIfWeightsModal from './WhatIfWeightsModal';
 import ProvenanceModal from './ProvenanceModal';
 import FactorHistoryModal from './FactorHistoryModal';
+import EnhancedFactorDetails from './EnhancedFactorDetails';
 import EtfBreakdownModal from './EtfBreakdownModal';
 import WeightsLauncher from './WeightsLauncher';
 import HistoryChart from './HistoryChart';
@@ -92,6 +93,7 @@ export default function RealDashboard() {
   const [whatIfModalOpen, setWhatIfModalOpen] = useState(false);
   const [provenanceModalOpen, setProvenanceModalOpen] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [enhancedDetailsOpen, setEnhancedDetailsOpen] = useState(false);
   const [etfBreakdownOpen, setEtfBreakdownOpen] = useState(false);
   const [selectedFactor, setSelectedFactor] = useState<{key: string, label: string} | null>(null);
 
@@ -138,6 +140,11 @@ export default function RealDashboard() {
   const openHistoryModal = (factor: {key: string, label: string}) => {
     setSelectedFactor(factor);
     setHistoryModalOpen(true);
+  };
+
+  const openEnhancedDetails = (factor: {key: string, label: string}) => {
+    setSelectedFactor(factor);
+    setEnhancedDetailsOpen(true);
   };
 
   const openEtfBreakdown = () => {
@@ -577,6 +584,12 @@ export default function RealDashboard() {
                     >
                       History
                     </button>
+                    <button
+                      onClick={() => openEnhancedDetails({key: factor.key, label: factor.label})}
+                      className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      Enhanced Details
+                    </button>
                     <a 
                       href="/methodology" 
                       className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
@@ -804,6 +817,16 @@ export default function RealDashboard() {
           onClose={() => setHistoryModalOpen(false)}
           factorKey={selectedFactor?.key || ''}
           factorLabel={selectedFactor?.label || ''}
+        />
+      )}
+
+      {enhancedDetailsOpen && selectedFactor && (
+        <EnhancedFactorDetails
+          isOpen={enhancedDetailsOpen}
+          onClose={() => setEnhancedDetailsOpen(false)}
+          factorKey={selectedFactor?.key || ''}
+          factorLabel={selectedFactor?.label || ''}
+          currentScore={latest?.factors?.find(f => f.key === selectedFactor?.key)?.score || 0}
         />
       )}
 
