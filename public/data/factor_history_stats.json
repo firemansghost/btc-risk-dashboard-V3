@@ -1,0 +1,94 @@
+{
+  "totalRecords": 1,
+  "dateRange": "2025-09-26 to 2025-09-26",
+  "factorStats": {
+    "trend_valuation": {
+      "dataPoints": 1,
+      "mean": 50,
+      "stdDev": 0,
+      "min": 50,
+      "max": 50,
+      "range": 0,
+      "statusCounts": {
+        "fresh": 1
+      }
+    },
+    "onchain": {
+      "dataPoints": 1,
+      "mean": 89,
+      "stdDev": 0,
+      "min": 89,
+      "max": 89,
+      "range": 0,
+      "statusCounts": {
+        "fresh": 1
+      }
+    },
+    "stablecoins": {
+      "dataPoints": 1,
+      "mean": 38,
+      "stdDev": 0,
+      "min": 38,
+      "max": 38,
+      "range": 0,
+      "statusCounts": {
+        "fresh": 1
+      }
+    },
+    "etf_flows": {
+      "dataPoints": 1,
+      "mean": 61,
+      "stdDev": 0,
+      "min": 61,
+      "max": 61,
+      "range": 0,
+      "statusCounts": {
+        "fresh": 1
+      }
+    },
+    "net_liquidity": {
+      "dataPoints": 1,
+      "mean": 51,
+      "stdDev": 0,
+      "min": 51,
+      "max": 51,
+      "range": 0,
+      "statusCounts": {
+        "fresh": 1
+      }
+    },
+    "term_leverage": {
+      "dataPoints": 1,
+      "mean": 46,
+      "stdDev": 0,
+      "min": 46,
+      "max": 46,
+      "range": 0,
+      "statusCounts": {
+        "fresh": 1
+      }
+    },
+    "macro_overlay": {
+      "dataPoints": 1,
+      "mean": 56,
+      "stdDev": 0,
+      "min": 56,
+      "max": 56,
+      "range": 0,
+      "statusCounts": {
+        "fresh": 1
+      }
+    },
+    "social_interest": {
+      "dataPoints": 1,
+      "mean": 40,
+      "stdDev": 0,
+      "min": 40,
+      "max": 40,
+      "range": 0,
+      "statusCounts": {
+        "fresh": 1
+      }
+    }
+  }
+}
