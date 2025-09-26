@@ -69,7 +69,7 @@ export default function EnhancedFactorDetails({
         ]);
 
         if (!volatilityRes.ok || !correlationRes.ok || !attributionRes.ok) {
-          throw new Error('Failed to fetch analysis data');
+          throw new Error(`Failed to fetch analysis data: ${volatilityRes.status} ${correlationRes.status} ${attributionRes.status}`);
         }
 
         const [volatility, correlation, attribution] = await Promise.all([
@@ -78,10 +78,15 @@ export default function EnhancedFactorDetails({
           attributionRes.json()
         ]);
 
+        // Check if the data structure is correct
+        if (!volatility.factors || !correlation.correlationMatrix) {
+          throw new Error('Invalid data structure in analysis files');
+        }
+
         setAnalysisData({
           volatility: volatility.factors,
           correlation: correlation.correlationMatrix,
-          attribution: attribution.factors
+          attribution: attribution.factors || {} // Handle missing attribution data
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load analysis data');
@@ -95,9 +100,9 @@ export default function EnhancedFactorDetails({
 
   if (!isOpen) return null;
 
-  const factorData = analysisData?.volatility[factorKey];
-  const correlationData = analysisData?.correlation[factorKey];
-  const attributionData = analysisData?.attribution[factorKey];
+  const factorData = analysisData?.volatility?.[factorKey];
+  const correlationData = analysisData?.correlation?.[factorKey];
+  const attributionData = analysisData?.attribution?.[factorKey];
 
   const getVolatilityColor = (level: string) => {
     switch (level) {
@@ -202,7 +207,7 @@ export default function EnhancedFactorDetails({
         <div className="p-6 space-y-8">
           
           {/* Volatility & Risk Metrics */}
-          {factorData && (
+          {factorData ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900">📊 Volatility Analysis</h3>
@@ -264,6 +269,14 @@ export default function EnhancedFactorDetails({
                   </div>
                 </div>
               </div>
+            </div>
+          ) : (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-yellow-800 mb-2">⚠️ Data Not Available</h3>
+              <p className="text-yellow-700">
+                Enhanced factor analysis data is not available for {factorLabel}. 
+                This may be because the analysis scripts haven't been run yet or the data is still being generated.
+              </p>
             </div>
           )}
 
