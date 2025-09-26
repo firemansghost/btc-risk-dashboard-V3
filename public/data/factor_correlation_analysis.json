@@ -1,0 +1,332 @@
+{
+  "timestamp": "2025-09-26T15:05:09.024Z",
+  "dataPoints": 30,
+  "correlationMatrix": {
+    "trend_valuation": {
+      "trend_valuation": 1,
+      "onchain": 0.301,
+      "stablecoins": 0.816,
+      "etf_flows": 0.776,
+      "net_liquidity": 0.999,
+      "term_leverage": 0.971,
+      "macro_overlay": 0.891,
+      "social_interest": 0.752
+    },
+    "onchain": {
+      "trend_valuation": 0.301,
+      "onchain": 1,
+      "stablecoins": -0.253,
+      "etf_flows": 0.804,
+      "net_liquidity": 0.314,
+      "term_leverage": 0.099,
+      "macro_overlay": 0.665,
+      "social_interest": -0.359
+    },
+    "stablecoins": {
+      "trend_valuation": 0.816,
+      "onchain": -0.253,
+      "stablecoins": 1,
+      "etf_flows": 0.308,
+      "net_liquidity": 0.806,
+      "term_leverage": 0.92,
+      "macro_overlay": 0.496,
+      "social_interest": 0.993
+    },
+    "etf_flows": {
+      "trend_valuation": 0.776,
+      "onchain": 0.804,
+      "stablecoins": 0.308,
+      "etf_flows": 1,
+      "net_liquidity": 0.782,
+      "term_leverage": 0.624,
+      "macro_overlay": 0.971,
+      "social_interest": 0.206
+    },
+    "net_liquidity": {
+      "trend_valuation": 0.999,
+      "onchain": 0.314,
+      "stablecoins": 0.806,
+      "etf_flows": 0.782,
+      "net_liquidity": 1,
+      "term_leverage": 0.967,
+      "macro_overlay": 0.896,
+      "social_interest": 0.74
+    },
+    "term_leverage": {
+      "trend_valuation": 0.971,
+      "onchain": 0.099,
+      "stablecoins": 0.92,
+      "etf_flows": 0.624,
+      "net_liquidity": 0.967,
+      "term_leverage": 1,
+      "macro_overlay": 0.775,
+      "social_interest": 0.875
+    },
+    "macro_overlay": {
+      "trend_valuation": 0.891,
+      "onchain": 0.665,
+      "stablecoins": 0.496,
+      "etf_flows": 0.971,
+      "net_liquidity": 0.896,
+      "term_leverage": 0.775,
+      "macro_overlay": 1,
+      "social_interest": 0.404
+    },
+    "social_interest": {
+      "trend_valuation": 0.752,
+      "onchain": -0.359,
+      "stablecoins": 0.993,
+      "etf_flows": 0.206,
+      "net_liquidity": 0.74,
+      "term_leverage": 0.875,
+      "macro_overlay": 0.404,
+      "social_interest": 1
+    }
+  },
+  "patterns": {
+    "strongPositive": [
+      {
+        "pair": "trend_valuation ↔ stablecoins",
+        "correlation": 0.816
+      },
+      {
+        "pair": "trend_valuation ↔ etf_flows",
+        "correlation": 0.776
+      },
+      {
+        "pair": "trend_valuation ↔ net_liquidity",
+        "correlation": 0.999
+      },
+      {
+        "pair": "trend_valuation ↔ term_leverage",
+        "correlation": 0.971
+      },
+      {
+        "pair": "trend_valuation ↔ macro_overlay",
+        "correlation": 0.891
+      },
+      {
+        "pair": "trend_valuation ↔ social_interest",
+        "correlation": 0.752
+      },
+      {
+        "pair": "onchain ↔ etf_flows",
+        "correlation": 0.804
+      },
+      {
+        "pair": "stablecoins ↔ trend_valuation",
+        "correlation": 0.816
+      },
+      {
+        "pair": "stablecoins ↔ net_liquidity",
+        "correlation": 0.806
+      },
+      {
+        "pair": "stablecoins ↔ term_leverage",
+        "correlation": 0.92
+      },
+      {
+        "pair": "stablecoins ↔ social_interest",
+        "correlation": 0.993
+      },
+      {
+        "pair": "etf_flows ↔ trend_valuation",
+        "correlation": 0.776
+      },
+      {
+        "pair": "etf_flows ↔ onchain",
+        "correlation": 0.804
+      },
+      {
+        "pair": "etf_flows ↔ net_liquidity",
+        "correlation": 0.782
+      },
+      {
+        "pair": "etf_flows ↔ macro_overlay",
+        "correlation": 0.971
+      },
+      {
+        "pair": "net_liquidity ↔ trend_valuation",
+        "correlation": 0.999
+      },
+      {
+        "pair": "net_liquidity ↔ stablecoins",
+        "correlation": 0.806
+      },
+      {
+        "pair": "net_liquidity ↔ etf_flows",
+        "correlation": 0.782
+      },
+      {
+        "pair": "net_liquidity ↔ term_leverage",
+        "correlation": 0.967
+      },
+      {
+        "pair": "net_liquidity ↔ macro_overlay",
+        "correlation": 0.896
+      },
+      {
+        "pair": "net_liquidity ↔ social_interest",
+        "correlation": 0.74
+      },
+      {
+        "pair": "term_leverage ↔ trend_valuation",
+        "correlation": 0.971
+      },
+      {
+        "pair": "term_leverage ↔ stablecoins",
+        "correlation": 0.92
+      },
+      {
+        "pair": "term_leverage ↔ net_liquidity",
+        "correlation": 0.967
+      },
+      {
+        "pair": "term_leverage ↔ macro_overlay",
+        "correlation": 0.775
+      },
+      {
+        "pair": "term_leverage ↔ social_interest",
+        "correlation": 0.875
+      },
+      {
+        "pair": "macro_overlay ↔ trend_valuation",
+        "correlation": 0.891
+      },
+      {
+        "pair": "macro_overlay ↔ etf_flows",
+        "correlation": 0.971
+      },
+      {
+        "pair": "macro_overlay ↔ net_liquidity",
+        "correlation": 0.896
+      },
+      {
+        "pair": "macro_overlay ↔ term_leverage",
+        "correlation": 0.775
+      },
+      {
+        "pair": "social_interest ↔ trend_valuation",
+        "correlation": 0.752
+      },
+      {
+        "pair": "social_interest ↔ stablecoins",
+        "correlation": 0.993
+      },
+      {
+        "pair": "social_interest ↔ net_liquidity",
+        "correlation": 0.74
+      },
+      {
+        "pair": "social_interest ↔ term_leverage",
+        "correlation": 0.875
+      }
+    ],
+    "moderatePositive": [
+      {
+        "pair": "trend_valuation ↔ onchain",
+        "correlation": 0.301
+      },
+      {
+        "pair": "onchain ↔ trend_valuation",
+        "correlation": 0.301
+      },
+      {
+        "pair": "onchain ↔ net_liquidity",
+        "correlation": 0.314
+      },
+      {
+        "pair": "onchain ↔ macro_overlay",
+        "correlation": 0.665
+      },
+      {
+        "pair": "stablecoins ↔ etf_flows",
+        "correlation": 0.308
+      },
+      {
+        "pair": "stablecoins ↔ macro_overlay",
+        "correlation": 0.496
+      },
+      {
+        "pair": "etf_flows ↔ stablecoins",
+        "correlation": 0.308
+      },
+      {
+        "pair": "etf_flows ↔ term_leverage",
+        "correlation": 0.624
+      },
+      {
+        "pair": "net_liquidity ↔ onchain",
+        "correlation": 0.314
+      },
+      {
+        "pair": "term_leverage ↔ etf_flows",
+        "correlation": 0.624
+      },
+      {
+        "pair": "macro_overlay ↔ onchain",
+        "correlation": 0.665
+      },
+      {
+        "pair": "macro_overlay ↔ stablecoins",
+        "correlation": 0.496
+      },
+      {
+        "pair": "macro_overlay ↔ social_interest",
+        "correlation": 0.404
+      },
+      {
+        "pair": "social_interest ↔ macro_overlay",
+        "correlation": 0.404
+      }
+    ],
+    "weakPositive": [
+      {
+        "pair": "etf_flows ↔ social_interest",
+        "correlation": 0.206
+      },
+      {
+        "pair": "social_interest ↔ etf_flows",
+        "correlation": 0.206
+      }
+    ],
+    "weakNegative": [
+      {
+        "pair": "onchain ↔ stablecoins",
+        "correlation": -0.253
+      },
+      {
+        "pair": "stablecoins ↔ onchain",
+        "correlation": -0.253
+      }
+    ],
+    "moderateNegative": [
+      {
+        "pair": "onchain ↔ social_interest",
+        "correlation": -0.359
+      },
+      {
+        "pair": "social_interest ↔ onchain",
+        "correlation": -0.359
+      }
+    ],
+    "strongNegative": [],
+    "uncorrelated": [
+      {
+        "pair": "onchain ↔ term_leverage",
+        "correlation": 0.099
+      },
+      {
+        "pair": "term_leverage ↔ onchain",
+        "correlation": 0.099
+      }
+    ]
+  },
+  "summary": {
+    "totalPairs": 56,
+    "strongCorrelations": 34,
+    "moderateCorrelations": 16,
+    "weakCorrelations": 4,
+    "uncorrelated": 2
+  }
+}

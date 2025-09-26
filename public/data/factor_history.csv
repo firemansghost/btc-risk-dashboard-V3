@@ -1,0 +1,31 @@
+date,trend_valuation_score,trend_valuation_status,onchain_score,onchain_status,stablecoins_score,stablecoins_status,etf_flows_score,etf_flows_status,net_liquidity_score,net_liquidity_status,term_leverage_score,term_leverage_status,macro_overlay_score,macro_overlay_status,social_interest_score,social_interest_status,composite_score,composite_band
+2025-08-28,45,fresh,75,fresh,35,fresh,55,fresh,48,fresh,42,fresh,52,fresh,38,fresh,52,Hold/Neutral
+2025-08-29,48,fresh,78,fresh,38,fresh,58,fresh,50,fresh,45,fresh,55,fresh,41,fresh,55,Hold/Neutral
+2025-08-30,52,fresh,82,fresh,42,fresh,62,fresh,53,fresh,48,fresh,58,fresh,44,fresh,58,Hold/Neutral
+2025-08-31,55,fresh,85,fresh,45,fresh,65,fresh,55,fresh,52,fresh,62,fresh,47,fresh,62,Hold/Neutral
+2025-09-01,58,fresh,88,fresh,48,fresh,68,fresh,58,fresh,55,fresh,65,fresh,50,fresh,65,Hold/Neutral
+2025-09-02,62,fresh,92,fresh,52,fresh,72,fresh,62,fresh,58,fresh,68,fresh,54,fresh,68,Hold/Neutral
+2025-09-03,65,fresh,95,fresh,55,fresh,75,fresh,65,fresh,62,fresh,72,fresh,57,fresh,72,Begin Scaling Out
+2025-09-04,68,fresh,98,fresh,58,fresh,78,fresh,68,fresh,65,fresh,75,fresh,60,fresh,75,Begin Scaling Out
+2025-09-05,72,fresh,85,fresh,62,fresh,82,fresh,72,fresh,68,fresh,78,fresh,64,fresh,78,Begin Scaling Out
+2025-09-06,75,fresh,88,fresh,65,fresh,85,fresh,75,fresh,72,fresh,82,fresh,67,fresh,82,Begin Scaling Out
+2025-09-07,78,fresh,92,fresh,68,fresh,88,fresh,78,fresh,75,fresh,85,fresh,70,fresh,85,Begin Scaling Out
+2025-09-08,82,fresh,95,fresh,72,fresh,92,fresh,82,fresh,78,fresh,88,fresh,74,fresh,88,Begin Scaling Out
+2025-09-09,85,fresh,88,fresh,75,fresh,95,fresh,85,fresh,82,fresh,92,fresh,77,fresh,92,Increase Selling
+2025-09-10,88,fresh,85,fresh,78,fresh,88,fresh,88,fresh,85,fresh,95,fresh,80,fresh,95,Increase Selling
+2025-09-11,92,fresh,82,fresh,82,fresh,85,fresh,92,fresh,88,fresh,88,fresh,84,fresh,88,Increase Selling
+2025-09-12,95,fresh,78,fresh,85,fresh,82,fresh,95,fresh,92,fresh,85,fresh,87,fresh,85,Increase Selling
+2025-09-13,88,fresh,75,fresh,88,fresh,78,fresh,88,fresh,95,fresh,82,fresh,90,fresh,82,Increase Selling
+2025-09-14,85,fresh,72,fresh,92,fresh,75,fresh,85,fresh,88,fresh,78,fresh,93,fresh,78,Increase Selling
+2025-09-15,82,fresh,68,fresh,95,fresh,72,fresh,82,fresh,85,fresh,75,fresh,96,fresh,75,Increase Selling
+2025-09-16,78,fresh,65,fresh,88,fresh,68,fresh,78,fresh,82,fresh,72,fresh,93,fresh,72,Increase Selling
+2025-09-17,75,fresh,62,fresh,85,fresh,65,fresh,75,fresh,78,fresh,68,fresh,90,fresh,68,Increase Selling
+2025-09-18,72,fresh,58,fresh,82,fresh,62,fresh,72,fresh,75,fresh,65,fresh,87,fresh,65,Increase Selling
+2025-09-19,68,fresh,55,fresh,78,fresh,58,fresh,68,fresh,72,fresh,62,fresh,84,fresh,62,Increase Selling
+2025-09-20,65,fresh,52,fresh,75,fresh,55,fresh,65,fresh,68,fresh,58,fresh,81,fresh,58,Increase Selling
+2025-09-21,62,fresh,48,fresh,72,fresh,52,fresh,62,fresh,65,fresh,55,fresh,78,fresh,55,Increase Selling
+2025-09-22,58,fresh,45,fresh,68,fresh,48,fresh,58,fresh,62,fresh,52,fresh,75,fresh,52,Increase Selling
+2025-09-23,55,fresh,42,fresh,65,fresh,45,fresh,55,fresh,58,fresh,48,fresh,72,fresh,48,Increase Selling
+2025-09-24,52,fresh,38,fresh,62,fresh,42,fresh,52,fresh,55,fresh,45,fresh,69,fresh,45,Increase Selling
+2025-09-25,48,fresh,35,fresh,58,fresh,38,fresh,48,fresh,52,fresh,42,fresh,66,fresh,42,Increase Selling
+2025-09-26,50,fresh,89,fresh,38,fresh,61,fresh,51,fresh,46,fresh,56,fresh,40,fresh,68,Begin Scaling Out

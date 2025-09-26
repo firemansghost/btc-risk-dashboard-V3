@@ -275,6 +275,19 @@ async function main() {
   const composite = factorResults.composite;
   const band = riskBand(composite);
 
+  // 2.1) Update factor history tracking
+  console.log("Updating factor history...");
+  try {
+    const factorHistoryModule = await import('./factor-history-tracking.mjs');
+    if (factorHistoryModule.updateFactorHistory) {
+      await factorHistoryModule.updateFactorHistory();
+    } else {
+      console.log("⚠️  Factor history tracking not available");
+    }
+  } catch (error) {
+    console.log(`⚠️  Factor history update failed: ${error.message}`);
+  }
+
   // 2.5) Compute BTC⇄Gold cross-rates
   console.log("Computing BTC⇄Gold cross-rates...");
   const { computeBtcGoldRates } = await import('./factors.mjs');

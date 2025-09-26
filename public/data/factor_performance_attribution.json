@@ -1,0 +1,2186 @@
+{
+  "timestamp": "2025-09-26T15:05:49.849Z",
+  "dataPoints": 30,
+  "attributionDays": 29,
+  "dailyAttribution": [
+    {
+      "date": "2025-08-29",
+      "composite_change": 3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 20.33898305084746
+        },
+        "onchain": {
+          "change": 3,
+          "weight": 0.05,
+          "contribution": 0.15000000000000002,
+          "contribution_pct": 5.084745762711865
+        },
+        "stablecoins": {
+          "change": 3,
+          "weight": 0.21,
+          "contribution": 0.63,
+          "contribution_pct": 21.35593220338983
+        },
+        "etf_flows": {
+          "change": 3,
+          "weight": 0.09,
+          "contribution": 0.27,
+          "contribution_pct": 9.152542372881356
+        },
+        "net_liquidity": {
+          "change": 2,
+          "weight": 0.05,
+          "contribution": 0.1,
+          "contribution_pct": 3.389830508474576
+        },
+        "term_leverage": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 20.33898305084746
+        },
+        "macro_overlay": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 10.16949152542373
+        },
+        "social_interest": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 10.16949152542373
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": 0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        },
+        {
+          "factor": "term_leverage",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 98.33333333333334
+    },
+    {
+      "date": "2025-08-30",
+      "composite_change": 3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": 4,
+          "weight": 0.2,
+          "contribution": 0.8,
+          "contribution_pct": 22.535211267605636
+        },
+        "onchain": {
+          "change": 4,
+          "weight": 0.05,
+          "contribution": 0.2,
+          "contribution_pct": 5.633802816901409
+        },
+        "stablecoins": {
+          "change": 4,
+          "weight": 0.21,
+          "contribution": 0.84,
+          "contribution_pct": 23.661971830985916
+        },
+        "etf_flows": {
+          "change": 4,
+          "weight": 0.09,
+          "contribution": 0.36,
+          "contribution_pct": 10.140845070422536
+        },
+        "net_liquidity": {
+          "change": 3,
+          "weight": 0.05,
+          "contribution": 0.15000000000000002,
+          "contribution_pct": 4.225352112676057
+        },
+        "term_leverage": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 16.901408450704228
+        },
+        "macro_overlay": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 8.450704225352114
+        },
+        "social_interest": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 8.450704225352114
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": 0.84,
+          "abs_contribution": 0.84
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": 0.8,
+          "abs_contribution": 0.8
+        },
+        {
+          "factor": "term_leverage",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 81.66666666666667
+    },
+    {
+      "date": "2025-08-31",
+      "composite_change": 4,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 18.461538461538467
+        },
+        "onchain": {
+          "change": 3,
+          "weight": 0.05,
+          "contribution": 0.15000000000000002,
+          "contribution_pct": 4.615384615384617
+        },
+        "stablecoins": {
+          "change": 3,
+          "weight": 0.21,
+          "contribution": 0.63,
+          "contribution_pct": 19.384615384615383
+        },
+        "etf_flows": {
+          "change": 3,
+          "weight": 0.09,
+          "contribution": 0.27,
+          "contribution_pct": 8.307692307692308
+        },
+        "net_liquidity": {
+          "change": 2,
+          "weight": 0.05,
+          "contribution": 0.1,
+          "contribution_pct": 3.076923076923077
+        },
+        "term_leverage": {
+          "change": 4,
+          "weight": 0.2,
+          "contribution": 0.8,
+          "contribution_pct": 24.615384615384617
+        },
+        "macro_overlay": {
+          "change": 4,
+          "weight": 0.1,
+          "contribution": 0.4,
+          "contribution_pct": 12.307692307692308
+        },
+        "social_interest": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 9.230769230769234
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "term_leverage",
+          "contribution": 0.8,
+          "abs_contribution": 0.8
+        },
+        {
+          "factor": "stablecoins",
+          "contribution": 0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 81.25
+    },
+    {
+      "date": "2025-09-01",
+      "composite_change": 3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 20.000000000000004
+        },
+        "onchain": {
+          "change": 3,
+          "weight": 0.05,
+          "contribution": 0.15000000000000002,
+          "contribution_pct": 5.000000000000001
+        },
+        "stablecoins": {
+          "change": 3,
+          "weight": 0.21,
+          "contribution": 0.63,
+          "contribution_pct": 21
+        },
+        "etf_flows": {
+          "change": 3,
+          "weight": 0.09,
+          "contribution": 0.27,
+          "contribution_pct": 9.000000000000002
+        },
+        "net_liquidity": {
+          "change": 3,
+          "weight": 0.05,
+          "contribution": 0.15000000000000002,
+          "contribution_pct": 5.000000000000001
+        },
+        "term_leverage": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 20.000000000000004
+        },
+        "macro_overlay": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 10.000000000000002
+        },
+        "social_interest": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 10.000000000000002
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": 0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        },
+        {
+          "factor": "term_leverage",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 100
+    },
+    {
+      "date": "2025-09-02",
+      "composite_change": 3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": 4,
+          "weight": 0.2,
+          "contribution": 0.8,
+          "contribution_pct": 21.621621621621625
+        },
+        "onchain": {
+          "change": 4,
+          "weight": 0.05,
+          "contribution": 0.2,
+          "contribution_pct": 5.405405405405406
+        },
+        "stablecoins": {
+          "change": 4,
+          "weight": 0.21,
+          "contribution": 0.84,
+          "contribution_pct": 22.702702702702705
+        },
+        "etf_flows": {
+          "change": 4,
+          "weight": 0.09,
+          "contribution": 0.36,
+          "contribution_pct": 9.72972972972973
+        },
+        "net_liquidity": {
+          "change": 4,
+          "weight": 0.05,
+          "contribution": 0.2,
+          "contribution_pct": 5.405405405405406
+        },
+        "term_leverage": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 16.21621621621622
+        },
+        "macro_overlay": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 8.10810810810811
+        },
+        "social_interest": {
+          "change": 4,
+          "weight": 0.1,
+          "contribution": 0.4,
+          "contribution_pct": 10.810810810810812
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": 0.84,
+          "abs_contribution": 0.84
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": 0.8,
+          "abs_contribution": 0.8
+        },
+        {
+          "factor": "term_leverage",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 76.66666666666667
+    },
+    {
+      "date": "2025-09-03",
+      "composite_change": 4,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 18.18181818181818
+        },
+        "onchain": {
+          "change": 3,
+          "weight": 0.05,
+          "contribution": 0.15000000000000002,
+          "contribution_pct": 4.545454545454545
+        },
+        "stablecoins": {
+          "change": 3,
+          "weight": 0.21,
+          "contribution": 0.63,
+          "contribution_pct": 19.090909090909086
+        },
+        "etf_flows": {
+          "change": 3,
+          "weight": 0.09,
+          "contribution": 0.27,
+          "contribution_pct": 8.18181818181818
+        },
+        "net_liquidity": {
+          "change": 3,
+          "weight": 0.05,
+          "contribution": 0.15000000000000002,
+          "contribution_pct": 4.545454545454545
+        },
+        "term_leverage": {
+          "change": 4,
+          "weight": 0.2,
+          "contribution": 0.8,
+          "contribution_pct": 24.24242424242424
+        },
+        "macro_overlay": {
+          "change": 4,
+          "weight": 0.1,
+          "contribution": 0.4,
+          "contribution_pct": 12.12121212121212
+        },
+        "social_interest": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 9.09090909090909
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "term_leverage",
+          "contribution": 0.8,
+          "abs_contribution": 0.8
+        },
+        {
+          "factor": "stablecoins",
+          "contribution": 0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 82.50000000000001
+    },
+    {
+      "date": "2025-09-04",
+      "composite_change": 3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 20.000000000000004
+        },
+        "onchain": {
+          "change": 3,
+          "weight": 0.05,
+          "contribution": 0.15000000000000002,
+          "contribution_pct": 5.000000000000001
+        },
+        "stablecoins": {
+          "change": 3,
+          "weight": 0.21,
+          "contribution": 0.63,
+          "contribution_pct": 21
+        },
+        "etf_flows": {
+          "change": 3,
+          "weight": 0.09,
+          "contribution": 0.27,
+          "contribution_pct": 9.000000000000002
+        },
+        "net_liquidity": {
+          "change": 3,
+          "weight": 0.05,
+          "contribution": 0.15000000000000002,
+          "contribution_pct": 5.000000000000001
+        },
+        "term_leverage": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 20.000000000000004
+        },
+        "macro_overlay": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 10.000000000000002
+        },
+        "social_interest": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 10.000000000000002
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": 0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        },
+        {
+          "factor": "term_leverage",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 100
+    },
+    {
+      "date": "2025-09-05",
+      "composite_change": 3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": 4,
+          "weight": 0.2,
+          "contribution": 0.8,
+          "contribution_pct": 28.07017543859649
+        },
+        "onchain": {
+          "change": -13,
+          "weight": 0.05,
+          "contribution": -0.65,
+          "contribution_pct": -22.807017543859647
+        },
+        "stablecoins": {
+          "change": 4,
+          "weight": 0.21,
+          "contribution": 0.84,
+          "contribution_pct": 29.47368421052631
+        },
+        "etf_flows": {
+          "change": 4,
+          "weight": 0.09,
+          "contribution": 0.36,
+          "contribution_pct": 12.631578947368421
+        },
+        "net_liquidity": {
+          "change": 4,
+          "weight": 0.05,
+          "contribution": 0.2,
+          "contribution_pct": 7.017543859649122
+        },
+        "term_leverage": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 21.05263157894737
+        },
+        "macro_overlay": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 10.526315789473685
+        },
+        "social_interest": {
+          "change": 4,
+          "weight": 0.1,
+          "contribution": 0.4,
+          "contribution_pct": 14.035087719298245
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": 0.84,
+          "abs_contribution": 0.84
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": 0.8,
+          "abs_contribution": 0.8
+        },
+        {
+          "factor": "onchain",
+          "contribution": -0.65,
+          "abs_contribution": 0.65
+        }
+      ],
+      "attribution_quality": 95
+    },
+    {
+      "date": "2025-09-06",
+      "composite_change": 4,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 18.18181818181818
+        },
+        "onchain": {
+          "change": 3,
+          "weight": 0.05,
+          "contribution": 0.15000000000000002,
+          "contribution_pct": 4.545454545454545
+        },
+        "stablecoins": {
+          "change": 3,
+          "weight": 0.21,
+          "contribution": 0.63,
+          "contribution_pct": 19.090909090909086
+        },
+        "etf_flows": {
+          "change": 3,
+          "weight": 0.09,
+          "contribution": 0.27,
+          "contribution_pct": 8.18181818181818
+        },
+        "net_liquidity": {
+          "change": 3,
+          "weight": 0.05,
+          "contribution": 0.15000000000000002,
+          "contribution_pct": 4.545454545454545
+        },
+        "term_leverage": {
+          "change": 4,
+          "weight": 0.2,
+          "contribution": 0.8,
+          "contribution_pct": 24.24242424242424
+        },
+        "macro_overlay": {
+          "change": 4,
+          "weight": 0.1,
+          "contribution": 0.4,
+          "contribution_pct": 12.12121212121212
+        },
+        "social_interest": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 9.09090909090909
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "term_leverage",
+          "contribution": 0.8,
+          "abs_contribution": 0.8
+        },
+        {
+          "factor": "stablecoins",
+          "contribution": 0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 82.50000000000001
+    },
+    {
+      "date": "2025-09-07",
+      "composite_change": 3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 19.672131147540988
+        },
+        "onchain": {
+          "change": 4,
+          "weight": 0.05,
+          "contribution": 0.2,
+          "contribution_pct": 6.557377049180328
+        },
+        "stablecoins": {
+          "change": 3,
+          "weight": 0.21,
+          "contribution": 0.63,
+          "contribution_pct": 20.655737704918035
+        },
+        "etf_flows": {
+          "change": 3,
+          "weight": 0.09,
+          "contribution": 0.27,
+          "contribution_pct": 8.852459016393443
+        },
+        "net_liquidity": {
+          "change": 3,
+          "weight": 0.05,
+          "contribution": 0.15000000000000002,
+          "contribution_pct": 4.918032786885247
+        },
+        "term_leverage": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 19.672131147540988
+        },
+        "macro_overlay": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 9.836065573770494
+        },
+        "social_interest": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 9.836065573770494
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": 0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        },
+        {
+          "factor": "term_leverage",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 98.33333333333334
+    },
+    {
+      "date": "2025-09-08",
+      "composite_change": 3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": 4,
+          "weight": 0.2,
+          "contribution": 0.8,
+          "contribution_pct": 21.917808219178085
+        },
+        "onchain": {
+          "change": 3,
+          "weight": 0.05,
+          "contribution": 0.15000000000000002,
+          "contribution_pct": 4.109589041095891
+        },
+        "stablecoins": {
+          "change": 4,
+          "weight": 0.21,
+          "contribution": 0.84,
+          "contribution_pct": 23.013698630136986
+        },
+        "etf_flows": {
+          "change": 4,
+          "weight": 0.09,
+          "contribution": 0.36,
+          "contribution_pct": 9.863013698630137
+        },
+        "net_liquidity": {
+          "change": 4,
+          "weight": 0.05,
+          "contribution": 0.2,
+          "contribution_pct": 5.479452054794521
+        },
+        "term_leverage": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 16.438356164383563
+        },
+        "macro_overlay": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 8.219178082191782
+        },
+        "social_interest": {
+          "change": 4,
+          "weight": 0.1,
+          "contribution": 0.4,
+          "contribution_pct": 10.958904109589042
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": 0.84,
+          "abs_contribution": 0.84
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": 0.8,
+          "abs_contribution": 0.8
+        },
+        {
+          "factor": "term_leverage",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 78.33333333333334
+    },
+    {
+      "date": "2025-09-09",
+      "composite_change": 4,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 21.428571428571427
+        },
+        "onchain": {
+          "change": -7,
+          "weight": 0.05,
+          "contribution": -0.35000000000000003,
+          "contribution_pct": -12.499999999999998
+        },
+        "stablecoins": {
+          "change": 3,
+          "weight": 0.21,
+          "contribution": 0.63,
+          "contribution_pct": 22.499999999999996
+        },
+        "etf_flows": {
+          "change": 3,
+          "weight": 0.09,
+          "contribution": 0.27,
+          "contribution_pct": 9.64285714285714
+        },
+        "net_liquidity": {
+          "change": 3,
+          "weight": 0.05,
+          "contribution": 0.15000000000000002,
+          "contribution_pct": 5.357142857142857
+        },
+        "term_leverage": {
+          "change": 4,
+          "weight": 0.2,
+          "contribution": 0.8,
+          "contribution_pct": 28.571428571428566
+        },
+        "macro_overlay": {
+          "change": 4,
+          "weight": 0.1,
+          "contribution": 0.4,
+          "contribution_pct": 14.285714285714283
+        },
+        "social_interest": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 10.714285714285714
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "term_leverage",
+          "contribution": 0.8,
+          "abs_contribution": 0.8
+        },
+        {
+          "factor": "stablecoins",
+          "contribution": 0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 70.00000000000001
+    },
+    {
+      "date": "2025-09-10",
+      "composite_change": 3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 33.33333333333333
+        },
+        "onchain": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": -8.333333333333332
+        },
+        "stablecoins": {
+          "change": 3,
+          "weight": 0.21,
+          "contribution": 0.63,
+          "contribution_pct": 35
+        },
+        "etf_flows": {
+          "change": -7,
+          "weight": 0.09,
+          "contribution": -0.63,
+          "contribution_pct": -35
+        },
+        "net_liquidity": {
+          "change": 3,
+          "weight": 0.05,
+          "contribution": 0.15000000000000002,
+          "contribution_pct": 8.333333333333332
+        },
+        "term_leverage": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 33.33333333333333
+        },
+        "macro_overlay": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 16.666666666666664
+        },
+        "social_interest": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 16.666666666666664
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": 0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "etf_flows",
+          "contribution": -0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 60.00000000000001
+    },
+    {
+      "date": "2025-09-11",
+      "composite_change": -7,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": 4,
+          "weight": 0.2,
+          "contribution": 0.8,
+          "contribution_pct": 46.511627906976756
+        },
+        "onchain": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": -8.720930232558143
+        },
+        "stablecoins": {
+          "change": 4,
+          "weight": 0.21,
+          "contribution": 0.84,
+          "contribution_pct": 48.83720930232558
+        },
+        "etf_flows": {
+          "change": -3,
+          "weight": 0.09,
+          "contribution": -0.27,
+          "contribution_pct": -15.697674418604654
+        },
+        "net_liquidity": {
+          "change": 4,
+          "weight": 0.05,
+          "contribution": 0.2,
+          "contribution_pct": 11.627906976744189
+        },
+        "term_leverage": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 34.88372093023257
+        },
+        "macro_overlay": {
+          "change": -7,
+          "weight": 0.1,
+          "contribution": -0.7000000000000001,
+          "contribution_pct": -40.69767441860466
+        },
+        "social_interest": {
+          "change": 4,
+          "weight": 0.1,
+          "contribution": 0.4,
+          "contribution_pct": 23.255813953488378
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": 0.84,
+          "abs_contribution": 0.84
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": 0.8,
+          "abs_contribution": 0.8
+        },
+        {
+          "factor": "macro_overlay",
+          "contribution": -0.7000000000000001,
+          "abs_contribution": 0.7000000000000001
+        }
+      ],
+      "attribution_quality": 0
+    },
+    {
+      "date": "2025-09-12",
+      "composite_change": -3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": 35.08771929824562
+        },
+        "onchain": {
+          "change": -4,
+          "weight": 0.05,
+          "contribution": -0.2,
+          "contribution_pct": -11.695906432748538
+        },
+        "stablecoins": {
+          "change": 3,
+          "weight": 0.21,
+          "contribution": 0.63,
+          "contribution_pct": 36.8421052631579
+        },
+        "etf_flows": {
+          "change": -3,
+          "weight": 0.09,
+          "contribution": -0.27,
+          "contribution_pct": -15.789473684210527
+        },
+        "net_liquidity": {
+          "change": 3,
+          "weight": 0.05,
+          "contribution": 0.15000000000000002,
+          "contribution_pct": 8.771929824561404
+        },
+        "term_leverage": {
+          "change": 4,
+          "weight": 0.2,
+          "contribution": 0.8,
+          "contribution_pct": 46.78362573099415
+        },
+        "macro_overlay": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": -17.54385964912281
+        },
+        "social_interest": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": 17.54385964912281
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "term_leverage",
+          "contribution": 0.8,
+          "abs_contribution": 0.8
+        },
+        {
+          "factor": "stablecoins",
+          "contribution": 0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 0
+    },
+    {
+      "date": "2025-09-13",
+      "composite_change": -3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": -7,
+          "weight": 0.2,
+          "contribution": -1.4000000000000001,
+          "contribution_pct": 135.92233009708735
+        },
+        "onchain": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": 14.563106796116504
+        },
+        "stablecoins": {
+          "change": 3,
+          "weight": 0.21,
+          "contribution": 0.63,
+          "contribution_pct": -61.1650485436893
+        },
+        "etf_flows": {
+          "change": -4,
+          "weight": 0.09,
+          "contribution": -0.36,
+          "contribution_pct": 34.9514563106796
+        },
+        "net_liquidity": {
+          "change": -7,
+          "weight": 0.05,
+          "contribution": -0.35000000000000003,
+          "contribution_pct": 33.98058252427184
+        },
+        "term_leverage": {
+          "change": 3,
+          "weight": 0.2,
+          "contribution": 0.6000000000000001,
+          "contribution_pct": -58.252427184466015
+        },
+        "macro_overlay": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 29.126213592233007
+        },
+        "social_interest": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": -29.126213592233007
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "trend_valuation",
+          "contribution": -1.4000000000000001,
+          "abs_contribution": 1.4000000000000001
+        },
+        {
+          "factor": "stablecoins",
+          "contribution": 0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "term_leverage",
+          "contribution": 0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 34.33333333333334
+    },
+    {
+      "date": "2025-09-14",
+      "composite_change": -4,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": -3,
+          "weight": 0.2,
+          "contribution": -0.6000000000000001,
+          "contribution_pct": 32.78688524590164
+        },
+        "onchain": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": 8.19672131147541
+        },
+        "stablecoins": {
+          "change": 4,
+          "weight": 0.21,
+          "contribution": 0.84,
+          "contribution_pct": -45.901639344262286
+        },
+        "etf_flows": {
+          "change": -3,
+          "weight": 0.09,
+          "contribution": -0.27,
+          "contribution_pct": 14.754098360655737
+        },
+        "net_liquidity": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": 8.19672131147541
+        },
+        "term_leverage": {
+          "change": -7,
+          "weight": 0.2,
+          "contribution": -1.4000000000000001,
+          "contribution_pct": 76.50273224043715
+        },
+        "macro_overlay": {
+          "change": -4,
+          "weight": 0.1,
+          "contribution": -0.4,
+          "contribution_pct": 21.857923497267755
+        },
+        "social_interest": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": -16.39344262295082
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "term_leverage",
+          "contribution": -1.4000000000000001,
+          "abs_contribution": 1.4000000000000001
+        },
+        {
+          "factor": "stablecoins",
+          "contribution": 0.84,
+          "abs_contribution": 0.84
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": -0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 45.75
+    },
+    {
+      "date": "2025-09-15",
+      "composite_change": -3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": -3,
+          "weight": 0.2,
+          "contribution": -0.6000000000000001,
+          "contribution_pct": 50.42016806722689
+        },
+        "onchain": {
+          "change": -4,
+          "weight": 0.05,
+          "contribution": -0.2,
+          "contribution_pct": 16.806722689075627
+        },
+        "stablecoins": {
+          "change": 3,
+          "weight": 0.21,
+          "contribution": 0.63,
+          "contribution_pct": -52.941176470588225
+        },
+        "etf_flows": {
+          "change": -3,
+          "weight": 0.09,
+          "contribution": -0.27,
+          "contribution_pct": 22.6890756302521
+        },
+        "net_liquidity": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": 12.605042016806722
+        },
+        "term_leverage": {
+          "change": -3,
+          "weight": 0.2,
+          "contribution": -0.6000000000000001,
+          "contribution_pct": 50.42016806722689
+        },
+        "macro_overlay": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 25.210084033613445
+        },
+        "social_interest": {
+          "change": 3,
+          "weight": 0.1,
+          "contribution": 0.30000000000000004,
+          "contribution_pct": -25.210084033613445
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": 0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": -0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        },
+        {
+          "factor": "term_leverage",
+          "contribution": -0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 39.66666666666667
+    },
+    {
+      "date": "2025-09-16",
+      "composite_change": -3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": -4,
+          "weight": 0.2,
+          "contribution": -0.8,
+          "contribution_pct": 19.138755980861248
+        },
+        "onchain": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": 3.588516746411484
+        },
+        "stablecoins": {
+          "change": -7,
+          "weight": 0.21,
+          "contribution": -1.47,
+          "contribution_pct": 35.16746411483253
+        },
+        "etf_flows": {
+          "change": -4,
+          "weight": 0.09,
+          "contribution": -0.36,
+          "contribution_pct": 8.61244019138756
+        },
+        "net_liquidity": {
+          "change": -4,
+          "weight": 0.05,
+          "contribution": -0.2,
+          "contribution_pct": 4.784688995215312
+        },
+        "term_leverage": {
+          "change": -3,
+          "weight": 0.2,
+          "contribution": -0.6000000000000001,
+          "contribution_pct": 14.354066985645936
+        },
+        "macro_overlay": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 7.177033492822968
+        },
+        "social_interest": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 7.177033492822968
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": -1.47,
+          "abs_contribution": 1.47
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": -0.8,
+          "abs_contribution": 0.8
+        },
+        {
+          "factor": "term_leverage",
+          "contribution": -0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 60.66666666666667
+    },
+    {
+      "date": "2025-09-17",
+      "composite_change": -4,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": -3,
+          "weight": 0.2,
+          "contribution": -0.6000000000000001,
+          "contribution_pct": 18.18181818181818
+        },
+        "onchain": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": 4.545454545454545
+        },
+        "stablecoins": {
+          "change": -3,
+          "weight": 0.21,
+          "contribution": -0.63,
+          "contribution_pct": 19.090909090909086
+        },
+        "etf_flows": {
+          "change": -3,
+          "weight": 0.09,
+          "contribution": -0.27,
+          "contribution_pct": 8.18181818181818
+        },
+        "net_liquidity": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": 4.545454545454545
+        },
+        "term_leverage": {
+          "change": -4,
+          "weight": 0.2,
+          "contribution": -0.8,
+          "contribution_pct": 24.24242424242424
+        },
+        "macro_overlay": {
+          "change": -4,
+          "weight": 0.1,
+          "contribution": -0.4,
+          "contribution_pct": 12.12121212121212
+        },
+        "social_interest": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 9.09090909090909
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "term_leverage",
+          "contribution": -0.8,
+          "abs_contribution": 0.8
+        },
+        {
+          "factor": "stablecoins",
+          "contribution": -0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": -0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 82.50000000000001
+    },
+    {
+      "date": "2025-09-18",
+      "composite_change": -3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": -3,
+          "weight": 0.2,
+          "contribution": -0.6000000000000001,
+          "contribution_pct": 19.672131147540988
+        },
+        "onchain": {
+          "change": -4,
+          "weight": 0.05,
+          "contribution": -0.2,
+          "contribution_pct": 6.557377049180328
+        },
+        "stablecoins": {
+          "change": -3,
+          "weight": 0.21,
+          "contribution": -0.63,
+          "contribution_pct": 20.655737704918035
+        },
+        "etf_flows": {
+          "change": -3,
+          "weight": 0.09,
+          "contribution": -0.27,
+          "contribution_pct": 8.852459016393443
+        },
+        "net_liquidity": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": 4.918032786885247
+        },
+        "term_leverage": {
+          "change": -3,
+          "weight": 0.2,
+          "contribution": -0.6000000000000001,
+          "contribution_pct": 19.672131147540988
+        },
+        "macro_overlay": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 9.836065573770494
+        },
+        "social_interest": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 9.836065573770494
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": -0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": -0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        },
+        {
+          "factor": "term_leverage",
+          "contribution": -0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 98.33333333333334
+    },
+    {
+      "date": "2025-09-19",
+      "composite_change": -3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": -4,
+          "weight": 0.2,
+          "contribution": -0.8,
+          "contribution_pct": 22.535211267605636
+        },
+        "onchain": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": 4.225352112676057
+        },
+        "stablecoins": {
+          "change": -4,
+          "weight": 0.21,
+          "contribution": -0.84,
+          "contribution_pct": 23.661971830985916
+        },
+        "etf_flows": {
+          "change": -4,
+          "weight": 0.09,
+          "contribution": -0.36,
+          "contribution_pct": 10.140845070422536
+        },
+        "net_liquidity": {
+          "change": -4,
+          "weight": 0.05,
+          "contribution": -0.2,
+          "contribution_pct": 5.633802816901409
+        },
+        "term_leverage": {
+          "change": -3,
+          "weight": 0.2,
+          "contribution": -0.6000000000000001,
+          "contribution_pct": 16.901408450704228
+        },
+        "macro_overlay": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 8.450704225352114
+        },
+        "social_interest": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 8.450704225352114
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": -0.84,
+          "abs_contribution": 0.84
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": -0.8,
+          "abs_contribution": 0.8
+        },
+        {
+          "factor": "term_leverage",
+          "contribution": -0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 81.66666666666667
+    },
+    {
+      "date": "2025-09-20",
+      "composite_change": -4,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": -3,
+          "weight": 0.2,
+          "contribution": -0.6000000000000001,
+          "contribution_pct": 18.18181818181818
+        },
+        "onchain": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": 4.545454545454545
+        },
+        "stablecoins": {
+          "change": -3,
+          "weight": 0.21,
+          "contribution": -0.63,
+          "contribution_pct": 19.090909090909086
+        },
+        "etf_flows": {
+          "change": -3,
+          "weight": 0.09,
+          "contribution": -0.27,
+          "contribution_pct": 8.18181818181818
+        },
+        "net_liquidity": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": 4.545454545454545
+        },
+        "term_leverage": {
+          "change": -4,
+          "weight": 0.2,
+          "contribution": -0.8,
+          "contribution_pct": 24.24242424242424
+        },
+        "macro_overlay": {
+          "change": -4,
+          "weight": 0.1,
+          "contribution": -0.4,
+          "contribution_pct": 12.12121212121212
+        },
+        "social_interest": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 9.09090909090909
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "term_leverage",
+          "contribution": -0.8,
+          "abs_contribution": 0.8
+        },
+        {
+          "factor": "stablecoins",
+          "contribution": -0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": -0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 82.50000000000001
+    },
+    {
+      "date": "2025-09-21",
+      "composite_change": -3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": -3,
+          "weight": 0.2,
+          "contribution": -0.6000000000000001,
+          "contribution_pct": 19.672131147540988
+        },
+        "onchain": {
+          "change": -4,
+          "weight": 0.05,
+          "contribution": -0.2,
+          "contribution_pct": 6.557377049180328
+        },
+        "stablecoins": {
+          "change": -3,
+          "weight": 0.21,
+          "contribution": -0.63,
+          "contribution_pct": 20.655737704918035
+        },
+        "etf_flows": {
+          "change": -3,
+          "weight": 0.09,
+          "contribution": -0.27,
+          "contribution_pct": 8.852459016393443
+        },
+        "net_liquidity": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": 4.918032786885247
+        },
+        "term_leverage": {
+          "change": -3,
+          "weight": 0.2,
+          "contribution": -0.6000000000000001,
+          "contribution_pct": 19.672131147540988
+        },
+        "macro_overlay": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 9.836065573770494
+        },
+        "social_interest": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 9.836065573770494
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": -0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": -0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        },
+        {
+          "factor": "term_leverage",
+          "contribution": -0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 98.33333333333334
+    },
+    {
+      "date": "2025-09-22",
+      "composite_change": -3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": -4,
+          "weight": 0.2,
+          "contribution": -0.8,
+          "contribution_pct": 22.535211267605636
+        },
+        "onchain": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": 4.225352112676057
+        },
+        "stablecoins": {
+          "change": -4,
+          "weight": 0.21,
+          "contribution": -0.84,
+          "contribution_pct": 23.661971830985916
+        },
+        "etf_flows": {
+          "change": -4,
+          "weight": 0.09,
+          "contribution": -0.36,
+          "contribution_pct": 10.140845070422536
+        },
+        "net_liquidity": {
+          "change": -4,
+          "weight": 0.05,
+          "contribution": -0.2,
+          "contribution_pct": 5.633802816901409
+        },
+        "term_leverage": {
+          "change": -3,
+          "weight": 0.2,
+          "contribution": -0.6000000000000001,
+          "contribution_pct": 16.901408450704228
+        },
+        "macro_overlay": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 8.450704225352114
+        },
+        "social_interest": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 8.450704225352114
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": -0.84,
+          "abs_contribution": 0.84
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": -0.8,
+          "abs_contribution": 0.8
+        },
+        {
+          "factor": "term_leverage",
+          "contribution": -0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 81.66666666666667
+    },
+    {
+      "date": "2025-09-23",
+      "composite_change": -4,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": -3,
+          "weight": 0.2,
+          "contribution": -0.6000000000000001,
+          "contribution_pct": 18.18181818181818
+        },
+        "onchain": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": 4.545454545454545
+        },
+        "stablecoins": {
+          "change": -3,
+          "weight": 0.21,
+          "contribution": -0.63,
+          "contribution_pct": 19.090909090909086
+        },
+        "etf_flows": {
+          "change": -3,
+          "weight": 0.09,
+          "contribution": -0.27,
+          "contribution_pct": 8.18181818181818
+        },
+        "net_liquidity": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": 4.545454545454545
+        },
+        "term_leverage": {
+          "change": -4,
+          "weight": 0.2,
+          "contribution": -0.8,
+          "contribution_pct": 24.24242424242424
+        },
+        "macro_overlay": {
+          "change": -4,
+          "weight": 0.1,
+          "contribution": -0.4,
+          "contribution_pct": 12.12121212121212
+        },
+        "social_interest": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 9.09090909090909
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "term_leverage",
+          "contribution": -0.8,
+          "abs_contribution": 0.8
+        },
+        {
+          "factor": "stablecoins",
+          "contribution": -0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": -0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 82.50000000000001
+    },
+    {
+      "date": "2025-09-24",
+      "composite_change": -3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": -3,
+          "weight": 0.2,
+          "contribution": -0.6000000000000001,
+          "contribution_pct": 19.672131147540988
+        },
+        "onchain": {
+          "change": -4,
+          "weight": 0.05,
+          "contribution": -0.2,
+          "contribution_pct": 6.557377049180328
+        },
+        "stablecoins": {
+          "change": -3,
+          "weight": 0.21,
+          "contribution": -0.63,
+          "contribution_pct": 20.655737704918035
+        },
+        "etf_flows": {
+          "change": -3,
+          "weight": 0.09,
+          "contribution": -0.27,
+          "contribution_pct": 8.852459016393443
+        },
+        "net_liquidity": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": 4.918032786885247
+        },
+        "term_leverage": {
+          "change": -3,
+          "weight": 0.2,
+          "contribution": -0.6000000000000001,
+          "contribution_pct": 19.672131147540988
+        },
+        "macro_overlay": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 9.836065573770494
+        },
+        "social_interest": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 9.836065573770494
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": -0.63,
+          "abs_contribution": 0.63
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": -0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        },
+        {
+          "factor": "term_leverage",
+          "contribution": -0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 98.33333333333334
+    },
+    {
+      "date": "2025-09-25",
+      "composite_change": -3,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": -4,
+          "weight": 0.2,
+          "contribution": -0.8,
+          "contribution_pct": 22.535211267605636
+        },
+        "onchain": {
+          "change": -3,
+          "weight": 0.05,
+          "contribution": -0.15000000000000002,
+          "contribution_pct": 4.225352112676057
+        },
+        "stablecoins": {
+          "change": -4,
+          "weight": 0.21,
+          "contribution": -0.84,
+          "contribution_pct": 23.661971830985916
+        },
+        "etf_flows": {
+          "change": -4,
+          "weight": 0.09,
+          "contribution": -0.36,
+          "contribution_pct": 10.140845070422536
+        },
+        "net_liquidity": {
+          "change": -4,
+          "weight": 0.05,
+          "contribution": -0.2,
+          "contribution_pct": 5.633802816901409
+        },
+        "term_leverage": {
+          "change": -3,
+          "weight": 0.2,
+          "contribution": -0.6000000000000001,
+          "contribution_pct": 16.901408450704228
+        },
+        "macro_overlay": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 8.450704225352114
+        },
+        "social_interest": {
+          "change": -3,
+          "weight": 0.1,
+          "contribution": -0.30000000000000004,
+          "contribution_pct": 8.450704225352114
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": -0.84,
+          "abs_contribution": 0.84
+        },
+        {
+          "factor": "trend_valuation",
+          "contribution": -0.8,
+          "abs_contribution": 0.8
+        },
+        {
+          "factor": "term_leverage",
+          "contribution": -0.6000000000000001,
+          "abs_contribution": 0.6000000000000001
+        }
+      ],
+      "attribution_quality": 81.66666666666667
+    },
+    {
+      "date": "2025-09-26",
+      "composite_change": 26,
+      "factor_contributions": {
+        "trend_valuation": {
+          "change": 2,
+          "weight": 0.2,
+          "contribution": 0.4,
+          "contribution_pct": -31.24999999999999
+        },
+        "onchain": {
+          "change": 54,
+          "weight": 0.05,
+          "contribution": 2.7,
+          "contribution_pct": -210.93749999999994
+        },
+        "stablecoins": {
+          "change": -20,
+          "weight": 0.21,
+          "contribution": -4.2,
+          "contribution_pct": 328.1249999999999
+        },
+        "etf_flows": {
+          "change": 23,
+          "weight": 0.09,
+          "contribution": 2.07,
+          "contribution_pct": -161.71874999999994
+        },
+        "net_liquidity": {
+          "change": 3,
+          "weight": 0.05,
+          "contribution": 0.15000000000000002,
+          "contribution_pct": -11.718749999999996
+        },
+        "term_leverage": {
+          "change": -6,
+          "weight": 0.2,
+          "contribution": -1.2000000000000002,
+          "contribution_pct": 93.74999999999997
+        },
+        "macro_overlay": {
+          "change": 14,
+          "weight": 0.1,
+          "contribution": 1.4000000000000001,
+          "contribution_pct": -109.37499999999997
+        },
+        "social_interest": {
+          "change": -26,
+          "weight": 0.1,
+          "contribution": -2.6,
+          "contribution_pct": 203.12499999999991
+        }
+      },
+      "top_contributors": [
+        {
+          "factor": "stablecoins",
+          "contribution": -4.2,
+          "abs_contribution": 4.2
+        },
+        {
+          "factor": "onchain",
+          "contribution": 2.7,
+          "abs_contribution": 2.7
+        },
+        {
+          "factor": "social_interest",
+          "contribution": -2.6,
+          "abs_contribution": 2.6
+        }
+      ],
+      "attribution_quality": 0
+    }
+  ],
+  "factorStats": {
+    "trend_valuation": {
+      "totalContribution": 1,
+      "avgContribution": 0.03,
+      "avgAbsContribution": 0.68,
+      "positiveDays": 16,
+      "negativeDays": 13,
+      "contributionFrequency": 100,
+      "impactScore": 0.68
+    },
+    "onchain": {
+      "totalContribution": 0.7,
+      "avgContribution": 0.02,
+      "avgAbsContribution": 0.28,
+      "positiveDays": 11,
+      "negativeDays": 18,
+      "contributionFrequency": 100,
+      "impactScore": 0.28
+    },
+    "stablecoins": {
+      "totalContribution": 0.63,
+      "avgContribution": 0.02,
+      "avgAbsContribution": 0.85,
+      "positiveDays": 18,
+      "negativeDays": 11,
+      "contributionFrequency": 100,
+      "impactScore": 0.85
+    },
+    "etf_flows": {
+      "totalContribution": 0.54,
+      "avgContribution": 0.02,
+      "avgAbsContribution": 0.37,
+      "positiveDays": 13,
+      "negativeDays": 16,
+      "contributionFrequency": 100,
+      "impactScore": 0.37
+    },
+    "net_liquidity": {
+      "totalContribution": 0.15,
+      "avgContribution": 0.01,
+      "avgAbsContribution": 0.17,
+      "positiveDays": 16,
+      "negativeDays": 13,
+      "contributionFrequency": 100,
+      "impactScore": 0.17
+    },
+    "term_leverage": {
+      "totalContribution": 0.8,
+      "avgContribution": 0.03,
+      "avgAbsContribution": 0.7,
+      "positiveDays": 16,
+      "negativeDays": 13,
+      "contributionFrequency": 100,
+      "impactScore": 0.7
+    },
+    "macro_overlay": {
+      "totalContribution": 0.4,
+      "avgContribution": 0.01,
+      "avgAbsContribution": 0.38,
+      "positiveDays": 14,
+      "negativeDays": 15,
+      "contributionFrequency": 100,
+      "impactScore": 0.38
+    },
+    "social_interest": {
+      "totalContribution": 0.2,
+      "avgContribution": 0.01,
+      "avgAbsContribution": 0.39,
+      "positiveDays": 18,
+      "negativeDays": 11,
+      "contributionFrequency": 100,
+      "impactScore": 0.39
+    }
+  },
+  "summary": {
+    "avgAttributionQuality": 71.47,
+    "topPerformingFactors": [
+      {
+        "factor": "stablecoins",
+        "impactScore": 0.85
+      },
+      {
+        "factor": "term_leverage",
+        "impactScore": 0.7
+      },
+      {
+        "factor": "trend_valuation",
+        "impactScore": 0.68
+      }
+    ]
+  }
+}
