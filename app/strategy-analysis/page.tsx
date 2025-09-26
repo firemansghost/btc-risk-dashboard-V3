@@ -5,9 +5,10 @@ import StrategyComparisonCard from '../components/StrategyComparisonCard';
 import StrategyTester from '../components/StrategyTester';
 import BacktestingInsights from '../components/BacktestingInsights';
 import RiskBandAnalysis from '../components/RiskBandAnalysis';
+import InvestmentGlossary from '../components/InvestmentGlossary';
 
 export default function StrategyAnalysisPage() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'tester' | 'insights' | 'risk-bands'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'tester' | 'insights' | 'risk-bands' | 'glossary'>('overview');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -79,6 +80,16 @@ export default function StrategyAnalysisPage() {
             >
               🎯 Risk Band Analysis
             </button>
+            <button
+              onClick={() => setActiveTab('glossary')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'glossary'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              📚 Investment Glossary
+            </button>
           </nav>
         </div>
       </div>
@@ -148,6 +159,12 @@ export default function StrategyAnalysisPage() {
               </p>
             </div>
             <RiskBandAnalysis />
+          </div>
+        )}
+
+        {activeTab === 'glossary' && (
+          <div className="space-y-8">
+            <InvestmentGlossary />
           </div>
         )}
       </div>

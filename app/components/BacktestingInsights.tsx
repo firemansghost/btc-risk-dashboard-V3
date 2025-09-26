@@ -19,8 +19,8 @@ export default function BacktestingInsights() {
     },
     {
       category: 'Risk Management',
-      title: '<strong>Bitcoin G-Score</strong> Risk-Based Strategies Work',
-      description: '<strong>Bitcoin G-Score</strong> risk-based DCA outperformed regular DCA by 5.94% while maintaining better risk-adjusted returns.',
+      title: 'Bitcoin G-Score Risk-Based Strategies Work',
+      description: 'Bitcoin G-Score risk-based DCA outperformed regular DCA by 5.94% while maintaining better risk-adjusted returns.',
       metrics: {
         outperformance: '5.94%',
         sharpe: '0.77',
@@ -32,8 +32,8 @@ export default function BacktestingInsights() {
     },
     {
       category: 'Risk Bands',
-      title: '<strong>Bitcoin G-Score</strong> Buying Signals Show Higher Returns',
-      description: '<strong>Bitcoin G-Score</strong> Begin Scaling In signals had 69.6% win rate with 9.18% average 30-day returns, validating our risk bands.',
+      title: 'Bitcoin G-Score Buying Signals Show Higher Returns',
+      description: 'Bitcoin G-Score Begin Scaling In signals had 69.6% win rate with 9.18% average 30-day returns, validating our risk bands.',
       metrics: {
         winRate: '69.6%',
         avgReturn: '9.18%',
@@ -45,8 +45,8 @@ export default function BacktestingInsights() {
     },
     {
       category: 'Market Timing',
-      title: '<strong>Bitcoin G-Score</strong> Strategy May Be Too Conservative',
-      description: '<strong>Bitcoin G-Score</strong> risk-based strategy underperformed buy-and-hold by 77.93%, suggesting we may be missing bull market opportunities.',
+      title: 'Bitcoin G-Score Strategy May Be Too Conservative',
+      description: 'Bitcoin G-Score risk-based strategy underperformed buy-and-hold by 77.93%, suggesting we may be missing bull market opportunities.',
       metrics: {
         underperformance: '77.93%',
         buyAndHold: '314.92%',
