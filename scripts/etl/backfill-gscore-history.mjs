@@ -179,6 +179,8 @@ async function backfillHistoricalGScores() {
   console.log('🚀 Starting Historical G-Score Backfill...');
   console.log('=====================================');
   
+  try {
+  
   // 1. Load existing price history
   console.log('📈 Loading price history...');
   const priceHistory = await loadPriceHistory();
@@ -307,14 +309,19 @@ async function backfillHistoricalGScores() {
   }
   
   console.log('\n✅ Historical G-Score backfill complete!');
+  
+  } catch (error) {
+    console.error('❌ Backfill failed:', error.message);
+    console.error('Stack trace:', error.stack);
+    throw error;
+  }
 }
 
 // Run the backfill if this script is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  backfillHistoricalGScores().catch(error => {
-    console.error('❌ Backfill failed:', error);
-    process.exit(1);
-  });
-}
+console.log('Script starting...');
+backfillHistoricalGScores().catch(error => {
+  console.error('❌ Backfill failed:', error);
+  process.exit(1);
+});
 
 export { backfillHistoricalGScores };
