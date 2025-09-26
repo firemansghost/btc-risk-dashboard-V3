@@ -99,6 +99,30 @@ const glossaryTerms: GlossaryTerm[] = [
     definition: 'A statistical measure of how two variables move in relation to each other. In investing, it shows how different assets or factors move together.',
     example: 'Bitcoin and gold may have low correlation, meaning they don\'t always move in the same direction.',
     category: 'concept'
+  },
+  {
+    term: 'Breadth (21d)',
+    definition: 'A measure of how many ETFs had net inflows over 21 trading days. Higher breadth means more distributed demand across multiple funds.',
+    example: 'If 12 out of 15 ETFs had positive flows, breadth is high, indicating diversified demand.',
+    category: 'metric'
+  },
+  {
+    term: 'BMSB (Bull Market Support Band)',
+    definition: 'A technical indicator combining the 20-week Simple Moving Average and 21-week Exponential Moving Average. Used to identify key support levels in bull markets.',
+    example: 'When Bitcoin price is above the BMSB, it suggests strong bullish momentum and support.',
+    category: 'concept'
+  },
+  {
+    term: 'HHI (Herfindahl-Hirschman Index)',
+    definition: 'A measure of flow concentration in ETF investments. Higher values indicate flows are concentrated in fewer funds, while lower values show more diversified flows.',
+    example: 'High HHI means most money is flowing into just 2-3 ETFs, while low HHI means money is spread across many ETFs.',
+    category: 'metric'
+  },
+  {
+    term: 'Contribution',
+    definition: 'The impact of a specific factor on the overall Bitcoin G-Score, calculated as factor score multiplied by its weight.',
+    example: 'If Trend & Valuation has a score of 80 and weight of 25%, its contribution to the G-Score is 20 points.',
+    category: 'concept'
   }
 ];
 
