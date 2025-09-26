@@ -87,7 +87,7 @@ export default function EtfPerformanceAnalysis({ isOpen, onClose }: EtfPerforman
 
     const totalMarketFlows = data.reduce((sum, row) => sum + row.day_flow_usd, 0);
 
-    return Object.entries(etfGroups).map(([symbol, flows]) => {
+    return Object.entries(etfGroups).map(([symbol, flows]: [string, any[]]) => {
       const sortedFlows = flows.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       const dailyFlows = sortedFlows.map(f => f.day_flow_usd);
       
