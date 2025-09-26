@@ -96,7 +96,7 @@ export default function StrategyTester({}: StrategyTesterProps) {
     <div className="space-y-8">
       {/* Test Parameters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Bitcoin G-Score Strategy Test Parameters</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4"><strong>Bitcoin G-Score</strong> Strategy Test Parameters</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -253,7 +253,7 @@ export default function StrategyTester({}: StrategyTesterProps) {
 
           {/* Insights */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h4 className="text-lg font-semibold text-blue-900 mb-4">💡 Bitcoin G-Score Key Insights</h4>
+            <h4 className="text-lg font-semibold text-blue-900 mb-4">💡 <strong>Bitcoin G-Score</strong> Key Insights</h4>
             <div className="space-y-3">
               <div className="flex items-start">
                 <div className="flex-shrink-0">
@@ -271,7 +271,7 @@ export default function StrategyTester({}: StrategyTesterProps) {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-blue-800">
-                    <strong>Bitcoin G-Score Risk-Based DCA</strong> provides better risk-adjusted returns than regular DCA while maintaining lower volatility.
+                    <strong>Bitcoin G-Score</strong> Risk-Based DCA provides better risk-adjusted returns than regular DCA while maintaining lower volatility.
                   </p>
                 </div>
               </div>

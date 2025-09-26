@@ -107,9 +107,9 @@ export default function RiskBandAnalysis() {
     <div className="space-y-8">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg p-8 text-white">
-        <h2 className="text-2xl font-bold mb-4">🎯 Bitcoin G-Score Risk Band Effectiveness Analysis</h2>
+        <h2 className="text-2xl font-bold mb-4">🎯 <strong>Bitcoin G-Score</strong> Risk Band Effectiveness Analysis</h2>
         <p className="text-lg mb-6">
-          Our Bitcoin G-Score risk bands are working as intended - buying signals show higher forward returns than selling signals.
+          Our <strong>Bitcoin G-Score</strong> risk bands are working as intended - buying signals show higher forward returns than selling signals.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white/20 rounded-lg p-4">
@@ -220,17 +220,17 @@ export default function RiskBandAnalysis() {
         <h3 className="text-xl font-bold mb-4">💡 Key Insights</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h4 className="font-semibold mb-2">✅ Bitcoin G-Score Risk Bands Work as Intended</h4>
+            <h4 className="font-semibold mb-2">✅ <strong>Bitcoin G-Score</strong> Risk Bands Work as Intended</h4>
             <p className="text-sm opacity-90">
-              Bitcoin G-Score buying signals (Begin Scaling In) show the highest returns (9.18%) and win rates (69.6%), 
-              validating our Bitcoin G-Score risk assessment methodology.
+              <strong>Bitcoin G-Score</strong> buying signals (Begin Scaling In) show the highest returns (9.18%) and win rates (69.6%), 
+              validating our <strong>Bitcoin G-Score</strong> risk assessment methodology.
             </p>
           </div>
           <div>
-            <h4 className="font-semibold mb-2">📈 Clear Bitcoin G-Score Performance Hierarchy</h4>
+            <h4 className="font-semibold mb-2">📈 Clear <strong>Bitcoin G-Score</strong> Performance Hierarchy</h4>
             <p className="text-sm opacity-90">
-              Lower Bitcoin G-Scores consistently outperform higher G-Scores, confirming that 
-              our Bitcoin G-Score risk bands effectively identify market opportunities.
+              Lower <strong>Bitcoin G-Scores</strong> consistently outperform higher G-Scores, confirming that 
+              our <strong>Bitcoin G-Score</strong> risk bands effectively identify market opportunities.
             </p>
           </div>
         </div>
@@ -241,7 +241,7 @@ export default function RiskBandAnalysis() {
         <h3 className="text-lg font-semibold text-gray-900 mb-4">🎯 Strategy Recommendations</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="border border-gray-200 rounded-lg p-4">
-            <h4 className="font-semibold text-green-800 mb-2">🟢 Bitcoin G-Score Begin Scaling In (G-Score &lt; 50)</h4>
+            <h4 className="font-semibold text-green-800 mb-2">🟢 <strong>Bitcoin G-Score</strong> Begin Scaling In (G-Score &lt; 50)</h4>
             <ul className="text-sm text-gray-700 space-y-1">
               <li>• Increase allocation by 50-100%</li>
               <li>• Consider lump sum investments</li>
@@ -250,7 +250,7 @@ export default function RiskBandAnalysis() {
             </ul>
           </div>
           <div className="border border-gray-200 rounded-lg p-4">
-            <h4 className="font-semibold text-yellow-800 mb-2">🟡 Bitcoin G-Score Begin Scaling Out (G-Score &gt; 70)</h4>
+            <h4 className="font-semibold text-yellow-800 mb-2">🟡 <strong>Bitcoin G-Score</strong> Begin Scaling Out (G-Score &gt; 70)</h4>
             <ul className="text-sm text-gray-700 space-y-1">
               <li>• Reduce allocation by 25-50%</li>
               <li>• Take partial profits</li>

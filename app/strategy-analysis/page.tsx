@@ -17,9 +17,9 @@ export default function StrategyAnalysisPage() {
           <div className="py-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Strategy Analysis</h1>
+                <h1 className="text-3xl font-bold text-gray-900">Bitcoin G-Score Strategy Analysis</h1>
                 <p className="mt-2 text-lg text-gray-600">
-                  Comprehensive backtesting results using the Bitcoin G-Score and interactive strategy testing tools
+                  Comprehensive backtesting results using the <strong>Bitcoin G-Score</strong> and interactive strategy testing tools
                 </p>
               </div>
               <div className="flex space-x-4">
@@ -89,9 +89,9 @@ export default function StrategyAnalysisPage() {
           <div className="space-y-8">
             {/* Hero Section */}
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-8 text-white">
-              <h2 className="text-2xl font-bold mb-4">🚀 Bitcoin G-Score Strategy Analysis Results</h2>
+              <h2 className="text-2xl font-bold mb-4">🚀 <strong>Bitcoin G-Score</strong> Strategy Analysis Results</h2>
               <p className="text-lg mb-6">
-                Our comprehensive backtesting using the Bitcoin G-Score reveals that <strong>Value Averaging</strong> is the clear winner 
+                Our comprehensive backtesting using the <strong>Bitcoin G-Score</strong> reveals that <strong>Value Averaging</strong> is the clear winner 
                 with <strong>224.89% returns</strong> and <strong>0% maximum drawdown</strong>.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -118,9 +118,9 @@ export default function StrategyAnalysisPage() {
         {activeTab === 'tester' && (
           <div className="space-y-8">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">🧪 Interactive Bitcoin G-Score Strategy Tester</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">🧪 Interactive <strong>Bitcoin G-Score</strong> Strategy Tester</h2>
               <p className="text-lg text-gray-600">
-                Test different investment strategies powered by the Bitcoin G-Score with your own parameters and see projected returns
+                Test different investment strategies powered by the <strong>Bitcoin G-Score</strong> with your own parameters and see projected returns
               </p>
             </div>
             <StrategyTester />
@@ -130,9 +130,9 @@ export default function StrategyAnalysisPage() {
         {activeTab === 'insights' && (
           <div className="space-y-8">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">💡 Bitcoin G-Score Key Insights & Findings</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">💡 <strong>Bitcoin G-Score</strong> Key Insights & Findings</h2>
               <p className="text-lg text-gray-600">
-                Discover the most important findings from our comprehensive Bitcoin G-Score backtesting analysis
+                Discover the most important findings from our comprehensive <strong>Bitcoin G-Score</strong> backtesting analysis
               </p>
             </div>
             <BacktestingInsights />
@@ -142,9 +142,9 @@ export default function StrategyAnalysisPage() {
         {activeTab === 'risk-bands' && (
           <div className="space-y-8">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">🎯 Bitcoin G-Score Risk Band Effectiveness</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">🎯 <strong>Bitcoin G-Score</strong> Risk Band Effectiveness</h2>
               <p className="text-lg text-gray-600">
-                Analysis of how different Bitcoin G-Score risk bands perform in different market conditions
+                Analysis of how different <strong>Bitcoin G-Score</strong> risk bands perform in different market conditions
               </p>
             </div>
             <RiskBandAnalysis />
