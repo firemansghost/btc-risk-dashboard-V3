@@ -155,3 +155,4 @@ createETFBackfill().then(result => {
   console.error('❌ ETF backfill failed:', error);
   process.exit(1);
 });
+

@@ -39,3 +39,4 @@ testNumbers.forEach(num => {
 });
 
 console.log('\n🎉 Parser test completed successfully!');
+
