@@ -302,6 +302,42 @@ export default function WhatIsRiskPage() {
                   <h3 className="font-semibold text-gray-900 mb-2">Contribution</h3>
                   <p className="text-gray-700 text-sm">Factor score × weight.</p>
                 </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">ETF Flows</h3>
+                  <p className="text-gray-700 text-sm">Daily net money moving into/out of Bitcoin ETFs. Positive = buying pressure.</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Market Share</h3>
+                  <p className="text-gray-700 text-sm">Percentage of total ETF flows captured by each fund. Shows dominance.</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Trend Analysis</h3>
+                  <p className="text-gray-700 text-sm">Directional movement pattern (up/down/stable) based on recent data.</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Confidence Interval</h3>
+                  <p className="text-gray-700 text-sm">Statistical range showing prediction reliability (60-95%).</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">ARIMA</h3>
+                  <p className="text-gray-700 text-sm">AutoRegressive Integrated Moving Average - time series forecasting model.</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">LSTM</h3>
+                  <p className="text-gray-700 text-sm">Long Short-Term Memory neural network for pattern recognition.</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Ensemble Method</h3>
+                  <p className="text-gray-700 text-sm">Combining multiple ML models for better accuracy than any single model.</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">MAPE</h3>
+                  <p className="text-gray-700 text-sm">Mean Absolute Percentage Error - measures prediction accuracy.</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">RMSE</h3>
+                  <p className="text-gray-700 text-sm">Root Mean Square Error - measures prediction precision.</p>
+                </div>
               </div>
             </section>
 
