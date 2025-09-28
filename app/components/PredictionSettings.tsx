@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function PredictionSettings() {
+function PredictionSettings() {
   const [settings, setSettings] = useState({
     predictionHorizon: 7,
     confidenceLevel: 80,
@@ -141,3 +141,5 @@ export default function PredictionSettings() {
     </div>
   );
 }
+
+export default PredictionSettings;

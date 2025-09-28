@@ -10,7 +10,7 @@ interface ETFPrediction {
   marketShare: number;
 }
 
-export default function IndividualETFPredictions() {
+function IndividualETFPredictions() {
   // Mock data for individual ETF predictions
   const etfPredictions: ETFPrediction[] = [
     {
@@ -149,3 +149,5 @@ export default function IndividualETFPredictions() {
     </div>
   );
 }
+
+export default IndividualETFPredictions;

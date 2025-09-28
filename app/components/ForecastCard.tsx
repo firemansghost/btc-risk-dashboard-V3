@@ -8,7 +8,7 @@ interface ForecastCardProps {
   description?: string;
 }
 
-export default function ForecastCard({ title, prediction, confidence, trend, description }: ForecastCardProps) {
+function ForecastCard({ title, prediction, confidence, trend, description }: ForecastCardProps) {
   const getTrendIcon = () => {
     switch (trend) {
       case 'up':
@@ -73,3 +73,5 @@ export default function ForecastCard({ title, prediction, confidence, trend, des
     </div>
   );
 }
+
+export default ForecastCard;

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function ModelPerformance() {
+function ModelPerformance() {
   const performanceMetrics = [
     {
       model: 'Time Series ARIMA',
@@ -119,3 +119,5 @@ export default function ModelPerformance() {
     </div>
   );
 }
+
+export default ModelPerformance;

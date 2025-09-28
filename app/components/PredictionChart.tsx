@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function PredictionChart() {
+function PredictionChart() {
   // Mock data for demonstration
   const historicalData = [
     { date: '2025-09-21', flow: 45.2 },
@@ -99,3 +99,5 @@ export default function PredictionChart() {
     </div>
   );
 }
+
+export default PredictionChart;
