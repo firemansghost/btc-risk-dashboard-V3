@@ -1,5 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
+// ETF Predictions page - AI-powered forecasting
 import ForecastCard from '@/components/ForecastCard';
 import PredictionChart from '@/components/PredictionChart';
 import IndividualETFPredictions from '@/components/IndividualETFPredictions';
