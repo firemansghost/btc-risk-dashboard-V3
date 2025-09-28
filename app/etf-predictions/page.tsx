@@ -1,11 +1,12 @@
 import React from 'react';
 import { Metadata } from 'next';
 // ETF Predictions page - AI-powered forecasting
-import ForecastCard from '@/components/ForecastCard';
-import PredictionChart from '@/components/PredictionChart';
-import IndividualETFPredictions from '@/components/IndividualETFPredictions';
-import ModelPerformance from '@/components/ModelPerformance';
-import PredictionSettings from '@/components/PredictionSettings';
+import TestComponent from '@/components/TestComponent';
+// import ForecastCard from '@/components/ForecastCard';
+// import PredictionChart from '@/components/PredictionChart';
+// import IndividualETFPredictions from '@/components/IndividualETFPredictions';
+// import ModelPerformance from '@/components/ModelPerformance';
+// import PredictionSettings from '@/components/PredictionSettings';
 
 export const metadata: Metadata = {
   title: 'ETF Flow Predictions | Bitcoin Risk Dashboard',
@@ -30,57 +31,35 @@ export default function ETFPredictionsPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Quick Forecasts */}
+        {/* Test Component */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Forecasts</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <ForecastCard 
-              title="Tomorrow's Flow"
-              prediction="$45.2M"
-              confidence="85%"
-              trend="up"
-              description="Expected daily flow for tomorrow"
-            />
-            <ForecastCard 
-              title="This Week"
-              prediction="$312.4M"
-              confidence="78%"
-              trend="stable"
-              description="7-day rolling sum forecast"
-            />
-            <ForecastCard 
-              title="Next Week"
-              prediction="$298.7M"
-              confidence="72%"
-              trend="down"
-              description="Following week projection"
-            />
-          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Test Component</h2>
+          <TestComponent />
         </div>
 
-        {/* Detailed Analysis */}
+        {/* Detailed Analysis - Temporarily Disabled */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h3 className="text-xl font-semibold mb-4">Flow Predictions</h3>
-            <PredictionChart />
+            <p>Component temporarily disabled for testing</p>
           </div>
           
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h3 className="text-xl font-semibold mb-4">Individual ETF Forecasts</h3>
-            <IndividualETFPredictions />
+            <p>Component temporarily disabled for testing</p>
           </div>
         </div>
 
-        {/* Model Performance */}
+        {/* Model Performance - Temporarily Disabled */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h3 className="text-xl font-semibold mb-4">Model Performance</h3>
-            <ModelPerformance />
+            <p>Component temporarily disabled for testing</p>
           </div>
           
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h3 className="text-xl font-semibold mb-4">Prediction Settings</h3>
-            <PredictionSettings />
+            <p>Component temporarily disabled for testing</p>
           </div>
         </div>
 
