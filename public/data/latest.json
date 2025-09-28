@@ -1,18 +1,18 @@
 {
   "ok": true,
   "version": "v3.1.0",
-  "as_of_utc": "2025-09-27T11:16:58.198Z",
-  "composite_score": 75,
-  "composite_raw": 75,
+  "as_of_utc": "2025-09-28T13:38:42.917Z",
+  "composite_score": 54,
+  "composite_raw": 54,
   "band": {
-    "key": "increase_selling",
-    "label": "Increase Selling",
+    "key": "hold_neutral",
+    "label": "Hold/Neutral",
     "range": [
-      70,
-      85
+      45,
+      55
     ],
-    "color": "#6B7280",
-    "recommendation": "Increase Selling"
+    "color": "#10B981",
+    "recommendation": "Hold/Neutral"
   },
   "health": "green",
   "factors": [
