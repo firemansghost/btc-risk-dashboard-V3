@@ -2,7 +2,7 @@ import React from 'react';
 import { Metadata } from 'next';
 // ETF Predictions page - AI-powered forecasting
 import TestComponent from '@/components/TestComponent';
-// import ForecastCard from '@/components/ForecastCard';
+import ForecastCard from '@/components/ForecastCard';
 // import PredictionChart from '@/components/PredictionChart';
 // import IndividualETFPredictions from '@/components/IndividualETFPredictions';
 // import ModelPerformance from '@/components/ModelPerformance';
@@ -35,6 +35,20 @@ export default function ETFPredictionsPage() {
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Test Component</h2>
           <TestComponent />
+        </div>
+
+        {/* Test ForecastCard */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Test ForecastCard</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <ForecastCard 
+              title="Tomorrow's Flow"
+              prediction="$45.2M"
+              confidence="85%"
+              trend="up"
+              description="Expected daily flow for tomorrow"
+            />
+          </div>
         </div>
 
         {/* Detailed Analysis - Temporarily Disabled */}
