@@ -766,6 +766,12 @@ export default function RealDashboard() {
                       >
                         Performance Analysis
                       </button>
+                      <button
+                        onClick={() => window.open('/etf-predictions', '_blank')}
+                        className="text-sm text-green-600 hover:text-green-700 font-medium"
+                      >
+                        Predictions
+                      </button>
                     </div>
                   )}
                   

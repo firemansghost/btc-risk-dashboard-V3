@@ -1,0 +1,65 @@
+{
+  "updated_at": "2025-09-28T13:38:28.638Z",
+  "sources": [
+    {
+      "name": "Coinbase daily candles",
+      "ok": true,
+      "ms": null,
+      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400"
+    },
+    {
+      "name": "CoinGecko market chart (fallback)",
+      "ok": true,
+      "ms": null,
+      "url": "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=2&interval=daily"
+    },
+    {
+      "name": "Fear & Greed Index",
+      "ok": true,
+      "ms": null,
+      "url": "https://api.alternative.me/fng/"
+    },
+    {
+      "name": "FRED API (if key provided)",
+      "ok": false,
+      "ms": null,
+      "url": "https://fred.stlouisfed.org/"
+    },
+    {
+      "name": "Stooq",
+      "ok": true,
+      "url": "https://stooq.com/",
+      "ms": 1033,
+      "fallback": false,
+      "cache_used": false,
+      "fallback_used": false
+    }
+  ],
+  "factors_computed": 8,
+  "factors_successful": 6,
+  "gold_cross_rates": {
+    "status": "success",
+    "source": "Stooq",
+    "fallback_used": false,
+    "latency_ms": 1033
+  },
+  "satoshis_per_dollar": {
+    "status": "success",
+    "source": "BTC daily close (derived)",
+    "derived": true
+  },
+  "price_history": {
+    "total_rows": 729,
+    "oldest_date": "2023-09-29",
+    "newest_date": "2025-09-28",
+    "alpha_vantage_backfill": null,
+    "coinbase_daily_update": {
+      "status": "success",
+      "rows_fetched": 14,
+      "ms": 314
+    },
+    "drift_check": null
+  },
+  "etf_schema_hash": "cd3800",
+  "etf_schema_last_check": "2025-09-28T13:38:16.335Z"
+}

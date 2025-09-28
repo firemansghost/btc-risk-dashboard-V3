@@ -16,6 +16,7 @@ export default function Navigation() {
     { href: '/', label: 'Overview' },
     { href: '/methodology', label: 'Methodology' },
     { href: '/strategy-analysis', label: 'Strategy Analysis' },
+    { href: '/etf-predictions', label: 'ETF Predictions' },
     { href: '/what-is-risk', label: 'What Is Risk?' },
   ];
 

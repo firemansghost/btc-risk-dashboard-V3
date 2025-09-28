@@ -1,0 +1,72 @@
+{
+  "totalRecords": 1,
+  "dateRange": "2025-09-28 to 2025-09-28",
+  "factorStats": {
+    "trend_valuation": {
+      "dataPoints": 1,
+      "mean": 51,
+      "stdDev": 0,
+      "min": 51,
+      "max": 51,
+      "range": 0,
+      "statusCounts": {
+        "fresh": 1
+      }
+    },
+    "onchain": {
+      "dataPoints": 1,
+      "mean": 91,
+      "stdDev": 0,
+      "min": 91,
+      "max": 91,
+      "range": 0,
+      "statusCounts": {
+        "fresh": 1
+      }
+    },
+    "stablecoins": {
+      "dataPoints": 1,
+      "mean": 43,
+      "stdDev": 0,
+      "min": 43,
+      "max": 43,
+      "range": 0,
+      "statusCounts": {
+        "fresh": 1
+      }
+    },
+    "etf_flows": {
+      "dataPoints": 1,
+      "mean": 58,
+      "stdDev": 0,
+      "min": 58,
+      "max": 58,
+      "range": 0,
+      "statusCounts": {
+        "fresh": 1
+      }
+    },
+    "term_leverage": {
+      "dataPoints": 1,
+      "mean": 56,
+      "stdDev": 0,
+      "min": 56,
+      "max": 56,
+      "range": 0,
+      "statusCounts": {
+        "fresh": 1
+      }
+    },
+    "social_interest": {
+      "dataPoints": 1,
+      "mean": 40,
+      "stdDev": 0,
+      "min": 40,
+      "max": 40,
+      "range": 0,
+      "statusCounts": {
+        "fresh": 1
+      }
+    }
+  }
+}

@@ -1,0 +1,2 @@
+date,trend_valuation_score,trend_valuation_status,onchain_score,onchain_status,stablecoins_score,stablecoins_status,etf_flows_score,etf_flows_status,net_liquidity_score,net_liquidity_status,term_leverage_score,term_leverage_status,macro_overlay_score,macro_overlay_status,social_interest_score,social_interest_status,composite_score,composite_band
+2025-09-28,51,fresh,91,fresh,43,fresh,58,fresh,null,excluded,56,fresh,null,excluded,40,fresh,52,
