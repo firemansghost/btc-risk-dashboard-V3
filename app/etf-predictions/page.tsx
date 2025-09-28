@@ -1,12 +1,5 @@
 import React from 'react';
 import { Metadata } from 'next';
-// ETF Predictions page - AI-powered forecasting
-import TestComponent from '@/components/TestComponent';
-import ForecastCard from '@/components/ForecastCard';
-// import PredictionChart from '@/components/PredictionChart';
-// import IndividualETFPredictions from '@/components/IndividualETFPredictions';
-// import ModelPerformance from '@/components/ModelPerformance';
-// import PredictionSettings from '@/components/PredictionSettings';
 
 export const metadata: Metadata = {
   title: 'ETF Flow Predictions | Bitcoin Risk Dashboard',
@@ -31,69 +24,11 @@ export default function ETFPredictionsPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Test Component */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Test Component</h2>
-          <TestComponent />
-        </div>
-
-        {/* Test ForecastCard */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Test ForecastCard</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <ForecastCard 
-              title="Tomorrow's Flow"
-              prediction="$45.2M"
-              confidence="85%"
-              trend="up"
-              description="Expected daily flow for tomorrow"
-            />
-          </div>
-        </div>
-
-        {/* Detailed Analysis - Temporarily Disabled */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-semibold mb-4">Flow Predictions</h3>
-            <p>Component temporarily disabled for testing</p>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-semibold mb-4">Individual ETF Forecasts</h3>
-            <p>Component temporarily disabled for testing</p>
-          </div>
-        </div>
-
-        {/* Model Performance - Temporarily Disabled */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-semibold mb-4">Model Performance</h3>
-            <p>Component temporarily disabled for testing</p>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-semibold mb-4">Prediction Settings</h3>
-            <p>Component temporarily disabled for testing</p>
-          </div>
-        </div>
-
-        {/* Historical Accuracy */}
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <h3 className="text-xl font-semibold mb-4">Historical Accuracy</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">87.3%</div>
-              <div className="text-sm text-gray-600">1-Day Accuracy</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">82.1%</div>
-              <div className="text-sm text-gray-600">7-Day Accuracy</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">76.8%</div>
-              <div className="text-sm text-gray-600">30-Day Accuracy</div>
-            </div>
-          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">ETF Predictions Coming Soon</h2>
+          <p className="text-gray-600">
+            This page is under development. Advanced ETF flow prediction models will be available soon.
+          </p>
         </div>
       </div>
     </div>
