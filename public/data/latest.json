@@ -1,24 +1,15 @@
 {
   "ok": true,
   "version": "v3.1.0",
-<<<<<<< HEAD
-  "as_of_utc": "2025-09-28T13:38:42.917Z",
-  "composite_score": 54,
-  "composite_raw": 54,
-=======
-  "as_of_utc": "2025-09-28T11:17:11.929Z",
-  "composite_score": 77,
-  "composite_raw": 77,
->>>>>>> dcdfe312aa046600de988c1c1ecf298d9dfb5278
   "band": {
-    "key": "hold_neutral",
-    "label": "Hold/Neutral",
+    "key": "begin_scaling_out",
+    "label": "Begin Scaling Out",
     "range": [
-      45,
-      55
+      55,
+      70
     ],
-    "color": "#10B981",
-    "recommendation": "Hold/Neutral"
+    "color": "#F59E0B",
+    "recommendation": "Begin Scaling Out"
   },
   "health": "green",
   "factors": [
@@ -7290,5 +7281,8 @@
   "cross": {
     "btc_per_oz": 28.927999632559494,
     "oz_per_btc": 0.034568584509883094
-  }
+  },
+  "composite_score": 55,
+  "composite_raw": 55,
+  "as_of_utc": "2025-09-28T13:47:33.372Z"
 }
