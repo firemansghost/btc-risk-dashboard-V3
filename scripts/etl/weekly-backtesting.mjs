@@ -297,10 +297,17 @@ function calculateStrategyPerformance(historicalData) {
 function generateBacktestingReport(bandPerformance, strategyPerformance, historicalData) {
   const report = {
     timestamp: new Date().toISOString(),
+    lastUpdated: new Date().toISOString(),
     dataRange: {
       startDate: historicalData[0]?.date || 'Unknown',
       endDate: historicalData[historicalData.length - 1]?.date || 'Unknown',
       totalDays: historicalData.length
+    },
+    metadata: {
+      generatedBy: 'weekly-backtesting-script',
+      version: '1.0.0',
+      dataSource: 'history.csv',
+      analysisType: 'comprehensive-backtesting'
     },
     bandPerformance,
     strategyPerformance,

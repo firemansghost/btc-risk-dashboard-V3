@@ -6,6 +6,7 @@ import StrategyTester from '../components/StrategyTester';
 import BacktestingInsights from '../components/BacktestingInsights';
 import RiskBandAnalysis from '../components/RiskBandAnalysis';
 import InvestmentGlossary from '../components/InvestmentGlossary';
+import BacktestingStatus from '../components/BacktestingStatus';
 
 export default function StrategyAnalysisPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'tester' | 'insights' | 'risk-bands' | 'glossary'>('overview');
@@ -121,6 +122,9 @@ export default function StrategyAnalysisPage() {
               </div>
             </div>
 
+            {/* Backtesting Status */}
+            <BacktestingStatus />
+
             {/* Strategy Comparison */}
             <StrategyComparisonCard />
           </div>
@@ -146,6 +150,7 @@ export default function StrategyAnalysisPage() {
                 Discover the most important findings from our comprehensive <strong>Bitcoin G-Score</strong> backtesting analysis
               </p>
             </div>
+            <BacktestingStatus />
             <BacktestingInsights />
           </div>
         )}
@@ -158,6 +163,7 @@ export default function StrategyAnalysisPage() {
                 Analysis of how different <strong>Bitcoin G-Score</strong> risk bands perform in different market conditions
               </p>
             </div>
+            <BacktestingStatus />
             <RiskBandAnalysis />
           </div>
         )}

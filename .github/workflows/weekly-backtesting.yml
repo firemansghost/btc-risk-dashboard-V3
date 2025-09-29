@@ -3,8 +3,8 @@ name: Weekly Backtesting
 on:
   workflow_dispatch:
   schedule:
-    # Every Sunday at 11:00 UTC (after daily ETL has run)
-    - cron: "0 11 * * 0"
+    # Every Sunday at 11:30 UTC (30 minutes after daily ETL)
+    - cron: "30 11 * * 0"
 
 permissions:
   contents: write
