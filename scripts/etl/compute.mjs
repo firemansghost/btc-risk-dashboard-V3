@@ -233,17 +233,76 @@ async function getCoinGeckoCloseForYesterday() {
   return { date: ISO(new Date(pair[0])), close: Number(pair[1]) };
 }
 
+// Load risk bands from dashboard-config.json
+let riskBands = null;
+
+async function loadRiskBands() {
+  if (riskBands) return riskBands;
+  
+  try {
+    const fs = await import('fs');
+    const path = await import('path');
+    const dashboardConfigPath = path.join(process.cwd(), 'config', 'dashboard-config.json');
+    const dashboardConfigFile = fs.readFileSync(dashboardConfigPath, 'utf8');
+    const dashboardConfig = JSON.parse(dashboardConfigFile);
+    
+    if (dashboardConfig.bands && Array.isArray(dashboardConfig.bands)) {
+      riskBands = dashboardConfig.bands;
+      console.log('ETL: Loaded risk bands from dashboard-config.json');
+      return riskBands;
+    }
+  } catch (error) {
+    console.warn('ETL: Failed to load risk bands from dashboard-config.json:', error.message);
+  }
+  
+  // Fallback to hardcoded bands if config fails
+  riskBands = [
+    { key: 'aggressive_buy', label: 'Aggressive Buying', range: [0, 14], color: 'green', recommendation: 'Max allocation' },
+    { key: 'dca_buy', label: 'Regular DCA Buying', range: [15, 34], color: 'green', recommendation: 'Continue regular purchases' },
+    { key: 'moderate_buy', label: 'Moderate Buying', range: [35, 49], color: 'yellow', recommendation: 'Reduce position size' },
+    { key: 'hold_wait', label: 'Hold & Wait', range: [50, 64], color: 'orange', recommendation: 'Hold existing positions' },
+    { key: 'reduce_risk', label: 'Reduce Risk', range: [65, 79], color: 'red', recommendation: 'Consider taking profits' },
+    { key: 'high_risk', label: 'High Risk', range: [80, 100], color: 'red', recommendation: 'Significant risk of correction' }
+  ];
+  console.log('ETL: Using fallback risk bands');
+  return riskBands;
+}
+
 function riskBand(score) {
-  if (score < 15) return { name: "Aggressive Buying", lo: 0, hi: 14 };
-  if (score < 35) return { name: "Regular DCA Buying", lo: 15, hi: 34 };
-  if (score < 50) return { name: "Moderate Buying", lo: 35, hi: 49 };
-  if (score < 65) return { name: "Hold & Wait", lo: 50, hi: 64 };
-  if (score < 80) return { name: "Reduce Risk", lo: 65, hi: 79 };
-  return { name: "High Risk", lo: 80, hi: 100 };
+  if (!riskBands) {
+    console.error('ETL: Risk bands not loaded. Call loadRiskBands() first.');
+    return { name: "Unknown", lo: 0, hi: 100 };
+  }
+  
+  // Find the band that contains this score
+  for (const band of riskBands) {
+    if (score >= band.range[0] && score < band.range[1]) {
+      return { 
+        name: band.label, 
+        lo: band.range[0], 
+        hi: band.range[1],
+        color: band.color,
+        recommendation: band.recommendation
+      };
+    }
+  }
+  
+  // Fallback to last band if score is out of range
+  const lastBand = riskBands[riskBands.length - 1];
+  return { 
+    name: lastBand.label, 
+    lo: lastBand.range[0], 
+    hi: lastBand.range[1],
+    color: lastBand.color,
+    recommendation: lastBand.recommendation
+  };
 }
 
 async function main() {
   await ensureDir("public/data");
+  
+  // Load risk bands from dashboard-config.json
+  await loadRiskBands();
   
   // Clean old cache files
   try {

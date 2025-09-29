@@ -119,15 +119,8 @@ const DEFAULT_CONFIG: RiskConfig = {
     { key: 'social_interest', label: 'Social Interest', pillar: 'social', weight: 10, enabled: true }
   ],
 
-  // Risk band thresholds - CORRECTED NON-OVERLAPPING RANGES
-  bands: [
-    { key: 'aggressive_buy', label: 'Aggressive Buying', range: [0, 14], color: 'green', recommendation: 'Max allocation' },
-    { key: 'dca_buy', label: 'Regular DCA Buying', range: [15, 34], color: 'green', recommendation: 'Continue regular purchases' },
-    { key: 'moderate_buy', label: 'Moderate Buying', range: [35, 49], color: 'yellow', recommendation: 'Reduce position size' },
-    { key: 'hold_wait', label: 'Hold & Wait', range: [50, 64], color: 'orange', recommendation: 'Hold existing positions' },
-    { key: 'reduce_risk', label: 'Reduce Risk', range: [65, 79], color: 'red', recommendation: 'Consider taking profits' },
-    { key: 'high_risk', label: 'High Risk', range: [80, 100], color: 'red', recommendation: 'Significant risk of correction' }
-  ],
+  // Risk band thresholds - LOADED FROM dashboard-config.json
+  bands: [],
 
   // Normalization settings
   normalization: {
@@ -266,6 +259,22 @@ export function getConfig(): RiskConfig {
     } catch (error) {
       console.warn(`Config: Failed to load ${configPath}, using defaults:`, error);
     }
+  }
+  
+  // Always load risk bands from dashboard-config.json
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const dashboardConfigPath = path.join(process.cwd(), 'config', 'dashboard-config.json');
+    const dashboardConfigFile = fs.readFileSync(dashboardConfigPath, 'utf8');
+    const dashboardConfig = JSON.parse(dashboardConfigFile);
+    
+    if (dashboardConfig.bands && Array.isArray(dashboardConfig.bands)) {
+      config.bands = dashboardConfig.bands;
+      console.log('Config: Loaded risk bands from dashboard-config.json');
+    }
+  } catch (error) {
+    console.warn('Config: Failed to load risk bands from dashboard-config.json, using defaults:', error);
   }
   
   // Validate and cache
