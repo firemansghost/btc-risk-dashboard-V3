@@ -123,10 +123,10 @@ const DEFAULT_CONFIG: RiskConfig = {
   bands: [
     { key: 'aggressive_buy', label: 'Aggressive Buying', range: [0, 15], color: 'green', recommendation: 'Max allocation' },
     { key: 'dca_buy', label: 'Regular DCA Buying', range: [15, 35], color: 'green', recommendation: 'Continue regular purchases' },
-    { key: 'hold_neutral', label: 'Hold/Neutral', range: [35, 55], color: 'blue', recommendation: 'Maintain positions, selective buying' },
-    { key: 'begin_scaling', label: 'Begin Scaling Out', range: [55, 70], color: 'yellow', recommendation: 'Take some profits' },
-    { key: 'increase_sell', label: 'Increase Selling', range: [70, 85], color: 'orange', recommendation: 'Accelerate profit taking' },
-    { key: 'max_sell', label: 'Maximum Selling', range: [85, 100], color: 'red', recommendation: 'Exit most/all positions' }
+    { key: 'moderate_buy', label: 'Moderate Buying', range: [35, 50], color: 'yellow', recommendation: 'Reduce position size' },
+    { key: 'hold_wait', label: 'Hold & Wait', range: [50, 65], color: 'orange', recommendation: 'Hold existing positions' },
+    { key: 'reduce_risk', label: 'Reduce Risk', range: [65, 80], color: 'red', recommendation: 'Consider taking profits' },
+    { key: 'high_risk', label: 'High Risk', range: [80, 100], color: 'red', recommendation: 'Significant risk of correction' }
   ],
 
   // Normalization settings
@@ -235,9 +235,9 @@ function calculateDigest(config: RiskConfig): string {
 }
 
 export function getConfig(): RiskConfig {
-  if (cachedConfig) {
-    return cachedConfig;
-  }
+  // Force reload to get updated risk bands
+  cachedConfig = null;
+  configDigest = null;
   
   let config: Partial<RiskConfig> = {};
   
