@@ -1,0 +1,4975 @@
+{
+  "timestamp": "2025-09-29T21:32:18.513Z",
+  "dataRange": {
+    "startDate": "2023-09-25",
+    "endDate": "2025-09-29",
+    "totalDays": 734
+  },
+  "bandPerformance": {
+    "Aggressive Buying": {
+      "signals": [],
+      "performance": {
+        "signalCount": 0,
+        "avgGScore": 0,
+        "avgPrice": 0,
+        "winRate": 0,
+        "avgReturn30d": 0,
+        "avgReturn90d": 0,
+        "bestReturn": 0,
+        "worstReturn": 0
+      }
+    },
+    "Regular DCA Buying": {
+      "signals": [
+        {
+          "date": "2024-07-20",
+          "gScore": 34,
+          "price": 67163.83,
+          "originalBand": "Regular DCA Buying"
+        },
+        {
+          "date": "2025-08-22",
+          "gScore": 32,
+          "price": 116908.68,
+          "originalBand": "Regular DCA Buying"
+        },
+        {
+          "date": "2025-08-23",
+          "gScore": 35,
+          "price": 115383.87,
+          "originalBand": "Regular DCA Buying"
+        }
+      ],
+      "performance": {
+        "signalCount": 3,
+        "avgGScore": 33.666666666666664,
+        "avgPrice": 99818.79333333333,
+        "winRate": 33.33333333333333,
+        "avgReturn30d": -4.432573769735197,
+        "avgReturn90d": -6.42984475423751,
+        "bestReturn": 0.8615762324491368,
+        "worstReturn": -12.615733796002996
+      }
+    },
+    "Moderate Buying": {
+      "signals": [
+        {
+          "date": "2023-09-25",
+          "gScore": 47,
+          "price": 26296.08,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-03-18",
+          "gScore": 47,
+          "price": 67613.04,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-06-01",
+          "gScore": 49,
+          "price": 67719.29,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-07-16",
+          "gScore": 47,
+          "price": 65088.99,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-07-17",
+          "gScore": 41,
+          "price": 64085.81,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-07-18",
+          "gScore": 40,
+          "price": 63982.86,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-07-19",
+          "gScore": 37,
+          "price": 66707.61,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-07-21",
+          "gScore": 38,
+          "price": 68181.28,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-07-22",
+          "gScore": 43,
+          "price": 67558.22,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-07-25",
+          "gScore": 50,
+          "price": 65795.42,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-10-14",
+          "gScore": 47,
+          "price": 66065.65,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-10-15",
+          "gScore": 47,
+          "price": 67056.6,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-10-16",
+          "gScore": 45,
+          "price": 67608.44,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-10-17",
+          "gScore": 47,
+          "price": 67402.33,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-10-18",
+          "gScore": 41,
+          "price": 68426.11,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-10-19",
+          "gScore": 46,
+          "price": 68363.73,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-10-25",
+          "gScore": 48,
+          "price": 66564.51,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-10-26",
+          "gScore": 50,
+          "price": 67012.56,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-10-31",
+          "gScore": 45,
+          "price": 70197.83,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-11-01",
+          "gScore": 46,
+          "price": 69467.29,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-11-02",
+          "gScore": 37,
+          "price": 69358.94,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-11-03",
+          "gScore": 43,
+          "price": 68738.18,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-11-04",
+          "gScore": 48,
+          "price": 67807.48,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2024-11-05",
+          "gScore": 38,
+          "price": 69380.73,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-05-11",
+          "gScore": 42,
+          "price": 104137.62,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-05-12",
+          "gScore": 40,
+          "price": 102800.21,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-05-13",
+          "gScore": 41,
+          "price": 104131.06,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-05-14",
+          "gScore": 40,
+          "price": 103545.38,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-05-15",
+          "gScore": 40,
+          "price": 103786.43,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-05-16",
+          "gScore": 43,
+          "price": 103500.03,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-05-17",
+          "gScore": 42,
+          "price": 103161.07,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-05-18",
+          "gScore": 46,
+          "price": 106473.46,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-05-19",
+          "gScore": 44,
+          "price": 105616.18,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-05-20",
+          "gScore": 41,
+          "price": 106883.24,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-05-27",
+          "gScore": 40,
+          "price": 108978.46,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-05-28",
+          "gScore": 36,
+          "price": 107819.29,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-05-29",
+          "gScore": 42,
+          "price": 105572.58,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-05-30",
+          "gScore": 46,
+          "price": 104033.26,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-05-31",
+          "gScore": 47,
+          "price": 104645.87,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-06-01",
+          "gScore": 45,
+          "price": 105697.94,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-06-02",
+          "gScore": 45,
+          "price": 105904.94,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-06-09",
+          "gScore": 40,
+          "price": 110301.15,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-06-10",
+          "gScore": 44,
+          "price": 110300.24,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-06-11",
+          "gScore": 40,
+          "price": 108669.37,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-06-12",
+          "gScore": 48,
+          "price": 105721.05,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-06-13",
+          "gScore": 49,
+          "price": 106118.7,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-06-16",
+          "gScore": 45,
+          "price": 106853.38,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-06-17",
+          "gScore": 46,
+          "price": 104590.44,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-06-18",
+          "gScore": 47,
+          "price": 104915.6,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-06-23",
+          "gScore": 49,
+          "price": 105419.39,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-06-24",
+          "gScore": 42,
+          "price": 106141,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-06-25",
+          "gScore": 47,
+          "price": 107400.22,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-06-26",
+          "gScore": 50,
+          "price": 107029.64,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-07-02",
+          "gScore": 42,
+          "price": 108888.32,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-07-03",
+          "gScore": 40,
+          "price": 109628.83,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-07-04",
+          "gScore": 45,
+          "price": 108028.6,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-07-05",
+          "gScore": 48,
+          "price": 108246.65,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-07-06",
+          "gScore": 49,
+          "price": 109217.98,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-08-14",
+          "gScore": 48,
+          "price": 118389.79,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-08-16",
+          "gScore": 48,
+          "price": 117455.68,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-08-17",
+          "gScore": 48,
+          "price": 117488.6,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-08-18",
+          "gScore": 48,
+          "price": 116286.76,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-08-19",
+          "gScore": 48,
+          "price": 112856.19,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-08-20",
+          "gScore": 41,
+          "price": 114276,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-08-21",
+          "gScore": 44,
+          "price": 112480.3,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2025-08-24",
+          "gScore": 39,
+          "price": 113478,
+          "originalBand": "Moderate Buying"
+        }
+      ],
+      "performance": {
+        "signalCount": 66,
+        "avgGScore": 44.27272727272727,
+        "avgPrice": 92626.48303030302,
+        "winRate": 68.18181818181817,
+        "avgReturn30d": 7.783962188237858,
+        "avgReturn90d": 16.165781581514718,
+        "bestReturn": 43.775524470161706,
+        "worstReturn": -15.602039152095703
+      }
+    },
+    "Hold & Wait": {
+      "signals": [
+        {
+          "date": "2023-09-26",
+          "gScore": 52,
+          "price": 26208.44,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-09-27",
+          "gScore": 52,
+          "price": 26357.62,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-09-28",
+          "gScore": 52,
+          "price": 27027.14,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-09-29",
+          "gScore": 52,
+          "price": 26907,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-09-30",
+          "gScore": 52,
+          "price": 26961,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-01",
+          "gScore": 52,
+          "price": 27995.46,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-02",
+          "gScore": 52,
+          "price": 27504.04,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-03",
+          "gScore": 52,
+          "price": 27428.96,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-04",
+          "gScore": 52,
+          "price": 27786.75,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-05",
+          "gScore": 52,
+          "price": 27412.96,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-06",
+          "gScore": 52,
+          "price": 27945.17,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-07",
+          "gScore": 52,
+          "price": 27976.43,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-08",
+          "gScore": 52,
+          "price": 27933.55,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-09",
+          "gScore": 52,
+          "price": 27596.67,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-10",
+          "gScore": 52,
+          "price": 27393.29,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-11",
+          "gScore": 52,
+          "price": 26869.19,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-12",
+          "gScore": 52,
+          "price": 26750.51,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-13",
+          "gScore": 52,
+          "price": 26863.53,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-14",
+          "gScore": 52,
+          "price": 26851.71,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-15",
+          "gScore": 52,
+          "price": 27186.13,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-16",
+          "gScore": 52,
+          "price": 28520.24,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-17",
+          "gScore": 52,
+          "price": 28408.83,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-18",
+          "gScore": 52,
+          "price": 28326.51,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-19",
+          "gScore": 52,
+          "price": 28735.34,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-20",
+          "gScore": 52,
+          "price": 29684.73,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-21",
+          "gScore": 52,
+          "price": 29924.84,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-22",
+          "gScore": 52,
+          "price": 30004.15,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-23",
+          "gScore": 52,
+          "price": 33087.58,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-24",
+          "gScore": 52,
+          "price": 33922.52,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-25",
+          "gScore": 52,
+          "price": 34506.35,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-26",
+          "gScore": 52,
+          "price": 34154.71,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-27",
+          "gScore": 52,
+          "price": 33906.09,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-28",
+          "gScore": 52,
+          "price": 34085.42,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-29",
+          "gScore": 52,
+          "price": 34534.48,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-30",
+          "gScore": 52,
+          "price": 34493.79,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-10-31",
+          "gScore": 52,
+          "price": 34656.4,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-01",
+          "gScore": 52,
+          "price": 35440.1,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-02",
+          "gScore": 52,
+          "price": 34950,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-03",
+          "gScore": 52,
+          "price": 34731.27,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-04",
+          "gScore": 52,
+          "price": 35087.01,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-05",
+          "gScore": 52,
+          "price": 35035.42,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-06",
+          "gScore": 52,
+          "price": 35059.46,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-07",
+          "gScore": 52,
+          "price": 35416.28,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-08",
+          "gScore": 52,
+          "price": 35639.13,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-09",
+          "gScore": 52,
+          "price": 36706.59,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-10",
+          "gScore": 52,
+          "price": 37324.83,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-11",
+          "gScore": 52,
+          "price": 37139.12,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-12",
+          "gScore": 52,
+          "price": 37086.03,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-13",
+          "gScore": 52,
+          "price": 36475.67,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-14",
+          "gScore": 52,
+          "price": 35554.09,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-15",
+          "gScore": 52,
+          "price": 37885.35,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-16",
+          "gScore": 52,
+          "price": 36161.15,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-17",
+          "gScore": 52,
+          "price": 36630.38,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-18",
+          "gScore": 52,
+          "price": 36594.89,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-19",
+          "gScore": 52,
+          "price": 37391.19,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-20",
+          "gScore": 52,
+          "price": 37475.64,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-21",
+          "gScore": 52,
+          "price": 35751.89,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-22",
+          "gScore": 52,
+          "price": 37424.31,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-23",
+          "gScore": 52,
+          "price": 37304.05,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-24",
+          "gScore": 52,
+          "price": 37745.84,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-25",
+          "gScore": 52,
+          "price": 37805.99,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-26",
+          "gScore": 52,
+          "price": 37462.79,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-27",
+          "gScore": 52,
+          "price": 37241.63,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-28",
+          "gScore": 52,
+          "price": 37838.26,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-29",
+          "gScore": 52,
+          "price": 37863.84,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-11-30",
+          "gScore": 52,
+          "price": 37732.27,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-01",
+          "gScore": 52,
+          "price": 38703.54,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-02",
+          "gScore": 52,
+          "price": 39478.95,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-03",
+          "gScore": 52,
+          "price": 39984.81,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-04",
+          "gScore": 52,
+          "price": 41987.24,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-05",
+          "gScore": 52,
+          "price": 44084.39,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-06",
+          "gScore": 52,
+          "price": 43764.05,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-07",
+          "gScore": 52,
+          "price": 43280.95,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-08",
+          "gScore": 52,
+          "price": 44192.87,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-09",
+          "gScore": 52,
+          "price": 43723.25,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-10",
+          "gScore": 52,
+          "price": 43793.68,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-11",
+          "gScore": 52,
+          "price": 41229.61,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-12",
+          "gScore": 52,
+          "price": 41477.39,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-13",
+          "gScore": 52,
+          "price": 42885.54,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-14",
+          "gScore": 52,
+          "price": 43027.77,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-15",
+          "gScore": 52,
+          "price": 41933.89,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-16",
+          "gScore": 52,
+          "price": 42237.29,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-17",
+          "gScore": 52,
+          "price": 41349.59,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-18",
+          "gScore": 52,
+          "price": 42650.01,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-19",
+          "gScore": 52,
+          "price": 42266.22,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-20",
+          "gScore": 52,
+          "price": 43674.77,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-21",
+          "gScore": 52,
+          "price": 43875.32,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-22",
+          "gScore": 52,
+          "price": 44013.73,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-23",
+          "gScore": 52,
+          "price": 43726.35,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-24",
+          "gScore": 52,
+          "price": 43025.03,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-25",
+          "gScore": 52,
+          "price": 43589.67,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-26",
+          "gScore": 52,
+          "price": 42515.53,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-27",
+          "gScore": 52,
+          "price": 43474.4,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-28",
+          "gScore": 52,
+          "price": 42581.23,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-29",
+          "gScore": 52,
+          "price": 42063.45,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-30",
+          "gScore": 52,
+          "price": 42141.03,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2023-12-31",
+          "gScore": 52,
+          "price": 42288.06,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-01",
+          "gScore": 52,
+          "price": 44220.78,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-02",
+          "gScore": 52,
+          "price": 44972.8,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-03",
+          "gScore": 52,
+          "price": 42862.44,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-04",
+          "gScore": 52,
+          "price": 44193.29,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-05",
+          "gScore": 52,
+          "price": 44186.59,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-06",
+          "gScore": 52,
+          "price": 43992.44,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-07",
+          "gScore": 52,
+          "price": 43950.28,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-08",
+          "gScore": 52,
+          "price": 46995.1,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-09",
+          "gScore": 52,
+          "price": 46124.08,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-10",
+          "gScore": 52,
+          "price": 46666.11,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-11",
+          "gScore": 52,
+          "price": 46342.66,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-12",
+          "gScore": 52,
+          "price": 42773.03,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-13",
+          "gScore": 52,
+          "price": 42839.33,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-14",
+          "gScore": 52,
+          "price": 41697.33,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-15",
+          "gScore": 52,
+          "price": 42490.16,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-16",
+          "gScore": 52,
+          "price": 43130.45,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-17",
+          "gScore": 52,
+          "price": 42739.49,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-18",
+          "gScore": 52,
+          "price": 41293.5,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-19",
+          "gScore": 52,
+          "price": 41624.07,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-20",
+          "gScore": 52,
+          "price": 41666.67,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-21",
+          "gScore": 52,
+          "price": 41554.05,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-22",
+          "gScore": 52,
+          "price": 39524.27,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-23",
+          "gScore": 52,
+          "price": 39878.3,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-24",
+          "gScore": 52,
+          "price": 40077.78,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-25",
+          "gScore": 52,
+          "price": 39941.66,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-26",
+          "gScore": 52,
+          "price": 41814.8,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-27",
+          "gScore": 52,
+          "price": 42126.55,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-28",
+          "gScore": 52,
+          "price": 42034.59,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-29",
+          "gScore": 52,
+          "price": 43306.18,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-30",
+          "gScore": 52,
+          "price": 42942.78,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-01-31",
+          "gScore": 52,
+          "price": 42548.08,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-01",
+          "gScore": 52,
+          "price": 43078.81,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-02",
+          "gScore": 52,
+          "price": 43181.66,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-03",
+          "gScore": 52,
+          "price": 43010.67,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-04",
+          "gScore": 52,
+          "price": 42568.55,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-05",
+          "gScore": 52,
+          "price": 42657.67,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-06",
+          "gScore": 52,
+          "price": 43095.79,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-07",
+          "gScore": 52,
+          "price": 44343.61,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-08",
+          "gScore": 52,
+          "price": 45305.2,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-09",
+          "gScore": 52,
+          "price": 47160.41,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-10",
+          "gScore": 52,
+          "price": 47767.06,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-11",
+          "gScore": 52,
+          "price": 48316.3,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-12",
+          "gScore": 52,
+          "price": 49941.81,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-13",
+          "gScore": 52,
+          "price": 49725.36,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-14",
+          "gScore": 52,
+          "price": 51858.59,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-15",
+          "gScore": 52,
+          "price": 51934.29,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-16",
+          "gScore": 52,
+          "price": 52162.64,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-17",
+          "gScore": 52,
+          "price": 51666.22,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-18",
+          "gScore": 52,
+          "price": 52153.63,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-19",
+          "gScore": 52,
+          "price": 51787.05,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-20",
+          "gScore": 52,
+          "price": 52277.52,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-21",
+          "gScore": 52,
+          "price": 51851.67,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-22",
+          "gScore": 52,
+          "price": 51258.7,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-23",
+          "gScore": 52,
+          "price": 50747.05,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-24",
+          "gScore": 52,
+          "price": 51570.65,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-25",
+          "gScore": 52,
+          "price": 51731,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-26",
+          "gScore": 52,
+          "price": 54533.48,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-27",
+          "gScore": 52,
+          "price": 57077.07,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-28",
+          "gScore": 52,
+          "price": 62518.9,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-02-29",
+          "gScore": 52,
+          "price": 61179.03,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-01",
+          "gScore": 52,
+          "price": 62436.72,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-02",
+          "gScore": 52,
+          "price": 62045.78,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-03",
+          "gScore": 52,
+          "price": 63154.49,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-04",
+          "gScore": 52,
+          "price": 68360.14,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-05",
+          "gScore": 52,
+          "price": 63800.78,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-06",
+          "gScore": 52,
+          "price": 66122.28,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-07",
+          "gScore": 52,
+          "price": 66938.21,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-08",
+          "gScore": 52,
+          "price": 68289.16,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-09",
+          "gScore": 52,
+          "price": 68480,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-10",
+          "gScore": 52,
+          "price": 69032.12,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-11",
+          "gScore": 52,
+          "price": 72110.98,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-12",
+          "gScore": 52,
+          "price": 71475.93,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-13",
+          "gScore": 52,
+          "price": 73135.04,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-14",
+          "gScore": 52,
+          "price": 71364.58,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-15",
+          "gScore": 52,
+          "price": 69506.88,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-16",
+          "gScore": 52,
+          "price": 65254.22,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-17",
+          "gScore": 52,
+          "price": 68343.64,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-19",
+          "gScore": 52,
+          "price": 61906.27,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-20",
+          "gScore": 52,
+          "price": 67858.8,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-21",
+          "gScore": 52,
+          "price": 65484.7,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-22",
+          "gScore": 52,
+          "price": 63814.56,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-23",
+          "gScore": 52,
+          "price": 63998.86,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-24",
+          "gScore": 52,
+          "price": 67204.93,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-25",
+          "gScore": 52,
+          "price": 69890.28,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-26",
+          "gScore": 52,
+          "price": 69992.4,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-27",
+          "gScore": 52,
+          "price": 69435.96,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-28",
+          "gScore": 52,
+          "price": 70801.18,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-29",
+          "gScore": 52,
+          "price": 69903.75,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-30",
+          "gScore": 52,
+          "price": 69626.87,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-03-31",
+          "gScore": 52,
+          "price": 71288.9,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-04-01",
+          "gScore": 52,
+          "price": 69681.82,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-04-02",
+          "gScore": 52,
+          "price": 65464.14,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-04-03",
+          "gScore": 52,
+          "price": 65987.92,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-04-04",
+          "gScore": 52,
+          "price": 68525.23,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-04-05",
+          "gScore": 52,
+          "price": 67856.51,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-04-06",
+          "gScore": 52,
+          "price": 68919.89,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-04-07",
+          "gScore": 52,
+          "price": 69350.34,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-04-08",
+          "gScore": 52,
+          "price": 71622.53,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-04-09",
+          "gScore": 52,
+          "price": 69117.01,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-04-10",
+          "gScore": 52,
+          "price": 70634.04,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-04-30",
+          "gScore": 61,
+          "price": 60622.1,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-05-01",
+          "gScore": 54,
+          "price": 58265.59,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-05-02",
+          "gScore": 55,
+          "price": 59071.89,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-05-05",
+          "gScore": 65,
+          "price": 64023.45,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-05-06",
+          "gScore": 56,
+          "price": 63162.24,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-05-07",
+          "gScore": 58,
+          "price": 62315.76,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-05-08",
+          "gScore": 60,
+          "price": 61169.53,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-05-13",
+          "gScore": 58,
+          "price": 62932.37,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-05-14",
+          "gScore": 55,
+          "price": 61539.84,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-05-16",
+          "gScore": 58,
+          "price": 65252.18,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-05-18",
+          "gScore": 63,
+          "price": 66923.87,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-05-28",
+          "gScore": 58,
+          "price": 68321.98,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-05-29",
+          "gScore": 60,
+          "price": 67569.45,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-05-30",
+          "gScore": 63,
+          "price": 68338.58,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-05-31",
+          "gScore": 54,
+          "price": 67472.41,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-06-11",
+          "gScore": 62,
+          "price": 67316.53,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-06-12",
+          "gScore": 62,
+          "price": 68248.6,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-06-13",
+          "gScore": 62,
+          "price": 66738.85,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-06-14",
+          "gScore": 59,
+          "price": 66004.39,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-06-15",
+          "gScore": 61,
+          "price": 66192,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-06-16",
+          "gScore": 59,
+          "price": 66628.75,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-06-17",
+          "gScore": 61,
+          "price": 66481.81,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-06-18",
+          "gScore": 65,
+          "price": 65152.8,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-06-19",
+          "gScore": 63,
+          "price": 64943.79,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-06-20",
+          "gScore": 65,
+          "price": 64840.88,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-06-30",
+          "gScore": 62,
+          "price": 62668.26,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-07-01",
+          "gScore": 62,
+          "price": 62830.13,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-07-13",
+          "gScore": 62,
+          "price": 59224.58,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-07-14",
+          "gScore": 59,
+          "price": 60808.42,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-07-15",
+          "gScore": 54,
+          "price": 64757.16,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-07-23",
+          "gScore": 55,
+          "price": 65939.24,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-07-24",
+          "gScore": 57,
+          "price": 65366.4,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-07-26",
+          "gScore": 53,
+          "price": 67924.08,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-07-27",
+          "gScore": 53,
+          "price": 67899.41,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-07-28",
+          "gScore": 61,
+          "price": 68244.3,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-07-29",
+          "gScore": 62,
+          "price": 66771.45,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-07-30",
+          "gScore": 63,
+          "price": 66169.68,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-07-31",
+          "gScore": 56,
+          "price": 64609.62,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-08-01",
+          "gScore": 61,
+          "price": 65288.18,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-08-02",
+          "gScore": 56,
+          "price": 61418.06,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-08-21",
+          "gScore": 65,
+          "price": 61163.28,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-08-22",
+          "gScore": 65,
+          "price": 60383.29,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-08-23",
+          "gScore": 65,
+          "price": 64086.72,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-09-17",
+          "gScore": 63,
+          "price": 60312.6,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-09-18",
+          "gScore": 56,
+          "price": 61769.18,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-09-19",
+          "gScore": 64,
+          "price": 62960.14,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-09-21",
+          "gScore": 63,
+          "price": 63362.74,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-10-01",
+          "gScore": 61,
+          "price": 60790,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-10-04",
+          "gScore": 62,
+          "price": 62090.71,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-10-05",
+          "gScore": 64,
+          "price": 62051.29,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-10-06",
+          "gScore": 59,
+          "price": 62810.86,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-10-12",
+          "gScore": 62,
+          "price": 63187.47,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-10-20",
+          "gScore": 57,
+          "price": 69014.86,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-10-21",
+          "gScore": 52,
+          "price": 67346.15,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-10-22",
+          "gScore": 56,
+          "price": 67380.08,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-10-23",
+          "gScore": 51,
+          "price": 66601.11,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-10-24",
+          "gScore": 54,
+          "price": 68156.84,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-10-27",
+          "gScore": 63,
+          "price": 67943.19,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-10-29",
+          "gScore": 57,
+          "price": 72724.35,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-10-30",
+          "gScore": 56,
+          "price": 72322.91,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-11-06",
+          "gScore": 60,
+          "price": 75646.55,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-11-07",
+          "gScore": 58,
+          "price": 75920,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-11-08",
+          "gScore": 58,
+          "price": 76566.73,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-11-30",
+          "gScore": 65,
+          "price": 96465.42,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-12-02",
+          "gScore": 60,
+          "price": 95862.89,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-12-04",
+          "gScore": 62,
+          "price": 98746.24,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-12-05",
+          "gScore": 59,
+          "price": 97044.23,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-12-09",
+          "gScore": 59,
+          "price": 97324.81,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-12-11",
+          "gScore": 60,
+          "price": 101202.11,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-12-12",
+          "gScore": 60,
+          "price": 100030.47,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-12-13",
+          "gScore": 58,
+          "price": 101428.75,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-12-14",
+          "gScore": 64,
+          "price": 101399.99,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2024-12-24",
+          "gScore": 62,
+          "price": 98594.47,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-01-09",
+          "gScore": 63,
+          "price": 92547.44,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-01-10",
+          "gScore": 61,
+          "price": 94701.18,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-01-11",
+          "gScore": 59,
+          "price": 94565.02,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-01-14",
+          "gScore": 61,
+          "price": 96534.96,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-01-15",
+          "gScore": 63,
+          "price": 100510.23,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-01-16",
+          "gScore": 60,
+          "price": 99981.78,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-01-20",
+          "gScore": 62,
+          "price": 102145.43,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-01-21",
+          "gScore": 63,
+          "price": 106159.26,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-01-22",
+          "gScore": 57,
+          "price": 103667.11,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-01-23",
+          "gScore": 58,
+          "price": 103926.36,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-01-24",
+          "gScore": 60,
+          "price": 104850.27,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-01-25",
+          "gScore": 60,
+          "price": 104733.56,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-01-26",
+          "gScore": 58,
+          "price": 102563,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-01-27",
+          "gScore": 60,
+          "price": 102062.42,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-02-01",
+          "gScore": 63,
+          "price": 100623.85,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-02-02",
+          "gScore": 54,
+          "price": 97676.52,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-02-03",
+          "gScore": 64,
+          "price": 101460.2,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-02-04",
+          "gScore": 57,
+          "price": 97795.05,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-02-06",
+          "gScore": 65,
+          "price": 96564.62,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-02-07",
+          "gScore": 59,
+          "price": 96537.08,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-02-08",
+          "gScore": 62,
+          "price": 96476.25,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-02-09",
+          "gScore": 64,
+          "price": 96475.82,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-02-10",
+          "gScore": 63,
+          "price": 97444.41,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-02-11",
+          "gScore": 64,
+          "price": 95774.08,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-02-13",
+          "gScore": 64,
+          "price": 96625.29,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-02-14",
+          "gScore": 61,
+          "price": 97509.03,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-02-15",
+          "gScore": 63,
+          "price": 97596.94,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-02-21",
+          "gScore": 64,
+          "price": 96157.03,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-02-23",
+          "gScore": 63,
+          "price": 96265.98,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-02-24",
+          "gScore": 56,
+          "price": 91510.82,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-03-01",
+          "gScore": 63,
+          "price": 86018.76,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-03-02",
+          "gScore": 58,
+          "price": 94265.48,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-03-24",
+          "gScore": 60,
+          "price": 87523.62,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-03-25",
+          "gScore": 60,
+          "price": 87427.88,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-03-26",
+          "gScore": 53,
+          "price": 86926.01,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-03-27",
+          "gScore": 55,
+          "price": 87217.48,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-03-28",
+          "gScore": 54,
+          "price": 84381.8,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-03-29",
+          "gScore": 56,
+          "price": 82616.83,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-03-30",
+          "gScore": 65,
+          "price": 82379.98,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-04-01",
+          "gScore": 62,
+          "price": 85170.37,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-04-23",
+          "gScore": 59,
+          "price": 93740.92,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-04-24",
+          "gScore": 52,
+          "price": 94021.96,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-04-25",
+          "gScore": 58,
+          "price": 94708.79,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-04-26",
+          "gScore": 64,
+          "price": 94666.64,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-04-29",
+          "gScore": 64,
+          "price": 94271.09,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-05-01",
+          "gScore": 63,
+          "price": 96524.98,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-05-02",
+          "gScore": 57,
+          "price": 96929.81,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-05-03",
+          "gScore": 60,
+          "price": 95861.33,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-05-04",
+          "gScore": 56,
+          "price": 94272.55,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-05-08",
+          "gScore": 53,
+          "price": 103253.49,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-05-09",
+          "gScore": 53,
+          "price": 102986.96,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-05-10",
+          "gScore": 53,
+          "price": 104821.19,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-05-23",
+          "gScore": 53,
+          "price": 107329.61,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-05-24",
+          "gScore": 53,
+          "price": 107794.01,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-05-25",
+          "gScore": 53,
+          "price": 109048.68,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-05-26",
+          "gScore": 54,
+          "price": 109464.32,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-06-03",
+          "gScore": 52,
+          "price": 105447.82,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-06-04",
+          "gScore": 58,
+          "price": 104753.38,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-06-06",
+          "gScore": 62,
+          "price": 104397.99,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-06-07",
+          "gScore": 56,
+          "price": 105619.02,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-06-08",
+          "gScore": 58,
+          "price": 105784.4,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-06-14",
+          "gScore": 52,
+          "price": 105465.42,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-06-15",
+          "gScore": 51,
+          "price": 105599.25,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-06-19",
+          "gScore": 53,
+          "price": 104671.9,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-06-20",
+          "gScore": 60,
+          "price": 103317.8,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-06-21",
+          "gScore": 64,
+          "price": 102160.03,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-06-27",
+          "gScore": 50,
+          "price": 107113.38,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-06-28",
+          "gScore": 58,
+          "price": 107352.2,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-06-29",
+          "gScore": 54,
+          "price": 108386.44,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-06-30",
+          "gScore": 59,
+          "price": 107173.21,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-01",
+          "gScore": 56,
+          "price": 105711.78,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-07",
+          "gScore": 52,
+          "price": 108269.84,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-08",
+          "gScore": 50,
+          "price": 108958.04,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-09",
+          "gScore": 53,
+          "price": 111282.85,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-10",
+          "gScore": 63,
+          "price": 116031.3,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-12",
+          "gScore": 60,
+          "price": 117472.65,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-15",
+          "gScore": 61,
+          "price": 117781.64,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-16",
+          "gScore": 64,
+          "price": 118681.68,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-18",
+          "gScore": 60,
+          "price": 118023.05,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-19",
+          "gScore": 61,
+          "price": 117914.17,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-20",
+          "gScore": 63,
+          "price": 117312.7,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-21",
+          "gScore": 57,
+          "price": 117428.79,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-22",
+          "gScore": 63,
+          "price": 120026.42,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-24",
+          "gScore": 64,
+          "price": 118397.04,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-25",
+          "gScore": 59,
+          "price": 117633.27,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-26",
+          "gScore": 62,
+          "price": 117969.63,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-28",
+          "gScore": 57,
+          "price": 118070.59,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-29",
+          "gScore": 59,
+          "price": 117933.39,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-30",
+          "gScore": 61,
+          "price": 117830.15,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-07-31",
+          "gScore": 61,
+          "price": 115761.13,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-03",
+          "gScore": 61,
+          "price": 114215.73,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-04",
+          "gScore": 63,
+          "price": 115051.85,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-05",
+          "gScore": 64,
+          "price": 114112.95,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-06",
+          "gScore": 61,
+          "price": 115028.83,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-07",
+          "gScore": 60,
+          "price": 117515.49,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-08",
+          "gScore": 59,
+          "price": 116683.79,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-09",
+          "gScore": 59,
+          "price": 116492.51,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-10",
+          "gScore": 63,
+          "price": 119309.37,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-11",
+          "gScore": 61,
+          "price": 118701.84,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-12",
+          "gScore": 59,
+          "price": 120113.18,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-13",
+          "gScore": 59,
+          "price": 123365.63,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-15",
+          "gScore": 50,
+          "price": 117436.96,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-25",
+          "gScore": 51,
+          "price": 110127.74,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-26",
+          "gScore": 52,
+          "price": 111788.01,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-27",
+          "gScore": 57,
+          "price": 111253.21,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-28",
+          "gScore": 51,
+          "price": 112574.85,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-29",
+          "gScore": 62,
+          "price": 108378.32,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-30",
+          "gScore": 61,
+          "price": 108827.93,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-08-31",
+          "gScore": 62,
+          "price": 108247.95,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-01",
+          "gScore": 63,
+          "price": 109240.55,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-02",
+          "gScore": 57,
+          "price": 111247.94,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-03",
+          "gScore": 54,
+          "price": 111756.41,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-07",
+          "gScore": 64,
+          "price": 111129.61,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-08",
+          "gScore": 65,
+          "price": 112072.57,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-09",
+          "gScore": 63,
+          "price": 111549.32,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-10",
+          "gScore": 61,
+          "price": 113983.97,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-11",
+          "gScore": 56,
+          "price": 115540,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-12",
+          "gScore": 52,
+          "price": 116106.03,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-13",
+          "gScore": 50,
+          "price": 115968.35,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-14",
+          "gScore": 52,
+          "price": 115314.13,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-15",
+          "gScore": 52,
+          "price": 115309.35,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-16",
+          "gScore": 54,
+          "price": 115104.12,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-17",
+          "gScore": 54,
+          "price": 116377.99,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-18",
+          "gScore": 53,
+          "price": 117293.8,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-19",
+          "gScore": 54,
+          "price": 116478.28,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-20",
+          "gScore": 53,
+          "price": 115903.33,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-21",
+          "gScore": 52,
+          "price": 115673.46,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-22",
+          "gScore": 61,
+          "price": 112905.38,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-23",
+          "gScore": 59,
+          "price": 112807.46,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-24",
+          "gScore": 59,
+          "price": 113116.01,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2025-09-25",
+          "gScore": 58,
+          "price": 113236.2,
+          "originalBand": "Hold & Wait"
+        }
+      ],
+      "performance": {
+        "signalCount": 401,
+        "avgGScore": 55.49376558603491,
+        "avgPrice": 69771.43840399003,
+        "winRate": 60.47120418848168,
+        "avgReturn30d": 7.100571820927501,
+        "avgReturn90d": 23.478707931398674,
+        "bestReturn": 50.888065829088056,
+        "worstReturn": -18.712057681793233
+      }
+    },
+    "Reduce Risk": {
+      "signals": [
+        {
+          "date": "2024-04-11",
+          "gScore": 72,
+          "price": 70020.73,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-04-12",
+          "gScore": 76,
+          "price": 67148.61,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-04-21",
+          "gScore": 75,
+          "price": 64952.92,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-04-22",
+          "gScore": 72,
+          "price": 66859.17,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-04-23",
+          "gScore": 78,
+          "price": 66414.16,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-04-26",
+          "gScore": 79,
+          "price": 63742.39,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-04-27",
+          "gScore": 76,
+          "price": 63422,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-04-28",
+          "gScore": 77,
+          "price": 63108.94,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-04-29",
+          "gScore": 79,
+          "price": 63844.85,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-05-03",
+          "gScore": 74,
+          "price": 62913.03,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-05-04",
+          "gScore": 68,
+          "price": 63902.88,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-05-09",
+          "gScore": 66,
+          "price": 63073.57,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-05-10",
+          "gScore": 70,
+          "price": 60787.47,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-05-11",
+          "gScore": 71,
+          "price": 60814.63,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-05-12",
+          "gScore": 72,
+          "price": 61453.02,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-05-15",
+          "gScore": 72,
+          "price": 66244.69,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-05-17",
+          "gScore": 66,
+          "price": 67046.33,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-05-19",
+          "gScore": 66,
+          "price": 66261.62,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-05-23",
+          "gScore": 74,
+          "price": 67940.45,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-05-24",
+          "gScore": 77,
+          "price": 68547.8,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-06-02",
+          "gScore": 72,
+          "price": 67735.52,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-06-03",
+          "gScore": 67,
+          "price": 68791,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-06-04",
+          "gScore": 78,
+          "price": 70542.32,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-06-05",
+          "gScore": 76,
+          "price": 71121.11,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-06-06",
+          "gScore": 73,
+          "price": 70773.64,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-06-07",
+          "gScore": 65,
+          "price": 69324.53,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-06-08",
+          "gScore": 77,
+          "price": 69304.05,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-06-09",
+          "gScore": 73,
+          "price": 69637.87,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-06-10",
+          "gScore": 70,
+          "price": 69497.73,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-06-22",
+          "gScore": 69,
+          "price": 64235.01,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-06-23",
+          "gScore": 76,
+          "price": 63171.43,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-06-24",
+          "gScore": 78,
+          "price": 60263,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-06-25",
+          "gScore": 69,
+          "price": 61789.71,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-06-26",
+          "gScore": 75,
+          "price": 60816.68,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-06-27",
+          "gScore": 71,
+          "price": 61615.39,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-06-28",
+          "gScore": 75,
+          "price": 60313.35,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-06-29",
+          "gScore": 72,
+          "price": 60885.67,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-07-02",
+          "gScore": 65,
+          "price": 62040.22,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-07-03",
+          "gScore": 69,
+          "price": 60145.01,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-07-04",
+          "gScore": 80,
+          "price": 57042.14,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-07-05",
+          "gScore": 80,
+          "price": 56639.43,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-07-06",
+          "gScore": 80,
+          "price": 58244.75,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-07-12",
+          "gScore": 80,
+          "price": 57909.03,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-08-03",
+          "gScore": 77,
+          "price": 60674.93,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-08-04",
+          "gScore": 78,
+          "price": 58130.95,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-08-24",
+          "gScore": 72,
+          "price": 64179.63,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-08-25",
+          "gScore": 69,
+          "price": 64251.93,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-08-26",
+          "gScore": 74,
+          "price": 62840,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-08-28",
+          "gScore": 78,
+          "price": 59045.88,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-08-29",
+          "gScore": 76,
+          "price": 59364.47,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-08-30",
+          "gScore": 69,
+          "price": 59112.77,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-08-31",
+          "gScore": 71,
+          "price": 58968.37,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-02",
+          "gScore": 73,
+          "price": 59139.83,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-03",
+          "gScore": 72,
+          "price": 57468.84,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-04",
+          "gScore": 75,
+          "price": 57971,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-05",
+          "gScore": 77,
+          "price": 56156.82,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-06",
+          "gScore": 78,
+          "price": 53950.01,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-07",
+          "gScore": 78,
+          "price": 54156.33,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-08",
+          "gScore": 79,
+          "price": 54881.11,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-09",
+          "gScore": 78,
+          "price": 57053.9,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-10",
+          "gScore": 73,
+          "price": 57645.59,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-11",
+          "gScore": 78,
+          "price": 57352.79,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-12",
+          "gScore": 79,
+          "price": 58137.54,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-14",
+          "gScore": 76,
+          "price": 60012.35,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-15",
+          "gScore": 65,
+          "price": 59122.33,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-16",
+          "gScore": 66,
+          "price": 58208.75,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-20",
+          "gScore": 70,
+          "price": 63210.69,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-22",
+          "gScore": 73,
+          "price": 63577.66,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-23",
+          "gScore": 70,
+          "price": 63338.87,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-24",
+          "gScore": 79,
+          "price": 64272.93,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-26",
+          "gScore": 79,
+          "price": 65177.21,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-27",
+          "gScore": 78,
+          "price": 65789,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-28",
+          "gScore": 80,
+          "price": 65858.99,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-29",
+          "gScore": 80,
+          "price": 65600.01,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-09-30",
+          "gScore": 74,
+          "price": 63301.25,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-10-02",
+          "gScore": 70,
+          "price": 60631.37,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-10-03",
+          "gScore": 69,
+          "price": 60744.99,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-10-07",
+          "gScore": 67,
+          "price": 62200.28,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-10-08",
+          "gScore": 72,
+          "price": 62122.02,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-10-11",
+          "gScore": 68,
+          "price": 62518.75,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-10-13",
+          "gScore": 72,
+          "price": 62845.3,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-10-28",
+          "gScore": 68,
+          "price": 69924.5,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-11-09",
+          "gScore": 66,
+          "price": 76716.06,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-11-24",
+          "gScore": 79,
+          "price": 98028.18,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-11-28",
+          "gScore": 80,
+          "price": 95665.53,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-01",
+          "gScore": 68,
+          "price": 97263.18,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-03",
+          "gScore": 66,
+          "price": 95924.52,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-06",
+          "gScore": 69,
+          "price": 99891.35,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-07",
+          "gScore": 67,
+          "price": 99929.32,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-08",
+          "gScore": 72,
+          "price": 101174.99,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-10",
+          "gScore": 74,
+          "price": 96660.76,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-15",
+          "gScore": 73,
+          "price": 104447.76,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-16",
+          "gScore": 66,
+          "price": 106099.81,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-17",
+          "gScore": 68,
+          "price": 106136.99,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-18",
+          "gScore": 65,
+          "price": 100150.73,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-19",
+          "gScore": 68,
+          "price": 97372.21,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-20",
+          "gScore": 69,
+          "price": 97765,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-21",
+          "gScore": 66,
+          "price": 97230.08,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-22",
+          "gScore": 68,
+          "price": 95087.75,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-23",
+          "gScore": 75,
+          "price": 94764.56,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-25",
+          "gScore": 66,
+          "price": 99346.28,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-26",
+          "gScore": 76,
+          "price": 95669.49,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-28",
+          "gScore": 69,
+          "price": 95130.82,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-29",
+          "gScore": 70,
+          "price": 93563.35,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2024-12-30",
+          "gScore": 75,
+          "price": 92620.71,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-01-02",
+          "gScore": 77,
+          "price": 96903.19,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-01-06",
+          "gScore": 66,
+          "price": 102279.41,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-01-07",
+          "gScore": 65,
+          "price": 96941.98,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-01-08",
+          "gScore": 67,
+          "price": 95036.63,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-01-12",
+          "gScore": 66,
+          "price": 94509.62,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-01-13",
+          "gScore": 67,
+          "price": 94506.45,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-01-17",
+          "gScore": 75,
+          "price": 104107,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-01-18",
+          "gScore": 78,
+          "price": 104435,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-01-19",
+          "gScore": 69,
+          "price": 101211.13,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-01-28",
+          "gScore": 67,
+          "price": 101290,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-01-29",
+          "gScore": 66,
+          "price": 103747.25,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-01-30",
+          "gScore": 75,
+          "price": 104742.64,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-01-31",
+          "gScore": 67,
+          "price": 102411.26,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-02-05",
+          "gScore": 65,
+          "price": 96638.33,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-02-12",
+          "gScore": 66,
+          "price": 97862.53,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-02-16",
+          "gScore": 72,
+          "price": 96119.88,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-02-17",
+          "gScore": 77,
+          "price": 95781.8,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-02-18",
+          "gScore": 76,
+          "price": 95607.4,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-02-19",
+          "gScore": 75,
+          "price": 96632.03,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-02-20",
+          "gScore": 70,
+          "price": 98347.2,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-02-22",
+          "gScore": 71,
+          "price": 96582.12,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-02-25",
+          "gScore": 66,
+          "price": 88583.74,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-02-26",
+          "gScore": 69,
+          "price": 84111.78,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-02-27",
+          "gScore": 68,
+          "price": 84625.19,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-02-28",
+          "gScore": 70,
+          "price": 84297.73,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-03-05",
+          "gScore": 77,
+          "price": 90603.73,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-03-06",
+          "gScore": 78,
+          "price": 89921.85,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-03-19",
+          "gScore": 68,
+          "price": 86877.96,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-03-22",
+          "gScore": 77,
+          "price": 83852.03,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-03-23",
+          "gScore": 67,
+          "price": 86092.94,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-03-31",
+          "gScore": 67,
+          "price": 82534.32,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-04-02",
+          "gScore": 74,
+          "price": 82490.08,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-04-03",
+          "gScore": 72,
+          "price": 83174.33,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-04-04",
+          "gScore": 67,
+          "price": 83860.16,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-04-05",
+          "gScore": 75,
+          "price": 83498.25,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-04-06",
+          "gScore": 74,
+          "price": 78370.75,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-04-07",
+          "gScore": 78,
+          "price": 79140.01,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-04-19",
+          "gScore": 79,
+          "price": 85074.99,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-04-20",
+          "gScore": 76,
+          "price": 85177.34,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-04-21",
+          "gScore": 75,
+          "price": 87522.07,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-04-22",
+          "gScore": 77,
+          "price": 93489.1,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-04-27",
+          "gScore": 68,
+          "price": 93780.57,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-04-28",
+          "gScore": 66,
+          "price": 95042.57,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-04-30",
+          "gScore": 69,
+          "price": 94182.54,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-05-05",
+          "gScore": 79,
+          "price": 94733.99,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-05-06",
+          "gScore": 80,
+          "price": 96839.17,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-05-07",
+          "gScore": 79,
+          "price": 97058.32,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-05-21",
+          "gScore": 68,
+          "price": 109699.54,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-05-22",
+          "gScore": 76,
+          "price": 111722.53,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-06-05",
+          "gScore": 69,
+          "price": 101570.2,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-06-22",
+          "gScore": 78,
+          "price": 100996.87,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-07-11",
+          "gScore": 71,
+          "price": 117582.16,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-07-13",
+          "gScore": 66,
+          "price": 119130.81,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-07-14",
+          "gScore": 70,
+          "price": 119863.71,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-07-17",
+          "gScore": 69,
+          "price": 119273.69,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-07-23",
+          "gScore": 66,
+          "price": 118810.44,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-07-27",
+          "gScore": 66,
+          "price": 119465.52,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-08-01",
+          "gScore": 66,
+          "price": 113248.73,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-08-02",
+          "gScore": 69,
+          "price": 112542.74,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-09-04",
+          "gScore": 66,
+          "price": 110720.79,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-09-05",
+          "gScore": 68,
+          "price": 110670.02,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-09-06",
+          "gScore": 68,
+          "price": 110212.6,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2025-09-29",
+          "gScore": 56,
+          "price": 112062.6,
+          "originalBand": "Begin Scaling Out"
+        }
+      ],
+      "performance": {
+        "signalCount": 168,
+        "avgGScore": 72.07738095238095,
+        "avgPrice": 80560.22934523805,
+        "winRate": 63.030303030303024,
+        "avgReturn30d": 3.3029003402708006,
+        "avgReturn90d": 16.13432156682984,
+        "bestReturn": 41.615642585931965,
+        "worstReturn": -18.50175538107503
+      }
+    },
+    "High Risk": {
+      "signals": [
+        {
+          "date": "2024-04-13",
+          "gScore": 95,
+          "price": 64024.77,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-04-14",
+          "gScore": 96,
+          "price": 65777.05,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-04-15",
+          "gScore": 90,
+          "price": 63452.18,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-04-16",
+          "gScore": 90,
+          "price": 63814.94,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-04-17",
+          "gScore": 87,
+          "price": 61279.36,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-04-18",
+          "gScore": 93,
+          "price": 63513.85,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-04-19",
+          "gScore": 92,
+          "price": 63848.37,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-04-20",
+          "gScore": 94,
+          "price": 64968.87,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-04-24",
+          "gScore": 86,
+          "price": 64255.78,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-04-25",
+          "gScore": 84,
+          "price": 64484.44,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-05-20",
+          "gScore": 100,
+          "price": 71432.17,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-05-21",
+          "gScore": 100,
+          "price": 70142.84,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-05-22",
+          "gScore": 87,
+          "price": 69109.93,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-05-25",
+          "gScore": 84,
+          "price": 69289.67,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-05-26",
+          "gScore": 80,
+          "price": 68473.72,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-05-27",
+          "gScore": 90,
+          "price": 69368.72,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-07-07",
+          "gScore": 82,
+          "price": 55854.09,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-07-08",
+          "gScore": 81,
+          "price": 56699.43,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-07-09",
+          "gScore": 81,
+          "price": 58047.86,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-07-10",
+          "gScore": 81,
+          "price": 57712.59,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-07-11",
+          "gScore": 81,
+          "price": 57340.77,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-08-05",
+          "gScore": 88,
+          "price": 54029.12,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-08-06",
+          "gScore": 97,
+          "price": 56048.08,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-08-07",
+          "gScore": 96,
+          "price": 55148.1,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-08-08",
+          "gScore": 95,
+          "price": 61705.58,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-08-09",
+          "gScore": 98,
+          "price": 60862.13,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-08-10",
+          "gScore": 98,
+          "price": 60935.02,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-08-11",
+          "gScore": 100,
+          "price": 58722.49,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-08-12",
+          "gScore": 100,
+          "price": 59358.78,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-08-13",
+          "gScore": 100,
+          "price": 60603.19,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-08-14",
+          "gScore": 100,
+          "price": 58690.62,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-08-15",
+          "gScore": 100,
+          "price": 57543.61,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-08-16",
+          "gScore": 100,
+          "price": 58888.99,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-08-17",
+          "gScore": 100,
+          "price": 59497.49,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-08-18",
+          "gScore": 100,
+          "price": 58437.9,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-08-19",
+          "gScore": 100,
+          "price": 59452.67,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-08-20",
+          "gScore": 100,
+          "price": 59017.59,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-08-27",
+          "gScore": 81,
+          "price": 59439.64,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-09-01",
+          "gScore": 83,
+          "price": 57299,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-09-13",
+          "gScore": 81,
+          "price": 60543.35,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-09-25",
+          "gScore": 83,
+          "price": 63130.89,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-10-09",
+          "gScore": 82,
+          "price": 60578.28,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-10-10",
+          "gScore": 85,
+          "price": 60279.53,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-10",
+          "gScore": 85,
+          "price": 80428.92,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-11",
+          "gScore": 100,
+          "price": 88770.73,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-12",
+          "gScore": 100,
+          "price": 88035.43,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-13",
+          "gScore": 100,
+          "price": 90493.82,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-14",
+          "gScore": 100,
+          "price": 87340.4,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-15",
+          "gScore": 100,
+          "price": 91058.36,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-16",
+          "gScore": 100,
+          "price": 90636.24,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-17",
+          "gScore": 100,
+          "price": 89886.69,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-18",
+          "gScore": 100,
+          "price": 90520.3,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-19",
+          "gScore": 100,
+          "price": 92435.89,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-20",
+          "gScore": 100,
+          "price": 94393.15,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-21",
+          "gScore": 100,
+          "price": 98439.09,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-22",
+          "gScore": 100,
+          "price": 99024.03,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-23",
+          "gScore": 100,
+          "price": 97778.77,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-25",
+          "gScore": 85,
+          "price": 93000.01,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-26",
+          "gScore": 84,
+          "price": 91929.54,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-27",
+          "gScore": 84,
+          "price": 95951.19,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-11-29",
+          "gScore": 80,
+          "price": 97490.56,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-12-27",
+          "gScore": 83,
+          "price": 94171.89,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2024-12-31",
+          "gScore": 83,
+          "price": 93354.22,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-01-01",
+          "gScore": 86,
+          "price": 94383.59,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-01-03",
+          "gScore": 80,
+          "price": 98136.51,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-01-04",
+          "gScore": 84,
+          "price": 98209.85,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-01-05",
+          "gScore": 84,
+          "price": 98345.33,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-03-03",
+          "gScore": 86,
+          "price": 86161.1,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-03-04",
+          "gScore": 83,
+          "price": 87249.96,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-03-07",
+          "gScore": 86,
+          "price": 86756.98,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-03-08",
+          "gScore": 87,
+          "price": 86206.69,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-03-09",
+          "gScore": 100,
+          "price": 80699.17,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-03-10",
+          "gScore": 100,
+          "price": 78544.71,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-03-11",
+          "gScore": 96,
+          "price": 82914.51,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-03-12",
+          "gScore": 94,
+          "price": 83659.43,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-03-13",
+          "gScore": 100,
+          "price": 81073.43,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-03-14",
+          "gScore": 94,
+          "price": 83980.49,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-03-15",
+          "gScore": 94,
+          "price": 84351.46,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-03-16",
+          "gScore": 99,
+          "price": 82562.57,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-03-17",
+          "gScore": 80,
+          "price": 84011.4,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-03-18",
+          "gScore": 83,
+          "price": 82698.76,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-03-20",
+          "gScore": 85,
+          "price": 84183.42,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-03-21",
+          "gScore": 96,
+          "price": 84061.96,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-04-08",
+          "gScore": 80,
+          "price": 76251.64,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-04-09",
+          "gScore": 88,
+          "price": 82594.75,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-04-10",
+          "gScore": 96,
+          "price": 79552.34,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-04-11",
+          "gScore": 91,
+          "price": 83380.47,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-04-12",
+          "gScore": 90,
+          "price": 85271.01,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-04-13",
+          "gScore": 94,
+          "price": 83733.07,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-04-14",
+          "gScore": 90,
+          "price": 84590.36,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-04-15",
+          "gScore": 93,
+          "price": 83629.78,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-04-16",
+          "gScore": 86,
+          "price": 84028.72,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-04-18",
+          "gScore": 81,
+          "price": 84466.47,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-09-26",
+          "gScore": 85,
+          "price": 109108.44,
+          "originalBand": "High Risk"
+        },
+        {
+          "date": "2025-09-27",
+          "gScore": 75,
+          "price": 109366.69,
+          "originalBand": "Increase Selling"
+        },
+        {
+          "date": "2025-09-28",
+          "gScore": 77,
+          "price": 109371.61,
+          "originalBand": "Increase Selling"
+        }
+      ],
+      "performance": {
+        "signalCount": 96,
+        "avgGScore": 90.91666666666667,
+        "avgPrice": 76789.36822916665,
+        "winRate": 61.29032258064516,
+        "avgReturn30d": 4.323948765232995,
+        "avgReturn90d": 16.23455504839159,
+        "bestReturn": 25.717073101640835,
+        "worstReturn": -10.637822860479787
+      }
+    }
+  },
+  "strategyPerformance": {
+    "DCA": {
+      "monthlyAmount": 1000,
+      "totalInvested": 25000,
+      "totalBTC": 0.3924507312716307,
+      "finalValue": 43979.04931820025,
+      "totalReturn": 75.91619727280099,
+      "trades": [
+        {
+          "date": "2023-09-25",
+          "price": 26296.08,
+          "amount": 1000,
+          "btcPurchased": 0.038028481811737715,
+          "totalBTC": 0.038028481811737715,
+          "totalInvested": 1000
+        },
+        {
+          "date": "2023-10-25",
+          "price": 34506.35,
+          "amount": 1000,
+          "btcPurchased": 0.028980173214495305,
+          "totalBTC": 0.06700865502623302,
+          "totalInvested": 2000
+        },
+        {
+          "date": "2023-11-24",
+          "price": 37745.84,
+          "amount": 1000,
+          "btcPurchased": 0.02649298571710154,
+          "totalBTC": 0.09350164074333456,
+          "totalInvested": 3000
+        },
+        {
+          "date": "2023-12-24",
+          "price": 43025.03,
+          "amount": 1000,
+          "btcPurchased": 0.023242284781672437,
+          "totalBTC": 0.116743925525007,
+          "totalInvested": 4000
+        },
+        {
+          "date": "2024-01-23",
+          "price": 39878.3,
+          "amount": 1000,
+          "btcPurchased": 0.025076294626400823,
+          "totalBTC": 0.14182022015140783,
+          "totalInvested": 5000
+        },
+        {
+          "date": "2024-02-22",
+          "price": 51258.7,
+          "amount": 1000,
+          "btcPurchased": 0.01950888337004255,
+          "totalBTC": 0.16132910352145038,
+          "totalInvested": 6000
+        },
+        {
+          "date": "2024-03-23",
+          "price": 63998.86,
+          "amount": 1000,
+          "btcPurchased": 0.015625278325270168,
+          "totalBTC": 0.17695438184672055,
+          "totalInvested": 7000
+        },
+        {
+          "date": "2024-04-22",
+          "price": 66859.17,
+          "amount": 1000,
+          "btcPurchased": 0.01495681145907136,
+          "totalBTC": 0.1919111933057919,
+          "totalInvested": 8000
+        },
+        {
+          "date": "2024-05-22",
+          "price": 69109.93,
+          "amount": 1000,
+          "btcPurchased": 0.014469700663855398,
+          "totalBTC": 0.2063808939696473,
+          "totalInvested": 9000
+        },
+        {
+          "date": "2024-06-22",
+          "price": 64235.01,
+          "amount": 1000,
+          "btcPurchased": 0.015567834425494757,
+          "totalBTC": 0.22194872839514204,
+          "totalInvested": 10000
+        },
+        {
+          "date": "2024-07-22",
+          "price": 67558.22,
+          "amount": 1000,
+          "btcPurchased": 0.014802047774497314,
+          "totalBTC": 0.23675077616963935,
+          "totalInvested": 11000
+        },
+        {
+          "date": "2024-08-21",
+          "price": 61163.28,
+          "amount": 1000,
+          "btcPurchased": 0.016349679088498853,
+          "totalBTC": 0.2531004552581382,
+          "totalInvested": 12000
+        },
+        {
+          "date": "2024-09-20",
+          "price": 63210.69,
+          "amount": 1000,
+          "btcPurchased": 0.015820108908793748,
+          "totalBTC": 0.26892056416693194,
+          "totalInvested": 13000
+        },
+        {
+          "date": "2024-10-20",
+          "price": 69014.86,
+          "amount": 1000,
+          "btcPurchased": 0.014489633102204367,
+          "totalBTC": 0.2834101972691363,
+          "totalInvested": 14000
+        },
+        {
+          "date": "2024-11-19",
+          "price": 92435.89,
+          "amount": 1000,
+          "btcPurchased": 0.010818308775952717,
+          "totalBTC": 0.294228506045089,
+          "totalInvested": 15000
+        },
+        {
+          "date": "2024-12-19",
+          "price": 97372.21,
+          "amount": 1000,
+          "btcPurchased": 0.01026987063352059,
+          "totalBTC": 0.3044983766786096,
+          "totalInvested": 16000
+        },
+        {
+          "date": "2025-01-18",
+          "price": 104435,
+          "amount": 1000,
+          "btcPurchased": 0.00957533393977115,
+          "totalBTC": 0.31407371061838074,
+          "totalInvested": 17000
+        },
+        {
+          "date": "2025-02-17",
+          "price": 95781.8,
+          "amount": 1000,
+          "btcPurchased": 0.01044039681860228,
+          "totalBTC": 0.324514107436983,
+          "totalInvested": 18000
+        },
+        {
+          "date": "2025-03-19",
+          "price": 86877.96,
+          "amount": 1000,
+          "btcPurchased": 0.011510399185247903,
+          "totalBTC": 0.3360245066222309,
+          "totalInvested": 19000
+        },
+        {
+          "date": "2025-04-19",
+          "price": 85074.99,
+          "amount": 1000,
+          "btcPurchased": 0.011754335792457923,
+          "totalBTC": 0.3477788424146888,
+          "totalInvested": 20000
+        },
+        {
+          "date": "2025-05-19",
+          "price": 105616.18,
+          "amount": 1000,
+          "btcPurchased": 0.009468246247876037,
+          "totalBTC": 0.3572470886625648,
+          "totalInvested": 21000
+        },
+        {
+          "date": "2025-06-18",
+          "price": 104915.6,
+          "amount": 1000,
+          "btcPurchased": 0.009531471010984068,
+          "totalBTC": 0.3667785596735489,
+          "totalInvested": 22000
+        },
+        {
+          "date": "2025-07-18",
+          "price": 118023.05,
+          "amount": 1000,
+          "btcPurchased": 0.00847292117937979,
+          "totalBTC": 0.3752514808529287,
+          "totalInvested": 23000
+        },
+        {
+          "date": "2025-08-17",
+          "price": 117488.6,
+          "amount": 1000,
+          "btcPurchased": 0.008511464090984145,
+          "totalBTC": 0.38376294494391283,
+          "totalInvested": 24000
+        },
+        {
+          "date": "2025-09-16",
+          "price": 115104.12,
+          "amount": 1000,
+          "btcPurchased": 0.008687786327717896,
+          "totalBTC": 0.3924507312716307,
+          "totalInvested": 25000
+        }
+      ]
+    },
+    "Risk-Based": {
+      "monthlyAmount": 1000,
+      "totalInvested": 11750,
+      "totalBTC": 0.1913370205790953,
+      "finalValue": 21441.724002346924,
+      "totalReturn": 82.48275746678233,
+      "trades": [
+        {
+          "date": "2023-09-25",
+          "price": 26296.08,
+          "band": "Moderate Buying",
+          "mappedBand": "Moderate Buying",
+          "amount": 750,
+          "btcPurchased": 0.028521361358803288,
+          "totalBTC": 0.028521361358803288,
+          "totalInvested": 750
+        },
+        {
+          "date": "2023-10-25",
+          "price": 34506.35,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold & Wait",
+          "amount": 500,
+          "btcPurchased": 0.014490086607247652,
+          "totalBTC": 0.04301144796605094,
+          "totalInvested": 1250
+        },
+        {
+          "date": "2023-11-24",
+          "price": 37745.84,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold & Wait",
+          "amount": 500,
+          "btcPurchased": 0.01324649285855077,
+          "totalBTC": 0.05625794082460171,
+          "totalInvested": 1750
+        },
+        {
+          "date": "2023-12-24",
+          "price": 43025.03,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold & Wait",
+          "amount": 500,
+          "btcPurchased": 0.011621142390836219,
+          "totalBTC": 0.06787908321543792,
+          "totalInvested": 2250
+        },
+        {
+          "date": "2024-01-23",
+          "price": 39878.3,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold & Wait",
+          "amount": 500,
+          "btcPurchased": 0.012538147313200411,
+          "totalBTC": 0.08041723052863833,
+          "totalInvested": 2750
+        },
+        {
+          "date": "2024-02-22",
+          "price": 51258.7,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold & Wait",
+          "amount": 500,
+          "btcPurchased": 0.009754441685021275,
+          "totalBTC": 0.09017167221365961,
+          "totalInvested": 3250
+        },
+        {
+          "date": "2024-03-23",
+          "price": 63998.86,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold & Wait",
+          "amount": 500,
+          "btcPurchased": 0.007812639162635084,
+          "totalBTC": 0.0979843113762947,
+          "totalInvested": 3750
+        },
+        {
+          "date": "2024-04-22",
+          "price": 66859.17,
+          "band": "Reduce Risk",
+          "mappedBand": "Reduce Risk",
+          "amount": 250,
+          "btcPurchased": 0.00373920286476784,
+          "totalBTC": 0.10172351424106253,
+          "totalInvested": 4000
+        },
+        {
+          "date": "2024-05-22",
+          "price": 69109.93,
+          "band": "High Risk",
+          "mappedBand": "High Risk",
+          "amount": 500,
+          "btcPurchased": 0.007234850331927699,
+          "totalBTC": 0.10895836457299023,
+          "totalInvested": 4500
+        },
+        {
+          "date": "2024-06-22",
+          "price": 64235.01,
+          "band": "Reduce Risk",
+          "mappedBand": "Reduce Risk",
+          "amount": 250,
+          "btcPurchased": 0.003891958606373689,
+          "totalBTC": 0.11285032317936391,
+          "totalInvested": 4750
+        },
+        {
+          "date": "2024-07-22",
+          "price": 67558.22,
+          "band": "Moderate Buying",
+          "mappedBand": "Moderate Buying",
+          "amount": 750,
+          "btcPurchased": 0.011101535830872986,
+          "totalBTC": 0.1239518590102369,
+          "totalInvested": 5500
+        },
+        {
+          "date": "2024-08-21",
+          "price": 61163.28,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold & Wait",
+          "amount": 500,
+          "btcPurchased": 0.008174839544249426,
+          "totalBTC": 0.13212669855448633,
+          "totalInvested": 6000
+        },
+        {
+          "date": "2024-09-20",
+          "price": 63210.69,
+          "band": "Reduce Risk",
+          "mappedBand": "Reduce Risk",
+          "amount": 250,
+          "btcPurchased": 0.003955027227198437,
+          "totalBTC": 0.13608172578168476,
+          "totalInvested": 6250
+        },
+        {
+          "date": "2024-10-20",
+          "price": 69014.86,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold & Wait",
+          "amount": 500,
+          "btcPurchased": 0.007244816551102183,
+          "totalBTC": 0.14332654233278694,
+          "totalInvested": 6750
+        },
+        {
+          "date": "2024-11-19",
+          "price": 92435.89,
+          "band": "High Risk",
+          "mappedBand": "High Risk",
+          "amount": 500,
+          "btcPurchased": 0.005409154387976359,
+          "totalBTC": 0.1487356967207633,
+          "totalInvested": 7250
+        },
+        {
+          "date": "2024-12-19",
+          "price": 97372.21,
+          "band": "Reduce Risk",
+          "mappedBand": "Reduce Risk",
+          "amount": 250,
+          "btcPurchased": 0.0025674676583801476,
+          "totalBTC": 0.15130316437914346,
+          "totalInvested": 7500
+        },
+        {
+          "date": "2025-01-18",
+          "price": 104435,
+          "band": "Reduce Risk",
+          "mappedBand": "Reduce Risk",
+          "amount": 250,
+          "btcPurchased": 0.0023938334849427875,
+          "totalBTC": 0.15369699786408625,
+          "totalInvested": 7750
+        },
+        {
+          "date": "2025-02-17",
+          "price": 95781.8,
+          "band": "Reduce Risk",
+          "mappedBand": "Reduce Risk",
+          "amount": 250,
+          "btcPurchased": 0.00261009920465057,
+          "totalBTC": 0.15630709706873683,
+          "totalInvested": 8000
+        },
+        {
+          "date": "2025-03-19",
+          "price": 86877.96,
+          "band": "Reduce Risk",
+          "mappedBand": "Reduce Risk",
+          "amount": 250,
+          "btcPurchased": 0.0028775997963119758,
+          "totalBTC": 0.1591846968650488,
+          "totalInvested": 8250
+        },
+        {
+          "date": "2025-04-19",
+          "price": 85074.99,
+          "band": "Reduce Risk",
+          "mappedBand": "Reduce Risk",
+          "amount": 250,
+          "btcPurchased": 0.002938583948114481,
+          "totalBTC": 0.16212328081316327,
+          "totalInvested": 8500
+        },
+        {
+          "date": "2025-05-19",
+          "price": 105616.18,
+          "band": "Moderate Buying",
+          "mappedBand": "Moderate Buying",
+          "amount": 750,
+          "btcPurchased": 0.007101184685907027,
+          "totalBTC": 0.1692244654990703,
+          "totalInvested": 9250
+        },
+        {
+          "date": "2025-06-18",
+          "price": 104915.6,
+          "band": "Moderate Buying",
+          "mappedBand": "Moderate Buying",
+          "amount": 750,
+          "btcPurchased": 0.00714860325823805,
+          "totalBTC": 0.17637306875730835,
+          "totalInvested": 10000
+        },
+        {
+          "date": "2025-07-18",
+          "price": 118023.05,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold & Wait",
+          "amount": 500,
+          "btcPurchased": 0.004236460589689895,
+          "totalBTC": 0.18060952934699825,
+          "totalInvested": 10500
+        },
+        {
+          "date": "2025-08-17",
+          "price": 117488.6,
+          "band": "Moderate Buying",
+          "mappedBand": "Moderate Buying",
+          "amount": 750,
+          "btcPurchased": 0.0063835980682381095,
+          "totalBTC": 0.18699312741523635,
+          "totalInvested": 11250
+        },
+        {
+          "date": "2025-09-16",
+          "price": 115104.12,
+          "band": "Hold & Wait",
+          "mappedBand": "Hold & Wait",
+          "amount": 500,
+          "btcPurchased": 0.004343893163858948,
+          "totalBTC": 0.1913370205790953,
+          "totalInvested": 11750
+        }
+      ]
+    }
+  },
+  "summary": {
+    "totalDataPoints": 734,
+    "riskBasedReturn": 82.48275746678233,
+    "dcaReturn": 75.91619727280099,
+    "outperformance": 6.566560193981346,
+    "bestPerformingBand": "Moderate Buying",
+    "worstPerformingBand": "Regular DCA Buying"
+  }
+}

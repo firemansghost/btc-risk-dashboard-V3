@@ -248,7 +248,7 @@ export default function RiskBandAnalysis() {
           <div>
             <h4 className="font-semibold mb-2">✅ <strong>Bitcoin G-Score</strong> Risk Bands Work as Intended</h4>
             <p className="text-sm opacity-90">
-              <strong>Bitcoin G-Score</strong> buying signals (Begin Scaling In) show the highest returns (9.18%) and win rates (69.6%), 
+              <strong>Bitcoin G-Score</strong> buying signals (Aggressive Buying) show the highest returns (9.18%) and win rates (69.6%), 
               validating our <strong>Bitcoin G-Score</strong> risk assessment methodology.
             </p>
           </div>

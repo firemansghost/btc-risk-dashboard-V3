@@ -16,6 +16,7 @@
     "etl:gscore-validate": "node scripts/etl/validate-gscore-quality.mjs",
     "etl:gscore-storage": "node scripts/etl/manage-gscore-storage.mjs",
     "etl:gscore-enhance": "node scripts/etl/enhanced-gscore-tracking.mjs",
+    "etl:backtesting": "node scripts/etl/weekly-backtesting.mjs",
     "og:png": "node scripts/gen-og.mjs",
     "webhook:dev": "node tools/webhook-receiver-dev.mjs",
     "test": "vitest run"
