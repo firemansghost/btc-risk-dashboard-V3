@@ -153,7 +153,7 @@ export default function AlertsPage() {
                 </p>
                 <ul className="text-sm text-gray-500 mt-2 space-y-1">
                   <li>• ETF 21-day flows cross zero (with deadband filtering)</li>
-                  <li>• Risk band changes between Hold/Neutral, Buy, Sell, etc.</li>
+                  <li>• Risk band changes between Aggressive Buying, Hold & Wait, High Risk, etc.</li>
                 </ul>
               </div>
             )}
@@ -204,7 +204,7 @@ export default function AlertsPage() {
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Risk Band Changes</h4>
               <p>
-                Tracks changes in the overall risk band (Hold/Neutral, Buy, Sell, etc.) by comparing 
+                Tracks changes in the overall risk band (Aggressive Buying, Hold & Wait, High Risk, etc.) by comparing 
                 yesterday's band from history.csv with today's band from latest.json.
               </p>
             </div>

@@ -33,7 +33,7 @@ export default function BacktestingInsights() {
     {
       category: 'Risk Bands',
       title: 'Bitcoin G-Score Buying Signals Show Higher Returns',
-      description: 'Bitcoin G-Score Begin Scaling In signals had 69.6% win rate with 9.18% average 30-day returns, validating our risk bands.',
+      description: 'Bitcoin G-Score Aggressive Buying signals had 69.6% win rate with 9.18% average 30-day returns, validating our risk bands.',
       metrics: {
         winRate: '69.6%',
         avgReturn: '9.18%',

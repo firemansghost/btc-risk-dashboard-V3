@@ -106,12 +106,12 @@ A short, practical guide to what GhostGauge is, how it speaks, and how to presen
 
 ## Risk bands (display + copy — align with app defaults)
 
-• 0–15 Aggressive Buying
-• 15–35 Regular DCA Buying
-• 35–55 Hold / Neutral
-• 55–70 Begin Scaling Out
-• 70–85 Increase Selling
-• 85–100 Maximum Selling
+• 0–14 Aggressive Buying
+• 15–34 Regular DCA Buying
+• 35–49 Moderate Buying
+• 50–64 Hold & Wait
+• 65–79 Reduce Risk
+• 80–100 High Risk
 
 *(Note: these bands are configurable in app config; keep brand copy in sync with the live config and use live config as main source)*
 
@@ -139,7 +139,7 @@ The GrayGhost Risk Score (GRS v3) blends five pillars into a transparent 0–100
 Drivers — Liquidity · Momentum · Term Structure · Macro · Social
 
 ### Band legend (match live config)
-0–15 Aggressive Buying · 15–35 Regular DCA Buying · 35–55 Hold/Neutral · 55–70 Begin Scaling Out · 70–85 Increase Selling · 85–100 Maximum Selling
+0–14 Aggressive Buying · 15–34 Regular DCA Buying · 35–49 Moderate Buying · 50–64 Hold & Wait · 65–79 Reduce Risk · 80–100 High Risk
 
 ### Methodology CTA
 Methodology (GRS v3) — inputs, normalization, weights, and staleness handling
@@ -159,7 +159,7 @@ Bitcoin G-Score just crossed 70 — High risk. Drivers + chart on GhostGauge. gh
 W/W Δ: 58 → 66. Liquidity led; term structure cooled. Full breakdown in Drivers. ghostgauge.com
 
 ### Multi-asset tease (future)
-ETH G-Score: 48 (Hold/Neutral). Compare BTC/ETH drivers on GhostGauge.
+ETH G-Score: 48 (Hold & Wait). Compare BTC/ETH drivers on GhostGauge.
 
 ### Persona-seasoned alt (sparingly)
 "The street's loud. Signals aren't. BTC G-Score 72 — High."

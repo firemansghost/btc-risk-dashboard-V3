@@ -267,7 +267,7 @@ export default function RiskBandAnalysis() {
         <h3 className="text-lg font-semibold text-gray-900 mb-4">🎯 Strategy Recommendations</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="border border-gray-200 rounded-lg p-4">
-            <h4 className="font-semibold text-green-800 mb-2">🟢 <strong>Bitcoin G-Score</strong> Begin Scaling In (G-Score &lt; 50)</h4>
+            <h4 className="font-semibold text-green-800 mb-2">🟢 <strong>Bitcoin G-Score</strong> Aggressive Buying (G-Score 0-14)</h4>
             <ul className="text-sm text-gray-700 space-y-1">
               <li>• Increase allocation by 50-100%</li>
               <li>• Consider lump sum investments</li>
@@ -276,7 +276,7 @@ export default function RiskBandAnalysis() {
             </ul>
           </div>
           <div className="border border-gray-200 rounded-lg p-4">
-            <h4 className="font-semibold text-yellow-800 mb-2">🟡 <strong>Bitcoin G-Score</strong> Begin Scaling Out (G-Score &gt; 70)</h4>
+            <h4 className="font-semibold text-red-800 mb-2">🔴 <strong>Bitcoin G-Score</strong> High Risk (G-Score 80-100)</h4>
             <ul className="text-sm text-gray-700 space-y-1">
               <li>• Reduce allocation by 25-50%</li>
               <li>• Take partial profits</li>

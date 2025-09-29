@@ -79,7 +79,7 @@ const glossaryTerms: GlossaryTerm[] = [
   {
     term: 'Risk Bands',
     definition: 'Categories that classify market conditions based on the Bitcoin G-Score. They help determine appropriate investment actions.',
-    example: 'G-Score < 50 = "Begin Scaling In" (buying opportunity), G-Score > 70 = "Begin Scaling Out" (reduce risk).',
+    example: 'G-Score 0-14 = "Aggressive Buying" (max allocation), G-Score 80-100 = "High Risk" (significant risk of correction).',
     category: 'concept'
   },
   {
@@ -91,7 +91,7 @@ const glossaryTerms: GlossaryTerm[] = [
   {
     term: 'Forward Returns',
     definition: 'The actual returns that occurred after a specific signal or date. Used to validate whether signals were accurate.',
-    example: 'If a "Begin Scaling In" signal occurred on Jan 1st, forward returns measure what happened in the following 30 days.',
+    example: 'If an "Aggressive Buying" signal occurred on Jan 1st, forward returns measure what happened in the following 30 days.',
     category: 'metric'
   },
   {
