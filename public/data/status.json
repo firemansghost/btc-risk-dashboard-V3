@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-09-28T11:17:11.932Z",
+  "updated_at": "2025-09-29T11:19:35.082Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -29,7 +29,7 @@
       "name": "Stooq",
       "ok": true,
       "url": "https://stooq.com/",
-      "ms": 1004,
+      "ms": 1154,
       "fallback": false,
       "cache_used": false,
       "fallback_used": false
@@ -38,43 +38,43 @@
       "name": "History: trend_valuation",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 12
+      "total_rows": 13
     },
     {
       "name": "History: stablecoins",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 32
+      "total_rows": 33
     },
     {
       "name": "History: etf_flows",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 427
+      "total_rows": 428
     },
     {
       "name": "History: net_liquidity",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 83
+      "total_rows": 84
     },
     {
       "name": "History: term_leverage",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 27
+      "total_rows": 28
     },
     {
       "name": "History: macro_overlay",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 12
+      "total_rows": 13
     },
     {
       "name": "History: social_interest",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 12
+      "total_rows": 13
     }
   ],
   "factors_computed": 8,
@@ -83,7 +83,7 @@
     "status": "success",
     "source": "Stooq",
     "fallback_used": false,
-    "latency_ms": 1004
+    "latency_ms": 1154
   },
   "satoshis_per_dollar": {
     "status": "success",
@@ -91,16 +91,16 @@
     "derived": true
   },
   "etf_schema_hash": "cd3800",
-  "etf_schema_last_check": "2025-09-28T11:17:01.100Z",
+  "etf_schema_last_check": "2025-09-29T11:19:23.624Z",
   "price_history": {
     "total_rows": 729,
-    "oldest_date": "2023-09-29",
-    "newest_date": "2025-09-28",
+    "oldest_date": "2023-09-30",
+    "newest_date": "2025-09-29",
     "alpha_vantage_backfill": null,
     "coinbase_daily_update": {
       "status": "success",
       "rows_fetched": 14,
-      "ms": 71
+      "ms": 210
     },
     "drift_check": null
   }
