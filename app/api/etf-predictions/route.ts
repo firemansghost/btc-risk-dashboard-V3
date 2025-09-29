@@ -47,6 +47,23 @@ function generatePredictions(etfData: any) {
     return rowDate >= weekAgo;
   });
   
+  // If no recent data, use the most recent data available
+  if (recentData.length === 0) {
+    console.log('No recent data found, using latest available data');
+    // Get the most recent data for each ETF
+    const latestBySymbol = data.reduce((acc: any, row: any) => {
+      if (!acc[row.symbol] || new Date(row.date) > new Date(acc[row.symbol].date)) {
+        acc[row.symbol] = row;
+      }
+      return acc;
+    }, {});
+    
+    // Convert to array and use as "recent" data
+    Object.values(latestBySymbol).forEach((row: any) => {
+      recentData.push(row);
+    });
+  }
+  
   // Group by ETF symbol
   const etfGroups = recentData.reduce((acc: any, row: any) => {
     if (!acc[row.symbol]) acc[row.symbol] = [];
@@ -182,7 +199,9 @@ export async function GET() {
     const etfData = await fetchRealEtfData();
     
     // Generate predictions based on real data
+    console.log('ETF Predictions API: Data loaded, records:', etfData.data.length);
     const realPredictions = generatePredictions(etfData);
+    console.log('ETF Predictions API: Generated predictions - individual:', realPredictions.individual.length, 'daily:', realPredictions.daily.length);
     
     const predictions = {
       timestamp: new Date().toISOString(),
@@ -219,7 +238,14 @@ export async function GET() {
       insights: generateInsights(realPredictions)
     };
 
-    return NextResponse.json(predictions);
+    // Return the data in the format expected by the frontend
+    return NextResponse.json({
+      daily: realPredictions.daily,
+      individual: realPredictions.individual,
+      weekly: realPredictions.weekly,
+      insights: generateInsights(realPredictions),
+      lastUpdated: new Date().toISOString()
+    });
   } catch (error) {
     console.error('ETF Predictions API Error:', error);
     return NextResponse.json(
