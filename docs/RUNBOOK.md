@@ -59,6 +59,55 @@ npm run test
 - **Artifacts**: Updates `public/data/latest.json`, `status.json`, `history.csv`
 - **Notifications**: Optional webhook alerts on failures
 
+## Configuration Management
+
+### Risk Band Configuration
+
+**Single Source of Truth**: `config/dashboard-config.json`
+
+The risk band system uses a centralized configuration approach:
+
+#### Configuration File Structure
+```json
+{
+  "bands": [
+    {
+      "key": "aggressive_buy",
+      "label": "Aggressive Buying", 
+      "range": [0, 14],
+      "color": "green",
+      "recommendation": "Max allocation",
+      "order": 1
+    }
+    // ... additional bands
+  ]
+}
+```
+
+#### How It Works
+- **UI Components**: Load bands from `dashboard-config.json` via `lib/riskConfig.ts`
+- **ETL Pipeline**: Loads bands from `dashboard-config.json` in `scripts/etl/compute.mjs`
+- **Consistency**: All components use identical ranges and colors
+- **Fallbacks**: Robust error handling prevents system failures
+
+#### Updating Risk Bands
+1. **Edit Configuration**: Modify `config/dashboard-config.json`
+2. **Validate Ranges**: Ensure non-overlapping ranges (e.g., 0-14, 15-34, 35-49)
+3. **Deploy Changes**: Push to repository (no code changes needed)
+4. **Automatic Update**: All components will use new configuration
+
+#### Best Practices
+- **Non-overlapping Ranges**: Avoid gaps or overlaps between bands
+- **Consistent Colors**: Use semantic color names (`green`, `yellow`, `orange`, `red`)
+- **Clear Labels**: Use descriptive band names and recommendations
+- **Version Control**: All changes are tracked in Git
+
+#### Troubleshooting
+- **Configuration Errors**: Check JSON syntax in `dashboard-config.json`
+- **Missing Bands**: System falls back to hardcoded defaults
+- **Inconsistent Display**: Verify all components load from same source
+- **ETL Failures**: Check that `loadRiskBands()` succeeds in compute.mjs
+
 ## Required Secrets
 
 ### Production (Vercel)

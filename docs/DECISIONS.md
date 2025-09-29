@@ -2,6 +2,38 @@
 
 Key technical choices and rationale for the Bitcoin Risk Dashboard.
 
+## 2025-01-27: Risk Band Configuration - Single Source of Truth
+
+**Decision**: Centralized risk band configuration in `config/dashboard-config.json`
+
+**Context**: Risk band ranges and colors were hardcoded in multiple locations, leading to inconsistencies
+
+**Options Considered**:
+1. Keep hardcoded values in each component (current state)
+2. Centralize in `lib/riskConfig.ts` only
+3. Use `config/dashboard-config.json` as single source of truth
+
+**Chosen Solution**: `config/dashboard-config.json` as single source of truth
+
+**Rationale**:
+- **Consistency**: All components (UI, ETL, API) use identical configuration
+- **Maintainability**: Update ranges/colors in one place without code changes
+- **Transparency**: Configuration is visible and version-controlled
+- **Flexibility**: Easy to adjust risk bands without deployment
+- **Robustness**: Fallback mechanisms prevent system failures
+
+**Implementation**:
+- `lib/riskConfig.ts`: Loads bands from `dashboard-config.json` for UI components
+- `scripts/etl/compute.mjs`: Loads bands from `dashboard-config.json` for ETL processing
+- All components now use consistent colors and non-overlapping ranges
+- G-score calculation remains unaffected (bands only used for display/labeling)
+
+**Benefits**:
+- Single source of truth eliminates inconsistencies
+- Easy maintenance without code changes
+- Consistent user experience across all components
+- Robust fallback mechanisms ensure system reliability
+
 ## 2025-09-17: Adopted Brand Card v1.1 (GhostGauge) as single source of truth for voice, naming, bands
 
 ## 2025-09-17: ETL Commits Artifacts

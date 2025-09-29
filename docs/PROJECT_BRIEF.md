@@ -89,9 +89,9 @@ The Bitcoin Risk Dashboard provides institutional-grade risk assessment for Bitc
 
 ## Risk Bands
 
-- **0-15**: Aggressive Buying (extreme opportunity)
-- **15-35**: Regular DCA Buying (good opportunity)
-- **35-55**: Hold/Neutral (wait and watch)
-- **55-70**: Begin Scaling Out (reduce exposure)
-- **70-85**: Increase Selling (significant caution)
-- **85-100**: Maximum Selling (extreme caution)
+- **0-14**: Aggressive Buying (extreme opportunity)
+- **15-34**: Regular DCA Buying (good opportunity)
+- **35-49**: Moderate Buying (reduce position size)
+- **50-64**: Hold & Wait (hold existing positions)
+- **65-79**: Reduce Risk (consider taking profits)
+- **80-100**: High Risk (significant risk of correction)

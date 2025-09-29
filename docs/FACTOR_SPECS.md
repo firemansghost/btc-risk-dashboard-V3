@@ -130,7 +130,7 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 2. **Staleness Filtering**: Only fresh factors contribute to composite
 3. **Weight Normalization**: Weights re-normalized when factors are stale
 4. **Weighted Sum**: Composite = Σ(factor_score × normalized_weight)
-5. **Band Assignment**: Composite score mapped to risk band (0-15, 15-35, etc.)
+5. **Band Assignment**: Composite score mapped to risk band (0-14, 15-34, 35-49, 50-64, 65-79, 80-100)
 
 ## Data Quality Controls
 
