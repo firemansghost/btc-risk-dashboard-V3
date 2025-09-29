@@ -669,7 +669,23 @@ export default function ETFPredictionsPage() {
         }
         
         const result = await response.json();
-        setData(result);
+        console.log('ETF Predictions API Response:', result);
+        
+        // Validate the response structure
+        if (!result || typeof result !== 'object') {
+          throw new Error('Invalid API response format');
+        }
+        
+        // Ensure we have the expected structure
+        const validatedData = {
+          daily: result.daily || [],
+          individual: result.individual || [],
+          weekly: result.weekly || { thisWeek: 0, nextWeek: 0, confidence: 0 },
+          insights: result.insights || [],
+          lastUpdated: result.lastUpdated || new Date().toISOString()
+        };
+        
+        setData(validatedData);
       } catch (err) {
         console.error('Error fetching ETF predictions:', err);
         setError(err instanceof Error ? err.message : 'Failed to load predictions');
@@ -725,21 +741,21 @@ export default function ETFPredictionsPage() {
               <ErrorCard message={error} onRetry={handleRetry} />
               <ErrorCard message={error} onRetry={handleRetry} />
             </div>
-          ) : data ? (
+          ) : data && (data.daily?.length > 0 || data.individual?.length > 0) ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
               <ForecastCard 
                 title="Tomorrow's Flow"
-                prediction={`$${data.daily[0]?.flow.toFixed(1) || 0}M`}
-                confidence={data.daily[0]?.confidence || 0}
-                trend={data.daily[0]?.trend || 'stable'}
+                prediction={`$${data.daily?.[0]?.flow?.toFixed(1) || 0}M`}
+                confidence={data.daily?.[0]?.confidence || 0}
+                trend={data.daily?.[0]?.trend || 'stable'}
                 description="Expected daily flow for tomorrow"
                 lastUpdated={data.lastUpdated}
                 dataPoints={data.individual?.length || 0}
               />
               <ForecastCard 
                 title="This Week"
-                prediction={`$${data.weekly.thisWeek.toFixed(1)}M`}
-                confidence={data.weekly.confidence}
+                prediction={`$${data.weekly?.thisWeek?.toFixed(1) || 0}M`}
+                confidence={data.weekly?.confidence || 0}
                 trend="stable"
                 description="7-day rolling sum forecast"
                 lastUpdated={data.lastUpdated}
@@ -747,8 +763,8 @@ export default function ETFPredictionsPage() {
               />
               <ForecastCard 
                 title="Next Week"
-                prediction={`$${data.weekly.nextWeek.toFixed(1)}M`}
-                confidence={data.weekly.confidence}
+                prediction={`$${data.weekly?.nextWeek?.toFixed(1) || 0}M`}
+                confidence={data.weekly?.confidence || 0}
                 trend="stable"
                 description="Following week projection"
                 lastUpdated={data.lastUpdated}
@@ -756,8 +772,28 @@ export default function ETFPredictionsPage() {
               />
             </div>
           ) : (
-            <div className="text-center py-8">
-              <div className="text-gray-500">No data available</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                <div className="text-center">
+                  <div className="text-yellow-600 text-2xl mb-2">⚠️</div>
+                  <div className="text-sm text-yellow-800">No prediction data available</div>
+                  <div className="text-xs text-yellow-600 mt-1">Check back later for updated forecasts</div>
+                </div>
+              </div>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                <div className="text-center">
+                  <div className="text-yellow-600 text-2xl mb-2">📊</div>
+                  <div className="text-sm text-yellow-800">Data processing</div>
+                  <div className="text-xs text-yellow-600 mt-1">ETF flow data is being analyzed</div>
+                </div>
+              </div>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                <div className="text-center">
+                  <div className="text-yellow-600 text-2xl mb-2">🔄</div>
+                  <div className="text-sm text-yellow-800">Updates daily</div>
+                  <div className="text-xs text-yellow-600 mt-1">Fresh predictions at 11:00 UTC</div>
+                </div>
+              </div>
             </div>
           )}
         </div>
