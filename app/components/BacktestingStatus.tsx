@@ -35,11 +35,18 @@ export default function BacktestingStatus() {
         const response = await fetch('/data/weekly_backtesting_report.json');
         if (response.ok) {
           const data = await response.json();
+          console.log('Backtesting data loaded:', {
+            timestamp: data.timestamp,
+            lastUpdated: data.lastUpdated,
+            hasTimestamp: !!data.timestamp,
+            hasLastUpdated: !!data.lastUpdated
+          });
           setBacktestingData(data);
         } else {
           setError('Backtesting data not available');
         }
       } catch (err) {
+        console.error('Failed to load backtesting data:', err);
         setError('Failed to load backtesting data');
       } finally {
         setLoading(false);
@@ -51,7 +58,16 @@ export default function BacktestingStatus() {
 
   const formatDate = (dateString: string) => {
     try {
+      if (!dateString) return 'Unknown';
+      
       const date = new Date(dateString);
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid date string:', dateString);
+        return 'Invalid Date';
+      }
+      
       return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
@@ -60,14 +76,24 @@ export default function BacktestingStatus() {
         minute: '2-digit',
         timeZoneName: 'short'
       });
-    } catch {
+    } catch (error) {
+      console.warn('Date formatting error:', error, 'for date:', dateString);
       return 'Unknown';
     }
   };
 
   const getDataAge = (dateString: string) => {
     try {
+      if (!dateString) return 'Unknown';
+      
       const date = new Date(dateString);
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid date string for age calculation:', dateString);
+        return 'Unknown';
+      }
+      
       const now = new Date();
       const diffMs = now.getTime() - date.getTime();
       const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -83,14 +109,24 @@ export default function BacktestingStatus() {
       } else {
         return 'Just now';
       }
-    } catch {
+    } catch (error) {
+      console.warn('Date age calculation error:', error, 'for date:', dateString);
       return 'Unknown';
     }
   };
 
   const getStatusColor = (dateString: string) => {
     try {
+      if (!dateString) return 'text-gray-600 bg-gray-50 border-gray-200';
+      
       const date = new Date(dateString);
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid date string for status color:', dateString);
+        return 'text-red-600 bg-red-50 border-red-200';
+      }
+      
       const now = new Date();
       const diffMs = now.getTime() - date.getTime();
       const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -98,7 +134,8 @@ export default function BacktestingStatus() {
       if (diffDays <= 1) return 'text-green-600 bg-green-50 border-green-200';
       if (diffDays <= 7) return 'text-yellow-600 bg-yellow-50 border-yellow-200';
       return 'text-red-600 bg-red-50 border-red-200';
-    } catch {
+    } catch (error) {
+      console.warn('Status color calculation error:', error, 'for date:', dateString);
       return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
