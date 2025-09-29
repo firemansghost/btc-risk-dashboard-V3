@@ -15,8 +15,8 @@
     },
     "onchain": {
       "dataPoints": 33,
-      "mean": 73.73,
-      "stdDev": 18.35,
+      "mean": 73.45,
+      "stdDev": 18.12,
       "min": 35,
       "max": 98,
       "range": 63,
@@ -26,8 +26,8 @@
     },
     "stablecoins": {
       "dataPoints": 32,
-      "mean": 65.28,
-      "stdDev": 17.49,
+      "mean": 65.5,
+      "stdDev": 17.25,
       "min": 35,
       "max": 95,
       "range": 60,
