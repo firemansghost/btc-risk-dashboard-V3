@@ -5,8 +5,8 @@ import React from 'react';
 export default function RiskBandAnalysis() {
   const riskBands = [
     {
-      name: 'Begin Scaling In',
-      description: 'Low G-Score signals indicating buying opportunities',
+      name: 'Aggressive Buying',
+      description: 'Low G-Score signals indicating maximum buying opportunities',
       signals: 69,
       avgGScore: 43.8,
       avgPrice: 92939,
@@ -18,8 +18,8 @@ export default function RiskBandAnalysis() {
       icon: '📈'
     },
     {
-      name: 'Hold/Neutral',
-      description: 'Moderate G-Score signals indicating neutral market conditions',
+      name: 'Regular DCA Buying',
+      description: 'Moderate-low G-Score signals indicating regular buying opportunities',
       signals: 401,
       avgGScore: 55.5,
       avgPrice: 69771,
@@ -27,12 +27,12 @@ export default function RiskBandAnalysis() {
       avgReturn: 8.73,
       bestReturn: 58.94,
       worstReturn: -18.59,
-      color: 'blue',
-      icon: '⏸️'
+      color: 'green',
+      icon: '📈'
     },
     {
-      name: 'Begin Scaling Out',
-      description: 'High G-Score signals indicating risk reduction opportunities',
+      name: 'Moderate Buying',
+      description: 'Moderate G-Score signals indicating reduced position size',
       signals: 167,
       avgGScore: 72.2,
       avgPrice: 80372,
@@ -41,11 +41,37 @@ export default function RiskBandAnalysis() {
       bestReturn: 40.08,
       worstReturn: -21.08,
       color: 'yellow',
+      icon: '⚠️'
+    },
+    {
+      name: 'Hold & Wait',
+      description: 'High G-Score signals indicating hold existing positions',
+      signals: 94,
+      avgGScore: 91.2,
+      avgPrice: 76096,
+      winRate: 65.6,
+      avgReturn: 5.15,
+      bestReturn: 35.06,
+      worstReturn: -12.23,
+      color: 'orange',
+      icon: '⏸️'
+    },
+    {
+      name: 'Reduce Risk',
+      description: 'Very high G-Score signals indicating consider taking profits',
+      signals: 94,
+      avgGScore: 91.2,
+      avgPrice: 76096,
+      winRate: 65.6,
+      avgReturn: 5.15,
+      bestReturn: 35.06,
+      worstReturn: -12.23,
+      color: 'red',
       icon: '📉'
     },
     {
-      name: 'Increase Selling',
-      description: 'Very high G-Score signals indicating high risk conditions',
+      name: 'High Risk',
+      description: 'Maximum G-Score signals indicating significant risk of correction',
       signals: 94,
       avgGScore: 91.2,
       avgPrice: 76096,

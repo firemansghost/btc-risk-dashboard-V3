@@ -176,7 +176,7 @@ export default function BacktestingInsights() {
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
             <div>
-              <div className="font-medium text-green-900">Begin Scaling In</div>
+              <div className="font-medium text-green-900">Aggressive Buying</div>
               <div className="text-sm text-green-700">Best performing band</div>
             </div>
             <div className="text-right">
@@ -185,21 +185,21 @@ export default function BacktestingInsights() {
             </div>
           </div>
           
-          <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
             <div>
-              <div className="font-medium text-blue-900">Hold/Neutral</div>
-              <div className="text-sm text-blue-700">Steady performance</div>
+              <div className="font-medium text-green-900">Regular DCA Buying</div>
+              <div className="text-sm text-green-700">Steady performance</div>
             </div>
             <div className="text-right">
-              <div className="text-lg font-bold text-blue-600">62.1%</div>
-              <div className="text-sm text-blue-600">Win Rate</div>
+              <div className="text-lg font-bold text-green-600">62.1%</div>
+              <div className="text-sm text-green-600">Win Rate</div>
             </div>
           </div>
           
           <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
             <div>
-              <div className="font-medium text-yellow-900">Begin Scaling Out</div>
-              <div className="text-sm text-yellow-700">Reducing risk</div>
+              <div className="font-medium text-yellow-900">Moderate Buying</div>
+              <div className="text-sm text-yellow-700">Reducing position size</div>
             </div>
             <div className="text-right">
               <div className="text-lg font-bold text-yellow-600">64.6%</div>
@@ -207,10 +207,32 @@ export default function BacktestingInsights() {
             </div>
           </div>
           
+          <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg">
+            <div>
+              <div className="font-medium text-orange-900">Hold & Wait</div>
+              <div className="text-sm text-orange-700">Hold existing positions</div>
+            </div>
+            <div className="text-right">
+              <div className="text-lg font-bold text-orange-600">65.6%</div>
+              <div className="text-sm text-orange-600">Win Rate</div>
+            </div>
+          </div>
+          
           <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
             <div>
-              <div className="font-medium text-red-900">Increase Selling</div>
-              <div className="text-sm text-red-700">High risk signals</div>
+              <div className="font-medium text-red-900">Reduce Risk</div>
+              <div className="text-sm text-red-700">Consider taking profits</div>
+            </div>
+            <div className="text-right">
+              <div className="text-lg font-bold text-red-600">65.6%</div>
+              <div className="text-sm text-red-600">Win Rate</div>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
+            <div>
+              <div className="font-medium text-red-900">High Risk</div>
+              <div className="text-sm text-red-700">Significant risk of correction</div>
             </div>
             <div className="text-right">
               <div className="text-lg font-bold text-red-600">65.6%</div>
