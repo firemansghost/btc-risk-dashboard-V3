@@ -206,7 +206,7 @@
     { 
       "key": "aggressive_buy", 
       "label": "Aggressive Buying", 
-      "range": [0, 15], 
+      "range": [0, 14], 
       "color": "green", 
       "recommendation": "Max allocation",
       "order": 1
@@ -214,7 +214,7 @@
     { 
       "key": "dca_buy", 
       "label": "Regular DCA Buying", 
-      "range": [15, 35], 
+      "range": [15, 34], 
       "color": "green", 
       "recommendation": "Continue regular purchases",
       "order": 2

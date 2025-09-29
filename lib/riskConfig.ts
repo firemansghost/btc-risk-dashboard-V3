@@ -121,8 +121,8 @@ const DEFAULT_CONFIG: RiskConfig = {
 
   // Risk band thresholds - CORRECTED NON-OVERLAPPING RANGES
   bands: [
-    { key: 'aggressive_buy', label: 'Aggressive Buying', range: [0, 15], color: 'green', recommendation: 'Max allocation' },
-    { key: 'dca_buy', label: 'Regular DCA Buying', range: [15, 35], color: 'green', recommendation: 'Continue regular purchases' },
+    { key: 'aggressive_buy', label: 'Aggressive Buying', range: [0, 14], color: 'green', recommendation: 'Max allocation' },
+    { key: 'dca_buy', label: 'Regular DCA Buying', range: [15, 34], color: 'green', recommendation: 'Continue regular purchases' },
     { key: 'moderate_buy', label: 'Moderate Buying', range: [35, 49], color: 'yellow', recommendation: 'Reduce position size' },
     { key: 'hold_wait', label: 'Hold & Wait', range: [50, 64], color: 'orange', recommendation: 'Hold existing positions' },
     { key: 'reduce_risk', label: 'Reduce Risk', range: [65, 79], color: 'red', recommendation: 'Consider taking profits' },
