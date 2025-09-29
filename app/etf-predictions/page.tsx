@@ -15,18 +15,21 @@ interface ETFPrediction {
 
 interface DailyPrediction {
   date: string;
-  predicted: number;
+  flow: number;
   confidence: number;
   trend: 'up' | 'down' | 'stable';
 }
 
 interface PredictionData {
-  individualPredictions: ETFPrediction[];
-  dailyPredictions: DailyPrediction[];
-  totalCurrent: number;
-  totalPredicted: number;
-  insights: string[];
-  lastUpdated: string;
+  individual: ETFPrediction[];
+  daily: DailyPrediction[];
+  weekly: {
+    thisWeek: number;
+    nextWeek: number;
+    confidence: number;
+  };
+  insights?: string[];
+  lastUpdated?: string;
 }
 
 // Loading component
@@ -209,7 +212,7 @@ function PredictionChart({ data, loading, error }: {
     );
   }
 
-  if (!data || !data.dailyPredictions || data.dailyPredictions.length === 0) {
+  if (!data || !data.daily || data.daily.length === 0) {
     return (
       <div className="w-full">
         <div className="mb-4">
@@ -226,8 +229,8 @@ function PredictionChart({ data, loading, error }: {
     );
   }
 
-  const predictions = data.dailyPredictions.slice(0, 7); // Show next 7 days
-  const maxFlow = Math.max(...predictions.map(p => p.predicted));
+  const predictions = data.daily.slice(0, 7); // Show next 7 days
+  const maxFlow = Math.max(...predictions.map(p => p.flow));
   const avgConfidence = Math.round(
     predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length
   );
@@ -246,8 +249,8 @@ function PredictionChart({ data, loading, error }: {
             <div key={index} className="flex flex-col items-center flex-1 min-w-0">
               <div 
                 className="w-full max-w-6 sm:max-w-8 bg-gradient-to-t from-blue-500 to-blue-300 rounded-t opacity-80"
-                style={{ height: `${Math.max((point.predicted / maxFlow) * 180, 20)}px` }}
-                title={`${point.date}: $${point.predicted.toFixed(1)}M (${point.confidence}% confidence)`}
+                style={{ height: `${Math.max((point.flow / maxFlow) * 180, 20)}px` }}
+                title={`${point.date}: $${point.flow.toFixed(1)}M (${point.confidence}% confidence)`}
               />
               <div className="text-xs text-gray-600 mt-1 text-center truncate w-full">
                 {new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -369,7 +372,7 @@ function IndividualETFPredictions({ data, loading, error }: {
     );
   }
 
-  if (!data || !data.individualPredictions || data.individualPredictions.length === 0) {
+  if (!data || !data.individual || data.individual.length === 0) {
     return (
       <div className="w-full">
         <div className="mb-4">
@@ -386,7 +389,7 @@ function IndividualETFPredictions({ data, loading, error }: {
     );
   }
 
-  const etfPredictions = data.individualPredictions;
+  const etfPredictions = data.individual;
 
   return (
     <div className="w-full">
@@ -444,7 +447,7 @@ function IndividualETFPredictions({ data, loading, error }: {
       
       <div className="mt-4 p-3 bg-blue-50 rounded-lg">
         <div className="text-sm text-blue-800">
-          <strong>Total Predicted Flow:</strong> ${data.totalPredicted.toFixed(1)}M (vs ${data.totalCurrent.toFixed(1)}M current)
+          <strong>Total Predicted Flow:</strong> ${data.weekly.nextWeek.toFixed(1)}M (vs ${data.weekly.thisWeek.toFixed(1)}M current)
         </div>
         <div className="text-xs text-blue-600 mt-1">
           Based on trend analysis of individual ETF flows
@@ -529,9 +532,9 @@ function ModelPerformance({ data, loading, error }: {
               <div className="text-xs text-gray-600">Method</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
-                {data?.individualPredictions?.length || 0}
-              </div>
+            <div className="text-2xl font-bold text-green-600">
+              {data?.individual?.length || 0}
+            </div>
               <div className="text-xs text-gray-600">ETFs Tracked</div>
             </div>
             <div className="text-center">
@@ -726,30 +729,30 @@ export default function ETFPredictionsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
               <ForecastCard 
                 title="Tomorrow's Flow"
-                prediction={`$${data.dailyPredictions[0]?.predicted.toFixed(1) || 0}M`}
-                confidence={data.dailyPredictions[0]?.confidence || 0}
-                trend={data.dailyPredictions[0]?.trend || 'stable'}
+                prediction={`$${data.daily[0]?.flow.toFixed(1) || 0}M`}
+                confidence={data.daily[0]?.confidence || 0}
+                trend={data.daily[0]?.trend || 'stable'}
                 description="Expected daily flow for tomorrow"
                 lastUpdated={data.lastUpdated}
-                dataPoints={data.individualPredictions?.length || 0}
+                dataPoints={data.individual?.length || 0}
               />
               <ForecastCard 
                 title="This Week"
-                prediction={`$${data.totalPredicted.toFixed(1)}M`}
-                confidence={Math.round(data.dailyPredictions.reduce((sum, p) => sum + p.confidence, 0) / data.dailyPredictions.length)}
+                prediction={`$${data.weekly.thisWeek.toFixed(1)}M`}
+                confidence={data.weekly.confidence}
                 trend="stable"
                 description="7-day rolling sum forecast"
                 lastUpdated={data.lastUpdated}
-                dataPoints={data.individualPredictions?.length || 0}
+                dataPoints={data.individual?.length || 0}
               />
               <ForecastCard 
                 title="Next Week"
-                prediction={`$${data.dailyPredictions.slice(1, 7).reduce((sum, p) => sum + p.predicted, 0).toFixed(1)}M`}
-                confidence={Math.round(data.dailyPredictions.slice(1, 7).reduce((sum, p) => sum + p.confidence, 0) / 6)}
+                prediction={`$${data.weekly.nextWeek.toFixed(1)}M`}
+                confidence={data.weekly.confidence}
                 trend="stable"
                 description="Following week projection"
                 lastUpdated={data.lastUpdated}
-                dataPoints={data.individualPredictions?.length || 0}
+                dataPoints={data.individual?.length || 0}
               />
             </div>
           ) : (
