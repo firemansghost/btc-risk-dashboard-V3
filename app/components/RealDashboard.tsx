@@ -402,7 +402,10 @@ export default function RealDashboard() {
                       Cycle: {formatSignedNumber(cycleValue)}
                     </span>
                     <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                      Small cycle-context nudge based on long-trend residuals. Usually ±0–2 pts; may be disabled.
+                      {hasValue ? 
+                        `Long-term cycle position adjustment. Based on deviation from Bitcoin's power-law trend. Currently ${formatSignedNumber(cycleValue)} points.` :
+                        `Long-term cycle position adjustment (inactive - conditions not met). Activates when Bitcoin deviates >30% from its long-term power-law trend.`
+                      }
                       <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
                     </div>
                   </div>
@@ -434,7 +437,10 @@ export default function RealDashboard() {
                       Spike: {formatSignedNumber(spikeValue)}
                     </span>
                     <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                      One-day move vs recent volatility. Nudges the score a few points when markets jump.
+                      {hasValue ? 
+                        `Daily volatility adjustment. Based on today's move vs recent volatility. Currently ${formatSignedNumber(spikeValue)} points.` :
+                        `Daily volatility adjustment (inactive - conditions not met). Activates when daily move exceeds 2x recent volatility.`
+                      }
                       <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
                     </div>
                   </div>

@@ -125,9 +125,9 @@ export default function MethodologyPage() {
                   Adjustment
                 </h4>
                 <p className="text-sm text-gray-700">
-                  A gentle context nudge derived from a long-term power-law residual of Bitcoin's price trend. 
-                  Interprets "where we are in the cycle." Small magnitude (capped), e.g., +1.2 or −0.8. 
-                  It doesn't replace factor signals—just a slight tilt.
+                  A gentle context nudge derived from Bitcoin's deviation from its long-term power-law trend. 
+                  Calculates where current price sits relative to Bitcoin's historical growth pattern. 
+                  Only activates when deviation exceeds 30% from the trend line. Small magnitude (capped at ±2.0 points).
                 </p>
               </div>
               
@@ -139,8 +139,9 @@ export default function MethodologyPage() {
                   Adjustment
                 </h4>
                 <p className="text-sm text-gray-700">
-                  A fast-path nudge when the recent daily move is a large outlier versus short-term volatility (EWMA). 
-                  Large up-spikes → small risk increase; large down-spikes → small risk decrease. Also capped.
+                  A fast-path nudge when today's price move is a significant outlier versus recent volatility (20-day EWMA). 
+                  Only activates when daily move exceeds 2x recent volatility (Z-score &gt;2.0). 
+                  Large up-spikes → small risk increase; large down-spikes → small risk decrease. Capped at ±1.5 points.
                 </p>
               </div>
             </div>

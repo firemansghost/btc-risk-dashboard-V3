@@ -273,7 +273,6 @@ async function main() {
   console.log("Computing real risk factors...");
   const factorResults = await computeAllFactors(y.close);
   const composite = factorResults.composite;
-  const band = riskBand(composite);
 
   // 2.1) Update factor history tracking
   console.log("Updating factor history...");
@@ -631,7 +630,74 @@ async function main() {
     console.log("No new alerts generated");
   }
 
-  // 3) Upsert history.csv
+  // 3) Upsert history.csv (will be updated after adjustments are calculated)
+
+  // 4) latest.json with real factor data
+  // Calculate cycle and spike adjustments
+  const nowIso = new Date().toISOString();
+  
+  // Import adjustment calculation functions
+  const { 
+    calculateCycleAdjustment, 
+    calculateSpikeAdjustment, 
+    loadHistoricalPrices, 
+    calculateDailyReturns 
+  } = await import('./adjustments.mjs');
+  
+  // Load historical data for adjustments
+  const historicalPrices = await loadHistoricalPrices();
+  let cycle_adjustment, spike_adjustment;
+  
+  if (historicalPrices && historicalPrices.length > 365) {
+    // Calculate cycle adjustment (power-law trend)
+    const cycleResult = calculateCycleAdjustment(historicalPrices, y.close);
+    cycle_adjustment = {
+      ...cycleResult,
+      last_utc: nowIso,
+      source: 'ETL calculation'
+    };
+    
+    // Calculate spike adjustment (volatility)
+    const dailyReturns = calculateDailyReturns(historicalPrices);
+    const currentReturn = dailyReturns.length > 0 ? dailyReturns[dailyReturns.length - 1] : 0;
+    const spikeResult = calculateSpikeAdjustment(dailyReturns, currentReturn);
+    spike_adjustment = {
+      ...spikeResult,
+      ref_close: historicalPrices[historicalPrices.length - 2] || y.close,
+      spot: y.close,
+      last_utc: nowIso,
+      source: 'ETL calculation'
+    };
+  } else {
+    // Fallback when insufficient historical data
+    cycle_adjustment = {
+      adj_pts: 0,
+      residual_z: null,
+      last_utc: nowIso,
+      source: 'ETL fallback',
+      reason: 'insufficient_historical_data'
+    };
+    spike_adjustment = {
+      adj_pts: 0,
+      r_1d: 0,
+      sigma: 0,
+      z: 0,
+      ref_close: y.close,
+      spot: y.close,
+      last_utc: nowIso,
+      source: 'ETL fallback',
+      reason: 'insufficient_historical_data'
+    };
+  }
+
+  // Apply adjustments to composite score
+  const adjustedComposite = composite + (cycle_adjustment.adj_pts || 0) + (spike_adjustment.adj_pts || 0);
+  const finalComposite = Math.max(0, Math.min(100, Math.round(adjustedComposite * 10) / 10));
+  
+  // Calculate risk band using adjusted composite score
+  const band = riskBand(finalComposite);
+
+  // 3) Upsert history.csv with adjusted composite score
   const header = "date,score,band,price_usd";
   const existing = await readText("public/data/history.csv");
   let lines = existing ? existing.trim().split("\n") : [header];
@@ -641,37 +707,15 @@ async function main() {
 
   const already = lines.some(l => l.startsWith(y.date + ","));
   if (!already) {
-    lines.push(`${y.date},${composite},${band.name},${y.close.toFixed(2)}`);
+    lines.push(`${y.date},${finalComposite},${band.name},${y.close.toFixed(2)}`);
   }
   await fs.writeFile("public/data/history.csv", lines.join("\n"));
-
-  // 4) latest.json with real factor data
-  // Compose adjustments in richer object form per docs
-  const nowIso = new Date().toISOString();
-  const cycle_adjustment = {
-    adj_pts: 0,
-    residual_z: null,
-    last_utc: nowIso,
-    source: 'ETL fallback',
-    reason: 'disabled'
-  };
-  const spike_adjustment = {
-    adj_pts: 0,
-    r_1d: 0,
-    sigma: 0,
-    z: 0,
-    ref_close: y.close,
-    spot: y.close,
-    last_utc: nowIso,
-    source: 'ETL fallback',
-    reason: 'disabled'
-  };
 
   const latest = {
     ok: true,
     version: "v3.1.0",
     as_of_utc: new Date().toISOString(),
-    composite_score: composite,
+    composite_score: finalComposite,
     composite_raw: composite,
     band: {
       key: band.key || band.name.toLowerCase().replace(/[^a-z0-9]/g, '_'),
