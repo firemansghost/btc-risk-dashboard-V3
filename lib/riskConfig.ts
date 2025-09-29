@@ -119,7 +119,7 @@ const DEFAULT_CONFIG: RiskConfig = {
     { key: 'social_interest', label: 'Social Interest', pillar: 'social', weight: 10, enabled: true }
   ],
 
-  // Risk band thresholds
+  // Risk band thresholds - CORRECTED NON-OVERLAPPING RANGES
   bands: [
     { key: 'aggressive_buy', label: 'Aggressive Buying', range: [0, 15], color: 'green', recommendation: 'Max allocation' },
     { key: 'dca_buy', label: 'Regular DCA Buying', range: [15, 35], color: 'green', recommendation: 'Continue regular purchases' },
