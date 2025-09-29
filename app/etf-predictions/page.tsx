@@ -1,14 +1,91 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-// Inline ForecastCard component
-function ForecastCard({ title, prediction, confidence, trend, description }: {
+// Types for our data
+interface ETFPrediction {
+  symbol: string;
+  name: string;
+  current: number;
+  predicted: number;
+  confidence: number;
+  trend: 'up' | 'down' | 'stable';
+  marketShare: number;
+}
+
+interface DailyPrediction {
+  date: string;
+  predicted: number;
+  confidence: number;
+  trend: 'up' | 'down' | 'stable';
+}
+
+interface PredictionData {
+  individualPredictions: ETFPrediction[];
+  dailyPredictions: DailyPrediction[];
+  totalCurrent: number;
+  totalPredicted: number;
+  insights: string[];
+  lastUpdated: string;
+}
+
+// Loading component
+function LoadingCard() {
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-gray-300 animate-pulse">
+      <div className="flex items-center justify-between mb-4">
+        <div className="h-6 bg-gray-200 rounded w-32"></div>
+        <div className="w-8 h-8 bg-gray-200 rounded"></div>
+      </div>
+      <div className="mb-4">
+        <div className="h-8 bg-gray-200 rounded w-24 mb-2"></div>
+        <div className="h-4 bg-gray-200 rounded w-20"></div>
+      </div>
+      <div className="h-4 bg-gray-200 rounded w-full"></div>
+    </div>
+  );
+}
+
+// Error component
+function ErrorCard({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  return (
+    <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+      <div className="flex items-center">
+        <div className="text-red-600 mr-3">⚠️</div>
+        <div>
+          <h3 className="text-sm font-medium text-red-800">Unable to load predictions</h3>
+          <p className="text-sm text-red-600 mt-1">{message}</p>
+          {onRetry && (
+            <button 
+              onClick={onRetry}
+              className="mt-2 text-sm text-red-800 hover:text-red-900 underline"
+            >
+              Try again
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Improved ForecastCard with real data
+function ForecastCard({ 
+  title, 
+  prediction, 
+  confidence, 
+  trend, 
+  description,
+  lastUpdated,
+  dataPoints 
+}: {
   title: string;
   prediction: string;
-  confidence: string;
+  confidence: number;
   trend: 'up' | 'down' | 'stable';
   description?: string;
+  lastUpdated?: string;
+  dataPoints?: number;
 }) {
   const getTrendIcon = () => {
     switch (trend) {
@@ -29,14 +106,30 @@ function ForecastCard({ title, prediction, confidence, trend, description }: {
   };
 
   const getConfidenceColor = () => {
-    const conf = parseInt(confidence);
-    if (conf >= 80) return 'text-green-600';
-    if (conf >= 60) return 'text-yellow-600';
+    if (confidence >= 80) return 'text-green-600';
+    if (confidence >= 60) return 'text-yellow-600';
     return 'text-red-600';
   };
 
+  const formatLastUpdated = (dateString?: string) => {
+    if (!dateString) return 'Unknown';
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / (1000 * 60));
+      
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
+      return date.toLocaleDateString();
+    } catch {
+      return 'Unknown';
+    }
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500">
+    <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500 hover:shadow-xl transition-shadow duration-200">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
         <span className="text-2xl">{getTrendIcon()}</span>
@@ -45,87 +138,119 @@ function ForecastCard({ title, prediction, confidence, trend, description }: {
       <div className="mb-4">
         <div className="text-3xl font-bold text-gray-900 mb-1">{prediction}</div>
         <div className={`text-sm font-medium ${getConfidenceColor()}`}>
-          {confidence} confidence
+          {confidence}% confidence
         </div>
+        {dataPoints && (
+          <div className="text-xs text-gray-500 mt-1">
+            Based on {dataPoints} ETFs tracked
+          </div>
+        )}
       </div>
       
       {description && (
         <p className="text-sm text-gray-600">{description}</p>
       )}
       
-      <div className="mt-4 flex items-center">
+      <div className="mt-4 flex items-center justify-between">
         <div className={`text-sm font-medium ${getTrendColor()}`}>
           {trend === 'up' && 'Increasing'}
           {trend === 'down' && 'Decreasing'}
           {trend === 'stable' && 'Stable'}
         </div>
-        <div className="ml-auto text-xs text-gray-500">
-          Updated 2 min ago
+        <div className="text-xs text-gray-500">
+          {lastUpdated ? `Updated ${formatLastUpdated(lastUpdated)}` : 'Unknown'}
         </div>
       </div>
     </div>
   );
 }
 
-// PredictionChart component for time series visualization
-function PredictionChart() {
-  // Mock data for demonstration
-  const historicalData = [
-    { date: '2025-09-21', flow: 45.2 },
-    { date: '2025-09-22', flow: 52.1 },
-    { date: '2025-09-23', flow: 38.7 },
-    { date: '2025-09-24', flow: 61.3 },
-    { date: '2025-09-25', flow: 48.9 },
-    { date: '2025-09-26', flow: 55.4 },
-    { date: '2025-09-27', flow: 42.8 },
-  ];
+// Real data PredictionChart component
+function PredictionChart({ data, loading, error }: { 
+  data?: PredictionData; 
+  loading: boolean; 
+  error?: string; 
+}) {
+  if (loading) {
+    return (
+      <div className="w-full">
+        <div className="mb-4">
+          <h4 className="text-lg font-semibold text-gray-900">7-Day Flow Forecast</h4>
+          <p className="text-sm text-gray-600">Loading predictions...</p>
+        </div>
+        <div className="h-64 bg-gray-50 rounded-lg p-4 animate-pulse">
+          <div className="flex items-end justify-between h-full">
+            {[...Array(7)].map((_, i) => (
+              <div key={i} className="flex flex-col items-center">
+                <div className="w-8 bg-gray-200 rounded-t" style={{ height: `${Math.random() * 150 + 50}px` }} />
+                <div className="w-4 h-3 bg-gray-200 rounded mt-1"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const predictionData = [
-    { date: '2025-09-28', flow: 45.2, confidence: 85, type: 'prediction' },
-    { date: '2025-09-29', flow: 48.7, confidence: 78, type: 'prediction' },
-    { date: '2025-09-30', flow: 51.3, confidence: 72, type: 'prediction' },
-    { date: '2025-10-01', flow: 49.8, confidence: 68, type: 'prediction' },
-  ];
+  if (error) {
+    return (
+      <div className="w-full">
+        <div className="mb-4">
+          <h4 className="text-lg font-semibold text-gray-900">7-Day Flow Forecast</h4>
+          <p className="text-sm text-red-600">Unable to load chart data</p>
+        </div>
+        <div className="h-64 bg-red-50 rounded-lg p-4 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-red-600 text-2xl mb-2">⚠️</div>
+            <div className="text-sm text-red-800">{error}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const maxFlow = Math.max(
-    ...historicalData.map(d => d.flow),
-    ...predictionData.map(d => d.flow)
+  if (!data || !data.dailyPredictions || data.dailyPredictions.length === 0) {
+    return (
+      <div className="w-full">
+        <div className="mb-4">
+          <h4 className="text-lg font-semibold text-gray-900">7-Day Flow Forecast</h4>
+          <p className="text-sm text-gray-600">No prediction data available</p>
+        </div>
+        <div className="h-64 bg-gray-50 rounded-lg p-4 flex items-center justify-center">
+          <div className="text-center text-gray-500">
+            <div className="text-2xl mb-2">📊</div>
+            <div className="text-sm">No data to display</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const predictions = data.dailyPredictions.slice(0, 7); // Show next 7 days
+  const maxFlow = Math.max(...predictions.map(p => p.predicted));
+  const avgConfidence = Math.round(
+    predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length
   );
 
   return (
     <div className="w-full">
       <div className="mb-4">
         <h4 className="text-lg font-semibold text-gray-900">7-Day Flow Forecast</h4>
-        <p className="text-sm text-gray-600">Historical data and AI predictions</p>
+        <p className="text-sm text-gray-600">Trend-based predictions using historical data</p>
       </div>
       
       {/* Chart Container */}
-      <div className="relative h-64 bg-gray-50 rounded-lg p-4">
-        <div className="flex items-end justify-between h-full">
-          {/* Historical Data */}
-          {historicalData.map((point, index) => (
-            <div key={index} className="flex flex-col items-center">
+      <div className="relative h-48 sm:h-64 bg-gray-50 rounded-lg p-3 sm:p-4">
+        <div className="flex items-end justify-between h-full gap-1">
+          {predictions.map((point, index) => (
+            <div key={index} className="flex flex-col items-center flex-1 min-w-0">
               <div 
-                className="w-8 bg-blue-500 rounded-t"
-                style={{ height: `${(point.flow / maxFlow) * 200}px` }}
-                title={`${point.date}: $${point.flow}M`}
+                className="w-full max-w-6 sm:max-w-8 bg-gradient-to-t from-blue-500 to-blue-300 rounded-t opacity-80"
+                style={{ height: `${Math.max((point.predicted / maxFlow) * 180, 20)}px` }}
+                title={`${point.date}: $${point.predicted.toFixed(1)}M (${point.confidence}% confidence)`}
               />
-              <div className="text-xs text-gray-600 mt-1">
-                {new Date(point.date).getDate()}
-              </div>
-            </div>
-          ))}
-          
-          {/* Prediction Data */}
-          {predictionData.map((point, index) => (
-            <div key={`pred-${index}`} className="flex flex-col items-center">
-              <div 
-                className="w-8 bg-gradient-to-t from-purple-500 to-purple-300 rounded-t opacity-80"
-                style={{ height: `${(point.flow / maxFlow) * 200}px` }}
-                title={`${point.date}: $${point.flow}M (${point.confidence}% confidence)`}
-              />
-              <div className="text-xs text-purple-600 mt-1 font-medium">
-                {new Date(point.date).getDate()}
+              <div className="text-xs text-gray-600 mt-1 text-center truncate w-full">
+                {new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </div>
             </div>
           ))}
@@ -133,7 +258,7 @@ function PredictionChart() {
         
         {/* Y-axis labels */}
         <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-gray-500">
-          <span>${maxFlow}M</span>
+          <span>${maxFlow.toFixed(0)}M</span>
           <span>${Math.round(maxFlow * 0.75)}M</span>
           <span>${Math.round(maxFlow * 0.5)}M</span>
           <span>${Math.round(maxFlow * 0.25)}M</span>
@@ -144,11 +269,7 @@ function PredictionChart() {
       {/* Legend */}
       <div className="flex items-center justify-center mt-4 space-x-6">
         <div className="flex items-center">
-          <div className="w-4 h-4 bg-blue-500 rounded mr-2"></div>
-          <span className="text-sm text-gray-600">Historical</span>
-        </div>
-        <div className="flex items-center">
-          <div className="w-4 h-4 bg-gradient-to-r from-purple-500 to-purple-300 rounded mr-2"></div>
+          <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-blue-300 rounded mr-2"></div>
           <span className="text-sm text-gray-600">Predictions</span>
         </div>
       </div>
@@ -156,69 +277,26 @@ function PredictionChart() {
       {/* Confidence Indicators */}
       <div className="mt-4 grid grid-cols-2 gap-4">
         <div className="text-center">
-          <div className="text-2xl font-bold text-green-600">85%</div>
+          <div className="text-2xl font-bold text-green-600">
+            {predictions[0]?.confidence || 0}%
+          </div>
           <div className="text-xs text-gray-600">Tomorrow's Confidence</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-blue-600">72%</div>
-          <div className="text-xs text-gray-600">7-Day Confidence</div>
+          <div className="text-2xl font-bold text-blue-600">{avgConfidence}%</div>
+          <div className="text-xs text-gray-600">7-Day Average</div>
         </div>
       </div>
     </div>
   );
 }
 
-// IndividualETFPredictions component for per-ETF forecasts
-function IndividualETFPredictions() {
-  // Mock data for individual ETF predictions
-  const etfPredictions = [
-    {
-      symbol: 'IBIT',
-      name: 'iShares Bitcoin Trust',
-      currentFlow: 25.3,
-      predictedFlow: 28.7,
-      confidence: 82,
-      trend: 'up',
-      marketShare: 35.2
-    },
-    {
-      symbol: 'FBTC',
-      name: 'Fidelity Wise Origin Bitcoin Fund',
-      currentFlow: 18.9,
-      predictedFlow: 22.1,
-      confidence: 78,
-      trend: 'up',
-      marketShare: 26.3
-    },
-    {
-      symbol: 'BITB',
-      name: 'Bitwise Bitcoin ETF',
-      currentFlow: 12.4,
-      predictedFlow: 11.8,
-      confidence: 85,
-      trend: 'down',
-      marketShare: 17.2
-    },
-    {
-      symbol: 'ARKB',
-      name: 'ARK 21Shares Bitcoin ETF',
-      currentFlow: 8.7,
-      predictedFlow: 9.2,
-      confidence: 79,
-      trend: 'up',
-      marketShare: 12.1
-    },
-    {
-      symbol: 'BTCO',
-      name: 'Invesco Galaxy Bitcoin ETF',
-      currentFlow: 6.2,
-      predictedFlow: 6.8,
-      confidence: 76,
-      trend: 'up',
-      marketShare: 8.6
-    }
-  ];
-
+// Real data IndividualETFPredictions component
+function IndividualETFPredictions({ data, loading, error }: { 
+  data?: PredictionData; 
+  loading: boolean; 
+  error?: string; 
+}) {
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'up': return '↗️';
@@ -243,6 +321,73 @@ function IndividualETFPredictions() {
     return 'text-red-600';
   };
 
+  if (loading) {
+    return (
+      <div className="w-full">
+        <div className="mb-4">
+          <h4 className="text-lg font-semibold text-gray-900">Individual ETF Forecasts</h4>
+          <p className="text-sm text-gray-600">Loading ETF predictions...</p>
+        </div>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-gray-50 rounded-lg p-4 animate-pulse">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+                  <div>
+                    <div className="h-4 bg-gray-200 rounded w-32 mb-1"></div>
+                    <div className="h-3 bg-gray-200 rounded w-20"></div>
+                  </div>
+                </div>
+                <div className="w-8 h-8 bg-gray-200 rounded"></div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="h-6 bg-gray-200 rounded"></div>
+                <div className="h-6 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full">
+        <div className="mb-4">
+          <h4 className="text-lg font-semibold text-gray-900">Individual ETF Forecasts</h4>
+          <p className="text-sm text-red-600">Unable to load ETF data</p>
+        </div>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="text-center">
+            <div className="text-red-600 text-2xl mb-2">⚠️</div>
+            <div className="text-sm text-red-800">{error}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data || !data.individualPredictions || data.individualPredictions.length === 0) {
+    return (
+      <div className="w-full">
+        <div className="mb-4">
+          <h4 className="text-lg font-semibold text-gray-900">Individual ETF Forecasts</h4>
+          <p className="text-sm text-gray-600">No ETF prediction data available</p>
+        </div>
+        <div className="bg-gray-50 rounded-lg p-4 text-center">
+          <div className="text-gray-500">
+            <div className="text-2xl mb-2">📊</div>
+            <div className="text-sm">No ETF data to display</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const etfPredictions = data.individualPredictions;
+
   return (
     <div className="w-full">
       <div className="mb-4">
@@ -260,7 +405,7 @@ function IndividualETFPredictions() {
                 </div>
                 <div>
                   <div className="font-semibold text-gray-900">{etf.name}</div>
-                  <div className="text-sm text-gray-600">{etf.marketShare}% market share</div>
+                  <div className="text-sm text-gray-600">{etf.marketShare.toFixed(1)}% market share</div>
                 </div>
               </div>
               <div className="text-right">
@@ -271,18 +416,18 @@ function IndividualETFPredictions() {
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <div className="text-sm text-gray-600 mb-1">Current Flow</div>
-                <div className="text-lg font-semibold text-gray-900">${etf.currentFlow}M</div>
+                <div className="text-lg font-semibold text-gray-900">${etf.current.toFixed(1)}M</div>
               </div>
               <div>
                 <div className="text-sm text-gray-600 mb-1">Predicted Flow</div>
-                <div className="text-lg font-semibold text-purple-600">${etf.predictedFlow}M</div>
+                <div className="text-lg font-semibold text-purple-600">${etf.predicted.toFixed(1)}M</div>
               </div>
             </div>
             
-            <div className="mt-3 flex items-center justify-between">
+            <div className="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div className="flex items-center">
                 <div className="text-sm text-gray-600 mr-2">Confidence:</div>
                 <div className={`text-sm font-medium ${getConfidenceColor(etf.confidence)}`}>
@@ -290,7 +435,7 @@ function IndividualETFPredictions() {
                 </div>
               </div>
               <div className="text-sm text-gray-500">
-                Change: {etf.predictedFlow > etf.currentFlow ? '+' : ''}{(etf.predictedFlow - etf.currentFlow).toFixed(1)}M
+                Change: {etf.predicted > etf.current ? '+' : ''}{(etf.predicted - etf.current).toFixed(1)}M
               </div>
             </div>
           </div>
@@ -299,295 +444,264 @@ function IndividualETFPredictions() {
       
       <div className="mt-4 p-3 bg-blue-50 rounded-lg">
         <div className="text-sm text-blue-800">
-          <strong>Total Predicted Flow:</strong> $78.6M (vs $71.5M current)
+          <strong>Total Predicted Flow:</strong> ${data.totalPredicted.toFixed(1)}M (vs ${data.totalCurrent.toFixed(1)}M current)
         </div>
         <div className="text-xs text-blue-600 mt-1">
-          Based on individual ETF momentum and market conditions
+          Based on trend analysis of individual ETF flows
         </div>
       </div>
     </div>
   );
 }
 
-// ModelPerformance component for ML accuracy metrics
-function ModelPerformance() {
-  const performanceMetrics = [
-    {
-      model: 'Time Series ARIMA',
-      accuracy: 87.3,
-      mape: 12.4,
-      rmse: 8.2,
-      lastUpdated: '2 hours ago',
-      status: 'active'
-    },
-    {
-      model: 'LSTM Neural Network',
-      accuracy: 84.7,
-      mape: 15.1,
-      rmse: 9.8,
-      lastUpdated: '4 hours ago',
-      status: 'active'
-    },
-    {
-      model: 'Random Forest',
-      accuracy: 82.9,
-      mape: 16.8,
-      rmse: 10.5,
-      lastUpdated: '6 hours ago',
-      status: 'active'
-    },
-    {
-      model: 'Linear Regression',
-      accuracy: 79.2,
-      mape: 19.3,
-      rmse: 12.1,
-      lastUpdated: '8 hours ago',
-      status: 'backup'
-    }
-  ];
+// Honest ModelPerformance component
+function ModelPerformance({ data, loading, error }: { 
+  data?: PredictionData; 
+  loading: boolean; 
+  error?: string; 
+}) {
+  if (loading) {
+    return (
+      <div className="w-full">
+        <div className="mb-4">
+          <h4 className="text-lg font-semibold text-gray-900">Prediction Method</h4>
+          <p className="text-sm text-gray-600">Loading method details...</p>
+        </div>
+        <div className="space-y-4">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="bg-gray-50 rounded-lg p-4 animate-pulse">
+              <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="h-8 bg-gray-200 rounded"></div>
+                <div className="h-8 bg-gray-200 rounded"></div>
+                <div className="h-8 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
-  const getAccuracyColor = (accuracy: number) => {
-    if (accuracy >= 85) return 'text-green-600';
-    if (accuracy >= 80) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'backup': return 'bg-yellow-100 text-yellow-800';
-      case 'inactive': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  if (error) {
+    return (
+      <div className="w-full">
+        <div className="mb-4">
+          <h4 className="text-lg font-semibold text-gray-900">Prediction Method</h4>
+          <p className="text-sm text-red-600">Unable to load method details</p>
+        </div>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="text-center">
+            <div className="text-red-600 text-2xl mb-2">⚠️</div>
+            <div className="text-sm text-red-800">{error}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
       <div className="mb-4">
-        <h4 className="text-lg font-semibold text-gray-900">Model Performance</h4>
-        <p className="text-sm text-gray-600">Real-time accuracy metrics for prediction models</p>
+        <h4 className="text-lg font-semibold text-gray-900">Prediction Method</h4>
+        <p className="text-sm text-gray-600">How we generate ETF flow predictions</p>
       </div>
       
       <div className="space-y-4">
-        {performanceMetrics.map((model, index) => (
-          <div key={index} className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-3">
-                <div className="font-semibold text-gray-900">{model.model}</div>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(model.status)}`}>
-                  {model.status.toUpperCase()}
-                </span>
-              </div>
-              <div className="text-sm text-gray-500">
-                Updated {model.lastUpdated}
-              </div>
+        <div className="bg-gray-50 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-3">
+              <div className="font-semibold text-gray-900">Trend Analysis</div>
+              <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                ACTIVE
+              </span>
             </div>
-            
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className={`text-2xl font-bold ${getAccuracyColor(model.accuracy)}`}>
-                  {model.accuracy}%
-                </div>
-                <div className="text-xs text-gray-600">Accuracy</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
-                  {model.mape}%
-                </div>
-                <div className="text-xs text-gray-600">MAPE</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">
-                  {model.rmse}
-                </div>
-                <div className="text-xs text-gray-600">RMSE</div>
-              </div>
+            <div className="text-sm text-gray-500">
+              Updated {data?.lastUpdated ? new Date(data.lastUpdated).toLocaleTimeString() : 'Unknown'}
             </div>
           </div>
-        ))}
+          
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                Simple
+              </div>
+              <div className="text-xs text-gray-600">Method</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {data?.individualPredictions?.length || 0}
+              </div>
+              <div className="text-xs text-gray-600">ETFs Tracked</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">
+                7 Days
+              </div>
+              <div className="text-xs text-gray-600">Forecast Horizon</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gray-50 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-3">
+              <div className="font-semibold text-gray-900">Data Source</div>
+              <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                LIVE
+              </span>
+            </div>
+            <div className="text-sm text-gray-500">
+              Daily ETL Updates
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                CSV
+              </div>
+              <div className="text-xs text-gray-600">Data Format</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">
+                Real-time
+              </div>
+              <div className="text-xs text-gray-600">Updates</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">
+                Farside
+              </div>
+              <div className="text-xs text-gray-600">Source</div>
+            </div>
+          </div>
+        </div>
       </div>
       
-      <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
-        <div className="text-sm text-gray-800">
-          <strong>Ensemble Method:</strong> Weighted average of top 3 models
+      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+        <div className="text-sm text-blue-800">
+          <strong>Algorithm:</strong> Trend continuation based on recent flow patterns
         </div>
-        <div className="text-xs text-gray-600 mt-1">
-          ARIMA (40%), LSTM (35%), Random Forest (25%)
+        <div className="text-xs text-blue-600 mt-1">
+          Uses 7-day rolling average and momentum analysis
         </div>
       </div>
       
-      <div className="mt-4 grid grid-cols-2 gap-4">
-        <div className="text-center p-3 bg-green-50 rounded-lg">
-          <div className="text-2xl font-bold text-green-600">91.2%</div>
-          <div className="text-xs text-gray-600">Ensemble Accuracy</div>
+      <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
+        <div className="text-sm text-yellow-800">
+          <strong>⚠️ Disclaimer:</strong> Predictions are for informational purposes only
         </div>
-        <div className="text-center p-3 bg-blue-50 rounded-lg">
-          <div className="text-2xl font-bold text-blue-600">8.7</div>
-          <div className="text-xs text-gray-600">Combined RMSE</div>
+        <div className="text-xs text-yellow-600 mt-1">
+          Not financial advice. Past performance doesn't guarantee future results.
         </div>
       </div>
     </div>
   );
 }
 
-// PredictionSettings component for user configuration
+// Simplified PredictionSettings component
 function PredictionSettings() {
-  const [settings, setSettings] = useState({
-    predictionHorizon: 7,
-    confidenceLevel: 80,
-    modelSelection: 'ensemble',
-    autoUpdate: true,
-    notifications: true
-  });
-
-  const handleSettingChange = (key: string, value: any) => {
-    setSettings(prev => ({
-      ...prev,
-      [key]: value
-    }));
-  };
-
   return (
     <div className="w-full">
       <div className="mb-4">
-        <h4 className="text-lg font-semibold text-gray-900">Prediction Settings</h4>
-        <p className="text-sm text-gray-600">Configure your forecasting preferences</p>
+        <h4 className="text-lg font-semibold text-gray-900">About Predictions</h4>
+        <p className="text-sm text-gray-600">Understanding our forecasting approach</p>
       </div>
       
-      <div className="space-y-6">
-        {/* Prediction Horizon */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Prediction Horizon
-          </label>
-          <select 
-            value={settings.predictionHorizon}
-            onChange={(e) => handleSettingChange('predictionHorizon', parseInt(e.target.value))}
-            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value={1}>1 Day</option>
-            <option value={3}>3 Days</option>
-            <option value={7}>7 Days</option>
-            <option value={14}>14 Days</option>
-            <option value={30}>30 Days</option>
-          </select>
-          <p className="text-xs text-gray-500 mt-1">
-            How far into the future to predict
+      <div className="space-y-4">
+        <div className="bg-blue-50 rounded-lg p-4">
+          <h5 className="font-semibold text-blue-900 mb-2">📊 Data Source</h5>
+          <p className="text-sm text-blue-800">
+            Predictions are based on real ETF flow data from Farside Investors, 
+            updated daily through our ETL process.
           </p>
         </div>
 
-        {/* Confidence Level */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Confidence Level: {settings.confidenceLevel}%
-          </label>
-          <input
-            type="range"
-            min="60"
-            max="95"
-            value={settings.confidenceLevel}
-            onChange={(e) => handleSettingChange('confidenceLevel', parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>60%</span>
-            <span>95%</span>
-          </div>
-          <p className="text-xs text-gray-500 mt-1">
-            Minimum confidence for predictions
+        <div className="bg-green-50 rounded-lg p-4">
+          <h5 className="font-semibold text-green-900 mb-2">🔮 Prediction Method</h5>
+          <p className="text-sm text-green-800">
+            We use trend analysis to project future flows based on recent patterns. 
+            This is a simple but effective approach for short-term forecasting.
           </p>
         </div>
 
-        {/* Model Selection */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Model Selection
-          </label>
-          <div className="space-y-2">
-            {[
-              { value: 'ensemble', label: 'Ensemble (Recommended)', description: 'Combines multiple models for best accuracy' },
-              { value: 'arima', label: 'ARIMA Time Series', description: 'Classical time series forecasting' },
-              { value: 'lstm', label: 'LSTM Neural Network', description: 'Deep learning approach' },
-              { value: 'random_forest', label: 'Random Forest', description: 'Machine learning ensemble' }
-            ].map((option) => (
-              <label key={option.value} className="flex items-start">
-                <input
-                  type="radio"
-                  name="modelSelection"
-                  value={option.value}
-                  checked={settings.modelSelection === option.value}
-                  onChange={(e) => handleSettingChange('modelSelection', e.target.value)}
-                  className="mt-1 mr-3"
-                />
-                <div>
-                  <div className="text-sm font-medium text-gray-900">{option.label}</div>
-                  <div className="text-xs text-gray-600">{option.description}</div>
-                </div>
-              </label>
-            ))}
-          </div>
+        <div className="bg-yellow-50 rounded-lg p-4">
+          <h5 className="font-semibold text-yellow-900 mb-2">⚠️ Important Notes</h5>
+          <ul className="text-sm text-yellow-800 space-y-1">
+            <li>• Predictions are for informational purposes only</li>
+            <li>• Not financial advice or investment recommendations</li>
+            <li>• Past performance doesn't guarantee future results</li>
+            <li>• Always do your own research before investing</li>
+          </ul>
         </div>
 
-        {/* Auto Update */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium text-gray-900">Auto Update</div>
-            <div className="text-xs text-gray-600">Automatically refresh predictions</div>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={settings.autoUpdate}
-              onChange={(e) => handleSettingChange('autoUpdate', e.target.checked)}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-          </label>
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h5 className="font-semibold text-gray-900 mb-2">🔄 Update Schedule</h5>
+          <p className="text-sm text-gray-700">
+            Predictions are refreshed daily at 11:00 UTC when new ETF flow data becomes available.
+          </p>
         </div>
-
-        {/* Notifications */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-medium text-gray-900">Notifications</div>
-            <div className="text-xs text-gray-600">Get alerts for significant changes</div>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={settings.notifications}
-              onChange={(e) => handleSettingChange('notifications', e.target.checked)}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-          </label>
-        </div>
-      </div>
-
-      {/* Save Button */}
-      <div className="mt-6">
-        <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-          Save Settings
-        </button>
       </div>
     </div>
   );
 }
 
-// Metadata is handled by the parent layout
-
+// Main page component with real data fetching
 export default function ETFPredictionsPage() {
+  const [data, setData] = useState<PredictionData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch prediction data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch('/api/etf-predictions');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        setData(result);
+      } catch (err) {
+        console.error('Error fetching ETF predictions:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load predictions');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleRetry = () => {
+    setError(null);
+    setLoading(true);
+    // Trigger re-fetch by updating a dependency
+    window.location.reload();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-8 lg:py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-4">ETF Flow Predictions</h1>
-          <p className="text-xl text-blue-100">
-            AI-powered forecasting for Bitcoin ETF flows with confidence intervals
+          <h1 className="text-3xl lg:text-4xl font-bold mb-4">ETF Flow Predictions</h1>
+          <p className="text-lg lg:text-xl text-blue-100">
+            Trend-based forecasting for Bitcoin ETF flows with confidence intervals
           </p>
-          <p className="text-lg text-blue-200 mt-2">
-            Using advanced time series models and machine learning to predict future ETF flows
+          <p className="text-base lg:text-lg text-blue-200 mt-2">
+            Using real-time data and simple trend analysis to predict future ETF flows
           </p>
+          {data?.lastUpdated && (
+            <p className="text-sm text-blue-300 mt-2">
+              Last updated: {new Date(data.lastUpdated).toLocaleString()}
+            </p>
+          )}
         </div>
       </div>
 
@@ -596,75 +710,95 @@ export default function ETFPredictionsPage() {
         {/* Quick Forecasts */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Forecasts</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <ForecastCard 
-              title="Tomorrow's Flow"
-              prediction="$45.2M"
-              confidence="85%"
-              trend="up"
-              description="Expected daily flow for tomorrow"
-            />
-            <ForecastCard 
-              title="This Week"
-              prediction="$312.4M"
-              confidence="78%"
-              trend="stable"
-              description="7-day rolling sum forecast"
-            />
-            <ForecastCard 
-              title="Next Week"
-              prediction="$298.7M"
-              confidence="72%"
-              trend="down"
-              description="Following week projection"
-            />
-          </div>
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+              <LoadingCard />
+              <LoadingCard />
+              <LoadingCard />
+            </div>
+          ) : error ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+              <ErrorCard message={error} onRetry={handleRetry} />
+              <ErrorCard message={error} onRetry={handleRetry} />
+              <ErrorCard message={error} onRetry={handleRetry} />
+            </div>
+          ) : data ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+              <ForecastCard 
+                title="Tomorrow's Flow"
+                prediction={`$${data.dailyPredictions[0]?.predicted.toFixed(1) || 0}M`}
+                confidence={data.dailyPredictions[0]?.confidence || 0}
+                trend={data.dailyPredictions[0]?.trend || 'stable'}
+                description="Expected daily flow for tomorrow"
+                lastUpdated={data.lastUpdated}
+                dataPoints={data.individualPredictions?.length || 0}
+              />
+              <ForecastCard 
+                title="This Week"
+                prediction={`$${data.totalPredicted.toFixed(1)}M`}
+                confidence={Math.round(data.dailyPredictions.reduce((sum, p) => sum + p.confidence, 0) / data.dailyPredictions.length)}
+                trend="stable"
+                description="7-day rolling sum forecast"
+                lastUpdated={data.lastUpdated}
+                dataPoints={data.individualPredictions?.length || 0}
+              />
+              <ForecastCard 
+                title="Next Week"
+                prediction={`$${data.dailyPredictions.slice(1, 7).reduce((sum, p) => sum + p.predicted, 0).toFixed(1)}M`}
+                confidence={Math.round(data.dailyPredictions.slice(1, 7).reduce((sum, p) => sum + p.confidence, 0) / 6)}
+                trend="stable"
+                description="Following week projection"
+                lastUpdated={data.lastUpdated}
+                dataPoints={data.individualPredictions?.length || 0}
+              />
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="text-gray-500">No data available</div>
+            </div>
+          )}
         </div>
 
         {/* Detailed Analysis */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 mb-8">
+          <div className="bg-white rounded-lg shadow-lg p-4 lg:p-6">
             <h3 className="text-xl font-semibold mb-4">Flow Predictions</h3>
-            <PredictionChart />
+            <PredictionChart data={data || undefined} loading={loading} error={error || undefined} />
           </div>
           
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white rounded-lg shadow-lg p-4 lg:p-6">
             <h3 className="text-xl font-semibold mb-4">Individual ETF Forecasts</h3>
-            <IndividualETFPredictions />
+            <IndividualETFPredictions data={data || undefined} loading={loading} error={error || undefined} />
           </div>
         </div>
 
-        {/* Model Performance */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-semibold mb-4">Model Performance</h3>
-            <ModelPerformance />
+        {/* Method & Settings */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 mb-8">
+          <div className="bg-white rounded-lg shadow-lg p-4 lg:p-6">
+            <h3 className="text-xl font-semibold mb-4">Prediction Method</h3>
+            <ModelPerformance data={data || undefined} loading={loading} error={error || undefined} />
           </div>
           
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-semibold mb-4">Prediction Settings</h3>
+          <div className="bg-white rounded-lg shadow-lg p-4 lg:p-6">
+            <h3 className="text-xl font-semibold mb-4">About Predictions</h3>
             <PredictionSettings />
           </div>
         </div>
 
-        {/* Historical Accuracy */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h3 className="text-xl font-semibold mb-4">Historical Accuracy</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">87.3%</div>
-              <div className="text-sm text-gray-600">1-Day Accuracy</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">82.1%</div>
-              <div className="text-sm text-gray-600">7-Day Accuracy</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">76.8%</div>
-              <div className="text-sm text-gray-600">30-Day Accuracy</div>
+        {/* Data Insights */}
+        {data?.insights && data.insights.length > 0 && (
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h3 className="text-xl font-semibold mb-4">Key Insights</h3>
+            <div className="space-y-2">
+              {data.insights.map((insight, index) => (
+                <div key={index} className="flex items-start">
+                  <div className="text-blue-600 mr-2">💡</div>
+                  <div className="text-sm text-gray-700">{insight}</div>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
