@@ -1,9 +1,16 @@
 {
-  "timestamp": "2025-09-29T21:32:18.513Z",
+  "timestamp": "2025-09-29T21:56:34.721Z",
+  "lastUpdated": "2025-09-29T21:56:34.721Z",
   "dataRange": {
     "startDate": "2023-09-25",
     "endDate": "2025-09-29",
     "totalDays": 734
+  },
+  "metadata": {
+    "generatedBy": "weekly-backtesting-script",
+    "version": "1.0.0",
+    "dataSource": "history.csv",
+    "analysisType": "comprehensive-backtesting"
   },
   "bandPerformance": {
     "Aggressive Buying": {
