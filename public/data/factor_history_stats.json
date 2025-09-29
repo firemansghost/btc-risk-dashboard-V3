@@ -4,8 +4,8 @@
   "factorStats": {
     "trend_valuation": {
       "dataPoints": 33,
-      "mean": 67,
-      "stdDev": 14.6,
+      "mean": 67.03,
+      "stdDev": 14.57,
       "min": 45,
       "max": 95,
       "range": 50,
@@ -15,8 +15,8 @@
     },
     "onchain": {
       "dataPoints": 33,
-      "mean": 73.45,
-      "stdDev": 18.12,
+      "mean": 72.97,
+      "stdDev": 18.05,
       "min": 35,
       "max": 98,
       "range": 63,
@@ -60,8 +60,8 @@
     },
     "term_leverage": {
       "dataPoints": 33,
-      "mean": 67.24,
-      "stdDev": 14.73,
+      "mean": 67.3,
+      "stdDev": 14.72,
       "min": 42,
       "max": 95,
       "range": 53,
@@ -71,8 +71,8 @@
     },
     "macro_overlay": {
       "dataPoints": 33,
-      "mean": 67.64,
-      "stdDev": 14.14,
+      "mean": 67.21,
+      "stdDev": 14.59,
       "min": 42,
       "max": 95,
       "range": 53,
