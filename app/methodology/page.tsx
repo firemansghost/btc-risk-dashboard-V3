@@ -97,17 +97,17 @@ export default function MethodologyPage() {
                         <li><strong>Liquidity/Flows (35%)</strong>: Defaults: Stablecoins 21%, ETF Flows 9%, Net Liquidity 5% (pillar total 35%)</li>
                         <li><strong>Momentum/Valuation (25%)</strong>: Defaults: Trend & Valuation 20%, On-chain Activity 5% (pillar total 25%)</li>
                         <li><strong>Term Structure/Leverage (20%)</strong>: Derivatives and funding rates</li>
-                        <li><strong>Macro Overlay (10%)</strong>: Macroeconomic conditions. We display Net Liquidity here as context; it is scored lightly under Liquidity (5%) to avoid double-counting</li>
+                        <li><strong>Macro Overlay (10%)</strong>: Macroeconomic conditions (DXY, 2Y rates, VIX). Net Liquidity appears here for context only; it is scored under Liquidity (5%) to avoid double-counting</li>
                         <li><strong>Social/Attention (10%)</strong>: Social sentiment indicators</li>
                       </ul>
                       <p className="text-xs text-gray-500 mt-2">
-                        Note: On-chain Activity contributes to Momentum rather than standing alone.
+                        Note: On-chain Activity contributes to Momentum rather than standing alone. Net Liquidity is scored under Liquidity (5%) but also displayed in Macro for context without affecting the composite score.
                       </p>
                     </div>
                     
                     <div className="bg-blue-50 rounded-lg p-4 mt-4">
                       <p className="text-sm text-blue-800">
-                        <strong>Cycle-Anchored Trend Approach:</strong> Inside Trend & Valuation, Distance to the Bull Market Support Band carries the largest weight by design (60%), reflecting where Bitcoin sits in the broader cycle. Long-trend stretch (Mayer Multiple, 30%) and weekly momentum (RSI, 10%) contribute the rest.
+                        <strong>BMSB-Led Trend Analysis:</strong> Inside Trend & Valuation, Distance to the Bull Market Support Band carries the largest weight by design (60%), reflecting where Bitcoin sits relative to its dynamic support levels. Long-trend stretch (Mayer Multiple, 30%) and weekly momentum (RSI, 10%) contribute the rest.
                       </p>
                     </div>
 
