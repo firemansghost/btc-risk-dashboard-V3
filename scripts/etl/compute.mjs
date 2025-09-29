@@ -236,10 +236,10 @@ async function getCoinGeckoCloseForYesterday() {
 function riskBand(score) {
   if (score < 15) return { name: "Aggressive Buying", lo: 0, hi: 15 };
   if (score < 35) return { name: "Regular DCA Buying", lo: 15, hi: 35 };
-  if (score < 55) return { name: "Hold/Neutral", lo: 35, hi: 55 };
-  if (score < 70) return { name: "Begin Scaling Out", lo: 55, hi: 70 };
-  if (score < 85) return { name: "Increase Selling", lo: 70, hi: 85 };
-  return { name: "Maximum Selling", lo: 85, hi: 100 };
+  if (score < 50) return { name: "Moderate Buying", lo: 35, hi: 49 };
+  if (score < 65) return { name: "Hold & Wait", lo: 50, hi: 64 };
+  if (score < 80) return { name: "Reduce Risk", lo: 65, hi: 79 };
+  return { name: "High Risk", lo: 80, hi: 100 };
 }
 
 async function main() {

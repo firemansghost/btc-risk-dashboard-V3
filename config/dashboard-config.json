@@ -222,7 +222,7 @@
     { 
       "key": "moderate_buy", 
       "label": "Moderate Buying", 
-      "range": [35, 50], 
+      "range": [35, 49], 
       "color": "yellow", 
       "recommendation": "Reduce position size",
       "order": 3
@@ -230,7 +230,7 @@
     { 
       "key": "hold_wait", 
       "label": "Hold & Wait", 
-      "range": [50, 65], 
+      "range": [50, 64], 
       "color": "orange", 
       "recommendation": "Hold existing positions",
       "order": 4
@@ -238,7 +238,7 @@
     { 
       "key": "reduce_risk", 
       "label": "Reduce Risk", 
-      "range": [65, 80], 
+      "range": [65, 79], 
       "color": "red", 
       "recommendation": "Consider taking profits",
       "order": 5

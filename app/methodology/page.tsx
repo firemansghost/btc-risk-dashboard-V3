@@ -80,11 +80,11 @@ export default function MethodologyPage() {
               The <strong>BTC G-Score</strong> is a composite risk assessment score ranging from 0 to 100, where:
             </p>
             <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">
-              <li><strong>0-15: Aggressive Buying</strong> - Maximum allocation recommended</li>
-              <li><strong>15-35: Regular DCA Buying</strong> - Continue regular purchases</li>
-              <li><strong>35-50: Moderate Buying</strong> - Reduce position size</li>
-              <li><strong>50-65: Hold & Wait</strong> - Hold existing positions</li>
-              <li><strong>65-80: Reduce Risk</strong> - Consider taking profits</li>
+              <li><strong>0-14: Aggressive Buying</strong> - Maximum allocation recommended</li>
+              <li><strong>15-34: Regular DCA Buying</strong> - Continue regular purchases</li>
+              <li><strong>35-49: Moderate Buying</strong> - Reduce position size</li>
+              <li><strong>50-64: Hold & Wait</strong> - Hold existing positions</li>
+              <li><strong>65-79: Reduce Risk</strong> - Consider taking profits</li>
               <li><strong>80-100: High Risk</strong> - Significant risk of correction</li>
             </ul>
             
