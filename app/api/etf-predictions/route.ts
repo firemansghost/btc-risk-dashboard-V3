@@ -93,8 +93,8 @@ function generatePredictions(etfData: any) {
     return {
       symbol,
       name: getEtfName(symbol),
-      current: latest.day_flow_usd,
-      predicted: Math.round(predictedFlow * 100) / 100,
+      current: Math.round((latest.day_flow_usd / 1000000) * 100) / 100, // Convert to millions
+      predicted: Math.round((predictedFlow / 1000000) * 100) / 100, // Convert to millions
       confidence: Math.round(confidence),
       trend: trend > 0.05 ? 'up' : trend < -0.05 ? 'down' : 'stable',
       marketShare: 0 // Will be calculated below
@@ -121,7 +121,7 @@ function generatePredictions(etfData: any) {
     
     dailyPredictions.push({
       date: futureDate.toISOString().split('T')[0],
-      flow: Math.round(totalPredicted * 100) / 100,
+      flow: Math.round((totalPredicted / 1000000) * 100) / 100, // Convert to millions
       confidence: Math.max(60, 85 - i * 2),
       trend: totalPredicted > individualPredictions.reduce((sum, etf) => sum + etf.current, 0) ? 'up' : 'down'
     });
@@ -131,7 +131,7 @@ function generatePredictions(etfData: any) {
     daily: dailyPredictions,
     individual: individualPredictions,
     weekly: {
-      thisWeek: Math.round(individualPredictions.reduce((sum, etf) => sum + etf.current, 0) * 7 * 100) / 100,
+      thisWeek: Math.round((individualPredictions.reduce((sum, etf) => sum + etf.current, 0) * 7) * 100) / 100,
       nextWeek: Math.round(dailyPredictions.reduce((sum, day) => sum + day.flow, 0) * 100) / 100,
       confidence: Math.round(dailyPredictions.reduce((sum, day) => sum + day.confidence, 0) / dailyPredictions.length)
     }
