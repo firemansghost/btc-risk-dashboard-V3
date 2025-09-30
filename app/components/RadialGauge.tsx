@@ -26,6 +26,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
   const [isHighContrast, setIsHighContrast] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [particles, setParticles] = useState<Array<{id: number, x: number, y: number, opacity: number}>>([]);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   // Gauge configuration (moved up to avoid dependency issues)
   const centerX = 140;
@@ -44,33 +45,42 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
       const currentAngle = (animatedScore / 100) * sweepAngle + startAngle;
       const targetAngle = (score / 100) * sweepAngle + startAngle;
       
-      // Use requestAnimationFrame for smooth needle animation
-      let startTime: number;
-      const duration = 800; // 800ms animation duration
-      
-      const animateNeedle = (timestamp: number) => {
-        if (!startTime) startTime = timestamp;
-        const progress = Math.min((timestamp - startTime) / duration, 1);
+      // Respect reduced motion preference
+      if (prefersReducedMotion) {
+        // Skip animation for reduced motion users
+        setNeedleAngle(targetAngle);
+        setAnimatedScore(score);
+        setIsAnimating(false);
+        setAnnouncement(`Bitcoin G-Score updated to ${score}, ${bandLabel} risk band`);
+      } else {
+        // Use requestAnimationFrame for smooth needle animation
+        let startTime: number;
+        const duration = 800; // 800ms animation duration
         
-        // Easing function for smooth animation
-        const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-        const interpolatedAngle = currentAngle + (targetAngle - currentAngle) * easeOutCubic;
+        const animateNeedle = (timestamp: number) => {
+          if (!startTime) startTime = timestamp;
+          const progress = Math.min((timestamp - startTime) / duration, 1);
+          
+          // Easing function for smooth animation
+          const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+          const interpolatedAngle = currentAngle + (targetAngle - currentAngle) * easeOutCubic;
+          
+          setNeedleAngle(interpolatedAngle);
+          
+          if (progress < 1) {
+            requestAnimationFrame(animateNeedle);
+          } else {
+            setAnimatedScore(score);
+            setIsAnimating(false);
+            // Announce score change to screen readers
+            setAnnouncement(`Bitcoin G-Score updated to ${score}, ${bandLabel} risk band`);
+          }
+        };
         
-        setNeedleAngle(interpolatedAngle);
-        
-        if (progress < 1) {
-          requestAnimationFrame(animateNeedle);
-        } else {
-          setAnimatedScore(score);
-          setIsAnimating(false);
-          // Announce score change to screen readers
-          setAnnouncement(`Bitcoin G-Score updated to ${score}, ${bandLabel} risk band`);
-        }
-      };
-      
-      requestAnimationFrame(animateNeedle);
+        requestAnimationFrame(animateNeedle);
+      }
     }
-  }, [score, animatedScore, startAngle, sweepAngle, bandLabel]);
+  }, [score, animatedScore, startAngle, sweepAngle, bandLabel, prefersReducedMotion]);
 
   // Trigger band animation on mount
   useEffect(() => {
@@ -78,22 +88,24 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
       setBandsVisible(true);
       setIsLoading(false);
       
-      // Create subtle particle effect
-      const newParticles = Array.from({ length: 8 }, (_, i) => ({
-        id: i,
-        x: centerX + (Math.random() - 0.5) * 40,
-        y: centerY + (Math.random() - 0.5) * 40,
-        opacity: Math.random() * 0.6 + 0.2
-      }));
-      setParticles(newParticles);
-      
-      // Fade out particles after 2 seconds
-      setTimeout(() => {
-        setParticles([]);
-      }, 2000);
-    }, 200); // Small delay to ensure smooth initial load
+      // Only create particle effect if user doesn't prefer reduced motion
+      if (!prefersReducedMotion) {
+        const newParticles = Array.from({ length: 8 }, (_, i) => ({
+          id: i,
+          x: centerX + (Math.random() - 0.5) * 40,
+          y: centerY + (Math.random() - 0.5) * 40,
+          opacity: Math.random() * 0.6 + 0.2
+        }));
+        setParticles(newParticles);
+        
+        // Fade out particles after 2 seconds
+        setTimeout(() => {
+          setParticles([]);
+        }, 2000);
+      }
+    }, prefersReducedMotion ? 0 : 200); // Skip delay for reduced motion users
     return () => clearTimeout(timer);
-  }, [centerX, centerY]);
+  }, [centerX, centerY, prefersReducedMotion]);
 
   // Detect high contrast mode
   useEffect(() => {
@@ -104,6 +116,27 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
     mediaQuery.addEventListener('change', handleChange);
     
     return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  // Detect reduced motion preference
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    
+    const handleChange = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  // Memory cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Clean up any pending animations or timers
+      setTooltip({ x: 0, y: 0, content: '', visible: false });
+      setParticles([]);
+      setAnnouncement('');
+    };
   }, []);
 
   // Enhanced keyboard navigation with arrow keys
@@ -379,6 +412,18 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
         .animate-spin {
           animation: loading-spin 1.5s linear infinite;
         }
+        @media (prefers-reduced-motion: reduce) {
+          .animate-fade-in,
+          .animate-spin,
+          .animate-pulse {
+            animation: none !important;
+          }
+          * {
+            transition-duration: 0.01ms !important;
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+          }
+        }
       `}</style>
       <svg
         width="280"
@@ -451,10 +496,10 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
               strokeWidth="4"
               strokeLinecap="round"
               strokeDasharray="94 94"
-              strokeDashoffset="94"
-              className="animate-spin"
+              strokeDashoffset={prefersReducedMotion ? "0" : "94"}
+              className={prefersReducedMotion ? "" : "animate-spin"}
               style={{
-                animation: 'loading-spin 1.5s linear infinite',
+                animation: prefersReducedMotion ? 'none' : 'loading-spin 1.5s linear infinite',
                 transformOrigin: 'center'
               }}
             />
