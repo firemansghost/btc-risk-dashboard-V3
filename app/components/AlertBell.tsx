@@ -27,6 +27,7 @@ export default function AlertBell() {
   const [alerts, setAlerts] = useState<LatestAlerts | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     async function fetchAlerts() {
@@ -94,6 +95,8 @@ export default function AlertBell() {
         href="/alerts"
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
         title={hasAlerts ? `${alerts.alerts.length} alert(s) today` : 'No alerts today'}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         <div className="relative">
           <svg 
@@ -121,7 +124,7 @@ export default function AlertBell() {
       </Link>
       
       {/* Tooltip with alert details */}
-      {hasAlerts && (
+      {hasAlerts && isHovered && (
         <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-3">
           <div className="text-xs text-gray-500 mb-2">Today's alerts:</div>
           {alerts.alerts.map((alert, idx) => (
