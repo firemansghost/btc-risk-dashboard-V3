@@ -37,9 +37,17 @@ The dashboard relies on a daily ETL pipeline that computes all risk factors and 
 
 ### Risk Assessment
 - **Real-time G-Score**: 0-100 risk assessment based on five analytical pillars
+- **Interactive Radial Gauge**: Professional SVG gauge with smooth animations and accessibility
 - **Factor Transparency**: Detailed breakdown of all risk factors with weights and contributions
 - **Historical Tracking**: Complete factor history with percentile rankings
 - **Configurable Weights**: Dynamic weight adjustment with real-time impact analysis
+
+### Interactive Visual Components
+- **Advanced Radial Gauge**: Professional SVG gauge with gradient overlays and glow effects
+- **Smooth Animations**: 60fps needle rotation and staggered band appearance
+- **Accessibility Compliance**: Full WCAG support with screen reader announcements
+- **Performance Optimized**: Respects user motion preferences and memory management
+- **Interactive Tooltips**: Hover tooltips with risk band information and recommendations
 
 ### ETF Predictions System
 - **Advanced Forecasting**: 7-day ETF flow predictions with confidence intervals
