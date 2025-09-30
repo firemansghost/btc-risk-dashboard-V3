@@ -34,16 +34,6 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
 
   // Calculate needle angle
   const needleAngle = startAngle + (animatedScore / 100) * sweepAngle;
-  
-  // Debug logging
-  console.log('Gauge Debug:', {
-    score: animatedScore,
-    startAngle,
-    endAngle,
-    sweepAngle,
-    needleAngle,
-    expectedAngle: startAngle + (animatedScore / 100) * sweepAngle
-  });
 
   // Convert degrees to radians
   const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
@@ -105,7 +95,8 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
     const labels: ReactElement[] = [];
     const labelRadius = radius + 20;
     
-    [0, 50, 100].forEach(value => {
+    // Show more labels to make the 0-100 scale clear
+    [0, 25, 50, 75, 100].forEach(value => {
       const angle = startAngle + (value / 100) * sweepAngle;
       const labelX = centerX + labelRadius * Math.cos(toRadians(angle));
       const labelY = centerY + labelRadius * Math.sin(toRadians(angle));
@@ -144,6 +135,15 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
           stroke="#E5E7EB"
           strokeWidth="8"
           strokeLinecap="round"
+        />
+        
+        {/* Debug: Show the full arc extent */}
+        <path
+          d={createArcPath(startAngle, endAngle, radius - 5)}
+          fill="none"
+          stroke="#FF0000"
+          strokeWidth="2"
+          opacity="0.3"
         />
         
         {/* Tick marks */}
