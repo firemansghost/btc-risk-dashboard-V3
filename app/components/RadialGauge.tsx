@@ -34,6 +34,16 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
 
   // Calculate needle angle
   const needleAngle = startAngle + (animatedScore / 100) * sweepAngle;
+  
+  // Debug logging
+  console.log('Needle Debug:', {
+    score: animatedScore,
+    startAngle,
+    endAngle,
+    sweepAngle,
+    needleAngle,
+    expectedPosition: `${animatedScore}% of arc`
+  });
 
   // Convert degrees to radians
   const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
@@ -144,28 +154,22 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
         {createTickLabels()}
         
         {/* Needle */}
-        <g className={`transition-transform duration-700 ease-out ${isAnimating ? 'transform-gpu' : ''}`}>
-          <line
-            x1={centerX}
-            y1={centerY}
-            x2={needleEndX}
-            y2={needleEndY}
-            stroke="#1F2937"
-            strokeWidth="3"
-            strokeLinecap="round"
-            style={{
-              transformOrigin: `${centerX}px ${centerY}px`,
-              transform: `rotate(${needleAngle}deg)`
-            }}
-          />
-          {/* Needle tip */}
-          <circle
-            cx={needleEndX}
-            cy={needleEndY}
-            r="4"
-            fill="#1F2937"
-          />
-        </g>
+        <line
+          x1={centerX}
+          y1={centerY}
+          x2={needleEndX}
+          y2={needleEndY}
+          stroke="#1F2937"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
+        {/* Needle tip */}
+        <circle
+          cx={needleEndX}
+          cy={needleEndY}
+          r="4"
+          fill="#1F2937"
+        />
         
         {/* Center dot */}
         <circle
