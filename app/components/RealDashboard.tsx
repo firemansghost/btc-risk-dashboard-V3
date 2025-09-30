@@ -482,8 +482,8 @@ export default function RealDashboard() {
           </div>
         )}
 
-        {/* Key Metrics Cards - 1x3 Grid Layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 lg:mb-8">
+        {/* Key Metrics Cards - Balanced 2x2 Layout */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 lg:mb-8">
           {/* Composite Score */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
             <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">BTC G-Score</h3>
@@ -604,10 +604,11 @@ export default function RealDashboard() {
             <div className="text-xs text-gray-600">Five-pillar framework</div>
           </div>
 
-          {/* Bitcoin ⇄ Gold */}
-          <BtcGoldCard className="h-full" />
+        </div>
 
-          {/* Satoshis per Dollar */}
+        {/* Second Row: Bitcoin⇄Gold + Satoshis per Dollar */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 lg:mb-8">
+          <BtcGoldCard className="h-full" />
           <SatoshisPerDollarCard className="h-full" />
         </div>
 
