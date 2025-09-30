@@ -95,7 +95,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
       const segmentEndAngle = startAngle + endPercent * sweepAngle;
       
       // Create invisible hit area for better interaction
-      const hitAreaRadius = radius + 8;
+      const hitAreaRadius = radius + 10; // Adjusted to match new tick positioning
       const hitAreaPath = createArcPath(segmentStartAngle, segmentEndAngle, hitAreaRadius);
       
       segments.push(
@@ -115,10 +115,10 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
             d={createArcPath(segmentStartAngle, segmentEndAngle, radius)}
             fill="none"
             stroke={bandColors[index]}
-            strokeWidth="8"
+            strokeWidth="12"
             strokeLinecap="round"
             opacity="0.3"
-            className="transition-all duration-200 hover:opacity-60 hover:stroke-width-12"
+            className="transition-all duration-200 hover:opacity-60 hover:stroke-width-16"
           />
         </g>
       );
@@ -191,7 +191,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
       const angle = startAngle + (i / 100) * sweepAngle;
       const isMajorTick = i % 50 === 0; // Major ticks at 0, 50, 100
       const tickLength = isMajorTick ? 16 : 10; // Slightly longer minor ticks
-      const tickRadius = radius + 5;
+      const tickRadius = radius + 10; // Moved further out to accommodate thicker arc
       
       const tickStartX = centerX + (tickRadius - tickLength) * Math.cos(toRadians(angle));
       const tickStartY = centerY + (tickRadius - tickLength) * Math.sin(toRadians(angle));
