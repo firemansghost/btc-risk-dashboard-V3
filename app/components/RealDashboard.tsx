@@ -229,7 +229,7 @@ export default function RealDashboard() {
                 </div>
                 
                 {/* New Layout: Gauge Left, Score Right */}
-                <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-end">
+                <div className="flex flex-col lg:flex-row gap-6 items-center lg:items-end">
                   {/* Left Side: Radial Gauge */}
                   <div className="flex-shrink-0">
                     <RadialGauge 
@@ -239,13 +239,13 @@ export default function RealDashboard() {
                     />
                   </div>
                   
-                  {/* Right Side: Score Display - Centered and aligned with gauge bottom */}
+                  {/* Right Side: Score Display - Responsive alignment */}
                   <div className="flex-1 text-center lg:text-left flex flex-col justify-end">
                     <div className="space-y-2">
                       <div className="text-5xl font-bold text-gray-900">
                         {latest?.composite_score ?? '—'}
                       </div>
-                      <div className={`inline-flex items-center px-3 py-2 rounded-full text-base font-semibold ${getBandColorClasses(latest?.band?.label ?? '')}`}>
+                      <div className={`inline-flex items-center px-3 py-2 rounded-full text-base font-semibold ${getBandColorClasses(latest?.band?.label ?? '')} mx-auto lg:mx-0`}>
                         {latest?.band?.label ?? '—'}
                       </div>
                       <div className="text-sm text-gray-600">
