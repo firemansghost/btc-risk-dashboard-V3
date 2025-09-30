@@ -66,6 +66,15 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
       const segmentStartAngle = startAngle + startPercent * sweepAngle;
       const segmentEndAngle = startAngle + endPercent * sweepAngle;
       
+      // Debug logging
+      console.log(`Band ${band.label}:`, {
+        startPercent,
+        endPercent,
+        segmentStartAngle,
+        segmentEndAngle,
+        sweepAngle
+      });
+      
       segments.push(
         <path
           key={band.label}
@@ -98,8 +107,8 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
       y: centerY + radius * Math.sin(toRadians(endAngle))
     };
     
-    // For a 240-degree arc, we need the large arc flag
-    const largeArcFlag = "1"; // Always use large arc for 240 degrees
+    // For a 180-degree arc, we need the large arc flag
+    const largeArcFlag = "1"; // Use large arc for 180 degrees
     
     return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
   };
