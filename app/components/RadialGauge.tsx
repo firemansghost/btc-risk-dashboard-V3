@@ -166,9 +166,15 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
   // Tooltip helper functions
   const showTooltip = (event: React.MouseEvent, content: string) => {
     const rect = (event.target as SVGElement).getBoundingClientRect();
+    const svgRect = (event.currentTarget as SVGElement).getBoundingClientRect();
+    
+    // Calculate position relative to SVG, ensuring tooltip stays within bounds
+    const x = event.clientX - svgRect.left;
+    const y = Math.max(30, event.clientY - svgRect.top - 20); // Ensure minimum 30px from top
+    
     setTooltip({
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top - 10,
+      x,
+      y,
       content,
       visible: true
     });
@@ -192,23 +198,23 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
       const tickEndX = centerX + tickRadius * Math.cos(toRadians(angle));
       const tickEndY = centerY + tickRadius * Math.sin(toRadians(angle));
       
-      // Create invisible hit area for better interaction
-      const hitAreaRadius = tickRadius + 5;
-      const hitStartX = centerX + (hitAreaRadius - tickLength - 5) * Math.cos(toRadians(angle));
-      const hitStartY = centerY + (hitAreaRadius - tickLength - 5) * Math.sin(toRadians(angle));
+      // Create larger invisible hit area for better interaction
+      const hitAreaRadius = tickRadius + 15; // Much larger hit area
+      const hitStartX = centerX + (hitAreaRadius - tickLength - 15) * Math.cos(toRadians(angle));
+      const hitStartY = centerY + (hitAreaRadius - tickLength - 15) * Math.sin(toRadians(angle));
       const hitEndX = centerX + hitAreaRadius * Math.cos(toRadians(angle));
       const hitEndY = centerY + hitAreaRadius * Math.sin(toRadians(angle));
       
       ticks.push(
         <g key={i}>
-          {/* Invisible hit area for better interaction */}
+          {/* Much larger invisible hit area for easier interaction */}
           <line
             x1={hitStartX}
             y1={hitStartY}
             x2={hitEndX}
             y2={hitEndY}
             stroke="transparent"
-            strokeWidth="8"
+            strokeWidth="20" // Much thicker hit area
             onMouseEnter={(e) => showTooltip(e, `Score: ${i}${isMajorTick ? ' (Major)' : ''}`)}
             onMouseLeave={hideTooltip}
             style={{ cursor: 'pointer' }}
@@ -267,8 +273,8 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
     <div className={`relative transition-all duration-300 hover:scale-105 hover:drop-shadow-xl focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-opacity-50 ${className}`}>
       <svg
         width="280"
-        height="180"
-        viewBox="0 0 280 180"
+        height="200"
+        viewBox="0 0 280 200"
         className="w-full h-auto"
         role="img"
         aria-label={`Bitcoin G-Score gauge showing ${score} out of 100, currently in ${bandLabel} risk band`}
@@ -345,23 +351,25 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
           className="drop-shadow-md"
         />
         
-        {/* Tooltip */}
+        {/* Enhanced Tooltip */}
         {tooltip.visible && (
           <g>
+            {/* Tooltip background with better positioning */}
             <rect
-              x={tooltip.x - 10}
-              y={tooltip.y - 25}
+              x={Math.max(10, tooltip.x - 100)} // Ensure tooltip doesn't go off left edge
+              y={tooltip.y - 30}
               width="200"
-              height="20"
+              height="25"
               fill="#1F2937"
               stroke="#374151"
               strokeWidth="1"
-              rx="4"
+              rx="6"
               className="drop-shadow-lg"
             />
+            {/* Tooltip text with better positioning */}
             <text
-              x={tooltip.x + 90}
-              y={tooltip.y - 10}
+              x={Math.max(110, tooltip.x + 100)} // Center text within tooltip
+              y={tooltip.y - 15}
               textAnchor="middle"
               dominantBaseline="middle"
               fontSize="12"
