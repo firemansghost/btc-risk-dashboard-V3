@@ -106,13 +106,13 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
     return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
   };
 
-  // Create tick marks
+  // Create tick marks with enhanced hierarchy
   const createTicks = () => {
     const ticks: ReactElement[] = [];
     for (let i = 0; i <= 100; i += 10) {
       const angle = startAngle + (i / 100) * sweepAngle;
       const isMajorTick = i % 50 === 0; // Major ticks at 0, 50, 100
-      const tickLength = isMajorTick ? 12 : 6;
+      const tickLength = isMajorTick ? 16 : 8; // Longer major ticks
       const tickRadius = radius + 5;
       
       const tickStartX = centerX + (tickRadius - tickLength) * Math.cos(toRadians(angle));
@@ -127,25 +127,29 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
           y1={tickStartY}
           x2={tickEndX}
           y2={tickEndY}
-          stroke="#6B7280"
-          strokeWidth={isMajorTick ? 2 : 1}
-          opacity={0.6}
+          stroke={isMajorTick ? "#374151" : "#6B7280"} // Darker major ticks
+          strokeWidth={isMajorTick ? 3 : 1.5} // Thicker major ticks
+          opacity={isMajorTick ? 0.9 : 0.7} // Higher opacity for major ticks
+          className={isMajorTick ? "drop-shadow-sm" : ""} // Subtle shadow for major ticks
         />
       );
     }
     return ticks;
   };
 
-  // Create tick labels
+  // Create tick labels with enhanced typography
   const createTickLabels = () => {
     const labels: ReactElement[] = [];
-    const labelRadius = radius + 20;
+    const labelRadius = radius + 24; // Slightly further out for better spacing
     
-    // Show more labels to make the 0-100 scale clear
+    // Show key labels with enhanced styling
     [0, 25, 50, 75, 100].forEach(value => {
       const angle = startAngle + (value / 100) * sweepAngle;
       const labelX = centerX + labelRadius * Math.cos(toRadians(angle));
       const labelY = centerY + labelRadius * Math.sin(toRadians(angle));
+      
+      // Enhanced styling for major labels (0, 50, 100)
+      const isMajorLabel = value % 50 === 0;
       
       labels.push(
         <text
@@ -154,9 +158,10 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
           y={labelY}
           textAnchor="middle"
           dominantBaseline="middle"
-          fontSize="12"
-          fill="#6B7280"
-          fontWeight="500"
+          fontSize={isMajorLabel ? "14" : "12"} // Larger font for major labels
+          fill={isMajorLabel ? "#1F2937" : "#4B5563"} // Darker color for major labels
+          fontWeight={isMajorLabel ? "700" : "600"} // Bolder font weight for major labels
+          className={isMajorLabel ? "drop-shadow-sm" : ""} // Subtle shadow for major labels
         >
           {value}
         </text>
@@ -173,6 +178,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
         viewBox="0 0 280 180"
         className="w-full h-auto"
         aria-hidden="true"
+        style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} // Subtle overall shadow
       >
         {/* Band-colored arc segments */}
         {createBandSegments()}
