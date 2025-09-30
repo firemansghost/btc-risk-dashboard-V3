@@ -25,7 +25,7 @@ const factorMetadata: Record<string, { sources: string[], description: string, c
     csvFile: 'mayer_multiple.csv'
   },
   'onchain': {
-    sources: ['Mempool.space', 'Blockchain.com', 'Glassnode'],
+    sources: ['Blockchain.info', 'Mempool.space', 'Coinbase'],
     description: 'On-chain Activity Metrics',
     csvFile: 'onchain_activity.csv'
   },

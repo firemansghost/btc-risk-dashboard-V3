@@ -477,6 +477,20 @@ async function main() {
           }
         );
         break;
+        
+      case 'onchain':
+        csvResult = await appendCsvRow(
+          "public/signals/onchain_activity.csv",
+          "date,fees_7d_avg,mempool_7d_avg,puell_multiple,score",
+          {
+            date: y.date,
+            fees_7d_avg: factor.details?.find(d => d.label === "Fees 7d avg (USD)")?.value?.replace(/[$,]/g, '') || '0',
+            mempool_7d_avg: factor.details?.find(d => d.label === "Mempool 7d avg (MB)")?.value?.replace(' MB', '') || '0',
+            puell_multiple: factor.details?.find(d => d.label === "Puell Multiple")?.value || '0',
+            score: factor.score
+          }
+        );
+        break;
     }
     
     if (csvResult.appended) {
