@@ -45,10 +45,10 @@ export default function SystemStatusCard({ factors, provenance, asOfUtc, onOpenW
   const clockSkew = checkClockSkew(asOfUtc || null);
 
   return (
-    <div className="rounded-xl border p-4 bg-white">
-      <div className="flex items-center justify-between mb-3">
+    <div className="rounded-xl border p-3 sm:p-4 bg-white">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
         <h3 className="font-medium text-gray-900">System Status</h3>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={onOpenProvenance}
             className="text-sm text-blue-600 hover:text-blue-800 underline"
@@ -80,7 +80,7 @@ export default function SystemStatusCard({ factors, provenance, asOfUtc, onOpenW
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {sources.map((source, index) => (
           <div 
             key={index} 

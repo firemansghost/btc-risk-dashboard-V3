@@ -33,18 +33,18 @@ export default function MethodologyPage() {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Methodology & Risk Factor Breakdown</h1>
-        <p className="text-gray-600">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Methodology & Risk Factor Breakdown</h1>
+        <p className="text-gray-600 text-sm sm:text-base">
           A transparent, data-driven approach to Bitcoin risk assessment using five independent pillars.
         </p>
       </div>
 
       {/* Navigation */}
-      <div className="mb-8">
-        <nav className="flex flex-wrap gap-4">
+      <div className="mb-6 sm:mb-8">
+        <nav className="flex flex-wrap gap-2 sm:gap-4">
           <a href="#overview" className="text-blue-600 hover:text-blue-800 underline">Overview</a>
           <a href="#g-score" className="text-blue-600 hover:text-blue-800 underline">BTC G-Score</a>
           <a href="#bands" className="text-blue-600 hover:text-blue-800 underline">Risk Bands</a>
@@ -119,7 +119,7 @@ export default function MethodologyPage() {
               The base factor score may include small adjustments to account for market context:
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="font-semibold text-gray-900 mb-2">
                   <span className="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 border border-slate-200 mr-2">
@@ -170,9 +170,9 @@ export default function MethodologyPage() {
           </p>
           
           {config?.bands && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {config.bands.map(band => (
-                <div key={band.key} className="flex items-start justify-between rounded-lg border bg-gray-50 px-4 py-3">
+                <div key={band.key} className="flex flex-col sm:flex-row sm:items-start sm:justify-between rounded-lg border bg-gray-50 px-4 py-3 gap-2">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-2">
                       <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${getBandColor(band.color)}`}>

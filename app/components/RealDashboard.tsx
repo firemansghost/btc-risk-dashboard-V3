@@ -170,12 +170,12 @@ export default function RealDashboard() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 py-4 sm:py-6">
             <div className="flex-1">
-              <div className="font-bold tracking-tight text-2xl md:text-3xl text-gray-900">
+              <div className="font-bold tracking-tight text-xl sm:text-2xl md:text-3xl text-gray-900">
                 <a href="/" className="hover:text-emerald-600 transition-colors">GhostGauge</a>
               </div>
-              <h1 className="text-xl md:text-2xl font-medium text-gray-900 mt-1" aria-label={`Bitcoin G-Score ${latest?.composite_score ?? '—'}, band ${latest?.band?.label ?? '—'}`}>
+              <h1 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900 mt-1" aria-label={`Bitcoin G-Score ${latest?.composite_score ?? '—'}, band ${latest?.band?.label ?? '—'}`}>
                 Bitcoin G-Score: <span className={getBandTextColorFromLabel(latest?.band?.label ?? '')}>{latest?.composite_score ?? '—'} — {latest?.band?.label ?? '—'}</span>
                 {(() => {
                   const delta = calculateYesterdayDelta(latest?.composite_score, latest);
@@ -224,7 +224,7 @@ export default function RealDashboard() {
                 <a href="/methodology#btc-g-score" className="text-emerald-600 hover:text-emerald-700 underline">New here? What the G-Score means →</a>
               </p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
               {refreshMessage && (
                 <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-md">
                   {refreshMessage}
@@ -312,7 +312,7 @@ export default function RealDashboard() {
                   }}
                   disabled={loading || refreshing}
                   aria-busy={refreshing}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                  className="px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm sm:text-base"
                 >
                 {refreshing ? (
                   <>
@@ -343,23 +343,23 @@ export default function RealDashboard() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Key Metrics Cards - 5 Box Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6 lg:mb-8">
           {/* Composite Score */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
             <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">BTC G-Score</h3>
-            <div className="text-3xl font-bold text-gray-900 mb-1">{latest?.composite_score ?? '—'}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{latest?.composite_score ?? '—'}</div>
             
             {/* Risk Band with Colorized Box */}
             <div className="mb-3">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
                 <span className="text-xs text-gray-600">Band:</span>
                 {latest?.band && (
-                  <span className={`px-2 py-1 rounded border text-xs font-medium ${getBandColorClasses(latest.band.color)}`}>
+                  <span className={`px-2 py-1 rounded border text-xs font-medium w-fit ${getBandColorClasses(latest.band.color)}`}>
                     {latest.band.label}
                   </span>
                 )}
               </div>
-              <div className="text-xs text-gray-600 ml-10">
+              <div className="text-xs text-gray-600 sm:ml-10">
                 {getBandRecommendation(latest?.band)}
               </div>
             </div>
@@ -375,7 +375,7 @@ export default function RealDashboard() {
             </div>
             
             {/* Cycle & Spike Adjustments */}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1 sm:gap-2">
               {(() => {
                 const cycleValue = latest?.cycle_adjustment?.adj_pts ?? latest?.adjustments?.cycle_nudge ?? 0;
                 const hasValue = cycleValue !== 0 && cycleValue != null;
@@ -450,18 +450,18 @@ export default function RealDashboard() {
           </div>
 
           {/* Bitcoin Price */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
             <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Bitcoin Price</h3>
-            <div className="text-3xl font-bold text-gray-900 mb-1">{latest?.btc?.spot_usd ? fmtUsd0(latest.btc.spot_usd) : 'N/A'}</div>
+            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1">{latest?.btc?.spot_usd ? fmtUsd0(latest.btc.spot_usd) : 'N/A'}</div>
             <div className="text-xs text-gray-500">
               {formatSourceTimestamp('Coinbase (daily close)', latest?.btc?.as_of_utc || '—')}
             </div>
           </div>
 
           {/* Model Version */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
             <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Model Version</h3>
-            <div className="text-3xl font-bold text-gray-900 mb-1">{latest?.model_version ?? 'v3'}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{latest?.model_version ?? 'v3'}</div>
             <div className="text-xs text-gray-600">Five-pillar framework</div>
           </div>
 
@@ -496,7 +496,7 @@ export default function RealDashboard() {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
           {sortFactorsByContribution(latest?.factors || []).map((factor: any) => {
             const contribution = calculateContribution(factor.score, factor.weight_pct);
             const factorTTL = getFactorTTL(factor.key);
@@ -505,9 +505,9 @@ export default function RealDashboard() {
             const cadence = getFactorCadence(factor.key);
             
             return (
-            <div key={factor.key} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 relative">
+            <div key={factor.key} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 relative">
           {/* Reserved Badge Lane - Top Right */}
-          <div className="absolute top-4 right-4 flex flex-col gap-1 items-end">
+          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex flex-col gap-1 items-end">
             <span 
               className={`px-2 py-1 rounded text-xs font-medium border ${staleness.className}`}
               title={staleness.tooltip}
@@ -539,20 +539,20 @@ export default function RealDashboard() {
             {/* Space for additional badges if needed */}
           </div>
               
-              <div className="mb-4 pr-20"> {/* Add right padding to avoid badge lane */}
+              <div className="mb-4 pr-16 sm:pr-20"> {/* Add right padding to avoid badge lane */}
                 {/* Header Row - Title and Pillar */}
-                <div className="flex items-center space-x-3 mb-3">
-                  <h3 className="text-lg font-semibold text-gray-900">{factor.label}</h3>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPillarBadgeClasses(factor.pillar)}`}>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900">{factor.label}</h3>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium w-fit ${getPillarBadgeClasses(factor.pillar)}`}>
                     {getPillarLabel(factor.pillar)}
                   </span>
                 </div>
                 
                 {/* Score Row - Dedicated flex container with controlled wrapping */}
-                <div className="flex items-center gap-2 flex-wrap min-h-[32px]">
+                <div className="flex items-center gap-1 sm:gap-2 flex-wrap min-h-[32px]">
                     {/* Risk Score Chip (Primary) */}
                     <span 
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
                         factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
                       }`}
                       aria-label={`Risk score: ${factor.score !== null ? factor.score.toFixed(0) : 'N/A'}`}
@@ -562,7 +562,7 @@ export default function RealDashboard() {
                     
                     {/* Weight Chip (Muted) */}
                     <span 
-                      className="px-2 py-1 rounded text-xs text-gray-600 bg-gray-50 border border-gray-200"
+                      className="px-1.5 sm:px-2 py-1 rounded text-xs text-gray-600 bg-gray-50 border border-gray-200"
                       aria-label={`Weight: ${factor.weight_pct ? `${factor.weight_pct}%` : 'unknown'}`}
                     >
                       W: {factor.weight_pct ? `${factor.weight_pct}%` : '—'}
@@ -570,7 +570,7 @@ export default function RealDashboard() {
                     
                     {/* Contribution Chip (Muted) */}
                     <span 
-                      className="px-2 py-1 rounded text-xs text-gray-600 bg-gray-50 border border-gray-200"
+                      className="px-1.5 sm:px-2 py-1 rounded text-xs text-gray-600 bg-gray-50 border border-gray-200"
                       aria-label={`Contribution: ${contribution !== null ? contribution.toFixed(1) : 'unknown'}`}
                     >
                       C: {contribution !== null ? contribution.toFixed(1) : '—'}
@@ -578,7 +578,7 @@ export default function RealDashboard() {
                   </div>
                 
                 {/* Pillar Row with Links */}
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-1">
                   <div className="text-sm text-gray-600">
                     <span className="font-medium text-gray-700">
                       {factor.pillar ? factor.pillar.charAt(0).toUpperCase() + factor.pillar.slice(1) : 'Unknown'} Pillar
@@ -589,22 +589,22 @@ export default function RealDashboard() {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
                     <button
                       onClick={() => openHistoryModal({key: factor.key, label: factor.label})}
-                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium px-2 py-1 rounded hover:bg-emerald-50 transition-colors"
                     >
                       History
                     </button>
                     <button
                       onClick={() => openEnhancedDetails({key: factor.key, label: factor.label})}
-                      className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                      className="text-sm text-blue-600 hover:text-blue-700 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
                     >
                       Enhanced Details
                     </button>
                     <a 
                       href="/methodology" 
-                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium px-2 py-1 rounded hover:bg-emerald-50 transition-colors"
                     >
                       What's this?
                     </a>

@@ -53,11 +53,11 @@ export default function RiskBandLegend({ score }: { score: number }) {
   const active = bands.find(b => score >= b.range[0] && score < b.range[1]) ?? bands[bands.length - 1];
 
   return (
-    <div className="rounded-xl border border-slate-200/60 bg-white p-4">
+    <div className="rounded-xl border border-slate-200/60 bg-white p-3 sm:p-4">
       <p className="text-xs text-slate-500 mb-2">Bands apply to Bitcoin.</p>
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <h3 className="text-sm font-semibold text-slate-700">Risk Bands</h3>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           {digest && (
             <button
               onClick={() => {
@@ -79,18 +79,18 @@ export default function RiskBandLegend({ score }: { score: number }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {bands.map(b => {
           const isActive = b.key === active.key;
           return (
             <div
               key={b.key}
-              className={`flex items-start justify-between rounded-lg border bg-white px-3 py-2 ${
+              className={`flex flex-col sm:flex-row sm:items-start sm:justify-between rounded-lg border bg-white px-3 py-2 gap-2 ${
                 isActive ? 'border-slate-400 shadow-sm' : 'border-slate-200'
               }`}
             >
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs ${chipColor(b.color)}`}>
                     {b.label}
                   </span>
