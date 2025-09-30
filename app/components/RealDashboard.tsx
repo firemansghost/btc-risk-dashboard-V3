@@ -208,48 +208,60 @@ export default function RealDashboard() {
                 <a href="/" className="hover:text-emerald-600 transition-colors">GhostGauge</a>
               </div>
               
-              {/* Prominent G-Score Card - Unified Vertical Layout */}
-              <div className="bg-white border-2 border-gray-300 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-200 max-w-lg ring-1 ring-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h1 className="text-sm font-bold text-gray-600 uppercase tracking-wide">
-                    Bitcoin G-Score
-                  </h1>
-                  {(() => {
-                    const delta = calculateYesterdayDelta(latest?.composite_score, latest);
-                    if (!delta) return null;
-                    return (
-                      <span 
-                        className="px-2 py-1 text-xs text-gray-600 bg-gray-100 rounded-full border border-gray-200"
-                        title="Change in headline G-Score since the previous daily close"
-                      >
-                        {delta.glyph} {delta.displayText}
-                      </span>
-                    );
-                  })()}
-                </div>
-                
-                {/* Unified Vertical Layout: Gauge on top, Score below */}
-                <div className="flex flex-col items-center space-y-4">
-                  {/* Radial Gauge */}
-                  <div className="flex justify-center">
-                    <RadialGauge 
-                      score={latest?.composite_score ?? 0}
-                      bandLabel={latest?.band?.label ?? '—'}
-                      className="w-64 h-32"
-                    />
+              {/* Top Row: G-Score Card + Bitcoin Price Card */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                {/* Prominent G-Score Card - Unified Vertical Layout */}
+                <div className="bg-white border-2 border-gray-300 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-200 ring-1 ring-gray-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <h1 className="text-sm font-bold text-gray-600 uppercase tracking-wide">
+                      Bitcoin G-Score
+                    </h1>
+                    {(() => {
+                      const delta = calculateYesterdayDelta(latest?.composite_score, latest);
+                      if (!delta) return null;
+                      return (
+                        <span 
+                          className="px-2 py-1 text-xs text-gray-600 bg-gray-100 rounded-full border border-gray-200"
+                          title="Change in headline G-Score since the previous daily close"
+                        >
+                          {delta.glyph} {delta.displayText}
+                        </span>
+                      );
+                    })()}
                   </div>
                   
-                  {/* Score Display - Centered below gauge */}
-                  <div className="text-center space-y-2">
-                    <div className="text-5xl font-bold text-gray-900">
-                      {latest?.composite_score ?? '—'}
+                  {/* Unified Vertical Layout: Gauge on top, Score below */}
+                  <div className="flex flex-col items-center space-y-4">
+                    {/* Radial Gauge */}
+                    <div className="flex justify-center">
+                      <RadialGauge 
+                        score={latest?.composite_score ?? 0}
+                        bandLabel={latest?.band?.label ?? '—'}
+                        className="w-64 h-32"
+                      />
                     </div>
-                    <div className={`inline-flex items-center px-3 py-2 rounded-full text-base font-semibold ${getBandColorClasses(latest?.band?.label ?? '')}`}>
-                      {latest?.band?.label ?? '—'}
+                    
+                    {/* Score Display - Centered below gauge */}
+                    <div className="text-center space-y-2">
+                      <div className="text-5xl font-bold text-gray-900">
+                        {latest?.composite_score ?? '—'}
+                      </div>
+                      <div className={`inline-flex items-center px-3 py-2 rounded-full text-base font-semibold ${getBandColorClasses(latest?.band?.label ?? '')}`}>
+                        {latest?.band?.label ?? '—'}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {getBandRecommendation(latest?.band)}
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-600">
-                      {getBandRecommendation(latest?.band)}
-                    </div>
+                  </div>
+                </div>
+
+                {/* Bitcoin Price Card */}
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+                  <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-4">Bitcoin Price</h3>
+                  <div className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">{latest?.btc?.spot_usd ? fmtUsd0(latest.btc.spot_usd) : 'N/A'}</div>
+                  <div className="text-sm text-gray-500">
+                    {formatSourceTimestamp('Coinbase (daily close)', latest?.btc?.as_of_utc || '—')}
                   </div>
                 </div>
               </div>
@@ -470,8 +482,8 @@ export default function RealDashboard() {
           </div>
         )}
 
-        {/* Key Metrics Cards - 2x2 Grid Layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 lg:mb-8">
+        {/* Key Metrics Cards - 1x3 Grid Layout */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 lg:mb-8">
           {/* Composite Score */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
             <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">BTC G-Score</h3>
@@ -584,14 +596,6 @@ export default function RealDashboard() {
             </div>
           </div>
 
-          {/* Bitcoin Price */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Bitcoin Price</h3>
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1">{latest?.btc?.spot_usd ? fmtUsd0(latest.btc.spot_usd) : 'N/A'}</div>
-            <div className="text-xs text-gray-500">
-              {formatSourceTimestamp('Coinbase (daily close)', latest?.btc?.as_of_utc || '—')}
-            </div>
-          </div>
 
           {/* Model Version */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
