@@ -210,7 +210,7 @@ export default function RealDashboard() {
               {/* Prominent G-Score Card */}
               <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow duration-200 max-w-md">
                 <div className="flex items-center justify-between mb-3">
-                  <h1 className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+                  <h1 className="text-sm font-bold text-gray-600 uppercase tracking-wide">
                     Bitcoin G-Score
                   </h1>
                   {(() => {
