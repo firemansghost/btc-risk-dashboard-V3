@@ -202,7 +202,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
             stroke={isHighContrast ? '#000000' : `url(#${gradientIds[index]})`}
             strokeWidth={isHighContrast ? '16' : '12'}
             strokeLinecap="round"
-            opacity={isHighContrast ? '0.8' : '0.3'}
+            opacity={isHighContrast ? '0.8' : '0.5'}
             filter="url(#glow)"
             className={`transition-all duration-300 hover:opacity-80 hover:stroke-width-16 hover:drop-shadow-lg ${
               bandsVisible ? 'animate-fade-in' : 'opacity-0'
@@ -396,28 +396,28 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
         {/* Gradient definitions for enhanced visual effects */}
         <defs>
           <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.3"/>
-            <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.6"/>
+            <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.6"/>
+            <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.9"/>
           </linearGradient>
           <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.3"/>
-            <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.6"/>
+            <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.6"/>
+            <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.9"/>
           </linearGradient>
           <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#22C55E" stopOpacity="0.3"/>
-            <stop offset="100%" stopColor="#22C55E" stopOpacity="0.6"/>
+            <stop offset="0%" stopColor="#22C55E" stopOpacity="0.6"/>
+            <stop offset="100%" stopColor="#22C55E" stopOpacity="0.9"/>
           </linearGradient>
           <linearGradient id="yellowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#EAB308" stopOpacity="0.3"/>
-            <stop offset="100%" stopColor="#EAB308" stopOpacity="0.6"/>
+            <stop offset="0%" stopColor="#EAB308" stopOpacity="0.6"/>
+            <stop offset="100%" stopColor="#EAB308" stopOpacity="0.9"/>
           </linearGradient>
           <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#F97316" stopOpacity="0.3"/>
-            <stop offset="100%" stopColor="#F97316" stopOpacity="0.6"/>
+            <stop offset="0%" stopColor="#F97316" stopOpacity="0.6"/>
+            <stop offset="100%" stopColor="#F97316" stopOpacity="0.9"/>
           </linearGradient>
           <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#EF4444" stopOpacity="0.3"/>
-            <stop offset="100%" stopColor="#EF4444" stopOpacity="0.6"/>
+            <stop offset="0%" stopColor="#EF4444" stopOpacity="0.6"/>
+            <stop offset="100%" stopColor="#EF4444" stopOpacity="0.9"/>
           </linearGradient>
           {/* Glow filter for hover effects */}
           <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
