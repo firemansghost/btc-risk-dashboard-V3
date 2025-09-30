@@ -121,7 +121,7 @@ function generatePredictions(etfData: any) {
     
     dailyPredictions.push({
       date: futureDate.toISOString().split('T')[0],
-      flow: Math.round((totalPredicted / 1000000) * 100) / 100, // Convert to millions
+      flow: Math.round(totalPredicted * 100) / 100, // Already in millions from individual predictions
       confidence: Math.max(60, 85 - i * 2),
       trend: totalPredicted > individualPredictions.reduce((sum, etf) => sum + etf.current, 0) ? 'up' : 'down'
     });
