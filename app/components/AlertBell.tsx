@@ -11,6 +11,11 @@ interface Alert {
   deadband?: number;
   composite_from?: number;
   composite_to?: number;
+  details?: {
+    adjustment_points?: number;
+    consecutive_weeks_below?: number;
+    [key: string]: any;
+  };
 }
 
 interface LatestAlerts {
