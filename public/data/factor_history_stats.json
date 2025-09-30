@@ -4,8 +4,8 @@
   "factorStats": {
     "trend_valuation": {
       "dataPoints": 34,
-      "mean": 66.56,
-      "stdDev": 14.6,
+      "mean": 66.53,
+      "stdDev": 14.63,
       "min": 45,
       "max": 95,
       "range": 50,
@@ -15,8 +15,8 @@
     },
     "onchain": {
       "dataPoints": 34,
-      "mean": 72.68,
-      "stdDev": 17.85,
+      "mean": 72.97,
+      "stdDev": 17.82,
       "min": 35,
       "max": 98,
       "range": 63,
@@ -26,8 +26,8 @@
     },
     "stablecoins": {
       "dataPoints": 33,
-      "mean": 65.03,
-      "stdDev": 17.19,
+      "mean": 65.09,
+      "stdDev": 17.14,
       "min": 35,
       "max": 95,
       "range": 60,
@@ -38,7 +38,7 @@
     },
     "etf_flows": {
       "dataPoints": 34,
-      "mean": 68.32,
+      "mean": 68.21,
       "stdDev": 14.26,
       "min": 38,
       "max": 95,
