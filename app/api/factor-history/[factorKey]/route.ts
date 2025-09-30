@@ -135,9 +135,9 @@ export async function GET(
       `${row.date_utc},${row.score},${row.change_vs_prior},${row.avg_30d},${row.status}`
     );
     
-    const csvContent = provenanceHeader + csvHeaders + '\n' + csvRows.join('\n');
+    const finalCsvContent = provenanceHeader + csvHeaders + '\n' + csvRows.join('\n');
 
-    return new NextResponse(csvContent, {
+    return new NextResponse(finalCsvContent, {
       status: 200,
       headers: {
         'Content-Type': 'text/csv',
