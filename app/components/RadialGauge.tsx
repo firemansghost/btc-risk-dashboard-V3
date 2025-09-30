@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, ReactElement } from 'react';
 
 interface RadialGaugeProps {
   score: number;
@@ -61,7 +61,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
 
   // Create tick marks
   const createTicks = () => {
-    const ticks: JSX.Element[] = [];
+    const ticks: ReactElement[] = [];
     for (let i = 0; i <= 100; i += 10) {
       const angle = startAngle + (i / 100) * sweepAngle;
       const isMajorTick = i % 50 === 0; // Major ticks at 0, 50, 100
@@ -91,7 +91,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
 
   // Create tick labels
   const createTickLabels = () => {
-    const labels: JSX.Element[] = [];
+    const labels: ReactElement[] = [];
     const labelRadius = radius + 20;
     
     [0, 50, 100].forEach(value => {
