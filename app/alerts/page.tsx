@@ -227,25 +227,59 @@ export default function AlertsPage() {
           <h3 className="text-lg font-medium text-gray-900 mb-4">Alert Methodology</h3>
           <div className="space-y-4 text-sm text-gray-600">
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">ETF Zero-Cross Detection</h4>
+              <h4 className="font-medium text-gray-900 mb-2">🔄 Cycle Adjustment Alerts</h4>
               <p>
-                Monitors the 21-day sum of ETF flows and detects when it crosses zero (positive to negative or vice versa).
-                Uses a smart deadband to avoid noise: <code className="bg-gray-100 px-1 rounded">max(round(0.02 × std), 1000)</code> 
+                Monitors long-term cycle adjustments in the G-Score calculation. Triggers when cycle adjustments 
+                exceed ±5 points (medium) or ±10 points (high). These adjustments reflect power-law trends and 
+                long-term market cycles, with positive adjustments indicating upward cycle pressure.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-900 mb-2">⚡ Spike Adjustment Alerts</h4>
+              <p>
+                Detects significant short-term volatility spike adjustments. Triggers when spike adjustments 
+                exceed ±3 points (medium) or ±6 points (high). These capture unusual price volatility relative 
+                to recent volatility patterns, indicating potential trend changes.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-900 mb-2">📊 50-Week SMA Warning Alerts</h4>
+              <p>
+                Monitors Bitcoin's position relative to the 50-week Simple Moving Average. Triggers when Bitcoin 
+                closes below the 50W SMA for 2+ consecutive weeks (medium) or 4+ weeks (high). Historically, 
+                this signals potential bull market end and trend reversal.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-900 mb-2">💰 ETF Zero-Cross Detection</h4>
+              <p>
+                Monitors the 21-day sum of ETF flows and detects when it crosses zero (positive to negative 
+                or vice versa). Uses a smart deadband to avoid noise: <code className="bg-gray-100 px-1 rounded">max(round(0.02 × std), 1000)</code> 
                 where std is calculated over the last 180 days.
               </p>
             </div>
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">Risk Band Changes</h4>
+              <h4 className="font-medium text-gray-900 mb-2">🎯 Risk Band Changes</h4>
               <p>
                 Tracks changes in the overall risk band (Aggressive Buying, Hold & Wait, High Risk, etc.) by comparing 
                 yesterday's band from history.csv with today's band from latest.json.
               </p>
             </div>
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">Idempotence</h4>
+              <h4 className="font-medium text-gray-900 mb-2">⚠️ Factor Staleness Alerts</h4>
               <p>
-                Alerts are only generated once per day per type. The system maintains a log of all alerts 
-                and skips duplicate entries to prevent spam.
+                Monitors individual risk factors for data staleness. Triggers when factors become stale due to 
+                data source failures or API issues. Stale factors are excluded from G-Score calculation, 
+                potentially affecting accuracy.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-900 mb-2">System Features</h4>
+              <p>
+                <strong>Idempotence:</strong> Alerts are only generated once per day per type. The system maintains 
+                a log of all alerts and skips duplicate entries to prevent spam.<br/>
+                <strong>Severity Levels:</strong> Medium (threshold met) and High (significant threshold exceeded).<br/>
+                <strong>Data Retention:</strong> Alerts are stored for 30 days and displayed in chronological order.
               </p>
             </div>
           </div>
