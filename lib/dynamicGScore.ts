@@ -29,15 +29,38 @@ interface DashboardData {
   };
 }
 
-// Risk band calculation (matches ETL logic)
-function getRiskBand(score: number): { key: string; label: string; range: [number, number]; color: string; recommendation: string } {
-  if (score >= 0 && score <= 15) return { key: "maximum_buying", label: "Maximum Buying", range: [0, 15] as [number, number], color: "#059669", recommendation: "Maximum Buying" };
-  if (score >= 16 && score <= 25) return { key: "buying", label: "Buying", range: [16, 25] as [number, number], color: "#16A34A", recommendation: "Buying" };
-  if (score >= 26 && score <= 34) return { key: "accumulate", label: "Accumulate", range: [26, 34] as [number, number], color: "#65A30D", recommendation: "Accumulate" };
-  if (score >= 35 && score <= 55) return { key: "hold_neutral", label: "Hold/Neutral", range: [35, 55] as [number, number], color: "#6B7280", recommendation: "Hold/Neutral" };
-  if (score >= 56 && score <= 70) return { key: "reduce", label: "Reduce", range: [56, 70] as [number, number], color: "#CA8A04", recommendation: "Reduce" };
-  if (score >= 71 && score <= 84) return { key: "selling", label: "Selling", range: [71, 84] as [number, number], color: "#DC2626", recommendation: "Selling" };
-  return { key: "maximum_selling", label: "Maximum Selling", range: [85, 100] as [number, number], color: "#991B1B", recommendation: "Maximum Selling" };
+// Load risk bands from single source of truth
+async function loadRiskBands(): Promise<Array<{ key: string; label: string; range: [number, number]; color: string; recommendation: string }>> {
+  try {
+    const response = await fetch('/config/dashboard-config.json');
+    if (!response.ok) {
+      throw new Error('Failed to load dashboard config');
+    }
+    const config = await response.json();
+    return config.bands || [];
+  } catch (error) {
+    console.error('Error loading risk bands:', error);
+    // Fallback to current bands if config fails to load
+    return [
+      { key: "aggressive_buy", label: "Aggressive Buying", range: [0, 14], color: "green", recommendation: "Max allocation" },
+      { key: "dca_buy", label: "Regular DCA Buying", range: [15, 34], color: "green", recommendation: "Continue regular purchases" },
+      { key: "moderate_buy", label: "Moderate Buying", range: [35, 49], color: "yellow", recommendation: "Reduce position size" },
+      { key: "hold_wait", label: "Hold & Wait", range: [50, 64], color: "orange", recommendation: "Hold existing positions" },
+      { key: "reduce_risk", label: "Reduce Risk", range: [65, 79], color: "red", recommendation: "Consider taking profits" },
+      { key: "high_risk", label: "High Risk", range: [80, 100], color: "red", recommendation: "Significant risk of correction" }
+    ];
+  }
+}
+
+// Risk band calculation using single source of truth
+function getRiskBand(score: number, bands: Array<{ key: string; label: string; range: [number, number]; color: string; recommendation: string }>): { key: string; label: string; range: [number, number]; color: string; recommendation: string } {
+  for (const band of bands) {
+    if (score >= band.range[0] && score <= band.range[1]) {
+      return band;
+    }
+  }
+  // Fallback to last band if score is out of range
+  return bands[bands.length - 1] || { key: "unknown", label: "Unknown", range: [0, 100], color: "gray", recommendation: "Unknown" };
 }
 
 // Simple percentile rank calculation
@@ -135,6 +158,10 @@ export async function recalculateGScoreWithFreshPrice(
   try {
     console.log('Recalculating G-Score with fresh Bitcoin price:', freshBtcPrice);
     
+    // Load risk bands from single source of truth
+    const riskBands = await loadRiskBands();
+    console.log('Loaded risk bands from config:', riskBands.length, 'bands');
+    
     const updatedFactors: FactorData[] = [];
     let totalWeight = 0;
     let weightedSum = 0;
@@ -160,9 +187,9 @@ export async function recalculateGScoreWithFreshPrice(
     
     // Calculate new composite score
     const newCompositeScore = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : originalData.composite_score;
-    const newBand = getRiskBand(newCompositeScore);
+    const newBand = getRiskBand(newCompositeScore, riskBands);
     
-    console.log('G-Score updated:', originalData.composite_score, '→', newCompositeScore);
+    console.log('G-Score updated:', originalData.composite_score, '→', newCompositeScore, 'Band:', newBand.label);
     
     return {
       ...originalData,
