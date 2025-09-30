@@ -26,11 +26,11 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
 
   // Gauge configuration
   const centerX = 130;
-  const centerY = 130;
+  const centerY = 140; // Adjusted for better horizontal positioning
   const radius = 100;
-  const startAngle = -120; // Start at -120 degrees
-  const endAngle = 120;    // End at +120 degrees
-  const sweepAngle = endAngle - startAngle; // 240 degrees total
+  const startAngle = -150; // Start at -150 degrees (more horizontal)
+  const endAngle = 30;    // End at +30 degrees (more horizontal)
+  const sweepAngle = endAngle - startAngle; // 180 degrees total
 
   // Calculate needle angle
   const needleAngle = startAngle + (animatedScore / 100) * sweepAngle;
@@ -122,9 +122,9 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
   return (
     <div className={`relative ${className}`}>
       <svg
-        width="260"
-        height="160"
-        viewBox="0 0 260 160"
+        width="280"
+        height="180"
+        viewBox="0 0 280 180"
         className="w-full h-auto"
         aria-hidden="true"
       >
@@ -135,15 +135,6 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
           stroke="#E5E7EB"
           strokeWidth="8"
           strokeLinecap="round"
-        />
-        
-        {/* Debug: Show the full arc extent */}
-        <path
-          d={createArcPath(startAngle, endAngle, radius - 5)}
-          fill="none"
-          stroke="#FF0000"
-          strokeWidth="2"
-          opacity="0.3"
         />
         
         {/* Tick marks */}
