@@ -29,8 +29,8 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
       setIsAnimating(true);
       
       // Animate needle rotation smoothly
-      const startAngle = (animatedScore / 100) * sweepAngle + startAngle;
-      const endAngle = (score / 100) * sweepAngle + startAngle;
+      const currentAngle = (animatedScore / 100) * sweepAngle + startAngle;
+      const targetAngle = (score / 100) * sweepAngle + startAngle;
       
       // Use requestAnimationFrame for smooth needle animation
       let startTime: number;
@@ -42,9 +42,9 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
         
         // Easing function for smooth animation
         const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-        const currentAngle = startAngle + (endAngle - startAngle) * easeOutCubic;
+        const interpolatedAngle = currentAngle + (targetAngle - currentAngle) * easeOutCubic;
         
-        setNeedleAngle(currentAngle);
+        setNeedleAngle(interpolatedAngle);
         
         if (progress < 1) {
           requestAnimationFrame(animateNeedle);
