@@ -21,6 +21,7 @@ import WeightsLauncher from './WeightsLauncher';
 import HistoryChart from './HistoryChart';
 import BtcGoldCard from './BtcGoldCard';
 import SatoshisPerDollarCard from './SatoshisPerDollarCard';
+import RadialGauge from './RadialGauge';
 
 function ErrorView({ msg, onRetry }: { msg: string; onRetry: () => void }) {
   return <div style={{ padding: 16 }}><p>{msg}</p><button onClick={onRetry} style={{ marginTop: 8 }}>Retry</button></div>;
@@ -208,8 +209,8 @@ export default function RealDashboard() {
               </div>
               
               {/* Prominent G-Score Card */}
-              <div className="bg-white border-2 border-gray-300 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-200 max-w-md ring-1 ring-gray-200">
-                <div className="flex items-center justify-between mb-3">
+              <div className="bg-white border-2 border-gray-300 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-200 max-w-lg ring-1 ring-gray-200">
+                <div className="flex items-center justify-between mb-4">
                   <h1 className="text-sm font-bold text-gray-600 uppercase tracking-wide">
                     Bitcoin G-Score
                   </h1>
@@ -227,17 +228,22 @@ export default function RealDashboard() {
                   })()}
                 </div>
                 
-                <div className="flex items-baseline gap-3">
-                  <div className={`text-4xl sm:text-5xl font-bold ${getBandTextColorFromLabel(latest?.band?.label ?? '')}`}>
-                    {latest?.composite_score ?? '—'}
+                {/* Radial Gauge */}
+                <div className="flex justify-center mb-4">
+                  <RadialGauge 
+                    score={latest?.composite_score ?? 0}
+                    bandLabel={latest?.band?.label ?? '—'}
+                    className="w-64 h-32"
+                  />
+                </div>
+                
+                {/* Band and Recommendation */}
+                <div className="text-center">
+                  <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getBandColorClasses(latest?.band?.label ?? '')} mb-2`}>
+                    {latest?.band?.label ?? '—'}
                   </div>
-                  <div className="flex-1">
-                    <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getBandColorClasses(latest?.band?.label ?? '')}`}>
-                      {latest?.band?.label ?? '—'}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {getBandRecommendation(latest?.band)}
-                    </div>
+                  <div className="text-xs text-gray-500">
+                    {getBandRecommendation(latest?.band)}
                   </div>
                 </div>
               </div>
