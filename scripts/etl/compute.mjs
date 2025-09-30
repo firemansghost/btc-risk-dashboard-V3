@@ -817,6 +817,19 @@ async function main() {
   };
   await fs.writeFile("public/data/latest.json", JSON.stringify(latest, null, 2));
 
+  // 4.1) Generate indicator alerts (cycle, spike, 50W SMA)
+  console.log("Generating indicator alerts...");
+  try {
+    const { exec } = await import('node:child_process');
+    const { promisify } = await import('node:util');
+    const execAsync = promisify(exec);
+    
+    await execAsync('node scripts/etl/generate-indicator-alerts.mjs');
+    console.log("✅ Indicator alerts generated successfully");
+  } catch (error) {
+    console.log(`⚠️  Indicator alert generation failed: ${error.message}`);
+  }
+
   // 5) status.json (preserve existing data like schema hashes)
   let existingStatus = {};
   try {
