@@ -25,11 +25,11 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
   }, [score, animatedScore]);
 
   // Gauge configuration
-  const centerX = 130;
-  const centerY = 140; // Adjusted for better horizontal positioning
+  const centerX = 140;
+  const centerY = 140; // Centered for -180 to 0 arc
   const radius = 100;
-  const startAngle = -150; // Start at -150 degrees (more horizontal)
-  const endAngle = 30;    // End at +30 degrees (more horizontal)
+  const startAngle = -180; // Start at -180 degrees (true horizontal)
+  const endAngle = 0;      // End at 0 degrees (true horizontal)
   const sweepAngle = endAngle - startAngle; // 180 degrees total
 
   // Calculate needle angle
