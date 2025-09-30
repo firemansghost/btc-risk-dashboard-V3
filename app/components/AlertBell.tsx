@@ -31,7 +31,7 @@ export default function AlertBell() {
   useEffect(() => {
     async function fetchAlerts() {
       try {
-        const response = await fetch('/alerts/latest.json', {
+        const response = await fetch('/data/alerts/latest.json', {
           cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' }
         });

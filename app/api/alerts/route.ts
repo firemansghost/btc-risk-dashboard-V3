@@ -7,7 +7,10 @@ export async function GET(request: Request) {
     const alertTypes = [
       'etf_zero_cross_alerts',
       'risk_band_change_alerts', 
-      'factor_staleness_alerts'
+      'factor_staleness_alerts',
+      'cycle_adjustment_alerts',
+      'spike_adjustment_alerts',
+      'sma50w_warning_alerts'
     ];
 
     const allAlerts: any[] = [];

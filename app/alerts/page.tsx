@@ -17,7 +17,7 @@ export default function AlertsPage() {
   useEffect(() => {
     async function fetchAlertLog() {
       try {
-        const response = await fetch('/alerts/log.csv', {
+        const response = await fetch('/api/alerts', {
           cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' }
         });
@@ -26,39 +26,20 @@ export default function AlertsPage() {
           throw new Error(`HTTP ${response.status}`);
         }
         
-        const csvText = await response.text();
-        const lines = csvText.trim().split('\n');
+        const data = await response.json();
         
-        if (lines.length <= 1) {
+        if (data.success && data.alerts) {
+          // Convert API response to AlertLogEntry format
+          const alertEntries: AlertLogEntry[] = data.alerts.map((alert: any) => ({
+            occurred_at: alert.timestamp,
+            type: alert.type,
+            details: alert.details || {}
+          }));
+          
+          setAlertLog(alertEntries);
+        } else {
           setAlertLog([]);
-          return;
         }
-        
-        const headers = lines[0].split(',');
-        const data = lines.slice(1).map(line => {
-          const values = line.split(',');
-          const entry: AlertLogEntry = {
-            occurred_at: values[0],
-            type: values[1],
-            details: {}
-          };
-          
-          // Parse details JSON (handle CSV escaping)
-          if (values.length > 2) {
-            const detailsStr = values.slice(2).join(',').replace(/^"|"$/g, '').replace(/""/g, '"');
-            try {
-              entry.details = JSON.parse(detailsStr);
-            } catch (error) {
-              entry.details = { raw: detailsStr };
-            }
-          }
-          
-          return entry;
-        });
-        
-        // Sort by date (newest first) and take latest 50
-        const sortedData = data.sort((a, b) => b.occurred_at.localeCompare(a.occurred_at)).slice(0, 50);
-        setAlertLog(sortedData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load alert log');
       } finally {
@@ -127,10 +108,20 @@ export default function AlertsPage() {
             </Link>
           </div>
           
-          <h1 className="text-3xl font-bold text-gray-900">Alert History</h1>
-          <p className="text-gray-600 mt-2">
-            Historical record of significant market events and risk band changes
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Alert History</h1>
+              <p className="text-gray-600 mt-2">
+                Historical record of significant market events and risk band changes
+              </p>
+            </div>
+            <Link 
+              href="/alerts/types"
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            >
+              View Alert Types →
+            </Link>
+          </div>
         </div>
 
         {/* Content */}
