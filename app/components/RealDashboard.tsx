@@ -208,8 +208,8 @@ export default function RealDashboard() {
                 <a href="/" className="hover:text-emerald-600 transition-colors">GhostGauge</a>
               </div>
               
-              {/* Prominent G-Score Card */}
-              <div className="bg-white border-2 border-gray-300 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-200 max-w-lg ring-1 ring-gray-200">
+              {/* Prominent G-Score Card - New Layout */}
+              <div className="bg-white border-2 border-gray-300 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-200 max-w-4xl ring-1 ring-gray-200">
                 <div className="flex items-center justify-between mb-4">
                   <h1 className="text-sm font-bold text-gray-600 uppercase tracking-wide">
                     Bitcoin G-Score
@@ -228,22 +228,30 @@ export default function RealDashboard() {
                   })()}
                 </div>
                 
-                {/* Radial Gauge */}
-                <div className="flex justify-center mb-4">
-                  <RadialGauge 
-                    score={latest?.composite_score ?? 0}
-                    bandLabel={latest?.band?.label ?? '—'}
-                    className="w-64 h-32"
-                  />
-                </div>
-                
-                {/* Band and Recommendation */}
-                <div className="text-center">
-                  <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getBandColorClasses(latest?.band?.label ?? '')} mb-2`}>
-                    {latest?.band?.label ?? '—'}
+                {/* New Layout: Gauge Left, Score Right */}
+                <div className="flex flex-col lg:flex-row gap-6 items-center">
+                  {/* Left Side: Radial Gauge */}
+                  <div className="flex-shrink-0">
+                    <RadialGauge 
+                      score={latest?.composite_score ?? 0}
+                      bandLabel={latest?.band?.label ?? '—'}
+                      className="w-64 h-32"
+                    />
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {getBandRecommendation(latest?.band)}
+                  
+                  {/* Right Side: Score Display */}
+                  <div className="flex-1 text-center lg:text-left">
+                    <div className="mb-4">
+                      <div className="text-6xl font-bold text-gray-900 mb-2">
+                        {latest?.composite_score ?? '—'}
+                      </div>
+                      <div className={`inline-flex items-center px-4 py-2 rounded-full text-lg font-semibold ${getBandColorClasses(latest?.band?.label ?? '')} mb-3`}>
+                        {latest?.band?.label ?? '—'}
+                      </div>
+                      <div className="text-sm text-gray-600 max-w-md">
+                        {getBandRecommendation(latest?.band)}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

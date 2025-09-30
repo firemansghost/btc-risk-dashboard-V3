@@ -239,17 +239,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
         />
       </svg>
       
-      {/* Enhanced center content area - positioned above gauge */}
-      <div className="absolute inset-0 flex items-start justify-center pointer-events-none -mt-16">
-        <div className="text-center">
-          <div className="text-3xl font-bold text-gray-900 mb-1 drop-shadow-sm">
-            {animatedScore}
-          </div>
-          <div className="text-xs font-semibold text-gray-700 bg-gray-100 px-2 py-1 rounded-full">
-            {bandLabel}
-          </div>
-        </div>
-      </div>
+      {/* Center content removed - now displayed separately in parent component */}
     </div>
   );
 }
