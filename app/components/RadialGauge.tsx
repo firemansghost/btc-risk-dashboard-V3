@@ -8,9 +8,18 @@ interface RadialGaugeProps {
   className?: string;
 }
 
+interface TooltipData {
+  x: number;
+  y: number;
+  content: string;
+  visible: boolean;
+}
+
 export default function RadialGauge({ score, bandLabel, className = '' }: RadialGaugeProps) {
   const [animatedScore, setAnimatedScore] = useState(score);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [tooltip, setTooltip] = useState<TooltipData>({ x: 0, y: 0, content: '', visible: false });
+  const [focusedElement, setFocusedElement] = useState<string | null>(null);
 
   // Animation effect
   useEffect(() => {
@@ -23,6 +32,25 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
       return () => clearTimeout(timer);
     }
   }, [score, animatedScore]);
+
+  // Keyboard navigation
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      // Show tooltip for focused element
+      if (focusedElement) {
+        const content = focusedElement.includes('band') 
+          ? `${focusedElement.replace('band-', '')} risk band`
+          : `Score: ${focusedElement}`;
+        setTooltip({ x: 140, y: 90, content, visible: true });
+        setTimeout(() => setTooltip(prev => ({ ...prev, visible: false })), 3000);
+      }
+    }
+    if (event.key === 'Escape') {
+      setTooltip(prev => ({ ...prev, visible: false }));
+      setFocusedElement(null);
+    }
+  };
 
   // Gauge configuration
   const centerX = 140;
@@ -66,21 +94,50 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
       const segmentStartAngle = startAngle + startPercent * sweepAngle;
       const segmentEndAngle = startAngle + endPercent * sweepAngle;
       
+      // Create invisible hit area for better interaction
+      const hitAreaRadius = radius + 8;
+      const hitAreaPath = createArcPath(segmentStartAngle, segmentEndAngle, hitAreaRadius);
       
       segments.push(
-        <path
-          key={band.label}
-          d={createArcPath(segmentStartAngle, segmentEndAngle, radius)}
-          fill="none"
-          stroke={bandColors[index]}
-          strokeWidth="8"
-          strokeLinecap="round"
-          opacity="0.3"
-        />
+        <g key={band.label}>
+          {/* Invisible hit area for better interaction */}
+          <path
+            d={hitAreaPath}
+            fill="transparent"
+            stroke="transparent"
+            strokeWidth="20"
+            onMouseEnter={(e) => showTooltip(e, `${band.label} (${band.min}-${band.max}): ${getBandRecommendation(band.label)}`)}
+            onMouseLeave={hideTooltip}
+            style={{ cursor: 'pointer' }}
+          />
+          {/* Visible band segment */}
+          <path
+            d={createArcPath(segmentStartAngle, segmentEndAngle, radius)}
+            fill="none"
+            stroke={bandColors[index]}
+            strokeWidth="8"
+            strokeLinecap="round"
+            opacity="0.3"
+            className="transition-all duration-200 hover:opacity-60 hover:stroke-width-12"
+          />
+        </g>
       );
     });
     
     return segments;
+  };
+
+  // Helper function to get band recommendations
+  const getBandRecommendation = (bandLabel: string): string => {
+    const recommendations: { [key: string]: string } = {
+      'Aggressive Buying': 'High confidence buying opportunity',
+      'Regular DCA Buying': 'Good time for dollar-cost averaging',
+      'Moderate Buying': 'Consider small position additions',
+      'Hold & Wait': 'Hold existing positions',
+      'Reduce Risk': 'Consider reducing exposure',
+      'High Risk': 'High risk environment - be cautious'
+    };
+    return recommendations[bandLabel] || 'Risk assessment';
   };
 
   // Calculate needle end point
@@ -106,7 +163,22 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
     return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
   };
 
-  // Create tick marks with enhanced hierarchy
+  // Tooltip helper functions
+  const showTooltip = (event: React.MouseEvent, content: string) => {
+    const rect = (event.target as SVGElement).getBoundingClientRect();
+    setTooltip({
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top - 10,
+      content,
+      visible: true
+    });
+  };
+
+  const hideTooltip = () => {
+    setTooltip(prev => ({ ...prev, visible: false }));
+  };
+
+  // Create tick marks with enhanced hierarchy and interactions
   const createTicks = () => {
     const ticks: ReactElement[] = [];
     for (let i = 0; i <= 100; i += 10) {
@@ -120,18 +192,39 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
       const tickEndX = centerX + tickRadius * Math.cos(toRadians(angle));
       const tickEndY = centerY + tickRadius * Math.sin(toRadians(angle));
       
+      // Create invisible hit area for better interaction
+      const hitAreaRadius = tickRadius + 5;
+      const hitStartX = centerX + (hitAreaRadius - tickLength - 5) * Math.cos(toRadians(angle));
+      const hitStartY = centerY + (hitAreaRadius - tickLength - 5) * Math.sin(toRadians(angle));
+      const hitEndX = centerX + hitAreaRadius * Math.cos(toRadians(angle));
+      const hitEndY = centerY + hitAreaRadius * Math.sin(toRadians(angle));
+      
       ticks.push(
-        <line
-          key={i}
-          x1={tickStartX}
-          y1={tickStartY}
-          x2={tickEndX}
-          y2={tickEndY}
-          stroke={isMajorTick ? "#374151" : "#6B7280"} // Darker major ticks
-          strokeWidth={isMajorTick ? 3 : 2} // Slightly thicker minor ticks
-          opacity={isMajorTick ? 0.9 : 0.8} // Higher opacity for minor ticks
-          className={isMajorTick ? "drop-shadow-sm" : ""} // Subtle shadow for major ticks
-        />
+        <g key={i}>
+          {/* Invisible hit area for better interaction */}
+          <line
+            x1={hitStartX}
+            y1={hitStartY}
+            x2={hitEndX}
+            y2={hitEndY}
+            stroke="transparent"
+            strokeWidth="8"
+            onMouseEnter={(e) => showTooltip(e, `Score: ${i}${isMajorTick ? ' (Major)' : ''}`)}
+            onMouseLeave={hideTooltip}
+            style={{ cursor: 'pointer' }}
+          />
+          {/* Visible tick mark */}
+          <line
+            x1={tickStartX}
+            y1={tickStartY}
+            x2={tickEndX}
+            y2={tickEndY}
+            stroke={isMajorTick ? "#374151" : "#6B7280"} // Darker major ticks
+            strokeWidth={isMajorTick ? 3 : 2} // Slightly thicker minor ticks
+            opacity={isMajorTick ? 0.9 : 0.8} // Higher opacity for minor ticks
+            className={`${isMajorTick ? "drop-shadow-sm" : ""} transition-all duration-200 hover:opacity-100 hover:stroke-width-${isMajorTick ? '4' : '3'}`} // Hover effects
+          />
+        </g>
       );
     }
     return ticks;
@@ -171,14 +264,17 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
   };
 
   return (
-    <div className={`relative transition-all duration-300 hover:scale-105 hover:drop-shadow-xl ${className}`}>
+    <div className={`relative transition-all duration-300 hover:scale-105 hover:drop-shadow-xl focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-opacity-50 ${className}`}>
       <svg
         width="280"
         height="180"
         viewBox="0 0 280 180"
         className="w-full h-auto"
-        aria-hidden="true"
+        role="img"
+        aria-label={`Bitcoin G-Score gauge showing ${score} out of 100, currently in ${bandLabel} risk band`}
         style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} // Subtle overall shadow
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
       >
         {/* Band-colored arc segments */}
         {createBandSegments()}
@@ -212,7 +308,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
             strokeLinecap="round"
             opacity="0.2"
           />
-          {/* Main needle */}
+          {/* Main needle with interactions */}
           <line
             x1={centerX}
             y1={centerY}
@@ -221,8 +317,12 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
             stroke="#1F2937"
             strokeWidth="4"
             strokeLinecap="round"
+            onMouseEnter={(e) => showTooltip(e, `Current Score: ${score} - ${bandLabel}`)}
+            onMouseLeave={hideTooltip}
+            style={{ cursor: 'pointer' }}
+            className="transition-all duration-200 hover:stroke-width-6"
           />
-          {/* Needle tip with gradient */}
+          {/* Needle tip with gradient and interactions */}
           <circle
             cx={needleEndX}
             cy={needleEndY}
@@ -230,6 +330,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
             fill="#1F2937"
             stroke="#FFFFFF"
             strokeWidth="2"
+            className="transition-all duration-200 hover:r-8"
           />
         </g>
         
@@ -243,6 +344,34 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
           strokeWidth="3"
           className="drop-shadow-md"
         />
+        
+        {/* Tooltip */}
+        {tooltip.visible && (
+          <g>
+            <rect
+              x={tooltip.x - 10}
+              y={tooltip.y - 25}
+              width="200"
+              height="20"
+              fill="#1F2937"
+              stroke="#374151"
+              strokeWidth="1"
+              rx="4"
+              className="drop-shadow-lg"
+            />
+            <text
+              x={tooltip.x + 90}
+              y={tooltip.y - 10}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize="12"
+              fill="#FFFFFF"
+              fontWeight="500"
+            >
+              {tooltip.content}
+            </text>
+          </g>
+        )}
       </svg>
       
       {/* Center content removed - now displayed separately in parent component */}
