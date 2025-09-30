@@ -43,10 +43,10 @@ const factorMetadata: Record<string, { sources: string[], description: string, c
 
 export async function GET(
   request: Request,
-  { params }: { params: { factorKey: string } }
+  { params }: { params: Promise<{ factorKey: string }> }
 ) {
   try {
-    const { factorKey } = params;
+    const { factorKey } = await params;
     const url = new URL(request.url);
     const format = url.searchParams.get('format') || 'csv';
     const range = url.searchParams.get('range') || '90d';
