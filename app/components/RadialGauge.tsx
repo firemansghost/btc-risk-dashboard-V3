@@ -112,7 +112,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
     for (let i = 0; i <= 100; i += 10) {
       const angle = startAngle + (i / 100) * sweepAngle;
       const isMajorTick = i % 50 === 0; // Major ticks at 0, 50, 100
-      const tickLength = isMajorTick ? 16 : 8; // Longer major ticks
+      const tickLength = isMajorTick ? 16 : 10; // Slightly longer minor ticks
       const tickRadius = radius + 5;
       
       const tickStartX = centerX + (tickRadius - tickLength) * Math.cos(toRadians(angle));
@@ -128,8 +128,8 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
           x2={tickEndX}
           y2={tickEndY}
           stroke={isMajorTick ? "#374151" : "#6B7280"} // Darker major ticks
-          strokeWidth={isMajorTick ? 3 : 1.5} // Thicker major ticks
-          opacity={isMajorTick ? 0.9 : 0.7} // Higher opacity for major ticks
+          strokeWidth={isMajorTick ? 3 : 2} // Slightly thicker minor ticks
+          opacity={isMajorTick ? 0.9 : 0.8} // Higher opacity for minor ticks
           className={isMajorTick ? "drop-shadow-sm" : ""} // Subtle shadow for major ticks
         />
       );
