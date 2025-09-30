@@ -20,18 +20,51 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
   const [isAnimating, setIsAnimating] = useState(false);
   const [tooltip, setTooltip] = useState<TooltipData>({ x: 0, y: 0, content: '', visible: false });
   const [focusedElement, setFocusedElement] = useState<string | null>(null);
+  const [needleAngle, setNeedleAngle] = useState(0);
+  const [bandsVisible, setBandsVisible] = useState(false);
 
-  // Animation effect
+  // Animation effect with smooth needle rotation
   useEffect(() => {
     if (score !== animatedScore) {
       setIsAnimating(true);
-      const timer = setTimeout(() => {
-        setAnimatedScore(score);
-        setIsAnimating(false);
-      }, 50); // Small delay to ensure smooth animation start
-      return () => clearTimeout(timer);
+      
+      // Animate needle rotation smoothly
+      const startAngle = (animatedScore / 100) * sweepAngle + startAngle;
+      const endAngle = (score / 100) * sweepAngle + startAngle;
+      
+      // Use requestAnimationFrame for smooth needle animation
+      let startTime: number;
+      const duration = 800; // 800ms animation duration
+      
+      const animateNeedle = (timestamp: number) => {
+        if (!startTime) startTime = timestamp;
+        const progress = Math.min((timestamp - startTime) / duration, 1);
+        
+        // Easing function for smooth animation
+        const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+        const currentAngle = startAngle + (endAngle - startAngle) * easeOutCubic;
+        
+        setNeedleAngle(currentAngle);
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateNeedle);
+        } else {
+          setAnimatedScore(score);
+          setIsAnimating(false);
+        }
+      };
+      
+      requestAnimationFrame(animateNeedle);
     }
-  }, [score, animatedScore]);
+  }, [score, animatedScore, startAngle, sweepAngle]);
+
+  // Trigger band animation on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setBandsVisible(true);
+    }, 200); // Small delay to ensure smooth initial load
+    return () => clearTimeout(timer);
+  }, []);
 
   // Keyboard navigation
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -76,7 +109,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
     { min: 80, max: 100, label: 'High Risk' }
   ];
 
-  // Create band-colored arc segments
+  // Create band-colored arc segments with staggered animation
   const createBandSegments = () => {
     const segments: ReactElement[] = [];
     const bandColors = [
@@ -110,7 +143,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
             onMouseLeave={hideTooltip}
             style={{ cursor: 'pointer' }}
           />
-          {/* Visible band segment */}
+          {/* Visible band segment with staggered animation */}
           <path
             d={createArcPath(segmentStartAngle, segmentEndAngle, radius)}
             fill="none"
@@ -118,7 +151,13 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
             strokeWidth="12"
             strokeLinecap="round"
             opacity="0.3"
-            className="transition-all duration-200 hover:opacity-60 hover:stroke-width-16"
+            className={`transition-all duration-200 hover:opacity-60 hover:stroke-width-16 ${
+              bandsVisible ? 'animate-fade-in' : 'opacity-0'
+            }`}
+            style={{
+              animationDelay: `${index * 100}ms`, // Staggered appearance
+              animationFillMode: 'forwards'
+            }}
           />
         </g>
       );
@@ -140,10 +179,11 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
     return recommendations[bandLabel] || 'Risk assessment';
   };
 
-  // Calculate needle end point
+  // Calculate needle end point with smooth animation
   const needleLength = 80;
-  const needleEndX = centerX + needleLength * Math.cos(toRadians(needleAngle));
-  const needleEndY = centerY + needleLength * Math.sin(toRadians(needleAngle));
+  const currentNeedleAngle = needleAngle || ((score / 100) * sweepAngle + startAngle);
+  const needleEndX = centerX + needleLength * Math.cos(toRadians(currentNeedleAngle));
+  const needleEndY = centerY + needleLength * Math.sin(toRadians(currentNeedleAngle));
 
   // Create arc path for background track
   const createArcPath = (startAngle: number, endAngle: number, radius: number) => {
@@ -271,6 +311,15 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
 
   return (
     <div className={`relative transition-all duration-300 hover:scale-105 hover:drop-shadow-xl focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-opacity-50 ${className}`}>
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: scale(0.8); }
+          to { opacity: 0.3; transform: scale(1); }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.6s ease-out;
+        }
+      `}</style>
       <svg
         width="280"
         height="200"
@@ -314,7 +363,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
             strokeLinecap="round"
             opacity="0.2"
           />
-          {/* Main needle with interactions */}
+          {/* Main needle with interactions and micro-animations */}
           <line
             x1={centerX}
             y1={centerY}
@@ -326,9 +375,9 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
             onMouseEnter={(e) => showTooltip(e, `Current Score: ${score} - ${bandLabel}`)}
             onMouseLeave={hideTooltip}
             style={{ cursor: 'pointer' }}
-            className="transition-all duration-200 hover:stroke-width-6"
+            className="transition-all duration-300 hover:stroke-width-6 hover:drop-shadow-lg"
           />
-          {/* Needle tip with gradient and interactions */}
+          {/* Needle tip with gradient and micro-animations */}
           <circle
             cx={needleEndX}
             cy={needleEndY}
@@ -336,11 +385,11 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
             fill="#1F2937"
             stroke="#FFFFFF"
             strokeWidth="2"
-            className="transition-all duration-200 hover:r-8"
+            className="transition-all duration-300 hover:r-8 hover:drop-shadow-md"
           />
         </g>
         
-        {/* Enhanced center dot */}
+        {/* Enhanced center dot with micro-animations */}
         <circle
           cx={centerX}
           cy={centerY}
@@ -348,7 +397,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
           fill="#1F2937"
           stroke="#FFFFFF"
           strokeWidth="3"
-          className="drop-shadow-md"
+          className="drop-shadow-md transition-all duration-300 hover:r-12 hover:drop-shadow-lg"
         />
         
         {/* Enhanced Tooltip */}
