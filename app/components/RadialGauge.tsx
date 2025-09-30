@@ -34,6 +34,16 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
 
   // Calculate needle angle
   const needleAngle = startAngle + (animatedScore / 100) * sweepAngle;
+  
+  // Debug logging
+  console.log('Gauge Debug:', {
+    score: animatedScore,
+    startAngle,
+    endAngle,
+    sweepAngle,
+    needleAngle,
+    expectedAngle: startAngle + (animatedScore / 100) * sweepAngle
+  });
 
   // Convert degrees to radians
   const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
@@ -54,7 +64,8 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
       y: centerY + radius * Math.sin(toRadians(endAngle))
     };
     
-    const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+    // For a 240-degree arc, we need the large arc flag
+    const largeArcFlag = "1"; // Always use large arc for 240 degrees
     
     return `M ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
   };
@@ -121,8 +132,8 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
     <div className={`relative ${className}`}>
       <svg
         width="260"
-        height="140"
-        viewBox="0 0 260 140"
+        height="160"
+        viewBox="0 0 260 160"
         className="w-full h-auto"
         aria-hidden="true"
       >
