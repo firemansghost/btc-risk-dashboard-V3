@@ -23,6 +23,14 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
   const [needleAngle, setNeedleAngle] = useState(0);
   const [bandsVisible, setBandsVisible] = useState(false);
 
+  // Gauge configuration (moved up to avoid dependency issues)
+  const centerX = 140;
+  const centerY = 140; // Centered for -180 to 0 arc
+  const radius = 100;
+  const startAngle = -180; // Start at -180 degrees (true horizontal)
+  const endAngle = 0;      // End at 0 degrees (true horizontal)
+  const sweepAngle = endAngle - startAngle; // 180 degrees total
+
   // Animation effect with smooth needle rotation
   useEffect(() => {
     if (score !== animatedScore) {
@@ -84,14 +92,6 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
       setFocusedElement(null);
     }
   };
-
-  // Gauge configuration
-  const centerX = 140;
-  const centerY = 140; // Centered for -180 to 0 arc
-  const radius = 100;
-  const startAngle = -180; // Start at -180 degrees (true horizontal)
-  const endAngle = 0;      // End at 0 degrees (true horizontal)
-  const sweepAngle = endAngle - startAngle; // 180 degrees total
 
   // Calculate needle angle (removed duplicate - using animated version below)
 
