@@ -217,7 +217,6 @@ export default function RealDashboard() {
                     <h1 className="text-sm font-bold text-gray-600 uppercase tracking-wide">
                       Bitcoin G-Score
                     </h1>
-                    <AlertBell />
                     {(() => {
                       const delta = calculateYesterdayDelta(latest?.composite_score, latest);
                       if (!delta) return null;
@@ -260,7 +259,10 @@ export default function RealDashboard() {
 
                 {/* Bitcoin Price Card */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-                  <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wide mb-4">Bitcoin Price</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wide">Bitcoin Price</h3>
+                    <AlertBell />
+                  </div>
                   <div className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">{latest?.btc?.spot_usd ? fmtUsd0(latest.btc.spot_usd) : 'N/A'}</div>
                   <div className="text-sm text-gray-500">
                     {formatSourceTimestamp('Coinbase (daily close)', latest?.btc?.as_of_utc || '—')}
