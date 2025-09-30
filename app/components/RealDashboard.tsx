@@ -101,6 +101,22 @@ export default function RealDashboard() {
 
   // Factor expansion state
   const [expandedFactors, setExpandedFactors] = useState(new Set<string>());
+  
+  // Onboarding state
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Check if user is first-time visitor
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem('ghostgauge-onboarding-dismissed');
+    if (!hasSeenOnboarding) {
+      setShowOnboarding(true);
+    }
+  }, []);
+
+  const dismissOnboarding = () => {
+    setShowOnboarding(false);
+    localStorage.setItem('ghostgauge-onboarding-dismissed', 'true');
+  };
 
   const load = useCallback(async () => {
     setError(null); setLoading(true); startedAt.current = Date.now();
@@ -342,6 +358,71 @@ export default function RealDashboard() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Onboarding Block */}
+        {showOnboarding && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold text-blue-800">Getting Started</h3>
+              <button 
+                onClick={dismissOnboarding}
+                className="text-blue-600 hover:text-blue-800 text-xl font-bold leading-none"
+                aria-label="Dismiss onboarding"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="text-blue-700 text-sm space-y-3">
+              <p>
+                <strong>Bitcoin G-Score</strong> turns market conditions into a 0–100 risk measure (higher = riskier). 
+                Use the risk bands as context, not commands.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-semibold mb-1 text-blue-800">Quick Start:</h4>
+                  <ul className="space-y-1 text-xs">
+                    <li>• Check the <strong>G-Score</strong> and risk band above</li>
+                    <li>• Review <strong>factor contributions</strong> below</li>
+                    <li>• Use <strong>History</strong> buttons for trends</li>
+                    <li>• Click <strong>Enhanced Details</strong> for deeper analysis</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold mb-1 text-blue-800">Learn More:</h4>
+                  <div className="space-y-1 text-xs">
+                    <div>
+                      <a href="/what-is-risk" className="text-blue-600 hover:underline">What Is Risk?</a>
+                      <span className="text-blue-500 ml-1">→ Risk concepts & analogies</span>
+                    </div>
+                    <div>
+                      <a href="/methodology" className="text-blue-600 hover:underline">Methodology</a>
+                      <span className="text-blue-500 ml-1">→ How G-Score is calculated</span>
+                    </div>
+                    <div>
+                      <a href="/strategy-analysis" className="text-blue-600 hover:underline">Strategy Analysis</a>
+                      <span className="text-blue-500 ml-1">→ Historical performance</span>
+                    </div>
+                    <div>
+                      <a href="/etf-predictions" className="text-blue-600 hover:underline">ETF Predictions</a>
+                      <span className="text-blue-500 ml-1">→ Flow forecasts</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-blue-100 border border-blue-300 rounded p-3 mt-3">
+                <p className="text-xs text-blue-800">
+                  <strong>💡 Pro Tip:</strong> The G-Score combines 5 pillars (Liquidity, Momentum, Term Structure, Macro, Social) 
+                  with transparent weights. Higher scores indicate riskier market conditions, not price predictions.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Key Metrics Cards - 5 Box Layout */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6 lg:mb-8">
           {/* Composite Score */}
@@ -372,6 +453,13 @@ export default function RealDashboard() {
               >
                 Tune weights
               </button>
+              <span className="text-gray-400">•</span>
+              <a 
+                href="/what-is-risk" 
+                className="text-xs text-blue-600 hover:text-blue-700 font-medium border-b border-blue-200 hover:border-blue-300 transition-colors"
+              >
+                What's this?
+              </a>
             </div>
             
             {/* Cycle & Spike Adjustments */}
@@ -490,6 +578,15 @@ export default function RealDashboard() {
 
         {/* Factor Cards */}
         <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">Risk Factor Breakdown</h2>
+            <a 
+              href="/methodology#factors" 
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium border-b border-blue-200 hover:border-blue-300 transition-colors"
+            >
+              How factors work →
+            </a>
+          </div>
           {/* Factor Summary */}
           <div className="text-sm text-gray-600 mb-4">
             Sorted by contribution · Liquidity 35% · Momentum 25% · Term 20% · Macro 10% · Social 10%
@@ -759,7 +856,7 @@ export default function RealDashboard() {
               
                   {/* ETF-specific action buttons */}
                   {factor.key === 'etf_flows' && (
-                    <div className="mt-2 flex gap-3">
+                    <div className="mt-2 flex flex-wrap gap-3">
                       <button
                         onClick={openEtfBreakdown}
                         className="text-sm text-blue-600 hover:text-blue-700 font-medium"
@@ -778,6 +875,12 @@ export default function RealDashboard() {
                       >
                         Predictions
                       </button>
+                      <a 
+                        href="/etf-predictions" 
+                        className="text-sm text-gray-600 hover:text-gray-700 font-medium"
+                      >
+                        What are ETF flows? →
+                      </a>
                     </div>
                   )}
                   
