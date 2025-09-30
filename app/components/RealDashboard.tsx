@@ -209,7 +209,7 @@ export default function RealDashboard() {
               </div>
               
               {/* Prominent G-Score Card - New Layout */}
-              <div className="bg-white border-2 border-gray-300 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-200 max-w-2xl ring-1 ring-gray-200">
+              <div className="bg-white border-2 border-gray-300 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-200 max-w-xl ring-1 ring-gray-200">
                 <div className="flex items-center justify-between mb-4">
                   <h1 className="text-sm font-bold text-gray-600 uppercase tracking-wide">
                     Bitcoin G-Score
@@ -229,7 +229,7 @@ export default function RealDashboard() {
                 </div>
                 
                 {/* New Layout: Gauge Left, Score Right */}
-                <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center">
+                <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-end">
                   {/* Left Side: Radial Gauge */}
                   <div className="flex-shrink-0">
                     <RadialGauge 
@@ -239,13 +239,13 @@ export default function RealDashboard() {
                     />
                   </div>
                   
-                  {/* Right Side: Score Display */}
-                  <div className="flex-1 text-center lg:text-left lg:pt-4">
-                    <div className="mb-4">
-                      <div className="text-5xl font-bold text-gray-900 mb-2">
+                  {/* Right Side: Score Display - Centered and aligned with gauge bottom */}
+                  <div className="flex-1 text-center lg:text-left flex flex-col justify-end">
+                    <div className="space-y-2">
+                      <div className="text-5xl font-bold text-gray-900">
                         {latest?.composite_score ?? '—'}
                       </div>
-                      <div className={`inline-flex items-center px-3 py-2 rounded-full text-base font-semibold ${getBandColorClasses(latest?.band?.label ?? '')} mb-3`}>
+                      <div className={`inline-flex items-center px-3 py-2 rounded-full text-base font-semibold ${getBandColorClasses(latest?.band?.label ?? '')}`}>
                         {latest?.band?.label ?? '—'}
                       </div>
                       <div className="text-sm text-gray-600">
