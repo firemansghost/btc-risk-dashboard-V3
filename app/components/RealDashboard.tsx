@@ -241,11 +241,11 @@ export default function RealDashboard() {
                   
                   {/* Right Side: Score Display - Responsive alignment */}
                   <div className="flex-1 text-center lg:text-left flex flex-col justify-end">
-                    <div className="space-y-2">
-                      <div className="text-5xl font-bold text-gray-900 mx-auto lg:mx-0">
+                    <div className="space-y-2 flex flex-col items-center lg:items-start">
+                      <div className="text-5xl font-bold text-gray-900">
                         {latest?.composite_score ?? '—'}
                       </div>
-                      <div className={`inline-flex items-center px-3 py-2 rounded-full text-base font-semibold ${getBandColorClasses(latest?.band?.label ?? '')} mx-auto lg:mx-0`}>
+                      <div className={`inline-flex items-center px-3 py-2 rounded-full text-base font-semibold ${getBandColorClasses(latest?.band?.label ?? '')}`}>
                         {latest?.band?.label ?? '—'}
                       </div>
                       <div className="text-sm text-gray-600">
