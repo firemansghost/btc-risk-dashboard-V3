@@ -24,6 +24,11 @@ const factorMetadata: Record<string, { sources: string[], description: string, c
     description: 'Trend & Valuation Analysis',
     csvFile: 'mayer_multiple.csv'
   },
+  'onchain': {
+    sources: ['Mempool.space', 'Blockchain.com', 'Glassnode'],
+    description: 'On-chain Activity Metrics',
+    csvFile: 'onchain_activity.csv'
+  },
   'term_leverage': {
     sources: ['Deribit', 'Binance', 'OKX'],
     description: 'Term Structure & Leverage',
@@ -52,13 +57,25 @@ export async function GET(
     const range = url.searchParams.get('range') || '90d';
     
     // Get factor metadata
-    const metadata = factorMetadata[factorKey];
-    if (!metadata) {
-      return NextResponse.json({ error: 'Factor not found' }, { status: 404 });
-    }
+  const metadata = factorMetadata[factorKey];
+  if (!metadata) {
+    return NextResponse.json({ error: 'Factor not found' }, { status: 404 });
+  }
 
-    // Load the CSV data
-    const csvPath = path.join(process.cwd(), 'public', 'signals', metadata.csvFile);
+  // Check if the CSV file exists
+  const csvPath = path.join(process.cwd(), 'public', 'signals', metadata.csvFile);
+  try {
+    await fs.access(csvPath);
+  } catch (error) {
+    return NextResponse.json({ 
+      error: 'Historical data not available for this factor',
+      message: 'This factor does not maintain historical CSV data',
+      factor: factorKey,
+      description: metadata.description
+    }, { status: 404 });
+  }
+
+  // Load the CSV data
     const csvContent = await fs.readFile(csvPath, 'utf8');
     const lines = csvContent.trim().split('\n');
     

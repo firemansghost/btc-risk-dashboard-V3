@@ -34,6 +34,7 @@ export default function FactorHistoryModal({ isOpen, onClose, factorKey, factorL
     'etf_flows': { sources: ['Farside', 'SEC Filings'], description: 'Bitcoin ETF Flow Data' },
     'net_liquidity': { sources: ['FRED (St. Louis Fed)', 'Federal Reserve'], description: 'Net Liquidity Indicators' },
     'trend_valuation': { sources: ['Coinbase', 'Bitcoin Historical Data'], description: 'Trend & Valuation Analysis' },
+    'onchain': { sources: ['Mempool.space', 'Blockchain.com', 'Glassnode'], description: 'On-chain Activity Metrics' },
     'term_leverage': { sources: ['Deribit', 'Binance', 'OKX'], description: 'Term Structure & Leverage' },
     'macro_overlay': { sources: ['FRED', 'Federal Reserve', 'TradingView'], description: 'Macroeconomic Overlay' },
     'social_interest': { sources: ['Alternative.me', 'Fear & Greed Index'], description: 'Social Interest & Sentiment' }
