@@ -77,6 +77,20 @@ function getBandRecommendation(band: any): string {
   return band?.label || 'Unknown';
 }
 
+// Get band color classes for pills
+function getBandColorClasses(bandLabel: string): string {
+  const colorMap: Record<string, string> = {
+    'Aggressive Buying': 'bg-green-100 text-green-800 border-green-200',
+    'Regular DCA Buying': 'bg-green-100 text-green-800 border-green-200',
+    'Moderate Buying': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    'Hold & Wait': 'bg-orange-100 text-orange-800 border-orange-200',
+    'Reduce Risk': 'bg-red-100 text-red-800 border-red-200',
+    'High Risk': 'bg-red-100 text-red-800 border-red-200'
+  };
+  
+  return colorMap[bandLabel] || 'bg-gray-100 text-gray-800 border-gray-200';
+}
+
 export default function RealDashboard() {
   console.log('RealDashboard: component mounting');
   
@@ -186,26 +200,46 @@ export default function RealDashboard() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 py-4 sm:py-6">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6 py-4 sm:py-6">
             <div className="flex-1">
-              <div className="font-bold tracking-tight text-xl sm:text-2xl md:text-3xl text-gray-900">
+              <div className="font-bold tracking-tight text-xl sm:text-2xl md:text-3xl text-gray-900 mb-4">
                 <a href="/" className="hover:text-emerald-600 transition-colors">GhostGauge</a>
               </div>
-              <h1 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900 mt-1" aria-label={`Bitcoin G-Score ${latest?.composite_score ?? '—'}, band ${latest?.band?.label ?? '—'}`}>
-                Bitcoin G-Score: <span className={getBandTextColorFromLabel(latest?.band?.label ?? '')}>{latest?.composite_score ?? '—'} — {latest?.band?.label ?? '—'}</span>
-                {(() => {
-                  const delta = calculateYesterdayDelta(latest?.composite_score, latest);
-                  if (!delta) return null;
-                  return (
-                    <span 
-                      className="ml-3 px-2 py-0.5 text-xs text-gray-600 bg-gray-100 rounded-full border border-gray-200"
-                      title="Change in headline G-Score since the previous daily close"
-                    >
-                      {delta.glyph} {delta.displayText}
-                    </span>
-                  );
-                })()}
-              </h1>
+              
+              {/* Prominent G-Score Card */}
+              <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow duration-200 max-w-md">
+                <div className="flex items-center justify-between mb-3">
+                  <h1 className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+                    Bitcoin G-Score
+                  </h1>
+                  {(() => {
+                    const delta = calculateYesterdayDelta(latest?.composite_score, latest);
+                    if (!delta) return null;
+                    return (
+                      <span 
+                        className="px-2 py-1 text-xs text-gray-600 bg-gray-100 rounded-full border border-gray-200"
+                        title="Change in headline G-Score since the previous daily close"
+                      >
+                        {delta.glyph} {delta.displayText}
+                      </span>
+                    );
+                  })()}
+                </div>
+                
+                <div className="flex items-baseline gap-3">
+                  <div className={`text-4xl sm:text-5xl font-bold ${getBandTextColorFromLabel(latest?.band?.label ?? '')}`}>
+                    {latest?.composite_score ?? '—'}
+                  </div>
+                  <div className="flex-1">
+                    <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getBandColorClasses(latest?.band?.label ?? '')}`}>
+                      {latest?.band?.label ?? '—'}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {getBandRecommendation(latest?.band)}
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div className="flex items-center gap-2 mt-3 mb-4">
                 <p className="text-sm text-gray-600">
                   Daily 0–100 risk score for Bitcoin (GRS v3). As of {latest?.as_of_utc ? formatFriendlyTimestamp(latest.as_of_utc) : '—'} · <a href="/methodology" className="text-emerald-600 hover:text-emerald-700">Methodology</a>
