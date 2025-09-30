@@ -33,18 +33,32 @@ function formatSignedNumber(value: number): string {
 }
 
 // Get correct band color classes (matching RiskBandLegend exactly)
-function getBandColorClasses(color: string): string {
+function getBandColorClasses(input: string): string {
+  // Handle band labels first
+  const labelColorMap: Record<string, string> = {
+    'Aggressive Buying': 'bg-green-100 text-green-800 border-green-200',
+    'Regular DCA Buying': 'bg-green-100 text-green-800 border-green-200',
+    'Moderate Buying': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    'Hold & Wait': 'bg-orange-100 text-orange-800 border-orange-200',
+    'Reduce Risk': 'bg-red-100 text-red-800 border-red-200',
+    'High Risk': 'bg-red-100 text-red-800 border-red-200'
+  };
+  
+  if (labelColorMap[input]) {
+    return labelColorMap[input];
+  }
+  
   // Handle both semantic color names and hex colors
-  if (color === '#059669' || color === 'green') return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-  if (color === '#16A34A' || color === 'green') return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-  if (color === '#65A30D' || color === 'green') return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-  if (color === '#6B7280' || color === 'blue') return 'bg-sky-100 text-sky-800 border-sky-200';  // Hold/Neutral
-  if (color === '#CA8A04' || color === 'yellow') return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-  if (color === '#DC2626' || color === 'orange') return 'bg-orange-100 text-orange-800 border-orange-200';
-  if (color === '#991B1B' || color === 'red') return 'bg-rose-100 text-rose-800 border-rose-200';
+  if (input === '#059669' || input === 'green') return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+  if (input === '#16A34A' || input === 'green') return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+  if (input === '#65A30D' || input === 'green') return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+  if (input === '#6B7280' || input === 'blue') return 'bg-sky-100 text-sky-800 border-sky-200';  // Hold/Neutral
+  if (input === '#CA8A04' || input === 'yellow') return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+  if (input === '#DC2626' || input === 'orange') return 'bg-orange-100 text-orange-800 border-orange-200';
+  if (input === '#991B1B' || input === 'red') return 'bg-rose-100 text-rose-800 border-rose-200';
   
   // Fallback to semantic names
-  switch (color) {
+  switch (input) {
     case 'green': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
     case 'blue': return 'bg-sky-100 text-sky-800 border-sky-200';
     case 'yellow': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
@@ -77,19 +91,6 @@ function getBandRecommendation(band: any): string {
   return band?.label || 'Unknown';
 }
 
-// Get band color classes for pills
-function getBandColorClasses(bandLabel: string): string {
-  const colorMap: Record<string, string> = {
-    'Aggressive Buying': 'bg-green-100 text-green-800 border-green-200',
-    'Regular DCA Buying': 'bg-green-100 text-green-800 border-green-200',
-    'Moderate Buying': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    'Hold & Wait': 'bg-orange-100 text-orange-800 border-orange-200',
-    'Reduce Risk': 'bg-red-100 text-red-800 border-red-200',
-    'High Risk': 'bg-red-100 text-red-800 border-red-200'
-  };
-  
-  return colorMap[bandLabel] || 'bg-gray-100 text-gray-800 border-gray-200';
-}
 
 export default function RealDashboard() {
   console.log('RealDashboard: component mounting');
