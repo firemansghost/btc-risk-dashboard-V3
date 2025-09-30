@@ -1,0 +1,17 @@
+[
+  {
+    "id": "cycle_test_2025-09-30_1730000000",
+    "type": "cycle_adjustment",
+    "timestamp": "2025-09-30T17:30:00.000Z",
+    "severity": "medium",
+    "title": "Significant Cycle Adjustment Detected",
+    "message": "Cycle adjustment: positive 6.2 points",
+    "details": {
+      "adjustment_points": 6.2,
+      "residual_z": 0.8,
+      "source": "ETL calculation",
+      "reason": "Historical cycle analysis"
+    },
+    "action_required": "Monitor trend"
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "spike_test_2025-09-30_1730000000",
+    "type": "spike_adjustment",
+    "timestamp": "2025-09-30T17:30:00.000Z",
+    "severity": "medium",
+    "title": "Significant Spike Adjustment Detected",
+    "message": "Spike adjustment: negative 4.1 points",
+    "details": {
+      "adjustment_points": -4.1,
+      "r_1d": -0.05,
+      "sigma": 0.8,
+      "z_score": -0.6,
+      "ref_close": 112866.77
+    },
+    "action_required": "Monitor price action"
+  }
+]

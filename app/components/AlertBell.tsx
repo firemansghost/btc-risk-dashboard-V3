@@ -54,6 +54,16 @@ export default function AlertBell() {
         return `ETF flows crossed zero (${direction})`;
       case 'band_change':
         return `Risk band changed: ${alert.from} → ${alert.to}`;
+      case 'cycle_adjustment':
+        const cycleDir = (alert.details?.adjustment_points || 0) > 0 ? 'positive' : 'negative';
+        const cycleMag = Math.abs(alert.details?.adjustment_points || 0);
+        return `Cycle adjustment: ${cycleDir} ${cycleMag.toFixed(1)} pts`;
+      case 'spike_adjustment':
+        const spikeDir = (alert.details?.adjustment_points || 0) > 0 ? 'positive' : 'negative';
+        const spikeMag = Math.abs(alert.details?.adjustment_points || 0);
+        return `Spike adjustment: ${spikeDir} ${spikeMag.toFixed(1)} pts`;
+      case 'sma50w_warning':
+        return `50W SMA warning: ${alert.details?.consecutive_weeks_below || 0} weeks below`;
       default:
         return `Alert: ${alert.type}`;
     }

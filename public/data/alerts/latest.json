@@ -1,0 +1,52 @@
+{
+  "occurred_at": "2025-09-30T22:21:06.815Z",
+  "alerts": [
+    {
+      "id": "cycle_test_2025-09-30_1730000000",
+      "type": "cycle_adjustment",
+      "timestamp": "2025-09-30T17:30:00.000Z",
+      "severity": "medium",
+      "title": "Significant Cycle Adjustment Detected",
+      "message": "Cycle adjustment: positive 6.2 points",
+      "details": {
+        "adjustment_points": 6.2,
+        "residual_z": 0.8,
+        "source": "ETL calculation",
+        "reason": "Historical cycle analysis"
+      },
+      "action_required": "Monitor trend"
+    },
+    {
+      "id": "spike_test_2025-09-30_1730000000",
+      "type": "spike_adjustment",
+      "timestamp": "2025-09-30T17:30:00.000Z",
+      "severity": "medium",
+      "title": "Significant Spike Adjustment Detected",
+      "message": "Spike adjustment: negative 4.1 points",
+      "details": {
+        "adjustment_points": -4.1,
+        "r_1d": -0.05,
+        "sigma": 0.8,
+        "z_score": -0.6,
+        "ref_close": 112866.77
+      },
+      "action_required": "Monitor price action"
+    },
+    {
+      "id": "sma50w_test_2025-09-30_1730000000",
+      "type": "sma50w_warning",
+      "timestamp": "2025-09-30T17:30:00.000Z",
+      "severity": "high",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 3 consecutive weeks",
+      "details": {
+        "sma50": 99836.91,
+        "current_close": 95000,
+        "consecutive_weeks_below": 3,
+        "is_below": true,
+        "price_vs_sma": "-4.85"
+      },
+      "action_required": "Consider reducing risk exposure"
+    }
+  ]
+}

@@ -42,7 +42,10 @@ export default function AlertManagementCard() {
         const alertSources = [
           'etf_zero_cross_alerts.json',
           'risk_band_change_alerts.json',
-          'factor_staleness_alerts.json'
+          'factor_staleness_alerts.json',
+          'cycle_adjustment_alerts.json',
+          'spike_adjustment_alerts.json',
+          'sma50w_warning_alerts.json'
         ];
 
         const allAlerts: Alert[] = [];

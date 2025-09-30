@@ -78,6 +78,16 @@ export default function AlertsPage() {
         return `ETF flows crossed zero (${direction}): ${from} → ${to}`;
       case 'band_change':
         return `Risk band changed: ${alert.details.from} → ${alert.details.to} (${alert.details.composite_from} → ${alert.details.composite_to})`;
+      case 'cycle_adjustment':
+        const cycleDir = (alert.details.adjustment_points || 0) > 0 ? 'positive' : 'negative';
+        const cycleMag = Math.abs(alert.details.adjustment_points || 0);
+        return `Cycle adjustment: ${cycleDir} ${cycleMag.toFixed(1)} points`;
+      case 'spike_adjustment':
+        const spikeDir = (alert.details.adjustment_points || 0) > 0 ? 'positive' : 'negative';
+        const spikeMag = Math.abs(alert.details.adjustment_points || 0);
+        return `Spike adjustment: ${spikeDir} ${spikeMag.toFixed(1)} points`;
+      case 'sma50w_warning':
+        return `50W SMA warning: ${alert.details.consecutive_weeks_below || 0} consecutive weeks below`;
       default:
         return `Alert: ${alert.type}`;
     }
@@ -89,6 +99,12 @@ export default function AlertsPage() {
         return 'bg-blue-100 text-blue-800';
       case 'band_change':
         return 'bg-red-100 text-red-800';
+      case 'cycle_adjustment':
+        return 'bg-purple-100 text-purple-800';
+      case 'spike_adjustment':
+        return 'bg-orange-100 text-orange-800';
+      case 'sma50w_warning':
+        return 'bg-amber-100 text-amber-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }

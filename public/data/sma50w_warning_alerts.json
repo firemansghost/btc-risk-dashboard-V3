@@ -1,0 +1,18 @@
+[
+  {
+    "id": "sma50w_test_2025-09-30_1730000000",
+    "type": "sma50w_warning",
+    "timestamp": "2025-09-30T17:30:00.000Z",
+    "severity": "high",
+    "title": "50-Week SMA Warning",
+    "message": "Bitcoin has closed below 50W SMA for 3 consecutive weeks",
+    "details": {
+      "sma50": 99836.91,
+      "current_close": 95000,
+      "consecutive_weeks_below": 3,
+      "is_below": true,
+      "price_vs_sma": "-4.85"
+    },
+    "action_required": "Consider reducing risk exposure"
+  }
+]
