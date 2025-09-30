@@ -11,8 +11,10 @@ interface AlertLogEntry {
 
 export default function AlertsPage() {
   const [alertLog, setAlertLog] = useState<AlertLogEntry[]>([]);
+  const [allAlerts, setAllAlerts] = useState<AlertLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [displayCount, setDisplayCount] = useState(10);
 
   useEffect(() => {
     async function fetchAlertLog() {
@@ -36,8 +38,10 @@ export default function AlertsPage() {
             details: alert.details || {}
           }));
           
-          setAlertLog(alertEntries);
+          setAllAlerts(alertEntries);
+          setAlertLog(alertEntries.slice(0, displayCount));
         } else {
+          setAllAlerts([]);
           setAlertLog([]);
         }
       } catch (err) {
@@ -49,6 +53,11 @@ export default function AlertsPage() {
 
     fetchAlertLog();
   }, []);
+
+  // Update displayed alerts when displayCount changes
+  useEffect(() => {
+    setAlertLog(allAlerts.slice(0, displayCount));
+  }, [allAlerts, displayCount]);
 
   const formatAlertDetails = (alert: AlertLogEntry): string => {
     switch (alert.type) {
@@ -113,6 +122,11 @@ export default function AlertsPage() {
               <h1 className="text-3xl font-bold text-gray-900">Alert History</h1>
               <p className="text-gray-600 mt-2">
                 Historical record of significant market events and risk band changes
+                {allAlerts.length > 0 && (
+                  <span className="ml-2 text-sm text-gray-500">
+                    (Showing {Math.min(displayCount, allAlerts.length)} of {allAlerts.length} alerts)
+                  </span>
+                )}
               </p>
             </div>
             <Link 
@@ -191,6 +205,18 @@ export default function AlertsPage() {
                     </div>
                   </div>
                 ))}
+                
+                {/* Load More Button */}
+                {allAlerts.length > displayCount && (
+                  <div className="flex justify-center pt-4">
+                    <button
+                      onClick={() => setDisplayCount(prev => Math.min(prev + 10, allAlerts.length))}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Load More ({allAlerts.length - displayCount} remaining)
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
