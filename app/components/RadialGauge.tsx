@@ -22,6 +22,8 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
   const [focusedElement, setFocusedElement] = useState<string | null>(null);
   const [needleAngle, setNeedleAngle] = useState(0);
   const [bandsVisible, setBandsVisible] = useState(false);
+  const [announcement, setAnnouncement] = useState('');
+  const [isHighContrast, setIsHighContrast] = useState(false);
 
   // Gauge configuration (moved up to avoid dependency issues)
   const centerX = 140;
@@ -59,12 +61,14 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
         } else {
           setAnimatedScore(score);
           setIsAnimating(false);
+          // Announce score change to screen readers
+          setAnnouncement(`Bitcoin G-Score updated to ${score}, ${bandLabel} risk band`);
         }
       };
       
       requestAnimationFrame(animateNeedle);
     }
-  }, [score, animatedScore, startAngle, sweepAngle]);
+  }, [score, animatedScore, startAngle, sweepAngle, bandLabel]);
 
   // Trigger band animation on mount
   useEffect(() => {
@@ -74,7 +78,18 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
     return () => clearTimeout(timer);
   }, []);
 
-  // Keyboard navigation
+  // Detect high contrast mode
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-contrast: high)');
+    setIsHighContrast(mediaQuery.matches);
+    
+    const handleChange = (e: MediaQueryListEvent) => setIsHighContrast(e.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  // Enhanced keyboard navigation with arrow keys
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
@@ -90,6 +105,19 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
     if (event.key === 'Escape') {
       setTooltip(prev => ({ ...prev, visible: false }));
       setFocusedElement(null);
+    }
+    // Arrow key navigation between score ranges
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      event.preventDefault();
+      const currentScore = Math.round(animatedScore);
+      const increment = event.key === 'ArrowRight' ? 5 : -5;
+      const newScore = Math.max(0, Math.min(100, currentScore + increment));
+      
+      // Announce navigation to screen readers
+      setAnnouncement(`Navigating to score ${newScore}`);
+      
+      // Update focused element for visual feedback
+      setFocusedElement(`score-${newScore}`);
     }
   };
 
@@ -142,14 +170,14 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
             onMouseLeave={hideTooltip}
             style={{ cursor: 'pointer' }}
           />
-          {/* Visible band segment with staggered animation */}
+          {/* Visible band segment with staggered animation and high contrast support */}
           <path
             d={createArcPath(segmentStartAngle, segmentEndAngle, radius)}
             fill="none"
-            stroke={bandColors[index]}
-            strokeWidth="12"
+            stroke={isHighContrast ? '#000000' : bandColors[index]}
+            strokeWidth={isHighContrast ? '16' : '12'}
             strokeLinecap="round"
-            opacity="0.3"
+            opacity={isHighContrast ? '0.8' : '0.3'}
             className={`transition-all duration-200 hover:opacity-60 hover:stroke-width-16 ${
               bandsVisible ? 'animate-fade-in' : 'opacity-0'
             }`}
@@ -329,6 +357,8 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
         style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} // Subtle overall shadow
         onKeyDown={handleKeyDown}
         tabIndex={0}
+        aria-live="polite"
+        aria-atomic="true"
       >
         {/* Band-colored arc segments */}
         {createBandSegments()}
@@ -429,6 +459,16 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
           </g>
         )}
       </svg>
+      
+      {/* Screen reader announcements */}
+      <div 
+        aria-live="polite" 
+        aria-atomic="true" 
+        className="sr-only"
+        role="status"
+      >
+        {announcement}
+      </div>
       
       {/* Center content removed - now displayed separately in parent component */}
     </div>
