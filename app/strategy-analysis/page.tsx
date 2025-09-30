@@ -7,6 +7,7 @@ import BacktestingInsights from '../components/BacktestingInsights';
 import RiskBandAnalysis from '../components/RiskBandAnalysis';
 import InvestmentGlossary from '../components/InvestmentGlossary';
 import BacktestingStatus from '../components/BacktestingStatus';
+import BacktestingDisclosures from '../components/BacktestingDisclosures';
 
 export default function StrategyAnalysisPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'tester' | 'insights' | 'risk-bands' | 'glossary'>('overview');
@@ -102,9 +103,12 @@ export default function StrategyAnalysisPage() {
             {/* Hero Section */}
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-8 text-white">
               <h2 className="text-2xl font-bold mb-4">🚀 <strong>Bitcoin G-Score</strong> Strategy Analysis Results</h2>
-              <p className="text-lg mb-6">
+              <p className="text-lg mb-4">
                 Our comprehensive backtesting using the <strong>Bitcoin G-Score</strong> reveals that <strong>Value Averaging</strong> is the clear winner 
-                with <strong>224.89% returns</strong> and <strong>0% maximum drawdown</strong>.
+                with <strong>224.89% returns</strong> and <strong>0% maximum drawdown from peak</strong>.
+              </p>
+              <p className="text-sm opacity-90 mb-6">
+                <strong>Analysis Period:</strong> August 2023 - September 2025 (731 days) • <strong>Market:</strong> Bull market with high volatility
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white/20 rounded-lg p-4">
@@ -117,13 +121,17 @@ export default function StrategyAnalysisPage() {
                 </div>
                 <div className="bg-white/20 rounded-lg p-4">
                   <div className="text-3xl font-bold">0%</div>
-                  <div className="text-sm opacity-90">Max Drawdown</div>
+                  <div className="text-sm opacity-90">Max Drawdown*</div>
+                  <div className="text-xs opacity-75 mt-1">*From peak value</div>
                 </div>
               </div>
             </div>
 
             {/* Backtesting Status */}
             <BacktestingStatus />
+
+            {/* Disclosures */}
+            <BacktestingDisclosures />
 
             {/* Strategy Comparison */}
             <StrategyComparisonCard />
@@ -151,6 +159,7 @@ export default function StrategyAnalysisPage() {
               </p>
             </div>
             <BacktestingStatus />
+            <BacktestingDisclosures />
             <BacktestingInsights />
           </div>
         )}
@@ -164,6 +173,7 @@ export default function StrategyAnalysisPage() {
               </p>
             </div>
             <BacktestingStatus />
+            <BacktestingDisclosures />
             <RiskBandAnalysis />
           </div>
         )}

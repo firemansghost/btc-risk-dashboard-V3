@@ -27,6 +27,28 @@ interface ComparisonData {
   insights: Array<{ type: string; message: string }>;
 }
 
+// Tooltip component for metric definitions
+function MetricTooltip({ children, definition }: { children: React.ReactNode; definition: string }) {
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  return (
+    <div className="relative inline-block">
+      <div
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+        className="cursor-help"
+      >
+        {children}
+      </div>
+      {showTooltip && (
+        <div className="absolute z-10 w-64 p-2 mt-1 text-xs text-white bg-gray-900 rounded shadow-lg">
+          {definition}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function StrategyComparisonCard() {
   const [comparisonData, setComparisonData] = useState<ComparisonData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -185,32 +207,50 @@ export default function StrategyComparisonCard() {
 
             {/* Key Metrics */}
             <div>
-              <h4 className="text-sm font-medium text-gray-900 mb-3">Key Metrics</h4>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium text-gray-900">Key Metrics</h4>
+                <div className="text-xs text-gray-500">
+                  <span className="inline-flex items-center">
+                    <span className="w-2 h-2 bg-blue-500 rounded-full mr-1"></span>
+                    Hover for definitions
+                  </span>
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {Object.entries(comparisonData.strategies).map(([name, strategy]) => (
                   <div key={name} className="bg-gray-50 rounded-lg p-4">
                     <h5 className="text-sm font-medium text-gray-900 mb-2">{name}</h5>
                     <div className="space-y-1">
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">Return:</span>
+                        <MetricTooltip definition="Total percentage return over the entire backtesting period">
+                          <span className="text-gray-500">Return:</span>
+                        </MetricTooltip>
                         <span className={`font-medium ${getReturnColor(strategy.totalReturn * 100)}`}>
                           {(strategy.totalReturn * 100).toFixed(2)}%
                         </span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">Invested:</span>
+                        <MetricTooltip definition="Total amount invested over the entire period">
+                          <span className="text-gray-500">Invested:</span>
+                        </MetricTooltip>
                         <span className="font-medium">${strategy.totalInvested.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">Final Value:</span>
+                        <MetricTooltip definition="Final portfolio value at the end of the period">
+                          <span className="text-gray-500">Final Value:</span>
+                        </MetricTooltip>
                         <span className="font-medium">${strategy.finalValue.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">Total BTC:</span>
+                        <MetricTooltip definition="Total Bitcoin accumulated over the period">
+                          <span className="text-gray-500">Total BTC:</span>
+                        </MetricTooltip>
                         <span className="font-medium">{strategy.totalBTC.toFixed(4)}</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">Trades:</span>
+                        <MetricTooltip definition="Number of individual trades executed">
+                          <span className="text-gray-500">Trades:</span>
+                        </MetricTooltip>
                         <span className="font-medium">{strategy.trades.length}</span>
                       </div>
                     </div>
