@@ -22,6 +22,7 @@ import HistoryChart from './HistoryChart';
 import BtcGoldCard from './BtcGoldCard';
 import SatoshisPerDollarCard from './SatoshisPerDollarCard';
 import RadialGauge from './RadialGauge';
+import AlertBell from './AlertBell';
 
 function ErrorView({ msg, onRetry }: { msg: string; onRetry: () => void }) {
   return <div style={{ padding: 16 }}><p>{msg}</p><button onClick={onRetry} style={{ marginTop: 8 }}>Retry</button></div>;
@@ -216,6 +217,7 @@ export default function RealDashboard() {
                     <h1 className="text-sm font-bold text-gray-600 uppercase tracking-wide">
                       Bitcoin G-Score
                     </h1>
+                    <AlertBell />
                     {(() => {
                       const delta = calculateYesterdayDelta(latest?.composite_score, latest);
                       if (!delta) return null;
