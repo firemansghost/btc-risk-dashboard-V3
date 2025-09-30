@@ -34,19 +34,53 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
 
   // Calculate needle angle
   const needleAngle = startAngle + (animatedScore / 100) * sweepAngle;
-  
-  // Debug logging
-  console.log('Needle Debug:', {
-    score: animatedScore,
-    startAngle,
-    endAngle,
-    sweepAngle,
-    needleAngle,
-    expectedPosition: `${animatedScore}% of arc`
-  });
 
   // Convert degrees to radians
   const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+
+  // Risk bands configuration
+  const bands = [
+    { min: 0, max: 14, label: 'Aggressive Buying' },
+    { min: 15, max: 34, label: 'Regular DCA Buying' },
+    { min: 35, max: 49, label: 'Moderate Buying' },
+    { min: 50, max: 64, label: 'Hold & Wait' },
+    { min: 65, max: 79, label: 'Reduce Risk' },
+    { min: 80, max: 100, label: 'High Risk' }
+  ];
+
+  // Create band-colored arc segments
+  const createBandSegments = () => {
+    const segments: ReactElement[] = [];
+    const bandColors = [
+      '#8B5CF6', // Purple (Aggressive Buying)
+      '#3B82F6', // Blue (Regular DCA)
+      '#22C55E', // Green (Moderate Buying)
+      '#EAB308', // Yellow (Hold & Wait)
+      '#F97316', // Orange (Reduce Risk)
+      '#EF4444'  // Red (High Risk)
+    ];
+    
+    bands.forEach((band, index) => {
+      const startPercent = band.min / 100;
+      const endPercent = band.max / 100;
+      const segmentStartAngle = startAngle + startPercent * sweepAngle;
+      const segmentEndAngle = startAngle + endPercent * sweepAngle;
+      
+      segments.push(
+        <path
+          key={band.label}
+          d={createArcPath(segmentStartAngle, segmentEndAngle, radius)}
+          fill="none"
+          stroke={bandColors[index]}
+          strokeWidth="8"
+          strokeLinecap="round"
+          opacity="0.3"
+        />
+      );
+    });
+    
+    return segments;
+  };
 
   // Calculate needle end point
   const needleLength = 80;
@@ -130,7 +164,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
   };
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative transition-all duration-300 hover:scale-105 hover:drop-shadow-xl ${className}`}>
       <svg
         width="280"
         height="180"
@@ -138,13 +172,17 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
         className="w-full h-auto"
         aria-hidden="true"
       >
-        {/* Background track arc */}
+        {/* Band-colored arc segments */}
+        {createBandSegments()}
+        
+        {/* Background track arc (subtle) */}
         <path
           d={createArcPath(startAngle, endAngle, radius)}
           fill="none"
           stroke="#E5E7EB"
-          strokeWidth="8"
+          strokeWidth="2"
           strokeLinecap="round"
+          opacity="0.5"
         />
         
         {/* Tick marks */}
@@ -153,40 +191,59 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
         {/* Tick labels */}
         {createTickLabels()}
         
-        {/* Needle */}
-        <line
-          x1={centerX}
-          y1={centerY}
-          x2={needleEndX}
-          y2={needleEndY}
-          stroke="#1F2937"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-        {/* Needle tip */}
-        <circle
-          cx={needleEndX}
-          cy={needleEndY}
-          r="4"
-          fill="#1F2937"
-        />
+        {/* Enhanced Needle */}
+        <g className="drop-shadow-lg">
+          {/* Needle shadow */}
+          <line
+            x1={centerX + 1}
+            y1={centerY + 1}
+            x2={needleEndX + 1}
+            y2={needleEndY + 1}
+            stroke="#000000"
+            strokeWidth="4"
+            strokeLinecap="round"
+            opacity="0.2"
+          />
+          {/* Main needle */}
+          <line
+            x1={centerX}
+            y1={centerY}
+            x2={needleEndX}
+            y2={needleEndY}
+            stroke="#1F2937"
+            strokeWidth="4"
+            strokeLinecap="round"
+          />
+          {/* Needle tip with gradient */}
+          <circle
+            cx={needleEndX}
+            cy={needleEndY}
+            r="6"
+            fill="#1F2937"
+            stroke="#FFFFFF"
+            strokeWidth="2"
+          />
+        </g>
         
-        {/* Center dot */}
+        {/* Enhanced center dot */}
         <circle
           cx={centerX}
           cy={centerY}
-          r="6"
+          r="10"
           fill="#1F2937"
+          stroke="#FFFFFF"
+          strokeWidth="3"
+          className="drop-shadow-md"
         />
       </svg>
       
-      {/* Center content area for score and band */}
+      {/* Enhanced center content area */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="text-center">
-          <div className="text-3xl font-bold text-gray-900 mb-1">
-            {score}
+          <div className="text-5xl font-bold text-gray-900 mb-2 drop-shadow-sm">
+            {animatedScore}
           </div>
-          <div className="text-xs text-gray-600 font-medium">
+          <div className="text-sm font-semibold text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
             {bandLabel}
           </div>
         </div>
