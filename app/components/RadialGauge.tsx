@@ -93,8 +93,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
   const endAngle = 0;      // End at 0 degrees (true horizontal)
   const sweepAngle = endAngle - startAngle; // 180 degrees total
 
-  // Calculate needle angle
-  const needleAngle = startAngle + (animatedScore / 100) * sweepAngle;
+  // Calculate needle angle (removed duplicate - using animated version below)
 
   // Convert degrees to radians
   const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
