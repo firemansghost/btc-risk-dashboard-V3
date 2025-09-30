@@ -15,8 +15,8 @@
     },
     "onchain": {
       "dataPoints": 34,
-      "mean": 72.74,
-      "stdDev": 17.83,
+      "mean": 73.21,
+      "stdDev": 17.91,
       "min": 35,
       "max": 98,
       "range": 63,
@@ -26,8 +26,8 @@
     },
     "stablecoins": {
       "dataPoints": 33,
-      "mean": 65.09,
-      "stdDev": 17.14,
+      "mean": 65.03,
+      "stdDev": 17.19,
       "min": 35,
       "max": 95,
       "range": 60,
@@ -60,8 +60,8 @@
     },
     "term_leverage": {
       "dataPoints": 34,
-      "mean": 67,
-      "stdDev": 14.57,
+      "mean": 67.12,
+      "stdDev": 14.54,
       "min": 42,
       "max": 95,
       "range": 53,
