@@ -24,6 +24,8 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
   const [bandsVisible, setBandsVisible] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const [isHighContrast, setIsHighContrast] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [particles, setParticles] = useState<Array<{id: number, x: number, y: number, opacity: number}>>([]);
 
   // Gauge configuration (moved up to avoid dependency issues)
   const centerX = 140;
@@ -74,9 +76,24 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
   useEffect(() => {
     const timer = setTimeout(() => {
       setBandsVisible(true);
+      setIsLoading(false);
+      
+      // Create subtle particle effect
+      const newParticles = Array.from({ length: 8 }, (_, i) => ({
+        id: i,
+        x: centerX + (Math.random() - 0.5) * 40,
+        y: centerY + (Math.random() - 0.5) * 40,
+        opacity: Math.random() * 0.6 + 0.2
+      }));
+      setParticles(newParticles);
+      
+      // Fade out particles after 2 seconds
+      setTimeout(() => {
+        setParticles([]);
+      }, 2000);
     }, 200); // Small delay to ensure smooth initial load
     return () => clearTimeout(timer);
-  }, []);
+  }, [centerX, centerY]);
 
   // Detect high contrast mode
   useEffect(() => {
@@ -136,7 +153,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
     { min: 80, max: 100, label: 'High Risk' }
   ];
 
-  // Create band-colored arc segments with staggered animation
+  // Create band-colored arc segments with staggered animation and gradients
   const createBandSegments = () => {
     const segments: ReactElement[] = [];
     const bandColors = [
@@ -146,6 +163,14 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
       '#EAB308', // Yellow (Hold & Wait)
       '#F97316', // Orange (Reduce Risk)
       '#EF4444'  // Red (High Risk)
+    ];
+    const gradientIds = [
+      'purpleGradient',
+      'blueGradient', 
+      'greenGradient',
+      'yellowGradient',
+      'orangeGradient',
+      'redGradient'
     ];
     
     bands.forEach((band, index) => {
@@ -170,15 +195,16 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
             onMouseLeave={hideTooltip}
             style={{ cursor: 'pointer' }}
           />
-          {/* Visible band segment with staggered animation and high contrast support */}
+          {/* Visible band segment with gradients, glow effects, and high contrast support */}
           <path
             d={createArcPath(segmentStartAngle, segmentEndAngle, radius)}
             fill="none"
-            stroke={isHighContrast ? '#000000' : bandColors[index]}
+            stroke={isHighContrast ? '#000000' : `url(#${gradientIds[index]})`}
             strokeWidth={isHighContrast ? '16' : '12'}
             strokeLinecap="round"
             opacity={isHighContrast ? '0.8' : '0.3'}
-            className={`transition-all duration-200 hover:opacity-60 hover:stroke-width-16 ${
+            filter="url(#glow)"
+            className={`transition-all duration-300 hover:opacity-80 hover:stroke-width-16 hover:drop-shadow-lg ${
               bandsVisible ? 'animate-fade-in' : 'opacity-0'
             }`}
             style={{
@@ -346,6 +372,13 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
         .animate-fade-in {
           animation: fadeIn 0.6s ease-out;
         }
+        @keyframes loading-spin {
+          from { stroke-dashoffset: 94; }
+          to { stroke-dashoffset: 0; }
+        }
+        .animate-spin {
+          animation: loading-spin 1.5s linear infinite;
+        }
       `}</style>
       <svg
         width="280"
@@ -360,6 +393,74 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
         aria-live="polite"
         aria-atomic="true"
       >
+        {/* Gradient definitions for enhanced visual effects */}
+        <defs>
+          <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.3"/>
+            <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.6"/>
+          </linearGradient>
+          <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.3"/>
+            <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.6"/>
+          </linearGradient>
+          <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#22C55E" stopOpacity="0.3"/>
+            <stop offset="100%" stopColor="#22C55E" stopOpacity="0.6"/>
+          </linearGradient>
+          <linearGradient id="yellowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#EAB308" stopOpacity="0.3"/>
+            <stop offset="100%" stopColor="#EAB308" stopOpacity="0.6"/>
+          </linearGradient>
+          <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#F97316" stopOpacity="0.3"/>
+            <stop offset="100%" stopColor="#F97316" stopOpacity="0.6"/>
+          </linearGradient>
+          <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#EF4444" stopOpacity="0.3"/>
+            <stop offset="100%" stopColor="#EF4444" stopOpacity="0.6"/>
+          </linearGradient>
+          {/* Glow filter for hover effects */}
+          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feMerge> 
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        
+        {/* Loading spinner animation */}
+        {isLoading && (
+          <g>
+            <circle
+              cx={centerX}
+              cy={centerY}
+              r="60"
+              fill="none"
+              stroke="#E5E7EB"
+              strokeWidth="4"
+              strokeLinecap="round"
+              opacity="0.3"
+            />
+            <circle
+              cx={centerX}
+              cy={centerY}
+              r="60"
+              fill="none"
+              stroke="#3B82F6"
+              strokeWidth="4"
+              strokeLinecap="round"
+              strokeDasharray="94 94"
+              strokeDashoffset="94"
+              className="animate-spin"
+              style={{
+                animation: 'loading-spin 1.5s linear infinite',
+                transformOrigin: 'center'
+              }}
+            />
+          </g>
+        )}
+        
         {/* Band-colored arc segments */}
         {createBandSegments()}
         
@@ -428,6 +529,19 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
           strokeWidth="3"
           className="drop-shadow-md transition-all duration-300 hover:r-12 hover:drop-shadow-lg"
         />
+        
+        {/* Subtle particle effects */}
+        {particles.map((particle) => (
+          <circle
+            key={particle.id}
+            cx={particle.x}
+            cy={particle.y}
+            r="2"
+            fill="#3B82F6"
+            opacity={particle.opacity}
+            className="animate-pulse"
+          />
+        ))}
         
         {/* Enhanced Tooltip */}
         {tooltip.visible && (
