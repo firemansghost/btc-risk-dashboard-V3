@@ -54,11 +54,19 @@ export default function AlertsPage() {
           const alertEntries: AlertLogEntry[] = data.alerts.map((alert: any) => ({
             occurred_at: alert.timestamp,
             type: alert.type,
-            details: alert.details || {},
+            details: alert.details || alert.data || {},
             // Preserve rich fields for better display
             title: alert.title,
             message: alert.message,
-            severity: alert.severity
+            severity: alert.severity,
+            // Enhanced context fields
+            context: alert.context,
+            trend: alert.trend,
+            consecutiveDays: alert.consecutiveDays,
+            daysInCurrentBand: alert.daysInCurrentBand,
+            daysInPreviousBand: alert.daysInPreviousBand,
+            zeroCrosses: alert.zeroCrosses,
+            recommendations: alert.recommendations
           }));
           
           setAllAlerts(alertEntries);
@@ -257,6 +265,26 @@ export default function AlertsPage() {
                         {alert.context && (
                           <div className="text-xs text-blue-600 mt-2 italic">
                             📊 {alert.context}
+                          </div>
+                        )}
+                        {alert.trend && (
+                          <div className="text-xs text-purple-600 mt-1">
+                            📈 Trend: {alert.trend}
+                          </div>
+                        )}
+                        {alert.consecutiveDays && alert.consecutiveDays > 1 && (
+                          <div className="text-xs text-orange-600 mt-1">
+                            🔄 {alert.consecutiveDays} consecutive days
+                          </div>
+                        )}
+                        {alert.daysInCurrentBand && (
+                          <div className="text-xs text-indigo-600 mt-1">
+                            📅 {alert.daysInCurrentBand} days in current band
+                          </div>
+                        )}
+                        {alert.zeroCrosses && alert.zeroCrosses > 0 && (
+                          <div className="text-xs text-cyan-600 mt-1">
+                            ⚡ {alert.zeroCrosses} zero crosses detected
                           </div>
                         )}
                         {alert.recommendations && alert.recommendations.length > 0 && (
