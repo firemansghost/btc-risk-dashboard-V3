@@ -160,8 +160,8 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       }
       
       // Calculate standard deviation (volatility)
-      const mean = factorScores.reduce((sum, score) => sum + score, 0) / factorScores.length;
-      const variance = factorScores.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) / factorScores.length;
+      const mean = factorScores.reduce((sum: any, score: any) => sum + score, 0) / factorScores.length;
+      const variance = factorScores.reduce((sum: any, score: any) => sum + Math.pow(score - mean, 2), 0) / factorScores.length;
       const volatility = Math.sqrt(variance);
       
       // Determine volatility level
