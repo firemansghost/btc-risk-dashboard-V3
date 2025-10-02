@@ -35,17 +35,45 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
   const [explanation, setExplanation] = useState<ScoreExplanation | null>(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
-  const [previousScore, setPreviousScore] = useState<number | null>(null);
+  const [historicalData, setHistoricalData] = useState<any>(null);
 
-  // Simple score change tracking using localStorage
-  const getScoreChange = () => {
-    if (!explanation || !previousScore) return null;
+  // Load historical data for score comparison
+  const loadHistoricalData = async () => {
+    try {
+      const response = await fetch('/api/history?range=30d', {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setHistoricalData(data);
+      }
+    } catch (error) {
+      console.error('Error loading historical data:', error);
+    }
+  };
+
+  // Get score changes from historical data
+  const getScoreChanges = () => {
+    if (!explanation || !historicalData?.points || historicalData.points.length < 2) return null;
     
-    const change = explanation.totalScore - previousScore;
+    const currentScore = explanation.totalScore;
+    const yesterday = historicalData.points[historicalData.points.length - 2];
+    const lastWeek = historicalData.points[Math.max(0, historicalData.points.length - 8)];
+    
+    const yesterdayChange = currentScore - yesterday.score;
+    const lastWeekChange = currentScore - lastWeek.score;
+    
     return {
-      change,
-      direction: change > 0 ? 'up' : change < 0 ? 'down' : 'stable',
-      magnitude: Math.abs(change)
+      yesterday: {
+        change: yesterdayChange,
+        direction: yesterdayChange > 0 ? 'up' : yesterdayChange < 0 ? 'down' : 'stable'
+      },
+      lastWeek: {
+        change: lastWeekChange,
+        direction: lastWeekChange > 0 ? 'up' : lastWeekChange < 0 ? 'down' : 'stable'
+      }
     };
   };
 
@@ -183,11 +211,8 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       return;
     }
 
-    // Load previous score from localStorage
-    const savedScore = localStorage.getItem('previous-g-score');
-    if (savedScore) {
-      setPreviousScore(parseFloat(savedScore));
-    }
+    // Load historical data for score comparison
+    loadHistoricalData();
 
     try {
       const factors = latest.factors || [];
@@ -244,9 +269,6 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       };
 
       setExplanation(scoreExplanation);
-      
-      // Save current score for next time
-      localStorage.setItem('previous-g-score', totalScore.toString());
     } catch (error) {
       console.error('Error calculating score explanation:', error);
     } finally {
@@ -397,19 +419,33 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
           </span>
         </div>
         
-        {/* Score Change Indicator */}
-        {getScoreChange() && (
+        {/* Score Change Indicators */}
+        {getScoreChanges() && (
           <div className="mt-2 pt-2 border-t border-gray-200">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-500">vs Yesterday</span>
-              <div className="flex items-center gap-1">
-                {getScoreChange()!.direction === 'up' ? (
-                  <span className="text-red-500">📈 +{getScoreChange()!.change.toFixed(1)}</span>
-                ) : getScoreChange()!.direction === 'down' ? (
-                  <span className="text-green-500">📉 {getScoreChange()!.change.toFixed(1)}</span>
-                ) : (
-                  <span className="text-gray-500">➡️ No change</span>
-                )}
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-500">vs Yesterday</span>
+                <div className="flex items-center gap-1">
+                  {getScoreChanges()!.yesterday.direction === 'up' ? (
+                    <span className="text-red-500">📈 +{getScoreChanges()!.yesterday.change.toFixed(1)}</span>
+                  ) : getScoreChanges()!.yesterday.direction === 'down' ? (
+                    <span className="text-green-500">📉 {getScoreChanges()!.yesterday.change.toFixed(1)}</span>
+                  ) : (
+                    <span className="text-gray-500">➡️ 0.0</span>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-500">vs Last Week</span>
+                <div className="flex items-center gap-1">
+                  {getScoreChanges()!.lastWeek.direction === 'up' ? (
+                    <span className="text-red-500">📈 +{getScoreChanges()!.lastWeek.change.toFixed(1)}</span>
+                  ) : getScoreChanges()!.lastWeek.direction === 'down' ? (
+                    <span className="text-green-500">📉 {getScoreChanges()!.lastWeek.change.toFixed(1)}</span>
+                  ) : (
+                    <span className="text-gray-500">➡️ 0.0</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
