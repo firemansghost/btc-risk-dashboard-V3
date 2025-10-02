@@ -85,7 +85,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
   // Get relative positioning in historical range
   const getRelativePosition = () => {
-    if (!explanation || !historicalData?.points || historicalData.points.length < 3) {
+    if (!explanation || !historicalData?.points || historicalData.points.length < 1) {
       console.log('getRelativePosition: Missing data', { 
         hasExplanation: !!explanation, 
         hasHistoricalData: !!historicalData, 
@@ -104,6 +104,18 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     });
     
     if (allScores.length === 0) return null;
+    
+    // If we only have 1 data point, we can't calculate relative position
+    if (allScores.length === 1) {
+      return {
+        percentile: 50, // Default to middle
+        position: 'Average',
+        positionColor: 'text-blue-600',
+        minScore: currentScore,
+        maxScore: currentScore,
+        scoreRange: 0
+      };
+    }
     
     const minScore = Math.min(...allScores);
     const maxScore = Math.max(...allScores);
