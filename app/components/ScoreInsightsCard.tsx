@@ -38,7 +38,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
   // Helper function to generate factor explanations
   const generateFactorExplanation = (factor: any): FactorExplanation => {
-    const contribution = calculateContribution(factor.score, factor.weight_pct);
+    const contribution = calculateContribution(factor.score, factor.weight_pct) || 0;
     const isHighScore = factor.score > 60;
     const isLowScore = factor.score < 40;
     
