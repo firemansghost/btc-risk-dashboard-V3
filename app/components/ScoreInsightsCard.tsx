@@ -142,6 +142,55 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     return factorMomentum.sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
   };
 
+  // Get factor volatility analysis
+  const getFactorVolatility = () => {
+    if (!explanation || !historicalData?.points || historicalData.points.length < 7) {
+      return null;
+    }
+
+    const currentFactors = explanation.keyDrivers;
+    const points = historicalData.points;
+    
+    // Calculate volatility for each factor over the last 7 days
+    const factorVolatility = currentFactors.map(factor => {
+      const factorScores = points.map(point => point[factor.key] || 0).filter(score => !isNaN(score));
+      
+      if (factorScores.length < 3) {
+        return null; // Not enough data
+      }
+      
+      // Calculate standard deviation (volatility)
+      const mean = factorScores.reduce((sum, score) => sum + score, 0) / factorScores.length;
+      const variance = factorScores.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) / factorScores.length;
+      const volatility = Math.sqrt(variance);
+      
+      // Determine volatility level
+      let volatilityLevel = 'low';
+      if (volatility > 2.0) volatilityLevel = 'high';
+      else if (volatility > 1.0) volatilityLevel = 'medium';
+      
+      let context = '';
+      if (volatilityLevel === 'high') {
+        context = `${factor.label} shows high volatility, contributing significant risk to the overall score`;
+      } else if (volatilityLevel === 'medium') {
+        context = `${factor.label} shows moderate volatility with some risk contribution`;
+      } else {
+        context = `${factor.label} shows low volatility, providing stable risk assessment`;
+      }
+      
+      return {
+        key: factor.key,
+        label: factor.label,
+        volatility,
+        volatilityLevel,
+        context
+      };
+    }).filter(factor => factor !== null); // Remove factors with insufficient data
+    
+    // Sort by volatility (highest first)
+    return factorVolatility.sort((a, b) => b.volatility - a.volatility);
+  };
+
   // Get relative positioning in historical range
   const getRelativePosition = () => {
     if (!explanation || !historicalData?.points || historicalData.points.length < 1) {
@@ -620,6 +669,54 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
           {explanation.overallExplanation}
         </div>
       </div>
+
+      {/* Factor Volatility Analysis */}
+      {getFactorVolatility() && (
+        <div className="mb-4">
+          <div className="text-xs font-medium text-gray-600 mb-3 flex items-center gap-2">
+            <span>📈</span>
+            <span>Factor Volatility</span>
+          </div>
+          <div className="space-y-3">
+            {getFactorVolatility()!.slice(0, expanded ? undefined : 3).map((factor, idx) => (
+              <div key={idx} className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{getFactorIcon(factor.key)}</span>
+                    <span className="text-sm font-medium text-gray-900">{factor.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-bold ${factor.volatilityLevel === 'high' ? 'text-red-600' : factor.volatilityLevel === 'medium' ? 'text-yellow-600' : 'text-green-600'}`}>
+                      {factor.volatilityLevel === 'high' ? '🔥' : factor.volatilityLevel === 'medium' ? '⚡' : '📊'} {factor.volatilityLevel}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {factor.volatility.toFixed(2)}σ
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Volatility Bar */}
+                <div className="mb-2">
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                    <span>Volatility</span>
+                    <span>{factor.volatility.toFixed(2)}σ (std dev)</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${factor.volatilityLevel === 'high' ? 'bg-red-500' : factor.volatilityLevel === 'medium' ? 'bg-yellow-500' : 'bg-green-500'}`}
+                      style={{ width: `${Math.min(100, (factor.volatility / 3) * 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+                
+                <div className="text-xs text-gray-600">
+                  {factor.context}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Factor Momentum */}
       {getFactorMomentum() && (
