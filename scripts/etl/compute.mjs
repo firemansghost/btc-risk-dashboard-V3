@@ -830,6 +830,19 @@ async function main() {
     console.log(`⚠️  Indicator alert generation failed: ${error.message}`);
   }
 
+  // 4.2) Generate factor change alerts
+  console.log("Generating factor change alerts...");
+  try {
+    const { exec } = await import('node:child_process');
+    const { promisify } = await import('node:util');
+    const execAsync = promisify(exec);
+    
+    await execAsync('node scripts/etl/generate-factor-change-alerts.mjs');
+    console.log("✅ Factor change alerts generated successfully");
+  } catch (error) {
+    console.log(`⚠️  Factor change alert generation failed: ${error.message}`);
+  }
+
   // 5) status.json (preserve existing data like schema hashes)
   let existingStatus = {};
   try {

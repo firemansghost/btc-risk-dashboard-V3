@@ -1,0 +1,29 @@
+[
+  {
+    "id": "factor_change_etf_flows_1759367010889",
+    "type": "factor_change",
+    "severity": "medium",
+    "timestamp": "2025-10-02T01:03:30.890Z",
+    "factor": "ETF Flows",
+    "factorKey": "etf_flows",
+    "title": "📊 MEDIUM: ETF Flows Factor Changed",
+    "message": "ETF Flows increased significantly: 62 → 75 (+13.0 points)",
+    "data": {
+      "factor": "ETF Flows",
+      "factorKey": "etf_flows",
+      "previous_score": 62,
+      "current_score": 75,
+      "change_points": 13,
+      "change_percentage": 20.967741935483872,
+      "severity": "medium",
+      "weight": 9
+    },
+    "actions": [
+      "Review factor details and recent changes",
+      "Consider implications for market outlook",
+      "Monitor for continued factor volatility",
+      "Check data source reliability",
+      "Review related market indicators"
+    ]
+  }
+]
