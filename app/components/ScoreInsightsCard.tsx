@@ -47,12 +47,6 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Historical data loaded:', { 
-          ok: data.ok, 
-          pointsLength: data.points?.length,
-          firstPoint: data.points?.[0],
-          lastPoint: data.points?.[data.points?.length - 1]
-        });
         setHistoricalData(data);
       }
     } catch (error) {
@@ -151,41 +145,18 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
   // Get relative positioning in historical range
   const getRelativePosition = () => {
     if (!explanation || !historicalData?.points || historicalData.points.length < 1) {
-      console.log('getRelativePosition: Missing data', { 
-        hasExplanation: !!explanation, 
-        hasHistoricalData: !!historicalData, 
-        pointsLength: historicalData?.points?.length 
-      });
       return null;
     }
     
     const currentScore = explanation.totalScore;
     const allScores = historicalData.points.map((d: any) => d.composite).filter((score: any) => !isNaN(score));
     
-    const mappedScores = historicalData.points.map((d: any) => d.composite);
-    const filteredScores = mappedScores.filter((score: any) => !isNaN(score));
-    
-    console.log('getRelativePosition: Data check', { 
-      currentScore, 
-      allScoresLength: allScores.length,
-      allScores: allScores.slice(0, 5), // First 5 scores for debugging
-      rawPoints: historicalData.points.slice(0, 3), // First 3 raw points
-      mappedScores: mappedScores, // All mapped scores
-      filteredScores: filteredScores, // Filtered scores
-      firstMappedScore: mappedScores[0], // First mapped score value
-      firstMappedScoreType: typeof mappedScores[0], // Type of first score
-      firstMappedScoreIsNaN: isNaN(mappedScores[0]), // Is first score NaN?
-      firstRawPoint: historicalData.points[0] // First raw data point
-    });
-    
     if (allScores.length === 0) {
-      console.log('getRelativePosition: No valid scores found');
       return null;
     }
     
     // If we only have 1 data point, we can't calculate relative position
     if (allScores.length === 1) {
-      console.log('getRelativePosition: Single data point, returning default');
       return {
         percentile: 50, // Default to middle
         position: 'Average',
@@ -631,20 +602,32 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         
         {/* Trend Indicators */}
         {getScoreChanges() && (
-          <div className="mt-2 pt-2 border-t border-gray-200">
-            <div className="text-xs text-gray-500 mb-2">Score Trend</div>
-            <div className="flex items-center justify-between">
+          <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="text-xs text-gray-500 mb-3 flex items-center gap-2">
+              <span>📈</span>
+              <span>Score Trend</span>
+            </div>
+            <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
               <div className="flex items-center gap-2">
                 <span className="text-sm">📊</span>
-                <span className="text-xs text-gray-600">Trajectory</span>
+                <span className="text-sm font-medium text-gray-700">Trajectory</span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 {getScoreTrendDirection() === 'up' ? (
-                  <span className="text-red-500 text-sm">📈 Rising</span>
+                  <span className="text-red-600 text-sm font-semibold flex items-center gap-1">
+                    <span>📈</span>
+                    <span>Rising</span>
+                  </span>
                 ) : getScoreTrendDirection() === 'down' ? (
-                  <span className="text-green-500 text-sm">📉 Falling</span>
+                  <span className="text-green-600 text-sm font-semibold flex items-center gap-1">
+                    <span>📉</span>
+                    <span>Falling</span>
+                  </span>
                 ) : (
-                  <span className="text-gray-500 text-sm">➡️ Stable</span>
+                  <span className="text-gray-600 text-sm font-semibold flex items-center gap-1">
+                    <span>➡️</span>
+                    <span>Stable</span>
+                  </span>
                 )}
               </div>
             </div>
@@ -662,10 +645,13 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       {/* Factor Momentum */}
       {getFactorMomentum() && (
         <div className="mb-4">
-          <div className="text-xs font-medium text-gray-600 mb-2">Factor Momentum</div>
-          <div className="space-y-2">
+          <div className="text-xs font-medium text-gray-600 mb-3 flex items-center gap-2">
+            <span>📊</span>
+            <span>Factor Momentum</span>
+          </div>
+          <div className="space-y-3">
             {getFactorMomentum()!.slice(0, expanded ? undefined : 3).map((factor, idx) => (
-              <div key={idx} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-100">
+              <div key={idx} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{getFactorIcon(factor.key)}</span>
