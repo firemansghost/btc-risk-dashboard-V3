@@ -47,6 +47,12 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Historical data loaded:', { 
+          ok: data.ok, 
+          pointsLength: data.points?.length,
+          firstPoint: data.points?.[0],
+          lastPoint: data.points?.[data.points?.length - 1]
+        });
         setHistoricalData(data);
       }
     } catch (error) {
@@ -79,10 +85,23 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
   // Get relative positioning in historical range
   const getRelativePosition = () => {
-    if (!explanation || !historicalData?.points || historicalData.points.length < 3) return null;
+    if (!explanation || !historicalData?.points || historicalData.points.length < 3) {
+      console.log('getRelativePosition: Missing data', { 
+        hasExplanation: !!explanation, 
+        hasHistoricalData: !!historicalData, 
+        pointsLength: historicalData?.points?.length 
+      });
+      return null;
+    }
     
     const currentScore = explanation.totalScore;
     const allScores = historicalData.points.map((d: any) => d.score).filter((score: any) => !isNaN(score));
+    
+    console.log('getRelativePosition: Data check', { 
+      currentScore, 
+      allScoresLength: allScores.length,
+      allScores: allScores.slice(0, 5) // First 5 scores for debugging
+    });
     
     if (allScores.length === 0) return null;
     
