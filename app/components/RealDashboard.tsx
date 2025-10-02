@@ -413,7 +413,7 @@ export default function RealDashboard() {
                 })()}
               </div>
               <p className="text-sm text-gray-500 mt-2">
-                <a href="/methodology#btc-g-score" className="text-emerald-600 hover:text-emerald-700 underline">New here? What the G-Score means →</a>
+                <a href="/methodology#btc-g-score" className="text-emerald-600 hover:text-emerald-700 underline">New here? What the G-Score means →</a> · <a href="/alerts" className="text-emerald-600 hover:text-emerald-700 underline">View Alerts →</a>
               </p>
             </div>
           </div>
