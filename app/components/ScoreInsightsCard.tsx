@@ -35,6 +35,19 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
   const [explanation, setExplanation] = useState<ScoreExplanation | null>(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
+  const [previousScore, setPreviousScore] = useState<number | null>(null);
+
+  // Simple score change tracking using localStorage
+  const getScoreChange = () => {
+    if (!explanation || !previousScore) return null;
+    
+    const change = explanation.totalScore - previousScore;
+    return {
+      change,
+      direction: change > 0 ? 'up' : change < 0 ? 'down' : 'stable',
+      magnitude: Math.abs(change)
+    };
+  };
 
   // Helper function to generate factor explanations
   const generateFactorExplanation = (factor: any): FactorExplanation => {
@@ -170,6 +183,12 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       return;
     }
 
+    // Load previous score from localStorage
+    const savedScore = localStorage.getItem('previous-g-score');
+    if (savedScore) {
+      setPreviousScore(parseFloat(savedScore));
+    }
+
     try {
       const factors = latest.factors || [];
       const activeFactors = factors.filter((f: any) => f.status === 'fresh');
@@ -225,6 +244,9 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       };
 
       setExplanation(scoreExplanation);
+      
+      // Save current score for next time
+      localStorage.setItem('previous-g-score', totalScore.toString());
     } catch (error) {
       console.error('Error calculating score explanation:', error);
     } finally {
@@ -374,6 +396,24 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             {explanation.bandLabel}
           </span>
         </div>
+        
+        {/* Score Change Indicator */}
+        {getScoreChange() && (
+          <div className="mt-2 pt-2 border-t border-gray-200">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-500">vs Yesterday</span>
+              <div className="flex items-center gap-1">
+                {getScoreChange()!.direction === 'up' ? (
+                  <span className="text-red-500">📈 +{getScoreChange()!.change.toFixed(1)}</span>
+                ) : getScoreChange()!.direction === 'down' ? (
+                  <span className="text-green-500">📉 {getScoreChange()!.change.toFixed(1)}</span>
+                ) : (
+                  <span className="text-gray-500">➡️ No change</span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Overall Explanation */}
