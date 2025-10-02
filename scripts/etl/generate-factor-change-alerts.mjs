@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { manageAlertsWithDeduplication } from './alert-deduplication.mjs';
 import { determineSeverity, getSeverityConfig } from './alert-severity-system.mjs';
+import { enhanceAlertsWithContext } from './alert-context-enhancer.mjs';
 
 // Factor configuration
 const FACTOR_CONFIG = {
@@ -28,6 +29,69 @@ const THRESHOLDS = {
   medium: 10,  // ±10 points change
   high: 20     // ±20 points change
 };
+
+/**
+ * Load historical data for context enhancement
+ */
+function loadHistoricalData() {
+  const dataDir = path.join(process.cwd(), 'public', 'data');
+  
+  const historicalData = {
+    factorHistory: [],
+    gScoreHistory: [],
+    etfFlows: []
+  };
+  
+  try {
+    // Load factor history
+    const factorHistoryPath = path.join(dataDir, 'factor_history.csv');
+    if (fs.existsSync(factorHistoryPath)) {
+      const content = fs.readFileSync(factorHistoryPath, 'utf8');
+      const lines = content.trim().split('\n');
+      if (lines.length > 1) {
+        const headers = lines[0].split(',');
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(',');
+          const record = {};
+          headers.forEach((header, idx) => {
+            record[header.trim()] = values[idx]?.trim();
+          });
+          historicalData.factorHistory.push(record);
+        }
+      }
+    }
+    
+    // Load G-Score history
+    const historyPath = path.join(dataDir, 'history.csv');
+    if (fs.existsSync(historyPath)) {
+      const content = fs.readFileSync(historyPath, 'utf8');
+      const lines = content.trim().split('\n');
+      if (lines.length > 1) {
+        const headers = lines[0].split(',');
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(',');
+          const record = {};
+          headers.forEach((header, idx) => {
+            record[header.trim()] = values[idx]?.trim();
+          });
+          historicalData.gScoreHistory.push(record);
+        }
+      }
+    }
+    
+    // Load ETF flows history
+    const etfFlowsPath = path.join(dataDir, 'etf-flows-historical.json');
+    if (fs.existsSync(etfFlowsPath)) {
+      const content = fs.readFileSync(etfFlowsPath, 'utf8');
+      historicalData.etfFlows = JSON.parse(content);
+    }
+    
+  } catch (error) {
+    console.error('Error loading historical data:', error);
+  }
+  
+  return historicalData;
+}
 
 /**
  * Load factor history from CSV
@@ -229,8 +293,14 @@ async function generateFactorChangeAlerts() {
   }
   
   if (alerts.length > 0) {
+    // Load historical data for context enhancement
+    const historicalData = loadHistoricalData();
+    
+    // Enhance alerts with context
+    const enhancedAlerts = enhanceAlertsWithContext(alerts, historicalData);
+    
     // Use deduplication system
-    const result = manageAlertsWithDeduplication(existingAlerts, alerts, {
+    const result = manageAlertsWithDeduplication(existingAlerts, enhancedAlerts, {
       retentionDays: 30,
       maxAlerts: 500
     });

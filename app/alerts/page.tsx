@@ -10,6 +10,14 @@ interface AlertLogEntry {
   title?: string;
   message?: string;
   severity?: string;
+  // Enhanced context fields
+  context?: string;
+  trend?: string;
+  consecutiveDays?: number;
+  daysInCurrentBand?: number;
+  daysInPreviousBand?: number;
+  zeroCrosses?: number;
+  recommendations?: string[];
 }
 
 // Unified severity configuration
@@ -246,6 +254,19 @@ export default function AlertsPage() {
                         <p className="text-gray-900 font-medium">
                           {formatAlertDetails(alert)}
                         </p>
+                        {alert.context && (
+                          <div className="text-xs text-blue-600 mt-2 italic">
+                            📊 {alert.context}
+                          </div>
+                        )}
+                        {alert.recommendations && alert.recommendations.length > 0 && (
+                          <div className="text-xs text-green-600 mt-2">
+                            💡 {alert.recommendations[0]}
+                            {alert.recommendations.length > 1 && (
+                              <span className="text-gray-500"> (+{alert.recommendations.length - 1} more)</span>
+                            )}
+                          </div>
+                        )}
                         {alert.details.deadband && (
                           <p className="text-xs text-gray-500 mt-1">
                             Deadband: {alert.details.deadband.toLocaleString()}

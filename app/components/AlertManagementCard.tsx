@@ -11,6 +11,14 @@ interface Alert {
   message: string;
   data?: any;
   actions?: string[];
+  // Enhanced context fields
+  context?: string;
+  trend?: string;
+  consecutiveDays?: number;
+  daysInCurrentBand?: number;
+  daysInPreviousBand?: number;
+  zeroCrosses?: number;
+  recommendations?: string[];
 }
 
 // Unified severity configuration
@@ -236,6 +244,19 @@ export default function AlertManagementCard() {
                           </span>
                         </div>
                         <p className="text-sm text-gray-600 mb-2">{alert.message}</p>
+                        {alert.context && (
+                          <div className="text-xs text-blue-600 mb-2 italic">
+                            📊 {alert.context}
+                          </div>
+                        )}
+                        {alert.recommendations && alert.recommendations.length > 0 && (
+                          <div className="text-xs text-green-600 mb-2">
+                            💡 {alert.recommendations[0]}
+                            {alert.recommendations.length > 1 && (
+                              <span className="text-gray-500"> (+{alert.recommendations.length - 1} more)</span>
+                            )}
+                          </div>
+                        )}
                         <p className="text-xs text-gray-500">{formatTimestamp(alert.timestamp)}</p>
                         {alert.actions && alert.actions.length > 0 && (
                           <div className="mt-2">

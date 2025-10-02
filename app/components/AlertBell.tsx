@@ -12,6 +12,14 @@ interface Alert {
   message: string;
   data?: any;
   actions?: string[];
+  // Enhanced context fields
+  context?: string;
+  trend?: string;
+  consecutiveDays?: number;
+  daysInCurrentBand?: number;
+  daysInPreviousBand?: number;
+  zeroCrosses?: number;
+  recommendations?: string[];
   // Legacy fields for backward compatibility
   direction?: string;
   from?: any;
@@ -213,6 +221,20 @@ export default function AlertBell() {
     return colorMap[config.color as keyof typeof colorMap] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
+  const formatAlertContext = (alert: Alert): string => {
+    if (alert.context) {
+      return alert.context;
+    }
+    return '';
+  };
+
+  const formatAlertRecommendations = (alert: Alert): string[] => {
+    if (alert.recommendations && Array.isArray(alert.recommendations)) {
+      return alert.recommendations;
+    }
+    return [];
+  };
+
   const formatAlertText = (alert: Alert): string => {
     // Use new API format if available (title/message)
     if (alert.title && alert.message) {
@@ -320,6 +342,19 @@ export default function AlertBell() {
                   </span>
                 </div>
                 <div className="text-xs text-gray-600 mt-1">{formatAlertText(alert)}</div>
+                {formatAlertContext(alert) && (
+                  <div className="text-xs text-blue-600 mt-1 italic">
+                    📊 {formatAlertContext(alert)}
+                  </div>
+                )}
+                {formatAlertRecommendations(alert).length > 0 && (
+                  <div className="text-xs text-green-600 mt-1">
+                    💡 {formatAlertRecommendations(alert)[0]}
+                    {formatAlertRecommendations(alert).length > 1 && (
+                      <span className="text-gray-500"> (+{formatAlertRecommendations(alert).length - 1} more)</span>
+                    )}
+                  </div>
+                )}
               </div>
               <button
                 onClick={(e) => {
