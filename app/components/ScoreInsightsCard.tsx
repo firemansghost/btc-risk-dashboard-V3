@@ -95,9 +95,9 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     }
     
     const currentScore = explanation.totalScore;
-    const allScores = historicalData.points.map((d: any) => d.score).filter((score: any) => !isNaN(score));
+    const allScores = historicalData.points.map((d: any) => d.composite).filter((score: any) => !isNaN(score));
     
-    const mappedScores = historicalData.points.map((d: any) => d.score);
+    const mappedScores = historicalData.points.map((d: any) => d.composite);
     const filteredScores = mappedScores.filter((score: any) => !isNaN(score));
     
     console.log('getRelativePosition: Data check', { 
