@@ -153,7 +153,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     
     // Calculate volatility for each factor over the last 7 days
     const factorVolatility = currentFactors.map(factor => {
-      const factorScores = points.map(point => point[factor.key] || 0).filter(score => !isNaN(score));
+      const factorScores = points.map((point: any) => point[factor.key] || 0).filter((score: any) => !isNaN(score));
       
       if (factorScores.length < 3) {
         return null; // Not enough data
