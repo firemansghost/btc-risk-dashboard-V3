@@ -23,6 +23,7 @@ import BtcGoldCard from './BtcGoldCard';
 import SatoshisPerDollarCard from './SatoshisPerDollarCard';
 import RadialGauge from './RadialGauge';
 import AlertBell from './AlertBell';
+import ScoreInsightsCard from './ScoreInsightsCard';
 
 function ErrorView({ msg, onRetry }: { msg: string; onRetry: () => void }) {
   return <div style={{ padding: 16 }}><p>{msg}</p><button onClick={onRetry} style={{ marginTop: 8 }}>Retry</button></div>;
@@ -620,6 +621,11 @@ export default function RealDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 lg:mb-8">
           <BtcGoldCard className="h-full" />
           <SatoshisPerDollarCard className="h-full" />
+        </div>
+
+        {/* Score Insights Card */}
+        <div className="mb-6 lg:mb-8">
+          <ScoreInsightsCard latest={latest} className="h-full" />
         </div>
 
         {/* Risk Band Legend */}
