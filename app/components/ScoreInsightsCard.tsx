@@ -106,6 +106,48 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     return lastWeekDirection;
   };
 
+  // Get factor momentum over time
+  const getFactorMomentum = () => {
+    if (!explanation || !historicalData?.points || historicalData.points.length < 2) {
+      return null;
+    }
+
+    const currentFactors = explanation.keyDrivers;
+    const points = historicalData.points;
+    const previousPoint = points[points.length - 2]; // Yesterday's data
+    
+    // Calculate factor changes
+    const factorMomentum = currentFactors.map(factor => {
+      const currentScore = factor.score;
+      const previousScore = previousPoint[factor.key] || 0;
+      const change = currentScore - previousScore;
+      
+      let momentum = 'stable';
+      if (change > 0.5) momentum = 'improving';
+      else if (change < -0.5) momentum = 'declining';
+      
+      let context = '';
+      if (momentum === 'improving') {
+        context = `${factor.label} is strengthening, contributing more to risk reduction`;
+      } else if (momentum === 'declining') {
+        context = `${factor.label} is weakening, contributing more to risk increase`;
+      } else {
+        context = `${factor.label} remains stable with minimal change`;
+      }
+      
+      return {
+        key: factor.key,
+        label: factor.label,
+        change,
+        momentum,
+        context
+      };
+    }).filter(factor => Math.abs(factor.change) > 0.1); // Only show factors with meaningful changes
+    
+    // Sort by absolute change (most significant first)
+    return factorMomentum.sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
+  };
+
   // Get relative positioning in historical range
   const getRelativePosition = () => {
     if (!explanation || !historicalData?.points || historicalData.points.length < 1) {
@@ -616,6 +658,51 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
           {explanation.overallExplanation}
         </div>
       </div>
+
+      {/* Factor Momentum */}
+      {getFactorMomentum() && (
+        <div className="mb-4">
+          <div className="text-xs font-medium text-gray-600 mb-2">Factor Momentum</div>
+          <div className="space-y-2">
+            {getFactorMomentum()!.slice(0, expanded ? undefined : 3).map((factor, idx) => (
+              <div key={idx} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-100">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{getFactorIcon(factor.key)}</span>
+                    <span className="text-sm font-medium text-gray-900">{factor.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-bold ${factor.momentum === 'improving' ? 'text-green-600' : factor.momentum === 'declining' ? 'text-red-600' : 'text-gray-600'}`}>
+                      {factor.momentum === 'improving' ? '📈' : factor.momentum === 'declining' ? '📉' : '➡️'} {factor.momentum}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {factor.change > 0 ? '+' : ''}{factor.change.toFixed(1)}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Momentum Bar */}
+                <div className="mb-2">
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                    <span>Change</span>
+                    <span>{factor.change > 0 ? '+' : ''}{factor.change.toFixed(1)} points</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${factor.momentum === 'improving' ? 'bg-green-500' : factor.momentum === 'declining' ? 'bg-red-500' : 'bg-gray-400'}`}
+                      style={{ width: `${Math.min(100, Math.abs(factor.change) * 10)}%` }}
+                    ></div>
+                  </div>
+                </div>
+                
+                <div className="text-xs text-gray-600">
+                  {factor.context}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Key Drivers */}
       <div className="mb-4">
