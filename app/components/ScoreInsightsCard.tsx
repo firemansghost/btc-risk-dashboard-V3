@@ -97,13 +97,20 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     const currentScore = explanation.totalScore;
     const allScores = historicalData.points.map((d: any) => d.score).filter((score: any) => !isNaN(score));
     
+    const mappedScores = historicalData.points.map((d: any) => d.score);
+    const filteredScores = mappedScores.filter((score: any) => !isNaN(score));
+    
     console.log('getRelativePosition: Data check', { 
       currentScore, 
       allScoresLength: allScores.length,
       allScores: allScores.slice(0, 5), // First 5 scores for debugging
       rawPoints: historicalData.points.slice(0, 3), // First 3 raw points
-      mappedScores: historicalData.points.map((d: any) => d.score), // All mapped scores
-      filteredScores: historicalData.points.map((d: any) => d.score).filter((score: any) => !isNaN(score)) // Filtered scores
+      mappedScores: mappedScores, // All mapped scores
+      filteredScores: filteredScores, // Filtered scores
+      firstMappedScore: mappedScores[0], // First mapped score value
+      firstMappedScoreType: typeof mappedScores[0], // Type of first score
+      firstMappedScoreIsNaN: isNaN(mappedScores[0]), // Is first score NaN?
+      firstRawPoint: historicalData.points[0] // First raw data point
     });
     
     if (allScores.length === 0) {
