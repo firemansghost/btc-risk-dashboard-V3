@@ -183,7 +183,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       const keyDrivers = sortedByContribution.slice(0, 3);
       
       // Find concerns (high scores or excluded factors)
-      const concerns = factorExplanations.filter(f => f.score > 60 || f.status !== 'fresh');
+      const concerns = factorExplanations.filter((f: FactorExplanation) => f.score > 60 || f.status !== 'fresh');
       
       // Generate overall explanation
       const bandLabel = latest.band?.label || 'Unknown';
