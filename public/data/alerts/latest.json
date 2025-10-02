@@ -1,4 +1,4247 @@
 {
-  "occurred_at": "2025-10-02T01:30:59.502Z",
-  "alerts": []
+  "timestamp": "2025-10-02T03:11:21.164Z",
+  "total_alerts": 207,
+  "alerts": [
+    {
+      "id": "df325f40ae12fd79",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-10-02T03:11:21.157Z",
+      "factor": "ETF Flows",
+      "factorKey": "etf_flows",
+      "title": "📊 MEDIUM: ETF Flows Factor Changed",
+      "message": "ETF Flows increased significantly: 62 → 75 (+13.0 points)",
+      "data": {
+        "factor": "ETF Flows",
+        "factorKey": "etf_flows",
+        "previous_score": 62,
+        "current_score": 75,
+        "change_points": 13,
+        "change_percentage": 20.967741935483872,
+        "severity": "medium",
+        "weight": 9
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 22nd consecutive day of improving trend.",
+      "trend": "improving",
+      "consecutiveDays": 2,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-10-02T03:11:21.161Z"
+    },
+    {
+      "id": "d0d15c0c85e04dd8",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-10-02T03:11:21.157Z",
+      "factor": "Social Interest",
+      "factorKey": "social_interest",
+      "title": "📊 MEDIUM: Social Interest Factor Changed",
+      "message": "Social Interest increased significantly: 40 → 55 (+15.0 points)",
+      "data": {
+        "factor": "Social Interest",
+        "factorKey": "social_interest",
+        "previous_score": 40,
+        "current_score": 55,
+        "change_points": 15,
+        "change_percentage": 37.5,
+        "severity": "medium",
+        "weight": 10
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "declining",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-10-02T03:11:21.161Z"
+    },
+    {
+      "id": "a6fea56c8fabc0a7",
+      "type": "factor_change",
+      "severity": "critical",
+      "timestamp": "2025-10-02T03:11:21.156Z",
+      "factor": "On-chain Activity",
+      "factorKey": "onchain",
+      "title": "📊 CRITICAL: On-chain Activity Factor Changed",
+      "message": "On-chain Activity decreased significantly: 84 → 41 (-43.0 points)",
+      "data": {
+        "factor": "On-chain Activity",
+        "factorKey": "onchain",
+        "previous_score": 84,
+        "current_score": 41,
+        "change_points": -43,
+        "change_percentage": -51.19047619047619,
+        "severity": "critical",
+        "weight": 5
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "improving",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-10-02T03:11:21.161Z"
+    },
+    {
+      "id": "27c83f796783a675",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-10-02T03:11:21.156Z",
+      "factor": "Stablecoins",
+      "factorKey": "stablecoins",
+      "title": "📊 LOW: Stablecoins Factor Changed",
+      "message": "Stablecoins decreased significantly: 47 → 38 (-9.0 points)",
+      "data": {
+        "factor": "Stablecoins",
+        "factorKey": "stablecoins",
+        "previous_score": 47,
+        "current_score": 38,
+        "change_points": -9,
+        "change_percentage": -19.148936170212767,
+        "severity": "low",
+        "weight": 21
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 33rd consecutive day of declining trend.",
+      "trend": "declining",
+      "consecutiveDays": 3,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-10-02T03:11:21.161Z"
+    },
+    {
+      "id": "acedbcbbe110e16d",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-10-02T01:03:30.890Z",
+      "factor": "ETF Flows",
+      "factorKey": "etf_flows",
+      "title": "📊 MEDIUM: ETF Flows Factor Changed",
+      "message": "ETF Flows increased significantly: 62 → 75 (+13.0 points)",
+      "data": {
+        "factor": "ETF Flows",
+        "factorKey": "etf_flows",
+        "previous_score": 62,
+        "current_score": 75,
+        "change_points": 13,
+        "change_percentage": 20.967741935483872,
+        "severity": "medium",
+        "weight": 9
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "generated_at": "2025-10-02T03:11:21.161Z"
+    },
+    {
+      "id": "staleness_alert_etf_flows_1758903758398",
+      "type": "factor_staleness",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:22:38.398Z",
+      "factor": "ETF Flows",
+      "factorKey": "etf_flows",
+      "title": "📊 MEDIUM: ETF Flows Data Aging",
+      "message": "ETF Flows data is aging (1d old, TTL: 1d)",
+      "data": {
+        "factor": "ETF Flows",
+        "factorKey": "etf_flows",
+        "status": "fresh",
+        "score": 61,
+        "lastUpdate": "2025-09-25T16:00:00.000Z",
+        "ageHours": 24,
+        "ttlHours": 24,
+        "severity": "medium"
+      },
+      "actions": [
+        "Monitor data source health",
+        "Check for scheduled maintenance",
+        "Review update frequency",
+        "Check Farside website status",
+        "Verify HTML parsing",
+        "Review ETF data sources"
+      ]
+    },
+    {
+      "id": "staleness_alert_onchain_1758903758395",
+      "type": "factor_staleness",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:22:38.395Z",
+      "factor": "On-chain Activity",
+      "factorKey": "onchain",
+      "title": "ℹ️ INFO: On-chain Activity Data Getting Old",
+      "message": "On-chain Activity data is getting old (2d old, TTL: 3d)",
+      "data": {
+        "factor": "On-chain Activity",
+        "factorKey": "onchain",
+        "status": "fresh",
+        "score": 89,
+        "lastUpdate": "2025-09-25T00:00:00.000Z",
+        "ageHours": 40,
+        "ttlHours": 72,
+        "severity": "low"
+      },
+      "actions": [
+        "Monitor for further delays",
+        "Check data source status",
+        "Check blockchain data sources",
+        "Verify mempool data",
+        "Review on-chain metrics"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-06-22_1758903683757",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-06-22",
+      "title": "ℹ️ INFO: G-Score Change",
+      "message": "Significant score change: 64 → 78 (Begin Scaling Out)",
+      "data": {
+        "previousScore": 64,
+        "currentScore": 78,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Begin Scaling Out",
+        "change": 14,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for follow-up changes",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-06-23_1758903683757",
+      "type": "risk_band_change",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-06-23",
+      "title": "⚠️ HIGH: Risk Level Decreased",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (78 → 49)",
+      "data": {
+        "previousScore": 78,
+        "currentScore": 49,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -29,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions",
+        "Review risk parameters",
+        "Assess trend direction"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-07-02_1758903683757",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-07-02",
+      "title": "ℹ️ INFO: G-Score Change",
+      "message": "Significant score change: 56 → 42 (Hold/Neutral)",
+      "data": {
+        "previousScore": 56,
+        "currentScore": 42,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Hold/Neutral",
+        "change": -14,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for follow-up changes",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-07-10_1758903683757",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-07-10",
+      "title": "📊 MEDIUM: Risk Level Rose",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (53 → 63)",
+      "data": {
+        "previousScore": 53,
+        "currentScore": 63,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 10,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation",
+        "Review risk parameters"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-07-12_1758903683757",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-07-12",
+      "title": "ℹ️ INFO: G-Score Change",
+      "message": "Significant score change: 71 → 60 (Begin Scaling Out)",
+      "data": {
+        "previousScore": 71,
+        "currentScore": 60,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Begin Scaling Out",
+        "change": -11,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for follow-up changes",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-07-21_1758903683757",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-07-21",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (63 → 57)",
+      "data": {
+        "previousScore": 63,
+        "currentScore": 57,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -6,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-07-22_1758903683757",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-07-22",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (57 → 63)",
+      "data": {
+        "previousScore": 57,
+        "currentScore": 63,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 6,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-07-25_1758903683757",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-07-25",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (64 → 59)",
+      "data": {
+        "previousScore": 64,
+        "currentScore": 59,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -5,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-07-26_1758903683757",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-07-26",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (59 → 62)",
+      "data": {
+        "previousScore": 59,
+        "currentScore": 62,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 3,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-07-28_1758903683757",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-07-28",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (66 → 57)",
+      "data": {
+        "previousScore": 66,
+        "currentScore": 57,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -9,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-07-30_1758903683757",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-07-30",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (59 → 61)",
+      "data": {
+        "previousScore": 59,
+        "currentScore": 61,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 2,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-08-08_1758903683757",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-08-08",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (60 → 59)",
+      "data": {
+        "previousScore": 60,
+        "currentScore": 59,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -1,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-08-10_1758903683757",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-08-10",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (59 → 63)",
+      "data": {
+        "previousScore": 59,
+        "currentScore": 63,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 4,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-08-12_1758903683757",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-08-12",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (61 → 59)",
+      "data": {
+        "previousScore": 61,
+        "currentScore": 59,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -2,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-08-14_1758903683757",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-08-14",
+      "title": "ℹ️ INFO: G-Score Change",
+      "message": "Significant score change: 59 → 48 (Hold/Neutral)",
+      "data": {
+        "previousScore": 59,
+        "currentScore": 48,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Hold/Neutral",
+        "change": -11,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for follow-up changes",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-08-22_1758903683757",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-08-22",
+      "title": "📊 MEDIUM: Risk Level Fell",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling In (44 → 32)",
+      "data": {
+        "previousScore": 44,
+        "currentScore": 32,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling In",
+        "change": -12,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for trend confirmation",
+        "Review entry strategies"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-08-25_1758903683757",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-08-25",
+      "title": "📊 MEDIUM: Risk Level Rose",
+      "message": "Risk band changed: Begin Scaling In → Hold/Neutral (39 → 51)",
+      "data": {
+        "previousScore": 39,
+        "currentScore": 51,
+        "previousBand": "Begin Scaling In",
+        "currentBand": "Hold/Neutral",
+        "change": 12,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor market conditions",
+        "Assess trend direction"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-08-29_1758903683757",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-08-29",
+      "title": "📊 MEDIUM: Risk Level Rose",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (51 → 62)",
+      "data": {
+        "previousScore": 51,
+        "currentScore": 62,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 11,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation",
+        "Review risk parameters"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-09-02_1758903683757",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-09-02",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (63 → 57)",
+      "data": {
+        "previousScore": 63,
+        "currentScore": 57,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -6,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-09-04_1758903683757",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-09-04",
+      "title": "📊 MEDIUM: Risk Level Rose",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (54 → 66)",
+      "data": {
+        "previousScore": 54,
+        "currentScore": 66,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 12,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation",
+        "Review risk parameters"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-09-11_1758903683757",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-09-11",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (61 → 56)",
+      "data": {
+        "previousScore": 61,
+        "currentScore": 56,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -5,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-09-22_1758903683757",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-09-22",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (52 → 61)",
+      "data": {
+        "previousScore": 52,
+        "currentScore": 61,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 9,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-09-23_1758903683757",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-09-23",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (61 → 59)",
+      "data": {
+        "previousScore": 61,
+        "currentScore": 59,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -2,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-09-26_1758903683757",
+      "type": "risk_band_change",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:21:23.757Z",
+      "date": "2025-09-26",
+      "title": "⚠️ HIGH: Risk Level Increased",
+      "message": "Risk band changed: Hold/Neutral → Increase Selling (58 → 85)",
+      "data": {
+        "previousScore": 58,
+        "currentScore": 85,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Increase Selling",
+        "change": 27,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Review portfolio risk",
+        "Consider position sizing",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-01-12_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-01-12",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (59 → 66)",
+      "data": {
+        "previousScore": 59,
+        "currentScore": 66,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 7,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-01-17_1758903683756",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-01-17",
+      "title": "📊 MEDIUM: Notable G-Score Change",
+      "message": "Significant score change: 60 → 75 (Begin Scaling Out)",
+      "data": {
+        "previousScore": 60,
+        "currentScore": 75,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Begin Scaling Out",
+        "change": 15,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Analyze score drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-01-22_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-01-22",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (63 → 57)",
+      "data": {
+        "previousScore": 63,
+        "currentScore": 57,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -6,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-01-24_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-01-24",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (58 → 60)",
+      "data": {
+        "previousScore": 58,
+        "currentScore": 60,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 2,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-01-26_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-01-26",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (60 → 58)",
+      "data": {
+        "previousScore": 60,
+        "currentScore": 58,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -2,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-01-27_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-01-27",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (58 → 60)",
+      "data": {
+        "previousScore": 58,
+        "currentScore": 60,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 2,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-02-02_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-02-02",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (63 → 54)",
+      "data": {
+        "previousScore": 63,
+        "currentScore": 54,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -9,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-02-03_1758903683756",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-02-03",
+      "title": "📊 MEDIUM: Risk Level Rose",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (54 → 64)",
+      "data": {
+        "previousScore": 54,
+        "currentScore": 64,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 10,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation",
+        "Review risk parameters"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-02-04_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-02-04",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (64 → 57)",
+      "data": {
+        "previousScore": 64,
+        "currentScore": 57,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -7,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-02-05_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-02-05",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (57 → 65)",
+      "data": {
+        "previousScore": 57,
+        "currentScore": 65,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 8,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-02-07_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-02-07",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (65 → 59)",
+      "data": {
+        "previousScore": 65,
+        "currentScore": 59,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -6,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-02-08_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-02-08",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (59 → 62)",
+      "data": {
+        "previousScore": 59,
+        "currentScore": 62,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 3,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-02-24_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-02-24",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (63 → 56)",
+      "data": {
+        "previousScore": 63,
+        "currentScore": 56,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -7,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-02-25_1758903683756",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-02-25",
+      "title": "📊 MEDIUM: Risk Level Rose",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (56 → 66)",
+      "data": {
+        "previousScore": 56,
+        "currentScore": 66,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 10,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation",
+        "Review risk parameters"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-03-02_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-03-02",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (63 → 58)",
+      "data": {
+        "previousScore": 63,
+        "currentScore": 58,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -5,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-03-03_1758903683756",
+      "type": "risk_band_change",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-03-03",
+      "title": "⚠️ HIGH: Risk Level Increased",
+      "message": "Risk band changed: Hold/Neutral → Increase Selling (58 → 86)",
+      "data": {
+        "previousScore": 58,
+        "currentScore": 86,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Increase Selling",
+        "change": 28,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Review portfolio risk",
+        "Consider position sizing",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-03-05_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-03-05",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Increase Selling → Begin Scaling Out (83 → 77)",
+      "data": {
+        "previousScore": 83,
+        "currentScore": 77,
+        "previousBand": "Increase Selling",
+        "currentBand": "Begin Scaling Out",
+        "change": -6,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-03-07_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-03-07",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Begin Scaling Out → Increase Selling (78 → 86)",
+      "data": {
+        "previousScore": 78,
+        "currentScore": 86,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Increase Selling",
+        "change": 8,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-03-09_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-03-09",
+      "title": "ℹ️ INFO: G-Score Change",
+      "message": "Significant score change: 87 → 100 (Increase Selling)",
+      "data": {
+        "previousScore": 87,
+        "currentScore": 100,
+        "previousBand": "Increase Selling",
+        "currentBand": "Increase Selling",
+        "change": 13,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for follow-up changes",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-03-17_1758903683756",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-03-17",
+      "title": "📊 MEDIUM: Notable G-Score Change",
+      "message": "Significant score change: 99 → 80 (Increase Selling)",
+      "data": {
+        "previousScore": 99,
+        "currentScore": 80,
+        "previousBand": "Increase Selling",
+        "currentBand": "Increase Selling",
+        "change": -19,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Analyze score drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-03-19_1758903683756",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-03-19",
+      "title": "📊 MEDIUM: Risk Level Fell",
+      "message": "Risk band changed: Increase Selling → Begin Scaling Out (83 → 68)",
+      "data": {
+        "previousScore": 83,
+        "currentScore": 68,
+        "previousBand": "Increase Selling",
+        "currentBand": "Begin Scaling Out",
+        "change": -15,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for trend continuation",
+        "Review risk parameters"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-03-20_1758903683756",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-03-20",
+      "title": "📊 MEDIUM: Risk Level Rose",
+      "message": "Risk band changed: Begin Scaling Out → Increase Selling (68 → 85)",
+      "data": {
+        "previousScore": 68,
+        "currentScore": 85,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Increase Selling",
+        "change": 17,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor market conditions",
+        "Review risk management"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-03-21_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-03-21",
+      "title": "ℹ️ INFO: G-Score Change",
+      "message": "Significant score change: 85 → 96 (Increase Selling)",
+      "data": {
+        "previousScore": 85,
+        "currentScore": 96,
+        "previousBand": "Increase Selling",
+        "currentBand": "Increase Selling",
+        "change": 11,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for follow-up changes",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-03-22_1758903683756",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-03-22",
+      "title": "📊 MEDIUM: Risk Level Fell",
+      "message": "Risk band changed: Increase Selling → Begin Scaling Out (96 → 77)",
+      "data": {
+        "previousScore": 96,
+        "currentScore": 77,
+        "previousBand": "Increase Selling",
+        "currentBand": "Begin Scaling Out",
+        "change": -19,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for trend continuation",
+        "Review risk parameters"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-03-23_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-03-23",
+      "title": "ℹ️ INFO: G-Score Change",
+      "message": "Significant score change: 77 → 67 (Begin Scaling Out)",
+      "data": {
+        "previousScore": 77,
+        "currentScore": 67,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Begin Scaling Out",
+        "change": -10,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for follow-up changes",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-03-26_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-03-26",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (60 → 53)",
+      "data": {
+        "previousScore": 60,
+        "currentScore": 53,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -7,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-03-30_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-03-30",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (56 → 65)",
+      "data": {
+        "previousScore": 56,
+        "currentScore": 65,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 9,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-04-02_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-04-02",
+      "title": "ℹ️ INFO: G-Score Change",
+      "message": "Significant score change: 62 → 74 (Begin Scaling Out)",
+      "data": {
+        "previousScore": 62,
+        "currentScore": 74,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Begin Scaling Out",
+        "change": 12,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for follow-up changes",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-04-08_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-04-08",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Begin Scaling Out → Increase Selling (78 → 80)",
+      "data": {
+        "previousScore": 78,
+        "currentScore": 80,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Increase Selling",
+        "change": 2,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-04-19_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-04-19",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Increase Selling → Begin Scaling Out (81 → 79)",
+      "data": {
+        "previousScore": 81,
+        "currentScore": 79,
+        "previousBand": "Increase Selling",
+        "currentBand": "Begin Scaling Out",
+        "change": -2,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-04-23_1758903683756",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-04-23",
+      "title": "📊 MEDIUM: Risk Level Fell",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (77 → 59)",
+      "data": {
+        "previousScore": 77,
+        "currentScore": 59,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -18,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions",
+        "Assess trend direction"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-04-26_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-04-26",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (58 → 64)",
+      "data": {
+        "previousScore": 58,
+        "currentScore": 64,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 6,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-05-02_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-05-02",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (63 → 57)",
+      "data": {
+        "previousScore": 63,
+        "currentScore": 57,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -6,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-05-03_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-05-03",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (57 → 60)",
+      "data": {
+        "previousScore": 57,
+        "currentScore": 60,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 3,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-05-04_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-05-04",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (60 → 56)",
+      "data": {
+        "previousScore": 60,
+        "currentScore": 56,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -4,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-05-05_1758903683756",
+      "type": "risk_band_change",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-05-05",
+      "title": "⚠️ HIGH: Risk Level Increased",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (56 → 79)",
+      "data": {
+        "previousScore": 56,
+        "currentScore": 79,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 23,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation",
+        "Review risk management",
+        "Consider scaling out"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-05-06_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-05-06",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Begin Scaling Out → Increase Selling (79 → 80)",
+      "data": {
+        "previousScore": 79,
+        "currentScore": 80,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Increase Selling",
+        "change": 1,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-05-07_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-05-07",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Increase Selling → Begin Scaling Out (80 → 79)",
+      "data": {
+        "previousScore": 80,
+        "currentScore": 79,
+        "previousBand": "Increase Selling",
+        "currentBand": "Begin Scaling Out",
+        "change": -1,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-05-08_1758903683756",
+      "type": "risk_band_change",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-05-08",
+      "title": "⚠️ HIGH: Risk Level Decreased",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (79 → 53)",
+      "data": {
+        "previousScore": 79,
+        "currentScore": 53,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -26,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions",
+        "Review risk parameters",
+        "Assess trend direction"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-05-11_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-05-11",
+      "title": "ℹ️ INFO: G-Score Change",
+      "message": "Significant score change: 53 → 42 (Hold/Neutral)",
+      "data": {
+        "previousScore": 53,
+        "currentScore": 42,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Hold/Neutral",
+        "change": -11,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for follow-up changes",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-05-21_1758903683756",
+      "type": "risk_band_change",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-05-21",
+      "title": "⚠️ HIGH: Risk Level Increased",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (41 → 68)",
+      "data": {
+        "previousScore": 41,
+        "currentScore": 68,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 27,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation",
+        "Review risk management",
+        "Consider scaling out"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-05-23_1758903683756",
+      "type": "risk_band_change",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-05-23",
+      "title": "⚠️ HIGH: Risk Level Decreased",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (76 → 53)",
+      "data": {
+        "previousScore": 76,
+        "currentScore": 53,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -23,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions",
+        "Review risk parameters",
+        "Assess trend direction"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-05-27_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-05-27",
+      "title": "ℹ️ INFO: G-Score Change",
+      "message": "Significant score change: 54 → 40 (Hold/Neutral)",
+      "data": {
+        "previousScore": 54,
+        "currentScore": 40,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Hold/Neutral",
+        "change": -14,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for follow-up changes",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-05-28_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-05-28",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling In (40 → 36)",
+      "data": {
+        "previousScore": 40,
+        "currentScore": 36,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling In",
+        "change": -4,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for trend confirmation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-05-29_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-05-29",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Begin Scaling In → Hold/Neutral (36 → 42)",
+      "data": {
+        "previousScore": 36,
+        "currentScore": 42,
+        "previousBand": "Begin Scaling In",
+        "currentBand": "Hold/Neutral",
+        "change": 6,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-06-05_1758903683756",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-06-05",
+      "title": "📊 MEDIUM: Risk Level Rose",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (58 → 69)",
+      "data": {
+        "previousScore": 58,
+        "currentScore": 69,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 11,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation",
+        "Review risk parameters"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-06-07_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-06-07",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (62 → 56)",
+      "data": {
+        "previousScore": 62,
+        "currentScore": 56,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -6,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-06-09_1758903683756",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-06-09",
+      "title": "📊 MEDIUM: Notable G-Score Change",
+      "message": "Significant score change: 58 → 40 (Hold/Neutral)",
+      "data": {
+        "previousScore": 58,
+        "currentScore": 40,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Hold/Neutral",
+        "change": -18,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Analyze score drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-06-20_1758903683756",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.756Z",
+      "date": "2025-06-20",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (53 → 60)",
+      "data": {
+        "previousScore": 53,
+        "currentScore": 60,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 7,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-11-02_1758903683755",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-11-02",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling In (46 → 37)",
+      "data": {
+        "previousScore": 46,
+        "currentScore": 37,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling In",
+        "change": -9,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for trend confirmation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-11-03_1758903683755",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-11-03",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Begin Scaling In → Hold/Neutral (37 → 43)",
+      "data": {
+        "previousScore": 37,
+        "currentScore": 43,
+        "previousBand": "Begin Scaling In",
+        "currentBand": "Hold/Neutral",
+        "change": 6,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-11-05_1758903683755",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-11-05",
+      "title": "📊 MEDIUM: Risk Level Fell",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling In (48 → 38)",
+      "data": {
+        "previousScore": 48,
+        "currentScore": 38,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling In",
+        "change": -10,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for trend confirmation",
+        "Review entry strategies"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-11-06_1758903683755",
+      "type": "risk_band_change",
+      "severity": "critical",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-11-06",
+      "title": "🚨 CRITICAL: Risk Level Spiked",
+      "message": "Risk band changed: Begin Scaling In → Begin Scaling Out (38 → 60)",
+      "data": {
+        "previousScore": 38,
+        "currentScore": 60,
+        "previousBand": "Begin Scaling In",
+        "currentBand": "Begin Scaling Out",
+        "change": 22,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Consider scaling out of positions",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-11-07_1758903683755",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-11-07",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (60 → 58)",
+      "data": {
+        "previousScore": 60,
+        "currentScore": 58,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -2,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-11-09_1758903683755",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-11-09",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (58 → 66)",
+      "data": {
+        "previousScore": 58,
+        "currentScore": 66,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 8,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-11-10_1758903683755",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-11-10",
+      "title": "📊 MEDIUM: Risk Level Rose",
+      "message": "Risk band changed: Begin Scaling Out → Increase Selling (66 → 85)",
+      "data": {
+        "previousScore": 66,
+        "currentScore": 85,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Increase Selling",
+        "change": 19,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor market conditions",
+        "Review risk management"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-11-11_1758903683755",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-11-11",
+      "title": "📊 MEDIUM: Notable G-Score Change",
+      "message": "Significant score change: 85 → 100 (Increase Selling)",
+      "data": {
+        "previousScore": 85,
+        "currentScore": 100,
+        "previousBand": "Increase Selling",
+        "currentBand": "Increase Selling",
+        "change": 15,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Analyze score drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-11-24_1758903683755",
+      "type": "risk_band_change",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-11-24",
+      "title": "⚠️ HIGH: Risk Level Decreased",
+      "message": "Risk band changed: Increase Selling → Begin Scaling Out (100 → 79)",
+      "data": {
+        "previousScore": 100,
+        "currentScore": 79,
+        "previousBand": "Increase Selling",
+        "currentBand": "Begin Scaling Out",
+        "change": -21,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for trend continuation",
+        "Review risk management",
+        "Consider scaling out"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-11-25_1758903683755",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-11-25",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Begin Scaling Out → Increase Selling (79 → 85)",
+      "data": {
+        "previousScore": 79,
+        "currentScore": 85,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Increase Selling",
+        "change": 6,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-11-30_1758903683755",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-11-30",
+      "title": "📊 MEDIUM: Risk Level Fell",
+      "message": "Risk band changed: Increase Selling → Begin Scaling Out (80 → 65)",
+      "data": {
+        "previousScore": 80,
+        "currentScore": 65,
+        "previousBand": "Increase Selling",
+        "currentBand": "Begin Scaling Out",
+        "change": -15,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for trend continuation",
+        "Review risk parameters"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-12-05_1758903683755",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-12-05",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (62 → 59)",
+      "data": {
+        "previousScore": 62,
+        "currentScore": 59,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -3,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-12-06_1758903683755",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-12-06",
+      "title": "📊 MEDIUM: Risk Level Rose",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (59 → 69)",
+      "data": {
+        "previousScore": 59,
+        "currentScore": 69,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 10,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation",
+        "Review risk parameters"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-12-09_1758903683755",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-12-09",
+      "title": "📊 MEDIUM: Risk Level Fell",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (72 → 59)",
+      "data": {
+        "previousScore": 72,
+        "currentScore": 59,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -13,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions",
+        "Assess trend direction"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-12-10_1758903683755",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-12-10",
+      "title": "📊 MEDIUM: Risk Level Rose",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (59 → 74)",
+      "data": {
+        "previousScore": 59,
+        "currentScore": 74,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 15,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation",
+        "Review risk parameters"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-12-11_1758903683755",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-12-11",
+      "title": "ℹ️ INFO: G-Score Change",
+      "message": "Significant score change: 74 → 60 (Begin Scaling Out)",
+      "data": {
+        "previousScore": 74,
+        "currentScore": 60,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Begin Scaling Out",
+        "change": -14,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for follow-up changes",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-12-13_1758903683755",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-12-13",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (60 → 58)",
+      "data": {
+        "previousScore": 60,
+        "currentScore": 58,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -2,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-12-14_1758903683755",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-12-14",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Hold/Neutral → Begin Scaling Out (58 → 64)",
+      "data": {
+        "previousScore": 58,
+        "currentScore": 64,
+        "previousBand": "Hold/Neutral",
+        "currentBand": "Begin Scaling Out",
+        "change": 6,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-12-24_1758903683755",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-12-24",
+      "title": "ℹ️ INFO: G-Score Change",
+      "message": "Significant score change: 75 → 62 (Begin Scaling Out)",
+      "data": {
+        "previousScore": 75,
+        "currentScore": 62,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Begin Scaling Out",
+        "change": -13,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for follow-up changes",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-12-26_1758903683755",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-12-26",
+      "title": "ℹ️ INFO: G-Score Change",
+      "message": "Significant score change: 66 → 76 (Begin Scaling Out)",
+      "data": {
+        "previousScore": 66,
+        "currentScore": 76,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Begin Scaling Out",
+        "change": 10,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor for follow-up changes",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-12-27_1758903683755",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-12-27",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Begin Scaling Out → Increase Selling (76 → 83)",
+      "data": {
+        "previousScore": 76,
+        "currentScore": 83,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Increase Selling",
+        "change": 7,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-12-28_1758903683755",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-12-28",
+      "title": "📊 MEDIUM: Risk Level Fell",
+      "message": "Risk band changed: Increase Selling → Begin Scaling Out (83 → 69)",
+      "data": {
+        "previousScore": 83,
+        "currentScore": 69,
+        "previousBand": "Increase Selling",
+        "currentBand": "Begin Scaling Out",
+        "change": -14,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for trend continuation",
+        "Review risk parameters"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2024-12-31_1758903683755",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2024-12-31",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Begin Scaling Out → Increase Selling (75 → 83)",
+      "data": {
+        "previousScore": 75,
+        "currentScore": 83,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Increase Selling",
+        "change": 8,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-01-02_1758903683755",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2025-01-02",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Increase Selling → Begin Scaling Out (86 → 77)",
+      "data": {
+        "previousScore": 86,
+        "currentScore": 77,
+        "previousBand": "Increase Selling",
+        "currentBand": "Begin Scaling Out",
+        "change": -9,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-01-03_1758903683755",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2025-01-03",
+      "title": "ℹ️ INFO: Risk Level Up",
+      "message": "Risk band changed: Begin Scaling Out → Increase Selling (77 → 80)",
+      "data": {
+        "previousScore": 77,
+        "currentScore": 80,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Increase Selling",
+        "change": 3,
+        "changeDirection": "increasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-01-06_1758903683755",
+      "type": "risk_band_change",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2025-01-06",
+      "title": "📊 MEDIUM: Risk Level Fell",
+      "message": "Risk band changed: Increase Selling → Begin Scaling Out (84 → 66)",
+      "data": {
+        "previousScore": 84,
+        "currentScore": 66,
+        "previousBand": "Increase Selling",
+        "currentBand": "Begin Scaling Out",
+        "change": -18,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor for trend continuation",
+        "Review risk parameters"
+      ]
+    },
+    {
+      "id": "risk_band_alert_2025-01-11_1758903683755",
+      "type": "risk_band_change",
+      "severity": "low",
+      "timestamp": "2025-09-26T16:21:23.755Z",
+      "date": "2025-01-11",
+      "title": "ℹ️ INFO: Risk Level Down",
+      "message": "Risk band changed: Begin Scaling Out → Hold/Neutral (61 → 59)",
+      "data": {
+        "previousScore": 61,
+        "currentScore": 59,
+        "previousBand": "Begin Scaling Out",
+        "currentBand": "Hold/Neutral",
+        "change": -2,
+        "changeDirection": "decreasing"
+      },
+      "actions": [
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-05-12_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-05-12",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 334.5M → 5.2M (329.3M change)",
+      "data": {
+        "previousFlow": 334.5,
+        "currentFlow": 5.2,
+        "change": -329.3,
+        "changePercent": "-98.4"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-05-14_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-05-14",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 91.4M → 319.5M (228.1M change)",
+      "data": {
+        "previousFlow": 91.4,
+        "currentFlow": 319.5,
+        "change": 228.1,
+        "changePercent": "249.6"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-05-15_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-05-15",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 319.5M → 114.9M (204.6M change)",
+      "data": {
+        "previousFlow": 319.5,
+        "currentFlow": 114.9,
+        "change": -204.6,
+        "changePercent": "-64.0"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-05-16_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-05-16",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 114.9M → 260.2M (145.3M change)",
+      "data": {
+        "previousFlow": 114.9,
+        "currentFlow": 260.2,
+        "change": 145.29999999999998,
+        "changePercent": "126.5"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-05-19_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-05-19",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 260.2M → 667.4M (407.2M change)",
+      "data": {
+        "previousFlow": 260.2,
+        "currentFlow": 667.4,
+        "change": 407.2,
+        "changePercent": "156.5"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-05-20_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-05-20",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 667.4M → 329.2M (338.2M change)",
+      "data": {
+        "previousFlow": 667.4,
+        "currentFlow": 329.2,
+        "change": -338.2,
+        "changePercent": "-50.7"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-05-21_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-05-21",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 329.2M → 607.1M (277.9M change)",
+      "data": {
+        "previousFlow": 329.2,
+        "currentFlow": 607.1,
+        "change": 277.90000000000003,
+        "changePercent": "84.4"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-05-22_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-05-22",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 607.1M → 934.8M (327.7M change)",
+      "data": {
+        "previousFlow": 607.1,
+        "currentFlow": 934.8,
+        "change": 327.69999999999993,
+        "changePercent": "54.0"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-05-23_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "critical",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-05-23",
+      "title": "🚨 CRITICAL: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 934.8M → 211.7M (723.1M change)",
+      "data": {
+        "previousFlow": 934.8,
+        "currentFlow": 211.7,
+        "change": -723.0999999999999,
+        "changePercent": "-77.4"
+      },
+      "actions": [
+        "Investigate market catalysts",
+        "Review portfolio strategy",
+        "Monitor for trend reversal"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-05-26_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-05-26",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 211.7M → 0.0M (211.7M change)",
+      "data": {
+        "previousFlow": 211.7,
+        "currentFlow": 0,
+        "change": -211.7,
+        "changePercent": "-100.0"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-05-27_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-05-27",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 0.0M → 385.4M (385.4M change)",
+      "data": {
+        "previousFlow": 0,
+        "currentFlow": 385.4,
+        "change": 385.4,
+        "changePercent": "N/A"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-05-30_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-05-30",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 346.8M → 616.1M (269.3M change)",
+      "data": {
+        "previousFlow": 346.8,
+        "currentFlow": 616.1,
+        "change": 269.3,
+        "changePercent": "77.7"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-06-02_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-06-02",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 616.1M → 267.5M (348.6M change)",
+      "data": {
+        "previousFlow": 616.1,
+        "currentFlow": 267.5,
+        "change": -348.6,
+        "changePercent": "-56.6"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-06-03_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-06-03",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 267.5M → 375.1M (107.6M change)",
+      "data": {
+        "previousFlow": 267.5,
+        "currentFlow": 375.1,
+        "change": 107.60000000000002,
+        "changePercent": "40.2"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-06-04_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-06-04",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 375.1M → 87.0M (288.1M change)",
+      "data": {
+        "previousFlow": 375.1,
+        "currentFlow": 87,
+        "change": -288.1,
+        "changePercent": "-76.8"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-06-05_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-06-05",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 87.0M → 278.4M (191.4M change)",
+      "data": {
+        "previousFlow": 87,
+        "currentFlow": 278.4,
+        "change": 191.39999999999998,
+        "changePercent": "220.0"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-06-06_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-06-06",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 278.4M → 47.8M (230.6M change)",
+      "data": {
+        "previousFlow": 278.4,
+        "currentFlow": 47.8,
+        "change": -230.59999999999997,
+        "changePercent": "-82.8"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-06-09_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-06-09",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 47.8M → 386.2M (338.4M change)",
+      "data": {
+        "previousFlow": 47.8,
+        "currentFlow": 386.2,
+        "change": 338.4,
+        "changePercent": "707.9"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-06-11_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-06-11",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 431.2M → 164.6M (266.6M change)",
+      "data": {
+        "previousFlow": 431.2,
+        "currentFlow": 164.6,
+        "change": -266.6,
+        "changePercent": "-61.8"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-06-13_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-06-13",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 86.3M → 322.7M (236.4M change)",
+      "data": {
+        "previousFlow": 86.3,
+        "currentFlow": 322.7,
+        "change": 236.39999999999998,
+        "changePercent": "273.9"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-06-17_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-06-17",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 412.2M → 216.5M (195.7M change)",
+      "data": {
+        "previousFlow": 412.2,
+        "currentFlow": 216.5,
+        "change": -195.7,
+        "changePercent": "-47.5"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-06-18_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-06-18",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 216.5M → 388.3M (171.8M change)",
+      "data": {
+        "previousFlow": 216.5,
+        "currentFlow": 388.3,
+        "change": 171.8,
+        "changePercent": "79.4"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-06-19_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-06-19",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 388.3M → 0.0M (388.3M change)",
+      "data": {
+        "previousFlow": 388.3,
+        "currentFlow": 0,
+        "change": -388.3,
+        "changePercent": "-100.0"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-06-23_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-06-23",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 6.4M → 350.6M (344.2M change)",
+      "data": {
+        "previousFlow": 6.4,
+        "currentFlow": 350.6,
+        "change": 344.20000000000005,
+        "changePercent": "5378.1"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-06-24_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-06-24",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 350.6M → 588.6M (238.0M change)",
+      "data": {
+        "previousFlow": 350.6,
+        "currentFlow": 588.6,
+        "change": 238,
+        "changePercent": "67.9"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-06-26_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-06-26",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 547.7M → 226.7M (321.0M change)",
+      "data": {
+        "previousFlow": 547.7,
+        "currentFlow": 226.7,
+        "change": -321.00000000000006,
+        "changePercent": "-58.6"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-06-27_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-06-27",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 226.7M → 501.2M (274.5M change)",
+      "data": {
+        "previousFlow": 226.7,
+        "currentFlow": 501.2,
+        "change": 274.5,
+        "changePercent": "121.1"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-06-30_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-06-30",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 501.2M → 102.1M (399.1M change)",
+      "data": {
+        "previousFlow": 501.2,
+        "currentFlow": 102.1,
+        "change": -399.1,
+        "changePercent": "-79.6"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-07-01_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-07-01",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 102.1M → 342.2M (240.1M change)",
+      "data": {
+        "previousFlow": 102.1,
+        "currentFlow": 342.2,
+        "change": 240.1,
+        "changePercent": "235.2"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-07-03_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-07-03",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 407.8M → 601.8M (194.0M change)",
+      "data": {
+        "previousFlow": 407.8,
+        "currentFlow": 601.8,
+        "change": 193.99999999999994,
+        "changePercent": "47.6"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-07-07_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-07-07",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 601.8M → 216.5M (385.3M change)",
+      "data": {
+        "previousFlow": 601.8,
+        "currentFlow": 216.5,
+        "change": -385.29999999999995,
+        "changePercent": "-64.0"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-07-08_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-07-08",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 216.5M → 80.1M (136.4M change)",
+      "data": {
+        "previousFlow": 216.5,
+        "currentFlow": 80.1,
+        "change": -136.4,
+        "changePercent": "-63.0"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-07-09_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-07-09",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 80.1M → 215.7M (135.6M change)",
+      "data": {
+        "previousFlow": 80.1,
+        "currentFlow": 215.7,
+        "change": 135.6,
+        "changePercent": "169.3"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-07-10_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "critical",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-07-10",
+      "title": "🚨 CRITICAL: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 215.7M → 1175.6M (959.9M change)",
+      "data": {
+        "previousFlow": 215.7,
+        "currentFlow": 1175.6,
+        "change": 959.8999999999999,
+        "changePercent": "445.0"
+      },
+      "actions": [
+        "Investigate market catalysts",
+        "Review portfolio strategy",
+        "Monitor for trend reversal"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-07-11_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-07-11",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 1175.6M → 1029.6M (146.0M change)",
+      "data": {
+        "previousFlow": 1175.6,
+        "currentFlow": 1029.6,
+        "change": -146,
+        "changePercent": "-12.4"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-07-14_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "critical",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-07-14",
+      "title": "🚨 CRITICAL: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 1029.6M → 297.4M (732.2M change)",
+      "data": {
+        "previousFlow": 1029.6,
+        "currentFlow": 297.4,
+        "change": -732.1999999999999,
+        "changePercent": "-71.1"
+      },
+      "actions": [
+        "Investigate market catalysts",
+        "Review portfolio strategy",
+        "Monitor for trend reversal"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-07-15_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-07-15",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 297.4M → 403.1M (105.7M change)",
+      "data": {
+        "previousFlow": 297.4,
+        "currentFlow": 403.1,
+        "change": 105.70000000000005,
+        "changePercent": "35.5"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-07-16_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-07-16",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 403.1M → 799.4M (396.3M change)",
+      "data": {
+        "previousFlow": 403.1,
+        "currentFlow": 799.4,
+        "change": 396.29999999999995,
+        "changePercent": "98.3"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-07-17_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-07-17",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 799.4M → 522.6M (276.8M change)",
+      "data": {
+        "previousFlow": 799.4,
+        "currentFlow": 522.6,
+        "change": -276.79999999999995,
+        "changePercent": "-34.6"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-07-18_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-07-18",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 522.6M → 363.5M (159.1M change)",
+      "data": {
+        "previousFlow": 522.6,
+        "currentFlow": 363.5,
+        "change": -159.10000000000002,
+        "changePercent": "-30.4"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-07-21_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-07-21",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 363.5M → 131.4M (232.1M change)",
+      "data": {
+        "previousFlow": 363.5,
+        "currentFlow": 131.4,
+        "change": -232.1,
+        "changePercent": "-63.9"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-07-24_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-07-24",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 85.8M → 226.7M (140.9M change)",
+      "data": {
+        "previousFlow": 85.8,
+        "currentFlow": 226.7,
+        "change": 140.89999999999998,
+        "changePercent": "164.2"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-08-01_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "critical",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-08-01",
+      "title": "🚨 CRITICAL: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 114.8M → 812.3M (697.5M change)",
+      "data": {
+        "previousFlow": 114.8,
+        "currentFlow": 812.3,
+        "change": 697.5,
+        "changePercent": "607.6"
+      },
+      "actions": [
+        "Investigate market catalysts",
+        "Review portfolio strategy",
+        "Monitor for trend reversal"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-08-04_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-08-04",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 812.3M → 323.5M (488.8M change)",
+      "data": {
+        "previousFlow": 812.3,
+        "currentFlow": 323.5,
+        "change": -488.79999999999995,
+        "changePercent": "-60.2"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-08-05_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-08-05",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 323.5M → 196.2M (127.3M change)",
+      "data": {
+        "previousFlow": 323.5,
+        "currentFlow": 196.2,
+        "change": -127.30000000000001,
+        "changePercent": "-39.4"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-08-06_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-08-06",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 196.2M → 91.6M (104.6M change)",
+      "data": {
+        "previousFlow": 196.2,
+        "currentFlow": 91.6,
+        "change": -104.6,
+        "changePercent": "-53.3"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-08-07_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-08-07",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 91.6M → 277.4M (185.8M change)",
+      "data": {
+        "previousFlow": 91.6,
+        "currentFlow": 277.4,
+        "change": 185.79999999999998,
+        "changePercent": "202.8"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-08-08_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-08-08",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 277.4M → 403.9M (126.5M change)",
+      "data": {
+        "previousFlow": 277.4,
+        "currentFlow": 403.9,
+        "change": 126.5,
+        "changePercent": "45.6"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-08-11_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-08-11",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 403.9M → 178.1M (225.8M change)",
+      "data": {
+        "previousFlow": 403.9,
+        "currentFlow": 178.1,
+        "change": -225.79999999999998,
+        "changePercent": "-55.9"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-08-12_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-08-12",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 178.1M → 65.9M (112.2M change)",
+      "data": {
+        "previousFlow": 178.1,
+        "currentFlow": 65.9,
+        "change": -112.19999999999999,
+        "changePercent": "-63.0"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-08-14_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-08-14",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 86.9M → 230.8M (143.9M change)",
+      "data": {
+        "previousFlow": 86.9,
+        "currentFlow": 230.8,
+        "change": 143.9,
+        "changePercent": "165.6"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-08-15_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-08-15",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 230.8M → 14.1M (216.7M change)",
+      "data": {
+        "previousFlow": 230.8,
+        "currentFlow": 14.1,
+        "change": -216.70000000000002,
+        "changePercent": "-93.9"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-08-18_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-08-18",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 14.1M → 121.7M (107.6M change)",
+      "data": {
+        "previousFlow": 14.1,
+        "currentFlow": 121.7,
+        "change": 107.60000000000001,
+        "changePercent": "763.1"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-08-19_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-08-19",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 121.7M → 523.3M (401.6M change)",
+      "data": {
+        "previousFlow": 121.7,
+        "currentFlow": 523.3,
+        "change": 401.59999999999997,
+        "changePercent": "330.0"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-08-20_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-08-20",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 523.3M → 315.9M (207.4M change)",
+      "data": {
+        "previousFlow": 523.3,
+        "currentFlow": 315.9,
+        "change": -207.39999999999998,
+        "changePercent": "-39.6"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-08-21_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-08-21",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 315.9M → 194.4M (121.5M change)",
+      "data": {
+        "previousFlow": 315.9,
+        "currentFlow": 194.4,
+        "change": -121.49999999999997,
+        "changePercent": "-38.5"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-08-22_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-08-22",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 194.4M → 23.2M (171.2M change)",
+      "data": {
+        "previousFlow": 194.4,
+        "currentFlow": 23.2,
+        "change": -171.20000000000002,
+        "changePercent": "-88.1"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-08-25_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-08-25",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 23.2M → 219.1M (195.9M change)",
+      "data": {
+        "previousFlow": 23.2,
+        "currentFlow": 219.1,
+        "change": 195.9,
+        "changePercent": "844.4"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-08-26_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-08-26",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 219.1M → 88.1M (131.0M change)",
+      "data": {
+        "previousFlow": 219.1,
+        "currentFlow": 88.1,
+        "change": -131,
+        "changePercent": "-59.8"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-09-02_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-09-02",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 126.7M → 332.8M (206.1M change)",
+      "data": {
+        "previousFlow": 126.7,
+        "currentFlow": 332.8,
+        "change": 206.10000000000002,
+        "changePercent": "162.7"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-09-08_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-09-08",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 160.1M → 364.3M (204.2M change)",
+      "data": {
+        "previousFlow": 160.1,
+        "currentFlow": 364.3,
+        "change": 204.20000000000002,
+        "changePercent": "127.5"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-09-09_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-09-09",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 364.3M → 23.0M (341.3M change)",
+      "data": {
+        "previousFlow": 364.3,
+        "currentFlow": 23,
+        "change": -341.3,
+        "changePercent": "-93.7"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-09-10_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "critical",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-09-10",
+      "title": "🚨 CRITICAL: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 23.0M → 741.5M (718.5M change)",
+      "data": {
+        "previousFlow": 23,
+        "currentFlow": 741.5,
+        "change": 718.5,
+        "changePercent": "3123.9"
+      },
+      "actions": [
+        "Investigate market catalysts",
+        "Review portfolio strategy",
+        "Monitor for trend reversal"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-09-11_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-09-11",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 741.5M → 552.7M (188.8M change)",
+      "data": {
+        "previousFlow": 741.5,
+        "currentFlow": 552.7,
+        "change": -188.79999999999995,
+        "changePercent": "-25.5"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-09-15_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-09-15",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 642.4M → 259.9M (382.5M change)",
+      "data": {
+        "previousFlow": 642.4,
+        "currentFlow": 259.9,
+        "change": -382.5,
+        "changePercent": "-59.5"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-09-17_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-09-17",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 292.3M → 51.3M (241.0M change)",
+      "data": {
+        "previousFlow": 292.3,
+        "currentFlow": 51.3,
+        "change": -241,
+        "changePercent": "-82.4"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-09-18_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-09-18",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 51.3M → 163.0M (111.7M change)",
+      "data": {
+        "previousFlow": 51.3,
+        "currentFlow": 163,
+        "change": 111.7,
+        "changePercent": "217.7"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-09-22_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-09-22",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 222.6M → 363.1M (140.5M change)",
+      "data": {
+        "previousFlow": 222.6,
+        "currentFlow": 363.1,
+        "change": 140.50000000000003,
+        "changePercent": "63.1"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-09-23_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-09-23",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 363.1M → 103.8M (259.3M change)",
+      "data": {
+        "previousFlow": 363.1,
+        "currentFlow": 103.8,
+        "change": -259.3,
+        "changePercent": "-71.4"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-09-24_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-09-24",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 103.8M → 241.0M (137.2M change)",
+      "data": {
+        "previousFlow": 103.8,
+        "currentFlow": 241,
+        "change": 137.2,
+        "changePercent": "132.2"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-09-26_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "critical",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-09-26",
+      "title": "🚨 CRITICAL: ETF Flows Turn Negative",
+      "message": "ETF flows crossed zero: 253.4M → -253.0M",
+      "data": {
+        "previousFlow": 253.4,
+        "currentFlow": -253,
+        "change": -506.4,
+        "changePercent": "-199.8"
+      },
+      "actions": [
+        "Review portfolio allocation",
+        "Consider reducing Bitcoin exposure",
+        "Monitor for trend continuation"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-09-26_1758903613380",
+      "type": "etf_zero_cross",
+      "severity": "critical",
+      "timestamp": "2025-09-26T16:20:13.380Z",
+      "date": "2025-09-26",
+      "title": "🚨 CRITICAL: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 253.4M → -253.0M (506.4M change)",
+      "data": {
+        "previousFlow": 253.4,
+        "currentFlow": -253,
+        "change": -506.4,
+        "changePercent": "-199.8"
+      },
+      "actions": [
+        "Investigate market catalysts",
+        "Review portfolio strategy",
+        "Monitor for trend reversal"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-02-25_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "critical",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-02-25",
+      "title": "🚨 CRITICAL: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 565.9M → 1113.7M (547.8M change)",
+      "data": {
+        "previousFlow": 565.9,
+        "currentFlow": 1113.7,
+        "change": 547.8000000000001,
+        "changePercent": "96.8"
+      },
+      "actions": [
+        "Investigate market catalysts",
+        "Review portfolio strategy",
+        "Monitor for trend reversal"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-02-26_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-02-26",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 1113.7M → 757.8M (355.9M change)",
+      "data": {
+        "previousFlow": 1113.7,
+        "currentFlow": 757.8,
+        "change": -355.9000000000001,
+        "changePercent": "-32.0"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-02-27_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-02-27",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 757.8M → 275.9M (481.9M change)",
+      "data": {
+        "previousFlow": 757.8,
+        "currentFlow": 275.9,
+        "change": -481.9,
+        "changePercent": "-63.6"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-02-28_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-02-28",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 275.9M → 94.3M (181.6M change)",
+      "data": {
+        "previousFlow": 275.9,
+        "currentFlow": 94.3,
+        "change": -181.59999999999997,
+        "changePercent": "-65.8"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-03-05_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-03-05",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 143.5M → 38.3M (105.2M change)",
+      "data": {
+        "previousFlow": 143.5,
+        "currentFlow": 38.3,
+        "change": -105.2,
+        "changePercent": "-73.3"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-03-07_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-03-07",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 134.3M → 409.3M (275.0M change)",
+      "data": {
+        "previousFlow": 134.3,
+        "currentFlow": 409.3,
+        "change": 275,
+        "changePercent": "204.8"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-03-12_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-03-12",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 396.3M → 13.3M (383.0M change)",
+      "data": {
+        "previousFlow": 396.3,
+        "currentFlow": 13.3,
+        "change": -383,
+        "changePercent": "-96.6"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-03-13_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-03-13",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 13.3M → 143.4M (130.1M change)",
+      "data": {
+        "previousFlow": 13.3,
+        "currentFlow": 143.4,
+        "change": 130.1,
+        "changePercent": "978.2"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-03-14_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-03-14",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 143.4M → 41.3M (102.1M change)",
+      "data": {
+        "previousFlow": 143.4,
+        "currentFlow": 41.3,
+        "change": -102.10000000000001,
+        "changePercent": "-71.2"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-03-17_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-03-17",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 41.3M → 274.6M (233.3M change)",
+      "data": {
+        "previousFlow": 41.3,
+        "currentFlow": 274.6,
+        "change": 233.3,
+        "changePercent": "564.9"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-03-19_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-03-19",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 209.1M → 11.8M (197.3M change)",
+      "data": {
+        "previousFlow": 209.1,
+        "currentFlow": 11.8,
+        "change": -197.29999999999998,
+        "changePercent": "-94.4"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-03-20_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-03-20",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 11.8M → 165.7M (153.9M change)",
+      "data": {
+        "previousFlow": 11.8,
+        "currentFlow": 165.7,
+        "change": 153.89999999999998,
+        "changePercent": "1304.2"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-04-03_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-04-03",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 220.8M → 99.8M (121.0M change)",
+      "data": {
+        "previousFlow": 220.8,
+        "currentFlow": 99.8,
+        "change": -121.00000000000001,
+        "changePercent": "-54.8"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-04-08_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-04-08",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 109.2M → 328.0M (218.8M change)",
+      "data": {
+        "previousFlow": 109.2,
+        "currentFlow": 328,
+        "change": 218.8,
+        "changePercent": "200.4"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-04-09_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-04-09",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 328.0M → 127.2M (200.8M change)",
+      "data": {
+        "previousFlow": 328,
+        "currentFlow": 127.2,
+        "change": -200.8,
+        "changePercent": "-61.2"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-04-11_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-04-11",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 149.5M → 1.0M (148.5M change)",
+      "data": {
+        "previousFlow": 149.5,
+        "currentFlow": 1,
+        "change": -148.5,
+        "changePercent": "-99.3"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-04-18_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-04-18",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 106.9M → 0.0M (106.9M change)",
+      "data": {
+        "previousFlow": 106.9,
+        "currentFlow": 0,
+        "change": -106.9,
+        "changePercent": "-100.0"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-04-21_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-04-21",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 0.0M → 387.4M (387.4M change)",
+      "data": {
+        "previousFlow": 0,
+        "currentFlow": 387.4,
+        "change": 387.4,
+        "changePercent": "N/A"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-04-22_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "critical",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-04-22",
+      "title": "🚨 CRITICAL: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 387.4M → 936.5M (549.1M change)",
+      "data": {
+        "previousFlow": 387.4,
+        "currentFlow": 936.5,
+        "change": 549.1,
+        "changePercent": "141.7"
+      },
+      "actions": [
+        "Investigate market catalysts",
+        "Review portfolio strategy",
+        "Monitor for trend reversal"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-04-24_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-04-24",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 917.0M → 442.0M (475.0M change)",
+      "data": {
+        "previousFlow": 917,
+        "currentFlow": 442,
+        "change": -475,
+        "changePercent": "-51.8"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-04-28_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-04-28",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 380.0M → 591.2M (211.2M change)",
+      "data": {
+        "previousFlow": 380,
+        "currentFlow": 591.2,
+        "change": 211.20000000000005,
+        "changePercent": "55.6"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-04-29_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-04-29",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 591.2M → 172.8M (418.4M change)",
+      "data": {
+        "previousFlow": 591.2,
+        "currentFlow": 172.8,
+        "change": -418.40000000000003,
+        "changePercent": "-70.8"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-04-30_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "medium",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-04-30",
+      "title": "📊 MEDIUM: Significant ETF Flow Change",
+      "message": "Significant ETF flow change: 172.8M → 56.3M (116.5M change)",
+      "data": {
+        "previousFlow": 172.8,
+        "currentFlow": 56.3,
+        "change": -116.50000000000001,
+        "changePercent": "-67.4"
+      },
+      "actions": [
+        "Track flow patterns",
+        "Assess market sentiment"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-05-01_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-05-01",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 56.3M → 422.5M (366.2M change)",
+      "data": {
+        "previousFlow": 56.3,
+        "currentFlow": 422.5,
+        "change": 366.2,
+        "changePercent": "650.4"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-05-02_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-05-02",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 422.5M → 674.9M (252.4M change)",
+      "data": {
+        "previousFlow": 422.5,
+        "currentFlow": 674.9,
+        "change": 252.39999999999998,
+        "changePercent": "59.7"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-05-05_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-05-05",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 674.9M → 425.5M (249.4M change)",
+      "data": {
+        "previousFlow": 674.9,
+        "currentFlow": 425.5,
+        "change": -249.39999999999998,
+        "changePercent": "-37.0"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-05-06_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-05-06",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 425.5M → 85.7M (339.8M change)",
+      "data": {
+        "previousFlow": 425.5,
+        "currentFlow": 85.7,
+        "change": -339.8,
+        "changePercent": "-79.9"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    },
+    {
+      "id": "etf_alert_2025-05-09_1758903613379",
+      "type": "etf_zero_cross",
+      "severity": "high",
+      "timestamp": "2025-09-26T16:20:13.379Z",
+      "date": "2025-05-09",
+      "title": "⚠️ HIGH: Major ETF Flow Change",
+      "message": "Significant ETF flow change: 117.4M → 334.5M (217.1M change)",
+      "data": {
+        "previousFlow": 117.4,
+        "currentFlow": 334.5,
+        "change": 217.1,
+        "changePercent": "184.9"
+      },
+      "actions": [
+        "Analyze flow drivers",
+        "Review risk management",
+        "Monitor market conditions"
+      ]
+    }
+  ]
 }
