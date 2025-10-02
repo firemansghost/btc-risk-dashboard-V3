@@ -476,27 +476,6 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     return 'bg-gray-400';
   };
 
-  // Simple factor momentum analysis based on current scores
-  const getFactorMomentum = () => {
-    if (!explanation) return null;
-    
-    const momentumFactors = explanation.keyDrivers.map(driver => ({
-      ...driver,
-      momentum: driver.trend === 'improving' ? 'up' : driver.trend === 'declining' ? 'down' : 'stable'
-    }));
-    
-    const improvingCount = momentumFactors.filter(f => f.momentum === 'up').length;
-    const decliningCount = momentumFactors.filter(f => f.momentum === 'down').length;
-    const stableCount = momentumFactors.filter(f => f.momentum === 'stable').length;
-    
-    return {
-      factors: momentumFactors,
-      improvingCount,
-      decliningCount,
-      stableCount,
-      totalFactors: momentumFactors.length
-    };
-  };
 
   return (
     <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 ${className}`}>
@@ -737,39 +716,6 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         </div>
       </div>
 
-      {/* Factor Momentum */}
-      {getFactorMomentum() && (
-        <div className="mb-4">
-          <div className="text-xs font-medium text-gray-600 mb-2">Factor Momentum</div>
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-            <div className="grid grid-cols-3 gap-3 text-xs mb-3">
-              <div className="text-center">
-                <div className="text-green-600 font-bold text-lg">{getFactorMomentum()!.improvingCount}</div>
-                <div className="text-gray-600">Improving</div>
-              </div>
-              <div className="text-center">
-                <div className="text-blue-600 font-bold text-lg">{getFactorMomentum()!.stableCount}</div>
-                <div className="text-gray-600">Stable</div>
-              </div>
-              <div className="text-center">
-                <div className="text-red-600 font-bold text-lg">{getFactorMomentum()!.decliningCount}</div>
-                <div className="text-gray-600">Declining</div>
-              </div>
-            </div>
-            
-            {/* Momentum Summary */}
-            <div className="text-xs text-gray-700">
-              {getFactorMomentum()!.improvingCount > getFactorMomentum()!.decliningCount ? (
-                <span className="text-green-600">📈 More factors are improving than declining</span>
-              ) : getFactorMomentum()!.decliningCount > getFactorMomentum()!.improvingCount ? (
-                <span className="text-red-600">📉 More factors are declining than improving</span>
-              ) : (
-                <span className="text-blue-600">⚖️ Factors are balanced between improving and declining</span>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Concerns */}
       {explanation.concerns.length > 0 && (
