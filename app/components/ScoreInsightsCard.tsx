@@ -144,14 +144,20 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
   // Get factor volatility analysis
   const getFactorVolatility = () => {
-    if (!explanation || !historicalData?.points || historicalData.points.length < 7) {
+    if (!explanation || !historicalData?.points || historicalData.points.length < 3) {
+      console.log('getFactorVolatility: Insufficient data', {
+        hasExplanation: !!explanation,
+        hasHistoricalData: !!historicalData,
+        pointsLength: historicalData?.points?.length || 0,
+        required: 3
+      });
       return null;
     }
 
     const currentFactors = explanation.keyDrivers;
     const points = historicalData.points;
     
-    // Calculate volatility for each factor over the last 7 days
+    // Calculate volatility for each factor over available historical data
     const factorVolatility = currentFactors.map(factor => {
       const factorScores = points.map((point: any) => point[factor.key] || 0).filter((score: any) => !isNaN(score));
       
