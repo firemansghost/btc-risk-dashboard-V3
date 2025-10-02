@@ -35,6 +35,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
   const [explanation, setExplanation] = useState<ScoreExplanation | null>(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
+  const [historicalData, setHistoricalData] = useState<any>(null);
 
   // Helper function to generate factor explanations
   const generateFactorExplanation = (factor: any): FactorExplanation => {
@@ -169,6 +170,9 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       setLoading(false);
       return;
     }
+
+    // Load historical data for comparison
+    loadHistoricalData();
 
     try {
       const factors = latest.factors || [];
@@ -307,6 +311,57 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     return 'bg-gray-400';
   };
 
+  // Load historical data for comparison
+  const loadHistoricalData = async () => {
+    try {
+      const response = await fetch('/api/history?range=30d', {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setHistoricalData(data);
+      }
+    } catch (error) {
+      console.error('Error loading historical data:', error);
+    }
+  };
+
+  // Calculate historical comparisons
+  const getHistoricalComparison = () => {
+    if (!historicalData?.points || historicalData.points.length < 2) return null;
+    
+    const currentScore = explanation?.totalScore || 0;
+    const yesterday = historicalData.points[historicalData.points.length - 2];
+    const lastWeek = historicalData.points[Math.max(0, historicalData.points.length - 8)];
+    
+    const yesterdayChange = currentScore - yesterday.score;
+    const lastWeekChange = currentScore - lastWeek.score;
+    
+    // Calculate trend over last 7 days
+    const last7Days = historicalData.points.slice(-7);
+    const trend = last7Days.length >= 2 ? 
+      (last7Days[last7Days.length - 1].score - last7Days[0].score) / last7Days.length : 0;
+    
+    // Calculate score range
+    const allScores = historicalData.points.map((d: any) => d.score);
+    const minScore = Math.min(...allScores);
+    const maxScore = Math.max(...allScores);
+    const scoreRange = maxScore - minScore;
+    const currentPercentile = ((currentScore - minScore) / scoreRange) * 100;
+    
+    return {
+      yesterdayChange,
+      lastWeekChange,
+      trend,
+      currentPercentile,
+      minScore,
+      maxScore,
+      scoreRange
+    };
+  };
+
   return (
     <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 ${className}`}>
       <div className="flex items-center justify-between mb-4">
@@ -353,6 +408,57 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
           </span>
         </div>
       </div>
+
+      {/* Historical Comparison */}
+      {historicalData && getHistoricalComparison() && (
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="text-xs font-medium text-gray-600 mb-2">Historical Context</div>
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500">vs Yesterday</span>
+              <div className="flex items-center gap-1">
+                {getHistoricalComparison()!.yesterdayChange > 0 ? (
+                  <span className="text-red-500">↗️ +{getHistoricalComparison()!.yesterdayChange.toFixed(1)}</span>
+                ) : getHistoricalComparison()!.yesterdayChange < 0 ? (
+                  <span className="text-green-500">↘️ {getHistoricalComparison()!.yesterdayChange.toFixed(1)}</span>
+                ) : (
+                  <span className="text-gray-500">➡️ 0.0</span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500">vs Last Week</span>
+              <div className="flex items-center gap-1">
+                {getHistoricalComparison()!.lastWeekChange > 0 ? (
+                  <span className="text-red-500">↗️ +{getHistoricalComparison()!.lastWeekChange.toFixed(1)}</span>
+                ) : getHistoricalComparison()!.lastWeekChange < 0 ? (
+                  <span className="text-green-500">↘️ {getHistoricalComparison()!.lastWeekChange.toFixed(1)}</span>
+                ) : (
+                  <span className="text-gray-500">➡️ 0.0</span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500">7-Day Trend</span>
+              <div className="flex items-center gap-1">
+                {getHistoricalComparison()!.trend > 0.5 ? (
+                  <span className="text-red-500">📈 Rising</span>
+                ) : getHistoricalComparison()!.trend < -0.5 ? (
+                  <span className="text-green-500">📉 Falling</span>
+                ) : (
+                  <span className="text-gray-500">➡️ Stable</span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500">Percentile</span>
+              <span className="text-blue-600 font-medium">
+                {getHistoricalComparison()!.currentPercentile.toFixed(0)}th
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Overall Explanation */}
       <div className="mb-4">
