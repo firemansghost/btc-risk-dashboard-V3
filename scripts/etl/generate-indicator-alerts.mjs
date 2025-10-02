@@ -10,6 +10,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { manageAlertsWithDeduplication } from './alert-deduplication.mjs';
 
 /**
  * Load latest data
@@ -41,12 +42,36 @@ function loadExistingAlerts(alertType) {
 }
 
 /**
- * Save alerts
+ * Save alerts with deduplication
  */
-function saveAlerts(alertType, alerts) {
+function saveAlerts(alertType, newAlerts) {
   const alertPath = `public/data/${alertType}_alerts.json`;
-  fs.writeFileSync(alertPath, JSON.stringify(alerts, null, 2), 'utf8');
-  console.log(`✅ Saved ${alerts.length} ${alertType} alerts to ${alertPath}`);
+  
+  // Load existing alerts
+  let existingAlerts = [];
+  try {
+    if (fs.existsSync(alertPath)) {
+      const content = fs.readFileSync(alertPath, 'utf8');
+      existingAlerts = JSON.parse(content);
+    }
+  } catch (error) {
+    console.log(`⚠️  Error loading existing ${alertType} alerts: ${error.message}`);
+  }
+  
+  // Use deduplication system
+  const result = manageAlertsWithDeduplication(existingAlerts, newAlerts, {
+    retentionDays: 30,
+    maxAlerts: 200
+  });
+  
+  // Save deduplicated alerts
+  fs.writeFileSync(alertPath, JSON.stringify(result.alerts, null, 2), 'utf8');
+  
+  console.log(`✅ ${alertType} Alert Management:`);
+  console.log(`   📊 Original: ${result.stats.original} existing + ${result.stats.new} new`);
+  console.log(`   🔄 Duplicates removed: ${result.stats.duplicatesRemoved}`);
+  console.log(`   🗑️  Old alerts removed: ${result.stats.oldRemoved}`);
+  console.log(`   📁 Final count: ${result.stats.final} alerts`);
 }
 
 /**

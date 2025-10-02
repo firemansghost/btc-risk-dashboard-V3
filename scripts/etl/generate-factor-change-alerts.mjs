@@ -8,6 +8,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { manageAlertsWithDeduplication } from './alert-deduplication.mjs';
 
 // Factor configuration
 const FACTOR_CONFIG = {
@@ -216,36 +217,50 @@ async function generateFactorChangeAlerts() {
     }
   });
   
-  // Save alerts if any were generated
-  if (alerts.length > 0) {
-    const alertsPath = path.join(process.cwd(), 'public', 'data', 'factor_change_alerts.json');
-    
-    // Load existing alerts
-    let existingAlerts = [];
-    try {
-      if (fs.existsSync(alertsPath)) {
-        const content = fs.readFileSync(alertsPath, 'utf8');
-        existingAlerts = JSON.parse(content);
-      }
-    } catch (error) {
-      console.log(`⚠️  Error loading existing alerts: ${error.message}`);
+  // Save alerts with deduplication
+  const alertsPath = path.join(process.cwd(), 'public', 'data', 'factor_change_alerts.json');
+  
+  // Load existing alerts
+  let existingAlerts = [];
+  try {
+    if (fs.existsSync(alertsPath)) {
+      const content = fs.readFileSync(alertsPath, 'utf8');
+      existingAlerts = JSON.parse(content);
     }
+  } catch (error) {
+    console.log(`⚠️  Error loading existing alerts: ${error.message}`);
+  }
+  
+  if (alerts.length > 0) {
+    // Use deduplication system
+    const result = manageAlertsWithDeduplication(existingAlerts, alerts, {
+      retentionDays: 30,
+      maxAlerts: 500
+    });
     
-    // Add new alerts
-    const allAlerts = [...existingAlerts, ...alerts];
+    // Save deduplicated alerts
+    fs.writeFileSync(alertsPath, JSON.stringify(result.alerts, null, 2));
     
-    // Keep only last 30 days of alerts
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const filteredAlerts = allAlerts.filter(alert => 
-      new Date(alert.timestamp) > thirtyDaysAgo
-    );
-    
-    // Save updated alerts
-    fs.writeFileSync(alertsPath, JSON.stringify(filteredAlerts, null, 2));
-    console.log(`✅ Saved ${alerts.length} new factor change alerts`);
-    console.log(`📁 Total alerts in file: ${filteredAlerts.length}`);
+    console.log(`✅ Factor Change Alert Management:`);
+    console.log(`   📊 Original: ${result.stats.original} existing + ${result.stats.new} new`);
+    console.log(`   🔄 Duplicates removed: ${result.stats.duplicatesRemoved}`);
+    console.log(`   🗑️  Old alerts removed: ${result.stats.oldRemoved}`);
+    console.log(`   📁 Final count: ${result.stats.final} alerts`);
   } else {
     console.log('✅ No significant factor changes detected');
+    
+    // Still clean up old alerts even if no new ones
+    if (existingAlerts.length > 0) {
+      const result = manageAlertsWithDeduplication(existingAlerts, [], {
+        retentionDays: 30,
+        maxAlerts: 500
+      });
+      
+      if (result.stats.oldRemoved > 0) {
+        fs.writeFileSync(alertsPath, JSON.stringify(result.alerts, null, 2));
+        console.log(`🗑️  Cleaned up ${result.stats.oldRemoved} old alerts`);
+      }
+    }
   }
   
   // Update combined alerts file

@@ -8,6 +8,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { manageAlertsWithDeduplication } from './alert-deduplication.mjs';
 
 // Data source configurations
 const DATA_SOURCES = {
@@ -257,32 +258,50 @@ async function generateFreshnessReport() {
     }
   }
 
-  // Save freshness alerts
-  if (criticalAlerts.length > 0) {
-    const alertsPath = path.join(process.cwd(), 'public', 'data', 'data_freshness_alerts.json');
-    
-    // Load existing alerts
-    let existingAlerts = [];
-    try {
-      if (fs.existsSync(alertsPath)) {
-        const content = fs.readFileSync(alertsPath, 'utf8');
-        existingAlerts = JSON.parse(content);
-      }
-    } catch (error) {
-      console.log(`⚠️  Error loading existing freshness alerts: ${error.message}`);
+  // Save freshness alerts with deduplication
+  const alertsPath = path.join(process.cwd(), 'public', 'data', 'data_freshness_alerts.json');
+  
+  // Load existing alerts
+  let existingAlerts = [];
+  try {
+    if (fs.existsSync(alertsPath)) {
+      const content = fs.readFileSync(alertsPath, 'utf8');
+      existingAlerts = JSON.parse(content);
     }
+  } catch (error) {
+    console.log(`⚠️  Error loading existing freshness alerts: ${error.message}`);
+  }
 
-    // Add new alerts
-    const allAlerts = [...existingAlerts, ...criticalAlerts];
+  if (criticalAlerts.length > 0) {
+    // Use deduplication system
+    const result = manageAlertsWithDeduplication(existingAlerts, criticalAlerts, {
+      retentionDays: 7, // Shorter retention for freshness alerts
+      maxAlerts: 100
+    });
     
-    // Keep only last 7 days of alerts
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const filteredAlerts = allAlerts.filter(alert => 
-      new Date(alert.timestamp) > sevenDaysAgo
-    );
-
-    fs.writeFileSync(alertsPath, JSON.stringify(filteredAlerts, null, 2));
-    console.log(`🚨 Generated ${criticalAlerts.length} freshness alerts`);
+    // Save deduplicated alerts
+    fs.writeFileSync(alertsPath, JSON.stringify(result.alerts, null, 2));
+    
+    console.log(`🚨 Data Freshness Alert Management:`);
+    console.log(`   📊 Original: ${result.stats.original} existing + ${result.stats.new} new`);
+    console.log(`   🔄 Duplicates removed: ${result.stats.duplicatesRemoved}`);
+    console.log(`   🗑️  Old alerts removed: ${result.stats.oldRemoved}`);
+    console.log(`   📁 Final count: ${result.stats.final} alerts`);
+  } else {
+    console.log('✅ No critical data freshness issues detected');
+    
+    // Still clean up old alerts even if no new ones
+    if (existingAlerts.length > 0) {
+      const result = manageAlertsWithDeduplication(existingAlerts, [], {
+        retentionDays: 7,
+        maxAlerts: 100
+      });
+      
+      if (result.stats.oldRemoved > 0) {
+        fs.writeFileSync(alertsPath, JSON.stringify(result.alerts, null, 2));
+        console.log(`🗑️  Cleaned up ${result.stats.oldRemoved} old freshness alerts`);
+      }
+    }
   }
 
   console.log('✅ Data freshness monitoring complete');
