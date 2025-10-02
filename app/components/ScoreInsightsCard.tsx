@@ -9,33 +9,160 @@ interface ScoreInsightsCardProps {
   className?: string;
 }
 
-interface FactorInsight {
+interface FactorExplanation {
   key: string;
   label: string;
   score: number;
-  weight: number;
   contribution: number;
   status: string;
-  reason: string;
-  change?: number;
-  trend?: string;
+  explanation: string;
+  trend: string;
+  context: string;
+  recommendation: string;
 }
 
-interface ScoreInsight {
+interface ScoreExplanation {
   totalScore: number;
-  activeFactors: number;
-  excludedFactors: number;
-  topContributor: FactorInsight;
-  biggestChange: FactorInsight;
-  stalenessIssues: FactorInsight[];
-  trend: string;
-  bandDuration?: number;
+  bandLabel: string;
+  overallExplanation: string;
+  keyDrivers: FactorExplanation[];
+  concerns: FactorExplanation[];
+  insights: string[];
+  recommendations: string[];
 }
 
 export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsightsCardProps) {
-  const [insights, setInsights] = useState<ScoreInsight | null>(null);
+  const [explanation, setExplanation] = useState<ScoreExplanation | null>(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
+
+  // Helper function to generate factor explanations
+  const generateFactorExplanation = (factor: any): FactorExplanation => {
+    const contribution = calculateContribution(factor.score, factor.weight_pct);
+    const isHighScore = factor.score > 60;
+    const isLowScore = factor.score < 40;
+    
+    let explanation = '';
+    let trend = '';
+    let context = '';
+    let recommendation = '';
+
+    // Generate explanation based on factor type and score
+    switch (factor.key) {
+      case 'trend_valuation':
+        if (isHighScore) {
+          explanation = 'Bitcoin appears overvalued relative to historical trends';
+          trend = 'declining';
+          context = 'Price may be ahead of fundamentals';
+          recommendation = 'Consider waiting for better entry points';
+        } else if (isLowScore) {
+          explanation = 'Bitcoin appears undervalued with strong momentum';
+          trend = 'improving';
+          context = 'Favorable risk/reward ratio';
+          recommendation = 'Good opportunity for accumulation';
+        } else {
+          explanation = 'Bitcoin valuation is in neutral territory';
+          trend = 'stable';
+          context = 'Balanced risk/reward profile';
+          recommendation = 'Monitor for directional signals';
+        }
+        break;
+        
+      case 'term_structure':
+        if (isHighScore) {
+          explanation = 'Futures markets show excessive leverage and speculation';
+          trend = 'declining';
+          context = 'High leverage increases volatility risk';
+          recommendation = 'Reduce position size or use protective strategies';
+        } else if (isLowScore) {
+          explanation = 'Futures markets show healthy leverage levels';
+          trend = 'improving';
+          context = 'Lower speculation reduces crash risk';
+          recommendation = 'Favorable conditions for building positions';
+        } else {
+          explanation = 'Futures markets show moderate leverage';
+          trend = 'stable';
+          context = 'Balanced leverage environment';
+          recommendation = 'Monitor for leverage extremes';
+        }
+        break;
+        
+      case 'etf_flows':
+        if (isHighScore) {
+          explanation = 'ETF flows show strong institutional demand';
+          trend = 'improving';
+          context = 'Institutional adoption driving price support';
+          recommendation = 'Positive momentum - consider trend continuation';
+        } else if (isLowScore) {
+          explanation = 'ETF flows show weak or negative institutional interest';
+          trend = 'declining';
+          context = 'Lack of institutional support';
+          recommendation = 'Wait for institutional re-engagement';
+        } else {
+          explanation = 'ETF flows show normal institutional activity';
+          trend = 'stable';
+          context = 'Steady institutional participation';
+          recommendation = 'Monitor for flow acceleration';
+        }
+        break;
+        
+      case 'onchain':
+        if (isHighScore) {
+          explanation = 'On-chain activity shows strong network usage';
+          trend = 'improving';
+          context = 'High network activity indicates adoption';
+          recommendation = 'Network fundamentals are strong';
+        } else if (isLowScore) {
+          explanation = 'On-chain activity shows weak network usage';
+          trend = 'declining';
+          context = 'Low activity may indicate disinterest';
+          recommendation = 'Monitor for network activity recovery';
+        } else {
+          explanation = 'On-chain activity shows normal network usage';
+          trend = 'stable';
+          context = 'Steady network fundamentals';
+          recommendation = 'Network health is balanced';
+        }
+        break;
+        
+      case 'macro':
+        if (isHighScore) {
+          explanation = 'Macro conditions favor risk assets';
+          trend = 'improving';
+          context = 'Favorable monetary and economic environment';
+          recommendation = 'Macro tailwinds support Bitcoin';
+        } else if (isLowScore) {
+          explanation = 'Macro conditions are challenging for risk assets';
+          trend = 'declining';
+          context = 'Unfavorable monetary or economic environment';
+          recommendation = 'Macro headwinds may pressure Bitcoin';
+        } else {
+          explanation = 'Macro conditions are neutral for risk assets';
+          trend = 'stable';
+          context = 'Mixed macro signals';
+          recommendation = 'Monitor macro developments';
+        }
+        break;
+        
+      default:
+        explanation = `Factor shows ${isHighScore ? 'high' : isLowScore ? 'low' : 'moderate'} risk levels`;
+        trend = isHighScore ? 'declining' : isLowScore ? 'improving' : 'stable';
+        context = 'Factor contributing to overall risk assessment';
+        recommendation = 'Monitor factor for changes';
+    }
+
+    return {
+      key: factor.key,
+      label: factor.label,
+      score: factor.score,
+      contribution,
+      status: factor.status,
+      explanation,
+      trend,
+      context,
+      recommendation
+    };
+  };
 
   useEffect(() => {
     if (!latest?.factors) {
@@ -44,53 +171,62 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     }
 
     try {
-      // Calculate factor insights
       const factors = latest.factors || [];
       const activeFactors = factors.filter((f: any) => f.status === 'fresh');
       const excludedFactors = factors.filter((f: any) => f.status !== 'fresh');
       
-      // Calculate contributions
-      const factorInsights: FactorInsight[] = factors.map((factor: any) => {
-        const contribution = calculateContribution(factor.score, factor.weight_pct);
-        return {
-          key: factor.key,
-          label: factor.label,
-          score: factor.score,
-          weight: factor.weight_pct,
-          contribution,
-          status: factor.status,
-          reason: factor.reason
-        };
-      });
-
-      // Sort by contribution
-      const sortedFactors = factorInsights.sort((a, b) => b.contribution - a.contribution);
+      // Generate explanations for all factors
+      const factorExplanations = factors.map(generateFactorExplanation);
       
-      // Find top contributor
-      const topContributor = sortedFactors[0];
+      // Sort by contribution to find key drivers
+      const sortedByContribution = factorExplanations.sort((a, b) => b.contribution - a.contribution);
+      const keyDrivers = sortedByContribution.slice(0, 3);
       
-      // Find biggest change (would need historical data for this)
-      const biggestChange = sortedFactors.find(f => f.status === 'fresh') || sortedFactors[0];
+      // Find concerns (high scores or excluded factors)
+      const concerns = factorExplanations.filter(f => f.score > 60 || f.status !== 'fresh');
       
-      // Find staleness issues
-      const stalenessIssues = factorInsights.filter(f => f.status !== 'fresh');
+      // Generate overall explanation
+      const bandLabel = latest.band?.label || 'Unknown';
+      const totalScore = latest.composite_score;
       
-      // Determine overall trend (simplified)
-      const trend = latest.composite_score > 50 ? 'Higher Risk' : 'Lower Risk';
+      let overallExplanation = '';
+      if (totalScore < 40) {
+        overallExplanation = `Your G-Score of ${totalScore} indicates lower risk conditions. This suggests Bitcoin may be undervalued with favorable fundamentals.`;
+      } else if (totalScore > 60) {
+        overallExplanation = `Your G-Score of ${totalScore} indicates higher risk conditions. This suggests Bitcoin may be overvalued or facing headwinds.`;
+      } else {
+        overallExplanation = `Your G-Score of ${totalScore} indicates moderate risk conditions. This suggests Bitcoin is in a balanced state with mixed signals.`;
+      }
       
-      const scoreInsight: ScoreInsight = {
-        totalScore: latest.composite_score,
-        activeFactors: activeFactors.length,
-        excludedFactors: excludedFactors.length,
-        topContributor,
-        biggestChange,
-        stalenessIssues,
-        trend
+      // Generate insights
+      const insights = [
+        `${activeFactors.length} of ${factors.length} factors are active`,
+        excludedFactors.length > 0 ? `${excludedFactors.length} factors excluded due to staleness` : 'All factors are fresh',
+        `Currently in "${bandLabel}" risk band`
+      ];
+      
+      // Generate recommendations
+      const recommendations = [
+        totalScore < 40 ? 'Consider accumulating on weakness' : 
+        totalScore > 60 ? 'Consider reducing position size' : 
+        'Monitor for directional signals',
+        concerns.length > 0 ? 'Watch for factor improvements' : 'All factors are healthy',
+        'Review alerts for specific factor changes'
+      ];
+      
+      const scoreExplanation: ScoreExplanation = {
+        totalScore,
+        bandLabel,
+        overallExplanation,
+        keyDrivers,
+        concerns,
+        insights,
+        recommendations
       };
 
-      setInsights(scoreInsight);
+      setExplanation(scoreExplanation);
     } catch (error) {
-      console.error('Error calculating score insights:', error);
+      console.error('Error calculating score explanation:', error);
     } finally {
       setLoading(false);
     }
@@ -111,7 +247,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     );
   }
 
-  if (!insights) {
+  if (!explanation) {
     return (
       <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 ${className}`}>
         <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Score Insights</h3>
@@ -120,27 +256,27 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     );
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'fresh': return 'text-green-600';
-      case 'stale': return 'text-yellow-600';
-      case 'stale_beyond_ttl': return 'text-red-600';
-      default: return 'text-gray-600';
+  const getTrendIcon = (trend: string) => {
+    switch (trend) {
+      case 'improving': return '📈';
+      case 'declining': return '📉';
+      case 'stable': return '➡️';
+      default: return '📊';
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'fresh': return '✅';
-      case 'stale': return '⚠️';
-      case 'stale_beyond_ttl': return '❌';
-      default: return '❓';
+  const getTrendColor = (trend: string) => {
+    switch (trend) {
+      case 'improving': return 'text-green-600';
+      case 'declining': return 'text-red-600';
+      case 'stable': return 'text-blue-600';
+      default: return 'text-gray-600';
     }
   };
 
   return (
     <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 ${className}`}>
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Score Insights</h3>
         <button
           onClick={() => setExpanded(!expanded)}
@@ -150,82 +286,96 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         </button>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="text-center">
-          <div className="text-lg font-bold text-gray-900">{insights.totalScore}</div>
-          <div className="text-xs text-gray-500">Current Score</div>
-        </div>
-        <div className="text-center">
-          <div className="text-lg font-bold text-green-600">{insights.activeFactors}</div>
-          <div className="text-xs text-gray-500">Active Factors</div>
+      {/* Overall Explanation */}
+      <div className="mb-4">
+        <div className="text-sm text-gray-700 leading-relaxed">
+          {explanation.overallExplanation}
         </div>
       </div>
 
-      {/* Top Contributor */}
-      <div className="mb-3">
-        <div className="text-xs text-gray-500 mb-1">Top Contributor</div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-900">{insights.topContributor.label}</span>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-blue-600">
-              +{insights.topContributor.contribution.toFixed(1)}
-            </span>
-            <span className={`text-xs ${getStatusColor(insights.topContributor.status)}`}>
-              {getStatusIcon(insights.topContributor.status)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Staleness Issues */}
-      {insights.stalenessIssues.length > 0 && (
-        <div className="mb-3">
-          <div className="text-xs text-gray-500 mb-1">Excluded Factors</div>
-          <div className="space-y-1">
-            {insights.stalenessIssues.slice(0, expanded ? undefined : 2).map((factor, idx) => (
-              <div key={idx} className="flex items-center justify-between text-xs">
-                <span className="text-gray-700">{factor.label}</span>
-                <span className="text-red-500">{factor.reason}</span>
-              </div>
-            ))}
-            {!expanded && insights.stalenessIssues.length > 2 && (
-              <div className="text-xs text-gray-500">
-                +{insights.stalenessIssues.length - 2} more excluded
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Expanded Details */}
-      {expanded && (
-        <div className="border-t border-gray-100 pt-3 mt-3">
-          <div className="space-y-2">
-            <div className="text-xs text-gray-500">Factor Breakdown</div>
-            {insights.topContributor && (
-              <div className="grid grid-cols-1 gap-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-700">{insights.topContributor.label}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-900">{insights.topContributor.score}</span>
-                    <span className="text-blue-600">+{insights.topContributor.contribution.toFixed(1)}</span>
-                    <span className="text-gray-500">({insights.topContributor.weight}%)</span>
-                  </div>
+      {/* Key Drivers */}
+      <div className="mb-4">
+        <div className="text-xs font-medium text-gray-600 mb-2">Key Drivers</div>
+        <div className="space-y-2">
+          {explanation.keyDrivers.slice(0, expanded ? undefined : 2).map((driver, idx) => (
+            <div key={idx} className="bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-medium text-gray-900">{driver.label}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-blue-600">
+                    +{driver.contribution.toFixed(1)}
+                  </span>
+                  <span className={`text-xs ${getTrendColor(driver.trend)}`}>
+                    {getTrendIcon(driver.trend)}
+                  </span>
                 </div>
               </div>
+              <div className="text-xs text-gray-600 mb-1">{driver.explanation}</div>
+              <div className="text-xs text-blue-600 italic">{driver.context}</div>
+            </div>
+          ))}
+          {!expanded && explanation.keyDrivers.length > 2 && (
+            <div className="text-xs text-gray-500 text-center py-1">
+              +{explanation.keyDrivers.length - 2} more drivers
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Concerns */}
+      {explanation.concerns.length > 0 && (
+        <div className="mb-4">
+          <div className="text-xs font-medium text-gray-600 mb-2">Areas of Concern</div>
+          <div className="space-y-2">
+            {explanation.concerns.slice(0, expanded ? undefined : 2).map((concern, idx) => (
+              <div key={idx} className="bg-red-50 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-gray-900">{concern.label}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-red-600">
+                      {concern.score}
+                    </span>
+                    {concern.status !== 'fresh' && (
+                      <span className="text-xs text-red-500">❌</span>
+                    )}
+                  </div>
+                </div>
+                <div className="text-xs text-gray-600 mb-1">{concern.explanation}</div>
+                <div className="text-xs text-red-600 italic">{concern.recommendation}</div>
+              </div>
+            ))}
+            {!expanded && explanation.concerns.length > 2 && (
+              <div className="text-xs text-gray-500 text-center py-1">
+                +{explanation.concerns.length - 2} more concerns
+              </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Trend Indicator */}
-      <div className="mt-3 pt-3 border-t border-gray-100">
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-500">Overall Trend</span>
-          <span className={`font-medium ${insights.trend === 'Higher Risk' ? 'text-red-600' : 'text-green-600'}`}>
-            {insights.trend === 'Higher Risk' ? '📈 Higher Risk' : '📉 Lower Risk'}
-          </span>
+      {/* Insights */}
+      <div className="mb-4">
+        <div className="text-xs font-medium text-gray-600 mb-2">Current Status</div>
+        <div className="space-y-1">
+          {explanation.insights.map((insight, idx) => (
+            <div key={idx} className="text-xs text-gray-600 flex items-center gap-2">
+              <span className="text-blue-500">•</span>
+              <span>{insight}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recommendations */}
+      <div className="border-t border-gray-100 pt-3">
+        <div className="text-xs font-medium text-gray-600 mb-2">Recommendations</div>
+        <div className="space-y-1">
+          {explanation.recommendations.map((rec, idx) => (
+            <div key={idx} className="text-xs text-green-600 flex items-center gap-2">
+              <span className="text-green-500">💡</span>
+              <span>{rec}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
