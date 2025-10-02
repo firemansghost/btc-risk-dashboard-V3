@@ -17,6 +17,7 @@ interface AlertSettings {
   etfZeroCross: boolean;
   riskBandChange: boolean;
   factorStaleness: boolean;
+  factorChange: boolean;
   criticalOnly: boolean;
   emailNotifications: boolean;
   webhookUrl: string;
@@ -28,6 +29,7 @@ export default function AlertManagementCard() {
     etfZeroCross: true,
     riskBandChange: true,
     factorStaleness: true,
+    factorChange: true,
     criticalOnly: false,
     emailNotifications: false,
     webhookUrl: ''
@@ -45,7 +47,8 @@ export default function AlertManagementCard() {
           'factor_staleness_alerts.json',
           'cycle_adjustment_alerts.json',
           'spike_adjustment_alerts.json',
-          'sma50w_warning_alerts.json'
+          'sma50w_warning_alerts.json',
+          'factor_change_alerts.json'
         ];
 
         const allAlerts: Alert[] = [];
@@ -103,6 +106,8 @@ export default function AlertManagementCard() {
         return settings.riskBandChange;
       case 'factor_staleness':
         return settings.factorStaleness;
+      case 'factor_change':
+        return settings.factorChange;
       default:
         return true;
     }
@@ -273,6 +278,15 @@ export default function AlertManagementCard() {
                   />
                   <span className="ml-2 text-sm text-gray-700">Factor Staleness Alerts</span>
                 </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={settings.factorChange}
+                    onChange={(e) => saveSettings({ ...settings, factorChange: e.target.checked })}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Factor Change Alerts</span>
+                </label>
               </div>
             </div>
 
@@ -326,6 +340,7 @@ export default function AlertManagementCard() {
                     etfZeroCross: true,
                     riskBandChange: true,
                     factorStaleness: true,
+                    factorChange: true,
                     criticalOnly: false,
                     emailNotifications: false,
                     webhookUrl: ''
