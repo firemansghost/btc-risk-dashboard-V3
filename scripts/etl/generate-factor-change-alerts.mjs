@@ -244,8 +244,8 @@ async function generateFactorChangeAlerts() {
     return;
   }
   
-  // Get previous day's scores (most recent history entry)
-  const previousRecord = history[history.length - 1];
+  // Get previous day's scores (second most recent history entry)
+  const previousRecord = history[history.length - 2];
   const previousScores = {};
   
   Object.keys(FACTOR_CONFIG).forEach(factorKey => {
@@ -388,8 +388,7 @@ async function generateFactorChangeAlerts() {
 }
 
 // Run the script
-if (import.meta.url === `file://${process.argv[1]}`) {
-  generateFactorChangeAlerts().catch(console.error);
-}
+console.log('🚀 Starting factor change alerts script...');
+generateFactorChangeAlerts().catch(console.error);
 
 export { generateFactorChangeAlerts };
