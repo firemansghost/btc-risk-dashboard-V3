@@ -70,6 +70,10 @@ export default function AlertBell() {
         return `Spike adjustment: ${spikeDir} ${spikeMag.toFixed(1)} pts`;
       case 'sma50w_warning':
         return `50W SMA warning: ${alert.details?.consecutive_weeks_below || 0} weeks below`;
+      case 'factor_change':
+        const change = alert.details?.change_points || 0;
+        const changeDir = change > 0 ? '+' : '';
+        return `${alert.details?.factor || 'Factor'} changed: ${changeDir}${change.toFixed(1)} pts`;
       default:
         return `Alert: ${alert.type}`;
     }

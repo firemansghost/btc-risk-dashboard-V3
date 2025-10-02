@@ -78,6 +78,10 @@ export default function AlertsPage() {
         return `Spike adjustment: ${spikeDir} ${spikeMag.toFixed(1)} points`;
       case 'sma50w_warning':
         return `50W SMA warning: ${alert.details.consecutive_weeks_below || 0} consecutive weeks below`;
+      case 'factor_change':
+        const change = alert.details.change_points || 0;
+        const changeDir = change > 0 ? '+' : '';
+        return `Factor change: ${alert.details.factor || 'Unknown'} ${changeDir}${change.toFixed(1)} points (${alert.details.previous_score} → ${alert.details.current_score})`;
       default:
         return `Alert: ${alert.type}`;
     }
@@ -95,6 +99,8 @@ export default function AlertsPage() {
         return 'bg-orange-100 text-orange-800';
       case 'sma50w_warning':
         return 'bg-amber-100 text-amber-800';
+      case 'factor_change':
+        return 'bg-green-100 text-green-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }

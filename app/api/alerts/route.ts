@@ -10,7 +10,8 @@ export async function GET(request: Request) {
       'factor_staleness_alerts',
       'cycle_adjustment_alerts',
       'spike_adjustment_alerts',
-      'sma50w_warning_alerts'
+      'sma50w_warning_alerts',
+      'factor_change_alerts'
     ];
 
     const allAlerts: any[] = [];

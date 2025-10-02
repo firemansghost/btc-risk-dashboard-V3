@@ -81,6 +81,19 @@ export default function AlertTypesPage() {
       },
       explanation: 'Factor staleness occurs when data sources fail or become unavailable. Stale factors are excluded from G-Score calculation, potentially affecting accuracy.',
       action: 'Monitor data quality and consider the impact of stale factors on G-Score reliability.'
+    },
+    {
+      type: 'factor_change',
+      name: 'Factor Change Alerts',
+      description: 'Alerts when individual risk factors change significantly between runs',
+      icon: '📊',
+      color: 'green',
+      thresholds: {
+        medium: '±10-19 points change',
+        high: '±20+ points change'
+      },
+      explanation: 'Factor changes indicate significant shifts in underlying market conditions. Large changes may signal important market developments or data quality issues.',
+      action: 'Review factor details and consider implications for market outlook and G-Score reliability.'
     }
   ];
 
