@@ -126,7 +126,7 @@ export function getFactorTTL(factorKey: string): number {
   // TTL values matching ETL stalenessUtils.mjs (the actual source of truth)
   const factorTTLs: Record<string, number> = {
     'trend_valuation': 24, // 1 day
-    'onchain': 72, // 3 days
+    'onchain': 96, // 4 days
     'stablecoins': 24, // 1 day
     'etf_flows': 120, // 5 days
     'net_liquidity': 240, // 10 days
