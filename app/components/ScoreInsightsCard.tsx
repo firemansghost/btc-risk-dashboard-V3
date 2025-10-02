@@ -325,42 +325,54 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       }
     } catch (error) {
       console.error('Error loading historical data:', error);
+      // Don't set historical data if there's an error
+      setHistoricalData(null);
     }
   };
 
   // Calculate historical comparisons
   const getHistoricalComparison = () => {
-    if (!historicalData?.points || historicalData.points.length < 2) return null;
-    
-    const currentScore = explanation?.totalScore || 0;
-    const yesterday = historicalData.points[historicalData.points.length - 2];
-    const lastWeek = historicalData.points[Math.max(0, historicalData.points.length - 8)];
-    
-    const yesterdayChange = currentScore - yesterday.score;
-    const lastWeekChange = currentScore - lastWeek.score;
-    
-    // Calculate trend over last 7 days
-    const last7Days = historicalData.points.slice(-7);
-    const trend = last7Days.length >= 2 ? 
-      (last7Days[last7Days.length - 1].score - last7Days[0].score) / last7Days.length : 0;
-    
-    // Calculate score range
-    const allScores = historicalData.points.map((d: any) => d.score);
-    const minScore = Math.min(...allScores);
-    const maxScore = Math.max(...allScores);
-    const scoreRange = maxScore - minScore;
-    const currentPercentile = ((currentScore - minScore) / scoreRange) * 100;
-    
-    return {
-      yesterdayChange,
-      lastWeekChange,
-      trend,
-      currentPercentile,
-      minScore,
-      maxScore,
-      scoreRange
-    };
+    try {
+      if (!historicalData?.points || historicalData.points.length < 2) return null;
+      
+      const currentScore = explanation?.totalScore || 0;
+      const yesterday = historicalData.points[historicalData.points.length - 2];
+      const lastWeek = historicalData.points[Math.max(0, historicalData.points.length - 8)];
+      
+      if (!yesterday || !lastWeek) return null;
+      
+      const yesterdayChange = currentScore - yesterday.score;
+      const lastWeekChange = currentScore - lastWeek.score;
+      
+      // Calculate trend over last 7 days
+      const last7Days = historicalData.points.slice(-7);
+      const trend = last7Days.length >= 2 ? 
+        (last7Days[last7Days.length - 1].score - last7Days[0].score) / last7Days.length : 0;
+      
+      // Calculate score range
+      const allScores = historicalData.points.map((d: any) => d.score).filter(score => !isNaN(score));
+      if (allScores.length === 0) return null;
+      
+      const minScore = Math.min(...allScores);
+      const maxScore = Math.max(...allScores);
+      const scoreRange = maxScore - minScore;
+      const currentPercentile = scoreRange > 0 ? ((currentScore - minScore) / scoreRange) * 100 : 50;
+      
+      return {
+        yesterdayChange,
+        lastWeekChange,
+        trend,
+        currentPercentile,
+        minScore,
+        maxScore,
+        scoreRange
+      };
+    } catch (error) {
+      console.error('Error calculating historical comparison:', error);
+      return null;
+    }
   };
+
 
   return (
     <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 ${className}`}>
@@ -410,7 +422,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       </div>
 
       {/* Historical Comparison */}
-      {(() => {
+      {historicalData && (() => {
         const historicalComparison = getHistoricalComparison();
         if (!historicalComparison) return null;
         
