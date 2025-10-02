@@ -270,6 +270,11 @@ export default function RealDashboard() {
                   </div>
                 </div>
               </div>
+
+              {/* Score Insights Card - Right under main cards */}
+              <div className="mb-6 lg:mb-8">
+                <ScoreInsightsCard latest={latest} className="h-full" />
+              </div>
               
               {/* Refresh Dashboard Button - Moved below top cards */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mt-6 mb-4">
@@ -621,11 +626,6 @@ export default function RealDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 lg:mb-8">
           <BtcGoldCard className="h-full" />
           <SatoshisPerDollarCard className="h-full" />
-        </div>
-
-        {/* Score Insights Card */}
-        <div className="mb-6 lg:mb-8">
-          <ScoreInsightsCard latest={latest} className="h-full" />
         </div>
 
         {/* Risk Band Legend */}
