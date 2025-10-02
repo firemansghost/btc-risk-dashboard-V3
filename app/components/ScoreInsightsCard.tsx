@@ -100,13 +100,18 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     console.log('getRelativePosition: Data check', { 
       currentScore, 
       allScoresLength: allScores.length,
-      allScores: allScores.slice(0, 5) // First 5 scores for debugging
+      allScores: allScores.slice(0, 5), // First 5 scores for debugging
+      rawPoints: historicalData.points.slice(0, 3) // First 3 raw points
     });
     
-    if (allScores.length === 0) return null;
+    if (allScores.length === 0) {
+      console.log('getRelativePosition: No valid scores found');
+      return null;
+    }
     
     // If we only have 1 data point, we can't calculate relative position
     if (allScores.length === 1) {
+      console.log('getRelativePosition: Single data point, returning default');
       return {
         percentile: 50, // Default to middle
         position: 'Average',
