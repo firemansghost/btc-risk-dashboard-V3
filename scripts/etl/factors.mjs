@@ -1218,14 +1218,22 @@ async function computeTermLeverage() {
   }
 }
 
-// 7. ON-CHAIN ACTIVITY (Pure JS implementation)
+// 7. ON-CHAIN ACTIVITY (Enhanced with fallback sources)
 async function computeOnchain() {
   try {
-    // Import the JS onchain implementation
-    const { computeOnchain: jsComputeOnchain } = await import('./factors/onchain.mjs');
-    const result = await jsComputeOnchain();
+    // Try enhanced version first (with fallback sources)
+    const { computeOnchainEnhanced } = await import('./factors/onchain-enhanced.mjs');
+    const result = await computeOnchainEnhanced();
     
-    // Return in expected ETL format
+    // If enhanced version fails, fall back to original
+    if (result.score === null) {
+      console.log('⚠️  Enhanced onchain failed, trying original implementation...');
+      const { computeOnchain: jsComputeOnchain } = await import('./factors/onchain.mjs');
+      const fallbackResult = await jsComputeOnchain();
+      return fallbackResult;
+    }
+    
+    // Return enhanced result in expected ETL format
     return {
       score: result.score,
       reason: result.reason,
