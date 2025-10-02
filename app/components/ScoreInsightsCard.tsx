@@ -144,12 +144,12 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
   // Get factor volatility analysis
   const getFactorVolatility = () => {
-    if (!explanation || !historicalData?.points || historicalData.points.length < 3) {
+    if (!explanation || !historicalData?.points || historicalData.points.length < 1) {
       console.log('getFactorVolatility: Insufficient data', {
         hasExplanation: !!explanation,
         hasHistoricalData: !!historicalData,
         pointsLength: historicalData?.points?.length || 0,
-        required: 3
+        required: 1
       });
       return null;
     }
@@ -161,11 +161,27 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     const factorVolatility = currentFactors.map(factor => {
       const factorScores = points.map((point: any) => point[factor.key] || 0).filter((score: any) => !isNaN(score));
       
-      if (factorScores.length < 3) {
+      if (factorScores.length < 1) {
         return null; // Not enough data
       }
       
-      // Calculate standard deviation (volatility)
+      // For single data point, show current score as baseline
+      if (factorScores.length === 1) {
+        const currentScore = factorScores[0];
+        const volatility = 0; // No volatility with single point
+        const volatilityLevel = 'stable';
+        const context = `${factor.label} shows current score of ${currentScore.toFixed(1)}, volatility analysis requires more historical data`;
+        
+        return {
+          key: factor.key,
+          label: factor.label,
+          volatility,
+          volatilityLevel,
+          context
+        };
+      }
+      
+      // Calculate standard deviation (volatility) for multiple data points
       const mean = factorScores.reduce((sum: any, score: any) => sum + score, 0) / factorScores.length;
       const variance = factorScores.reduce((sum: any, score: any) => sum + Math.pow(score - mean, 2), 0) / factorScores.length;
       const volatility = Math.sqrt(variance);
