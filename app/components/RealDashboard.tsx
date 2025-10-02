@@ -345,6 +345,11 @@ export default function RealDashboard() {
                           
                           setRefreshing(false);
                           setTimeout(() => setRefreshMessage(null), 5000);
+                          
+                          // Dispatch event to notify AlertBell of dashboard refresh
+                          window.dispatchEvent(new CustomEvent('dashboard-refreshed', {
+                            detail: { btc_price: freshBtcPrice, updated_at: data.data.updated_at }
+                          }));
                         })
                         .catch((error) => {
                           console.error('Smart refresh failed:', error);

@@ -38,6 +38,7 @@ export default function AlertBell() {
   const [isHovered, setIsHovered] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isPageVisible, setIsPageVisible] = useState(true);
+  const [acknowledgedAlerts, setAcknowledgedAlerts] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function fetchAlerts(isInitial = false) {
@@ -84,15 +85,36 @@ export default function AlertBell() {
     // Initial fetch
     fetchAlerts(true);
 
-    // Set up automatic refresh every 30 seconds (only when page is visible)
+    // Set up smart refresh strategy:
+    // - Listen for dashboard refresh events
+    // - Poll every 5 minutes (much less frequent)
+    // - Only when page is visible
     const interval = setInterval(() => {
       if (isPageVisible) {
         fetchAlerts(false);
       }
-    }, 30000);
+    }, 5 * 60 * 1000); // 5 minutes instead of 30 seconds
 
-    // Cleanup interval on unmount
-    return () => clearInterval(interval);
+    // Listen for dashboard refresh events
+    const handleDashboardRefresh = () => {
+      fetchAlerts(false);
+    };
+
+    // Listen for workflow completion events
+    const handleWorkflowComplete = () => {
+      fetchAlerts(false);
+    };
+
+    // Add event listeners
+    window.addEventListener('dashboard-refreshed', handleDashboardRefresh);
+    window.addEventListener('workflow-completed', handleWorkflowComplete);
+
+    // Cleanup
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('dashboard-refreshed', handleDashboardRefresh);
+      window.removeEventListener('workflow-completed', handleWorkflowComplete);
+    };
   }, [isPageVisible]);
 
   // Page visibility detection
@@ -104,6 +126,27 @@ export default function AlertBell() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
+
+  // Load acknowledged alerts from localStorage
+  useEffect(() => {
+    const savedAcknowledged = localStorage.getItem('acknowledgedAlerts');
+    if (savedAcknowledged) {
+      try {
+        const parsed = JSON.parse(savedAcknowledged);
+        setAcknowledgedAlerts(new Set(parsed));
+      } catch (error) {
+        console.error('Failed to parse acknowledged alerts:', error);
+      }
+    }
+  }, []);
+
+  // Save acknowledged alerts to localStorage
+  const acknowledgeAlert = (alertId: string) => {
+    const newAcknowledged = new Set(acknowledgedAlerts);
+    newAcknowledged.add(alertId);
+    setAcknowledgedAlerts(newAcknowledged);
+    localStorage.setItem('acknowledgedAlerts', JSON.stringify([...newAcknowledged]));
+  };
 
   const formatAlertText = (alert: Alert): string => {
     // Use new API format if available (title/message)
@@ -137,7 +180,12 @@ export default function AlertBell() {
     }
   };
 
-  const hasAlerts = alerts && alerts.alerts.length > 0;
+  // Filter out acknowledged alerts
+  const unacknowledgedAlerts = alerts?.alerts.filter(alert => 
+    alert.id && !acknowledgedAlerts.has(alert.id)
+  ) || [];
+  
+  const hasAlerts = unacknowledgedAlerts.length > 0;
 
   if (loading) {
     return (
@@ -156,7 +204,7 @@ export default function AlertBell() {
       <Link
         href="/alerts"
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-        title={hasAlerts ? `${alerts.alerts.length} alert(s) today` : 'No alerts today'}
+        title={hasAlerts ? `${unacknowledgedAlerts.length} unread alert(s)` : 'No unread alerts'}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -176,7 +224,7 @@ export default function AlertBell() {
           </svg>
           {hasAlerts && (
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full flex items-center justify-center">
-              <span className="text-xs text-white font-bold">{alerts.alerts.length}</span>
+              <span className="text-xs text-white font-bold">{unacknowledgedAlerts.length}</span>
             </div>
           )}
           {isRefreshing && (
@@ -184,26 +232,62 @@ export default function AlertBell() {
           )}
         </div>
         <span className="text-sm font-medium">
-          {hasAlerts ? `${alerts.alerts.length} alert${alerts.alerts.length === 1 ? '' : 's'}` : 'No alerts'}
+          {hasAlerts ? `${unacknowledgedAlerts.length} unread` : 'No unread alerts'}
         </span>
       </Link>
       
       {/* Tooltip with alert details */}
       {hasAlerts && isHovered && (
-        <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-3">
-          <div className="text-xs text-gray-500 mb-2">Today's alerts:</div>
-          {alerts.alerts.map((alert, idx) => (
-            <div key={idx} className="text-sm text-gray-700 mb-1">
-              • {formatAlertText(alert)}
+        <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-3">
+          <div className="text-xs text-gray-500 mb-2">Unread alerts:</div>
+          {unacknowledgedAlerts.slice(0, 5).map((alert, idx) => (
+            <div key={alert.id || idx} className="flex items-start justify-between text-sm text-gray-700 mb-2 p-2 bg-gray-50 rounded">
+              <div className="flex-1">
+                <div className="font-medium text-gray-900">{alert.title || `Alert: ${alert.type}`}</div>
+                <div className="text-xs text-gray-600 mt-1">{formatAlertText(alert)}</div>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (alert.id) {
+                    acknowledgeAlert(alert.id);
+                  }
+                }}
+                className="ml-2 text-xs text-blue-600 hover:text-blue-800 underline"
+                title="Mark as read"
+              >
+                ✓
+              </button>
             </div>
           ))}
-          <div className="mt-2 pt-2 border-t border-gray-100">
+          {unacknowledgedAlerts.length > 5 && (
+            <div className="text-xs text-gray-500 mb-2">
+              ... and {unacknowledgedAlerts.length - 5} more
+            </div>
+          )}
+          <div className="mt-2 pt-2 border-t border-gray-100 flex justify-between items-center">
             <Link 
               href="/alerts" 
               className="text-xs text-blue-600 hover:text-blue-800 underline"
             >
               View all alerts →
             </Link>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // Acknowledge all visible alerts
+                unacknowledgedAlerts.forEach(alert => {
+                  if (alert.id) {
+                    acknowledgeAlert(alert.id);
+                  }
+                });
+              }}
+              className="text-xs text-gray-600 hover:text-gray-800 underline"
+            >
+              Mark all as read
+            </button>
           </div>
         </div>
       )}
