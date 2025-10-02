@@ -101,7 +101,9 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       currentScore, 
       allScoresLength: allScores.length,
       allScores: allScores.slice(0, 5), // First 5 scores for debugging
-      rawPoints: historicalData.points.slice(0, 3) // First 3 raw points
+      rawPoints: historicalData.points.slice(0, 3), // First 3 raw points
+      mappedScores: historicalData.points.map((d: any) => d.score), // All mapped scores
+      filteredScores: historicalData.points.map((d: any) => d.score).filter((score: any) => !isNaN(score)) // Filtered scores
     });
     
     if (allScores.length === 0) {
