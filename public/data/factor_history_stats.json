@@ -15,20 +15,19 @@
     },
     "onchain": {
       "dataPoints": 36,
-      "mean": 73.78,
-      "stdDev": 17.57,
+      "mean": 72.61,
+      "stdDev": 18.29,
       "min": 35,
       "max": 98,
       "range": 63,
       "statusCounts": {
-        "fresh": 35,
-        "stale": 1
+        "fresh": 36
       }
     },
     "stablecoins": {
       "dataPoints": 35,
-      "mean": 63.86,
-      "stdDev": 17.37,
+      "mean": 63.74,
+      "stdDev": 17.53,
       "min": 35,
       "max": 95,
       "range": 60,
@@ -61,8 +60,8 @@
     },
     "term_leverage": {
       "dataPoints": 36,
-      "mean": 67.28,
-      "stdDev": 14.15,
+      "mean": 67.33,
+      "stdDev": 14.16,
       "min": 42,
       "max": 95,
       "range": 53,
@@ -83,8 +82,8 @@
     },
     "social_interest": {
       "dataPoints": 36,
-      "mean": 65.22,
-      "stdDev": 19.31,
+      "mean": 65.64,
+      "stdDev": 18.92,
       "min": 38,
       "max": 96,
       "range": 58,

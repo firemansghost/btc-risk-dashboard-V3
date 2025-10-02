@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-10-02T01:30:59.647Z",
+  "updated_at": "2025-10-02T11:18:22.578Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -26,17 +26,22 @@
       "url": "https://fred.stlouisfed.org/"
     },
     {
-      "name": "History: onchain",
+      "name": "Stooq",
       "ok": true,
-      "rows_appended": 1,
-      "total_rows": 37
+      "url": "https://stooq.com/",
+      "ms": 1159,
+      "fallback": false,
+      "cache_used": false,
+      "fallback_used": false
     }
   ],
   "factors_computed": 8,
   "factors_successful": 8,
   "gold_cross_rates": {
-    "status": "failed",
-    "reason": "error: CoinGecko 429"
+    "status": "success",
+    "source": "Stooq",
+    "fallback_used": false,
+    "latency_ms": 1159
   },
   "satoshis_per_dollar": {
     "status": "success",
@@ -44,16 +49,16 @@
     "derived": true
   },
   "etf_schema_hash": "cd3800",
-  "etf_schema_last_check": "2025-10-02T01:30:34.693Z",
+  "etf_schema_last_check": "2025-10-02T11:18:08.200Z",
   "price_history": {
-    "total_rows": 737,
-    "oldest_date": "2023-09-25",
+    "total_rows": 729,
+    "oldest_date": "2023-10-03",
     "newest_date": "2025-10-02",
     "alpha_vantage_backfill": null,
     "coinbase_daily_update": {
       "status": "success",
       "rows_fetched": 14,
-      "ms": 733
+      "ms": 77
     },
     "drift_check": null
   }
