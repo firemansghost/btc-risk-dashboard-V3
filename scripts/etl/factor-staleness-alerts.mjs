@@ -7,6 +7,9 @@
  */
 
 import fs from 'node:fs';
+import { manageAlertsWithDeduplication } from './alert-deduplication.mjs';
+import { enhanceAlertsWithContext } from './alert-context-enhancer.mjs';
+import { determineSeverity, getSeverityConfig } from './alert-severity-system.mjs';
 
 /**
  * Load latest factor data
@@ -71,16 +74,6 @@ function getFactorTTL(factorKey) {
   return ttlMap[factorKey] || 24; // Default 24 hours
 }
 
-/**
- * Determine staleness severity
- */
-function determineStalenessSeverity(ageHours, ttlHours) {
-  if (ageHours > ttlHours * 2) return 'critical'; // More than 2x TTL
-  if (ageHours > ttlHours) return 'high'; // Exceeds TTL
-  if (ageHours > ttlHours * 0.8) return 'medium'; // 80% of TTL
-  if (ageHours > ttlHours * 0.5) return 'low'; // 50% of TTL
-  return 'fresh';
-}
 
 /**
  * Detect factor staleness issues
@@ -100,7 +93,7 @@ function detectFactorStaleness(factorData) {
   for (const factor of factorData.factors) {
     const ageHours = calculateDataAge(factor.last_utc);
     const ttlHours = getFactorTTL(factor.key);
-    const severity = determineStalenessSeverity(ageHours, ttlHours);
+    const severity = determineSeverity('factor_staleness', ageHours);
     
     // Only create alerts for stale factors
     if (severity !== 'fresh') {

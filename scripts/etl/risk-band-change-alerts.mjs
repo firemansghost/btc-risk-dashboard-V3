@@ -7,6 +7,9 @@
  */
 
 import fs from 'node:fs';
+import { manageAlertsWithDeduplication } from './alert-deduplication.mjs';
+import { enhanceAlertsWithContext } from './alert-context-enhancer.mjs';
+import { determineSeverity, getSeverityConfig } from './alert-severity-system.mjs';
 
 /**
  * Load G-Score history data
@@ -86,7 +89,7 @@ function detectRiskBandChanges(scores) {
     // Check for band changes
     if (currentBand !== previousBand) {
       const changeDirection = getChangeDirection(previous.gScore, current.gScore);
-      const severity = calculateBandChangeSeverity(previousBand, currentBand, Math.abs(current.gScore - previous.gScore));
+      const severity = determineSeverity('risk_band_change', Math.abs(current.gScore - previous.gScore));
       
       events.push({
         type: 'band_change',
@@ -105,7 +108,7 @@ function detectRiskBandChanges(scores) {
     // Check for significant score changes within the same band
     const scoreChange = Math.abs(current.gScore - previous.gScore);
     if (scoreChange >= 10 && currentBand === previousBand) {
-      const severity = calculateScoreChangeSeverity(scoreChange);
+      const severity = determineSeverity('risk_band_change', scoreChange);
       
       events.push({
         type: 'significant_score_change',
@@ -138,37 +141,7 @@ function getChangeDirection(previousScore, currentScore) {
   return 'stable';
 }
 
-/**
- * Calculate band change severity
- */
-function calculateBandChangeSeverity(previousBand, currentBand, scoreChange) {
-  // Critical band changes (high risk to low risk or vice versa)
-  const criticalChanges = [
-    ['Increase Selling', 'Increase Buying'],
-    ['Increase Buying', 'Increase Selling'],
-    ['Begin Scaling Out', 'Begin Scaling In'],
-    ['Begin Scaling In', 'Begin Scaling Out']
-  ];
-  
-  const isCritical = criticalChanges.some(([from, to]) => 
-    (previousBand === from && currentBand === to) || 
-    (previousBand === to && currentBand === from)
-  );
-  
-  if (isCritical) return 'critical';
-  if (scoreChange >= 20) return 'high';
-  if (scoreChange >= 10) return 'medium';
-  return 'low';
-}
 
-/**
- * Calculate score change severity
- */
-function calculateScoreChangeSeverity(scoreChange) {
-  if (scoreChange >= 20) return 'high';
-  if (scoreChange >= 15) return 'medium';
-  return 'low';
-}
 
 /**
  * Generate risk band change alert notifications

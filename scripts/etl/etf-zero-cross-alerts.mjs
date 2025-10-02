@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { manageAlertsWithDeduplication } from './alert-deduplication.mjs';
 import { enhanceAlertsWithContext } from './alert-context-enhancer.mjs';
+import { determineSeverity, getSeverityConfig } from './alert-severity-system.mjs';
 
 /**
  * Load historical data for context enhancement
@@ -148,7 +149,7 @@ function detectZeroCrossEvents(flows) {
         previousFlow: previousFlow,
         currentFlow: currentFlow,
         change: currentFlow - previousFlow,
-        severity: calculateSeverity(Math.abs(currentFlow - previousFlow)),
+        severity: determineSeverity('etf_zero_cross', Math.abs(currentFlow - previousFlow)),
         description: `ETF flows crossed zero: ${previousFlow.toFixed(1)}M → ${currentFlow.toFixed(1)}M`
       });
     }
@@ -161,7 +162,7 @@ function detectZeroCrossEvents(flows) {
         previousFlow: previousFlow,
         currentFlow: currentFlow,
         change: currentFlow - previousFlow,
-        severity: calculateSeverity(Math.abs(currentFlow - previousFlow)),
+        severity: determineSeverity('etf_zero_cross', Math.abs(currentFlow - previousFlow)),
         description: `ETF flows crossed zero: ${previousFlow.toFixed(1)}M → ${currentFlow.toFixed(1)}M`
       });
     }
@@ -175,7 +176,7 @@ function detectZeroCrossEvents(flows) {
         previousFlow: previousFlow,
         currentFlow: currentFlow,
         change: currentFlow - previousFlow,
-        severity: calculateSeverity(flowChange),
+        severity: determineSeverity('etf_zero_cross', flowChange),
         description: `Significant ETF flow change: ${previousFlow.toFixed(1)}M → ${currentFlow.toFixed(1)}M (${flowChange.toFixed(1)}M change)`
       });
     }
@@ -188,15 +189,6 @@ function detectZeroCrossEvents(flows) {
   };
 }
 
-/**
- * Calculate alert severity based on flow change magnitude
- */
-function calculateSeverity(changeMagnitude) {
-  if (changeMagnitude >= 500) return 'critical';
-  if (changeMagnitude >= 200) return 'high';
-  if (changeMagnitude >= 100) return 'medium';
-  return 'low';
-}
 
 /**
  * Generate alert notifications
