@@ -39,6 +39,8 @@ export default function AlertBell() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isPageVisible, setIsPageVisible] = useState(true);
   const [acknowledgedAlerts, setAcknowledgedAlerts] = useState<Set<string>>(new Set());
+  const [isPopupHovered, setIsPopupHovered] = useState(false);
+  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     async function fetchAlerts(isInitial = false) {
@@ -148,6 +150,46 @@ export default function AlertBell() {
     localStorage.setItem('acknowledgedAlerts', JSON.stringify([...newAcknowledged]));
   };
 
+  // Handle hover with delay to prevent flickering
+  const handleMouseEnter = () => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+      setHoverTimeout(null);
+    }
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    const timeout = setTimeout(() => {
+      if (!isPopupHovered) {
+        setIsHovered(false);
+      }
+    }, 150); // Small delay to allow mouse to move to popup
+    setHoverTimeout(timeout);
+  };
+
+  const handlePopupMouseEnter = () => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+      setHoverTimeout(null);
+    }
+    setIsPopupHovered(true);
+  };
+
+  const handlePopupMouseLeave = () => {
+    setIsPopupHovered(false);
+    setIsHovered(false);
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout);
+      }
+    };
+  }, [hoverTimeout]);
+
   const formatAlertText = (alert: Alert): string => {
     // Use new API format if available (title/message)
     if (alert.title && alert.message) {
@@ -205,8 +247,8 @@ export default function AlertBell() {
         href="/alerts"
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
         title={hasAlerts ? `${unacknowledgedAlerts.length} unread alert(s)` : 'No unread alerts'}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         <div className="relative">
           <svg 
@@ -237,8 +279,12 @@ export default function AlertBell() {
       </Link>
       
       {/* Tooltip with alert details */}
-      {hasAlerts && isHovered && (
-        <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-3">
+      {hasAlerts && (isHovered || isPopupHovered) && (
+        <div 
+          className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-3"
+          onMouseEnter={handlePopupMouseEnter}
+          onMouseLeave={handlePopupMouseLeave}
+        >
           <div className="text-xs text-gray-500 mb-2">Unread alerts:</div>
           {unacknowledgedAlerts.slice(0, 5).map((alert, idx) => (
             <div key={alert.id || idx} className="flex items-start justify-between text-sm text-gray-700 mb-2 p-2 bg-gray-50 rounded">
@@ -294,3 +340,4 @@ export default function AlertBell() {
     </div>
   );
 }
+
