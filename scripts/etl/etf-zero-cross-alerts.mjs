@@ -7,6 +7,72 @@
  */
 
 import fs from 'node:fs';
+import path from 'node:path';
+import { manageAlertsWithDeduplication } from './alert-deduplication.mjs';
+import { enhanceAlertsWithContext } from './alert-context-enhancer.mjs';
+
+/**
+ * Load historical data for context enhancement
+ */
+function loadHistoricalData() {
+  const dataDir = path.join(process.cwd(), 'public', 'data');
+  
+  const historicalData = {
+    factorHistory: [],
+    gScoreHistory: [],
+    etfFlows: []
+  };
+  
+  try {
+    // Load factor history
+    const factorHistoryPath = path.join(dataDir, 'factor_history.csv');
+    if (fs.existsSync(factorHistoryPath)) {
+      const content = fs.readFileSync(factorHistoryPath, 'utf8');
+      const lines = content.trim().split('\n');
+      if (lines.length > 1) {
+        const headers = lines[0].split(',');
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(',');
+          const record = {};
+          headers.forEach((header, idx) => {
+            record[header.trim()] = values[idx]?.trim();
+          });
+          historicalData.factorHistory.push(record);
+        }
+      }
+    }
+    
+    // Load G-Score history
+    const historyPath = path.join(dataDir, 'history.csv');
+    if (fs.existsSync(historyPath)) {
+      const content = fs.readFileSync(historyPath, 'utf8');
+      const lines = content.trim().split('\n');
+      if (lines.length > 1) {
+        const headers = lines[0].split(',');
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(',');
+          const record = {};
+          headers.forEach((header, idx) => {
+            record[header.trim()] = values[idx]?.trim();
+          });
+          historicalData.gScoreHistory.push(record);
+        }
+      }
+    }
+    
+    // Load ETF flows history
+    const etfFlowsPath = path.join(dataDir, 'etf-flows-historical.json');
+    if (fs.existsSync(etfFlowsPath)) {
+      const content = fs.readFileSync(etfFlowsPath, 'utf8');
+      historicalData.etfFlows = JSON.parse(content);
+    }
+    
+  } catch (error) {
+    console.error('Error loading historical data:', error);
+  }
+  
+  return historicalData;
+}
 
 /**
  * Load ETF flows data
@@ -235,18 +301,31 @@ function saveAlerts(notifications) {
     }
   }
   
-  // Add new alerts
-  const allAlerts = [...existingAlerts, ...notifications];
+  // Load historical data for context enhancement
+  const historicalData = loadHistoricalData();
   
-  // Keep only last 100 alerts to prevent file from growing too large
-  const recentAlerts = allAlerts.slice(-100);
+  // Enhance new alerts with context
+  const enhancedAlerts = enhanceAlertsWithContext(notifications, historicalData);
   
-  fs.writeFileSync(alertsPath, JSON.stringify(recentAlerts, null, 2), 'utf8');
+  // Use deduplication system
+  const result = manageAlertsWithDeduplication(existingAlerts, enhancedAlerts, {
+    retentionDays: 30,
+    maxAlerts: 200
+  });
+  
+  // Save deduplicated alerts
+  fs.writeFileSync(alertsPath, JSON.stringify(result.alerts, null, 2), 'utf8');
+  
+  console.log(`✅ ETF Zero-Cross Alert Management:`);
+  console.log(`   📊 Original: ${result.stats.original} existing + ${result.stats.new} new`);
+  console.log(`   🔄 Duplicates removed: ${result.stats.duplicatesRemoved}`);
+  console.log(`   🗑️  Old alerts removed: ${result.stats.oldRemoved}`);
+  console.log(`   📈 Final alerts: ${result.stats.final}`);
   
   return {
-    totalAlerts: allAlerts.length,
-    newAlerts: notifications.length,
-    savedAlerts: recentAlerts.length
+    totalAlerts: result.stats.final,
+    newAlerts: result.stats.new,
+    savedAlerts: result.stats.final
   };
 }
 

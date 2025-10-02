@@ -12,6 +12,70 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { manageAlertsWithDeduplication } from './alert-deduplication.mjs';
 import { determineSeverity, getSeverityConfig } from './alert-severity-system.mjs';
+import { enhanceAlertsWithContext } from './alert-context-enhancer.mjs';
+
+/**
+ * Load historical data for context enhancement
+ */
+function loadHistoricalData() {
+  const dataDir = path.join(process.cwd(), 'public', 'data');
+  
+  const historicalData = {
+    factorHistory: [],
+    gScoreHistory: [],
+    etfFlows: []
+  };
+  
+  try {
+    // Load factor history
+    const factorHistoryPath = path.join(dataDir, 'factor_history.csv');
+    if (fs.existsSync(factorHistoryPath)) {
+      const content = fs.readFileSync(factorHistoryPath, 'utf8');
+      const lines = content.trim().split('\n');
+      if (lines.length > 1) {
+        const headers = lines[0].split(',');
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(',');
+          const record = {};
+          headers.forEach((header, idx) => {
+            record[header.trim()] = values[idx]?.trim();
+          });
+          historicalData.factorHistory.push(record);
+        }
+      }
+    }
+    
+    // Load G-Score history
+    const historyPath = path.join(dataDir, 'history.csv');
+    if (fs.existsSync(historyPath)) {
+      const content = fs.readFileSync(historyPath, 'utf8');
+      const lines = content.trim().split('\n');
+      if (lines.length > 1) {
+        const headers = lines[0].split(',');
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(',');
+          const record = {};
+          headers.forEach((header, idx) => {
+            record[header.trim()] = values[idx]?.trim();
+          });
+          historicalData.gScoreHistory.push(record);
+        }
+      }
+    }
+    
+    // Load ETF flows history
+    const etfFlowsPath = path.join(dataDir, 'etf-flows-historical.json');
+    if (fs.existsSync(etfFlowsPath)) {
+      const content = fs.readFileSync(etfFlowsPath, 'utf8');
+      historicalData.etfFlows = JSON.parse(content);
+    }
+    
+  } catch (error) {
+    console.error('Error loading historical data:', error);
+  }
+  
+  return historicalData;
+}
 
 /**
  * Load latest data
@@ -43,7 +107,7 @@ function loadExistingAlerts(alertType) {
 }
 
 /**
- * Save alerts with deduplication
+ * Save alerts with deduplication and context enhancement
  */
 function saveAlerts(alertType, newAlerts) {
   const alertPath = `public/data/${alertType}_alerts.json`;
@@ -59,8 +123,14 @@ function saveAlerts(alertType, newAlerts) {
     console.log(`⚠️  Error loading existing ${alertType} alerts: ${error.message}`);
   }
   
+  // Load historical data for context enhancement
+  const historicalData = loadHistoricalData();
+  
+  // Enhance new alerts with context
+  const enhancedAlerts = enhanceAlertsWithContext(newAlerts, historicalData);
+  
   // Use deduplication system
-  const result = manageAlertsWithDeduplication(existingAlerts, newAlerts, {
+  const result = manageAlertsWithDeduplication(existingAlerts, enhancedAlerts, {
     retentionDays: 30,
     maxAlerts: 200
   });
