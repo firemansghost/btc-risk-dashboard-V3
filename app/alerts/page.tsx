@@ -7,6 +7,9 @@ interface AlertLogEntry {
   occurred_at: string;
   type: string;
   details: any;
+  title?: string;
+  message?: string;
+  severity?: string;
 }
 
 export default function AlertsPage() {
@@ -35,7 +38,11 @@ export default function AlertsPage() {
           const alertEntries: AlertLogEntry[] = data.alerts.map((alert: any) => ({
             occurred_at: alert.timestamp,
             type: alert.type,
-            details: alert.details || {}
+            details: alert.details || {},
+            // Preserve rich fields for better display
+            title: alert.title,
+            message: alert.message,
+            severity: alert.severity
           }));
           
           setAllAlerts(alertEntries);
@@ -60,6 +67,12 @@ export default function AlertsPage() {
   }, [allAlerts, displayCount]);
 
   const formatAlertDetails = (alert: AlertLogEntry): string => {
+    // Use rich message field if available (same as AlertBell)
+    if (alert.message) {
+      return alert.message;
+    }
+    
+    // Fallback to legacy format for backward compatibility
     switch (alert.type) {
       case 'etf_zero_cross':
         const direction = alert.details.direction === 'up' ? 'positive' : 'negative';
