@@ -49,8 +49,8 @@
     },
     "net_liquidity": {
       "dataPoints": 36,
-      "mean": 65.86,
-      "stdDev": 14.43,
+      "mean": 66.17,
+      "stdDev": 14.23,
       "min": 48,
       "max": 95,
       "range": 47,
