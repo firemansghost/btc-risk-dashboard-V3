@@ -179,7 +179,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       const factorExplanations = factors.map(generateFactorExplanation);
       
       // Sort by contribution to find key drivers
-      const sortedByContribution = factorExplanations.sort((a, b) => b.contribution - a.contribution);
+      const sortedByContribution = factorExplanations.sort((a: FactorExplanation, b: FactorExplanation) => b.contribution - a.contribution);
       const keyDrivers = sortedByContribution.slice(0, 3);
       
       // Find concerns (high scores or excluded factors)
