@@ -843,6 +843,19 @@ async function main() {
     console.log(`⚠️  Factor change alert generation failed: ${error.message}`);
   }
 
+  // 4.3) Monitor data freshness
+  console.log("Monitoring data freshness...");
+  try {
+    const { exec } = await import('node:child_process');
+    const { promisify } = await import('node:util');
+    const execAsync = promisify(exec);
+    
+    await execAsync('node scripts/etl/monitor-data-freshness.mjs');
+    console.log("✅ Data freshness monitoring completed");
+  } catch (error) {
+    console.log(`⚠️  Data freshness monitoring failed: ${error.message}`);
+  }
+
   // 5) status.json (preserve existing data like schema hashes)
   let existingStatus = {};
   try {
