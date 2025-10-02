@@ -68,8 +68,8 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     const yesterday = historicalData.points[historicalData.points.length - 2];
     const lastWeek = historicalData.points[Math.max(0, historicalData.points.length - 8)];
     
-    const yesterdayChange = currentScore - yesterday.score;
-    const lastWeekChange = currentScore - lastWeek.score;
+    const yesterdayChange = currentScore - yesterday.composite;
+    const lastWeekChange = currentScore - lastWeek.composite;
     
     return {
       yesterday: {
@@ -81,6 +81,29 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         direction: lastWeekChange > 0 ? 'up' : lastWeekChange < 0 ? 'down' : 'stable'
       }
     };
+  };
+
+  // Get overall score trend direction
+  const getScoreTrendDirection = () => {
+    const changes = getScoreChanges();
+    if (!changes) return 'stable';
+
+    // Determine trend based on both yesterday and last week changes
+    const yesterdayDirection = changes.yesterday.direction;
+    const lastWeekDirection = changes.lastWeek.direction;
+    
+    // If both point in same direction, use that direction
+    if (yesterdayDirection === lastWeekDirection) {
+      return yesterdayDirection;
+    }
+    
+    // If yesterday is more significant, use yesterday
+    if (Math.abs(changes.yesterday.change) > Math.abs(changes.lastWeek.change) * 0.5) {
+      return yesterdayDirection;
+    }
+    
+    // Otherwise use last week direction (longer term trend)
+    return lastWeekDirection;
   };
 
   // Get relative positioning in historical range
@@ -559,6 +582,28 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
                     <span className="text-gray-500">➡️ 0.0</span>
                   )}
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Trend Indicators */}
+        {getScoreChanges() && (
+          <div className="mt-2 pt-2 border-t border-gray-200">
+            <div className="text-xs text-gray-500 mb-2">Score Trend</div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">📊</span>
+                <span className="text-xs text-gray-600">Trajectory</span>
+              </div>
+              <div className="flex items-center gap-1">
+                {getScoreTrendDirection() === 'up' ? (
+                  <span className="text-red-500 text-sm">📈 Rising</span>
+                ) : getScoreTrendDirection() === 'down' ? (
+                  <span className="text-green-500 text-sm">📉 Falling</span>
+                ) : (
+                  <span className="text-gray-500 text-sm">➡️ Stable</span>
+                )}
               </div>
             </div>
           </div>
