@@ -77,8 +77,22 @@ function loadHistoricalData() {
  * Analyze factor change trends
  */
 function analyzeFactorTrends(factorKey, currentScore, historicalData) {
+  // Map factor keys to CSV column names
+  const factorColumnMap = {
+    'trend_valuation': 'trend_valuation_score',
+    'onchain': 'onchain_score',
+    'stablecoins': 'stablecoins_score',
+    'etf_flows': 'etf_flows_score',
+    'net_liquidity': 'net_liquidity_score',
+    'term_leverage': 'term_leverage_score',
+    'macro_overlay': 'macro_overlay_score',
+    'social_interest': 'social_interest_score'
+  };
+  
+  const columnName = factorColumnMap[factorKey] || factorKey;
+  
   const factorHistory = historicalData.factorHistory
-    .filter(record => record[factorKey] && !isNaN(parseFloat(record[factorKey])))
+    .filter(record => record[columnName] && !isNaN(parseFloat(record[columnName])))
     .sort((a, b) => new Date(a.date || a.timestamp) - new Date(b.date || b.timestamp));
   
   if (factorHistory.length < 2) {
@@ -89,8 +103,8 @@ function analyzeFactorTrends(factorKey, currentScore, historicalData) {
     };
   }
   
-  const recentScores = factorHistory.slice(-7).map(r => parseFloat(r[factorKey]));
-  const olderScores = factorHistory.slice(-14, -7).map(r => parseFloat(r[factorKey]));
+  const recentScores = factorHistory.slice(-7).map(r => parseFloat(r[columnName]));
+  const olderScores = factorHistory.slice(-14, -7).map(r => parseFloat(r[columnName]));
   
   const recentAvg = recentScores.reduce((a, b) => a + b, 0) / recentScores.length;
   const olderAvg = olderScores.length > 0 ? olderScores.reduce((a, b) => a + b, 0) / olderScores.length : recentAvg;
@@ -101,8 +115,8 @@ function analyzeFactorTrends(factorKey, currentScore, historicalData) {
   // Count consecutive days in current direction
   let consecutiveDays = 1;
   for (let i = factorHistory.length - 2; i >= 0; i--) {
-    const current = parseFloat(factorHistory[i + 1][factorKey]);
-    const previous = parseFloat(factorHistory[i][factorKey]);
+    const current = parseFloat(factorHistory[i + 1][columnName]);
+    const previous = parseFloat(factorHistory[i][columnName]);
     if ((current > previous && recentAvg > olderAvg) || (current < previous && recentAvg < olderAvg)) {
       consecutiveDays++;
     } else {
