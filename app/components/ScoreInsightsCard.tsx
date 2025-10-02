@@ -483,7 +483,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         </div>
         
         {/* Relative Position Indicator */}
-        {getRelativePosition() && (
+        {getRelativePosition() ? (
           <div className="mt-2 pt-2 border-t border-gray-200">
             <div className="flex items-center justify-between text-xs">
               <span className="text-gray-500">Historical Position</span>
@@ -495,6 +495,13 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
                   ({getRelativePosition()!.percentile}th percentile)
                 </span>
               </div>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-2 pt-2 border-t border-gray-200">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-500">Historical Position</span>
+              <span className="text-gray-400">Loading...</span>
             </div>
           </div>
         )}
