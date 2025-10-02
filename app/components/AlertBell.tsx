@@ -36,9 +36,18 @@ export default function AlertBell() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isPageVisible, setIsPageVisible] = useState(true);
 
   useEffect(() => {
-    async function fetchAlerts() {
+    async function fetchAlerts(isInitial = false) {
+      // Only show loading spinner on initial load, not on refreshes
+      if (isInitial) {
+        setLoading(true);
+      } else {
+        setIsRefreshing(true);
+      }
+      
       try {
         // Use same API endpoint as Alert History page for consistency
         const response = await fetch('/api/alerts?limit=10', {
@@ -68,10 +77,32 @@ export default function AlertBell() {
         setAlerts({ occurred_at: new Date().toISOString(), alerts: [] });
       } finally {
         setLoading(false);
+        setIsRefreshing(false);
       }
     }
 
-    fetchAlerts();
+    // Initial fetch
+    fetchAlerts(true);
+
+    // Set up automatic refresh every 30 seconds (only when page is visible)
+    const interval = setInterval(() => {
+      if (isPageVisible) {
+        fetchAlerts(false);
+      }
+    }, 30000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
+  }, [isPageVisible]);
+
+  // Page visibility detection
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsPageVisible(!document.hidden);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
   const formatAlertText = (alert: Alert): string => {
@@ -131,7 +162,7 @@ export default function AlertBell() {
       >
         <div className="relative">
           <svg 
-            className={`w-6 h-6 ${hasAlerts ? 'text-orange-500' : 'text-gray-400'}`} 
+            className={`w-6 h-6 ${hasAlerts ? 'text-orange-500' : 'text-gray-400'} ${isRefreshing ? 'animate-pulse' : ''}`} 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
@@ -147,6 +178,9 @@ export default function AlertBell() {
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full flex items-center justify-center">
               <span className="text-xs text-white font-bold">{alerts.alerts.length}</span>
             </div>
+          )}
+          {isRefreshing && (
+            <div className="absolute -top-1 -left-1 w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
           )}
         </div>
         <span className="text-sm font-medium">
