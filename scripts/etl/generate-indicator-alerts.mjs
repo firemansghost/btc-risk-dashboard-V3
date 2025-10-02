@@ -11,6 +11,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { manageAlertsWithDeduplication } from './alert-deduplication.mjs';
+import { determineSeverity, getSeverityConfig } from './alert-severity-system.mjs';
 
 /**
  * Load latest data
@@ -96,7 +97,7 @@ function generateCycleAlerts(latestData) {
       id: `cycle_${today}_${Date.now()}`,
       type: 'cycle_adjustment',
       timestamp: new Date().toISOString(),
-      severity: absAdjustment >= 10 ? 'high' : 'medium',
+      severity: determineSeverity('cycle_adjustment', absAdjustment) || 'medium',
       title: `Significant Cycle Adjustment Detected`,
       message: `Cycle adjustment: ${direction} ${magnitude.toFixed(1)} points`,
       details: {
@@ -148,7 +149,7 @@ function generateSpikeAlerts(latestData) {
       id: `spike_${today}_${Date.now()}`,
       type: 'spike_adjustment',
       timestamp: new Date().toISOString(),
-      severity: absAdjustment >= 6 ? 'high' : 'medium',
+      severity: determineSeverity('spike_adjustment', absAdjustment) || 'medium',
       title: `Significant Spike Adjustment Detected`,
       message: `Spike adjustment: ${direction} ${magnitude.toFixed(1)} points`,
       details: {
@@ -198,7 +199,7 @@ function generate50WSMAAlerts(latestData) {
       id: `sma50w_${today}_${Date.now()}`,
       type: 'sma50w_warning',
       timestamp: new Date().toISOString(),
-      severity: sma50w.consecutiveWeeksBelow >= 4 ? 'high' : 'medium',
+      severity: determineSeverity('sma50w_warning', sma50w.consecutiveWeeksBelow) || 'medium',
       title: `50-Week SMA Warning`,
       message: `Bitcoin has closed below 50W SMA for ${sma50w.consecutiveWeeksBelow} consecutive weeks`,
       details: {

@@ -9,6 +9,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { manageAlertsWithDeduplication } from './alert-deduplication.mjs';
+import { determineSeverity, getSeverityConfig } from './alert-severity-system.mjs';
 
 // Data source configurations
 const DATA_SOURCES = {
@@ -211,7 +212,7 @@ async function generateFreshnessReport() {
       criticalAlerts.push({
         id: `freshness_alert_${source.source}_${Date.now()}`,
         type: 'data_freshness',
-        severity: 'high',
+        severity: determineSeverity('data_freshness', stalenessHours) || 'high',
         timestamp: new Date().toISOString(),
         source: source.name,
         sourceKey: source.source,
@@ -235,7 +236,7 @@ async function generateFreshnessReport() {
       criticalAlerts.push({
         id: `freshness_alert_${source.source}_${Date.now()}`,
         type: 'data_freshness',
-        severity: 'medium',
+        severity: determineSeverity('data_freshness', stalenessHours) || 'medium',
         timestamp: new Date().toISOString(),
         source: source.name,
         sourceKey: source.source,

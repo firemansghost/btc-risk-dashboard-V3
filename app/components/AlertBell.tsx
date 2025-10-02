@@ -26,6 +26,14 @@ interface Alert {
   };
 }
 
+// Unified severity configuration
+const SEVERITY_CONFIG = {
+  critical: { color: 'red', icon: '🚨', priority: 1 },
+  high: { color: 'orange', icon: '⚠️', priority: 2 },
+  medium: { color: 'yellow', icon: '📊', priority: 3 },
+  low: { color: 'blue', icon: 'ℹ️', priority: 4 }
+};
+
 interface LatestAlerts {
   occurred_at: string;
   alerts: Alert[];
@@ -190,6 +198,21 @@ export default function AlertBell() {
     };
   }, [hoverTimeout]);
 
+  // Get severity color classes
+  const getSeverityColorClasses = (severity: string) => {
+    const config = SEVERITY_CONFIG[severity as keyof typeof SEVERITY_CONFIG];
+    if (!config) return 'bg-gray-100 text-gray-800 border-gray-200';
+    
+    const colorMap = {
+      critical: 'bg-red-100 text-red-800 border-red-200',
+      high: 'bg-orange-100 text-orange-800 border-orange-200',
+      medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      low: 'bg-blue-100 text-blue-800 border-blue-200'
+    };
+    
+    return colorMap[config.color as keyof typeof colorMap] || 'bg-gray-100 text-gray-800 border-gray-200';
+  };
+
   const formatAlertText = (alert: Alert): string => {
     // Use new API format if available (title/message)
     if (alert.title && alert.message) {
@@ -289,7 +312,13 @@ export default function AlertBell() {
           {unacknowledgedAlerts.slice(0, 5).map((alert, idx) => (
             <div key={alert.id || idx} className="flex items-start justify-between text-sm text-gray-700 mb-2 p-2 bg-gray-50 rounded">
               <div className="flex-1">
-                <div className="font-medium text-gray-900">{alert.title || `Alert: ${alert.type}`}</div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm">{SEVERITY_CONFIG[alert.severity as keyof typeof SEVERITY_CONFIG]?.icon || '📢'}</span>
+                  <div className="font-medium text-gray-900">{alert.title || `Alert: ${alert.type}`}</div>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSeverityColorClasses(alert.severity)}`}>
+                    {alert.severity.toUpperCase()}
+                  </span>
+                </div>
                 <div className="text-xs text-gray-600 mt-1">{formatAlertText(alert)}</div>
               </div>
               <button

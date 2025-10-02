@@ -12,6 +12,14 @@ interface AlertLogEntry {
   severity?: string;
 }
 
+// Unified severity configuration
+const SEVERITY_CONFIG = {
+  critical: { color: 'red', icon: '🚨', priority: 1 },
+  high: { color: 'orange', icon: '⚠️', priority: 2 },
+  medium: { color: 'yellow', icon: '📊', priority: 3 },
+  low: { color: 'blue', icon: 'ℹ️', priority: 4 }
+};
+
 export default function AlertsPage() {
   const [alertLog, setAlertLog] = useState<AlertLogEntry[]>([]);
   const [allAlerts, setAllAlerts] = useState<AlertLogEntry[]>([]);
@@ -119,6 +127,21 @@ export default function AlertsPage() {
     }
   };
 
+  // Get severity color classes
+  const getSeverityColorClasses = (severity: string) => {
+    const config = SEVERITY_CONFIG[severity as keyof typeof SEVERITY_CONFIG];
+    if (!config) return 'bg-gray-100 text-gray-800 border-gray-200';
+    
+    const colorMap = {
+      critical: 'bg-red-100 text-red-800 border-red-200',
+      high: 'bg-orange-100 text-orange-800 border-orange-200',
+      medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      low: 'bg-blue-100 text-blue-800 border-blue-200'
+    };
+    
+    return colorMap[config.color as keyof typeof colorMap] || 'bg-gray-100 text-gray-800 border-gray-200';
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -205,9 +228,17 @@ export default function AlertsPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getAlertTypeColor(alert.type)}`}>
-                            {alert.type.replace('_', ' ').toUpperCase()}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm">{SEVERITY_CONFIG[alert.severity as keyof typeof SEVERITY_CONFIG]?.icon || '📢'}</span>
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getAlertTypeColor(alert.type)}`}>
+                              {alert.type.replace('_', ' ').toUpperCase()}
+                            </span>
+                            {alert.severity && (
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSeverityColorClasses(alert.severity)}`}>
+                                {alert.severity.toUpperCase()}
+                              </span>
+                            )}
+                          </div>
                           <span className="text-sm text-gray-500">
                             {new Date(alert.occurred_at).toLocaleDateString()} at {new Date(alert.occurred_at).toLocaleTimeString()}
                           </span>

@@ -9,6 +9,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { manageAlertsWithDeduplication } from './alert-deduplication.mjs';
+import { determineSeverity, getSeverityConfig } from './alert-severity-system.mjs';
 
 // Factor configuration
 const FACTOR_CONFIG = {
@@ -104,12 +105,8 @@ function calculateFactorChange(currentScore, previousScore) {
   const change = currentScore - previousScore;
   const absChange = Math.abs(change);
   
-  let severity = null;
-  if (absChange >= THRESHOLDS.high) {
-    severity = 'high';
-  } else if (absChange >= THRESHOLDS.medium) {
-    severity = 'medium';
-  }
+  // Use unified severity system
+  const severity = determineSeverity('factor_change', absChange);
   
   return {
     change,

@@ -13,6 +13,14 @@ interface Alert {
   actions?: string[];
 }
 
+// Unified severity configuration
+const SEVERITY_CONFIG = {
+  critical: { color: 'red', icon: '🚨', priority: 1 },
+  high: { color: 'orange', icon: '⚠️', priority: 2 },
+  medium: { color: 'yellow', icon: '📊', priority: 3 },
+  low: { color: 'blue', icon: 'ℹ️', priority: 4 }
+};
+
 interface AlertSettings {
   etfZeroCross: boolean;
   riskBandChange: boolean;
@@ -76,6 +84,21 @@ export default function AlertManagementCard() {
       } finally {
         setLoading(false);
       }
+    };
+
+    // Get severity color classes
+    const getSeverityColorClasses = (severity: string) => {
+      const config = SEVERITY_CONFIG[severity as keyof typeof SEVERITY_CONFIG];
+      if (!config) return 'bg-gray-100 text-gray-800 border-gray-200';
+      
+      const colorMap = {
+        critical: 'bg-red-100 text-red-800 border-red-200',
+        high: 'bg-orange-100 text-orange-800 border-orange-200',
+        medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+        low: 'bg-blue-100 text-blue-800 border-blue-200'
+      };
+      
+      return colorMap[config.color as keyof typeof colorMap] || 'bg-gray-100 text-gray-800 border-gray-200';
     };
 
     loadAlerts();
@@ -205,15 +228,10 @@ export default function AlertManagementCard() {
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <span className="text-lg">{getSeverityIcon(alert.severity)}</span>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-sm">{SEVERITY_CONFIG[alert.severity as keyof typeof SEVERITY_CONFIG]?.icon || '📢'}</span>
                           <h4 className="font-medium">{alert.title}</h4>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            alert.severity === 'critical' ? 'bg-red-100 text-red-800' :
-                            alert.severity === 'high' ? 'bg-orange-100 text-orange-800' :
-                            alert.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-blue-100 text-blue-800'
-                          }`}>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSeverityColorClasses(alert.severity)}`}>
                             {alert.severity.toUpperCase()}
                           </span>
                         </div>
