@@ -350,7 +350,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         (last7Days[last7Days.length - 1].score - last7Days[0].score) / last7Days.length : 0;
       
       // Calculate score range
-      const allScores = historicalData.points.map((d: any) => d.score).filter(score => !isNaN(score));
+      const allScores = historicalData.points.map((d: any) => d.score).filter((score: any) => !isNaN(score));
       if (allScores.length === 0) return null;
       
       const minScore = Math.min(...allScores);
