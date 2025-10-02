@@ -274,6 +274,39 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     }
   };
 
+  const getScoreColor = (score: number) => {
+    if (score < 40) return 'text-green-600';
+    if (score < 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const getScoreBgColor = (score: number) => {
+    if (score < 40) return 'bg-green-50 border-green-200';
+    if (score < 60) return 'bg-yellow-50 border-yellow-200';
+    return 'bg-red-50 border-red-200';
+  };
+
+  const getFactorIcon = (factorKey: string) => {
+    switch (factorKey) {
+      case 'trend_valuation': return '📈';
+      case 'term_structure': return '⚖️';
+      case 'etf_flows': return '🏦';
+      case 'onchain': return '⛓️';
+      case 'macro': return '🌍';
+      case 'stablecoins': return '🪙';
+      case 'net_liquidity': return '💧';
+      case 'social_interest': return '👥';
+      default: return '📊';
+    }
+  };
+
+  const getContributionColor = (contribution: number) => {
+    if (contribution > 5) return 'bg-green-500';
+    if (contribution > 2) return 'bg-blue-500';
+    if (contribution > 0) return 'bg-yellow-500';
+    return 'bg-gray-400';
+  };
+
   return (
     <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 ${className}`}>
       <div className="flex items-center justify-between mb-4">
@@ -284,6 +317,41 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         >
           {expanded ? 'Show Less' : 'Show More'}
         </button>
+      </div>
+
+      {/* Score Visualization */}
+      <div className={`mb-4 p-3 rounded-lg border ${getScoreBgColor(explanation.totalScore)}`}>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🎯</span>
+            <span className="text-sm font-medium text-gray-700">G-Score</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`text-2xl font-bold ${getScoreColor(explanation.totalScore)}`}>
+              {explanation.totalScore}
+            </span>
+            <span className="text-xs text-gray-500">/ 100</span>
+          </div>
+        </div>
+        
+        {/* Score Progress Bar */}
+        <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+          <div 
+            className={`h-2 rounded-full transition-all duration-500 ${
+              explanation.totalScore < 40 ? 'bg-green-500' : 
+              explanation.totalScore < 60 ? 'bg-yellow-500' : 'bg-red-500'
+            }`}
+            style={{ width: `${explanation.totalScore}%` }}
+          ></div>
+        </div>
+        
+        {/* Risk Band Indicator */}
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-gray-500">Risk Level</span>
+          <span className={`font-medium ${getScoreColor(explanation.totalScore)}`}>
+            {explanation.bandLabel}
+          </span>
+        </div>
       </div>
 
       {/* Overall Explanation */}
@@ -299,8 +367,11 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         <div className="space-y-2">
           {explanation.keyDrivers.slice(0, expanded ? undefined : 2).map((driver, idx) => (
             <div key={idx} className="bg-gray-50 rounded-lg p-3">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-medium text-gray-900">{driver.label}</span>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{getFactorIcon(driver.key)}</span>
+                  <span className="text-sm font-medium text-gray-900">{driver.label}</span>
+                </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-blue-600">
                     +{driver.contribution.toFixed(1)}
@@ -310,6 +381,21 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
                   </span>
                 </div>
               </div>
+              
+              {/* Contribution Bar */}
+              <div className="mb-2">
+                <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                  <span>Contribution</span>
+                  <span>{driver.contribution.toFixed(1)} points</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div 
+                    className={`h-1.5 rounded-full ${getContributionColor(driver.contribution)}`}
+                    style={{ width: `${Math.min(driver.contribution * 10, 100)}%` }}
+                  ></div>
+                </div>
+              </div>
+              
               <div className="text-xs text-gray-600 mb-1">{driver.explanation}</div>
               <div className="text-xs text-blue-600 italic">{driver.context}</div>
             </div>
@@ -328,18 +414,42 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
           <div className="text-xs font-medium text-gray-600 mb-2">Areas of Concern</div>
           <div className="space-y-2">
             {explanation.concerns.slice(0, expanded ? undefined : 2).map((concern, idx) => (
-              <div key={idx} className="bg-red-50 rounded-lg p-3">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium text-gray-900">{concern.label}</span>
+              <div key={idx} className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-red-600">
+                    <span className="text-lg">{getFactorIcon(concern.key)}</span>
+                    <span className="text-sm font-medium text-gray-900">{concern.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-bold ${getScoreColor(concern.score)}`}>
                       {concern.score}
                     </span>
                     {concern.status !== 'fresh' && (
-                      <span className="text-xs text-red-500">❌</span>
+                      <span className="text-xs text-red-500" title="Data is stale">⚠️</span>
                     )}
+                    <span className={`text-xs ${getTrendColor(concern.trend)}`}>
+                      {getTrendIcon(concern.trend)}
+                    </span>
                   </div>
                 </div>
+                
+                {/* Score Bar */}
+                <div className="mb-2">
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                    <span>Risk Level</span>
+                    <span>{concern.score}/100</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-1.5">
+                    <div 
+                      className={`h-1.5 rounded-full ${
+                        concern.score < 40 ? 'bg-green-500' : 
+                        concern.score < 60 ? 'bg-yellow-500' : 'bg-red-500'
+                      }`}
+                      style={{ width: `${concern.score}%` }}
+                    ></div>
+                  </div>
+                </div>
+                
                 <div className="text-xs text-gray-600 mb-1">{concern.explanation}</div>
                 <div className="text-xs text-red-600 italic">{concern.recommendation}</div>
               </div>
@@ -356,11 +466,13 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       {/* Insights */}
       <div className="mb-4">
         <div className="text-xs font-medium text-gray-600 mb-2">Current Status</div>
-        <div className="space-y-1">
+        <div className="space-y-2">
           {explanation.insights.map((insight, idx) => (
-            <div key={idx} className="text-xs text-gray-600 flex items-center gap-2">
-              <span className="text-blue-500">•</span>
-              <span>{insight}</span>
+            <div key={idx} className="bg-blue-50 border border-blue-200 rounded-lg p-2">
+              <div className="text-xs text-gray-700 flex items-center gap-2">
+                <span className="text-blue-500">📊</span>
+                <span>{insight}</span>
+              </div>
             </div>
           ))}
         </div>
@@ -369,11 +481,13 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       {/* Recommendations */}
       <div className="border-t border-gray-100 pt-3">
         <div className="text-xs font-medium text-gray-600 mb-2">Recommendations</div>
-        <div className="space-y-1">
+        <div className="space-y-2">
           {explanation.recommendations.map((rec, idx) => (
-            <div key={idx} className="text-xs text-green-600 flex items-center gap-2">
-              <span className="text-green-500">💡</span>
-              <span>{rec}</span>
+            <div key={idx} className="bg-green-50 border border-green-200 rounded-lg p-2">
+              <div className="text-xs text-green-700 flex items-center gap-2">
+                <span className="text-green-500">💡</span>
+                <span>{rec}</span>
+              </div>
             </div>
           ))}
         </div>
