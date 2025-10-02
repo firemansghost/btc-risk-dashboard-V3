@@ -77,6 +77,50 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     };
   };
 
+  // Get relative positioning in historical range
+  const getRelativePosition = () => {
+    if (!explanation || !historicalData?.points || historicalData.points.length < 3) return null;
+    
+    const currentScore = explanation.totalScore;
+    const allScores = historicalData.points.map((d: any) => d.score).filter((score: any) => !isNaN(score));
+    
+    if (allScores.length === 0) return null;
+    
+    const minScore = Math.min(...allScores);
+    const maxScore = Math.max(...allScores);
+    const scoreRange = maxScore - minScore;
+    const percentile = scoreRange > 0 ? ((currentScore - minScore) / scoreRange) * 100 : 50;
+    
+    // Determine position category
+    let position = '';
+    let positionColor = '';
+    if (percentile >= 80) {
+      position = 'High';
+      positionColor = 'text-red-600';
+    } else if (percentile >= 60) {
+      position = 'Above Average';
+      positionColor = 'text-orange-600';
+    } else if (percentile >= 40) {
+      position = 'Average';
+      positionColor = 'text-blue-600';
+    } else if (percentile >= 20) {
+      position = 'Below Average';
+      positionColor = 'text-green-600';
+    } else {
+      position = 'Low';
+      positionColor = 'text-green-600';
+    }
+    
+    return {
+      percentile: Math.round(percentile),
+      position,
+      positionColor,
+      minScore,
+      maxScore,
+      scoreRange
+    };
+  };
+
   // Helper function to generate factor explanations
   const generateFactorExplanation = (factor: any): FactorExplanation => {
     const contribution = calculateContribution(factor.score, factor.weight_pct) || 0;
@@ -418,6 +462,23 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             {explanation.bandLabel}
           </span>
         </div>
+        
+        {/* Relative Position Indicator */}
+        {getRelativePosition() && (
+          <div className="mt-2 pt-2 border-t border-gray-200">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-500">Historical Position</span>
+              <div className="flex items-center gap-2">
+                <span className={`font-medium ${getRelativePosition()!.positionColor}`}>
+                  {getRelativePosition()!.position}
+                </span>
+                <span className="text-gray-500">
+                  ({getRelativePosition()!.percentile}th percentile)
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* Score Change Indicators */}
         {getScoreChanges() && (
