@@ -4,7 +4,15 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 interface Alert {
+  id: string;
   type: string;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  timestamp: string;
+  title: string;
+  message: string;
+  data?: any;
+  actions?: string[];
+  // Legacy fields for backward compatibility
   direction?: string;
   from?: any;
   to?: any;
@@ -32,7 +40,8 @@ export default function AlertBell() {
   useEffect(() => {
     async function fetchAlerts() {
       try {
-        const response = await fetch('/data/alerts/latest.json', {
+        // Use same API endpoint as Alert History page for consistency
+        const response = await fetch('/api/alerts?limit=10', {
           cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' }
         });
@@ -42,9 +51,21 @@ export default function AlertBell() {
         }
         
         const data = await response.json();
-        setAlerts(data);
+        
+        if (data.success && data.alerts) {
+          // Convert API response to AlertBell format
+          const latestAlerts = {
+            occurred_at: new Date().toISOString(),
+            alerts: data.alerts
+          };
+          setAlerts(latestAlerts);
+        } else {
+          setAlerts({ occurred_at: new Date().toISOString(), alerts: [] });
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load alerts');
+        // Set empty alerts on error to prevent crashes
+        setAlerts({ occurred_at: new Date().toISOString(), alerts: [] });
       } finally {
         setLoading(false);
       }
@@ -54,6 +75,12 @@ export default function AlertBell() {
   }, []);
 
   const formatAlertText = (alert: Alert): string => {
+    // Use new API format if available (title/message)
+    if (alert.title && alert.message) {
+      return alert.message;
+    }
+    
+    // Fallback to legacy format for backward compatibility
     switch (alert.type) {
       case 'etf_zero_cross':
         const direction = alert.direction === 'up' ? 'positive' : 'negative';
