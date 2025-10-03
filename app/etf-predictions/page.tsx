@@ -2,6 +2,77 @@
 
 import React, { useState, useEffect } from 'react';
 
+// Trading day utilities
+function isBusinessDay(date: Date): boolean {
+  const day = date.getDay();
+  return day >= 1 && day <= 5; // Monday = 1, Friday = 5
+}
+
+function isWeekend(date: Date): boolean {
+  const day = date.getDay();
+  return day === 0 || day === 6; // Sunday = 0, Saturday = 6
+}
+
+function getNextTradingDay(date: Date = new Date()): Date {
+  const nextDay = new Date(date);
+  nextDay.setDate(date.getDate() + 1);
+  
+  while (!isBusinessDay(nextDay)) {
+    nextDay.setDate(nextDay.getDate() + 1);
+  }
+  
+  return nextDay;
+}
+
+function getTradingDaysInWeek(startDate: Date): Date[] {
+  const tradingDays: Date[] = [];
+  const currentDate = new Date(startDate);
+  
+  // Find the start of the week (Monday)
+  const dayOfWeek = currentDate.getDay();
+  const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  currentDate.setDate(currentDate.getDate() - daysToMonday);
+  
+  // Get all 5 trading days in the week
+  for (let i = 0; i < 5; i++) {
+    tradingDays.push(new Date(currentDate));
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  return tradingDays;
+}
+
+function getTradingDayName(date: Date): string {
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  
+  if (date.toDateString() === today.toDateString()) {
+    return 'Today';
+  } else if (date.toDateString() === tomorrow.toDateString()) {
+    return 'Tomorrow';
+  } else {
+    return date.toLocaleDateString('en-US', { weekday: 'long' });
+  }
+}
+
+function isCurrentDayWeekend(): boolean {
+  return isWeekend(new Date());
+}
+
+function getCurrentDayContext(): string {
+  const today = new Date();
+  const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+  
+  if (isWeekend(today)) {
+    return `Weekend (${dayName}) - No ETF trading`;
+  } else if (dayName === 'Friday') {
+    return 'Friday - Last trading day of the week';
+  } else {
+    return `${dayName} - Trading day`;
+  }
+}
+
 // Types for our data
 interface ETFPrediction {
   symbol: string;
@@ -742,34 +813,88 @@ export default function ETFPredictionsPage() {
               <ErrorCard message={error} onRetry={handleRetry} />
             </div>
           ) : data && (data.daily?.length > 0 || data.individual?.length > 0) ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-              <ForecastCard 
-                title="Tomorrow's Flow"
-                prediction={`$${data.daily?.[0]?.flow?.toFixed(1) || 0}M`}
-                confidence={data.daily?.[0]?.confidence || 0}
-                trend={data.daily?.[0]?.trend || 'stable'}
-                description="Expected daily flow for tomorrow"
-                lastUpdated={data.lastUpdated}
-                dataPoints={data.individual?.length || 0}
-              />
-              <ForecastCard 
-                title="This Week"
-                prediction={`$${data.weekly?.thisWeek?.toFixed(1) || 0}M`}
-                confidence={data.weekly?.confidence || 0}
-                trend="stable"
-                description="7-day rolling sum forecast"
-                lastUpdated={data.lastUpdated}
-                dataPoints={data.individual?.length || 0}
-              />
-              <ForecastCard 
-                title="Next Week"
-                prediction={`$${data.weekly?.nextWeek?.toFixed(1) || 0}M`}
-                confidence={data.weekly?.confidence || 0}
-                trend="stable"
-                description="Following week projection"
-                lastUpdated={data.lastUpdated}
-                dataPoints={data.individual?.length || 0}
-              />
+            <div className="space-y-6">
+              {/* Trading Day Context */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-blue-600 text-lg">📅</span>
+                  <span className="text-sm font-medium text-blue-900">Trading Day Status</span>
+                </div>
+                <div className="text-sm text-blue-800">
+                  {getCurrentDayContext()}
+                </div>
+              </div>
+              
+              {/* Smart Forecast Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                {(() => {
+                  const nextTradingDay = getNextTradingDay();
+                  const nextTradingDayName = getTradingDayName(nextTradingDay);
+                  const isWeekendNow = isCurrentDayWeekend();
+                  
+                  // Calculate trading day predictions
+                  const tradingDayPredictions = data.daily?.filter((_, index) => {
+                    const predictionDate = new Date(data.daily[index].date);
+                    return isBusinessDay(predictionDate);
+                  }) || [];
+                  
+                  // Calculate this week's trading days total
+                  const thisWeekTradingDays = getTradingDaysInWeek(new Date());
+                  const thisWeekTradingPredictions = data.daily?.filter((_, index) => {
+                    const predictionDate = new Date(data.daily[index].date);
+                    return thisWeekTradingDays.some(tradingDay => 
+                      tradingDay.toDateString() === predictionDate.toDateString()
+                    );
+                  }) || [];
+                  
+                  const thisWeekTradingTotal = thisWeekTradingPredictions.reduce((sum, day) => sum + day.flow, 0);
+                  
+                  // Calculate next week's trading days total
+                  const nextWeekStart = new Date();
+                  nextWeekStart.setDate(nextWeekStart.getDate() + 7);
+                  const nextWeekTradingDays = getTradingDaysInWeek(nextWeekStart);
+                  const nextWeekTradingPredictions = data.daily?.filter((_, index) => {
+                    const predictionDate = new Date(data.daily[index].date);
+                    return nextWeekTradingDays.some(tradingDay => 
+                      tradingDay.toDateString() === predictionDate.toDateString()
+                    );
+                  }) || [];
+                  
+                  const nextWeekTradingTotal = nextWeekTradingPredictions.reduce((sum, day) => sum + day.flow, 0);
+                  
+                  return (
+                    <>
+                      <ForecastCard 
+                        title={isWeekendNow ? "Next Trading Day" : "Next Trading Day"}
+                        prediction={`$${tradingDayPredictions[0]?.flow?.toFixed(1) || 0}M`}
+                        confidence={tradingDayPredictions[0]?.confidence || 0}
+                        trend={tradingDayPredictions[0]?.trend || 'stable'}
+                        description={`Expected flow for ${nextTradingDayName}${isWeekendNow ? ' (No trading on weekends)' : ''}`}
+                        lastUpdated={data.lastUpdated}
+                        dataPoints={data.individual?.length || 0}
+                      />
+                      <ForecastCard 
+                        title="This Trading Week"
+                        prediction={`$${thisWeekTradingTotal.toFixed(1)}M`}
+                        confidence={data.weekly?.confidence || 0}
+                        trend="stable"
+                        description="5 trading days forecast (Mon-Fri)"
+                        lastUpdated={data.lastUpdated}
+                        dataPoints={data.individual?.length || 0}
+                      />
+                      <ForecastCard 
+                        title="Next Trading Week"
+                        prediction={`$${nextWeekTradingTotal.toFixed(1)}M`}
+                        confidence={data.weekly?.confidence || 0}
+                        trend="stable"
+                        description="Following week's 5 trading days"
+                        lastUpdated={data.lastUpdated}
+                        dataPoints={data.individual?.length || 0}
+                      />
+                    </>
+                  );
+                })()}
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
