@@ -358,20 +358,20 @@ function getEnhancedTradingDayInfo(date: Date): {
   status: string;
 } {
   const indicator = getTradingDayIndicator(date);
-  const isWeekend = isWeekend(date);
+  const isWeekendDay = isWeekend(date);
   const isHoliday = isMarketHoliday(date);
   const holidayName = isHoliday ? getHolidayName(date) : undefined;
   
   let status = 'Trading Day';
   if (isHoliday) {
     status = `Market Holiday (${holidayName})`;
-  } else if (isWeekend) {
+  } else if (isWeekendDay) {
     status = 'Weekend (No Trading)';
   }
   
   return {
     ...indicator,
-    isWeekend,
+    isWeekend: isWeekendDay,
     isHoliday,
     holidayName,
     status
