@@ -161,6 +161,13 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
   // Get factor correlation analysis
   const getFactorCorrelations = () => {
+    console.log('getFactorCorrelations: Starting analysis', {
+      hasExplanation: !!explanation,
+      hasHistoricalData: !!historicalData,
+      pointsLength: historicalData?.points?.length || 0,
+      keyDriversLength: explanation?.keyDrivers?.length || 0
+    });
+    
     if (!explanation || !historicalData?.points || historicalData.points.length < 2) {
       console.log('getFactorCorrelations: Insufficient data', {
         hasExplanation: !!explanation,
@@ -174,6 +181,12 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     const currentFactors = explanation.keyDrivers;
     const points = historicalData.points;
     
+    console.log('getFactorCorrelations: Data check', {
+      currentFactors: currentFactors.map(f => ({ key: f.key, label: f.label })),
+      pointsSample: points.slice(0, 2).map(p => Object.keys(p)),
+      pointsLength: points.length
+    });
+    
     // Calculate correlations between all factor pairs
     const correlations = [];
     
@@ -186,7 +199,17 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         const factorAScores = points.map((point: any) => point[factorA.key] || 0).filter((score: any) => !isNaN(score));
         const factorBScores = points.map((point: any) => point[factorB.key] || 0).filter((score: any) => !isNaN(score));
         
-        if (factorAScores.length < 2 || factorBScores.length < 2) continue;
+        console.log(`getFactorCorrelations: Checking ${factorA.key} vs ${factorB.key}`, {
+          factorAScoresLength: factorAScores.length,
+          factorBScoresLength: factorBScores.length,
+          factorAScores: factorAScores.slice(0, 3),
+          factorBScores: factorBScores.slice(0, 3)
+        });
+        
+        if (factorAScores.length < 2 || factorBScores.length < 2) {
+          console.log(`getFactorCorrelations: Skipping ${factorA.key} vs ${factorB.key} - insufficient data`);
+          continue;
+        }
         
         // Calculate Pearson correlation coefficient
         const correlation = calculateCorrelation(factorAScores, factorBScores);
@@ -236,6 +259,16 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         });
       }
     }
+    
+    console.log('getFactorCorrelations: Final results', {
+      correlationsFound: correlations.length,
+      correlations: correlations.map(c => ({
+        pair: `${c.factorALabel} ↔ ${c.factorBLabel}`,
+        correlation: c.correlation,
+        strength: c.strength,
+        direction: c.direction
+      }))
+    });
     
     // Sort by absolute correlation strength (highest first)
     return correlations.sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation));
