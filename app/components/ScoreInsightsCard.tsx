@@ -40,6 +40,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     keyDrivers: false,
     factorVolatility: false,
     factorMomentum: false,
+    factorCorrelations: false,
     areasOfConcern: false,
     currentStatus: false,
     recommendations: false
@@ -156,6 +157,103 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     
     // Sort by absolute change (most significant first)
     return factorMomentum.sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
+  };
+
+  // Get factor correlation analysis
+  const getFactorCorrelations = () => {
+    if (!explanation || !historicalData?.points || historicalData.points.length < 2) {
+      console.log('getFactorCorrelations: Insufficient data', {
+        hasExplanation: !!explanation,
+        hasHistoricalData: !!historicalData,
+        pointsLength: historicalData?.points?.length || 0,
+        required: 2
+      });
+      return null;
+    }
+
+    const currentFactors = explanation.keyDrivers;
+    const points = historicalData.points;
+    
+    // Calculate correlations between all factor pairs
+    const correlations = [];
+    
+    for (let i = 0; i < currentFactors.length; i++) {
+      for (let j = i + 1; j < currentFactors.length; j++) {
+        const factorA = currentFactors[i];
+        const factorB = currentFactors[j];
+        
+        // Get factor scores over time
+        const factorAScores = points.map((point: any) => point[factorA.key] || 0).filter((score: any) => !isNaN(score));
+        const factorBScores = points.map((point: any) => point[factorB.key] || 0).filter((score: any) => !isNaN(score));
+        
+        if (factorAScores.length < 2 || factorBScores.length < 2) continue;
+        
+        // Calculate Pearson correlation coefficient
+        const correlation = calculateCorrelation(factorAScores, factorBScores);
+        
+        // Determine correlation strength and direction
+        let strength = 'weak';
+        let direction = 'neutral';
+        let icon = '➡️';
+        let color = 'gray';
+        
+        if (Math.abs(correlation) >= 0.7) {
+          strength = 'strong';
+        } else if (Math.abs(correlation) >= 0.4) {
+          strength = 'moderate';
+        }
+        
+        if (correlation > 0.3) {
+          direction = 'positive';
+          icon = '📈📈';
+          color = 'green';
+        } else if (correlation < -0.3) {
+          direction = 'negative';
+          icon = '📉📈';
+          color = 'red';
+        }
+        
+        let context = '';
+        if (direction === 'positive') {
+          context = `${factorA.label} and ${factorB.label} move together - when one rises, the other tends to rise`;
+        } else if (direction === 'negative') {
+          context = `${factorA.label} and ${factorB.label} move opposite - when one rises, the other tends to fall`;
+        } else {
+          context = `${factorA.label} and ${factorB.label} show little relationship`;
+        }
+        
+        correlations.push({
+          factorA: factorA.key,
+          factorALabel: factorA.label,
+          factorB: factorB.key,
+          factorBLabel: factorB.label,
+          correlation,
+          strength,
+          direction,
+          icon,
+          color,
+          context
+        });
+      }
+    }
+    
+    // Sort by absolute correlation strength (highest first)
+    return correlations.sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation));
+  };
+
+  // Calculate Pearson correlation coefficient
+  const calculateCorrelation = (x: number[], y: number[]) => {
+    const n = x.length;
+    const sumX = x.reduce((sum, val) => sum + val, 0);
+    const sumY = y.reduce((sum, val) => sum + val, 0);
+    const sumXY = x.reduce((sum, val, i) => sum + val * y[i], 0);
+    const sumXX = x.reduce((sum, val) => sum + val * val, 0);
+    const sumYY = y.reduce((sum, val) => sum + val * val, 0);
+    
+    const numerator = n * sumXY - sumX * sumY;
+    const denominator = Math.sqrt((n * sumXX - sumX * sumX) * (n * sumYY - sumY * sumY));
+    
+    return denominator === 0 ? 0 : numerator / denominator;
   };
 
   // Get factor volatility analysis
@@ -872,6 +970,76 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
               </div>
             ))}
           </div>
+          )}
+        </div>
+      )}
+
+      {/* Factor Correlations */}
+      {getFactorCorrelations() && (
+        <div className="mb-4">
+          <div 
+            className="text-xs font-medium text-gray-600 mb-3 flex items-center justify-between cursor-pointer hover:text-gray-800"
+            onClick={() => toggleSection('factorCorrelations')}
+          >
+            <div className="flex items-center gap-2">
+              <span>🔗</span>
+              <span>Factor Correlations ({getFactorCorrelations()!.length})</span>
+            </div>
+            <span className="text-lg transition-transform duration-200">
+              {expandedSections.factorCorrelations ? '🔽' : '▶️'}
+            </span>
+          </div>
+          {expandedSections.factorCorrelations && (
+            <div className="space-y-3">
+              {getFactorCorrelations()!.slice(0, expanded ? undefined : 3).map((correlation, idx) => (
+                <div key={idx} className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-4 border border-indigo-100 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{getFactorIcon(correlation.factorA)}</span>
+                      <span className="text-sm font-medium text-gray-900">{correlation.factorALabel}</span>
+                      <span className="text-gray-400">↔</span>
+                      <span className="text-lg">{getFactorIcon(correlation.factorB)}</span>
+                      <span className="text-sm font-medium text-gray-900">{correlation.factorBLabel}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm font-bold ${
+                        correlation.color === 'green' ? 'text-green-600' : 
+                        correlation.color === 'red' ? 'text-red-600' : 'text-gray-600'
+                      }`}>
+                        {correlation.icon} {correlation.strength} {correlation.direction}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {correlation.correlation > 0 ? '+' : ''}{correlation.correlation.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Correlation Bar */}
+                  <div className="mb-2">
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                      <span>Correlation</span>
+                      <span>{correlation.correlation > 0 ? '+' : ''}{correlation.correlation.toFixed(2)}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full ${
+                          correlation.color === 'green' ? 'bg-green-500' : 
+                          correlation.color === 'red' ? 'bg-red-500' : 'bg-gray-400'
+                        }`}
+                        style={{ 
+                          width: `${Math.min(100, Math.abs(correlation.correlation) * 100)}%`,
+                          marginLeft: correlation.correlation < 0 ? `${100 - Math.abs(correlation.correlation) * 100}%` : '0'
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-gray-600">
+                    {correlation.context}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}
