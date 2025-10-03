@@ -114,6 +114,96 @@ function isCurrentDayWeekend(): boolean {
   return isWeekend(new Date());
 }
 
+function getCurrentDayName(): string {
+  const today = new Date();
+  return today.toLocaleDateString('en-US', { weekday: 'long' });
+}
+
+function isCurrentDayFriday(): boolean {
+  const today = new Date();
+  return today.getDay() === 5; // Friday = 5
+}
+
+function isCurrentDayMonday(): boolean {
+  const today = new Date();
+  return today.getDay() === 1; // Monday = 1
+}
+
+function getDynamicCardMessaging(): {
+  nextTradingDayTitle: string;
+  nextTradingDayDescription: string;
+  thisWeekTitle: string;
+  thisWeekDescription: string;
+  nextWeekTitle: string;
+  nextWeekDescription: string;
+} {
+  const today = new Date();
+  const dayName = getCurrentDayName();
+  const isWeekendNow = isCurrentDayWeekend();
+  const isFriday = isCurrentDayFriday();
+  const isMonday = isCurrentDayMonday();
+  
+  // Next Trading Day messaging
+  let nextTradingDayTitle = "Next Trading Day";
+  let nextTradingDayDescription = "";
+  
+  if (isWeekendNow) {
+    nextTradingDayTitle = "Next Trading Day";
+    nextTradingDayDescription = "No trading on weekends - Next trading day is Monday";
+  } else if (isFriday) {
+    nextTradingDayTitle = "Next Trading Day (Monday)";
+    nextTradingDayDescription = "Last trading day of the week - Next trading day is Monday";
+  } else {
+    nextTradingDayTitle = "Next Trading Day";
+    nextTradingDayDescription = "Regular trading day forecast";
+  }
+  
+  // This Week messaging
+  let thisWeekTitle = "This Week Trading Days";
+  let thisWeekDescription = "";
+  
+  if (isWeekendNow) {
+    thisWeekTitle = "This Week Trading Days";
+    thisWeekDescription = "Weekend - This week's trading days are complete";
+  } else if (isFriday) {
+    thisWeekTitle = "This Week Trading Days";
+    thisWeekDescription = "Last trading day of the week - Week summary";
+  } else if (isMonday) {
+    thisWeekTitle = "This Week Trading Days";
+    thisWeekDescription = "Start of trading week - Full week ahead";
+  } else {
+    thisWeekTitle = "This Week Trading Days";
+    thisWeekDescription = "Mid-week trading days remaining";
+  }
+  
+  // Next Week messaging
+  let nextWeekTitle = "Next Week Trading Days";
+  let nextWeekDescription = "";
+  
+  if (isWeekendNow) {
+    nextWeekTitle = "Next Week Trading Days";
+    nextWeekDescription = "Weekend - Next week's trading days forecast";
+  } else if (isFriday) {
+    nextWeekTitle = "Next Week Trading Days";
+    nextWeekDescription = "End of week - Next week's trading days forecast";
+  } else if (isMonday) {
+    nextWeekTitle = "Next Week Trading Days";
+    nextWeekDescription = "Start of week - Following week's forecast";
+  } else {
+    nextWeekTitle = "Next Week Trading Days";
+    nextWeekDescription = "Following week's trading days forecast";
+  }
+  
+  return {
+    nextTradingDayTitle,
+    nextTradingDayDescription,
+    thisWeekTitle,
+    thisWeekDescription,
+    nextWeekTitle,
+    nextWeekDescription
+  };
+}
+
 function getCurrentDayContext(): string {
   const today = new Date();
   const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
@@ -886,6 +976,38 @@ export default function ETFPredictionsPage() {
                 <div className="text-xs text-blue-600">
                   {getWeekendStatusMessage()}
                 </div>
+                {/* Dynamic day-specific messaging */}
+                {(() => {
+                  const isWeekendNow = isCurrentDayWeekend();
+                  const isFriday = isCurrentDayFriday();
+                  const isMonday = isCurrentDayMonday();
+                  
+                  if (isWeekendNow) {
+                    return (
+                      <div className="mt-2 text-xs text-blue-700 bg-blue-100 rounded px-2 py-1">
+                        🏖️ Weekend: No ETF trading until Monday
+                      </div>
+                    );
+                  } else if (isFriday) {
+                    return (
+                      <div className="mt-2 text-xs text-blue-700 bg-blue-100 rounded px-2 py-1">
+                        📈 Friday: Last trading day of the week
+                      </div>
+                    );
+                  } else if (isMonday) {
+                    return (
+                      <div className="mt-2 text-xs text-blue-700 bg-blue-100 rounded px-2 py-1">
+                        🚀 Monday: Start of trading week
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div className="mt-2 text-xs text-blue-700 bg-blue-100 rounded px-2 py-1">
+                        📊 Mid-week: Active trading days
+                      </div>
+                    );
+                  }
+                })()}
               </div>
 
               {/* Contextual Explanations */}
@@ -910,6 +1032,9 @@ export default function ETFPredictionsPage() {
                   const nextTradingDay = getNextTradingDay();
                   const nextTradingInfo = getDetailedTradingDayInfo(nextTradingDay);
                   const isWeekendNow = isCurrentDayWeekend();
+                  
+                  // Get dynamic messaging based on current day
+                  const dynamicMessaging = getDynamicCardMessaging();
                   
                   // Calculate trading day predictions
                   const tradingDayPredictions = data.daily?.filter((_, index) => {
@@ -946,29 +1071,29 @@ export default function ETFPredictionsPage() {
                   return (
                     <>
                       <ForecastCard 
-                        title={`Next Trading Day`}
+                        title={dynamicMessaging.nextTradingDayTitle}
                         prediction={`$${tradingDayPredictions[0]?.flow?.toFixed(1) || 0}M`}
                         confidence={tradingDayPredictions[0]?.confidence || 0}
                         trend={tradingDayPredictions[0]?.trend || 'stable'}
-                        description={`${nextTradingInfo.date}${isWeekendNow ? ' (No weekend trading)' : ''}`}
+                        description={`${nextTradingInfo.date} - ${dynamicMessaging.nextTradingDayDescription}`}
                         lastUpdated={data.lastUpdated}
                         dataPoints={data.individual?.length || 0}
                       />
                       <ForecastCard 
-                        title={`${thisWeekInfo.weekName} Trading Days`}
+                        title={dynamicMessaging.thisWeekTitle}
                         prediction={`$${thisWeekTradingTotal.toFixed(1)}M`}
                         confidence={data.weekly?.confidence || 0}
                         trend="stable"
-                        description={thisWeekInfo.description}
+                        description={`${thisWeekInfo.description} - ${dynamicMessaging.thisWeekDescription}`}
                         lastUpdated={data.lastUpdated}
                         dataPoints={data.individual?.length || 0}
                       />
                       <ForecastCard 
-                        title={`${nextWeekInfo.weekName} Trading Days`}
+                        title={dynamicMessaging.nextWeekTitle}
                         prediction={`$${nextWeekTradingTotal.toFixed(1)}M`}
                         confidence={data.weekly?.confidence || 0}
                         trend="stable"
-                        description={nextWeekInfo.description}
+                        description={`${nextWeekInfo.description} - ${dynamicMessaging.nextWeekDescription}`}
                         lastUpdated={data.lastUpdated}
                         dataPoints={data.individual?.length || 0}
                       />
