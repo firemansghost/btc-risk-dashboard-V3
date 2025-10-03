@@ -56,6 +56,60 @@ function getTradingDayName(date: Date): string {
   }
 }
 
+function getDetailedTradingDayInfo(date: Date): { name: string; date: string; isWeekend: boolean; daysUntil: number } {
+  const today = new Date();
+  const daysUntil = Math.ceil((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  
+  return {
+    name: getTradingDayName(date),
+    date: date.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      month: 'short', 
+      day: 'numeric' 
+    }),
+    isWeekend: isWeekend(date),
+    daysUntil: daysUntil
+  };
+}
+
+function getTradingWeekInfo(startDate: Date): { 
+  weekName: string; 
+  tradingDays: string[]; 
+  totalDays: number;
+  description: string;
+} {
+  const tradingDays = getTradingDaysInWeek(startDate);
+  const dayNames = tradingDays.map(day => day.toLocaleDateString('en-US', { weekday: 'short' }));
+  
+  const today = new Date();
+  const isCurrentWeek = tradingDays.some(day => day.toDateString() === today.toDateString());
+  
+  let weekName = isCurrentWeek ? 'This Week' : 'Next Week';
+  let description = `${tradingDays.length} trading days (${dayNames.join(', ')})`;
+  
+  return {
+    weekName,
+    tradingDays: dayNames,
+    totalDays: tradingDays.length,
+    description
+  };
+}
+
+function getWeekendStatusMessage(): string {
+  const today = new Date();
+  const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+  
+  if (isWeekend(today)) {
+    const nextTradingDay = getNextTradingDay();
+    const nextTradingInfo = getDetailedTradingDayInfo(nextTradingDay);
+    return `No trading on weekends. Next trading day: ${nextTradingInfo.date}`;
+  } else if (dayName === 'Friday') {
+    return 'Last trading day of the week. Markets close at 4:00 PM ET.';
+  } else {
+    return 'Markets open. Trading until 4:00 PM ET.';
+  }
+}
+
 function isCurrentDayWeekend(): boolean {
   return isWeekend(new Date());
 }
@@ -814,14 +868,17 @@ export default function ETFPredictionsPage() {
             </div>
           ) : data && (data.daily?.length > 0 || data.individual?.length > 0) ? (
             <div className="space-y-6">
-              {/* Trading Day Context */}
+              {/* Enhanced Trading Day Context */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-blue-600 text-lg">📅</span>
                   <span className="text-sm font-medium text-blue-900">Trading Day Status</span>
                 </div>
-                <div className="text-sm text-blue-800">
+                <div className="text-sm text-blue-800 mb-2">
                   {getCurrentDayContext()}
+                </div>
+                <div className="text-xs text-blue-600">
+                  {getWeekendStatusMessage()}
                 </div>
               </div>
               
@@ -829,7 +886,7 @@ export default function ETFPredictionsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 {(() => {
                   const nextTradingDay = getNextTradingDay();
-                  const nextTradingDayName = getTradingDayName(nextTradingDay);
+                  const nextTradingInfo = getDetailedTradingDayInfo(nextTradingDay);
                   const isWeekendNow = isCurrentDayWeekend();
                   
                   // Calculate trading day predictions
@@ -840,6 +897,7 @@ export default function ETFPredictionsPage() {
                   
                   // Calculate this week's trading days total
                   const thisWeekTradingDays = getTradingDaysInWeek(new Date());
+                  const thisWeekInfo = getTradingWeekInfo(new Date());
                   const thisWeekTradingPredictions = data.daily?.filter((_, index) => {
                     const predictionDate = new Date(data.daily[index].date);
                     return thisWeekTradingDays.some(tradingDay => 
@@ -852,6 +910,7 @@ export default function ETFPredictionsPage() {
                   // Calculate next week's trading days total
                   const nextWeekStart = new Date();
                   nextWeekStart.setDate(nextWeekStart.getDate() + 7);
+                  const nextWeekInfo = getTradingWeekInfo(nextWeekStart);
                   const nextWeekTradingDays = getTradingDaysInWeek(nextWeekStart);
                   const nextWeekTradingPredictions = data.daily?.filter((_, index) => {
                     const predictionDate = new Date(data.daily[index].date);
@@ -865,29 +924,29 @@ export default function ETFPredictionsPage() {
                   return (
                     <>
                       <ForecastCard 
-                        title={isWeekendNow ? "Next Trading Day" : "Next Trading Day"}
+                        title={`Next Trading Day`}
                         prediction={`$${tradingDayPredictions[0]?.flow?.toFixed(1) || 0}M`}
                         confidence={tradingDayPredictions[0]?.confidence || 0}
                         trend={tradingDayPredictions[0]?.trend || 'stable'}
-                        description={`Expected flow for ${nextTradingDayName}${isWeekendNow ? ' (No trading on weekends)' : ''}`}
+                        description={`${nextTradingInfo.date}${isWeekendNow ? ' (No weekend trading)' : ''}`}
                         lastUpdated={data.lastUpdated}
                         dataPoints={data.individual?.length || 0}
                       />
                       <ForecastCard 
-                        title="This Trading Week"
+                        title={`${thisWeekInfo.weekName} Trading Days`}
                         prediction={`$${thisWeekTradingTotal.toFixed(1)}M`}
                         confidence={data.weekly?.confidence || 0}
                         trend="stable"
-                        description="5 trading days forecast (Mon-Fri)"
+                        description={thisWeekInfo.description}
                         lastUpdated={data.lastUpdated}
                         dataPoints={data.individual?.length || 0}
                       />
                       <ForecastCard 
-                        title="Next Trading Week"
+                        title={`${nextWeekInfo.weekName} Trading Days`}
                         prediction={`$${nextWeekTradingTotal.toFixed(1)}M`}
                         confidence={data.weekly?.confidence || 0}
                         trend="stable"
-                        description="Following week's 5 trading days"
+                        description={nextWeekInfo.description}
                         lastUpdated={data.lastUpdated}
                         dataPoints={data.individual?.length || 0}
                       />
