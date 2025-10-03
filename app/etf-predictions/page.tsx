@@ -96,18 +96,7 @@ function getTradingWeekInfo(startDate: Date): {
 }
 
 function getWeekendStatusMessage(): string {
-  const today = new Date();
-  const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
-  
-  if (isWeekend(today)) {
-    const nextTradingDay = getNextTradingDay();
-    const nextTradingInfo = getDetailedTradingDayInfo(nextTradingDay);
-    return `No trading on weekends. Next trading day: ${nextTradingInfo.date}`;
-  } else if (dayName === 'Friday') {
-    return 'Last trading day of the week. Markets close at 4:00 PM ET.';
-  } else {
-    return 'Markets open. Trading until 4:00 PM ET.';
-  }
+  return getHolidayStatusMessage();
 }
 
 function isCurrentDayWeekend(): boolean {
@@ -129,6 +118,145 @@ function isCurrentDayMonday(): boolean {
   return today.getDay() === 1; // Monday = 1
 }
 
+function isMarketHoliday(date: Date): boolean {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
+  
+  // New Year's Day (January 1)
+  if (month === 0 && day === 1) return true;
+  
+  // Martin Luther King Jr. Day (3rd Monday in January)
+  const mlkDay = getNthWeekdayInMonth(year, 0, 1, 3); // 3rd Monday in January
+  if (month === 0 && day === mlkDay) return true;
+  
+  // Presidents' Day (3rd Monday in February)
+  const presidentsDay = getNthWeekdayInMonth(year, 1, 1, 3); // 3rd Monday in February
+  if (month === 1 && day === presidentsDay) return true;
+  
+  // Good Friday (Friday before Easter - approximate calculation)
+  const easter = calculateEaster(year);
+  const goodFriday = new Date(easter);
+  goodFriday.setDate(easter.getDate() - 2);
+  if (month === goodFriday.getMonth() && day === goodFriday.getDate()) return true;
+  
+  // Memorial Day (Last Monday in May)
+  const memorialDay = getLastWeekdayInMonth(year, 4, 1); // Last Monday in May
+  if (month === 4 && day === memorialDay) return true;
+  
+  // Juneteenth (June 19)
+  if (month === 5 && day === 19) return true;
+  
+  // Independence Day (July 4)
+  if (month === 6 && day === 4) return true;
+  
+  // Labor Day (1st Monday in September)
+  const laborDay = getNthWeekdayInMonth(year, 8, 1, 1); // 1st Monday in September
+  if (month === 8 && day === laborDay) return true;
+  
+  // Thanksgiving (4th Thursday in November)
+  const thanksgiving = getNthWeekdayInMonth(year, 10, 4, 4); // 4th Thursday in November
+  if (month === 10 && day === thanksgiving) return true;
+  
+  // Christmas Day (December 25)
+  if (month === 11 && day === 25) return true;
+  
+  return false;
+}
+
+function getNthWeekdayInMonth(year: number, month: number, weekday: number, n: number): number {
+  // weekday: 0=Sunday, 1=Monday, ..., 6=Saturday
+  const firstDay = new Date(year, month, 1);
+  const firstWeekday = firstDay.getDay();
+  const daysToFirstWeekday = (weekday - firstWeekday + 7) % 7;
+  const targetDate = 1 + daysToFirstWeekday + (n - 1) * 7;
+  return targetDate;
+}
+
+function getLastWeekdayInMonth(year: number, month: number, weekday: number): number {
+  // weekday: 0=Sunday, 1=Monday, ..., 6=Saturday
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  const lastDate = new Date(year, month, lastDay);
+  const lastWeekday = lastDate.getDay();
+  const daysToLastWeekday = (lastWeekday - weekday + 7) % 7;
+  return lastDay - daysToLastWeekday;
+}
+
+function calculateEaster(year: number): Date {
+  // Simplified Easter calculation (works for years 1900-2099)
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+}
+
+function getHolidayName(date: Date): string {
+  const month = date.getMonth();
+  const day = date.getDate();
+  
+  if (month === 0 && day === 1) return "New Year's Day";
+  if (month === 1 && day === 19) return "Presidents' Day";
+  if (month === 4 && day === 31) return "Memorial Day";
+  if (month === 5 && day === 19) return "Juneteenth";
+  if (month === 6 && day === 4) return "Independence Day";
+  if (month === 8 && day === 1) return "Labor Day";
+  if (month === 10 && day === 25) return "Thanksgiving";
+  if (month === 11 && day === 25) return "Christmas Day";
+  
+  return "Market Holiday";
+}
+
+function isTradingDay(date: Date): boolean {
+  // Check if it's a weekend
+  if (isWeekend(date)) return false;
+  
+  // Check if it's a market holiday
+  if (isMarketHoliday(date)) return false;
+  
+  return true;
+}
+
+function getNextTradingDayWithHolidays(date: Date = new Date()): Date {
+  const nextDay = new Date(date);
+  nextDay.setDate(date.getDate() + 1);
+  
+  while (!isTradingDay(nextDay)) {
+    nextDay.setDate(nextDay.getDate() + 1);
+  }
+  
+  return nextDay;
+}
+
+function getHolidayStatusMessage(): string {
+  const today = new Date();
+  
+  if (isMarketHoliday(today)) {
+    const holidayName = getHolidayName(today);
+    const nextTradingDay = getNextTradingDayWithHolidays();
+    const nextTradingInfo = getDetailedTradingDayInfo(nextTradingDay);
+    return `Market closed for ${holidayName}. Next trading day: ${nextTradingInfo.date}`;
+  }
+  
+  if (isWeekend(today)) {
+    const nextTradingDay = getNextTradingDayWithHolidays();
+    const nextTradingInfo = getDetailedTradingDayInfo(nextTradingDay);
+    return `No trading on weekends. Next trading day: ${nextTradingInfo.date}`;
+  }
+  
+  return 'Markets open. Trading until 4:00 PM ET.';
+}
+
 function getDynamicCardMessaging(): {
   nextTradingDayTitle: string;
   nextTradingDayDescription: string;
@@ -140,6 +268,7 @@ function getDynamicCardMessaging(): {
   const today = new Date();
   const dayName = getCurrentDayName();
   const isWeekendNow = isCurrentDayWeekend();
+  const isHoliday = isMarketHoliday(today);
   const isFriday = isCurrentDayFriday();
   const isMonday = isCurrentDayMonday();
   
@@ -147,7 +276,11 @@ function getDynamicCardMessaging(): {
   let nextTradingDayTitle = "Next Trading Day";
   let nextTradingDayDescription = "";
   
-  if (isWeekendNow) {
+  if (isHoliday) {
+    const holidayName = getHolidayName(today);
+    nextTradingDayTitle = "Next Trading Day";
+    nextTradingDayDescription = `Market closed for ${holidayName} - Next trading day forecast`;
+  } else if (isWeekendNow) {
     nextTradingDayTitle = "Next Trading Day";
     nextTradingDayDescription = "No trading on weekends - Next trading day is Monday";
   } else if (isFriday) {
@@ -162,7 +295,11 @@ function getDynamicCardMessaging(): {
   let thisWeekTitle = "This Week Trading Days";
   let thisWeekDescription = "";
   
-  if (isWeekendNow) {
+  if (isHoliday) {
+    const holidayName = getHolidayName(today);
+    thisWeekTitle = "This Week Trading Days";
+    thisWeekDescription = `Market closed for ${holidayName} - This week's trading days`;
+  } else if (isWeekendNow) {
     thisWeekTitle = "This Week Trading Days";
     thisWeekDescription = "Weekend - This week's trading days are complete";
   } else if (isFriday) {
@@ -180,7 +317,11 @@ function getDynamicCardMessaging(): {
   let nextWeekTitle = "Next Week Trading Days";
   let nextWeekDescription = "";
   
-  if (isWeekendNow) {
+  if (isHoliday) {
+    const holidayName = getHolidayName(today);
+    nextWeekTitle = "Next Week Trading Days";
+    nextWeekDescription = `Market closed for ${holidayName} - Next week's trading days forecast`;
+  } else if (isWeekendNow) {
     nextWeekTitle = "Next Week Trading Days";
     nextWeekDescription = "Weekend - Next week's trading days forecast";
   } else if (isFriday) {
@@ -444,13 +585,13 @@ function PredictionChart({ data, loading, error }: {
     );
   }
 
-  // Filter for business days only (exclude weekends)
-  const businessDayPredictions = data.daily.filter((_, index) => {
+  // Filter for trading days only (exclude weekends and holidays)
+  const tradingDayPredictions = data.daily.filter((_, index) => {
     const predictionDate = new Date(data.daily[index].date);
-    return isBusinessDay(predictionDate);
+    return isTradingDay(predictionDate);
   });
   
-  const predictions = businessDayPredictions.slice(0, 7); // Show next 7 trading days
+  const predictions = tradingDayPredictions.slice(0, 7); // Show next 7 trading days
   const maxFlow = Math.max(...predictions.map(p => p.flow));
   const avgConfidence = Math.round(
     predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length
@@ -460,7 +601,7 @@ function PredictionChart({ data, loading, error }: {
     <div className="w-full">
       <div className="mb-4">
         <h4 className="text-lg font-semibold text-gray-900">7-Day Trading Flow Forecast</h4>
-        <p className="text-sm text-gray-600">Next 7 trading days (excludes weekends) - Trend-based predictions using historical data</p>
+        <p className="text-sm text-gray-600">Next 7 trading days (excludes weekends and holidays) - Trend-based predictions using historical data</p>
       </div>
       
       {/* Chart Container */}
@@ -979,10 +1120,18 @@ export default function ETFPredictionsPage() {
                 {/* Dynamic day-specific messaging */}
                 {(() => {
                   const isWeekendNow = isCurrentDayWeekend();
+                  const isHoliday = isMarketHoliday(new Date());
                   const isFriday = isCurrentDayFriday();
                   const isMonday = isCurrentDayMonday();
                   
-                  if (isWeekendNow) {
+                  if (isHoliday) {
+                    const holidayName = getHolidayName(new Date());
+                    return (
+                      <div className="mt-2 text-xs text-red-700 bg-red-100 rounded px-2 py-1">
+                        🏛️ Market closed for {holidayName}
+                      </div>
+                    );
+                  } else if (isWeekendNow) {
                     return (
                       <div className="mt-2 text-xs text-blue-700 bg-blue-100 rounded px-2 py-1">
                         🏖️ Weekend: No ETF trading until Monday
@@ -1029,17 +1178,18 @@ export default function ETFPredictionsPage() {
               {/* Smart Forecast Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 {(() => {
-                  const nextTradingDay = getNextTradingDay();
+                  const nextTradingDay = getNextTradingDayWithHolidays();
                   const nextTradingInfo = getDetailedTradingDayInfo(nextTradingDay);
                   const isWeekendNow = isCurrentDayWeekend();
+                  const isHoliday = isMarketHoliday(new Date());
                   
                   // Get dynamic messaging based on current day
                   const dynamicMessaging = getDynamicCardMessaging();
                   
-                  // Calculate trading day predictions
+                  // Calculate trading day predictions (exclude weekends and holidays)
                   const tradingDayPredictions = data.daily?.filter((_, index) => {
                     const predictionDate = new Date(data.daily[index].date);
-                    return isBusinessDay(predictionDate);
+                    return isTradingDay(predictionDate);
                   }) || [];
                   
                   // Calculate this week's trading days total
