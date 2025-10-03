@@ -183,7 +183,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     
     console.log('getFactorCorrelations: Data check', {
       currentFactors: currentFactors.map(f => ({ key: f.key, label: f.label })),
-      pointsSample: points.slice(0, 2).map(p => Object.keys(p)),
+      pointsSample: points.slice(0, 2).map((p: any) => Object.keys(p)),
       pointsLength: points.length
     });
     
