@@ -215,18 +215,22 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       concentrationText = 'Medium';
     }
     
+    // Get top 2 factors for context
+    const top2Factors = sortedContributions.slice(0, 2);
+    const top2FactorNames = top2Factors.map(f => f.label).join(' and ');
+    
     // Generate concentration insights
     let concentrationInsight = '';
     let recommendation = '';
     
     if (concentrationLevel === 'high') {
-      concentrationInsight = `Risk is highly concentrated - ${top2Percentage.toFixed(0)}% comes from just 2 factors`;
-      recommendation = 'Monitor top factors closely as they drive most of the risk';
+      concentrationInsight = `Risk is highly concentrated - ${top2Percentage.toFixed(0)}% comes from ${top2FactorNames}`;
+      recommendation = `Monitor ${top2FactorNames} closely as they drive most of the risk`;
     } else if (concentrationLevel === 'medium') {
-      concentrationInsight = `Risk is moderately concentrated - ${top2Percentage.toFixed(0)}% comes from top 2 factors`;
-      recommendation = 'Risk is reasonably distributed but keep an eye on top contributors';
+      concentrationInsight = `Risk is moderately concentrated - ${top2Percentage.toFixed(0)}% comes from ${top2FactorNames}`;
+      recommendation = `Risk is reasonably distributed but keep an eye on ${top2FactorNames}`;
     } else {
-      concentrationInsight = `Risk is well distributed - ${top2Percentage.toFixed(0)}% from top 2 factors`;
+      concentrationInsight = `Risk is well distributed - ${top2Percentage.toFixed(0)}% from ${top2FactorNames}`;
       recommendation = 'Good diversification - risk is spread across multiple factors';
     }
     
@@ -1217,7 +1221,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
                 {/* Concentration Bar */}
                 <div className="mb-3">
                   <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                    <span>Top 2 Factors</span>
+                    <span>Top 2 Factors ({getRiskConcentration()!.factorContributions.slice(0, 2).map(f => f.label).join(', ')})</span>
                     <span>{getRiskConcentration()!.top2Percentage.toFixed(0)}% of total risk</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
