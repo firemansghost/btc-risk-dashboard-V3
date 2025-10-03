@@ -36,6 +36,22 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const [historicalData, setHistoricalData] = useState<any>(null);
+  const [expandedSections, setExpandedSections] = useState({
+    keyDrivers: false,
+    factorVolatility: false,
+    factorMomentum: false,
+    areasOfConcern: false,
+    currentStatus: false,
+    recommendations: false
+  });
+
+  // Toggle individual section expansion
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
 
   // Load historical data for score comparison
   const loadHistoricalData = async () => {
@@ -694,53 +710,72 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
       {/* Key Drivers */}
       <div className="mb-4">
-        <div className="text-xs font-medium text-gray-600 mb-2">Key Drivers</div>
-        <div className="space-y-2">
-          {explanation.keyDrivers.slice(0, expanded ? undefined : 2).map((driver, idx) => (
-            <div key={idx} className="bg-gray-50 rounded-lg p-3">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{getFactorIcon(driver.key)}</span>
-                  <span className="text-sm font-medium text-gray-900">{driver.label}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-blue-600">
-                    +{driver.contribution.toFixed(1)}
-                  </span>
-                  <span className={`text-xs ${getTrendColor(driver.trend)}`}>
-                    {getTrendIcon(driver.trend)}
-                  </span>
-                </div>
-              </div>
-              
-              {/* Contribution Bar */}
-              <div className="mb-2">
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                  <span>Contribution</span>
-                  <span>{driver.contribution.toFixed(1)} points</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-1.5">
-                  <div 
-                    className={`h-1.5 rounded-full ${getContributionColor(driver.contribution)}`}
-                    style={{ width: `${Math.min(driver.contribution * 10, 100)}%` }}
-                  ></div>
-                </div>
-              </div>
-              
-              <div className="text-xs text-gray-600 mb-1">{driver.explanation}</div>
-              <div className="text-xs text-blue-600 italic">{driver.context}</div>
-            </div>
-          ))}
+        <div 
+          className="text-xs font-medium text-gray-600 mb-2 cursor-pointer hover:text-gray-800 flex items-center justify-between"
+          onClick={() => toggleSection('keyDrivers')}
+        >
+          <span>Key Drivers ({explanation.keyDrivers.length})</span>
+          <span className="text-lg transition-transform duration-200">
+            {expandedSections.keyDrivers ? '🔽' : '▶️'}
+          </span>
         </div>
+        {expandedSections.keyDrivers && (
+          <div className="space-y-2">
+            {explanation.keyDrivers.map((driver, idx) => (
+              <div key={idx} className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{getFactorIcon(driver.key)}</span>
+                    <span className="text-sm font-medium text-gray-900">{driver.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-blue-600">
+                      +{driver.contribution.toFixed(1)}
+                    </span>
+                    <span className={`text-xs ${getTrendColor(driver.trend)}`}>
+                      {getTrendIcon(driver.trend)}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Contribution Bar */}
+                <div className="mb-2">
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                    <span>Contribution</span>
+                    <span>{driver.contribution.toFixed(1)} points</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-1.5">
+                    <div 
+                      className={`h-1.5 rounded-full ${getContributionColor(driver.contribution)}`}
+                      style={{ width: `${Math.min(driver.contribution * 10, 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+                
+                <div className="text-xs text-gray-600 mb-1">{driver.explanation}</div>
+                <div className="text-xs text-blue-600 italic">{driver.context}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Factor Volatility Analysis */}
       {getFactorVolatility() && (
         <div className="mb-4">
-          <div className="text-xs font-medium text-gray-600 mb-3 flex items-center gap-2">
-            <span>📈</span>
-            <span>Factor Volatility</span>
+          <div 
+            className="text-xs font-medium text-gray-600 mb-3 flex items-center justify-between cursor-pointer hover:text-gray-800"
+            onClick={() => toggleSection('factorVolatility')}
+          >
+            <div className="flex items-center gap-2">
+              <span>📈</span>
+              <span>Factor Volatility ({getFactorVolatility()!.length})</span>
+            </div>
+            <span className="text-lg transition-transform duration-200">
+              {expandedSections.factorVolatility ? '🔽' : '▶️'}
+            </span>
           </div>
+          {expandedSections.factorVolatility && (
           <div className="space-y-3">
             {getFactorVolatility()!.slice(0, expanded ? undefined : 3).map((factor, idx) => (
               <div key={idx} className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100 shadow-sm hover:shadow-md transition-shadow">
@@ -779,16 +814,26 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
               </div>
             ))}
           </div>
+          )}
         </div>
       )}
 
       {/* Factor Momentum */}
       {getFactorMomentum() && (
         <div className="mb-4">
-          <div className="text-xs font-medium text-gray-600 mb-3 flex items-center gap-2">
-            <span>📊</span>
-            <span>Factor Momentum</span>
+          <div 
+            className="text-xs font-medium text-gray-600 mb-3 flex items-center justify-between cursor-pointer hover:text-gray-800"
+            onClick={() => toggleSection('factorMomentum')}
+          >
+            <div className="flex items-center gap-2">
+              <span>📊</span>
+              <span>Factor Momentum ({getFactorMomentum()!.length})</span>
+            </div>
+            <span className="text-lg transition-transform duration-200">
+              {expandedSections.factorMomentum ? '🔽' : '▶️'}
+            </span>
           </div>
+          {expandedSections.factorMomentum && (
           <div className="space-y-3">
             {getFactorMomentum()!.slice(0, expanded ? undefined : 3).map((factor, idx) => (
               <div key={idx} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
@@ -827,115 +872,61 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
               </div>
             ))}
           </div>
+          )}
         </div>
       )}
 
-      {/* Key Drivers */}
+      {/* Areas of Concern */}
       <div className="mb-4">
-        <div className="text-xs font-medium text-gray-600 mb-2">Key Drivers</div>
+        <div 
+          className="text-xs font-medium text-gray-600 mb-2 cursor-pointer hover:text-gray-800 flex items-center justify-between"
+          onClick={() => toggleSection('areasOfConcern')}
+        >
+          <span>Areas of Concern ({explanation.concerns.length})</span>
+          <span className="text-lg transition-transform duration-200">
+            {expandedSections.areasOfConcern ? '🔽' : '▶️'}
+          </span>
+        </div>
+        {expandedSections.areasOfConcern && (
         <div className="space-y-2">
-          {explanation.keyDrivers.slice(0, expanded ? undefined : 2).map((driver, idx) => (
-            <div key={idx} className="bg-gray-50 rounded-lg p-3">
+          {explanation.concerns.map((concern, idx) => (
+            <div key={idx} className="bg-red-50 border border-red-200 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">{getFactorIcon(driver.key)}</span>
-                  <span className="text-sm font-medium text-gray-900">{driver.label}</span>
+                  <span className="text-lg">{getFactorIcon(concern.key)}</span>
+                  <span className="text-sm font-medium text-gray-900">{concern.label}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-blue-600">
-                    +{driver.contribution.toFixed(1)}
+                  <span className="text-sm font-bold text-red-600">
+                    {concern.contribution.toFixed(1)}
                   </span>
-                  <span className={`text-xs ${getTrendColor(driver.trend)}`}>
-                    {getTrendIcon(driver.trend)}
+                  <span className={`text-xs ${getTrendColor(concern.trend)}`}>
+                    {getTrendIcon(concern.trend)}
                   </span>
                 </div>
               </div>
               
-              {/* Contribution Bar */}
-              <div className="mb-2">
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                  <span>Contribution</span>
-                  <span>{driver.contribution.toFixed(1)} points</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-1.5">
-                  <div 
-                    className={`h-1.5 rounded-full ${getContributionColor(driver.contribution)}`}
-                    style={{ width: `${Math.min(driver.contribution * 10, 100)}%` }}
-                  ></div>
-                </div>
-              </div>
-              
-              <div className="text-xs text-gray-600 mb-1">{driver.explanation}</div>
-              <div className="text-xs text-blue-600 italic">{driver.context}</div>
+              <div className="text-xs text-gray-600 mb-1">{concern.explanation}</div>
+              <div className="text-xs text-red-600 italic">{concern.context}</div>
             </div>
           ))}
-          {!expanded && explanation.keyDrivers.length > 2 && (
-            <div className="text-xs text-gray-500 text-center py-1">
-              +{explanation.keyDrivers.length - 2} more drivers
-            </div>
-          )}
         </div>
+        )}
       </div>
 
 
-      {/* Concerns */}
-      {explanation.concerns.length > 0 && (
-        <div className="mb-4">
-          <div className="text-xs font-medium text-gray-600 mb-2">Areas of Concern</div>
-          <div className="space-y-2">
-            {explanation.concerns.slice(0, expanded ? undefined : 2).map((concern, idx) => (
-              <div key={idx} className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{getFactorIcon(concern.key)}</span>
-                    <span className="text-sm font-medium text-gray-900">{concern.label}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-sm font-bold ${getScoreColor(concern.score)}`}>
-                      {concern.score}
-                    </span>
-                    {concern.status !== 'fresh' && (
-                      <span className="text-xs text-red-500" title="Data is stale">⚠️</span>
-                    )}
-                    <span className={`text-xs ${getTrendColor(concern.trend)}`}>
-                      {getTrendIcon(concern.trend)}
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Score Bar */}
-                <div className="mb-2">
-                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                    <span>Risk Level</span>
-                    <span>{concern.score}/100</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
-                    <div 
-                      className={`h-1.5 rounded-full ${
-                        concern.score < 40 ? 'bg-green-500' : 
-                        concern.score < 60 ? 'bg-yellow-500' : 'bg-red-500'
-                      }`}
-                      style={{ width: `${concern.score}%` }}
-                    ></div>
-                  </div>
-                </div>
-                
-                <div className="text-xs text-gray-600 mb-1">{concern.explanation}</div>
-                <div className="text-xs text-red-600 italic">{concern.recommendation}</div>
-              </div>
-            ))}
-            {!expanded && explanation.concerns.length > 2 && (
-              <div className="text-xs text-gray-500 text-center py-1">
-                +{explanation.concerns.length - 2} more concerns
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Insights */}
+      {/* Current Status */}
       <div className="mb-4">
-        <div className="text-xs font-medium text-gray-600 mb-2">Current Status</div>
+        <div 
+          className="text-xs font-medium text-gray-600 mb-2 cursor-pointer hover:text-gray-800 flex items-center justify-between"
+          onClick={() => toggleSection('currentStatus')}
+        >
+          <span>Current Status ({explanation.insights.length})</span>
+          <span className="text-lg transition-transform duration-200">
+            {expandedSections.currentStatus ? '🔽' : '▶️'}
+          </span>
+        </div>
+        {expandedSections.currentStatus && (
         <div className="space-y-2">
           {explanation.insights.map((insight, idx) => (
             <div key={idx} className="bg-blue-50 border border-blue-200 rounded-lg p-2">
@@ -946,21 +937,32 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             </div>
           ))}
         </div>
+        )}
       </div>
 
       {/* Recommendations */}
       <div className="border-t border-gray-100 pt-3">
-        <div className="text-xs font-medium text-gray-600 mb-2">Recommendations</div>
-        <div className="space-y-2">
-          {explanation.recommendations.map((rec, idx) => (
-            <div key={idx} className="bg-green-50 border border-green-200 rounded-lg p-2">
-              <div className="text-xs text-green-700 flex items-center gap-2">
-                <span className="text-green-500">💡</span>
-                <span>{rec}</span>
-              </div>
-            </div>
-          ))}
+        <div 
+          className="text-xs font-medium text-gray-600 mb-2 cursor-pointer hover:text-gray-800 flex items-center justify-between"
+          onClick={() => toggleSection('recommendations')}
+        >
+          <span>Recommendations ({explanation.recommendations.length})</span>
+          <span className="text-lg transition-transform duration-200">
+            {expandedSections.recommendations ? '🔽' : '▶️'}
+          </span>
         </div>
+        {expandedSections.recommendations && (
+          <div className="space-y-2">
+            {explanation.recommendations.map((rec, idx) => (
+              <div key={idx} className="bg-green-50 border border-green-200 rounded-lg p-2">
+                <div className="text-xs text-green-700 flex items-center gap-2">
+                  <span className="text-green-500">💡</span>
+                  <span>{rec}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
