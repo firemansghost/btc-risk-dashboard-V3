@@ -257,6 +257,127 @@ function getHolidayStatusMessage(): string {
   return 'Markets open. Trading until 4:00 PM ET.';
 }
 
+function getSpecificTradingDayName(date: Date): string {
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  
+  // Check if it's today
+  if (date.toDateString() === today.toDateString()) {
+    return 'Today';
+  }
+  
+  // Check if it's tomorrow
+  if (date.toDateString() === tomorrow.toDateString()) {
+    return 'Tomorrow';
+  }
+  
+  // Check if it's next week
+  const nextWeek = new Date(today);
+  nextWeek.setDate(today.getDate() + 7);
+  const isNextWeek = date >= nextWeek;
+  
+  if (isNextWeek) {
+    const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+    return `Next ${dayName}`;
+  }
+  
+  // For this week, just show the day name
+  const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+  return dayName;
+}
+
+function getTradingDayIndicator(date: Date): {
+  name: string;
+  date: string;
+  isToday: boolean;
+  isTomorrow: boolean;
+  isNextWeek: boolean;
+  daysUntil: number;
+  description: string;
+} {
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  
+  const isToday = date.toDateString() === today.toDateString();
+  const isTomorrow = date.toDateString() === tomorrow.toDateString();
+  
+  // Check if it's next week
+  const nextWeek = new Date(today);
+  nextWeek.setDate(today.getDate() + 7);
+  const isNextWeek = date >= nextWeek;
+  
+  // Calculate days until
+  const daysUntil = Math.ceil((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  
+  // Get specific name
+  const name = getSpecificTradingDayName(date);
+  
+  // Format date
+  const dateStr = date.toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    month: 'short', 
+    day: 'numeric' 
+  });
+  
+  // Generate description
+  let description = '';
+  if (isToday) {
+    description = 'Today\'s trading day';
+  } else if (isTomorrow) {
+    description = 'Tomorrow\'s trading day';
+  } else if (isNextWeek) {
+    description = `Next week's ${date.toLocaleDateString('en-US', { weekday: 'long' })}`;
+  } else {
+    description = `This week's ${date.toLocaleDateString('en-US', { weekday: 'long' })}`;
+  }
+  
+  return {
+    name,
+    date: dateStr,
+    isToday,
+    isTomorrow,
+    isNextWeek,
+    daysUntil,
+    description
+  };
+}
+
+function getEnhancedTradingDayInfo(date: Date): {
+  name: string;
+  date: string;
+  isToday: boolean;
+  isTomorrow: boolean;
+  isNextWeek: boolean;
+  daysUntil: number;
+  description: string;
+  isWeekend: boolean;
+  isHoliday: boolean;
+  holidayName?: string;
+  status: string;
+} {
+  const indicator = getTradingDayIndicator(date);
+  const isWeekend = isWeekend(date);
+  const isHoliday = isMarketHoliday(date);
+  const holidayName = isHoliday ? getHolidayName(date) : undefined;
+  
+  let status = 'Trading Day';
+  if (isHoliday) {
+    status = `Market Holiday (${holidayName})`;
+  } else if (isWeekend) {
+    status = 'Weekend (No Trading)';
+  }
+  
+  return {
+    ...indicator,
+    isWeekend,
+    isHoliday,
+    holidayName,
+    status
+  };
+}
+
 function getDynamicCardMessaging(): {
   nextTradingDayTitle: string;
   nextTradingDayDescription: string;
@@ -1117,6 +1238,17 @@ export default function ETFPredictionsPage() {
                 <div className="text-xs text-blue-600">
                   {getWeekendStatusMessage()}
                 </div>
+                {/* Enhanced Trading Day Indicator */}
+                {(() => {
+                  const nextTradingDay = getNextTradingDayWithHolidays();
+                  const nextTradingInfo = getEnhancedTradingDayInfo(nextTradingDay);
+                  
+                  return (
+                    <div className="mt-2 text-xs text-blue-700 bg-blue-100 rounded px-2 py-1">
+                      📅 Next trading day: {nextTradingInfo.name} ({nextTradingInfo.date})
+                    </div>
+                  );
+                })()}
                 {/* Dynamic day-specific messaging */}
                 {(() => {
                   const isWeekendNow = isCurrentDayWeekend();
@@ -1169,6 +1301,7 @@ export default function ETFPredictionsPage() {
                       <p><strong>Trading Days:</strong> Monday through Friday, 9:30 AM - 4:00 PM ET</p>
                       <p><strong>No Trading:</strong> Weekends (Saturday & Sunday) and market holidays</p>
                       <p><strong>Flow Predictions:</strong> Only calculated for actual trading days</p>
+                      <p><strong>Day Indicators:</strong> Shows specific days like "Tomorrow", "Next Monday", etc.</p>
                       <p><strong>Weekend Data:</strong> Charts may show weekend dates but flows are zero</p>
                     </div>
                   </div>
@@ -1179,7 +1312,7 @@ export default function ETFPredictionsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 {(() => {
                   const nextTradingDay = getNextTradingDayWithHolidays();
-                  const nextTradingInfo = getDetailedTradingDayInfo(nextTradingDay);
+                  const nextTradingInfo = getEnhancedTradingDayInfo(nextTradingDay);
                   const isWeekendNow = isCurrentDayWeekend();
                   const isHoliday = isMarketHoliday(new Date());
                   
@@ -1221,11 +1354,11 @@ export default function ETFPredictionsPage() {
                   return (
                     <>
                       <ForecastCard 
-                        title={dynamicMessaging.nextTradingDayTitle}
+                        title={`${nextTradingInfo.name} Trading Day`}
                         prediction={`$${tradingDayPredictions[0]?.flow?.toFixed(1) || 0}M`}
                         confidence={tradingDayPredictions[0]?.confidence || 0}
                         trend={tradingDayPredictions[0]?.trend || 'stable'}
-                        description={`${nextTradingInfo.date} - ${dynamicMessaging.nextTradingDayDescription}`}
+                        description={`${nextTradingInfo.date} - ${nextTradingInfo.description}`}
                         lastUpdated={data.lastUpdated}
                         dataPoints={data.individual?.length || 0}
                       />
