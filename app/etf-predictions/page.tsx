@@ -354,7 +354,13 @@ function PredictionChart({ data, loading, error }: {
     );
   }
 
-  const predictions = data.daily.slice(0, 7); // Show next 7 days
+  // Filter for business days only (exclude weekends)
+  const businessDayPredictions = data.daily.filter((_, index) => {
+    const predictionDate = new Date(data.daily[index].date);
+    return isBusinessDay(predictionDate);
+  });
+  
+  const predictions = businessDayPredictions.slice(0, 7); // Show next 7 trading days
   const maxFlow = Math.max(...predictions.map(p => p.flow));
   const avgConfidence = Math.round(
     predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length
@@ -363,8 +369,8 @@ function PredictionChart({ data, loading, error }: {
   return (
     <div className="w-full">
       <div className="mb-4">
-        <h4 className="text-lg font-semibold text-gray-900">7-Day Flow Forecast</h4>
-        <p className="text-sm text-gray-600">Trend-based predictions using historical data</p>
+        <h4 className="text-lg font-semibold text-gray-900">7-Day Trading Flow Forecast</h4>
+        <p className="text-sm text-gray-600">Next 7 trading days (excludes weekends) - Trend-based predictions using historical data</p>
       </div>
       
       {/* Chart Container */}
@@ -879,6 +885,22 @@ export default function ETFPredictionsPage() {
                 </div>
                 <div className="text-xs text-blue-600">
                   {getWeekendStatusMessage()}
+                </div>
+              </div>
+
+              {/* Contextual Explanations */}
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div className="flex items-start gap-2">
+                  <span className="text-amber-600 text-lg mt-0.5">ℹ️</span>
+                  <div>
+                    <h3 className="text-sm font-medium text-amber-900 mb-2">Bitcoin ETF Trading Calendar</h3>
+                    <div className="text-sm text-amber-800 space-y-1">
+                      <p><strong>Trading Days:</strong> Monday through Friday, 9:30 AM - 4:00 PM ET</p>
+                      <p><strong>No Trading:</strong> Weekends (Saturday & Sunday) and market holidays</p>
+                      <p><strong>Flow Predictions:</strong> Only calculated for actual trading days</p>
+                      <p><strong>Weekend Data:</strong> Charts may show weekend dates but flows are zero</p>
+                    </div>
+                  </div>
                 </div>
               </div>
               
