@@ -655,7 +655,7 @@ function PredictionChart({ data, loading, error }: {
     return (
       <div className="w-full">
         <div className="mb-4">
-          <h4 className="text-lg font-semibold text-gray-900">7-Day Flow Forecast</h4>
+          <h4 className="text-lg font-semibold text-gray-900">Trading Flow Forecast</h4>
           <p className="text-sm text-gray-600">Loading predictions...</p>
         </div>
         <div className="h-64 bg-gray-50 rounded-lg p-4 animate-pulse">
@@ -676,7 +676,7 @@ function PredictionChart({ data, loading, error }: {
     return (
       <div className="w-full">
         <div className="mb-4">
-          <h4 className="text-lg font-semibold text-gray-900">7-Day Flow Forecast</h4>
+          <h4 className="text-lg font-semibold text-gray-900">Trading Flow Forecast</h4>
           <p className="text-sm text-red-600">Unable to load chart data</p>
         </div>
         <div className="h-64 bg-red-50 rounded-lg p-4 flex items-center justify-center">
@@ -693,7 +693,7 @@ function PredictionChart({ data, loading, error }: {
     return (
       <div className="w-full">
         <div className="mb-4">
-          <h4 className="text-lg font-semibold text-gray-900">7-Day Flow Forecast</h4>
+          <h4 className="text-lg font-semibold text-gray-900">Trading Flow Forecast</h4>
           <p className="text-sm text-gray-600">No prediction data available</p>
         </div>
         <div className="h-64 bg-gray-50 rounded-lg p-4 flex items-center justify-center">
@@ -721,8 +721,8 @@ function PredictionChart({ data, loading, error }: {
   return (
     <div className="w-full">
       <div className="mb-4">
-        <h4 className="text-lg font-semibold text-gray-900">7-Day Trading Flow Forecast</h4>
-        <p className="text-sm text-gray-600">Next 7 trading days (excludes weekends and holidays) - Trend-based predictions using historical data</p>
+        <h4 className="text-lg font-semibold text-gray-900">{predictions.length}-Day Trading Flow Forecast</h4>
+        <p className="text-sm text-gray-600">Next {predictions.length} trading days (excludes weekends and holidays) - Trend-based predictions using historical data</p>
       </div>
       
       {/* Chart Container */}
@@ -770,7 +770,7 @@ function PredictionChart({ data, loading, error }: {
         </div>
         <div className="text-center">
           <div className="text-2xl font-bold text-blue-600">{avgConfidence}%</div>
-          <div className="text-xs text-gray-600">7-Day Average</div>
+          <div className="text-xs text-gray-600">{predictions.length}-Day Average</div>
         </div>
       </div>
     </div>
