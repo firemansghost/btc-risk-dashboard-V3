@@ -42,6 +42,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     factorMomentum: false,
     factorCorrelations: false,
     riskConcentration: false,
+    dataConfidence: false,
     areasOfConcern: false,
     currentStatus: false,
     recommendations: false
@@ -158,6 +159,149 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     
     // Sort by absolute change (most significant first)
     return factorMomentum.sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
+  };
+
+  // Get data confidence analysis
+  const getDataConfidence = () => {
+    if (!explanation || !explanation.keyDrivers || explanation.keyDrivers.length === 0) {
+      console.log('getDataConfidence: Insufficient data', {
+        hasExplanation: !!explanation,
+        keyDriversLength: explanation?.keyDrivers?.length || 0
+      });
+      return null;
+    }
+
+    const factors = explanation.keyDrivers;
+    
+    // Calculate confidence for each factor
+    const factorConfidences = factors.map(factor => {
+      // Determine data staleness
+      let stalenessLevel = 'fresh';
+      let stalenessHours = 0;
+      let stalenessIcon = '🟢';
+      let stalenessColor = 'green';
+      let stalenessText = 'Fresh';
+      
+      if (factor.status === 'stale') {
+        stalenessLevel = 'stale';
+        stalenessHours = 6; // Assume 6 hours for stale
+        stalenessIcon = '🟡';
+        stalenessColor = 'yellow';
+        stalenessText = 'Stale';
+      } else if (factor.status === 'very_stale') {
+        stalenessLevel = 'very_stale';
+        stalenessHours = 24; // Assume 24 hours for very stale
+        stalenessIcon = '🔴';
+        stalenessColor = 'red';
+        stalenessText = 'Very Stale';
+      }
+      
+      // Calculate confidence level based on staleness and other factors
+      let confidenceLevel = 'high';
+      let confidenceIcon = '🟢';
+      let confidenceColor = 'green';
+      let confidenceText = 'High';
+      let confidenceScore = 90;
+      
+      if (stalenessLevel === 'stale') {
+        confidenceLevel = 'medium';
+        confidenceIcon = '🟡';
+        confidenceColor = 'yellow';
+        confidenceText = 'Medium';
+        confidenceScore = 70;
+      } else if (stalenessLevel === 'very_stale') {
+        confidenceLevel = 'low';
+        confidenceIcon = '🔴';
+        confidenceColor = 'red';
+        confidenceText = 'Low';
+        confidenceScore = 40;
+      }
+      
+      // Generate confidence context
+      let confidenceContext = '';
+      if (confidenceLevel === 'high') {
+        confidenceContext = 'Data is fresh and reliable';
+      } else if (confidenceLevel === 'medium') {
+        confidenceContext = 'Data is somewhat stale but still usable';
+      } else {
+        confidenceContext = 'Data is very stale and may not reflect current conditions';
+      }
+      
+      return {
+        key: factor.key,
+        label: factor.label,
+        stalenessLevel,
+        stalenessHours,
+        stalenessIcon,
+        stalenessColor,
+        stalenessText,
+        confidenceLevel,
+        confidenceIcon,
+        confidenceColor,
+        confidenceText,
+        confidenceScore,
+        confidenceContext
+      };
+    });
+    
+    // Calculate overall confidence
+    const totalConfidenceScore = factorConfidences.reduce((sum, factor) => sum + factor.confidenceScore, 0);
+    const averageConfidenceScore = totalConfidenceScore / factorConfidences.length;
+    
+    let overallConfidenceLevel = 'high';
+    let overallConfidenceIcon = '🟢';
+    let overallConfidenceColor = 'green';
+    let overallConfidenceText = 'High';
+    
+    if (averageConfidenceScore < 60) {
+      overallConfidenceLevel = 'low';
+      overallConfidenceIcon = '🔴';
+      overallConfidenceColor = 'red';
+      overallConfidenceText = 'Low';
+    } else if (averageConfidenceScore < 80) {
+      overallConfidenceLevel = 'medium';
+      overallConfidenceIcon = '🟡';
+      overallConfidenceColor = 'yellow';
+      overallConfidenceText = 'Medium';
+    }
+    
+    // Generate overall confidence insight
+    const staleFactors = factorConfidences.filter(f => f.stalenessLevel !== 'fresh');
+    const lowConfidenceFactors = factorConfidences.filter(f => f.confidenceLevel === 'low');
+    
+    let overallInsight = '';
+    let overallRecommendation = '';
+    
+    if (staleFactors.length === 0) {
+      overallInsight = 'All data sources are fresh and reliable';
+      overallRecommendation = 'Data quality is excellent - proceed with confidence';
+    } else if (staleFactors.length === 1) {
+      overallInsight = `1 factor has stale data: ${staleFactors[0].label}`;
+      overallRecommendation = `Monitor ${staleFactors[0].label} for updates`;
+    } else {
+      overallInsight = `${staleFactors.length} factors have stale data: ${staleFactors.map(f => f.label).join(', ')}`;
+      overallRecommendation = `Monitor ${staleFactors.map(f => f.label).join(', ')} for updates`;
+    }
+    
+    console.log('getDataConfidence: Analysis complete', {
+      averageConfidenceScore,
+      overallConfidenceLevel,
+      staleFactorsCount: staleFactors.length,
+      lowConfidenceFactorsCount: lowConfidenceFactors.length
+    });
+    
+    return {
+      overallConfidenceLevel,
+      overallConfidenceIcon,
+      overallConfidenceColor,
+      overallConfidenceText,
+      averageConfidenceScore,
+      factorConfidences,
+      staleFactors,
+      lowConfidenceFactors,
+      overallInsight,
+      overallRecommendation
+    };
   };
 
   // Get risk concentration analysis
@@ -1282,6 +1426,119 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
                        factor.trend === 'declining' ? '📉 Declining' : '➡️ Stable'} 
                       - {factor.absoluteContribution.toFixed(1)} points contribution
                     </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Data Confidence */}
+      {getDataConfidence() && (
+        <div className="mb-4">
+          <div 
+            className="text-xs font-medium text-gray-600 mb-3 flex items-center justify-between cursor-pointer hover:text-gray-800"
+            onClick={() => toggleSection('dataConfidence')}
+          >
+            <div className="flex items-center gap-2">
+              <span>📊</span>
+              <span>Data Confidence</span>
+            </div>
+            <span className="text-lg transition-transform duration-200">
+              {expandedSections.dataConfidence ? '🔽' : '▶️'}
+            </span>
+          </div>
+          {expandedSections.dataConfidence && (
+            <div className="space-y-4">
+              {/* Overall Confidence Indicator */}
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-100 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{getDataConfidence()!.overallConfidenceIcon}</span>
+                    <span className="text-sm font-medium text-gray-900">Overall Confidence</span>
+                  </div>
+                  <div className={`text-sm font-bold ${
+                    getDataConfidence()!.overallConfidenceColor === 'red' ? 'text-red-600' : 
+                    getDataConfidence()!.overallConfidenceColor === 'yellow' ? 'text-yellow-600' : 'text-green-600'
+                  }`}>
+                    {getDataConfidence()!.overallConfidenceText} ({getDataConfidence()!.averageConfidenceScore.toFixed(0)}%)
+                  </div>
+                </div>
+                
+                {/* Confidence Bar */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                    <span>Data Quality Score</span>
+                    <span>{getDataConfidence()!.averageConfidenceScore.toFixed(0)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${
+                        getDataConfidence()!.overallConfidenceColor === 'red' ? 'bg-red-500' : 
+                        getDataConfidence()!.overallConfidenceColor === 'yellow' ? 'bg-yellow-500' : 'bg-green-500'
+                      }`}
+                      style={{ width: `${Math.min(100, getDataConfidence()!.averageConfidenceScore)}%` }}
+                    ></div>
+                  </div>
+                </div>
+                
+                <div className="text-xs text-gray-600 mb-2">
+                  {getDataConfidence()!.overallInsight}
+                </div>
+                <div className="text-xs text-green-600 italic">
+                  💡 {getDataConfidence()!.overallRecommendation}
+                </div>
+              </div>
+              
+              {/* Factor Confidence Breakdown */}
+              <div className="space-y-2">
+                <div className="text-xs font-medium text-gray-600 mb-2">Factor Data Quality</div>
+                {getDataConfidence()!.factorConfidences.map((factor, idx) => (
+                  <div key={idx} className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{getFactorIcon(factor.key)}</span>
+                        <span className="text-sm font-medium text-gray-900">{factor.label}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm font-bold ${
+                          factor.confidenceColor === 'red' ? 'text-red-600' : 
+                          factor.confidenceColor === 'yellow' ? 'text-yellow-600' : 'text-green-600'
+                        }`}>
+                          {factor.confidenceIcon} {factor.confidenceText}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {factor.confidenceScore}%
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Confidence Bar */}
+                    <div className="mb-2">
+                      <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                        <span>Data Quality</span>
+                        <span>{factor.confidenceScore}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div 
+                          className={`h-1.5 rounded-full ${
+                            factor.confidenceColor === 'red' ? 'bg-red-500' : 
+                            factor.confidenceColor === 'yellow' ? 'bg-yellow-500' : 'bg-green-500'
+                          }`}
+                          style={{ width: `${Math.min(100, factor.confidenceScore)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div className="text-xs text-gray-600 mb-1">
+                      {factor.stalenessIcon} {factor.stalenessText} - {factor.confidenceContext}
+                    </div>
+                    {factor.stalenessLevel !== 'fresh' && (
+                      <div className="text-xs text-orange-600 italic">
+                        ⚠️ Data may not reflect current conditions
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
