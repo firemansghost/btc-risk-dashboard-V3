@@ -692,6 +692,48 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         </div>
       </div>
 
+      {/* Key Drivers */}
+      <div className="mb-4">
+        <div className="text-xs font-medium text-gray-600 mb-2">Key Drivers</div>
+        <div className="space-y-2">
+          {explanation.keyDrivers.slice(0, expanded ? undefined : 2).map((driver, idx) => (
+            <div key={idx} className="bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{getFactorIcon(driver.key)}</span>
+                  <span className="text-sm font-medium text-gray-900">{driver.label}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-blue-600">
+                    +{driver.contribution.toFixed(1)}
+                  </span>
+                  <span className={`text-xs ${getTrendColor(driver.trend)}`}>
+                    {getTrendIcon(driver.trend)}
+                  </span>
+                </div>
+              </div>
+              
+              {/* Contribution Bar */}
+              <div className="mb-2">
+                <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                  <span>Contribution</span>
+                  <span>{driver.contribution.toFixed(1)} points</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div 
+                    className={`h-1.5 rounded-full ${getContributionColor(driver.contribution)}`}
+                    style={{ width: `${Math.min(driver.contribution * 10, 100)}%` }}
+                  ></div>
+                </div>
+              </div>
+              
+              <div className="text-xs text-gray-600 mb-1">{driver.explanation}</div>
+              <div className="text-xs text-blue-600 italic">{driver.context}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Factor Volatility Analysis */}
       {getFactorVolatility() && (
         <div className="mb-4">
