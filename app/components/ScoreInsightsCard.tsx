@@ -168,12 +168,12 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       keyDriversLength: explanation?.keyDrivers?.length || 0
     });
     
-    if (!explanation || !historicalData?.points || historicalData.points.length < 2) {
+    if (!explanation || !historicalData?.points || historicalData.points.length < 1) {
       console.log('getFactorCorrelations: Insufficient data', {
         hasExplanation: !!explanation,
         hasHistoricalData: !!historicalData,
         pointsLength: historicalData?.points?.length || 0,
-        required: 2
+        required: 1
       });
       return null;
     }
@@ -206,43 +206,55 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
           factorBScores: factorBScores.slice(0, 3)
         });
         
-        if (factorAScores.length < 2 || factorBScores.length < 2) {
+        if (factorAScores.length < 1 || factorBScores.length < 1) {
           console.log(`getFactorCorrelations: Skipping ${factorA.key} vs ${factorB.key} - insufficient data`);
           continue;
         }
         
-        // Calculate Pearson correlation coefficient
-        const correlation = calculateCorrelation(factorAScores, factorBScores);
+        // For single data point, show current scores as baseline
+        let correlation, strength, direction, icon, color, context;
         
-        // Determine correlation strength and direction
-        let strength = 'weak';
-        let direction = 'neutral';
-        let icon = '➡️';
-        let color = 'gray';
-        
-        if (Math.abs(correlation) >= 0.7) {
-          strength = 'strong';
-        } else if (Math.abs(correlation) >= 0.4) {
-          strength = 'moderate';
-        }
-        
-        if (correlation > 0.3) {
-          direction = 'positive';
-          icon = '📈📈';
-          color = 'green';
-        } else if (correlation < -0.3) {
-          direction = 'negative';
-          icon = '📉📈';
-          color = 'red';
-        }
-        
-        let context = '';
-        if (direction === 'positive') {
-          context = `${factorA.label} and ${factorB.label} move together - when one rises, the other tends to rise`;
-        } else if (direction === 'negative') {
-          context = `${factorA.label} and ${factorB.label} move opposite - when one rises, the other tends to fall`;
+        if (factorAScores.length === 1 && factorBScores.length === 1) {
+          correlation = 0; // No correlation with single point
+          strength = 'stable';
+          direction = 'baseline';
+          icon = '📊📊';
+          color = 'gray';
+          context = `${factorA.label} (${factorAScores[0].toFixed(1)}) and ${factorB.label} (${factorBScores[0].toFixed(1)}) - correlation analysis requires more historical data`;
         } else {
-          context = `${factorA.label} and ${factorB.label} show little relationship`;
+          // Calculate Pearson correlation coefficient for multiple data points
+          correlation = calculateCorrelation(factorAScores, factorBScores);
+          
+          // Determine correlation strength and direction
+          strength = 'weak';
+          direction = 'neutral';
+          icon = '➡️';
+          color = 'gray';
+          
+          if (Math.abs(correlation) >= 0.7) {
+            strength = 'strong';
+          } else if (Math.abs(correlation) >= 0.4) {
+            strength = 'moderate';
+          }
+          
+          if (correlation > 0.3) {
+            direction = 'positive';
+            icon = '📈📈';
+            color = 'green';
+          } else if (correlation < -0.3) {
+            direction = 'negative';
+            icon = '📉📈';
+            color = 'red';
+          }
+          
+          context = '';
+          if (direction === 'positive') {
+            context = `${factorA.label} and ${factorB.label} move together - when one rises, the other tends to rise`;
+          } else if (direction === 'negative') {
+            context = `${factorA.label} and ${factorB.label} move opposite - when one rises, the other tends to fall`;
+          } else {
+            context = `${factorA.label} and ${factorB.label} show little relationship`;
+          }
         }
         
         correlations.push({
