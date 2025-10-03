@@ -41,6 +41,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     factorVolatility: false,
     factorMomentum: false,
     factorCorrelations: false,
+    riskConcentration: false,
     areasOfConcern: false,
     currentStatus: false,
     recommendations: false
@@ -157,6 +158,98 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     
     // Sort by absolute change (most significant first)
     return factorMomentum.sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
+  };
+
+  // Get risk concentration analysis
+  const getRiskConcentration = () => {
+    if (!explanation || !explanation.keyDrivers || explanation.keyDrivers.length === 0) {
+      console.log('getRiskConcentration: Insufficient data', {
+        hasExplanation: !!explanation,
+        keyDriversLength: explanation?.keyDrivers?.length || 0
+      });
+      return null;
+    }
+
+    const factors = explanation.keyDrivers;
+    
+    // Calculate total contribution from all factors
+    const totalContribution = factors.reduce((sum, factor) => sum + Math.abs(factor.contribution), 0);
+    
+    if (totalContribution === 0) {
+      console.log('getRiskConcentration: No contributions found');
+      return null;
+    }
+    
+    // Calculate each factor's percentage of total risk
+    const factorContributions = factors.map(factor => ({
+      key: factor.key,
+      label: factor.label,
+      contribution: factor.contribution,
+      absoluteContribution: Math.abs(factor.contribution),
+      percentage: (Math.abs(factor.contribution) / totalContribution) * 100,
+      trend: factor.trend
+    }));
+    
+    // Sort by absolute contribution (highest first)
+    const sortedContributions = factorContributions.sort((a, b) => b.absoluteContribution - a.absoluteContribution);
+    
+    // Calculate concentration metrics
+    const top2Percentage = sortedContributions.slice(0, 2).reduce((sum, factor) => sum + factor.percentage, 0);
+    const top3Percentage = sortedContributions.slice(0, 3).reduce((sum, factor) => sum + factor.percentage, 0);
+    
+    // Determine concentration level
+    let concentrationLevel = 'low';
+    let concentrationColor = 'green';
+    let concentrationIcon = '🟢';
+    let concentrationText = 'Low';
+    
+    if (top2Percentage >= 70) {
+      concentrationLevel = 'high';
+      concentrationColor = 'red';
+      concentrationIcon = '🔴';
+      concentrationText = 'High';
+    } else if (top2Percentage >= 50) {
+      concentrationLevel = 'medium';
+      concentrationColor = 'yellow';
+      concentrationIcon = '🟡';
+      concentrationText = 'Medium';
+    }
+    
+    // Generate concentration insights
+    let concentrationInsight = '';
+    let recommendation = '';
+    
+    if (concentrationLevel === 'high') {
+      concentrationInsight = `Risk is highly concentrated - ${top2Percentage.toFixed(0)}% comes from just 2 factors`;
+      recommendation = 'Monitor top factors closely as they drive most of the risk';
+    } else if (concentrationLevel === 'medium') {
+      concentrationInsight = `Risk is moderately concentrated - ${top2Percentage.toFixed(0)}% comes from top 2 factors`;
+      recommendation = 'Risk is reasonably distributed but keep an eye on top contributors';
+    } else {
+      concentrationInsight = `Risk is well distributed - ${top2Percentage.toFixed(0)}% from top 2 factors`;
+      recommendation = 'Good diversification - risk is spread across multiple factors';
+    }
+    
+    console.log('getRiskConcentration: Analysis complete', {
+      totalContribution,
+      top2Percentage,
+      top3Percentage,
+      concentrationLevel,
+      factorCount: factors.length
+    });
+    
+    return {
+      concentrationLevel,
+      concentrationColor,
+      concentrationIcon,
+      concentrationText,
+      top2Percentage,
+      top3Percentage,
+      totalContribution,
+      factorContributions: sortedContributions,
+      concentrationInsight,
+      recommendation
+    };
   };
 
   // Get factor correlation analysis
@@ -1084,6 +1177,110 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Risk Concentration */}
+      {getRiskConcentration() && (
+        <div className="mb-4">
+          <div 
+            className="text-xs font-medium text-gray-600 mb-3 flex items-center justify-between cursor-pointer hover:text-gray-800"
+            onClick={() => toggleSection('riskConcentration')}
+          >
+            <div className="flex items-center gap-2">
+              <span>🔍</span>
+              <span>Risk Concentration</span>
+            </div>
+            <span className="text-lg transition-transform duration-200">
+              {expandedSections.riskConcentration ? '🔽' : '▶️'}
+            </span>
+          </div>
+          {expandedSections.riskConcentration && (
+            <div className="space-y-4">
+              {/* Concentration Level Indicator */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{getRiskConcentration()!.concentrationIcon}</span>
+                    <span className="text-sm font-medium text-gray-900">Concentration Level</span>
+                  </div>
+                  <div className={`text-sm font-bold ${
+                    getRiskConcentration()!.concentrationColor === 'red' ? 'text-red-600' : 
+                    getRiskConcentration()!.concentrationColor === 'yellow' ? 'text-yellow-600' : 'text-green-600'
+                  }`}>
+                    {getRiskConcentration()!.concentrationText}
+                  </div>
+                </div>
+                
+                {/* Concentration Bar */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                    <span>Top 2 Factors</span>
+                    <span>{getRiskConcentration()!.top2Percentage.toFixed(0)}% of total risk</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${
+                        getRiskConcentration()!.concentrationColor === 'red' ? 'bg-red-500' : 
+                        getRiskConcentration()!.concentrationColor === 'yellow' ? 'bg-yellow-500' : 'bg-green-500'
+                      }`}
+                      style={{ width: `${Math.min(100, getRiskConcentration()!.top2Percentage)}%` }}
+                    ></div>
+                  </div>
+                </div>
+                
+                <div className="text-xs text-gray-600 mb-2">
+                  {getRiskConcentration()!.concentrationInsight}
+                </div>
+                <div className="text-xs text-blue-600 italic">
+                  💡 {getRiskConcentration()!.recommendation}
+                </div>
+              </div>
+              
+              {/* Factor Contribution Breakdown */}
+              <div className="space-y-2">
+                <div className="text-xs font-medium text-gray-600 mb-2">Factor Risk Distribution</div>
+                {getRiskConcentration()!.factorContributions.map((factor, idx) => (
+                  <div key={idx} className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{getFactorIcon(factor.key)}</span>
+                        <span className="text-sm font-medium text-gray-900">{factor.label}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-blue-600">
+                          {factor.contribution > 0 ? '+' : ''}{factor.contribution.toFixed(1)}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {factor.percentage.toFixed(0)}%
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Contribution Bar */}
+                    <div className="mb-2">
+                      <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                        <span>Risk Contribution</span>
+                        <span>{factor.percentage.toFixed(1)}% of total</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div 
+                          className="h-1.5 rounded-full bg-blue-500"
+                          style={{ width: `${Math.min(100, factor.percentage)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div className="text-xs text-gray-600">
+                      {factor.trend === 'improving' ? '📈 Improving' : 
+                       factor.trend === 'declining' ? '📉 Declining' : '➡️ Stable'} 
+                      - {factor.absoluteContribution.toFixed(1)} points contribution
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
