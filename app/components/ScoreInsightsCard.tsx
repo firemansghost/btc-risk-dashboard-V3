@@ -1169,45 +1169,84 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             }
             
             return highRiskFactors.map((factor, idx) => (
-              <div key={idx} className="bg-white rounded-lg p-4 border border-red-200 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{getFactorIcon(factor.key)}</span>
-                    <span className="text-sm font-medium text-gray-900">{factor.label}</span>
+              <div key={idx} className="bg-white rounded-lg p-4 border border-red-200 shadow-sm hover:shadow-md transition-all duration-200">
+                {/* Header with Risk Level Indicator */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-red-100 p-2 rounded-lg">
+                      <span className="text-lg">{getFactorIcon(factor.key)}</span>
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-semibold text-gray-900">{factor.label}</h5>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          factor.score > 80 ? 'bg-red-100 text-red-800' : 
+                          factor.score > 60 ? 'bg-orange-100 text-orange-800' : 
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {factor.score > 80 ? '🔴 Critical Risk' : 
+                           factor.score > 60 ? '🟠 High Risk' : 
+                           '🟡 Elevated Risk'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-red-600">
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-red-600">
                       {factor.score}
-                    </span>
-                    <span className="text-xs text-gray-500">/ 100</span>
+                    </div>
+                    <div className="text-xs text-gray-500">/ 100</div>
                   </div>
                 </div>
-                <div className="text-xs text-gray-600">
-                  {(() => {
-                    // Generate contextual explanations based on factor and score
-                    const factorKey = factor.key;
-                    const score = factor.score;
-                    
-                    if (factorKey === 'onchain' && score > 80) {
-                      return 'At ATHs, on-chain metrics often show distribution signals';
-                    } else if (factorKey === 'etf_flows' && score > 60) {
-                      return 'High concentration risk as institutions take profits';
-                    } else if (factorKey === 'trend_valuation' && score > 50) {
-                      return 'Price above historical norms (Mayer Multiple 1.17)';
-                    } else if (factorKey === 'social_interest' && score > 70) {
-                      return 'Excessive social media hype and FOMO sentiment';
-                    } else if (factorKey === 'term_leverage' && score > 60) {
-                      return 'High leverage and funding rate pressure';
-                    } else if (factorKey === 'stablecoins' && score > 60) {
-                      return 'Stablecoin supply contraction indicating selling pressure';
-                    } else if (factorKey === 'macro_overlay' && score > 60) {
-                      return 'Macro headwinds and liquidity concerns';
-                    } else if (factorKey === 'net_liquidity' && score > 60) {
-                      return 'Liquidity contraction and monetary tightening';
-                    } else {
-                      return 'Elevated risk indicators detected';
-                    }
-                  })()}
+
+                {/* Risk Score Bar */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                    <span>Risk Level</span>
+                    <span>{factor.score > 80 ? 'Critical' : factor.score > 60 ? 'High' : 'Elevated'}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${
+                        factor.score > 80 ? 'bg-red-500' : 
+                        factor.score > 60 ? 'bg-orange-500' : 
+                        'bg-yellow-500'
+                      }`}
+                      style={{ width: `${Math.min(factor.score, 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Contextual Explanation */}
+                <div className="bg-red-50 rounded-lg p-3 border border-red-100">
+                  <div className="text-xs text-red-800 font-medium mb-1">⚠️ Risk Context</div>
+                  <div className="text-xs text-red-700">
+                    {(() => {
+                      // Generate contextual explanations based on factor and score
+                      const factorKey = factor.key;
+                      const score = factor.score;
+                      
+                      if (factorKey === 'onchain' && score > 80) {
+                        return 'At ATHs, on-chain metrics often show distribution signals from whales and institutions taking profits';
+                      } else if (factorKey === 'etf_flows' && score > 60) {
+                        return 'High concentration risk as institutions take profits and reduce exposure';
+                      } else if (factorKey === 'trend_valuation' && score > 50) {
+                        return 'Price above historical norms (Mayer Multiple 1.17) indicating potential overvaluation';
+                      } else if (factorKey === 'social_interest' && score > 70) {
+                        return 'Excessive social media hype and FOMO sentiment creating bubble conditions';
+                      } else if (factorKey === 'term_leverage' && score > 60) {
+                        return 'High leverage and funding rate pressure indicating speculative positioning';
+                      } else if (factorKey === 'stablecoins' && score > 60) {
+                        return 'Stablecoin supply contraction indicating selling pressure and reduced liquidity';
+                      } else if (factorKey === 'macro_overlay' && score > 60) {
+                        return 'Macro headwinds and liquidity concerns affecting market sentiment';
+                      } else if (factorKey === 'net_liquidity' && score > 60) {
+                        return 'Liquidity contraction and monetary tightening reducing market support';
+                      } else {
+                        return 'Elevated risk indicators detected requiring close monitoring';
+                      }
+                    })()}
+                  </div>
                 </div>
               </div>
             ));
@@ -1241,39 +1280,78 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             }
             
             return lowRiskFactors.map((factor, idx) => (
-              <div key={idx} className="bg-white rounded-lg p-4 border border-green-200 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{getFactorIcon(factor.key)}</span>
-                    <span className="text-sm font-medium text-gray-900">{factor.label}</span>
+              <div key={idx} className="bg-white rounded-lg p-4 border border-green-200 shadow-sm hover:shadow-md transition-all duration-200">
+                {/* Header with Risk Level Indicator */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-green-100 p-2 rounded-lg">
+                      <span className="text-lg">{getFactorIcon(factor.key)}</span>
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-semibold text-gray-900">{factor.label}</h5>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          factor.score < 30 ? 'bg-green-100 text-green-800' : 
+                          factor.score < 40 ? 'bg-blue-100 text-blue-800' : 
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {factor.score < 30 ? '🟢 Low Risk' : 
+                           factor.score < 40 ? '🔵 Very Low Risk' : 
+                           '🟡 Moderate Risk'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-green-600">
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-green-600">
                       {factor.score}
-                    </span>
-                    <span className="text-xs text-gray-500">/ 100</span>
+                    </div>
+                    <div className="text-xs text-gray-500">/ 100</div>
                   </div>
                 </div>
-                <div className="text-xs text-gray-600">
-                  {(() => {
-                    // Generate contextual explanations based on factor and score
-                    const factorKey = factor.key;
-                    const score = factor.score;
-                    
-                    if (factorKey === 'stablecoins' && score < 40) {
-                      return 'Healthy stablecoin dynamics - no panic selling detected';
-                    } else if (factorKey === 'social_interest' && score < 45) {
-                      return 'Low social media hype - avoiding FOMO sentiment';
-                    } else if (factorKey === 'term_leverage' && score < 50) {
-                      return 'Reasonable leverage levels - no excessive funding pressure';
-                    } else if (factorKey === 'macro_overlay' && score < 50) {
-                      return 'Stable macro environment - no major headwinds';
-                    } else if (factorKey === 'net_liquidity' && score < 50) {
-                      return 'Adequate liquidity conditions - no major tightening';
-                    } else {
-                      return 'Low risk indicators - contributing to market stability';
-                    }
-                  })()}
+
+                {/* Risk Score Bar */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                    <span>Risk Level</span>
+                    <span>{factor.score < 30 ? 'Low' : factor.score < 40 ? 'Very Low' : 'Moderate'}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${
+                        factor.score < 30 ? 'bg-green-500' : 
+                        factor.score < 40 ? 'bg-blue-500' : 
+                        'bg-yellow-500'
+                      }`}
+                      style={{ width: `${Math.min(factor.score, 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Contextual Explanation */}
+                <div className="bg-green-50 rounded-lg p-3 border border-green-100">
+                  <div className="text-xs text-green-800 font-medium mb-1">✅ Stability Context</div>
+                  <div className="text-xs text-green-700">
+                    {(() => {
+                      // Generate contextual explanations based on factor and score
+                      const factorKey = factor.key;
+                      const score = factor.score;
+                      
+                      if (factorKey === 'stablecoins' && score < 40) {
+                        return 'Healthy stablecoin dynamics with no panic selling detected, indicating stable market conditions';
+                      } else if (factorKey === 'social_interest' && score < 45) {
+                        return 'Low social media hype avoiding FOMO sentiment, reducing bubble risk';
+                      } else if (factorKey === 'term_leverage' && score < 50) {
+                        return 'Reasonable leverage levels with no excessive funding pressure, indicating healthy speculation';
+                      } else if (factorKey === 'macro_overlay' && score < 50) {
+                        return 'Stable macro environment with no major headwinds affecting market sentiment';
+                      } else if (factorKey === 'net_liquidity' && score < 50) {
+                        return 'Adequate liquidity conditions with no major tightening, supporting market stability';
+                      } else {
+                        return 'Low risk indicators contributing to overall market stability and reduced volatility';
+                      }
+                    })()}
+                  </div>
                 </div>
               </div>
             ));
