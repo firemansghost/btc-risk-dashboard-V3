@@ -404,6 +404,67 @@ async function computeNetLiquidity() {
   }
 }
 
+// Helper function to calculate weighted average of all stablecoins
+function calculateWeightedStablecoinChanges(responses, stablecoins) {
+  const weightedChanges = [];
+  
+  // Process each stablecoin's data
+  const coinData = [];
+  for (let i = 0; i < responses.length; i++) {
+    const response = responses[i];
+    const coin = stablecoins[i];
+    
+    if (response?.market_caps) {
+      const marketCaps = response.market_caps.map(([timestamp, cap]) => cap).filter(Number.isFinite);
+      coinData.push({
+        symbol: coin.symbol,
+        weight: coin.weight,
+        marketCaps: marketCaps
+      });
+    }
+  }
+  
+  if (coinData.length === 0) return [];
+  
+  // Calculate 30-day changes for each coin
+  const coinChanges = [];
+  for (const coin of coinData) {
+    const changes = [];
+    for (let i = 30; i < coin.marketCaps.length; i++) {
+      const current = coin.marketCaps[i];
+      const past = coin.marketCaps[i - 30];
+      if (Number.isFinite(current) && Number.isFinite(past) && past !== 0) {
+        changes.push((current - past) / past);
+      }
+    }
+    coinChanges.push({
+      symbol: coin.symbol,
+      weight: coin.weight,
+      changes: changes
+    });
+  }
+  
+  // Calculate weighted average for each time period
+  const maxLength = Math.max(...coinChanges.map(c => c.changes.length));
+  for (let i = 0; i < maxLength; i++) {
+    let weightedSum = 0;
+    let totalWeight = 0;
+    
+    for (const coin of coinChanges) {
+      if (i < coin.changes.length && Number.isFinite(coin.changes[i])) {
+        weightedSum += coin.changes[i] * coin.weight;
+        totalWeight += coin.weight;
+      }
+    }
+    
+    if (totalWeight > 0) {
+      weightedChanges.push(weightedSum / totalWeight);
+    }
+  }
+  
+  return weightedChanges;
+}
+
 // Helper functions for data format conversion
 function convertCmcToCoinGeckoFormat(cmcData, symbol) {
   try {
@@ -692,19 +753,10 @@ async function computeStablecoins() {
       changeSeries = historicalBaseline.changeSeries;
       console.log(`Stablecoins: Using historical baseline with ${changeSeries.length} data points for percentile calculation`);
     } else {
-      // Fallback: Build series from current data (less accurate)
-      const usdtData = responses[0]; // USDT is first
-      if (usdtData?.market_caps) {
-        const marketCaps = usdtData.market_caps.map(([timestamp, cap]) => cap).filter(Number.isFinite);
-        for (let i = 30; i < marketCaps.length; i++) {
-          const current = marketCaps[i];
-          const past = marketCaps[i - 30];
-          if (Number.isFinite(current) && Number.isFinite(past) && past !== 0) {
-            changeSeries.push((current - past) / past);
-          }
-        }
-      }
-      console.log(`Stablecoins: Using fallback series with ${changeSeries.length} data points`);
+      // Fallback: Build weighted average series from current data
+      const weightedChanges = calculateWeightedStablecoinChanges(responses, stablecoins);
+      changeSeries = weightedChanges;
+      console.log(`Stablecoins: Using weighted average fallback series with ${changeSeries.length} data points (USDT: ${stablecoins[0].weight}, USDC: ${stablecoins[1].weight}, DAI: ${stablecoins[2].weight})`);
     }
 
     if (changeSeries.length === 0) {
@@ -731,19 +783,9 @@ async function computeStablecoins() {
         const fs = await import('node:fs');
         const path = await import('node:path');
         
-        // Build new change series from current data
-        const newChangeSeries = [];
-        const usdtData = responses[0]; // USDT is first
-        if (usdtData?.market_caps) {
-          const marketCaps = usdtData.market_caps.map(([timestamp, cap]) => cap).filter(Number.isFinite);
-          for (let i = 30; i < marketCaps.length; i++) {
-            const current = marketCaps[i];
-            const past = marketCaps[i - 30];
-            if (Number.isFinite(current) && Number.isFinite(past) && past !== 0) {
-              newChangeSeries.push((current - past) / past);
-            }
-          }
-        }
+        // Build new weighted average change series from current data
+        const newChangeSeries = calculateWeightedStablecoinChanges(responses, stablecoins);
+        console.log(`Stablecoins: Calculated weighted average changes: ${newChangeSeries.length} data points`);
         
         // Merge with existing historical data (365-day rolling window)
         let updatedChangeSeries = [];
@@ -786,6 +828,7 @@ async function computeStablecoins() {
         { label: "Growth Momentum", value: recentMomentum > 1 ? "Accelerating" : recentMomentum > 0.5 ? "Steady" : "Decelerating" },
         { label: "Market Concentration", value: `HHI: ${(hhi * 10000).toFixed(0)}` },
         { label: "Supply Growth Percentile", value: `${(supplyPercentile * 100).toFixed(0)}%` },
+        { label: "Historical Baseline", value: `${changeSeries.length} data points (weighted average)` },
         { label: "Component Scores", value: `Supply: ${supplyScore}, Momentum: ${momentumScore}, Concentration: ${concentrationRiskScore}` }
       ]
     };
