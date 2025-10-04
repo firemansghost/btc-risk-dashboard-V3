@@ -26,11 +26,11 @@
     },
     "stablecoins": {
       "dataPoints": 37,
-      "mean": 62.22,
-      "stdDev": 18.22,
-      "min": 33,
+      "mean": 62.24,
+      "stdDev": 18.17,
+      "min": 34,
       "max": 95,
-      "range": 62,
+      "range": 61,
       "statusCounts": {
         "fresh": 37,
         "excluded": 1
