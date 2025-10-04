@@ -37,14 +37,11 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
   const [expanded, setExpanded] = useState(false);
   const [historicalData, setHistoricalData] = useState<any>(null);
   const [expandedSections, setExpandedSections] = useState({
-    keyDrivers: false,
     factorVolatility: false,
     factorMomentum: false,
     factorCorrelations: false,
     riskConcentration: false,
     dataConfidence: false,
-    areasOfConcern: false,
-    currentStatus: false,
     recommendations: false
   });
 
@@ -1497,57 +1494,6 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         </div>
       </div>
 
-      {/* Key Drivers */}
-      <div className="mb-4">
-        <div 
-          className="text-xs font-medium text-gray-600 mb-2 cursor-pointer hover:text-gray-800 flex items-center justify-between"
-          onClick={() => toggleSection('keyDrivers')}
-        >
-          <span>Key Drivers ({explanation.keyDrivers.length})</span>
-          <span className="text-lg transition-transform duration-200">
-            {expandedSections.keyDrivers ? '🔽' : '▶️'}
-          </span>
-        </div>
-        {expandedSections.keyDrivers && (
-          <div className="space-y-2">
-            {explanation.keyDrivers.map((driver, idx) => (
-              <div key={idx} className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{getFactorIcon(driver.key)}</span>
-                    <span className="text-sm font-medium text-gray-900">{driver.label}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-blue-600">
-                      +{driver.contribution.toFixed(1)}
-                    </span>
-                    <span className={`text-xs ${getTrendColor(driver.trend)}`}>
-                      {getTrendIcon(driver.trend)}
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Contribution Bar */}
-                <div className="mb-2">
-                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                    <span>Contribution</span>
-                    <span>{driver.contribution.toFixed(1)} points</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
-                    <div 
-                      className={`h-1.5 rounded-full ${getContributionColor(driver.contribution)}`}
-                      style={{ width: `${Math.min(driver.contribution * 10, 100)}%` }}
-                    ></div>
-                  </div>
-                </div>
-                
-                <div className="text-xs text-gray-600 mb-1">{driver.explanation}</div>
-                <div className="text-xs text-blue-600 italic">{driver.context}</div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
       {/* Factor Volatility Analysis */}
       {getFactorVolatility() && (
@@ -1952,69 +1898,8 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         </div>
       )}
 
-      {/* Areas of Concern */}
-      <div className="mb-4">
-        <div 
-          className="text-xs font-medium text-gray-600 mb-2 cursor-pointer hover:text-gray-800 flex items-center justify-between"
-          onClick={() => toggleSection('areasOfConcern')}
-        >
-          <span>Areas of Concern ({explanation.concerns.length})</span>
-          <span className="text-lg transition-transform duration-200">
-            {expandedSections.areasOfConcern ? '🔽' : '▶️'}
-          </span>
-        </div>
-        {expandedSections.areasOfConcern && (
-        <div className="space-y-2">
-          {explanation.concerns.map((concern, idx) => (
-            <div key={idx} className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{getFactorIcon(concern.key)}</span>
-                  <span className="text-sm font-medium text-gray-900">{concern.label}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-red-600">
-                    {concern.contribution.toFixed(1)}
-                  </span>
-                  <span className={`text-xs ${getTrendColor(concern.trend)}`}>
-                    {getTrendIcon(concern.trend)}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="text-xs text-gray-600 mb-1">{concern.explanation}</div>
-              <div className="text-xs text-red-600 italic">{concern.context}</div>
-            </div>
-          ))}
-        </div>
-        )}
-      </div>
 
 
-      {/* Current Status */}
-      <div className="mb-4">
-        <div 
-          className="text-xs font-medium text-gray-600 mb-2 cursor-pointer hover:text-gray-800 flex items-center justify-between"
-          onClick={() => toggleSection('currentStatus')}
-        >
-          <span>Current Status ({explanation.insights.length})</span>
-          <span className="text-lg transition-transform duration-200">
-            {expandedSections.currentStatus ? '🔽' : '▶️'}
-          </span>
-        </div>
-        {expandedSections.currentStatus && (
-        <div className="space-y-2">
-          {explanation.insights.map((insight, idx) => (
-            <div key={idx} className="bg-blue-50 border border-blue-200 rounded-lg p-2">
-              <div className="text-xs text-gray-700 flex items-center gap-2">
-                <span className="text-blue-500">📊</span>
-                <span>{insight}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-        )}
-      </div>
 
       {/* Recommendations */}
       <div className="border-t border-gray-100 pt-3">
