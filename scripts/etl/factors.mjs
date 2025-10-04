@@ -404,56 +404,95 @@ async function computeNetLiquidity() {
   }
 }
 
-// 4. STABLECOINS (Multi-stablecoin analysis)
+// 4. STABLECOINS (Multi-stablecoin analysis with caching)
 async function computeStablecoins() {
   try {
-    // Fetch multiple major stablecoins sequentially to avoid rate limiting
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const cacheDir = 'public/data/cache/stablecoins';
+    const cacheFile = `${cacheDir}/${today}.json`;
+    
+    // Try to read from cache first (if today's data exists)
+    let cachedData = null;
+    let fromCache = false;
+    
+    try {
+      const fs = await import('node:fs');
+      if (fs.existsSync(cacheFile)) {
+        const cacheContent = fs.readFileSync(cacheFile, 'utf8');
+        cachedData = JSON.parse(cacheContent);
+        fromCache = true;
+        console.log(`Stablecoins: Using cached data from ${today}`);
+      }
+    } catch (error) {
+      // Cache read failed, continue to live fetch
+    }
+    
+    // Define stablecoins array (used in both cached and live data paths)
     const stablecoins = [
       { id: 'tether', symbol: 'USDT', weight: 0.65 }, // Market leader
       { id: 'usd-coin', symbol: 'USDC', weight: 0.28 }, // Second largest
       { id: 'dai', symbol: 'DAI', weight: 0.07 } // Decentralized option
     ];
 
-    const responses = [];
-    
-    // Process each stablecoin sequentially with delays to avoid rate limiting
-    for (let i = 0; i < stablecoins.length; i++) {
-      const coin = stablecoins[i];
-      
-      // Add delay before each request (except the first)
-      if (i > 0) {
-        console.log(`Stablecoins: Waiting 5 seconds to avoid rate limiting...`);
-        await new Promise(resolve => setTimeout(resolve, 5000));
-      }
-      
-      try {
-        const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=90&interval=daily`);
+    // If no cache, fetch live data
+    let responses = [];
+    if (!cachedData) {
+
+      // Process each stablecoin sequentially with delays to avoid rate limiting
+      for (let i = 0; i < stablecoins.length; i++) {
+        const coin = stablecoins[i];
         
-        if (response.ok) {
-          const data = await response.json();
-          responses.push(data);
-          console.log(`Stablecoins: ${coin.symbol} data received`);
-        } else if (response.status === 429) {
-          console.log(`Stablecoins: Rate limited for ${coin.symbol}, waiting 10 seconds...`);
-          await new Promise(resolve => setTimeout(resolve, 10000));
-          // Retry once
-          const retryResponse = await fetch(`https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=90&interval=daily`);
-          if (retryResponse.ok) {
-            const data = await retryResponse.json();
+        // Add delay before each request (except the first)
+        if (i > 0) {
+          console.log(`Stablecoins: Waiting 5 seconds to avoid rate limiting...`);
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+        
+        try {
+          const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=90&interval=daily`);
+          
+          if (response.ok) {
+            const data = await response.json();
             responses.push(data);
-            console.log(`Stablecoins: ${coin.symbol} data received after retry`);
+            console.log(`Stablecoins: ${coin.symbol} data received`);
+          } else if (response.status === 429) {
+            console.log(`Stablecoins: Rate limited for ${coin.symbol}, waiting 10 seconds...`);
+            await new Promise(resolve => setTimeout(resolve, 10000));
+            // Retry once
+            const retryResponse = await fetch(`https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=90&interval=daily`);
+            if (retryResponse.ok) {
+              const data = await retryResponse.json();
+              responses.push(data);
+              console.log(`Stablecoins: ${coin.symbol} data received after retry`);
+            } else {
+              console.log(`Stablecoins: ${coin.symbol} failed after retry: ${retryResponse.status}`);
+              responses.push(null);
+            }
           } else {
-            console.log(`Stablecoins: ${coin.symbol} failed after retry: ${retryResponse.status}`);
+            console.log(`Stablecoins: ${coin.symbol} failed: ${response.status} ${response.statusText}`);
             responses.push(null);
           }
-        } else {
-          console.log(`Stablecoins: ${coin.symbol} failed: ${response.status} ${response.statusText}`);
+        } catch (error) {
+          console.log(`Stablecoins: ${coin.symbol} error: ${error.message}`);
           responses.push(null);
         }
-      } catch (error) {
-        console.log(`Stablecoins: ${coin.symbol} error: ${error.message}`);
-        responses.push(null);
       }
+      
+      // Save to cache if we got live data
+      if (responses.length > 0 && !fromCache) {
+        try {
+          const fs = await import('node:fs');
+          const path = await import('node:path');
+          fs.mkdirSync(cacheDir, { recursive: true });
+          fs.writeFileSync(cacheFile, JSON.stringify(responses, null, 2), 'utf8');
+          console.log(`Stablecoins: Saved live data to cache ${cacheFile}`);
+        } catch (error) {
+          console.warn('Stablecoins: Failed to save to cache:', error.message);
+        }
+      }
+    } else {
+      // Use cached data
+      responses = cachedData;
     }
     
     let totalMarketCap = 0;
@@ -1714,8 +1753,43 @@ async function computeBtcGoldRates() {
   }
 }
 
+// Helper function to clean old stablecoins cache files
+async function cleanOldStablecoinsCacheFiles() {
+  try {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    
+    const cacheDir = 'public/data/cache/stablecoins';
+    if (!fs.existsSync(cacheDir)) return;
+    
+    const files = fs.readdirSync(cacheDir);
+    const now = new Date();
+    const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+    let cleaned = 0;
+    
+    for (const file of files) {
+      if (file.endsWith('.json')) {
+        const filePath = path.join(cacheDir, file);
+        const stats = fs.statSync(filePath);
+        const age = now.getTime() - stats.mtime.getTime();
+        
+        if (age > maxAge) {
+          fs.unlinkSync(filePath);
+          cleaned++;
+        }
+      }
+    }
+    
+    if (cleaned > 0) {
+      console.log(`Stablecoins: Cleaned ${cleaned} old cache files`);
+    }
+  } catch (error) {
+    console.warn('Stablecoins: Could not clean cache files:', error.message);
+  }
+}
+
 // Export additional functions for use in other modules
-export { cleanOldCacheFiles, computeBtcGoldRates };
+export { cleanOldCacheFiles, cleanOldStablecoinsCacheFiles, computeBtcGoldRates };
 
 
 // Enhanced G-Score calculation with deterministic scoring
