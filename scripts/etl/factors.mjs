@@ -404,7 +404,70 @@ async function computeNetLiquidity() {
   }
 }
 
-// 4. STABLECOINS (Multi-stablecoin analysis with caching)
+// Helper functions for data format conversion
+function convertCmcToCoinGeckoFormat(cmcData, symbol) {
+  try {
+    // CMC historical data format conversion
+    const prices = [];
+    const marketCaps = [];
+    const totalVolumes = [];
+    
+    if (cmcData.data && cmcData.data.quotes) {
+      cmcData.data.quotes.forEach(quote => {
+        const timestamp = new Date(quote.timestamp).getTime();
+        const price = quote.quote.USD.price;
+        const marketCap = quote.quote.USD.market_cap;
+        const volume = quote.quote.USD.volume_24h;
+        
+        prices.push([timestamp, price]);
+        marketCaps.push([timestamp, marketCap]);
+        totalVolumes.push([timestamp, volume]);
+      });
+    }
+    
+    return {
+      prices: prices,
+      market_caps: marketCaps,
+      total_volumes: totalVolumes
+    };
+  } catch (error) {
+    console.log(`Stablecoins: Error converting CMC data for ${symbol}: ${error.message}`);
+    return null;
+  }
+}
+
+function convertCryptoCompareToCoinGeckoFormat(ccData, symbol) {
+  try {
+    // CryptoCompare historical data format conversion
+    const prices = [];
+    const marketCaps = [];
+    const totalVolumes = [];
+    
+    if (ccData.Data && ccData.Data.Data) {
+      ccData.Data.Data.forEach(dataPoint => {
+        const timestamp = dataPoint.time * 1000; // Convert to milliseconds
+        const price = dataPoint.close;
+        const marketCap = dataPoint.mktcap || 0;
+        const volume = dataPoint.volumeto || 0;
+        
+        prices.push([timestamp, price]);
+        marketCaps.push([timestamp, marketCap]);
+        totalVolumes.push([timestamp, volume]);
+      });
+    }
+    
+    return {
+      prices: prices,
+      market_caps: marketCaps,
+      total_volumes: totalVolumes
+    };
+  } catch (error) {
+    console.log(`Stablecoins: Error converting CryptoCompare data for ${symbol}: ${error.message}`);
+    return null;
+  }
+}
+
+// 4. STABLECOINS (Multi-stablecoin analysis with caching and fallback sources)
 async function computeStablecoins() {
   try {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
@@ -427,18 +490,18 @@ async function computeStablecoins() {
       // Cache read failed, continue to live fetch
     }
     
-    // Define stablecoins array (used in both cached and live data paths)
+    // Define stablecoins array with fallback source IDs
     const stablecoins = [
-      { id: 'tether', symbol: 'USDT', weight: 0.65 }, // Market leader
-      { id: 'usd-coin', symbol: 'USDC', weight: 0.28 }, // Second largest
-      { id: 'dai', symbol: 'DAI', weight: 0.07 } // Decentralized option
+      { id: 'tether', symbol: 'USDT', weight: 0.65, cmcId: '825' }, // Market leader
+      { id: 'usd-coin', symbol: 'USDC', weight: 0.28, cmcId: '3408' }, // Second largest
+      { id: 'dai', symbol: 'DAI', weight: 0.07, cmcId: '4943' } // Decentralized option
     ];
 
     // If no cache, fetch live data
     let responses = [];
     if (!cachedData) {
 
-      // Process each stablecoin sequentially with delays to avoid rate limiting
+      // Process each stablecoin with fallback data sources
       for (let i = 0; i < stablecoins.length; i++) {
         const coin = stablecoins[i];
         
@@ -448,32 +511,75 @@ async function computeStablecoins() {
           await new Promise(resolve => setTimeout(resolve, 5000));
         }
         
+        // Try multiple data sources with fallback chain
+        let coinData = null;
+        let dataSource = null;
+        
+        // Source 1: CoinGecko (primary)
         try {
           const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=90&interval=daily`);
           
           if (response.ok) {
-            const data = await response.json();
-            responses.push(data);
-            console.log(`Stablecoins: ${coin.symbol} data received`);
+            coinData = await response.json();
+            dataSource = 'CoinGecko';
+            console.log(`Stablecoins: ${coin.symbol} data received from CoinGecko`);
           } else if (response.status === 429) {
-            console.log(`Stablecoins: Rate limited for ${coin.symbol}, waiting 10 seconds...`);
-            await new Promise(resolve => setTimeout(resolve, 10000));
-            // Retry once
-            const retryResponse = await fetch(`https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=90&interval=daily`);
-            if (retryResponse.ok) {
-              const data = await retryResponse.json();
-              responses.push(data);
-              console.log(`Stablecoins: ${coin.symbol} data received after retry`);
-            } else {
-              console.log(`Stablecoins: ${coin.symbol} failed after retry: ${retryResponse.status}`);
-              responses.push(null);
-            }
+            console.log(`Stablecoins: CoinGecko rate limited for ${coin.symbol}, trying fallback...`);
           } else {
-            console.log(`Stablecoins: ${coin.symbol} failed: ${response.status} ${response.statusText}`);
-            responses.push(null);
+            console.log(`Stablecoins: CoinGecko failed for ${coin.symbol}: ${response.status}, trying fallback...`);
           }
         } catch (error) {
-          console.log(`Stablecoins: ${coin.symbol} error: ${error.message}`);
+          console.log(`Stablecoins: CoinGecko error for ${coin.symbol}: ${error.message}, trying fallback...`);
+        }
+        
+        // Source 2: CoinMarketCap (fallback)
+        if (!coinData) {
+          try {
+            const cmcResponse = await fetch(`https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/historical?id=${coin.cmcId || coin.id}&time_start=${new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()}&time_end=${new Date().toISOString()}`, {
+              headers: {
+                'X-CMC_PRO_API_KEY': process.env.CMC_API_KEY || '',
+                'Accept': 'application/json'
+              }
+            });
+            
+            if (cmcResponse.ok) {
+              const cmcData = await cmcResponse.json();
+              // Convert CMC format to CoinGecko format
+              coinData = convertCmcToCoinGeckoFormat(cmcData, coin.symbol);
+              dataSource = 'CoinMarketCap';
+              console.log(`Stablecoins: ${coin.symbol} data received from CoinMarketCap`);
+            } else {
+              console.log(`Stablecoins: CoinMarketCap failed for ${coin.symbol}: ${cmcResponse.status}`);
+            }
+          } catch (error) {
+            console.log(`Stablecoins: CoinMarketCap error for ${coin.symbol}: ${error.message}`);
+          }
+        }
+        
+        // Source 3: CryptoCompare (final fallback)
+        if (!coinData) {
+          try {
+            const ccResponse = await fetch(`https://min-api.cryptocompare.com/data/v2/histoday?fsym=${coin.symbol}&tsym=USD&limit=90&api_key=${process.env.CRYPTOCOMPARE_API_KEY || ''}`);
+            
+            if (ccResponse.ok) {
+              const ccData = await ccResponse.json();
+              // Convert CryptoCompare format to CoinGecko format
+              coinData = convertCryptoCompareToCoinGeckoFormat(ccData, coin.symbol);
+              dataSource = 'CryptoCompare';
+              console.log(`Stablecoins: ${coin.symbol} data received from CryptoCompare`);
+            } else {
+              console.log(`Stablecoins: CryptoCompare failed for ${coin.symbol}: ${ccResponse.status}`);
+            }
+          } catch (error) {
+            console.log(`Stablecoins: CryptoCompare error for ${coin.symbol}: ${error.message}`);
+          }
+        }
+        
+        if (coinData) {
+          responses.push(coinData);
+          console.log(`Stablecoins: ${coin.symbol} successfully fetched from ${dataSource}`);
+        } else {
+          console.log(`Stablecoins: All data sources failed for ${coin.symbol}`);
           responses.push(null);
         }
       }
