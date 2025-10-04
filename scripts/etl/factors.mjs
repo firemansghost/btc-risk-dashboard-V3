@@ -679,7 +679,7 @@ async function computeEtfFlows() {
     const latestIndividualFlows = individualEtfFlows.length > 0 ? 
       individualEtfFlows[individualEtfFlows.length - 1].flows : {};
     
-    // Load historical baseline for percentile calculation
+    // Load historical baseline for percentile calculation (business days only)
     let historicalBaseline = null;
     try {
       const fs = await import('node:fs');
@@ -687,8 +687,17 @@ async function computeEtfFlows() {
       if (fs.existsSync(historicalFile)) {
         const historicalContent = fs.readFileSync(historicalFile, 'utf8');
         const historicalData = JSON.parse(historicalContent);
-        historicalBaseline = historicalData.rollingSums.map(f => f.sum);
-        console.log(`ETF Flows: Using historical baseline with ${historicalBaseline.length} data points`);
+        
+        // Filter historical baseline to exclude weekends
+        const businessDaySums = historicalData.rollingSums
+          .filter(item => {
+            const date = new Date(item.date);
+            return isBusinessDay(date);
+          })
+          .map(f => f.sum);
+        
+        historicalBaseline = businessDaySums;
+        console.log(`ETF Flows: Using historical baseline with ${historicalBaseline.length} business day data points (filtered from ${historicalData.rollingSums.length} total)`);
       }
     } catch (error) {
       console.warn('ETF Flows: Could not load historical baseline:', error.message);
@@ -890,9 +899,13 @@ function parseEtfFlowsFromHtml(html) {
     }
     
     if (Number.isFinite(flow)) {
-      flows.push({ date, flow });
-      if (Object.keys(individualFlows).length > 0) {
-        individualEtfFlows.push({ date, flows: individualFlows });
+      // Only include business day flows (exclude weekends)
+      const flowDate = new Date(date);
+      if (isBusinessDay(flowDate)) {
+        flows.push({ date, flow });
+        if (Object.keys(individualFlows).length > 0) {
+          individualEtfFlows.push({ date, flows: individualFlows });
+        }
       }
     }
   }
@@ -953,17 +966,33 @@ function parseNumber(s) {
   return Number.isFinite(n) ? n : NaN;
 }
 
-// Helper function to calculate 21-day rolling sum
+// Helper function to calculate 21-day rolling sum (business days only)
 function calculate21DayRollingSum(flows) {
   const sums = [];
-  const flowsArray = flows.map(f => f.flow);
   
-  for (let i = 0; i < flowsArray.length; i++) {
-    if (i < 20) {
-      sums.push(NaN); // Not enough data for 21-day sum
-    } else {
-      const sum = flowsArray.slice(i - 20, i + 1).reduce((a, b) => a + b, 0);
+  for (let i = 0; i < flows.length; i++) {
+    // Count back 21 business days from current position
+    let businessDaysCounted = 0;
+    let sum = 0;
+    let j = i;
+    
+    // Go backwards through the data until we have 21 business days
+    while (j >= 0 && businessDaysCounted < 21) {
+      const flowDate = new Date(flows[j].date);
+      
+      // Only count business days (Monday-Friday)
+      if (isBusinessDay(flowDate)) {
+        sum += flows[j].flow;
+        businessDaysCounted++;
+      }
+      j--;
+    }
+    
+    // Only include if we have exactly 21 business days
+    if (businessDaysCounted === 21) {
       sums.push(sum);
+    } else {
+      sums.push(NaN); // Not enough business day data
     }
   }
   
@@ -1421,7 +1450,7 @@ async function computeMacroOverlay() {
 // MAIN COMPUTE FUNCTION
 // ============================================================================
 
-import { getStalenessStatus, getStalenessConfig } from './stalenessUtils.mjs';
+import { getStalenessStatus, getStalenessConfig, isBusinessDay } from './stalenessUtils.mjs';
 
 export async function computeAllFactors(dailyClose = null) {
   console.log("Computing risk factors...");
