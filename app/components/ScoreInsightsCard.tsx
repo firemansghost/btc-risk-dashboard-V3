@@ -1572,6 +1572,134 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         </div>
       </div>
 
+      {/* Smart Context Section */}
+      <div className="mb-6 p-5 bg-gradient-to-r from-indigo-50 to-purple-100 rounded-xl border border-indigo-200 shadow-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="bg-indigo-200 p-2 rounded-lg">
+            <span className="text-lg">🧠</span>
+          </div>
+          <h4 className="text-base font-semibold text-indigo-800">Smart Context Analysis</h4>
+        </div>
+        
+        <div className="space-y-4">
+          {(() => {
+            // Generate smart context based on current market conditions and historical data
+            const totalScore = explanation.totalScore;
+            const highRiskCount = explanation.keyDrivers.filter(f => f.score > 60).length;
+            const lowRiskCount = explanation.keyDrivers.filter(f => f.score < 40).length;
+            const isNearATH = totalScore > 50 && highRiskCount >= 2;
+            
+            const smartContext = [];
+            
+            // Market Phase Awareness
+            if (isNearATH) {
+              smartContext.push({
+                type: 'market-phase',
+                icon: '🚀',
+                title: 'Market Phase: All-Time High Environment',
+                description: 'Bitcoin is operating in an ATH environment with elevated risk metrics',
+                insights: [
+                  'This is normal behavior at ATHs - elevated risk doesn\'t mean imminent crash',
+                  'Historical data shows similar risk patterns during previous ATH cycles',
+                  'Institutional profit-taking and whale distribution are expected at these levels',
+                  'Social media hype and FOMO sentiment typically peak near ATHs'
+                ]
+              });
+            } else if (totalScore < 40 && lowRiskCount >= 2) {
+              smartContext.push({
+                type: 'market-phase',
+                icon: '🌱',
+                title: 'Market Phase: Consolidation/Recovery',
+                description: 'Bitcoin is in a lower-risk consolidation or recovery phase',
+                insights: [
+                  'Risk has been reset after previous market cycles',
+                  'Stable fundamentals suggest healthy market development',
+                  'Lower volatility indicates reduced speculative activity',
+                  'This phase often precedes the next major move'
+                ]
+              });
+            } else {
+              smartContext.push({
+                type: 'market-phase',
+                icon: '⚖️',
+                title: 'Market Phase: Transitional',
+                description: 'Bitcoin is in a transitional phase with mixed signals',
+                insights: [
+                  'Competing forces are creating mixed risk signals',
+                  'Market is at an inflection point between phases',
+                  'Next major move will depend on which forces prevail',
+                  'Close monitoring of key factors is recommended'
+                ]
+              });
+            }
+            
+            // Historical Context
+            if (historicalData && historicalData.points && historicalData.points.length > 1) {
+              const recentScores = historicalData.points.slice(-7).map((p: any) => p.composite);
+              const avgRecentScore = recentScores.reduce((a: number, b: number) => a + b, 0) / recentScores.length;
+              const scoreTrend = recentScores[recentScores.length - 1] - recentScores[0];
+              
+              smartContext.push({
+                type: 'historical',
+                icon: '📊',
+                title: 'Historical Context',
+                description: `7-day average: ${avgRecentScore.toFixed(1)}, Trend: ${scoreTrend > 0 ? '+' : ''}${scoreTrend.toFixed(1)}`,
+                insights: [
+                  `Current score of ${totalScore} is ${totalScore > avgRecentScore ? 'above' : 'below'} recent average`,
+                  `Score trend over past week: ${scoreTrend > 0 ? 'increasing risk' : 'decreasing risk'}`,
+                  `Historical volatility: ${recentScores.length > 1 ? Math.max(...recentScores) - Math.min(...recentScores) : 0} points`,
+                  `Risk level: ${totalScore > 70 ? 'High' : totalScore > 50 ? 'Moderate' : 'Low'} compared to historical range`
+                ]
+              });
+            }
+            
+            // Forward-Looking Insights
+            const forwardInsights = [];
+            
+            if (isNearATH) {
+              forwardInsights.push('Monitor for potential distribution signals and institutional selling');
+              forwardInsights.push('Watch for social media sentiment shifts and FOMO exhaustion');
+              forwardInsights.push('Prepare for increased volatility as ATH resistance is tested');
+            } else if (totalScore < 40) {
+              forwardInsights.push('Low risk environment may present accumulation opportunities');
+              forwardInsights.push('Monitor for fundamental improvements and institutional adoption');
+              forwardInsights.push('Watch for breakout signals and momentum shifts');
+            } else {
+              forwardInsights.push('Mixed signals suggest staying flexible and ready to adjust');
+              forwardInsights.push('Monitor key factors for directional clarity');
+              forwardInsights.push('Prepare for potential volatility as market chooses direction');
+            }
+            
+            smartContext.push({
+              type: 'forward-looking',
+              icon: '🔮',
+              title: 'Forward-Looking Insights',
+              description: 'Key factors to monitor for future market direction',
+              insights: forwardInsights
+            });
+            
+            return smartContext.map((context, idx) => (
+              <div key={idx} className="bg-white rounded-lg p-4 border border-indigo-200 shadow-sm">
+                <div className="flex items-start gap-3 mb-3">
+                  <span className="text-lg mt-0.5">{context.icon}</span>
+                  <div className="flex-1">
+                    <h5 className="font-semibold text-gray-900 mb-1">{context.title}</h5>
+                    <p className="text-sm text-gray-700 mb-3">{context.description}</p>
+                    <div className="space-y-1">
+                      {context.insights.map((insight, insightIdx) => (
+                        <div key={insightIdx} className="text-xs text-gray-600 flex items-start gap-2">
+                          <span className="text-indigo-500 mt-0.5">•</span>
+                          <span>{insight}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ));
+          })()}
+        </div>
+      </div>
 
       {/* Factor Volatility Analysis */}
       {getFactorVolatility() && (
