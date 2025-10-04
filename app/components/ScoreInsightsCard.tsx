@@ -1270,6 +1270,98 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         </div>
       </div>
 
+      {/* Context Explanation Section */}
+      <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg">💡</span>
+          <h4 className="text-sm font-medium text-blue-800">Why This Score Makes Sense</h4>
+        </div>
+        
+        <div className="text-sm text-gray-700 space-y-2">
+          {(() => {
+            // Determine market context and explain why the score makes sense
+            const totalScore = explanation.totalScore;
+            const highRiskCount = explanation.keyDrivers.filter(f => f.score > 60).length;
+            const lowRiskCount = explanation.keyDrivers.filter(f => f.score < 40).length;
+            
+            // Market phase detection
+            const isNearATH = totalScore > 50 && highRiskCount >= 2;
+            const isLowRisk = totalScore < 40 && lowRiskCount >= 2;
+            const isBalanced = totalScore >= 45 && totalScore <= 55;
+            
+            if (isNearATH) {
+              return (
+                <div className="space-y-2">
+                  <p className="font-medium text-blue-800">
+                    🚀 At All-Time Highs, Elevated Risk is Expected
+                  </p>
+                  <p>
+                    When Bitcoin approaches ATHs, we naturally see higher risk metrics. 
+                    On-chain activity shows distribution signals, institutions take profits 
+                    (ETF outflows), and social media hype increases. This is normal market behavior.
+                  </p>
+                  <p>
+                    The G-Score reflects this reality: <strong>high risk doesn't mean imminent crash</strong> - 
+                    it means we're in a high-risk environment where caution is warranted.
+                  </p>
+                </div>
+              );
+            } else if (isLowRisk) {
+              return (
+                <div className="space-y-2">
+                  <p className="font-medium text-green-800">
+                    ✅ Low Risk Environment Detected
+                  </p>
+                  <p>
+                    Multiple factors are showing low risk signals, indicating a more stable 
+                    market environment. This suggests healthy market dynamics with less 
+                    speculative activity and more balanced conditions.
+                  </p>
+                  <p>
+                    This is typically seen during consolidation phases or after significant 
+                    corrections when risk has been reset.
+                  </p>
+                </div>
+              );
+            } else if (isBalanced) {
+              return (
+                <div className="space-y-2">
+                  <p className="font-medium text-yellow-800">
+                    ⚖️ Balanced Risk Environment
+                  </p>
+                  <p>
+                    The G-Score reflects a mixed signal environment where some factors show 
+                    elevated risk while others remain stable. This is common during market 
+                    transitions or when different market forces are competing.
+                  </p>
+                  <p>
+                    This balanced state suggests the market is at an inflection point where 
+                    the next move could go either direction based on which forces prevail.
+                  </p>
+                </div>
+              );
+            } else {
+              return (
+                <div className="space-y-2">
+                  <p className="font-medium text-gray-800">
+                    📊 Mixed Market Signals
+                  </p>
+                  <p>
+                    The current G-Score reflects a complex market environment with both 
+                    risk factors and mitigating factors present. This mixed signal state 
+                    is common in dynamic markets where multiple forces are at play.
+                  </p>
+                  <p>
+                    The score provides a balanced assessment of the current risk landscape, 
+                    helping you understand both the opportunities and challenges present.
+                  </p>
+                </div>
+              );
+            }
+          })()}
+        </div>
+      </div>
+
       {/* Key Drivers */}
       <div className="mb-4">
         <div 
