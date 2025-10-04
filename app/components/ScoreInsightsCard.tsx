@@ -1136,6 +1136,76 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         </div>
       </div>
 
+      {/* Risk Contributors Section */}
+      <div className="mb-4 p-3 bg-red-50 rounded-lg border border-red-200">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg">🔴</span>
+          <h4 className="text-sm font-medium text-red-800">Top Risk Contributors</h4>
+        </div>
+        
+        <div className="space-y-2">
+          {(() => {
+            // Get top 3 high-risk factors (score > 50)
+            const highRiskFactors = explanation.keyDrivers
+              .filter(f => f.score > 50)
+              .sort((a, b) => b.score - a.score)
+              .slice(0, 3);
+            
+            if (highRiskFactors.length === 0) {
+              return (
+                <div className="text-sm text-green-600 text-center py-2">
+                  ✅ No high-risk factors detected
+                </div>
+              );
+            }
+            
+            return highRiskFactors.map((factor, idx) => (
+              <div key={idx} className="bg-white rounded-lg p-3 border border-red-100">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{getFactorIcon(factor.key)}</span>
+                    <span className="text-sm font-medium text-gray-900">{factor.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-red-600">
+                      {factor.score}
+                    </span>
+                    <span className="text-xs text-gray-500">/ 100</span>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-600">
+                  {(() => {
+                    // Generate contextual explanations based on factor and score
+                    const factorKey = factor.key;
+                    const score = factor.score;
+                    
+                    if (factorKey === 'onchain' && score > 80) {
+                      return 'At ATHs, on-chain metrics often show distribution signals';
+                    } else if (factorKey === 'etf_flows' && score > 60) {
+                      return 'High concentration risk as institutions take profits';
+                    } else if (factorKey === 'trend_valuation' && score > 50) {
+                      return 'Price above historical norms (Mayer Multiple 1.17)';
+                    } else if (factorKey === 'social_interest' && score > 70) {
+                      return 'Excessive social media hype and FOMO sentiment';
+                    } else if (factorKey === 'term_leverage' && score > 60) {
+                      return 'High leverage and funding rate pressure';
+                    } else if (factorKey === 'stablecoins' && score > 60) {
+                      return 'Stablecoin supply contraction indicating selling pressure';
+                    } else if (factorKey === 'macro_overlay' && score > 60) {
+                      return 'Macro headwinds and liquidity concerns';
+                    } else if (factorKey === 'net_liquidity' && score > 60) {
+                      return 'Liquidity contraction and monetary tightening';
+                    } else {
+                      return 'Elevated risk indicators detected';
+                    }
+                  })()}
+                </div>
+              </div>
+            ));
+          })()}
+        </div>
+      </div>
+
       {/* Key Drivers */}
       <div className="mb-4">
         <div 
