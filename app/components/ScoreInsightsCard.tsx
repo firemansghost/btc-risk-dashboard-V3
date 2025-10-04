@@ -1145,16 +1145,16 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         
         <div className="space-y-2">
           {(() => {
-            // Get top 3 high-risk factors (score > 50)
+            // Get top 3 high-risk factors (score > 45 for more inclusive)
             const highRiskFactors = explanation.keyDrivers
-              .filter(f => f.score > 50)
+              .filter(f => f.score > 45)
               .sort((a, b) => b.score - a.score)
               .slice(0, 3);
             
             if (highRiskFactors.length === 0) {
               return (
                 <div className="text-sm text-green-600 text-center py-2">
-                  ✅ No high-risk factors detected
+                  ✅ No high-risk factors detected (scores: {explanation.keyDrivers.map(f => `${f.label}:${f.score}`).join(', ')})
                 </div>
               );
             }
