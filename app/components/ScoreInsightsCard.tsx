@@ -1362,6 +1362,123 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         </div>
       </div>
 
+      {/* Actionable Insights Section */}
+      <div className="mb-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg">🎯</span>
+          <h4 className="text-sm font-medium text-purple-800">Actionable Insights</h4>
+        </div>
+        
+        <div className="space-y-3">
+          {(() => {
+            // Generate actionable insights based on current factors and market conditions
+            const totalScore = explanation.totalScore;
+            const highRiskFactors = explanation.keyDrivers.filter(f => f.score > 60);
+            const lowRiskFactors = explanation.keyDrivers.filter(f => f.score < 40);
+            const moderateRiskFactors = explanation.keyDrivers.filter(f => f.score >= 40 && f.score <= 60);
+            
+            const insights = [];
+            
+            // High-risk factor monitoring
+            if (highRiskFactors.length > 0) {
+              insights.push({
+                type: 'monitor',
+                icon: '👀',
+                title: 'Monitor High-Risk Factors',
+                description: `Watch ${highRiskFactors.map(f => f.label).join(', ')} closely for changes`,
+                details: highRiskFactors.map(factor => {
+                  if (factor.key === 'onchain') {
+                    return '• On-chain: Watch for whale movements and exchange inflows';
+                  } else if (factor.key === 'etf_flows') {
+                    return '• ETF Flows: Monitor daily flows for institutional sentiment shifts';
+                  } else if (factor.key === 'trend_valuation') {
+                    return '• Trend & Valuation: Track Mayer Multiple and price momentum';
+                  } else if (factor.key === 'social_interest') {
+                    return '• Social Interest: Monitor social media sentiment and FOMO levels';
+                  } else if (factor.key === 'term_leverage') {
+                    return '• Term Structure: Watch funding rates and leverage metrics';
+                  } else if (factor.key === 'stablecoins') {
+                    return '• Stablecoins: Monitor supply changes and selling pressure';
+                  } else if (factor.key === 'macro_overlay') {
+                    return '• Macro Overlay: Track economic indicators and policy changes';
+                  } else if (factor.key === 'net_liquidity') {
+                    return '• Net Liquidity: Monitor Fed policy and liquidity conditions';
+                  }
+                  return `• ${factor.label}: Watch for significant changes`;
+                }).join('\n')
+              });
+            }
+            
+            // Low-risk factor opportunities
+            if (lowRiskFactors.length > 0) {
+              insights.push({
+                type: 'opportunity',
+                icon: '💚',
+                title: 'Stable Foundation',
+                description: `${lowRiskFactors.map(f => f.label).join(', ')} are providing market stability`,
+                details: 'These factors suggest a more stable market environment with less speculative activity.'
+              });
+            }
+            
+            // Score-based guidance
+            if (totalScore > 70) {
+              insights.push({
+                type: 'caution',
+                icon: '⚠️',
+                title: 'High Risk Environment',
+                description: 'Consider reducing position sizes and increasing cash allocation',
+                details: 'High risk doesn\'t mean imminent crash, but caution is warranted. Monitor for trend changes.'
+              });
+            } else if (totalScore < 30) {
+              insights.push({
+                type: 'opportunity',
+                icon: '📈',
+                title: 'Low Risk Environment',
+                description: 'Consider increasing exposure if fundamentals align',
+                details: 'Low risk environment suggests potential opportunities, but always consider your risk tolerance.'
+              });
+            } else {
+              insights.push({
+                type: 'balanced',
+                icon: '⚖️',
+                title: 'Balanced Approach',
+                description: 'Maintain current strategy while monitoring key factors',
+                details: 'Mixed signals suggest staying flexible and ready to adjust based on factor changes.'
+              });
+            }
+            
+            // Market phase specific guidance
+            const isNearATH = totalScore > 50 && highRiskFactors.length >= 2;
+            if (isNearATH) {
+              insights.push({
+                type: 'context',
+                icon: '🚀',
+                title: 'ATH Context',
+                description: 'At all-time highs, elevated risk is normal',
+                details: 'Focus on risk management rather than timing the market. Consider DCA strategies.'
+              });
+            }
+            
+            return insights.map((insight, idx) => (
+              <div key={idx} className="bg-white rounded-lg p-3 border border-purple-100">
+                <div className="flex items-start gap-3">
+                  <span className="text-lg mt-0.5">{insight.icon}</span>
+                  <div className="flex-1">
+                    <h5 className="font-medium text-gray-900 mb-1">{insight.title}</h5>
+                    <p className="text-sm text-gray-700 mb-2">{insight.description}</p>
+                    {insight.details && (
+                      <div className="text-xs text-gray-600 whitespace-pre-line">
+                        {insight.details}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ));
+          })()}
+        </div>
+      </div>
+
       {/* Key Drivers */}
       <div className="mb-4">
         <div 
