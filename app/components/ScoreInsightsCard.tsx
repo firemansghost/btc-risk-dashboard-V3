@@ -1092,6 +1092,50 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         </div>
       </div>
 
+      {/* Risk Breakdown Section */}
+      <div className="mb-4 p-3 bg-gray-50 rounded-lg border">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg">📊</span>
+          <h4 className="text-sm font-medium text-gray-700">Risk Breakdown</h4>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div className="text-center">
+            <div className="text-lg font-bold text-gray-900">
+              {explanation.totalScore}
+            </div>
+            <div className="text-gray-500">G-Score</div>
+          </div>
+          <div className="text-center">
+            <div className={`text-lg font-bold ${getScoreColor(explanation.totalScore)}`}>
+              {explanation.totalScore < 40 ? 'Low Risk' : 
+               explanation.totalScore < 60 ? 'Moderate Risk' : 'High Risk'}
+            </div>
+            <div className="text-gray-500">Risk Level</div>
+          </div>
+          <div className="text-center">
+            <div className="text-lg font-bold text-blue-600">
+              {(() => {
+                // Determine market context based on score and factors
+                const highRiskFactors = explanation.keyDrivers.filter(f => f.score > 60).length;
+                const lowRiskFactors = explanation.keyDrivers.filter(f => f.score < 40).length;
+                
+                if (explanation.totalScore > 60 && highRiskFactors >= 2) {
+                  return 'Elevated Risk';
+                } else if (explanation.totalScore < 40 && lowRiskFactors >= 2) {
+                  return 'Lower Risk';
+                } else if (explanation.totalScore >= 50 && explanation.totalScore <= 60) {
+                  return 'Balanced Risk';
+                } else {
+                  return 'Mixed Signals';
+                }
+              })()}
+            </div>
+            <div className="text-gray-500">Current Context</div>
+          </div>
+        </div>
+      </div>
+
       {/* Key Drivers */}
       <div className="mb-4">
         <div 
