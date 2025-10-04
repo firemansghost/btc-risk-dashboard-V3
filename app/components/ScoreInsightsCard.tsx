@@ -1206,6 +1206,70 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         </div>
       </div>
 
+      {/* Risk Mitigators Section */}
+      <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg">🟢</span>
+          <h4 className="text-sm font-medium text-green-800">Top Risk Mitigators</h4>
+        </div>
+        
+        <div className="space-y-2">
+          {(() => {
+            // Get top 3 low-risk factors (score < 50)
+            const lowRiskFactors = explanation.keyDrivers
+              .filter(f => f.score < 50)
+              .sort((a, b) => a.score - b.score)
+              .slice(0, 3);
+            
+            if (lowRiskFactors.length === 0) {
+              return (
+                <div className="text-sm text-red-600 text-center py-2">
+                  ⚠️ No low-risk factors detected (scores: {explanation.keyDrivers.map(f => `${f.label}:${f.score}`).join(', ')})
+                </div>
+              );
+            }
+            
+            return lowRiskFactors.map((factor, idx) => (
+              <div key={idx} className="bg-white rounded-lg p-3 border border-green-100">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{getFactorIcon(factor.key)}</span>
+                    <span className="text-sm font-medium text-gray-900">{factor.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-green-600">
+                      {factor.score}
+                    </span>
+                    <span className="text-xs text-gray-500">/ 100</span>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-600">
+                  {(() => {
+                    // Generate contextual explanations based on factor and score
+                    const factorKey = factor.key;
+                    const score = factor.score;
+                    
+                    if (factorKey === 'stablecoins' && score < 40) {
+                      return 'Healthy stablecoin dynamics - no panic selling detected';
+                    } else if (factorKey === 'social_interest' && score < 45) {
+                      return 'Low social media hype - avoiding FOMO sentiment';
+                    } else if (factorKey === 'term_leverage' && score < 50) {
+                      return 'Reasonable leverage levels - no excessive funding pressure';
+                    } else if (factorKey === 'macro_overlay' && score < 50) {
+                      return 'Stable macro environment - no major headwinds';
+                    } else if (factorKey === 'net_liquidity' && score < 50) {
+                      return 'Adequate liquidity conditions - no major tightening';
+                    } else {
+                      return 'Low risk indicators - contributing to market stability';
+                    }
+                  })()}
+                </div>
+              </div>
+            ));
+          })()}
+        </div>
+      </div>
+
       {/* Key Drivers */}
       <div className="mb-4">
         <div 
