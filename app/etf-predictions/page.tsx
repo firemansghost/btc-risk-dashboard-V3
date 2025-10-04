@@ -1022,7 +1022,16 @@ function ModelPerformance({ data, loading, error }: {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
-                7 Days
+                {(() => {
+                  // Calculate actual trading days available
+                  if (!data?.daily) return 'N/A';
+                  const tradingDayPredictions = data.daily.filter((_, index) => {
+                    const predictionDate = new Date(data.daily[index].date);
+                    return isTradingDay(predictionDate);
+                  });
+                  const predictions = tradingDayPredictions.slice(0, 7);
+                  return `${predictions.length} Days`;
+                })()}
               </div>
               <div className="text-xs text-gray-600">Forecast Horizon</div>
             </div>
