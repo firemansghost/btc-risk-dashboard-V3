@@ -949,12 +949,20 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 ${className}`}>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Score Insights</h3>
+    <div className={`bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg border border-gray-200 p-6 ${className}`}>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="bg-blue-100 p-2 rounded-lg">
+            <span className="text-2xl">🧠</span>
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-gray-900">Score Insights</h3>
+            <p className="text-sm text-gray-600">Comprehensive analysis of Bitcoin's risk landscape</p>
+          </div>
+        </div>
         <button
           onClick={() => setExpanded(!expanded)}
-          className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
+          className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200"
         >
           {expanded ? 'Show Less' : 'Show More'}
         </button>
@@ -1093,10 +1101,12 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       </div>
 
       {/* Risk Breakdown Section */}
-      <div className="mb-4 p-3 bg-gray-50 rounded-lg border">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">📊</span>
-          <h4 className="text-sm font-medium text-gray-700">Risk Breakdown</h4>
+      <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 shadow-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="bg-gray-200 p-2 rounded-lg">
+            <span className="text-lg">📊</span>
+          </div>
+          <h4 className="text-base font-semibold text-gray-800">Risk Breakdown</h4>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
@@ -1137,10 +1147,12 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       </div>
 
       {/* Risk Contributors Section */}
-      <div className="mb-4 p-3 bg-red-50 rounded-lg border border-red-200">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">🔴</span>
-          <h4 className="text-sm font-medium text-red-800">Top Risk Contributors</h4>
+      <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-200 shadow-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="bg-red-200 p-2 rounded-lg">
+            <span className="text-lg">🔴</span>
+          </div>
+          <h4 className="text-base font-semibold text-red-800">Top Risk Contributors</h4>
         </div>
         
         <div className="space-y-2">
@@ -1160,7 +1172,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             }
             
             return highRiskFactors.map((factor, idx) => (
-              <div key={idx} className="bg-white rounded-lg p-3 border border-red-100">
+              <div key={idx} className="bg-white rounded-lg p-4 border border-red-200 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{getFactorIcon(factor.key)}</span>
@@ -1207,10 +1219,12 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       </div>
 
       {/* Risk Mitigators Section */}
-      <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">🟢</span>
-          <h4 className="text-sm font-medium text-green-800">Top Risk Mitigators</h4>
+      <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200 shadow-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="bg-green-200 p-2 rounded-lg">
+            <span className="text-lg">🟢</span>
+          </div>
+          <h4 className="text-base font-semibold text-green-800">Top Risk Mitigators</h4>
         </div>
         
         <div className="space-y-2">
@@ -1230,7 +1244,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             }
             
             return lowRiskFactors.map((factor, idx) => (
-              <div key={idx} className="bg-white rounded-lg p-3 border border-green-100">
+              <div key={idx} className="bg-white rounded-lg p-4 border border-green-200 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{getFactorIcon(factor.key)}</span>
@@ -1271,10 +1285,12 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       </div>
 
       {/* Context Explanation Section */}
-      <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">💡</span>
-          <h4 className="text-sm font-medium text-blue-800">Why This Score Makes Sense</h4>
+      <div className="mb-6 p-5 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200 shadow-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="bg-blue-200 p-2 rounded-lg">
+            <span className="text-lg">💡</span>
+          </div>
+          <h4 className="text-base font-semibold text-blue-800">Why This Score Makes Sense</h4>
         </div>
         
         <div className="text-sm text-gray-700 space-y-2">
@@ -1363,10 +1379,12 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       </div>
 
       {/* Actionable Insights Section */}
-      <div className="mb-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">🎯</span>
-          <h4 className="text-sm font-medium text-purple-800">Actionable Insights</h4>
+      <div className="mb-6 p-5 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200 shadow-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="bg-purple-200 p-2 rounded-lg">
+            <span className="text-lg">🎯</span>
+          </div>
+          <h4 className="text-base font-semibold text-purple-800">Actionable Insights</h4>
         </div>
         
         <div className="space-y-3">
@@ -1460,7 +1478,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             }
             
             return insights.map((insight, idx) => (
-              <div key={idx} className="bg-white rounded-lg p-3 border border-purple-100">
+              <div key={idx} className="bg-white rounded-lg p-4 border border-purple-200 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-start gap-3">
                   <span className="text-lg mt-0.5">{insight.icon}</span>
                   <div className="flex-1">
