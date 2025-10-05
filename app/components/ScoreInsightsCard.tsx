@@ -871,7 +871,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
   if (loading) {
     return (
-      <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 ${className}`}>
+      <div className={`bg-white rounded-lg shadow-sm border border-gray-200 card-padding ${className}`}>
         <div className="animate-pulse">
           <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
           <div className="h-3 bg-gray-200 rounded w-2/3 mb-4"></div>
@@ -886,7 +886,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
   if (!explanation) {
     return (
-      <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 ${className}`}>
+      <div className={`bg-white rounded-lg shadow-sm border border-gray-200 card-padding ${className}`}>
         <h3 className="text-caption mb-2">Score Insights</h3>
         <p className="text-body-small text-gray-500">Unable to load insights</p>
       </div>

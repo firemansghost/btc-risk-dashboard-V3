@@ -33,9 +33,9 @@ export default function MethodologyPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
+    <div className="container-large bg-gray-50 min-h-screen">
       {/* Header */}
-      <div className="mb-6 sm:mb-8">
+      <div className="section-spacing">
         <h1 className="text-heading-1 mb-4">Methodology & Risk Factor Breakdown</h1>
         <p className="text-body text-gray-600">
           A transparent, data-driven approach to Bitcoin risk assessment using five independent pillars.

@@ -251,3 +251,135 @@ body {
     @apply text-primary hover:bg-primary-light hover:text-primary focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all duration-200;
   }
 }
+
+/* 8px Grid System - Consistent Spacing */
+@layer components {
+  /* Spacing Scale - 8px Grid System */
+  .space-micro {
+    @apply space-y-1; /* 4px */
+  }
+  
+  .space-small {
+    @apply space-y-2; /* 8px */
+  }
+  
+  .space-medium {
+    @apply space-y-4; /* 16px */
+  }
+  
+  .space-large {
+    @apply space-y-6; /* 24px */
+  }
+  
+  .space-xl {
+    @apply space-y-8; /* 32px */
+  }
+  
+  /* Padding Scale */
+  .p-micro {
+    @apply p-1; /* 4px */
+  }
+  
+  .p-small {
+    @apply p-2; /* 8px */
+  }
+  
+  .p-medium {
+    @apply p-4; /* 16px */
+  }
+  
+  .p-large {
+    @apply p-6; /* 24px */
+  }
+  
+  .p-xl {
+    @apply p-8; /* 32px */
+  }
+  
+  /* Margin Scale */
+  .m-micro {
+    @apply m-1; /* 4px */
+  }
+  
+  .m-small {
+    @apply m-2; /* 8px */
+  }
+  
+  .m-medium {
+    @apply m-4; /* 16px */
+  }
+  
+  .m-large {
+    @apply m-6; /* 24px */
+  }
+  
+  .m-xl {
+    @apply m-8; /* 32px */
+  }
+  
+  /* Gap Scale */
+  .gap-micro {
+    @apply gap-1; /* 4px */
+  }
+  
+  .gap-small {
+    @apply gap-2; /* 8px */
+  }
+  
+  .gap-medium {
+    @apply gap-4; /* 16px */
+  }
+  
+  .gap-large {
+    @apply gap-6; /* 24px */
+  }
+  
+  .gap-xl {
+    @apply gap-8; /* 32px */
+  }
+  
+  /* Layout Containers */
+  .container-micro {
+    @apply p-1 space-y-1;
+  }
+  
+  .container-small {
+    @apply p-2 space-y-2;
+  }
+  
+  .container-medium {
+    @apply p-4 space-y-4;
+  }
+  
+  .container-large {
+    @apply p-6 space-y-6;
+  }
+  
+  .container-xl {
+    @apply p-8 space-y-8;
+  }
+  
+  /* Card Spacing */
+  .card-padding {
+    @apply p-4 sm:p-6; /* Responsive padding */
+  }
+  
+  .card-spacing {
+    @apply space-y-4; /* Consistent internal spacing */
+  }
+  
+  /* Section Spacing */
+  .section-spacing {
+    @apply mb-8 lg:mb-12; /* Consistent section spacing */
+  }
+  
+  /* Grid Spacing */
+  .grid-spacing {
+    @apply gap-4 sm:gap-6; /* Responsive grid spacing */
+  }
+  
+  /* Flex Spacing */
+  .flex-spacing {
+    @apply gap-2 sm:gap-4; /* Responsive flex spacing */
+  }
+}

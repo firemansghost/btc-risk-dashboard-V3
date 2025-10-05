@@ -204,16 +204,16 @@ export default function RealDashboard() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6 py-4 sm:py-6">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center flex-spacing py-4 sm:py-6">
             <div className="flex-1">
               <div className="text-display mb-4">
                 <a href="/" className="text-primary hover:text-primary-hover transition-colors">GhostGauge</a>
               </div>
               
               {/* Top Row: G-Score Card + Bitcoin Price Card */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 grid-spacing mb-8">
                 {/* Prominent G-Score Card - Unified Vertical Layout */}
-                <div className="bg-white border-2 border-gray-300 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-200 ring-1 ring-gray-200">
+                <div className="bg-white border-2 border-gray-300 rounded-xl card-padding shadow-lg hover:shadow-xl transition-all duration-200 ring-1 ring-gray-200">
                   <div className="flex items-center justify-between mb-4">
                     <h1 className="text-caption">
                       Bitcoin G-Score
@@ -259,7 +259,7 @@ export default function RealDashboard() {
                 </div>
 
                 {/* Bitcoin Price Card */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 card-padding">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-caption">Bitcoin Price</h3>
                     <AlertBell />
@@ -499,7 +499,7 @@ export default function RealDashboard() {
         )}
 
         {/* Key Metrics Cards - Balanced 2x2 Layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 lg:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 grid-spacing mb-6 lg:mb-8">
           {/* Composite Score */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
             <h3 className="text-label mb-2">BTC G-Score</h3>
@@ -661,7 +661,7 @@ export default function RealDashboard() {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 grid-spacing mb-6 lg:mb-8">
           {sortFactorsByContribution(latest?.factors || []).map((factor: any) => {
             const contribution = calculateContribution(factor.score, factor.weight_pct);
             const factorTTL = getFactorTTL(factor.key);
@@ -670,7 +670,7 @@ export default function RealDashboard() {
             const cadence = getFactorCadence(factor.key);
             
             return (
-            <div key={factor.key} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 relative">
+            <div key={factor.key} className="bg-white rounded-lg shadow-sm border border-gray-200 card-padding relative">
           {/* Reserved Badge Lane - Top Right */}
           <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex flex-col gap-1 items-end">
             <span 
