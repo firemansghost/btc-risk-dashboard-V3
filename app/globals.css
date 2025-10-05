@@ -524,3 +524,228 @@ body {
     @apply card-elevated card-md hover:card-floating transition-all duration-300;
   }
 }
+
+/* Interactive States & Transitions */
+@layer components {
+  /* Base Transitions */
+  .transition-smooth {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  .transition-fast {
+    @apply transition-all duration-150 ease-in-out;
+  }
+  
+  .transition-slow {
+    @apply transition-all duration-500 ease-in-out;
+  }
+  
+  /* Hover Effects */
+  .hover-lift {
+    @apply hover:scale-105 hover:shadow-lg transition-all duration-200;
+  }
+  
+  .hover-glow {
+    @apply hover:shadow-lg hover:shadow-primary/20 transition-all duration-300;
+  }
+  
+  .hover-slide {
+    @apply hover:translate-x-1 transition-transform duration-200;
+  }
+  
+  .hover-fade {
+    @apply hover:opacity-80 transition-opacity duration-200;
+  }
+  
+  /* Focus States */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  }
+  
+  .focus-ring-inset {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset;
+  }
+  
+  .focus-visible {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+  }
+  
+  /* Loading States */
+  .loading-pulse {
+    @apply animate-pulse;
+  }
+  
+  .loading-spin {
+    @apply animate-spin;
+  }
+  
+  .loading-bounce {
+    @apply animate-bounce;
+  }
+  
+  .loading-ping {
+    @apply animate-ping;
+  }
+  
+  /* Button Interactive States */
+  .btn-hover {
+    @apply hover:scale-105 hover:shadow-lg transition-all duration-200;
+  }
+  
+  .btn-active {
+    @apply active:scale-95 active:shadow-sm transition-all duration-100;
+  }
+  
+  .btn-loading {
+    @apply relative overflow-hidden;
+  }
+  
+  .btn-loading::before {
+    content: '';
+    @apply absolute inset-0 bg-white/20 animate-pulse;
+  }
+  
+  /* Card Interactive States */
+  .card-hover {
+    @apply hover:scale-[1.02] hover:shadow-xl transition-all duration-300;
+  }
+  
+  .card-click {
+    @apply active:scale-[0.98] active:shadow-md transition-all duration-150;
+  }
+  
+  /* Link Interactive States */
+  .link-hover {
+    @apply hover:text-primary-hover hover:underline transition-all duration-200;
+  }
+  
+  .link-focus {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded;
+  }
+  
+  /* Input Interactive States */
+  .input-focus {
+    @apply focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200;
+  }
+  
+  .input-hover {
+    @apply hover:border-primary/50 transition-colors duration-200;
+  }
+  
+  /* Success Animations */
+  .success-bounce {
+    @apply animate-bounce;
+  }
+  
+  .success-pulse {
+    @apply animate-pulse;
+  }
+  
+  .success-glow {
+    @apply shadow-lg shadow-green-500/25;
+  }
+  
+  /* Error Animations */
+  .error-shake {
+    @apply animate-pulse;
+  }
+  
+  .error-glow {
+    @apply shadow-lg shadow-red-500/25;
+  }
+  
+  /* Micro-interactions */
+  .micro-bounce {
+    @apply hover:animate-bounce;
+  }
+  
+  .micro-wiggle {
+    @apply hover:animate-pulse;
+  }
+  
+  .micro-glow {
+    @apply hover:shadow-lg hover:shadow-primary/20;
+  }
+  
+  /* Stagger Animations */
+  .stagger-1 {
+    @apply animate-in fade-in slide-in-from-bottom-4 duration-300;
+    animation-delay: 0ms;
+  }
+  
+  .stagger-2 {
+    @apply animate-in fade-in slide-in-from-bottom-4 duration-300;
+    animation-delay: 100ms;
+  }
+  
+  .stagger-3 {
+    @apply animate-in fade-in slide-in-from-bottom-4 duration-300;
+    animation-delay: 200ms;
+  }
+  
+  .stagger-4 {
+    @apply animate-in fade-in slide-in-from-bottom-4 duration-300;
+    animation-delay: 300ms;
+  }
+  
+  /* Loading Skeletons */
+  .skeleton {
+    @apply animate-pulse bg-gray-200 rounded;
+  }
+  
+  .skeleton-text {
+    @apply skeleton h-4 w-full;
+  }
+  
+  .skeleton-title {
+    @apply skeleton h-6 w-3/4;
+  }
+  
+  .skeleton-avatar {
+    @apply skeleton h-10 w-10 rounded-full;
+  }
+  
+  .skeleton-card {
+    @apply skeleton h-32 w-full rounded-lg;
+  }
+  
+  /* Progress Indicators */
+  .progress-bar {
+    @apply w-full bg-gray-200 rounded-full h-2 overflow-hidden;
+  }
+  
+  .progress-fill {
+    @apply h-full bg-primary transition-all duration-500 ease-out;
+  }
+  
+  .progress-indeterminate {
+    @apply animate-pulse;
+  }
+  
+  /* Toast Animations */
+  .toast-enter {
+    @apply animate-in slide-in-from-right-4 fade-in duration-300;
+  }
+  
+  .toast-exit {
+    @apply animate-out slide-out-to-right-4 fade-out duration-200;
+  }
+  
+  /* Modal Animations */
+  .modal-backdrop {
+    @apply animate-in fade-in duration-300;
+  }
+  
+  .modal-content {
+    @apply animate-in zoom-in-95 slide-in-from-bottom-4 duration-300;
+  }
+  
+  /* Dropdown Animations */
+  .dropdown-enter {
+    @apply animate-in fade-in slide-in-from-top-2 duration-200;
+  }
+  
+  .dropdown-exit {
+    @apply animate-out fade-out slide-out-to-top-2 duration-150;
+  }
+}

@@ -213,7 +213,7 @@ export default function RealDashboard() {
               {/* Top Row: G-Score Card + Bitcoin Price Card */}
               <div className="grid grid-cols-1 lg:grid-cols-2 grid-spacing mb-8">
                 {/* Prominent G-Score Card - Unified Vertical Layout */}
-                <div className="card-floating card-md border-2 border-gray-300 ring-1 ring-gray-200">
+                <div className="card-floating card-md border-2 border-gray-300 ring-1 ring-gray-200 card-hover">
                   <div className="flex items-center justify-between mb-4">
                     <h1 className="text-caption">
                       Bitcoin G-Score
@@ -259,7 +259,7 @@ export default function RealDashboard() {
                 </div>
 
                 {/* Bitcoin Price Card */}
-                <div className="card-elevated card-md">
+                <div className="card-elevated card-md card-hover">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-caption">Bitcoin Price</h3>
                     <AlertBell />
@@ -370,7 +370,7 @@ export default function RealDashboard() {
                     }}
                     disabled={loading || refreshing}
                     aria-busy={refreshing}
-                    className="btn-primary px-3 sm:px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm sm:text-base"
+                    className="btn-primary px-3 sm:px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm sm:text-base btn-hover btn-active"
                   >
                   {refreshing ? (
                     <>
@@ -424,7 +424,7 @@ export default function RealDashboard() {
                 })()}
               </div>
               <p className="text-sm text-gray-500 mt-2">
-                <a href="/methodology#btc-g-score" className="text-link">New here? What the G-Score means →</a> · <a href="/alerts" className="text-link">View Alerts →</a>
+                <a href="/methodology#btc-g-score" className="text-link link-hover link-focus">New here? What the G-Score means →</a> · <a href="/alerts" className="text-link link-hover link-focus">View Alerts →</a>
               </p>
             </div>
           </div>
@@ -670,7 +670,7 @@ export default function RealDashboard() {
             const cadence = getFactorCadence(factor.key);
             
             return (
-            <div key={factor.key} className="card-factor">
+            <div key={factor.key} className="card-factor card-hover card-click">
           {/* Reserved Badge Lane - Top Right */}
           <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex flex-col gap-1 items-end">
             <span 
@@ -757,19 +757,19 @@ export default function RealDashboard() {
                   <div className="flex items-center space-x-2 sm:space-x-3">
                     <button
                       onClick={() => openHistoryModal({key: factor.key, label: factor.label})}
-                      className="text-sm text-primary hover:text-primary-hover font-medium px-2 py-1 rounded hover:bg-emerald-50 transition-colors"
+                      className="text-sm text-primary hover:text-primary-hover font-medium px-2 py-1 rounded hover:bg-emerald-50 transition-smooth focus-ring"
                     >
                       History
                     </button>
                     <button
                       onClick={() => openEnhancedDetails({key: factor.key, label: factor.label})}
-                      className="text-sm text-accent hover:text-accent-hover font-medium px-2 py-1 rounded hover:bg-violet-50 transition-colors"
+                      className="text-sm text-accent hover:text-accent-hover font-medium px-2 py-1 rounded hover:bg-violet-50 transition-smooth focus-ring"
                     >
                       Enhanced Details
                     </button>
                     <a 
                       href="/methodology" 
-                      className="text-sm text-primary hover:text-primary-hover font-medium px-2 py-1 rounded hover:bg-emerald-50 transition-colors"
+                      className="text-sm text-primary hover:text-primary-hover font-medium px-2 py-1 rounded hover:bg-emerald-50 transition-smooth focus-ring"
                     >
                       What's this?
                     </a>
