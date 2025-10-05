@@ -680,53 +680,53 @@ export default function RealDashboard() {
             const cadence = getFactorCadence(factor.key);
             
             return (
-            <LazyLoader 
-              key={factor.key} 
-              delay={index * 100}
-              fallback={<SkeletonLoader isLoading={true}><SkeletonCard type="factor" /></SkeletonLoader>}
-            >
-              <div className="card-factor card-hover card-click">
-          {/* Reserved Badge Lane - Top Right */}
-          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex flex-col gap-1 items-end">
-            <span 
-              className={`px-2 py-1 rounded text-xs font-medium border ${staleness.className}`}
-              title={staleness.tooltip}
-            >
-              {staleness.level}
-            </span>
-            
-            {/* 50W SMA Diagnostic Pill (Trend & Valuation only) */}
-            {factor.key === 'trend_valuation' && factor.sma50wDiagnostic && (
-              <span 
-                className={`px-2 py-1 rounded text-xs font-medium border ${
-                  factor.sma50wDiagnostic.showWarning 
-                    ? 'bg-amber-100 text-amber-800 border-amber-200' 
-                    : 'bg-gray-50 text-gray-600 border-gray-200'
-                }`}
-                title={
-                  factor.sma50wDiagnostic.showWarning
-                    ? "Historical caution marker; display-only, not part of the score"
-                    : "50-week SMA status; display-only, not part of the score"
-                }
+              <LazyLoader 
+                key={factor.key} 
+                delay={index * 100}
+                fallback={<SkeletonLoader isLoading={true}><SkeletonCard type="factor" /></SkeletonLoader>}
               >
-                {factor.sma50wDiagnostic.showWarning 
-                  ? `Below 50W SMA (${factor.sma50wDiagnostic.consecutiveWeeksBelow}+ weeks)`
-                  : `Above 50W SMA ($${Math.round(factor.sma50wDiagnostic.sma50 / 1000)}k)`
-                }
-              </span>
-            )}
-            
-            {/* Space for additional badges if needed */}
-          </div>
-              
-              <div className="mb-4 pr-16 sm:pr-20"> {/* Add right padding to avoid badge lane */}
-                {/* Header Row - Title and Pillar */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
-                  <h3 className="text-heading-3">{factor.label}</h3>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium w-fit ${getPillarBadgeClasses(factor.pillar)}`}>
-                    {getPillarLabel(factor.pillar)}
-                  </span>
-                </div>
+                <div className="card-factor card-hover card-click">
+                  {/* Reserved Badge Lane - Top Right */}
+                  <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex flex-col gap-1 items-end">
+                    <span 
+                      className={`px-2 py-1 rounded text-xs font-medium border ${staleness.className}`}
+                      title={staleness.tooltip}
+                    >
+                      {staleness.level}
+                    </span>
+                    
+                    {/* 50W SMA Diagnostic Pill (Trend & Valuation only) */}
+                    {factor.key === 'trend_valuation' && factor.sma50wDiagnostic && (
+                      <span 
+                        className={`px-2 py-1 rounded text-xs font-medium border ${
+                          factor.sma50wDiagnostic.showWarning 
+                            ? 'bg-amber-100 text-amber-800 border-amber-200' 
+                            : 'bg-gray-50 text-gray-600 border-gray-200'
+                        }`}
+                        title={
+                          factor.sma50wDiagnostic.showWarning
+                            ? "Historical caution marker; display-only, not part of the score"
+                            : "50-week SMA status; display-only, not part of the score"
+                        }
+                      >
+                        {factor.sma50wDiagnostic.showWarning 
+                          ? `Below 50W SMA (${factor.sma50wDiagnostic.consecutiveWeeksBelow}+ weeks)`
+                          : `Above 50W SMA ($${Math.round(factor.sma50wDiagnostic.sma50 / 1000)}k)`
+                        }
+                      </span>
+                    )}
+                    
+                    {/* Space for additional badges if needed */}
+                  </div>
+                  
+                  <div className="mb-4 pr-16 sm:pr-20"> {/* Add right padding to avoid badge lane */}
+                    {/* Header Row - Title and Pillar */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
+                      <h3 className="text-heading-3">{factor.label}</h3>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium w-fit ${getPillarBadgeClasses(factor.pillar)}`}>
+                        {getPillarLabel(factor.pillar)}
+                      </span>
+                    </div>
                 
                 {/* Score Row - Dedicated flex container with controlled wrapping */}
                 <div className="flex items-center gap-1 sm:gap-2 flex-wrap min-h-[32px]">
