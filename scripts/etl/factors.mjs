@@ -1931,7 +1931,112 @@ async function computeOnchain() {
   }
 }
 
+// Cache configuration for Macro Overlay
+const MACRO_OVERLAY_CACHE_DIR = 'public/data/cache/macro_overlay';
+const MACRO_OVERLAY_CACHE_TTL_HOURS = 24; // 24 hours cache for FRED data
+const MACRO_OVERLAY_CACHE_FILE = 'macro_overlay_cache.json';
+
+/**
+ * Load cached Macro Overlay data
+ */
+async function loadMacroOverlayCache() {
+  try {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const cachePath = path.join(MACRO_OVERLAY_CACHE_DIR, MACRO_OVERLAY_CACHE_FILE);
+    const cacheData = await fs.readFile(cachePath, { encoding: 'utf8' });
+    const parsed = JSON.parse(cacheData);
+    
+    // Check if cache is still valid
+    const cacheAge = Date.now() - new Date(parsed.cachedAt).getTime();
+    const maxAge = MACRO_OVERLAY_CACHE_TTL_HOURS * 60 * 60 * 1000;
+    
+    if (cacheAge < maxAge) {
+      console.log(`Macro Overlay: Using cached data (${Math.round(cacheAge / (60 * 1000))} minutes old)`);
+      return parsed;
+    } else {
+      console.log(`Macro Overlay: Cache expired (${Math.round(cacheAge / (60 * 60 * 1000))} hours old)`);
+      return null;
+    }
+  } catch (error) {
+    console.log(`Macro Overlay: No valid cache found: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Save Macro Overlay data to cache
+ */
+async function saveMacroOverlayCache(data) {
+  try {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    await fs.mkdir(MACRO_OVERLAY_CACHE_DIR, { recursive: true });
+    const cachePath = path.join(MACRO_OVERLAY_CACHE_DIR, MACRO_OVERLAY_CACHE_FILE);
+    
+    const cacheData = {
+      ...data,
+      cachedAt: new Date().toISOString(),
+      version: '1.0.0'
+    };
+    
+    await fs.writeFile(cachePath, JSON.stringify(cacheData, null, 2), { encoding: 'utf8' });
+    console.log(`Macro Overlay: Cached data saved to ${cachePath}`);
+  } catch (error) {
+    console.warn(`Macro Overlay: Failed to save cache: ${error.message}`);
+  }
+}
+
+/**
+ * Check if FRED macro data has changed since last cache
+ */
+function hasMacroDataChanged(currentData, cachedData) {
+  if (!cachedData || !cachedData.latestDxyDate) {
+    return true;
+  }
+  
+  // Check if latest observation date has changed
+  return currentData.latestDxyDate !== cachedData.latestDxyDate;
+}
+
+/**
+ * Fetch FRED macro data with enhanced error handling and retry logic
+ */
+async function fetchMacroFredDataWithRetry(seriesId, apiKey, startISO, endISO, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=d&aggregation_method=avg`;
+      
+      const response = await fetch(url, {
+        headers: { 'User-Agent': 'btc-risk-dashboard' },
+        cache: 'no-store'
+      });
+      
+      if (!response.ok) {
+        if (attempt < maxRetries) {
+          console.log(`Macro Overlay: FRED ${seriesId} attempt ${attempt} failed (${response.status}), retrying...`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+          continue;
+        }
+        throw new Error(`FRED API error for ${seriesId}: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log(`Macro Overlay: FRED ${seriesId} fetched successfully (${data.observations?.length || 0} observations)`);
+      return data;
+    } catch (error) {
+      if (attempt === maxRetries) {
+        console.log(`Macro Overlay: FRED ${seriesId} failed after ${maxRetries} attempts: ${error.message}`);
+        throw error;
+      }
+      console.log(`Macro Overlay: FRED ${seriesId} attempt ${attempt} failed: ${error.message}, retrying...`);
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+    }
+  }
+}
+
 // 8. MACRO OVERLAY (Multi-factor macro environment analysis)
+// Enhanced with caching, retry logic, and incremental updates
 async function computeMacroOverlay() {
   const apiKey = process.env.FRED_API_KEY;
   if (!apiKey) {
@@ -1939,31 +2044,46 @@ async function computeMacroOverlay() {
   }
 
   try {
+    // Check for cached data first
+    const cachedData = await loadMacroOverlayCache();
+
     const end = new Date();
     const start = new Date(end.getTime() - 120 * 24 * 60 * 60 * 1000); // 120 days for better trend analysis
     const startISO = start.toISOString().slice(0, 10);
     const endISO = end.toISOString().slice(0, 10);
 
-    // Fetch expanded macro indicators: DXY, 2Y/10Y yields, VIX, Real Rates
-    const [dxyRes, dgs2Res, dgs10Res, vixRes, tipRes] = await Promise.all([
-      fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=DTWEXBGS&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=d&aggregation_method=avg`),
-      fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=DGS2&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=d&aggregation_method=avg`),
-      fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=DGS10&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=d&aggregation_method=avg`),
-      fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=VIXCLS&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=d&aggregation_method=avg`),
-      fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=DFII10&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=d&aggregation_method=avg`)
+    // 🚀 ENHANCED FRED FETCHING: Use retry logic and parallel processing
+    console.log('Macro Overlay: Fetching FRED macro data with retry logic...');
+    const startTime = Date.now();
+    
+    const [dxyData, dgs2Data, dgs10Data, vixData, tipData] = await Promise.all([
+      fetchMacroFredDataWithRetry('DTWEXBGS', apiKey, startISO, endISO),
+      fetchMacroFredDataWithRetry('DGS2', apiKey, startISO, endISO),
+      fetchMacroFredDataWithRetry('DGS10', apiKey, startISO, endISO),
+      fetchMacroFredDataWithRetry('VIXCLS', apiKey, startISO, endISO),
+      fetchMacroFredDataWithRetry('DFII10', apiKey, startISO, endISO).catch(() => null) // TIPS data is optional
     ]);
+    
+    const fetchTime = Date.now() - startTime;
+    console.log(`Macro Overlay: FRED data fetched in ${fetchTime}ms`);
 
-    if (!dxyRes.ok || !dgs2Res.ok || !dgs10Res.ok || !vixRes.ok) {
-      return { score: null, reason: "fred_api_error" };
+    // Check if we can use cached data (incremental update)
+    const latestDxyDate = dxyData.observations?.length > 0 ? 
+      dxyData.observations[dxyData.observations.length - 1].date : null;
+    
+    const dataChanged = hasMacroDataChanged({ latestDxyDate }, cachedData);
+    
+    if (cachedData && !dataChanged) {
+      console.log('Macro Overlay: Using cached calculations (no FRED data changes)');
+      return {
+        score: cachedData.score,
+        reason: "success_cached",
+        lastUpdated: cachedData.lastUpdated,
+        details: cachedData.details
+      };
     }
 
-    const [dxyData, dgs2Data, dgs10Data, vixData, tipData] = await Promise.all([
-      dxyRes.json(),
-      dgs2Res.json(),
-      dgs10Res.json(),
-      vixRes.json(),
-      tipRes.ok ? tipRes.json() : null
-    ]);
+    console.log('Macro Overlay: Computing fresh calculations (FRED data changed or no cache)');
 
     // Extract and clean values
     const dxyValues = dxyData.observations?.map(o => Number(o.value)).filter(Number.isFinite) || [];
@@ -2081,7 +2201,7 @@ async function computeMacroOverlay() {
     else if (dgs2_20dChange < -15) rateEnvironment = "Falling Rapidly";
     else if (dgs2_20dChange < -5) rateEnvironment = "Falling";
 
-    return { 
+    const result = { 
       score: compositeScore, 
       reason: "success",
       lastUpdated: new Date().toISOString(),
@@ -2092,10 +2212,18 @@ async function computeMacroOverlay() {
         { label: "VIX Level", value: `${latestVix.toFixed(1)} (${(vixPercentile * 100).toFixed(0)}%ile)` },
         { label: "Yield Curve (10Y-2Y)", value: `${yieldCurve.toFixed(2)}%${yieldCurve < 0 ? ' (Inverted)' : ''}` },
         { label: "Real Rate (10Y TIPS)", value: realRateValues.length > 0 ? `${latestRealRate.toFixed(2)}%` : "N/A" },
+        { label: "Fetch Time", value: `${fetchTime}ms` },
         { label: "Component Scores", value: `Dollar: ${dollarScore}, Rates: ${ratesScore}, VIX: ${vixScore}, Real: ${realRateScore}` },
         { label: "Current Levels", value: `DXY: ${latestDxy.toFixed(1)}, 2Y: ${latest2Y.toFixed(2)}%, VIX: ${latestVix.toFixed(1)}` }
-      ]
+      ],
+      latestDxyDate, // Include for cache comparison
+      fetchTime // Include timing info
     };
+
+    // Save to cache for future use
+    await saveMacroOverlayCache(result);
+
+    return result;
   } catch (error) {
     return { score: null, reason: `error: ${error.message}` };
   }
