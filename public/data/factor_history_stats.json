@@ -15,8 +15,8 @@
     },
     "onchain": {
       "dataPoints": 39,
-      "mean": 70,
-      "stdDev": 19.77,
+      "mean": 69.97,
+      "stdDev": 19.81,
       "min": 35,
       "max": 98,
       "range": 63,
