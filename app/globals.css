@@ -876,7 +876,8 @@ body {
   }
   
   .chart-grid-dashed {
-    @apply stroke-gray-200 stroke-1 stroke-dasharray-2,2;
+    @apply stroke-gray-200 stroke-1;
+    stroke-dasharray: 2,2;
   }
   
   /* Chart Data Points */
@@ -910,12 +911,12 @@ body {
   }
   
   .chart-line-dashed {
-    @apply stroke-dasharray-4,4;
+    stroke-dasharray: 4,4;
   }
   
   /* Chart Areas */
   .chart-area {
-    @apply fill-opacity-20 transition-all duration-300;
+    @apply opacity-20 transition-all duration-300;
   }
   
   .chart-area-primary {
