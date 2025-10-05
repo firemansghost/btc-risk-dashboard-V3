@@ -116,7 +116,7 @@ export default function MethodologyPage() {
                     
                     <div className="bg-green-50 rounded-lg p-4 mt-4">
                       <p className="text-sm text-green-800">
-                        <strong>Recent Optimizations:</strong> The system now includes enhanced caching, multi-source fallback chains, parallel processing, and business-day awareness. Trend & Valuation uses factor-level caching with 6-hour TTL, Stablecoins covers 7 coins with weighted averages, ETF Flows excludes weekends, and Term Structure & Leverage uses multi-exchange fallback (BitMEX → Binance → OKX).
+                        <strong>Comprehensive System Optimizations:</strong> All 8 factors now feature intelligent caching, multi-source fallback chains, parallel processing, and enhanced reliability. Key improvements include: Trend & Valuation (24h cache, parallel BMSB/Mayer/RSI), Stablecoins (7-coin coverage, 3-source fallback, 365-day baseline), ETF Flows (business-day logic, weekend exclusion), Term Leverage (3-exchange fallback, 6h cache), On-chain Activity (3-source fallback, 4h cache), Net Liquidity (enhanced FRED fetching, 24h cache), Macro Overlay (retry logic, 24h cache), and Social Interest (6h cache, momentum analysis).
                       </p>
                     </div>
 
@@ -243,9 +243,9 @@ export default function MethodologyPage() {
                 </tr>
                 <tr className="border-b">
                   <td className="py-2">CoinGecko</td>
-                  <td className="py-2">Stablecoin supply, market data</td>
+                  <td className="py-2">Stablecoin supply, trending data, price data</td>
                   <td className="py-2">Daily</td>
-                  <td className="py-2">Primary stablecoin tracking</td>
+                  <td className="py-2">Primary stablecoin tracking, social sentiment</td>
                 </tr>
                 <tr className="border-b">
                   <td className="py-2">CoinMarketCap</td>
@@ -287,13 +287,19 @@ export default function MethodologyPage() {
                   <td className="py-2">Blockchain.info</td>
                   <td className="py-2">Fees, mempool, miner revenue</td>
                   <td className="py-2">~10 min</td>
-                  <td className="py-2">On-chain metrics</td>
+                  <td className="py-2">Primary on-chain metrics</td>
                 </tr>
                 <tr className="border-b">
-                  <td className="py-2">Google Trends</td>
-                  <td className="py-2">Search interest</td>
-                  <td className="py-2">Daily</td>
-                  <td className="py-2">Social sentiment</td>
+                  <td className="py-2">Mempool.space</td>
+                  <td className="py-2">Mempool data, fees</td>
+                  <td className="py-2">~10 min</td>
+                  <td className="py-2">On-chain fallback source</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2">Mempool.observer</td>
+                  <td className="py-2">Mempool data, final fallback</td>
+                  <td className="py-2">~10 min</td>
+                  <td className="py-2">On-chain final fallback</td>
                 </tr>
                 <tr>
                   <td className="py-2">CBOE</td>
@@ -303,6 +309,24 @@ export default function MethodologyPage() {
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Enhanced Performance Features</h3>
+            <div className="bg-blue-50 rounded-lg p-4">
+              <p className="text-sm text-blue-800 mb-3">
+                <strong>Intelligent Caching System:</strong> All factors now use sophisticated caching with appropriate TTLs to minimize API calls and improve performance.
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-sm text-blue-700 ml-4">
+                <li><strong>Trend & Valuation:</strong> 24-hour cache with incremental updates</li>
+                <li><strong>Stablecoins:</strong> 24-hour cache with 365-day historical baseline</li>
+                <li><strong>ETF Flows:</strong> 24-hour cache with business-day logic</li>
+                <li><strong>Term Leverage:</strong> 6-hour cache with multi-exchange fallback</li>
+                <li><strong>On-chain Activity:</strong> 4-hour cache with 3-source fallback</li>
+                <li><strong>Net Liquidity:</strong> 24-hour cache with enhanced FRED fetching</li>
+                <li><strong>Macro Overlay:</strong> 24-hour cache with retry logic</li>
+                <li><strong>Social Interest:</strong> 6-hour cache with momentum analysis</li>
+              </ul>
+            </div>
           </div>
           <div className="mt-4">
             <button
