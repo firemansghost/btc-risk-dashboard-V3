@@ -1,0 +1,189 @@
+name: Bundle Size Tracking
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  bundle-size-tracking:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history for comparison
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build application
+      run: npm run build
+      env:
+        NODE_ENV: production
+    
+    - name: Run bundle size tracking
+      run: node scripts/ci-bundle-tracking.mjs
+      env:
+        BUILD_ID: ${{ github.run_id }}
+        COMMIT_HASH: ${{ github.sha }}
+        BRANCH_NAME: ${{ github.ref_name }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Upload bundle size report
+      uses: actions/upload-artifact@v4
+      with:
+        name: bundle-size-report
+        path: bundle-size-report.json
+        retention-days: 30
+    
+    - name: Comment on PR with bundle size changes
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          try {
+            const reportPath = path.join(process.cwd(), 'bundle-size-report.json');
+            if (fs.existsSync(reportPath)) {
+              const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+              
+              let comment = `## 📊 Bundle Size Report\n\n`;
+              comment += `**Build ID:** ${report.summary.buildId}\n`;
+              comment += `**Total Size:** ${report.metrics.totalSize}\n`;
+              comment += `**Gzipped Size:** ${report.metrics.gzippedSize}\n`;
+              comment += `**Compression Ratio:** ${report.metrics.compressionRatio}\n`;
+              comment += `**Chunks:** ${report.metrics.chunkCount}\n`;
+              comment += `**Assets:** ${report.metrics.assetCount}\n\n`;
+              
+              if (report.alerts.length > 0) {
+                comment += `## 🚨 Alerts (${report.alerts.length})\n\n`;
+                report.alerts.forEach(alert => {
+                  const emoji = alert.severity === 'critical' ? '🚨' : 
+                               alert.severity === 'error' ? '❌' : '⚠️';
+                  comment += `${emoji} **${alert.severity.toUpperCase()}:** ${alert.message}\n`;
+                  comment += `   ${alert.recommendation}\n\n`;
+                });
+              }
+              
+              if (report.recommendations.length > 0) {
+                comment += `## 💡 Recommendations (${report.recommendations.length})\n\n`;
+                report.recommendations.forEach(rec => {
+                  comment += `- ${rec}\n`;
+                });
+              }
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
+          } catch (error) {
+            console.error('Failed to create PR comment:', error);
+          }
+    
+    - name: Create GitHub issue for critical alerts
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          try {
+            const reportPath = path.join(process.cwd(), 'bundle-size-report.json');
+            if (fs.existsSync(reportPath)) {
+              const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+              const criticalAlerts = report.alerts.filter(alert => alert.severity === 'critical');
+              
+              if (criticalAlerts.length > 0) {
+                let issueBody = `## 🚨 Critical Bundle Size Alerts\n\n`;
+                issueBody += `**Build ID:** ${report.summary.buildId}\n`;
+                issueBody += `**Commit:** ${report.summary.commitHash}\n`;
+                issueBody += `**Branch:** ${report.summary.branch}\n\n`;
+                
+                issueBody += `### Bundle Metrics\n`;
+                issueBody += `- **Total Size:** ${report.metrics.totalSize}\n`;
+                issueBody += `- **Gzipped Size:** ${report.metrics.gzippedSize}\n`;
+                issueBody += `- **Compression Ratio:** ${report.metrics.compressionRatio}\n\n`;
+                
+                issueBody += `### Critical Alerts\n`;
+                criticalAlerts.forEach(alert => {
+                  issueBody += `- **${alert.type}:** ${alert.message}\n`;
+                  issueBody += `  - **Recommendation:** ${alert.recommendation}\n`;
+                });
+                
+                issueBody += `\n### Recommendations\n`;
+                report.recommendations.forEach(rec => {
+                  issueBody += `- ${rec}\n`;
+                });
+                
+                github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: `🚨 Critical Bundle Size Alert - ${report.summary.buildId}`,
+                  body: issueBody,
+                  labels: ['bug', 'performance', 'bundle-size', 'critical']
+                });
+              }
+            }
+          } catch (error) {
+            console.error('Failed to create GitHub issue:', error);
+          }
+    
+    - name: Update bundle size badge
+      if: success()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          try {
+            const reportPath = path.join(process.cwd(), 'bundle-size-report.json');
+            if (fs.existsSync(reportPath)) {
+              const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+              
+              // Update README with bundle size badge
+              const readmePath = path.join(process.cwd(), 'README.md');
+              if (fs.existsSync(readmePath)) {
+                let readme = fs.readFileSync(readmePath, 'utf8');
+                
+                // Add or update bundle size badge
+                const badgeRegex = /\[!\[Bundle Size\]\([^)]+\)\]\([^)]+\)/g;
+                const newBadge = `[![Bundle Size](https://img.shields.io/badge/bundle%20size-${report.metrics.totalSize}-blue)](https://github.com/${context.repo.owner}/${context.repo.repo}/actions)`;
+                
+                if (badgeRegex.test(readme)) {
+                  readme = readme.replace(badgeRegex, newBadge);
+                } else {
+                  readme = newBadge + '\n\n' + readme;
+                }
+                
+                fs.writeFileSync(readmePath, readme);
+                
+                // Commit the updated README
+                require('child_process').execSync('git config --local user.email "action@github.com"');
+                require('child_process').execSync('git config --local user.name "GitHub Action"');
+                require('child_process').execSync('git add README.md');
+                require('child_process').execSync('git commit -m "Update bundle size badge" || true');
+                require('child_process').execSync('git push || true');
+              }
+            }
+          } catch (error) {
+            console.error('Failed to update bundle size badge:', error);
+          }
