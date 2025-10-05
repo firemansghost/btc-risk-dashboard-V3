@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-10-05T00:22:43.410Z",
+  "updated_at": "2025-10-05T00:46:14.773Z",
   "date": "2025-09-26",
   "btc_close_usd": 108963.53013595635,
   "xau_close_usd": 3885.925,
@@ -10,7 +10,7 @@
       "name": "Stooq",
       "ok": true,
       "url": "https://stooq.com/",
-      "ms": 785,
+      "ms": 1019,
       "fallback": false
     }
   ]
