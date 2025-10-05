@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { calculateContribution, getFactorStaleness, sortFactorsByContribution, getFactorTTL } from '@/lib/factorUtils';
 import { formatFriendlyTimestamp } from '@/lib/dateUtils';
 import MobileCollapsible from './MobileCollapsible';
+import SkeletonLoader, { SkeletonCard } from './SkeletonLoader';
 
 interface ScoreInsightsCardProps {
   latest: any;
@@ -872,15 +873,10 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
   if (loading) {
     return (
-      <div className={`mobile-card chart-container ${className}`}>
-        <div className="chart-loading">
-          <div className="chart-skeleton-title mb-4"></div>
-          <div className="space-y-2">
-            <div className="chart-skeleton-line"></div>
-            <div className="chart-skeleton-line"></div>
-            <div className="chart-skeleton-line"></div>
-          </div>
-        </div>
+      <div className={`mobile-card ${className}`}>
+        <SkeletonLoader isLoading={true}>
+          <SkeletonCard type="insight" size="lg" />
+        </SkeletonLoader>
       </div>
     );
   }

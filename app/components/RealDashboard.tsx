@@ -24,6 +24,9 @@ import SatoshisPerDollarCard from './SatoshisPerDollarCard';
 import RadialGauge from './RadialGauge';
 import AlertBell from './AlertBell';
 import ScoreInsightsCard from './ScoreInsightsCard';
+import SkeletonLoader, { SkeletonDashboard } from './SkeletonLoader';
+import LazyLoader from './LazyLoader';
+import PerformanceMonitor from './PerformanceMonitor';
 
 function ErrorView({ msg, onRetry }: { msg: string; onRetry: () => void }) {
   return <div style={{ padding: 16 }}><p>{msg}</p><button onClick={onRetry} style={{ marginTop: 8 }}>Retry</button></div>;
@@ -193,7 +196,14 @@ export default function RealDashboard() {
 
   // Loading/error states with robust timeouts
   const elapsed = Math.max(0, Date.now() - (startedAt.current || Date.now()));
-  if (loading && elapsed < 12000) return <p>Loading dashboard… {Math.floor(elapsed/1000)}s</p>;
+  if (loading && elapsed < 12000) {
+    return (
+      <div className="min-h-screen">
+        <PerformanceMonitor componentName="Dashboard" showIndicator={true} />
+        <SkeletonDashboard />
+      </div>
+    );
+  }
   if (loading && elapsed >= 12000) return <ErrorView msg="Timed out waiting for dashboard data." onRetry={load} />;
   if (error) return <ErrorView msg={`Failed to load: ${error}`} onRetry={load} />;
   if (!latest || !status) return <ErrorView msg="Missing data artifacts." onRetry={load} />;
@@ -662,7 +672,7 @@ export default function RealDashboard() {
         </div>
         
         <div className="mobile-grid-2 mb-6 lg:mb-8">
-          {sortFactorsByContribution(latest?.factors || []).map((factor: any) => {
+          {sortFactorsByContribution(latest?.factors || []).map((factor: any, index: number) => {
             const contribution = calculateContribution(factor.score, factor.weight_pct);
             const factorTTL = getFactorTTL(factor.key);
             const staleness = getFactorStaleness(factor.last_utc || factor.as_of_utc, factorTTL, factor.key);
@@ -670,7 +680,12 @@ export default function RealDashboard() {
             const cadence = getFactorCadence(factor.key);
             
             return (
-            <div key={factor.key} className="card-factor card-hover card-click">
+            <LazyLoader 
+              key={factor.key} 
+              delay={index * 100}
+              fallback={<SkeletonLoader isLoading={true}><SkeletonCard type="factor" /></SkeletonLoader>}
+            >
+              <div className="card-factor card-hover card-click">
           {/* Reserved Badge Lane - Top Right */}
           <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex flex-col gap-1 items-end">
             <span 
@@ -961,15 +976,21 @@ export default function RealDashboard() {
                 </>
               )}
             </div>
+            </LazyLoader>
           );
           })}
         </div>
 
         {/* History Chart */}
-        <div className="card-elevated card-lg mb-8 chart-container chart-responsive">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Historical G-Score</h3>
-          <HistoryChart />
-        </div>
+        <LazyLoader 
+          delay={500}
+          fallback={<SkeletonLoader isLoading={true}><SkeletonCard type="chart" size="lg" /></SkeletonLoader>}
+        >
+          <div className="card-elevated card-lg mb-8 chart-container chart-responsive">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Historical G-Score</h3>
+            <HistoryChart />
+          </div>
+        </LazyLoader>
 
         {/* Weights and Provenance */}
         <div className="flex justify-center space-x-4">
