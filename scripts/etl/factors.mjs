@@ -566,11 +566,15 @@ async function computeStablecoins() {
       // Cache read failed, continue to live fetch
     }
     
-    // Define stablecoins array with fallback source IDs
+    // Define stablecoins array with expanded coverage and current market weights
     const stablecoins = [
-      { id: 'tether', symbol: 'USDT', weight: 0.65, cmcId: '825' }, // Market leader
-      { id: 'usd-coin', symbol: 'USDC', weight: 0.28, cmcId: '3408' }, // Second largest
-      { id: 'dai', symbol: 'DAI', weight: 0.07, cmcId: '4943' } // Decentralized option
+      { id: 'tether', symbol: 'USDT', weight: 0.55, cmcId: '825' }, // Market leader (reduced from 65%)
+      { id: 'usd-coin', symbol: 'USDC', weight: 0.25, cmcId: '3408' }, // Second largest (reduced from 28%)
+      { id: 'dai', symbol: 'DAI', weight: 0.05, cmcId: '4943' }, // Decentralized option (reduced from 7%)
+      { id: 'binance-usd', symbol: 'BUSD', weight: 0.03, cmcId: '4687' }, // Binance stablecoin
+      { id: 'true-usd', symbol: 'TUSD', weight: 0.02, cmcId: '2563' }, // TrueUSD
+      { id: 'frax', symbol: 'FRAX', weight: 0.02, cmcId: '6952' }, // Frax stablecoin
+      { id: 'liquity-usd', symbol: 'LUSD', weight: 0.01, cmcId: '9566' } // Liquity USD
     ];
 
     // If no cache, fetch live data with parallel processing
@@ -756,7 +760,8 @@ async function computeStablecoins() {
       // Fallback: Build weighted average series from current data
       const weightedChanges = calculateWeightedStablecoinChanges(responses, stablecoins);
       changeSeries = weightedChanges;
-      console.log(`Stablecoins: Using weighted average fallback series with ${changeSeries.length} data points (USDT: ${stablecoins[0].weight}, USDC: ${stablecoins[1].weight}, DAI: ${stablecoins[2].weight})`);
+      const weightInfo = stablecoins.map(coin => `${coin.symbol}: ${coin.weight}`).join(', ');
+      console.log(`Stablecoins: Using weighted average fallback series with ${changeSeries.length} data points (${weightInfo})`);
     }
 
     if (changeSeries.length === 0) {
@@ -828,7 +833,8 @@ async function computeStablecoins() {
         { label: "Growth Momentum", value: recentMomentum > 1 ? "Accelerating" : recentMomentum > 0.5 ? "Steady" : "Decelerating" },
         { label: "Market Concentration", value: `HHI: ${(hhi * 10000).toFixed(0)}` },
         { label: "Supply Growth Percentile", value: `${(supplyPercentile * 100).toFixed(0)}%` },
-        { label: "Historical Baseline", value: `${changeSeries.length} data points (weighted average)` },
+        { label: "Historical Baseline", value: `${changeSeries.length} data points (weighted average of ${stablecoins.length} stablecoins)` },
+        { label: "Stablecoin Coverage", value: `${stablecoins.map(c => c.symbol).join(', ')} (${stablecoins.length} coins)` },
         { label: "Component Scores", value: `Supply: ${supplyScore}, Momentum: ${momentumScore}, Concentration: ${concentrationRiskScore}` }
       ]
     };
