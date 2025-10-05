@@ -207,7 +207,7 @@ export default function RealDashboard() {
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6 py-4 sm:py-6">
             <div className="flex-1">
               <div className="text-display mb-4">
-                <a href="/" className="hover:text-emerald-600 transition-colors">GhostGauge</a>
+                <a href="/" className="text-primary hover:text-primary-hover transition-colors">GhostGauge</a>
               </div>
               
               {/* Top Row: G-Score Card + Bitcoin Price Card */}
@@ -370,7 +370,7 @@ export default function RealDashboard() {
                     }}
                     disabled={loading || refreshing}
                     aria-busy={refreshing}
-                    className="px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm sm:text-base"
+                    className="btn-primary px-3 sm:px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm sm:text-base"
                   >
                   {refreshing ? (
                     <>
@@ -424,7 +424,7 @@ export default function RealDashboard() {
                 })()}
               </div>
               <p className="text-sm text-gray-500 mt-2">
-                <a href="/methodology#btc-g-score" className="text-emerald-600 hover:text-emerald-700 underline">New here? What the G-Score means →</a> · <a href="/alerts" className="text-emerald-600 hover:text-emerald-700 underline">View Alerts →</a>
+                <a href="/methodology#btc-g-score" className="text-link">New here? What the G-Score means →</a> · <a href="/alerts" className="text-link">View Alerts →</a>
               </p>
             </div>
           </div>
@@ -757,19 +757,19 @@ export default function RealDashboard() {
                   <div className="flex items-center space-x-2 sm:space-x-3">
                     <button
                       onClick={() => openHistoryModal({key: factor.key, label: factor.label})}
-                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium px-2 py-1 rounded hover:bg-emerald-50 transition-colors"
+                      className="text-sm text-primary hover:text-primary-hover font-medium px-2 py-1 rounded hover:bg-emerald-50 transition-colors"
                     >
                       History
                     </button>
                     <button
                       onClick={() => openEnhancedDetails({key: factor.key, label: factor.label})}
-                      className="text-sm text-blue-600 hover:text-blue-700 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                      className="text-sm text-accent hover:text-accent-hover font-medium px-2 py-1 rounded hover:bg-violet-50 transition-colors"
                     >
                       Enhanced Details
                     </button>
                     <a 
                       href="/methodology" 
-                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium px-2 py-1 rounded hover:bg-emerald-50 transition-colors"
+                      className="text-sm text-primary hover:text-primary-hover font-medium px-2 py-1 rounded hover:bg-emerald-50 transition-colors"
                     >
                       What's this?
                     </a>

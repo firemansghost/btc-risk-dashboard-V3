@@ -82,3 +82,172 @@ body {
     @apply text-base font-medium text-emerald-600 hover:text-emerald-700 underline transition-colors;
   }
 }
+
+/* Semantic Color System - Brand Colors */
+@layer components {
+  /* Primary Brand Colors */
+  .bg-primary {
+    @apply bg-emerald-600;
+  }
+  
+  .bg-primary-hover {
+    @apply bg-emerald-700;
+  }
+  
+  .text-primary {
+    @apply text-emerald-600;
+  }
+  
+  .text-primary-hover {
+    @apply text-emerald-700;
+  }
+  
+  .border-primary {
+    @apply border-emerald-600;
+  }
+  
+  /* Secondary Brand Colors */
+  .bg-secondary {
+    @apply bg-teal-700;
+  }
+  
+  .bg-secondary-hover {
+    @apply bg-teal-800;
+  }
+  
+  .text-secondary {
+    @apply text-teal-700;
+  }
+  
+  .text-secondary-hover {
+    @apply text-teal-800;
+  }
+  
+  .border-secondary {
+    @apply border-teal-700;
+  }
+  
+  /* Accent Colors */
+  .bg-accent {
+    @apply bg-violet-600;
+  }
+  
+  .bg-accent-hover {
+    @apply bg-violet-700;
+  }
+  
+  .text-accent {
+    @apply text-violet-600;
+  }
+  
+  .text-accent-hover {
+    @apply text-violet-700;
+  }
+  
+  .border-accent {
+    @apply border-violet-600;
+  }
+  
+  /* Status Colors */
+  .bg-success {
+    @apply bg-green-600;
+  }
+  
+  .bg-success-light {
+    @apply bg-green-100;
+  }
+  
+  .text-success {
+    @apply text-green-600;
+  }
+  
+  .text-success-light {
+    @apply text-green-800;
+  }
+  
+  .border-success {
+    @apply border-green-600;
+  }
+  
+  .bg-warning {
+    @apply bg-amber-600;
+  }
+  
+  .bg-warning-light {
+    @apply bg-amber-100;
+  }
+  
+  .text-warning {
+    @apply text-amber-600;
+  }
+  
+  .text-warning-light {
+    @apply text-amber-800;
+  }
+  
+  .border-warning {
+    @apply border-amber-600;
+  }
+  
+  .bg-danger {
+    @apply bg-red-600;
+  }
+  
+  .bg-danger-light {
+    @apply bg-red-100;
+  }
+  
+  .text-danger {
+    @apply text-red-600;
+  }
+  
+  .text-danger-light {
+    @apply text-red-800;
+  }
+  
+  .border-danger {
+    @apply border-red-600;
+  }
+  
+  /* Neutral Colors */
+  .bg-neutral {
+    @apply bg-gray-600;
+  }
+  
+  .bg-neutral-light {
+    @apply bg-gray-100;
+  }
+  
+  .text-neutral {
+    @apply text-gray-600;
+  }
+  
+  .text-neutral-light {
+    @apply text-gray-800;
+  }
+  
+  .border-neutral {
+    @apply border-gray-600;
+  }
+  
+  /* Interactive States */
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary-hover focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary text-white hover:bg-secondary-hover focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-all duration-200;
+  }
+  
+  .btn-accent {
+    @apply bg-accent text-white hover:bg-accent-hover focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 transition-all duration-200;
+  }
+  
+  .btn-outline {
+    @apply border-2 border-primary text-primary hover:bg-primary hover:text-white focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all duration-200;
+  }
+  
+  .btn-ghost {
+    @apply text-primary hover:bg-primary-light hover:text-primary focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all duration-200;
+  }
+}

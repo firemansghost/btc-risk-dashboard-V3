@@ -45,16 +45,16 @@ export default function MethodologyPage() {
       {/* Navigation */}
       <div className="mb-6 sm:mb-8">
         <nav className="flex flex-wrap gap-2 sm:gap-4">
-          <a href="#overview" className="text-blue-600 hover:text-blue-800 underline">Overview</a>
-          <a href="#g-score" className="text-blue-600 hover:text-blue-800 underline">BTC G-Score</a>
-          <a href="#bands" className="text-blue-600 hover:text-blue-800 underline">Risk Bands</a>
-          <a href="#factors" className="text-blue-600 hover:text-blue-800 underline">Risk Factors</a>
-          <a href="#etf-predictions" className="text-blue-600 hover:text-blue-800 underline">ETF Predictions</a>
-          <a href="#sources" className="text-blue-600 hover:text-blue-800 underline">Data Sources</a>
-          <a href="#price-history" className="text-blue-600 hover:text-blue-800 underline">Price History</a>
-          <a href="#freshness" className="text-blue-600 hover:text-blue-800 underline">Freshness Rules</a>
-          <a href="#glossary" className="text-blue-600 hover:text-blue-800 underline">Glossary</a>
-          <a href="#faq" className="text-blue-600 hover:text-blue-800 underline">FAQ</a>
+          <a href="#overview" className="text-link">Overview</a>
+          <a href="#g-score" className="text-link">BTC G-Score</a>
+          <a href="#bands" className="text-link">Risk Bands</a>
+          <a href="#factors" className="text-link">Risk Factors</a>
+          <a href="#etf-predictions" className="text-link">ETF Predictions</a>
+          <a href="#sources" className="text-link">Data Sources</a>
+          <a href="#price-history" className="text-link">Price History</a>
+          <a href="#freshness" className="text-link">Freshness Rules</a>
+          <a href="#glossary" className="text-link">Glossary</a>
+          <a href="#faq" className="text-link">FAQ</a>
         </nav>
       </div>
 
@@ -331,7 +331,7 @@ export default function MethodologyPage() {
           <div className="mt-4">
             <button
               onClick={() => window.open('/api/config', '_blank')}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="btn-primary px-4 py-2 rounded-lg"
             >
               View Current Config
             </button>
