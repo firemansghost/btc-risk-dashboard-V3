@@ -1115,8 +1115,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
           </div>
           <div className="text-center">
             <div className={`text-lg font-bold ${getScoreColor(explanation.totalScore)}`}>
-              {explanation.totalScore < 40 ? 'Low Risk' : 
-               explanation.totalScore < 60 ? 'Moderate Risk' : 'High Risk'}
+              {explanation.bandLabel}
             </div>
             <div className="text-gray-500">Risk Level</div>
           </div>
@@ -1401,7 +1400,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
               return (
                 <div className="space-y-2">
                   <p className="font-medium text-green-800">
-                    ✅ Low Risk Environment Detected
+                    ✅ {explanation.bandLabel} Environment Detected
                   </p>
                   <p>
                     Multiple factors are showing low risk signals, indicating a more stable 
@@ -1518,15 +1517,15 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
               insights.push({
                 type: 'caution',
                 icon: '⚠️',
-                title: 'High Risk Environment',
+                title: `${explanation.bandLabel} Environment`,
                 description: 'Consider reducing position sizes and increasing cash allocation',
-                details: 'High risk doesn\'t mean imminent crash, but caution is warranted. Monitor for trend changes.'
+                details: `${explanation.bandLabel} doesn\'t mean imminent crash, but caution is warranted. Monitor for trend changes.`
               });
             } else if (totalScore < 30) {
               insights.push({
                 type: 'opportunity',
                 icon: '📈',
-                title: 'Low Risk Environment',
+                title: `${explanation.bandLabel} Environment`,
                 description: 'Consider increasing exposure if fundamentals align',
                 details: 'Low risk environment suggests potential opportunities, but always consider your risk tolerance.'
               });
