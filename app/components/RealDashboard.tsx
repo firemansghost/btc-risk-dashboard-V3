@@ -966,7 +966,7 @@ export default function RealDashboard() {
         </div>
 
         {/* History Chart */}
-        <div className="card-elevated card-lg mb-8">
+        <div className="card-elevated card-lg mb-8 chart-container chart-responsive">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Historical G-Score</h3>
           <HistoryChart />
         </div>
