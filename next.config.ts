@@ -16,62 +16,75 @@ const nextConfig: NextConfig = {
       usedExports: true,
       sideEffects: false,
       providedExports: true,
+      // Aggressive minification
+      minimize: true,
+      minimizer: [
+        ...config.optimization.minimizer,
+      ],
     };
 
     // Aggressive code splitting optimization
     config.optimization.splitChunks = {
       chunks: 'all',
-      minSize: 10000,
-      maxSize: 100000,
+      minSize: 20000,
+      maxSize: 200000,
+      maxAsyncRequests: 30,
+      maxInitialRequests: 30,
       cacheGroups: {
         // React chunks - highest priority
         react: {
           test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
           name: 'react',
           chunks: 'all',
-          priority: 30,
+          priority: 40,
           enforce: true,
+          maxSize: 100000,
         },
         // Next.js chunks
         nextjs: {
           test: /[\\/]node_modules[\\/]next[\\/]/,
           name: 'nextjs',
           chunks: 'all',
-          priority: 25,
+          priority: 35,
           enforce: true,
+          maxSize: 150000,
         },
         // Chart libraries
         charts: {
           test: /[\\/]node_modules[\\/](recharts|d3|chart\.js)[\\/]/,
           name: 'charts',
           chunks: 'all',
-          priority: 20,
+          priority: 30,
           enforce: true,
+          maxSize: 100000,
         },
         // UI libraries
         ui: {
           test: /[\\/]node_modules[\\/](tailwindcss|@tailwindcss)[\\/]/,
           name: 'ui',
           chunks: 'all',
-          priority: 15,
+          priority: 25,
           enforce: true,
+          maxSize: 50000,
         },
         // Other vendor chunks
         vendor: {
           test: /[\\/]node_modules[\\/]/,
           name: 'vendors',
           chunks: 'all',
-          priority: 10,
+          priority: 20,
           enforce: true,
+          maxSize: 200000,
         },
         // Common chunks
         common: {
           name: 'common',
           minChunks: 2,
           chunks: 'all',
-          priority: 5,
+          priority: 10,
           reuseExistingChunk: true,
           enforce: true,
+          maxSize: 100000,
         },
         // Default chunks
         default: {
@@ -79,6 +92,7 @@ const nextConfig: NextConfig = {
           priority: -20,
           reuseExistingChunk: true,
           enforce: true,
+          maxSize: 100000,
         },
       },
     };
@@ -86,8 +100,8 @@ const nextConfig: NextConfig = {
     // Performance optimization
     config.performance = {
       hints: 'warning',
-      maxEntrypointSize: 500000,
-      maxAssetSize: 500000,
+      maxEntrypointSize: 300000,
+      maxAssetSize: 300000,
       assetFilter: (assetFilename: string) => {
         return !assetFilename.endsWith('.map');
       },
@@ -105,6 +119,14 @@ const nextConfig: NextConfig = {
   // Experimental features for better performance
   experimental: {
     optimizePackageImports: ['recharts', 'react-icons'],
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
   },
 
   // Compiler optimizations
