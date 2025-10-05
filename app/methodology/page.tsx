@@ -97,20 +97,26 @@ export default function MethodologyPage() {
                         Pillar and factor weights are configurable and sum to 100%. Live defaults are shown below:
                       </p>
                       <ul className="list-disc list-inside space-y-1 text-gray-700 ml-4">
-                        <li><strong>Liquidity/Flows (35%)</strong>: Defaults: Stablecoins 21%, ETF Flows 9%, Net Liquidity 5% (pillar total 35%)</li>
-                        <li><strong>Momentum/Valuation (25%)</strong>: Defaults: Trend & Valuation 20%, On-chain Activity 5% (pillar total 25%)</li>
-                        <li><strong>Term Structure/Leverage (20%)</strong>: Derivatives and funding rates</li>
-                        <li><strong>Macro Overlay (10%)</strong>: Macroeconomic conditions (DXY, 2Y rates, VIX). Net Liquidity appears here for context only; it is scored under Liquidity (5%) to avoid double-counting</li>
-                        <li><strong>Social/Attention (10%)</strong>: Social sentiment indicators</li>
+                        <li><strong>Liquidity/Flows (38%)</strong>: Defaults: Stablecoins 18%, ETF Flows 10%, Net Liquidity 10% (pillar total 38%)</li>
+                        <li><strong>Momentum/Valuation (33%)</strong>: Defaults: Trend & Valuation 25%, On-chain Activity 8% (pillar total 33%)</li>
+                        <li><strong>Term Structure/Leverage (18%)</strong>: Derivatives and funding rates with multi-exchange fallback</li>
+                        <li><strong>Macro Overlay (6%)</strong>: Macroeconomic conditions (DXY, 2Y rates, VIX). Net Liquidity appears here for context only; it is scored under Liquidity (10%) to avoid double-counting</li>
+                        <li><strong>Social/Attention (5%)</strong>: Social sentiment indicators</li>
                       </ul>
                       <p className="text-xs text-gray-500 mt-2">
-                        Note: On-chain Activity contributes to Momentum rather than standing alone. Net Liquidity is scored under Liquidity (5%) but also displayed in Macro for context without affecting the composite score.
+                        Note: On-chain Activity contributes to Momentum rather than standing alone. Net Liquidity is scored under Liquidity (10%) but also displayed in Macro for context without affecting the composite score.
                       </p>
                     </div>
                     
                     <div className="bg-blue-50 rounded-lg p-4 mt-4">
                       <p className="text-sm text-blue-800">
                         <strong>BMSB-Led Trend Analysis:</strong> Inside Trend & Valuation, Distance to the Bull Market Support Band carries the largest weight by design (60%), reflecting where Bitcoin sits relative to its dynamic support levels. Long-trend stretch (Mayer Multiple, 30%) and weekly momentum (RSI, 10%) contribute the rest.
+                      </p>
+                    </div>
+                    
+                    <div className="bg-green-50 rounded-lg p-4 mt-4">
+                      <p className="text-sm text-green-800">
+                        <strong>Recent Optimizations:</strong> The system now includes enhanced caching, multi-source fallback chains, parallel processing, and business-day awareness. Trend & Valuation uses factor-level caching with 6-hour TTL, Stablecoins covers 7 coins with weighted averages, ETF Flows excludes weekends, and Term Structure & Leverage uses multi-exchange fallback (BitMEX → Binance → OKX).
                       </p>
                     </div>
 
@@ -239,7 +245,19 @@ export default function MethodologyPage() {
                   <td className="py-2">CoinGecko</td>
                   <td className="py-2">Stablecoin supply, market data</td>
                   <td className="py-2">Daily</td>
-                  <td className="py-2">Stablecoin tracking</td>
+                  <td className="py-2">Primary stablecoin tracking</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2">CoinMarketCap</td>
+                  <td className="py-2">Stablecoin market caps, fallback data</td>
+                  <td className="py-2">Daily</td>
+                  <td className="py-2">Stablecoin fallback source</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2">CryptoCompare</td>
+                  <td className="py-2">Stablecoin data, final fallback</td>
+                  <td className="py-2">Daily</td>
+                  <td className="py-2">Stablecoin final fallback</td>
                 </tr>
                 <tr className="border-b">
                   <td className="py-2">Farside</td>
@@ -251,7 +269,19 @@ export default function MethodologyPage() {
                   <td className="py-2">BitMEX</td>
                   <td className="py-2">Funding rates, basis</td>
                   <td className="py-2">Every 8h</td>
-                  <td className="py-2">Derivatives data</td>
+                  <td className="py-2">Primary derivatives data</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2">Binance</td>
+                  <td className="py-2">Funding rates, fallback data</td>
+                  <td className="py-2">Every 8h</td>
+                  <td className="py-2">Derivatives fallback source</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2">OKX</td>
+                  <td className="py-2">Funding rates, final fallback</td>
+                  <td className="py-2">Every 8h</td>
+                  <td className="py-2">Derivatives final fallback</td>
                 </tr>
                 <tr className="border-b">
                   <td className="py-2">Blockchain.info</td>
