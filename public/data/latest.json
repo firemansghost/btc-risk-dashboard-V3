@@ -1,9 +1,9 @@
 {
   "ok": true,
   "version": "v3.1.0",
-  "as_of_utc": "2025-10-05T00:45:00.632Z",
-  "composite_score": 62,
-  "composite_raw": 62,
+  "as_of_utc": "2025-10-05T00:46:14.784Z",
+  "composite_score": 63,
+  "composite_raw": 63,
   "band": {
     "key": "hold___wait",
     "label": "Hold & Wait",
@@ -25,7 +25,7 @@
       "score": 53,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-05T00:44:57.668Z",
+      "last_utc": "2025-10-05T00:46:11.893Z",
       "details": [
         {
           "label": "Price vs 200-day SMA (Mayer)",
@@ -45,11 +45,11 @@
         },
         {
           "label": "200-day SMA",
-          "value": "$105,657.049"
+          "value": "$105,657.099"
         },
         {
           "label": "Weekly Close (for BMSB)",
-          "value": "$122,329.3"
+          "value": "$122,339.38"
         },
         {
           "label": "Price source",
@@ -61,11 +61,11 @@
         },
         {
           "label": "BMSB (20W SMA / 21W EMA)",
-          "value": "$112,481.661 / $110,607.193"
+          "value": "$112,482.165 / $110,608.109"
         },
         {
           "label": "50-week SMA diagnostic",
-          "value": "Above 50W SMA ($100,026.164)"
+          "value": "Above 50W SMA ($100,026.365)"
         },
         {
           "label": "Component Scores",
@@ -73,8 +73,8 @@
         }
       ],
       "sma50wDiagnostic": {
-        "sma50": 100026.1638,
-        "currentClose": 122329.3,
+        "sma50": 100026.3654,
+        "currentClose": 122339.38,
         "isBelow": false,
         "consecutiveWeeksBelow": 0,
         "showWarning": false
@@ -86,18 +86,18 @@
       "pillar": "momentum",
       "weight": 8,
       "weight_pct": 8,
-      "score": 38,
+      "score": 39,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-05T00:44:58.983Z",
+      "last_utc": "2025-10-05T00:46:13.203Z",
       "details": [
         {
           "label": "Mempool 7d avg (MB)",
-          "value": "55.0"
+          "value": "57.0"
         },
         {
           "label": "Fees 7d avg (USD)",
-          "value": "$368612"
+          "value": "$368643"
         },
         {
           "label": "Data Sources",
@@ -118,7 +118,7 @@
       "score": 82,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-05T00:44:57.646Z",
+      "last_utc": "2025-10-05T00:46:11.871Z",
       "details": [
         {
           "label": "Total Market Cap",
@@ -166,7 +166,7 @@
       "weight_pct": 10,
       "score": 43,
       "status": "fresh",
-      "reason": "fresh (32.7h old)",
+      "reason": "fresh (32.8h old)",
       "last_utc": "2025-10-03T16:00:00.000Z",
       "details": [
         {
@@ -7173,7 +7173,7 @@
       "weight_pct": 10,
       "score": 62,
       "status": "fresh",
-      "reason": "fresh (96.7h old)",
+      "reason": "fresh (96.8h old)",
       "last_utc": "2025-10-01T00:00:00.000Z",
       "details": [
         {
@@ -7219,7 +7219,7 @@
       "score": 78,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-05T00:44:58.226Z",
+      "last_utc": "2025-10-05T00:46:12.458Z",
       "details": [
         {
           "label": "Current Funding Rate",
@@ -7264,7 +7264,7 @@
       "score": 69,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-05T00:44:58.800Z",
+      "last_utc": "2025-10-05T00:46:12.678Z",
       "details": [
         {
           "label": "Macro Regime",
@@ -7309,7 +7309,7 @@
       "score": 55,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-05T00:44:57.672Z",
+      "last_utc": "2025-10-05T00:46:11.897Z",
       "details": [
         {
           "label": "Search Attention",
@@ -7344,7 +7344,7 @@
   ],
   "btc": {
     "spot_usd": 122329.3,
-    "as_of_utc": "2025-10-05T00:45:00.632Z",
+    "as_of_utc": "2025-10-05T00:46:14.784Z",
     "source": "Coinbase"
   },
   "provenance": [],
@@ -7357,7 +7357,7 @@
   "cycle_adjustment": {
     "adj_pts": 0,
     "residual_z": null,
-    "last_utc": "2025-10-05T00:45:00.630Z",
+    "last_utc": "2025-10-05T00:46:14.782Z",
     "source": "ETL fallback",
     "reason": "insufficient_historical_data"
   },
@@ -7368,7 +7368,7 @@
     "z": 0,
     "ref_close": 122329.3,
     "spot": 122329.3,
-    "last_utc": "2025-10-05T00:45:00.630Z",
+    "last_utc": "2025-10-05T00:46:14.782Z",
     "source": "ETL fallback",
     "reason": "insufficient_historical_data"
   },
