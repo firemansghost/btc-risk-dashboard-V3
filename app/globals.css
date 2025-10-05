@@ -478,15 +478,15 @@ body {
   }
   
   .card-warning {
-    @apply card-elevated card-md border-l-4 border-warning bg-warning-light/30;
+    @apply card-elevated card-md border-l-4 border-warning bg-amber-50;
   }
   
   .card-danger {
-    @apply card-elevated card-md border-l-4 border-danger bg-danger-light/30;
+    @apply card-elevated card-md border-l-4 border-danger bg-red-50;
   }
   
   .card-success {
-    @apply card-elevated card-md border-l-4 border-success bg-success-light/30;
+    @apply card-elevated card-md border-l-4 border-success bg-green-50;
   }
   
   /* Card Animations */
