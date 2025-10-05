@@ -15,8 +15,8 @@
     },
     "onchain": {
       "dataPoints": 39,
-      "mean": 70,
-      "stdDev": 19.77,
+      "mean": 69.97,
+      "stdDev": 19.81,
       "min": 35,
       "max": 98,
       "range": 63,
@@ -60,8 +60,8 @@
     },
     "term_leverage": {
       "dataPoints": 39,
-      "mean": 68.38,
-      "stdDev": 14.01,
+      "mean": 68.26,
+      "stdDev": 13.95,
       "min": 42,
       "max": 95,
       "range": 53,
