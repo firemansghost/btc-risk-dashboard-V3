@@ -383,3 +383,144 @@ body {
     @apply gap-2 sm:gap-4; /* Responsive flex spacing */
   }
 }
+
+/* Modern Card System - Depth & Elevation */
+@layer components {
+  /* Base Card */
+  .card {
+    @apply bg-white rounded-xl border border-gray-200 transition-all duration-300;
+  }
+  
+  /* Card Variants */
+  .card-flat {
+    @apply card shadow-none border border-gray-200;
+  }
+  
+  .card-elevated {
+    @apply card shadow-sm hover:shadow-md border border-gray-200;
+  }
+  
+  .card-floating {
+    @apply card shadow-lg hover:shadow-xl border border-gray-200;
+  }
+  
+  .card-glass {
+    @apply card backdrop-blur-sm bg-white/80 border border-white/20 shadow-lg;
+  }
+  
+  .card-neumorphic {
+    @apply card bg-gray-50 border-0 shadow-[inset_-2px_-2px_4px_rgba(255,255,255,0.7),inset_2px_2px_4px_rgba(0,0,0,0.1)];
+  }
+  
+  /* Card Sizes */
+  .card-sm {
+    @apply p-3;
+  }
+  
+  .card-md {
+    @apply p-4 sm:p-6;
+  }
+  
+  .card-lg {
+    @apply p-6 sm:p-8;
+  }
+  
+  .card-xl {
+    @apply p-8 sm:p-10;
+  }
+  
+  /* Card States */
+  .card-interactive {
+    @apply cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-all duration-200;
+  }
+  
+  .card-selected {
+    @apply ring-2 ring-primary ring-offset-2 shadow-lg;
+  }
+  
+  .card-disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+  
+  /* Card Headers */
+  .card-header {
+    @apply flex items-center justify-between mb-4 pb-3 border-b border-gray-100;
+  }
+  
+  .card-title {
+    @apply text-heading-3 font-semibold text-gray-900;
+  }
+  
+  .card-subtitle {
+    @apply text-body-small text-gray-600 mt-1;
+  }
+  
+  /* Card Content */
+  .card-content {
+    @apply space-y-4;
+  }
+  
+  .card-footer {
+    @apply mt-4 pt-3 border-t border-gray-100 flex items-center justify-between;
+  }
+  
+  /* Specialized Cards */
+  .card-metric {
+    @apply card-elevated card-md text-center;
+  }
+  
+  .card-factor {
+    @apply card-floating card-md relative overflow-hidden;
+  }
+  
+  .card-insight {
+    @apply card-elevated card-md border-l-4 border-primary;
+  }
+  
+  .card-warning {
+    @apply card-elevated card-md border-l-4 border-warning bg-warning-light/30;
+  }
+  
+  .card-danger {
+    @apply card-elevated card-md border-l-4 border-danger bg-danger-light/30;
+  }
+  
+  .card-success {
+    @apply card-elevated card-md border-l-4 border-success bg-success-light/30;
+  }
+  
+  /* Card Animations */
+  .card-fade-in {
+    @apply animate-in fade-in duration-500;
+  }
+  
+  .card-slide-up {
+    @apply animate-in slide-in-from-bottom-4 duration-300;
+  }
+  
+  .card-scale-in {
+    @apply animate-in zoom-in-95 duration-200;
+  }
+  
+  /* Card Grid Layouts */
+  .card-grid-1 {
+    @apply grid grid-cols-1 gap-4;
+  }
+  
+  .card-grid-2 {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6;
+  }
+  
+  .card-grid-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6;
+  }
+  
+  .card-grid-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6;
+  }
+  
+  /* Card Responsive Behavior */
+  .card-responsive {
+    @apply card-elevated card-md hover:card-floating transition-all duration-300;
+  }
+}

@@ -871,7 +871,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
   if (loading) {
     return (
-      <div className={`bg-white rounded-lg shadow-sm border border-gray-200 card-padding ${className}`}>
+      <div className={`card-elevated card-md ${className}`}>
         <div className="animate-pulse">
           <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
           <div className="h-3 bg-gray-200 rounded w-2/3 mb-4"></div>
@@ -886,7 +886,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
   if (!explanation) {
     return (
-      <div className={`bg-white rounded-lg shadow-sm border border-gray-200 card-padding ${className}`}>
+      <div className={`card-elevated card-md ${className}`}>
         <h3 className="text-caption mb-2">Score Insights</h3>
         <p className="text-body-small text-gray-500">Unable to load insights</p>
       </div>
@@ -1168,7 +1168,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             }
             
             return highRiskFactors.map((factor, idx) => (
-              <div key={idx} className="bg-white rounded-lg p-4 border border-red-200 shadow-sm hover:shadow-md transition-all duration-200">
+              <div key={idx} className="card-danger">
                 {/* Header with Risk Level Indicator */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -1279,7 +1279,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             }
             
             return lowRiskFactors.map((factor, idx) => (
-              <div key={idx} className="bg-white rounded-lg p-4 border border-green-200 shadow-sm hover:shadow-md transition-all duration-200">
+              <div key={idx} className="card-success">
                 {/* Header with Risk Level Indicator */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -1552,7 +1552,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             }
             
             return insights.map((insight, idx) => (
-              <div key={idx} className="bg-white rounded-lg p-4 border border-purple-200 shadow-sm hover:shadow-md transition-shadow">
+              <div key={idx} className="card-insight">
                 <div className="flex items-start gap-3">
                   <span className="text-lg mt-0.5">{insight.icon}</span>
                   <div className="flex-1">
@@ -1678,7 +1678,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             });
             
             return smartContext.map((context, idx) => (
-              <div key={idx} className="bg-white rounded-lg p-4 border border-indigo-200 shadow-sm">
+              <div key={idx} className="card-elevated card-md">
                 <div className="flex items-start gap-3 mb-3">
                   <span className="text-lg mt-0.5">{context.icon}</span>
                   <div className="flex-1">

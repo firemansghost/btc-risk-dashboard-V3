@@ -213,7 +213,7 @@ export default function RealDashboard() {
               {/* Top Row: G-Score Card + Bitcoin Price Card */}
               <div className="grid grid-cols-1 lg:grid-cols-2 grid-spacing mb-8">
                 {/* Prominent G-Score Card - Unified Vertical Layout */}
-                <div className="bg-white border-2 border-gray-300 rounded-xl card-padding shadow-lg hover:shadow-xl transition-all duration-200 ring-1 ring-gray-200">
+                <div className="card-floating card-md border-2 border-gray-300 ring-1 ring-gray-200">
                   <div className="flex items-center justify-between mb-4">
                     <h1 className="text-caption">
                       Bitcoin G-Score
@@ -259,7 +259,7 @@ export default function RealDashboard() {
                 </div>
 
                 {/* Bitcoin Price Card */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 card-padding">
+                <div className="card-elevated card-md">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-caption">Bitcoin Price</h3>
                     <AlertBell />
@@ -501,7 +501,7 @@ export default function RealDashboard() {
         {/* Key Metrics Cards - Balanced 2x2 Layout */}
         <div className="grid grid-cols-1 sm:grid-cols-2 grid-spacing mb-6 lg:mb-8">
           {/* Composite Score */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
+          <div className="card-metric">
             <h3 className="text-label mb-2">BTC G-Score</h3>
             <div className="text-metric mb-1">{latest?.composite_score ?? '—'}</div>
             
@@ -614,7 +614,7 @@ export default function RealDashboard() {
 
 
           {/* Model Version */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
+          <div className="card-metric">
             <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Model Version</h3>
             <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{latest?.model_version ?? 'v3'}</div>
             <div className="text-xs text-gray-600">Five-pillar framework</div>
@@ -670,7 +670,7 @@ export default function RealDashboard() {
             const cadence = getFactorCadence(factor.key);
             
             return (
-            <div key={factor.key} className="bg-white rounded-lg shadow-sm border border-gray-200 card-padding relative">
+            <div key={factor.key} className="card-factor">
           {/* Reserved Badge Lane - Top Right */}
           <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex flex-col gap-1 items-end">
             <span 
@@ -966,7 +966,7 @@ export default function RealDashboard() {
         </div>
 
         {/* History Chart */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+        <div className="card-elevated card-lg mb-8">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Historical G-Score</h3>
           <HistoryChart />
         </div>

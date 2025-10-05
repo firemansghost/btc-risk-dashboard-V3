@@ -61,7 +61,7 @@ export default function MethodologyPage() {
       {/* Overview */}
       <section id="overview" className="mb-12">
         <h2 className="text-heading-2 mb-4">Overview</h2>
-        <div className="bg-white rounded-xl border p-6">
+        <div className="card-elevated card-lg">
           <p className="text-body text-gray-700">
             The Bitcoin Risk Dashboard provides a data-driven composite score (0–100) based on a weighted blend of independent pillars. 
             Each pillar captures different aspects of market risk: liquidity conditions, momentum indicators, leverage metrics, 
@@ -74,7 +74,7 @@ export default function MethodologyPage() {
       {/* BTC G-Score */}
       <section id="g-score" className="mb-12">
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">What is the BTC G-Score?</h2>
-        <div className="bg-white rounded-xl border p-6">
+        <div className="card-elevated card-lg">
           <div className="space-y-4">
             <p className="text-gray-700 leading-relaxed">
               The <strong>BTC G-Score</strong> is a composite risk assessment score ranging from 0 to 100, where:
@@ -169,7 +169,7 @@ export default function MethodologyPage() {
       {/* Risk Bands */}
       <section id="bands" className="mb-12">
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">Risk Bands</h2>
-        <div className="bg-white rounded-xl border p-6">
+        <div className="card-elevated card-lg">
           <p className="text-gray-600 mb-6">
             Bands translate the 0–100 score into plain-English guidance. They're not trade signals, but rather 
             risk assessment tools to help inform decision-making.
@@ -217,7 +217,7 @@ export default function MethodologyPage() {
       {/* Data Sources */}
       <section id="sources" className="mb-12">
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">Data Sources</h2>
-        <div className="bg-white rounded-xl border p-6">
+        <div className="card-elevated card-lg">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -342,7 +342,7 @@ export default function MethodologyPage() {
       {/* Price History System */}
       <section id="price-history" className="mb-12">
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">Price History & Technical Indicators</h2>
-        <div className="bg-white rounded-xl border p-6">
+        <div className="card-elevated card-lg">
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Unified Price History System</h3>
@@ -403,7 +403,7 @@ export default function MethodologyPage() {
       {/* Freshness Rules */}
       <section id="freshness" className="mb-12">
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">Freshness Rules</h2>
-        <div className="bg-white rounded-xl border p-6">
+        <div className="card-elevated card-lg">
           <p className="text-gray-700 leading-relaxed mb-4">
             Each factor has specific staleness thresholds based on its data update frequency. When factors become stale, 
             they are excluded from the composite score calculation and weights are re-normalized among the remaining fresh factors. 
@@ -428,7 +428,7 @@ export default function MethodologyPage() {
       {/* Glossary */}
       <section id="glossary" className="mb-12">
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">Glossary</h2>
-        <div className="bg-white rounded-xl border p-6">
+        <div className="card-elevated card-lg">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="font-medium text-gray-900 mb-3">Trading Terms</h3>
@@ -479,7 +479,7 @@ export default function MethodologyPage() {
       {/* ETF Predictions System */}
       <section id="etf-predictions" className="mb-12">
         <h2 className="text-2xl font-semibold text-gray-900 mb-6">ETF Flow Predictions</h2>
-        <div className="bg-white rounded-xl border p-6">
+        <div className="card-elevated card-lg">
           <div className="mb-6">
             <p className="text-gray-600 mb-4">
               Our ETF Predictions system uses advanced machine learning models to forecast Bitcoin ETF flows, 
@@ -537,7 +537,7 @@ export default function MethodologyPage() {
       {/* FAQ */}
       <section id="faq" className="mb-12">
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">Frequently Asked Questions</h2>
-        <div className="bg-white rounded-xl border p-6">
+        <div className="card-elevated card-lg">
           <div className="space-y-6">
             <div>
               <h3 className="font-medium text-gray-900 mb-2">Why did my score change overnight?</h3>
