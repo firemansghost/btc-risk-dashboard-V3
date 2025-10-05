@@ -405,7 +405,7 @@ body {
   }
   
   .card-glass {
-    @apply card backdrop-blur-sm bg-white/80 border border-white/20 shadow-lg;
+    @apply card backdrop-blur-sm bg-white border border-gray-200 shadow-lg;
   }
   
   .card-neumorphic {
@@ -602,7 +602,7 @@ body {
   
   .btn-loading::before {
     content: '';
-    @apply absolute inset-0 bg-white/20 animate-pulse;
+    @apply absolute inset-0 bg-gray-200 animate-pulse;
   }
   
   /* Card Interactive States */
@@ -988,7 +988,7 @@ body {
   
   .chart-loading::before {
     content: '';
-    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse;
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-gray-200 to-transparent animate-pulse;
   }
   
   .chart-skeleton {
@@ -1044,11 +1044,11 @@ body {
 @layer components {
   /* Sticky Navigation */
   .nav-sticky {
-    @apply sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 transition-all duration-300;
+    @apply sticky top-0 z-50 bg-white backdrop-blur-sm border-b border-gray-200 transition-all duration-300;
   }
   
   .nav-sticky-scrolled {
-    @apply bg-white/98 shadow-sm;
+    @apply bg-white shadow-sm;
   }
   
   /* Mobile Navigation */
@@ -1091,7 +1091,7 @@ body {
   
   /* Search Modal */
   .search-modal-backdrop {
-    @apply fixed inset-0 bg-black/50 backdrop-blur-sm;
+    @apply fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm;
   }
   
   .search-modal-container {
@@ -1214,7 +1214,7 @@ body {
   
   .btn-loading::before {
     content: '';
-    @apply absolute inset-0 bg-white/20 animate-pulse;
+    @apply absolute inset-0 bg-gray-200 animate-pulse;
   }
   
   .btn-disabled {
