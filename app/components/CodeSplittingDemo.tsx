@@ -1,12 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { createModalImport, createCardImport, createChartImport } from '@/lib/dynamicImports';
+import dynamic from 'next/dynamic';
 
 // Dynamic imports for demonstration
-const DemoModal = createModalImport(() => import('./ImageOptimizationDemo'));
-const DemoCard = createCardImport(() => import('./ImageOptimizationDemo'));
-const DemoChart = createChartImport(() => import('./ImageOptimizationDemo'));
+const DemoModal = dynamic(() => import('./ImageOptimizationDemo'), {
+  loading: () => <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"><div className="spinner spinner-lg"></div></div>,
+  ssr: false
+});
+
+const DemoCard = dynamic(() => import('./ImageOptimizationDemo'), {
+  loading: () => <div className="h-32 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center"><div className="spinner spinner-sm"></div></div>,
+  ssr: false
+});
+
+const DemoChart = dynamic(() => import('./ImageOptimizationDemo'), {
+  loading: () => <div className="h-64 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center"><div className="spinner spinner-lg"></div></div>,
+  ssr: false
+});
 
 export default function CodeSplittingDemo() {
   const [showModal, setShowModal] = useState(false);
