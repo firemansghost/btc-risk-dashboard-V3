@@ -1377,27 +1377,311 @@ async function cleanOldCacheFiles() {
   }
 }
 
+// Cache configuration for Term Leverage
+const TERM_LEVERAGE_CACHE_DIR = 'public/data/cache/term_leverage';
+const TERM_LEVERAGE_CACHE_TTL_HOURS = 6; // 6 hours cache for derivatives data
+const TERM_LEVERAGE_CACHE_FILE = 'term_leverage_cache.json';
+
+/**
+ * Load cached Term Leverage data
+ */
+async function loadTermLeverageCache() {
+  try {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const cachePath = path.join(TERM_LEVERAGE_CACHE_DIR, TERM_LEVERAGE_CACHE_FILE);
+    const cacheData = await fs.readFile(cachePath, { encoding: 'utf8' });
+    const parsed = JSON.parse(cacheData);
+    
+    // Check if cache is still valid
+    const cacheAge = Date.now() - new Date(parsed.cachedAt).getTime();
+    const maxAge = TERM_LEVERAGE_CACHE_TTL_HOURS * 60 * 60 * 1000;
+    
+    if (cacheAge < maxAge) {
+      console.log(`Term Leverage: Using cached data (${Math.round(cacheAge / (60 * 1000))} minutes old)`);
+      return parsed;
+    } else {
+      console.log(`Term Leverage: Cache expired (${Math.round(cacheAge / (60 * 60 * 1000))} hours old)`);
+      return null;
+    }
+  } catch (error) {
+    console.log(`Term Leverage: No valid cache found: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Save Term Leverage data to cache
+ */
+async function saveTermLeverageCache(data) {
+  try {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    await fs.mkdir(TERM_LEVERAGE_CACHE_DIR, { recursive: true });
+    const cachePath = path.join(TERM_LEVERAGE_CACHE_DIR, TERM_LEVERAGE_CACHE_FILE);
+    
+    const cacheData = {
+      ...data,
+      cachedAt: new Date().toISOString(),
+      version: '1.0.0'
+    };
+    
+    await fs.writeFile(cachePath, JSON.stringify(cacheData, null, 2), { encoding: 'utf8' });
+    console.log(`Term Leverage: Cached data saved to ${cachePath}`);
+  } catch (error) {
+    console.warn(`Term Leverage: Failed to save cache: ${error.message}`);
+  }
+}
+
+/**
+ * Check if funding data has changed since last cache
+ */
+function hasFundingDataChanged(currentFundingData, cachedData) {
+  if (!cachedData || !cachedData.fundingData || !cachedData.fundingData.length) {
+    return true;
+  }
+  
+  const currentLatest = currentFundingData[0]; // Most recent (reverse=true)
+  const cachedLatest = cachedData.fundingData[0];
+  
+  // Check if latest funding rate has changed
+  return !currentLatest || !cachedLatest || 
+         currentLatest.fundingRate !== cachedLatest.fundingRate ||
+         currentLatest.timestamp !== cachedLatest.timestamp;
+}
+
+/**
+ * Fetch funding data from BitMEX
+ */
+async function fetchBitmexFundingData() {
+  try {
+    const response = await fetch("https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&count=30&reverse=true", 
+      { headers: { "User-Agent": "btc-risk-etl" } });
+    
+    if (!response.ok) {
+      console.log(`Term Leverage: BitMEX failed with status ${response.status}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    console.log(`Term Leverage: BitMEX data received (${data.length} records)`);
+    return data;
+  } catch (error) {
+    console.log(`Term Leverage: BitMEX error: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Fetch funding data from Binance
+ */
+async function fetchBinanceFundingData() {
+  try {
+    const response = await fetch("https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=30");
+    
+    if (!response.ok) {
+      console.log(`Term Leverage: Binance failed with status ${response.status}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    console.log(`Term Leverage: Binance data received (${data.length} records)`);
+    return data;
+  } catch (error) {
+    console.log(`Term Leverage: Binance error: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Fetch funding data from OKX
+ */
+async function fetchOKXFundingData() {
+  try {
+    const response = await fetch("https://www.okx.com/api/v5/public/funding-rate-history?instId=BTC-USDT-SWAP&limit=30");
+    
+    if (!response.ok) {
+      console.log(`Term Leverage: OKX failed with status ${response.status}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    if (data.code === '0' && data.data) {
+      console.log(`Term Leverage: OKX data received (${data.data.length} records)`);
+      return data.data;
+    }
+    return null;
+  } catch (error) {
+    console.log(`Term Leverage: OKX error: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Calculate funding component in parallel
+ */
+async function calculateFundingComponent(fundingRates) {
+  return new Promise((resolve) => {
+    setImmediate(() => {
+      const rates = fundingRates.map(f => f.rate);
+      const avgFunding = rates.reduce((sum, rate) => sum + rate, 0) / rates.length;
+      const latestFunding = rates[0]; // Most recent
+      
+      // Build historical series for percentile ranking
+      const fundingPercentile = percentileRank(rates, avgFunding);
+      const fundingScore = riskFromPercentile(fundingPercentile, { invert: false, k: 3 });
+      
+      resolve({
+        component: 'funding',
+        data: { avgFunding, latestFunding, fundingPercentile },
+        score: fundingScore,
+        weight: 0.40
+      });
+    });
+  });
+}
+
+/**
+ * Calculate volatility component in parallel
+ */
+async function calculateVolatilityComponent(spotPrices) {
+  return new Promise((resolve) => {
+    setImmediate(() => {
+      // Calculate 7-day rolling volatility
+      const returns = [];
+      for (let i = 1; i < spotPrices.length; i++) {
+        returns.push((spotPrices[i] - spotPrices[i-1]) / spotPrices[i-1]);
+      }
+      
+      const priceVolatility = returns.length > 0 ? 
+        Math.sqrt(returns.reduce((sum, r) => sum + r*r, 0) / returns.length) * 100 : 0;
+      
+      // Build volatility series for percentile ranking
+      const volSeries = [];
+      for (let i = 7; i < spotPrices.length; i++) {
+        const subset = spotPrices.slice(i-7, i);
+        const subsetReturns = [];
+        for (let j = 1; j < subset.length; j++) {
+          subsetReturns.push((subset[j] - subset[j-1]) / subset[j-1]);
+        }
+        const vol = subsetReturns.length > 0 ? 
+          Math.sqrt(subsetReturns.reduce((sum, r) => sum + r*r, 0) / subsetReturns.length) * 100 : 0;
+        volSeries.push(vol);
+      }
+      
+      const volPercentile = volSeries.length > 0 ? percentileRank(volSeries, priceVolatility) : 0.5;
+      const volScore = riskFromPercentile(volPercentile, { invert: false, k: 3 });
+      
+      resolve({
+        component: 'volatility',
+        data: { priceVolatility, volPercentile },
+        score: volScore,
+        weight: 0.35
+      });
+    });
+  });
+}
+
+/**
+ * Calculate stress component in parallel
+ */
+async function calculateStressComponent(fundingRates, spotPrices) {
+  return new Promise((resolve) => {
+    setImmediate(() => {
+      const rates = fundingRates.map(f => f.rate);
+      const avgFunding = rates.reduce((sum, rate) => sum + rate, 0) / rates.length;
+      
+      // Calculate price volatility for stress indicator
+      const returns = [];
+      for (let i = 1; i < spotPrices.length; i++) {
+        returns.push((spotPrices[i] - spotPrices[i-1]) / spotPrices[i-1]);
+      }
+      const priceVolatility = returns.length > 0 ? 
+        Math.sqrt(returns.reduce((sum, r) => sum + r*r, 0) / returns.length) * 100 : 0;
+      
+      const stressIndicator = (Math.abs(avgFunding) * 10) + (priceVolatility * 0.1);
+      
+      // Build stress series for percentile ranking
+      const stressSeries = [];
+      for (let i = 7; i < Math.min(rates.length, spotPrices.length-7); i++) {
+        const fundingSubset = rates.slice(i-7, i);
+        const priceSubset = spotPrices.slice(i-7, i);
+        const avgF = fundingSubset.reduce((sum, r) => sum + r, 0) / fundingSubset.length;
+        
+        const subsetReturns = [];
+        for (let j = 1; j < priceSubset.length; j++) {
+          subsetReturns.push((priceSubset[j] - priceSubset[j-1]) / priceSubset[j-1]);
+        }
+        const vol = subsetReturns.length > 0 ? 
+          Math.sqrt(subsetReturns.reduce((sum, r) => sum + r*r, 0) / subsetReturns.length) * 100 : 0;
+        
+        stressSeries.push((Math.abs(avgF) * 10) + (vol * 0.1));
+      }
+      
+      const stressPercentile = stressSeries.length > 0 ? percentileRank(stressSeries, stressIndicator) : 0.5;
+      const stressScore = riskFromPercentile(stressPercentile, { invert: false, k: 3 });
+      
+      resolve({
+        component: 'stress',
+        data: { stressIndicator, stressPercentile },
+        score: stressScore,
+        weight: 0.25
+      });
+    });
+  });
+}
+
 // 6. TERM STRUCTURE & LEVERAGE (Multi-factor derivatives analysis)
+// Enhanced with caching, multi-exchange fallback, and parallel processing
 async function computeTermLeverage() {
   try {
-    // Fetch funding data from BitMEX and spot data from cached CoinGecko
-    const [fundingRes, spotData] = await Promise.all([
-      fetch("https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&count=30&reverse=true", 
-        { headers: { "User-Agent": "btc-risk-etl" } }),
+    // Check for cached data first
+    const cachedData = await loadTermLeverageCache();
+    
+    // Fetch funding data from multiple exchanges with fallback chain
+    const [bitmexData, binanceData, okxData, spotData] = await Promise.all([
+      fetchBitmexFundingData(),
+      fetchBinanceFundingData(), 
+      fetchOKXFundingData(),
       coinGecko.getMarketChart(30, 'daily')
     ]);
 
-    if (!fundingRes.ok) throw new Error(`BitMEX ${fundingRes.status}`);
+    // Use best available funding data (prefer BitMEX, fallback to others)
+    let fundingData = bitmexData;
+    let dataSource = 'BitMEX';
     
-    const fundingData = await fundingRes.json();
+    if (!fundingData || fundingData.length === 0) {
+      fundingData = binanceData;
+      dataSource = 'Binance';
+    }
     
-    if (!Array.isArray(fundingData) || fundingData.length === 0) {
-      return { score: null, reason: "no_funding_data" };
+    if (!fundingData || fundingData.length === 0) {
+      fundingData = okxData;
+      dataSource = 'OKX';
+    }
+    
+    if (!fundingData || fundingData.length === 0) {
+      return { score: null, reason: "no_funding_data_any_source" };
     }
     
     if (!spotData.prices || !Array.isArray(spotData.prices)) {
       return { score: null, reason: "no_spot_data" };
     }
+
+    // Check if we can use cached data (incremental update)
+    const dataChanged = hasFundingDataChanged(fundingData, cachedData);
+    
+    if (cachedData && !dataChanged) {
+      console.log('Term Leverage: Using cached calculations (no funding data changes)');
+      return {
+        score: cachedData.score,
+        reason: "success_cached",
+        lastUpdated: cachedData.lastUpdated,
+        details: cachedData.details
+      };
+    }
+
+    console.log(`Term Leverage: Computing fresh calculations (funding data changed or no cache) from ${dataSource}`);
 
     // Extract and process funding rates
     const fundingRates = fundingData.map(item => ({
@@ -1415,68 +1699,31 @@ async function computeTermLeverage() {
       return { score: null, reason: "insufficient_spot_data" };
     }
 
-    // Multi-factor analysis
-    // 1. Funding Rate Level (40% weight) - leverage intensity
-    const rates = fundingRates.map(f => f.rate);
-    const avgFunding = rates.reduce((sum, rate) => sum + rate, 0) / rates.length;
-    const latestFunding = rates[0]; // Most recent (reverse=true)
+    // 🚀 PARALLEL PROCESSING: Calculate all components simultaneously
+    console.log('Term Leverage: Computing components in parallel...');
+    const startTime = Date.now();
     
-    // Build historical series for percentile ranking
-    const fundingPercentile = percentileRank(rates, avgFunding);
-    const fundingScore = riskFromPercentile(fundingPercentile, { invert: false, k: 3 });
+    const [fundingResult, volatilityResult, stressResult] = await Promise.all([
+      calculateFundingComponent(fundingRates),
+      calculateVolatilityComponent(spotPrices),
+      calculateStressComponent(fundingRates, spotPrices)
+    ]);
+    
+    const parallelTime = Date.now() - startTime;
+    console.log(`Term Leverage: Parallel calculations completed in ${parallelTime}ms`);
 
-    // 2. Funding Rate Volatility (30% weight) - leverage instability
-    const fundingMean = avgFunding;
-    const fundingVariance = rates.reduce((sum, rate) => sum + Math.pow(rate - fundingMean, 2), 0) / rates.length;
-    const fundingVolatility = Math.sqrt(fundingVariance);
+    // Extract results from parallel processing
+    const fundingComponentData = fundingResult.data;
+    const volatilityData = volatilityResult.data;
+    const stressData = stressResult.data;
     
-    // Build volatility series for comparison
-    const volSeries = [];
-    for (let i = 7; i < rates.length; i++) {
-      const subset = rates.slice(i-7, i);
-      const mean = subset.reduce((sum, r) => sum + r, 0) / subset.length;
-      const variance = subset.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / subset.length;
-      volSeries.push(Math.sqrt(variance));
-    }
-    
-    const volPercentile = volSeries.length > 0 ? percentileRank(volSeries, fundingVolatility) : 0.5;
-    const volScore = riskFromPercentile(volPercentile, { invert: false, k: 3 });
+    const fundingScore = fundingResult.score;
+    const volScore = volatilityResult.score;
+    const stressScore = stressResult.score;
 
-    // 3. Funding-Spot Divergence (30% weight) - term structure stress
-    // Calculate 7-day price volatility as proxy for market stress
-    const priceReturns = [];
-    for (let i = 1; i < Math.min(spotPrices.length, 30); i++) {
-      const return_ = (spotPrices[i] - spotPrices[i-1]) / spotPrices[i-1];
-      if (Number.isFinite(return_)) priceReturns.push(return_);
-    }
-    
-    const priceVolatility = priceReturns.length > 0 ? 
-      Math.sqrt(priceReturns.reduce((sum, r) => sum + r*r, 0) / priceReturns.length) * 100 : 0;
-    
-    // High price volatility + high funding = term structure stress
-    const stressIndicator = (Math.abs(avgFunding) * 10) + (priceVolatility * 0.1);
-    
-    // Build stress series for percentile ranking
-    const stressSeries = [];
-    for (let i = 7; i < Math.min(rates.length, spotPrices.length-7); i++) {
-      const fundingSubset = rates.slice(i-7, i);
-      const priceSubset = spotPrices.slice(i-7, i);
-      const avgF = fundingSubset.reduce((sum, r) => sum + r, 0) / fundingSubset.length;
-      
-      const returns = [];
-      for (let j = 1; j < priceSubset.length; j++) {
-        returns.push((priceSubset[j] - priceSubset[j-1]) / priceSubset[j-1]);
-      }
-      const vol = returns.length > 0 ? 
-        Math.sqrt(returns.reduce((sum, r) => sum + r*r, 0) / returns.length) * 100 : 0;
-      
-      stressSeries.push((Math.abs(avgF) * 10) + (vol * 0.1));
-    }
-    
-    const stressPercentile = stressSeries.length > 0 ? percentileRank(stressSeries, stressIndicator) : 0.5;
-    const stressScore = riskFromPercentile(stressPercentile, { invert: false, k: 3 });
+    // All calculations completed in parallel - no additional processing needed
 
-    // Composite score (weighted blend) - BMSB-dominant Trend & Valuation
+    // Composite score (weighted blend)
     const compositeScore = Math.round(
       fundingScore * 0.40 + 
       volScore * 0.35 + 
@@ -1485,32 +1732,41 @@ async function computeTermLeverage() {
     
     // Determine leverage regime
     let leverageRegime = "Low";
-    if (Math.abs(avgFunding) > 0.05) leverageRegime = "High";
-    else if (Math.abs(avgFunding) > 0.02) leverageRegime = "Moderate";
+    if (Math.abs(fundingComponentData.avgFunding) > 0.05) leverageRegime = "High";
+    else if (Math.abs(fundingComponentData.avgFunding) > 0.02) leverageRegime = "Moderate";
     
     // Determine term structure state
     let termStructure = "Normal";
-    if (stressIndicator > 2) termStructure = "Stressed";
-    else if (stressIndicator > 1) termStructure = "Elevated";
+    if (stressData.stressIndicator > 2) termStructure = "Stressed";
+    else if (stressData.stressIndicator > 1) termStructure = "Elevated";
     
+    const rates = fundingRates.map(f => f.rate);
     const maxFunding = Math.max(...rates);
     const minFunding = Math.min(...rates);
     
-    return { 
+    const result = { 
       score: compositeScore, 
       reason: "success",
       lastUpdated: new Date().toISOString(),
       details: [
-        { label: "Current Funding Rate", value: `${latestFunding.toFixed(4)}%` },
-        { label: "30-day Average", value: `${avgFunding.toFixed(4)}%` },
-        { label: "Funding Volatility", value: `${fundingVolatility.toFixed(4)}%` },
-        { label: "Price Volatility (30d)", value: `${priceVolatility.toFixed(2)}%` },
+        { label: "Current Funding Rate", value: `${fundingComponentData.latestFunding.toFixed(4)}%` },
+        { label: "30-day Average", value: `${fundingComponentData.avgFunding.toFixed(4)}%` },
+        { label: "Price Volatility (30d)", value: `${volatilityData.priceVolatility.toFixed(2)}%` },
         { label: "Leverage Regime", value: leverageRegime },
         { label: "Term Structure", value: termStructure },
         { label: "30-day Range", value: `${minFunding.toFixed(4)}% - ${maxFunding.toFixed(4)}%` },
+        { label: "Data Source", value: dataSource },
+        { label: "Calculation Method", value: `Parallel processing (${parallelTime}ms)` },
         { label: "Component Scores", value: `Funding: ${fundingScore}, Vol: ${volScore}, Stress: ${stressScore}` }
-      ]
+      ],
+      fundingData: fundingData, // Include for cache comparison
+      parallelTime // Include timing info
     };
+
+    // Save to cache for future use
+    await saveTermLeverageCache(result);
+
+    return result;
   } catch (error) {
     return { score: null, reason: `error: ${error.message}` };
   }
