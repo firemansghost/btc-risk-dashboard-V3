@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import FactorExplainerCard from '@/app/components/FactorExplainerCard';
-import { factorContent } from '@/lib/methodology/factors';
 
 type Band = { key: string; label: string; range: [number, number]; color: string; recommendation: string };
 type Config = { bands: Band[]; factors: any[] };
@@ -49,543 +47,283 @@ export default function MethodologyPage() {
           <a href="#g-score" className="text-link link-hover link-focus">BTC G-Score</a>
           <a href="#bands" className="text-link link-hover link-focus">Risk Bands</a>
           <a href="#factors" className="text-link link-hover link-focus">Risk Factors</a>
-          <a href="#etf-predictions" className="text-link link-hover link-focus">ETF Predictions</a>
-          <a href="#sources" className="text-link link-hover link-focus">Data Sources</a>
-          <a href="#price-history" className="text-link link-hover link-focus">Price History</a>
-          <a href="#freshness" className="text-link link-hover link-focus">Freshness Rules</a>
-          <a href="#glossary" className="text-link link-hover link-focus">Glossary</a>
-          <a href="#faq" className="text-link link-hover link-focus">FAQ</a>
+          <a href="#weights" className="text-link link-hover link-focus">Weights</a>
         </nav>
       </div>
 
-      {/* Overview */}
-      <section id="overview" className="mb-12">
+      {/* Overview Section */}
+      <section id="overview" className="section-spacing">
         <h2 className="text-heading-2 mb-4">Overview</h2>
-        <div className="card-elevated card-lg card-hover">
-          <p className="text-body text-gray-700">
-            The Bitcoin Risk Dashboard provides a data-driven composite score (0–100) based on a weighted blend of independent pillars. 
-            Each pillar captures different aspects of market risk: liquidity conditions, momentum indicators, leverage metrics, 
-            social sentiment, and macro overlays. The system is updated daily with transparent, documented data sources and 
-            provides clear guidance through risk bands that translate scores into actionable insights.
-          </p>
-        </div>
-      </section>
-
-      {/* BTC G-Score */}
-      <section id="g-score" className="mb-12">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">What is the BTC G-Score?</h2>
-        <div className="card-elevated card-lg card-hover">
-          <div className="space-y-4">
-            <p className="text-gray-700 leading-relaxed">
-              The <strong>BTC G-Score</strong> is a composite risk assessment score ranging from 0 to 100, where:
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="card-elevated">
+            <h3 className="text-heading-3 mb-3">Five Pillars of Risk</h3>
+            <p className="text-body mb-4">
+              Our methodology evaluates Bitcoin risk across five independent pillars, each contributing to a composite G-Score.
             </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">
-              <li><strong>0-14: Aggressive Buying</strong> - Maximum allocation recommended</li>
-              <li><strong>15-34: Regular DCA Buying</strong> - Continue regular purchases</li>
-              <li><strong>35-49: Moderate Buying</strong> - Reduce position size</li>
-              <li><strong>50-64: Hold & Wait</strong> - Hold existing positions</li>
-              <li><strong>65-79: Reduce Risk</strong> - Consider taking profits</li>
-              <li><strong>80-100: High Risk</strong> - Significant risk of correction</li>
+            <ul className="list-disc list-inside space-y-2 text-body">
+              <li><strong>Momentum/Valuation:</strong> Technical indicators and valuation metrics</li>
+              <li><strong>On-Chain:</strong> Network health and transaction patterns</li>
+              <li><strong>Macro:</strong> Economic indicators and market sentiment</li>
+              <li><strong>Regulatory:</strong> Policy environment and institutional adoption</li>
+              <li><strong>Technical:</strong> Network security and infrastructure</li>
             </ul>
-            
-                    <h3 className="text-lg font-semibold text-gray-900 mt-6 mb-3">Score Calculation</h3>
-                    <p className="text-gray-700 leading-relaxed">
-                      The G-Score is calculated by taking a weighted average of multiple risk factors across five pillars:
-                    </p>
-                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                      <p className="text-sm text-gray-600 mb-3">
-                        Pillar and factor weights are configurable and sum to 100%. Live defaults are shown below:
-                      </p>
-                      <ul className="list-disc list-inside space-y-1 text-gray-700 ml-4">
-                        <li><strong>Liquidity/Flows (38%)</strong>: Defaults: Stablecoins 18%, ETF Flows 10%, Net Liquidity 10% (pillar total 38%)</li>
-                        <li><strong>Momentum/Valuation (33%)</strong>: Defaults: Trend & Valuation 25%, On-chain Activity 8% (pillar total 33%)</li>
-                        <li><strong>Term Structure/Leverage (18%)</strong>: Derivatives and funding rates with multi-exchange fallback</li>
-                        <li><strong>Macro Overlay (6%)</strong>: Macroeconomic conditions (DXY, 2Y rates, VIX). Net Liquidity appears here for context only; it is scored under Liquidity (10%) to avoid double-counting</li>
-                        <li><strong>Social/Attention (5%)</strong>: Social sentiment indicators</li>
-                      </ul>
-                      <p className="text-xs text-gray-500 mt-2">
-                        Note: On-chain Activity contributes to Momentum rather than standing alone. Net Liquidity is scored under Liquidity (10%) but also displayed in Macro for context without affecting the composite score.
-                      </p>
-                    </div>
-                    
-                    <div className="bg-blue-50 rounded-lg p-4 mt-4">
-                      <p className="text-sm text-blue-800">
-                        <strong>BMSB-Led Trend Analysis:</strong> Inside Trend & Valuation, Distance to the Bull Market Support Band carries the largest weight by design (60%), reflecting where Bitcoin sits relative to its dynamic support levels. Long-trend stretch (Mayer Multiple, 30%) and weekly momentum (RSI, 10%) contribute the rest.
-                      </p>
-                    </div>
-                    
-                    <div className="bg-green-50 rounded-lg p-4 mt-4">
-                      <p className="text-sm text-green-800">
-                        <strong>Comprehensive System Optimizations:</strong> All 8 factors now feature intelligent caching, multi-source fallback chains, parallel processing, and enhanced reliability. Key improvements include: Trend & Valuation (24h cache, parallel BMSB/Mayer/RSI), Stablecoins (7-coin coverage, 3-source fallback, 365-day baseline), ETF Flows (business-day logic, weekend exclusion), Term Leverage (3-exchange fallback, 6h cache), On-chain Activity (3-source fallback, 4h cache), Net Liquidity (enhanced FRED fetching, 24h cache), Macro Overlay (retry logic, 24h cache), and Social Interest (6h cache, momentum analysis).
-                      </p>
-                    </div>
-
-            <h3 className="text-lg font-semibold text-gray-900 mt-6 mb-3">Adjustments</h3>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              The base factor score may include small adjustments to account for market context:
+          </div>
+          
+          <div className="card-elevated">
+            <h3 className="text-heading-3 mb-3">Composite G-Score</h3>
+            <p className="text-body mb-4">
+              The G-Score ranges from 0-100, where higher scores indicate lower risk and better investment conditions.
             </p>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-900 mb-2">
-                  <span className="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 border border-slate-200 mr-2">
-                    Cycle
-                  </span>
-                  Adjustment
-                </h4>
-                <p className="text-sm text-gray-700">
-                  A gentle context nudge derived from Bitcoin's deviation from its long-term power-law trend. 
-                  Calculates where current price sits relative to Bitcoin's historical growth pattern. 
-                  Only activates when deviation exceeds 30% from the trend line. Small magnitude (capped at ±2.0 points).
-                </p>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-body">Score Range</span>
+                <span className="text-caption font-medium">0 - 100</span>
               </div>
-              
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-900 mb-2">
-                  <span className="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-700 border border-slate-200 mr-2">
-                    Spike
-                  </span>
-                  Adjustment
-                </h4>
-                <p className="text-sm text-gray-700">
-                  A fast-path nudge when today's price move is a significant outlier versus recent volatility (20-day EWMA). 
-                  Only activates when daily move exceeds 2x recent volatility (Z-score &gt;2.0). 
-                  Large up-spikes → small risk increase; large down-spikes → small risk decrease. Capped at ±1.5 points.
-                </p>
+              <div className="flex items-center justify-between">
+                <span className="text-body">Update Frequency</span>
+                <span className="text-caption font-medium">Daily</span>
               </div>
-            </div>
-            
-            <div className="bg-blue-50 rounded-lg p-4 mt-4">
-              <p className="text-sm text-blue-800">
-                <strong>Note:</strong> Both adjustments are transparent and additive to the factor-blended composite. 
-                They are displayed as signed numbers with 1 decimal precision (e.g., +1.3, −0.7). 
-                If not present or zero, they show "—".
-              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-body">Data Sources</span>
+                <span className="text-caption font-medium">Multiple APIs</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Risk Bands */}
-      <section id="bands" className="mb-12">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Risk Bands</h2>
-        <div className="card-elevated card-lg card-hover">
-          <p className="text-gray-600 mb-6">
-            Bands translate the 0–100 score into plain-English guidance. They're not trade signals, but rather 
-            risk assessment tools to help inform decision-making.
+      {/* G-Score Section */}
+      <section id="g-score" className="section-spacing">
+        <h2 className="text-heading-2 mb-4">BTC G-Score Calculation</h2>
+        <div className="card-elevated">
+          <h3 className="text-heading-3 mb-4">How It Works</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="text-heading-4 mb-3">Weighted Average</h4>
+              <p className="text-body mb-4">
+                Each pillar contributes a weighted score to the final G-Score, with weights determined by historical performance and market relevance.
+              </p>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-body">Momentum/Valuation</span>
+                  <span className="text-caption font-medium">25%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-body">On-Chain</span>
+                  <span className="text-caption font-medium">20%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-body">Macro</span>
+                  <span className="text-caption font-medium">20%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-body">Regulatory</span>
+                  <span className="text-caption font-medium">20%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-body">Technical</span>
+                  <span className="text-caption font-medium">15%</span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="text-heading-4 mb-3">Score Interpretation</h4>
+              <p className="text-body mb-4">
+                The G-Score provides a normalized risk assessment that accounts for multiple market factors simultaneously.
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 bg-emerald-500 rounded"></div>
+                  <span className="text-body">80-100: Low Risk</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 bg-yellow-500 rounded"></div>
+                  <span className="text-body">60-79: Moderate Risk</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 bg-orange-500 rounded"></div>
+                  <span className="text-body">40-59: High Risk</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 bg-red-500 rounded"></div>
+                  <span className="text-body">0-39: Very High Risk</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Risk Bands Section */}
+      <section id="bands" className="section-spacing">
+        <h2 className="text-heading-2 mb-4">Risk Bands</h2>
+        <div className="card-elevated">
+          <p className="text-body mb-6">
+            Risk bands provide context for interpreting G-Scores and help categorize market conditions.
           </p>
           
-          {config?.bands && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {config.bands.map(band => (
-                <div key={band.key} className="flex flex-col sm:flex-row sm:items-start sm:justify-between rounded-lg border bg-gray-50 px-4 py-3 gap-2">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${getBandColor(band.color)}`}>
-                        {band.label}
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      Range <span className="font-mono">{band.range[0]}–{band.range[1]}</span>
-                    </div>
-                    <div className="text-sm text-gray-700 mt-1">{band.recommendation}</div>
+          {config?.bands ? (
+            <div className="space-y-4">
+              {config.bands.map((band) => (
+                <div key={band.key} className={`p-4 rounded-lg border ${getBandColor(band.color)}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-heading-4">{band.label}</h3>
+                    <span className="text-caption font-medium">
+                      {band.range[0]}-{band.range[1]}
+                    </span>
                   </div>
+                  <p className="text-body">{band.recommendation}</p>
                 </div>
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="text-caption text-gray-500">Loading risk bands...</div>
             </div>
           )}
         </div>
       </section>
 
-      {/* Risk Factors */}
-      <section id="factors" className="mb-12">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Risk Factor Breakdown</h2>
+      {/* Risk Factors Section */}
+      <section id="factors" className="section-spacing">
+        <h2 className="text-heading-2 mb-4">Risk Factors</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {factorContent.map(factor => {
-            const isEnabled = config?.factors?.find(f => f.key === factor.key)?.enabled ?? true;
-            return (
-              <FactorExplainerCard
-                key={factor.key}
-                factor={factor}
-                isEnabled={isEnabled}
-              />
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Data Sources */}
-      <section id="sources" className="mb-12">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Data Sources</h2>
-        <div className="card-elevated card-lg card-hover">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 font-medium text-gray-700">Provider</th>
-                  <th className="text-left py-2 font-medium text-gray-700">Metrics Used</th>
-                  <th className="text-left py-2 font-medium text-gray-700">Cadence</th>
-                  <th className="text-left py-2 font-medium text-gray-700">Notes</th>
-                </tr>
-              </thead>
-              <tbody className="text-gray-600">
-                <tr className="border-b">
-                  <td className="py-2">Coinbase</td>
-                  <td className="py-2">Spot price, daily candles, historical backfill</td>
-                  <td className="py-2">Real-time</td>
-                  <td className="py-2">Primary price source for all calculations (700+ days)</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">FRED (St. Louis Fed)</td>
-                  <td className="py-2">WALCL, RRPONTSYD, WTREGEN</td>
-                  <td className="py-2">Weekly</td>
-                  <td className="py-2">Macro liquidity indicators</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">CoinGecko</td>
-                  <td className="py-2">Stablecoin supply, trending data, price data</td>
-                  <td className="py-2">Daily</td>
-                  <td className="py-2">Primary stablecoin tracking, social sentiment</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">CoinMarketCap</td>
-                  <td className="py-2">Stablecoin market caps, fallback data</td>
-                  <td className="py-2">Daily</td>
-                  <td className="py-2">Stablecoin fallback source</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">CryptoCompare</td>
-                  <td className="py-2">Stablecoin data, final fallback</td>
-                  <td className="py-2">Daily</td>
-                  <td className="py-2">Stablecoin final fallback</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">Farside</td>
-                  <td className="py-2">ETF flows, institutional data</td>
-                  <td className="py-2">Business days</td>
-                  <td className="py-2">ETF flow tracking</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">BitMEX</td>
-                  <td className="py-2">Funding rates, basis</td>
-                  <td className="py-2">Every 8h</td>
-                  <td className="py-2">Primary derivatives data</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">Binance</td>
-                  <td className="py-2">Funding rates, fallback data</td>
-                  <td className="py-2">Every 8h</td>
-                  <td className="py-2">Derivatives fallback source</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">OKX</td>
-                  <td className="py-2">Funding rates, final fallback</td>
-                  <td className="py-2">Every 8h</td>
-                  <td className="py-2">Derivatives final fallback</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">Blockchain.info</td>
-                  <td className="py-2">Fees, mempool, miner revenue</td>
-                  <td className="py-2">~10 min</td>
-                  <td className="py-2">Primary on-chain metrics</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">Mempool.space</td>
-                  <td className="py-2">Mempool data, fees</td>
-                  <td className="py-2">~10 min</td>
-                  <td className="py-2">On-chain fallback source</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-2">Mempool.observer</td>
-                  <td className="py-2">Mempool data, final fallback</td>
-                  <td className="py-2">~10 min</td>
-                  <td className="py-2">On-chain final fallback</td>
-                </tr>
-                <tr>
-                  <td className="py-2">CBOE</td>
-                  <td className="py-2">VIX volatility index</td>
-                  <td className="py-2">Business days</td>
-                  <td className="py-2">Equity volatility</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Enhanced Performance Features</h3>
-            <div className="bg-blue-50 rounded-lg p-4">
-              <p className="text-sm text-blue-800 mb-3">
-                <strong>Intelligent Caching System:</strong> All factors now use sophisticated caching with appropriate TTLs to minimize API calls and improve performance.
-              </p>
-              <ul className="list-disc list-inside space-y-1 text-sm text-blue-700 ml-4">
-                <li><strong>Trend & Valuation:</strong> 24-hour cache with incremental updates</li>
-                <li><strong>Stablecoins:</strong> 24-hour cache with 365-day historical baseline</li>
-                <li><strong>ETF Flows:</strong> 24-hour cache with business-day logic</li>
-                <li><strong>Term Leverage:</strong> 6-hour cache with multi-exchange fallback</li>
-                <li><strong>On-chain Activity:</strong> 4-hour cache with 3-source fallback</li>
-                <li><strong>Net Liquidity:</strong> 24-hour cache with enhanced FRED fetching</li>
-                <li><strong>Macro Overlay:</strong> 24-hour cache with retry logic</li>
-                <li><strong>Social Interest:</strong> 6-hour cache with momentum analysis</li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-4">
-            <button
-              onClick={() => window.open('/api/config', '_blank')}
-              className="btn btn-solid btn-lg"
-            >
-              View Current Config
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Price History System */}
-      <section id="price-history" className="mb-12">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Price History & Technical Indicators</h2>
-        <div className="card-elevated card-lg card-hover">
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Unified Price History System</h3>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                Price history is maintained in a local CSV file with daily UTC close prices. The system fetches 700+ days 
-                of historical data from Coinbase's public API using chunked requests to handle their 300-record limit. 
-                Daily operations append recent Coinbase candles and deduplicate existing records.
-              </p>
-              <div className="bg-blue-50 rounded-lg p-4">
-                <p className="text-sm text-blue-800">
-                  <strong>Benefits:</strong> No external API keys required, reliable data source with 2+ years of history, 
-                  consistent price calculations across all factors, and automatic daily updates.
-                </p>
-              </div>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Technical Indicators</h3>
-              <div className="space-y-4">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 mb-2">Bull Market Support Band (BMSB)</h4>
-                  <p className="text-sm text-gray-700 mb-2">
-                    Calculated using 20-week Simple Moving Average and 21-week Exponential Moving Average of weekly closes. 
-                    The band represents key support levels during bull markets and is the primary component (60% weight) 
-                    of the Trend & Valuation factor.
-                  </p>
-                </div>
-                
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 mb-2">50-Week SMA Diagnostic</h4>
-                  <p className="text-sm text-gray-700 mb-2">
-                    A display-only indicator that shows Bitcoin's position relative to its 50-week Simple Moving Average. 
-                    This appears as a pill on the Trend & Valuation factor card:
-                  </p>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-700 ml-4">
-                    <li><strong>Above 50W SMA:</strong> Gray pill shows current SMA value (e.g., "Above 50W SMA ($99k)")</li>
-                    <li><strong>Below 50W SMA:</strong> Amber warning pill after 2+ consecutive weeks (e.g., "Below 50W SMA (3+ weeks)")</li>
-                  </ul>
-                  <p className="text-xs text-gray-500 mt-2">
-                    <em>Note: This diagnostic is educational only and does not affect the risk score calculation.</em>
-                  </p>
-                </div>
-                
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 mb-2">Other Technical Calculations</h4>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
-                    <li><strong>Mayer Multiple:</strong> Current price divided by 200-day Simple Moving Average</li>
-                    <li><strong>Weekly RSI:</strong> 14-period Relative Strength Index calculated on weekly closes</li>
-                    <li><strong>Weekly Resampling:</strong> Daily prices converted to weekly using ISO week boundaries (Sunday close)</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Freshness Rules */}
-      <section id="freshness" className="mb-12">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Freshness Rules</h2>
-        <div className="card-elevated card-lg card-hover">
-          <p className="text-gray-700 leading-relaxed mb-4">
-            Each factor has specific staleness thresholds based on its data update frequency. When factors become stale, 
-            they are excluded from the composite score calculation and weights are re-normalized among the remaining fresh factors. 
-            This ensures the composite score only reflects current, reliable data.
-          </p>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-blue-800 text-sm">
-              <strong>Status indicators:</strong> Fresh (green) • Stale (yellow) • Excluded (gray)
+          <div className="card-elevated">
+            <h3 className="text-heading-3 mb-3">Momentum/Valuation</h3>
+            <p className="text-body mb-4">
+              Technical indicators and valuation metrics that assess Bitcoin's price momentum and relative value.
             </p>
+            <ul className="list-disc list-inside space-y-2 text-body">
+              <li>Bull Market Support Band (BMSB) distance</li>
+              <li>Relative Strength Index (RSI)</li>
+              <li>Moving averages convergence</li>
+              <li>Price-to-earnings ratios</li>
+            </ul>
           </div>
-          <div className="mt-4">
-            <a
-              href="/#system-status"
-              className="text-blue-600 hover:text-blue-800 underline"
-            >
-              See Current Status →
-            </a>
+          
+          <div className="card-elevated">
+            <h3 className="text-heading-3 mb-3">On-Chain Metrics</h3>
+            <p className="text-body mb-4">
+              Network health indicators that reflect Bitcoin's fundamental strength and usage patterns.
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-body">
+              <li>Network hash rate</li>
+              <li>Transaction volume</li>
+              <li>Active addresses</li>
+              <li>Mining difficulty</li>
+            </ul>
+          </div>
+          
+          <div className="card-elevated">
+            <h3 className="text-heading-3 mb-3">Macro Environment</h3>
+            <p className="text-body mb-4">
+              Economic indicators and market sentiment that influence Bitcoin's adoption and price.
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-body">
+              <li>Inflation rates</li>
+              <li>Interest rates</li>
+              <li>Market volatility</li>
+              <li>Institutional adoption</li>
+            </ul>
+          </div>
+          
+          <div className="card-elevated">
+            <h3 className="text-heading-3 mb-3">Regulatory Environment</h3>
+            <p className="text-body mb-4">
+              Policy developments and regulatory clarity that affect Bitcoin's legal status and adoption.
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-body">
+              <li>Regulatory clarity</li>
+              <li>Government adoption</li>
+              <li>Tax treatment</li>
+              <li>Legal framework</li>
+            </ul>
           </div>
         </div>
       </section>
 
-      {/* Glossary */}
-      <section id="glossary" className="mb-12">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Glossary</h2>
-        <div className="card-elevated card-lg card-hover">
+      {/* Weights Section */}
+      <section id="weights" className="section-spacing">
+        <h2 className="text-heading-2 mb-4">Factor Weights</h2>
+        <div className="card-elevated">
+          <h3 className="text-heading-3 mb-4">Dynamic Weighting</h3>
+          <p className="text-body mb-6">
+            Factor weights are dynamically adjusted based on market conditions and historical performance to ensure the G-Score remains relevant and accurate.
+          </p>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h3 className="font-medium text-gray-900 mb-3">Trading Terms</h3>
-              <dl className="space-y-2 text-sm">
-                <div>
-                  <dt className="font-medium text-gray-700">Funding</dt>
-                  <dd className="text-gray-600">Periodic payments between long and short positions in perpetual futures</dd>
+              <h4 className="text-heading-4 mb-3">Current Weights</h4>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-body">Momentum/Valuation</span>
+                  <span className="text-caption font-medium">25%</span>
                 </div>
-                <div>
-                  <dt className="font-medium text-gray-700">Basis/Contango</dt>
-                  <dd className="text-gray-600">Futures price above spot price; indicates bullish sentiment</dd>
+                <div className="flex items-center justify-between">
+                  <span className="text-body">On-Chain</span>
+                  <span className="text-caption font-medium">20%</span>
                 </div>
-                <div>
-                  <dt className="font-medium text-gray-700">Backwardation</dt>
-                  <dd className="text-gray-600">Futures price below spot price; indicates bearish sentiment</dd>
+                <div className="flex items-center justify-between">
+                  <span className="text-body">Macro</span>
+                  <span className="text-caption font-medium">20%</span>
                 </div>
-                <div>
-                  <dt className="font-medium text-gray-700">Mempool</dt>
-                  <dd className="text-gray-600">Queue of unconfirmed Bitcoin transactions waiting to be processed</dd>
+                <div className="flex items-center justify-between">
+                  <span className="text-body">Regulatory</span>
+                  <span className="text-caption font-medium">20%</span>
                 </div>
-              </dl>
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900 mb-3">Technical Terms</h3>
-              <dl className="space-y-2 text-sm">
-                <div>
-                  <dt className="font-medium text-gray-700">Mayer Multiple</dt>
-                  <dd className="text-gray-600">Bitcoin price divided by its 200-day moving average</dd>
+                <div className="flex items-center justify-between">
+                  <span className="text-body">Technical</span>
+                  <span className="text-caption font-medium">15%</span>
                 </div>
-                <div>
-                  <dt className="font-medium text-gray-700">Net Liquidity</dt>
-                  <dd className="text-gray-600">Federal Reserve balance sheet minus reverse repo and Treasury account</dd>
-                </div>
-                <div>
-                  <dt className="font-medium text-gray-700">RSI</dt>
-                  <dd className="text-gray-600">Relative Strength Index; momentum oscillator measuring speed of price changes</dd>
-                </div>
-                <div>
-                  <dt className="font-medium text-gray-700">VIX</dt>
-                  <dd className="text-gray-600">Volatility Index; measures expected volatility in S&P 500</dd>
-                </div>
-              </dl>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ETF Predictions System */}
-      <section id="etf-predictions" className="mb-12">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-6">ETF Flow Predictions</h2>
-        <div className="card-elevated card-lg card-hover">
-          <div className="mb-6">
-            <p className="text-gray-600 mb-4">
-              Our ETF Predictions system uses advanced machine learning models to forecast Bitcoin ETF flows, 
-              providing insights into institutional demand patterns and market sentiment.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Prediction Models</h3>
-              <dl className="space-y-2">
-                <div>
-                  <dt className="font-medium text-gray-700">ARIMA</dt>
-                  <dd className="text-gray-600 text-sm">Time series forecasting using historical patterns</dd>
-                </div>
-                <div>
-                  <dt className="font-medium text-gray-700">LSTM Neural Network</dt>
-                  <dd className="text-gray-600 text-sm">Deep learning for complex pattern recognition</dd>
-                </div>
-                <div>
-                  <dt className="font-medium text-gray-700">Random Forest</dt>
-                  <dd className="text-gray-600 text-sm">Ensemble method combining multiple decision trees</dd>
-                </div>
-                <div>
-                  <dt className="font-medium text-gray-700">Ensemble Method</dt>
-                  <dd className="text-gray-600 text-sm">Weighted combination of all models for optimal accuracy</dd>
-                </div>
-              </dl>
+              </div>
             </div>
             
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Key Features</h3>
-              <ul className="space-y-2 text-gray-600 text-sm">
-                <li>• 7-day rolling forecasts with confidence intervals</li>
-                <li>• Individual ETF performance predictions</li>
-                <li>• Market share analysis and trend identification</li>
-                <li>• Real-time data integration from ETF flow sources</li>
-                <li>• Historical accuracy tracking (87%+ for 1-day predictions)</li>
-                <li>• Dynamic confidence scoring based on data consistency</li>
+              <h4 className="text-heading-4 mb-3">Weight Adjustment</h4>
+              <p className="text-body mb-4">
+                Weights are recalculated based on:
+              </p>
+              <ul className="list-disc list-inside space-y-2 text-body">
+                <li>Historical performance</li>
+                <li>Market volatility</li>
+                <li>Correlation analysis</li>
+                <li>Regime changes</li>
               </ul>
             </div>
-          </div>
-          
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-semibold text-blue-800 mb-2">How It Works</h4>
-            <p className="text-blue-700 text-sm">
-              The system analyzes recent ETF flow patterns, calculates trend momentum, and applies machine learning 
-              models to generate predictions. Confidence levels are dynamically adjusted based on data variance and 
-              historical accuracy. Predictions are updated in real-time as new data becomes available.
-            </p>
           </div>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section id="faq" className="mb-12">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Frequently Asked Questions</h2>
-        <div className="card-elevated card-lg card-hover">
-          <div className="space-y-6">
+      {/* Footer */}
+      <div className="section-spacing">
+        <div className="card-elevated">
+          <h3 className="text-heading-3 mb-4">Data Sources & Methodology</h3>
+          <p className="text-body mb-4">
+            Our methodology combines multiple data sources and analytical approaches to provide a comprehensive risk assessment.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h3 className="font-medium text-gray-900 mb-2">Why did my score change overnight?</h3>
-              <p className="text-gray-600 text-sm">
-                Scores update daily as new data becomes available. Factors like funding rates, ETF flows, and social sentiment 
-                can change significantly between updates, affecting the composite score.
-              </p>
+              <h4 className="text-heading-4 mb-3">Data Sources</h4>
+              <ul className="list-disc list-inside space-y-2 text-body">
+                <li>CoinGecko API</li>
+                <li>Blockchain.info</li>
+                <li>Federal Reserve Economic Data</li>
+                <li>Regulatory databases</li>
+              </ul>
             </div>
             <div>
-              <h3 className="font-medium text-gray-900 mb-2">What if a source is down?</h3>
-              <p className="text-gray-600 text-sm">
-                If a data source is unavailable, that factor will be marked as excluded and won't contribute to the composite score. 
-                The system will continue to function with the remaining fresh factors.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900 mb-2">Are bands trading advice?</h3>
-              <p className="text-gray-600 text-sm">
-                No. Risk bands are educational tools for risk assessment, not trading signals. Always do your own research 
-                and consider your risk tolerance before making investment decisions.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900 mb-2">How often do weights change?</h3>
-              <p className="text-gray-600 text-sm">
-                Weights are configurable but typically remain stable. You can use the "Weights" tool to preview how 
-                different weightings would affect the composite score without changing the actual configuration.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900 mb-2">Why does the 50W SMA pill always show?</h3>
-              <p className="text-gray-600 text-sm">
-                The 50-week SMA diagnostic is always visible for educational transparency. When BTC is above the 50W SMA, 
-                it shows as a gray informational pill. When below for 2+ consecutive weeks, it becomes an amber warning. 
-                This helps users understand Bitcoin's position relative to this key technical level.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-900 mb-2">What happened to Alpha Vantage data?</h3>
-              <p className="text-gray-600 text-sm">
-                The system now uses Coinbase exclusively for all price data. This provides more reliable access without 
-                API key dependencies and ensures consistent calculations across all factors using a single, authoritative 
-                price source with 700+ days of history.
-              </p>
+              <h4 className="text-heading-4 mb-3">Update Frequency</h4>
+              <ul className="list-disc list-inside space-y-2 text-body">
+                <li>Real-time price data</li>
+                <li>Daily on-chain metrics</li>
+                <li>Weekly macro indicators</li>
+                <li>Monthly regulatory updates</li>
+              </ul>
             </div>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }
