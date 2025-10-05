@@ -1,7 +1,7 @@
 {
-  "version": "2.0.0",
-  "lastModified": "2025-01-20T12:00:00.000Z",
-  "description": "SINGLE SOURCE OF TRUTH for all dashboard configuration - pillars, factors, weights, bands, and sub-weights",
+  "version": "2.1.0",
+  "lastModified": "2025-10-05T00:00:00.000Z",
+  "description": "SINGLE SOURCE OF TRUTH for all dashboard configuration - pillars, factors, weights, bands, and sub-weights - Rebalanced to prioritize Trend & Valuation",
   
   "meta": {
     "approach": "cycle-anchored-trend",
@@ -13,35 +13,35 @@
   "pillars": {
     "liquidity": {
       "label": "Liquidity / Flows",
-      "weight": 0.35,
+      "weight": 0.38,
       "color": "bg-blue-100 text-blue-800 border-blue-200",
       "description": "ETF flows, stablecoin supply, net liquidity",
       "order": 1
     },
     "momentum": {
       "label": "Momentum / Valuation", 
-      "weight": 0.25,
+      "weight": 0.33,
       "color": "bg-green-100 text-green-800 border-green-200",
       "description": "Price trends, on-chain activity",
       "order": 2
     },
     "leverage": {
       "label": "Term Structure / Leverage",
-      "weight": 0.20,
+      "weight": 0.18,
       "color": "bg-orange-100 text-orange-800 border-orange-200", 
       "description": "Derivatives and funding rates",
       "order": 3
     },
     "macro": {
       "label": "Macro Overlay",
-      "weight": 0.10,
+      "weight": 0.06,
       "color": "bg-gray-100 text-gray-800 border-gray-200",
       "description": "Macroeconomic conditions",
       "order": 4
     },
     "social": {
       "label": "Social / Attention",
-      "weight": 0.10,
+      "weight": 0.05,
       "color": "bg-purple-100 text-purple-800 border-purple-200",
       "description": "Social sentiment indicators",
       "order": 5
@@ -52,10 +52,10 @@
     "trend_valuation": {
       "label": "Trend & Valuation",
       "pillar": "momentum",
-      "weight": 0.20,
+      "weight": 0.25,
       "enabled": true,
       "order": 1,
-      "description": "Cycle-Anchored Trend (BMSB-led) with Mayer Multiple and RSI",
+      "description": "Cycle-Anchored Trend (BMSB-led) with Mayer Multiple and RSI - Most fundamental risk indicator",
       "staleness": {
         "ttl_hours": 6,
         "market_dependent": true,
@@ -65,10 +65,10 @@
     "onchain": {
       "label": "On-chain Activity", 
       "pillar": "momentum",
-      "weight": 0.05,
+      "weight": 0.08,
       "enabled": true,
       "order": 2,
-      "description": "Network fees and mempool congestion",
+      "description": "Network fees and mempool congestion - Core Bitcoin metrics",
       "staleness": {
         "ttl_hours": 96,
         "market_dependent": false,
@@ -78,10 +78,10 @@
     "stablecoins": {
       "label": "Stablecoins",
       "pillar": "liquidity", 
-      "weight": 0.21,
+      "weight": 0.18,
       "enabled": true,
       "order": 3,
-      "description": "Stablecoin supply growth and momentum - crypto-native liquidity signal",
+      "description": "Stablecoin supply growth and momentum - Enhanced with 7-coin coverage",
       "staleness": {
         "ttl_hours": 24,
         "market_dependent": false,
@@ -91,10 +91,10 @@
     "etf_flows": {
       "label": "ETF Flows",
       "pillar": "liquidity",
-      "weight": 0.09,
+      "weight": 0.10,
       "enabled": true,
       "order": 4,
-      "description": "Bitcoin ETF flow momentum and diversification",
+      "description": "Bitcoin ETF flow momentum and diversification - Major institutional flow indicator",
       "staleness": {
         "ttl_hours": 24,
         "market_dependent": false,
@@ -104,7 +104,7 @@
     "net_liquidity": {
       "label": "Net Liquidity (FRED)",
       "pillar": "liquidity",
-      "weight": 0.05, 
+      "weight": 0.10, 
       "enabled": true,
       "order": 5,
       "description": "Fed balance sheet minus RRP and TGA - backdrop liquidity",
@@ -122,7 +122,7 @@
     "term_leverage": {
       "label": "Term Structure & Leverage",
       "pillar": "leverage",
-      "weight": 0.20,
+      "weight": 0.18,
       "enabled": true,
       "order": 6,
       "description": "Funding rates, basis, and open interest",
@@ -135,7 +135,7 @@
     "macro_overlay": {
       "label": "Macro Overlay",
       "pillar": "macro",
-      "weight": 0.10,
+      "weight": 0.06,
       "enabled": true,
       "order": 7,
       "description": "DXY, 2Y rates, and VIX",
@@ -148,7 +148,7 @@
     "social_interest": {
       "label": "Social Interest",
       "pillar": "social", 
-      "weight": 0.10,
+      "weight": 0.05,
       "enabled": true,
       "order": 8,
       "description": "Google Trends and Fear & Greed Index",
