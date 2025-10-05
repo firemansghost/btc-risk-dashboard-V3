@@ -27,6 +27,10 @@ import ScoreInsightsCard from './ScoreInsightsCard';
 import SkeletonLoader, { SkeletonDashboard, SkeletonCard } from './SkeletonLoader';
 import LazyLoader from './LazyLoader';
 import PerformanceMonitor from './PerformanceMonitor';
+import DashboardHero from './DashboardHero';
+import ProgressiveDisclosure from './ProgressiveDisclosure';
+import QuickActions from './QuickActions';
+import DashboardSection from './DashboardSection';
 
 function ErrorView({ msg, onRetry }: { msg: string; onRetry: () => void }) {
   return <div style={{ padding: 16 }}><p>{msg}</p><button onClick={onRetry} style={{ marginTop: 8 }}>Retry</button></div>;
@@ -208,20 +212,75 @@ export default function RealDashboard() {
   if (error) return <ErrorView msg={`Failed to load: ${error}`} onRetry={load} />;
   if (!latest || !status) return <ErrorView msg="Missing data artifacts." onRetry={load} />;
 
+  // Quick actions for the dashboard
+  const quickActions = [
+    {
+      label: 'View Methodology',
+      icon: '📋',
+      href: '/methodology',
+      variant: 'secondary' as const
+    },
+    {
+      label: 'ETF Predictions',
+      icon: '💰',
+      href: '/etf-predictions',
+      variant: 'secondary' as const
+    },
+    {
+      label: 'Set Alert',
+      icon: '🔔',
+      href: '/alerts',
+      variant: 'primary' as const
+    },
+    {
+      label: 'Strategy Analysis',
+      icon: '📈',
+      href: '/strategy-analysis',
+      variant: 'secondary' as const
+    }
+  ];
+
   // Main dashboard render
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center flex-spacing py-4 sm:py-6">
-            <div className="flex-1">
-              <div className="text-display mb-4">
-                <a href="/" className="text-primary hover:text-primary-hover transition-colors">GhostGauge</a>
-              </div>
-              
-              {/* Top Row: G-Score Card + Bitcoin Price Card */}
-              <div className="mobile-grid-2 mb-8">
+      {/* Hero Section */}
+      <DashboardHero
+        title="Bitcoin Risk Dashboard"
+        subtitle="Real-time Bitcoin market risk analysis and insights powered by comprehensive factor analysis"
+        badge="Live Data"
+        actions={[
+          {
+            label: 'View Methodology',
+            href: '/methodology',
+            variant: 'secondary',
+            icon: '📋'
+          },
+          {
+            label: 'Set Alert',
+            href: '/alerts',
+            variant: 'primary',
+            icon: '🔔'
+          }
+        ]}
+        className="mb-8"
+      />
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Quick Actions */}
+        <QuickActions
+          actions={quickActions}
+          title="Quick Actions"
+          className="mb-8"
+        />
+
+        {/* G-Score and Bitcoin Price Section */}
+        <DashboardSection
+          title="Key Metrics"
+          subtitle="Current Bitcoin G-Score and price information"
+          className="mb-8"
+        >
+          <div className="mobile-grid-2">
                 {/* Prominent G-Score Card - Unified Vertical Layout */}
                 <div className="card-floating card-md border-2 border-gray-300 ring-1 ring-gray-200 card-hover">
                   <div className="flex items-center justify-between mb-4">
@@ -279,15 +338,20 @@ export default function RealDashboard() {
                     {formatSourceTimestamp('Coinbase (daily close)', latest?.btc?.as_of_utc || '—')}
                   </div>
                 </div>
-              </div>
+          </div>
+        </DashboardSection>
 
-              {/* Score Insights Card - Right under main cards */}
-              <div className="mb-6 lg:mb-8">
-                <ScoreInsightsCard latest={latest} className="h-full" />
-              </div>
+        {/* Score Insights Section */}
+        <DashboardSection
+          title="Score Insights"
+          subtitle="Detailed analysis of the current G-Score and risk factors"
+          className="mb-8"
+        >
+          <ScoreInsightsCard latest={latest} className="h-full" />
+        </DashboardSection>
               
-              {/* Refresh Dashboard Button - Moved below top cards */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mt-6 mb-4">
+        {/* Refresh Dashboard Button */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mt-6 mb-4">
                 {refreshMessage && (
                   <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-md">
                     {refreshMessage}
@@ -508,8 +572,13 @@ export default function RealDashboard() {
           </div>
         )}
 
-        {/* Key Metrics Cards - Balanced 2x2 Layout */}
-        <div className="mobile-grid-2 mb-6 lg:mb-8">
+        {/* Key Metrics Cards Section */}
+        <DashboardSection
+          title="Key Metrics"
+          subtitle="Detailed breakdown of individual risk factors"
+          className="mb-8"
+        >
+          <div className="mobile-grid-2">
           {/* Composite Score */}
           <div className="card-metric">
             <h3 className="text-label mb-2">BTC G-Score</h3>
@@ -652,14 +721,23 @@ export default function RealDashboard() {
             onOpenProvenance={() => setProvenanceModalOpen(true)}
             onOpenWeights={() => setWhatIfModalOpen(true)}
           />
-        </div>
+          </div>
+        </DashboardSection>
 
-        {/* Factor Cards */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="mobile-heading">Risk Factor Breakdown</h2>
+        {/* Factor Cards Section */}
+        <DashboardSection
+          title="Risk Factor Breakdown"
+          subtitle="Individual risk factors contributing to the G-Score"
+          actions={
             <a 
-              href="/methodology#factors" 
+              href="/methodology#factors"
+              className="btn btn-ghost btn-sm"
+            >
+              View Details
+            </a>
+          }
+          className="mb-8"
+        > 
               className="text-sm text-blue-600 hover:text-blue-700 font-medium border-b border-blue-200 hover:border-blue-300 transition-colors"
             >
               How factors work →
@@ -979,9 +1057,14 @@ export default function RealDashboard() {
             </LazyLoader>
           );
           })}
-        </div>
+        </DashboardSection>
 
-        {/* History Chart */}
+        {/* History Chart Section */}
+        <DashboardSection
+          title="Historical G-Score"
+          subtitle="Track G-Score changes over time"
+          className="mb-8"
+        >
         <LazyLoader 
           delay={500}
           fallback={<SkeletonLoader isLoading={true}><SkeletonCard type="chart" size="lg" /></SkeletonLoader>}
@@ -991,24 +1074,31 @@ export default function RealDashboard() {
             <HistoryChart />
           </div>
         </LazyLoader>
+        </DashboardSection>
 
-        {/* Weights and Provenance */}
-        <div className="flex justify-center space-x-4">
-          <WeightsLauncher onOpen={() => setWhatIfModalOpen(true)} />
-          <button
-            onClick={() => setProvenanceModalOpen(true)}
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-          >
-            Data Sources
-          </button>
-        </div>
+        {/* Weights and Provenance Section */}
+        <DashboardSection
+          title="Data & Analysis"
+          subtitle="Explore data sources and adjust factor weights"
+          className="mb-8"
+        >
+          <div className="flex justify-center space-x-4">
+            <WeightsLauncher onOpen={() => setWhatIfModalOpen(true)} />
+            <button
+              onClick={() => setProvenanceModalOpen(true)}
+              className="btn btn-secondary"
+            >
+              Data Sources
+            </button>
+          </div>
 
-        {/* Dashboard Type Badge */}
-        <div className="flex justify-center mt-8 pb-4">
-          <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">
-            🚀 RealDashboard
-          </span>
-        </div>
+          {/* Dashboard Type Badge */}
+          <div className="flex justify-center mt-8 pb-4">
+            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">
+              🚀 RealDashboard
+            </span>
+          </div>
+        </DashboardSection>
       </div>
 
       {/* Modals */}

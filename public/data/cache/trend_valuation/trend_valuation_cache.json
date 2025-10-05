@@ -1,0 +1,7378 @@
+{
+  "score": 51,
+  "reason": "success",
+  "lastUpdated": "2025-10-05T00:53:44.708Z",
+  "details": [
+    {
+      "label": "Price vs 200-day SMA (Mayer)",
+      "value": "1.05"
+    },
+    {
+      "label": "Bull Market Support Band",
+      "value": "inside (-0.7%)"
+    },
+    {
+      "label": "Weekly momentum (RSI)",
+      "value": "52.8"
+    },
+    {
+      "label": "BTC Price (daily close)",
+      "value": "$109,598.11"
+    },
+    {
+      "label": "200-day SMA",
+      "value": "$104,419.239"
+    },
+    {
+      "label": "Weekly Close (for BMSB)",
+      "value": "$109,598.11"
+    },
+    {
+      "label": "Price source",
+      "value": "Coinbase (daily close)"
+    },
+    {
+      "label": "Historical data points",
+      "value": "729 days"
+    },
+    {
+      "label": "Calculation method",
+      "value": "Parallel processing (7ms)"
+    },
+    {
+      "label": "BMSB (20W SMA / 21W EMA)",
+      "value": "$111,558.891 / $109,198.662"
+    },
+    {
+      "label": "50-week SMA diagnostic",
+      "value": "Above 50W SMA ($98,907.884)"
+    },
+    {
+      "label": "Component Scores",
+      "value": "BMSB: 50, Mayer: 58, RSI: 36"
+    }
+  ],
+  "bmsb": {
+    "status": "inside",
+    "sma20": 111558.89099999999,
+    "ema21": 109198.66157881264,
+    "lower": 109198.66157881264,
+    "upper": 111558.89099999999,
+    "mid": 110378.77628940632,
+    "distance": -0.707261228698043,
+    "weekEnd": "2025-09-28"
+  },
+  "weeklyClose": 109598.11,
+  "weekEnd": "2025-09-28",
+  "sma50wDiagnostic": {
+    "sma50": 98907.88380000001,
+    "currentClose": 109598.11,
+    "isBelow": false,
+    "consecutiveWeeksBelow": 0,
+    "showWarning": false
+  },
+  "provenance": [
+    {
+      "source": "btc_price_history_csv",
+      "file_path": "../../public/data/btc_price_history.csv",
+      "ok": true,
+      "ms": 30,
+      "rows_loaded": 729
+    }
+  ],
+  "candles": [
+    {
+      "timestamp": 1695945600000,
+      "open": 26907,
+      "high": 26907,
+      "low": 26907,
+      "close": 26907,
+      "volume": 0,
+      "date_utc": "2023-09-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1696032000000,
+      "open": 26961,
+      "high": 26961,
+      "low": 26961,
+      "close": 26961,
+      "volume": 0,
+      "date_utc": "2023-09-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1696118400000,
+      "open": 27995.46,
+      "high": 27995.46,
+      "low": 27995.46,
+      "close": 27995.46,
+      "volume": 0,
+      "date_utc": "2023-10-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1696204800000,
+      "open": 27504.04,
+      "high": 27504.04,
+      "low": 27504.04,
+      "close": 27504.04,
+      "volume": 0,
+      "date_utc": "2023-10-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1696291200000,
+      "open": 27428.96,
+      "high": 27428.96,
+      "low": 27428.96,
+      "close": 27428.96,
+      "volume": 0,
+      "date_utc": "2023-10-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1696377600000,
+      "open": 27786.75,
+      "high": 27786.75,
+      "low": 27786.75,
+      "close": 27786.75,
+      "volume": 0,
+      "date_utc": "2023-10-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1696464000000,
+      "open": 27412.96,
+      "high": 27412.96,
+      "low": 27412.96,
+      "close": 27412.96,
+      "volume": 0,
+      "date_utc": "2023-10-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1696550400000,
+      "open": 27945.17,
+      "high": 27945.17,
+      "low": 27945.17,
+      "close": 27945.17,
+      "volume": 0,
+      "date_utc": "2023-10-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1696636800000,
+      "open": 27976.43,
+      "high": 27976.43,
+      "low": 27976.43,
+      "close": 27976.43,
+      "volume": 0,
+      "date_utc": "2023-10-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1696723200000,
+      "open": 27933.55,
+      "high": 27933.55,
+      "low": 27933.55,
+      "close": 27933.55,
+      "volume": 0,
+      "date_utc": "2023-10-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1696809600000,
+      "open": 27596.67,
+      "high": 27596.67,
+      "low": 27596.67,
+      "close": 27596.67,
+      "volume": 0,
+      "date_utc": "2023-10-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1696896000000,
+      "open": 27393.29,
+      "high": 27393.29,
+      "low": 27393.29,
+      "close": 27393.29,
+      "volume": 0,
+      "date_utc": "2023-10-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1696982400000,
+      "open": 26869.19,
+      "high": 26869.19,
+      "low": 26869.19,
+      "close": 26869.19,
+      "volume": 0,
+      "date_utc": "2023-10-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1697068800000,
+      "open": 26750.51,
+      "high": 26750.51,
+      "low": 26750.51,
+      "close": 26750.51,
+      "volume": 0,
+      "date_utc": "2023-10-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1697155200000,
+      "open": 26863.53,
+      "high": 26863.53,
+      "low": 26863.53,
+      "close": 26863.53,
+      "volume": 0,
+      "date_utc": "2023-10-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1697241600000,
+      "open": 26851.71,
+      "high": 26851.71,
+      "low": 26851.71,
+      "close": 26851.71,
+      "volume": 0,
+      "date_utc": "2023-10-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1697328000000,
+      "open": 27186.13,
+      "high": 27186.13,
+      "low": 27186.13,
+      "close": 27186.13,
+      "volume": 0,
+      "date_utc": "2023-10-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1697414400000,
+      "open": 28520.24,
+      "high": 28520.24,
+      "low": 28520.24,
+      "close": 28520.24,
+      "volume": 0,
+      "date_utc": "2023-10-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1697500800000,
+      "open": 28408.83,
+      "high": 28408.83,
+      "low": 28408.83,
+      "close": 28408.83,
+      "volume": 0,
+      "date_utc": "2023-10-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1697587200000,
+      "open": 28326.51,
+      "high": 28326.51,
+      "low": 28326.51,
+      "close": 28326.51,
+      "volume": 0,
+      "date_utc": "2023-10-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1697673600000,
+      "open": 28735.34,
+      "high": 28735.34,
+      "low": 28735.34,
+      "close": 28735.34,
+      "volume": 0,
+      "date_utc": "2023-10-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1697760000000,
+      "open": 29684.73,
+      "high": 29684.73,
+      "low": 29684.73,
+      "close": 29684.73,
+      "volume": 0,
+      "date_utc": "2023-10-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1697846400000,
+      "open": 29924.84,
+      "high": 29924.84,
+      "low": 29924.84,
+      "close": 29924.84,
+      "volume": 0,
+      "date_utc": "2023-10-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1697932800000,
+      "open": 30004.15,
+      "high": 30004.15,
+      "low": 30004.15,
+      "close": 30004.15,
+      "volume": 0,
+      "date_utc": "2023-10-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1698019200000,
+      "open": 33087.58,
+      "high": 33087.58,
+      "low": 33087.58,
+      "close": 33087.58,
+      "volume": 0,
+      "date_utc": "2023-10-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1698105600000,
+      "open": 33922.52,
+      "high": 33922.52,
+      "low": 33922.52,
+      "close": 33922.52,
+      "volume": 0,
+      "date_utc": "2023-10-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1698192000000,
+      "open": 34506.35,
+      "high": 34506.35,
+      "low": 34506.35,
+      "close": 34506.35,
+      "volume": 0,
+      "date_utc": "2023-10-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1698278400000,
+      "open": 34154.71,
+      "high": 34154.71,
+      "low": 34154.71,
+      "close": 34154.71,
+      "volume": 0,
+      "date_utc": "2023-10-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1698364800000,
+      "open": 33906.09,
+      "high": 33906.09,
+      "low": 33906.09,
+      "close": 33906.09,
+      "volume": 0,
+      "date_utc": "2023-10-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1698451200000,
+      "open": 34085.42,
+      "high": 34085.42,
+      "low": 34085.42,
+      "close": 34085.42,
+      "volume": 0,
+      "date_utc": "2023-10-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1698537600000,
+      "open": 34534.48,
+      "high": 34534.48,
+      "low": 34534.48,
+      "close": 34534.48,
+      "volume": 0,
+      "date_utc": "2023-10-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1698624000000,
+      "open": 34493.79,
+      "high": 34493.79,
+      "low": 34493.79,
+      "close": 34493.79,
+      "volume": 0,
+      "date_utc": "2023-10-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1698710400000,
+      "open": 34656.4,
+      "high": 34656.4,
+      "low": 34656.4,
+      "close": 34656.4,
+      "volume": 0,
+      "date_utc": "2023-10-31",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1698796800000,
+      "open": 35440.1,
+      "high": 35440.1,
+      "low": 35440.1,
+      "close": 35440.1,
+      "volume": 0,
+      "date_utc": "2023-11-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1698883200000,
+      "open": 34950,
+      "high": 34950,
+      "low": 34950,
+      "close": 34950,
+      "volume": 0,
+      "date_utc": "2023-11-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1698969600000,
+      "open": 34731.27,
+      "high": 34731.27,
+      "low": 34731.27,
+      "close": 34731.27,
+      "volume": 0,
+      "date_utc": "2023-11-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1699056000000,
+      "open": 35087.01,
+      "high": 35087.01,
+      "low": 35087.01,
+      "close": 35087.01,
+      "volume": 0,
+      "date_utc": "2023-11-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1699142400000,
+      "open": 35035.42,
+      "high": 35035.42,
+      "low": 35035.42,
+      "close": 35035.42,
+      "volume": 0,
+      "date_utc": "2023-11-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1699228800000,
+      "open": 35059.46,
+      "high": 35059.46,
+      "low": 35059.46,
+      "close": 35059.46,
+      "volume": 0,
+      "date_utc": "2023-11-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1699315200000,
+      "open": 35416.28,
+      "high": 35416.28,
+      "low": 35416.28,
+      "close": 35416.28,
+      "volume": 0,
+      "date_utc": "2023-11-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1699401600000,
+      "open": 35639.13,
+      "high": 35639.13,
+      "low": 35639.13,
+      "close": 35639.13,
+      "volume": 0,
+      "date_utc": "2023-11-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1699488000000,
+      "open": 36706.59,
+      "high": 36706.59,
+      "low": 36706.59,
+      "close": 36706.59,
+      "volume": 0,
+      "date_utc": "2023-11-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1699574400000,
+      "open": 37324.83,
+      "high": 37324.83,
+      "low": 37324.83,
+      "close": 37324.83,
+      "volume": 0,
+      "date_utc": "2023-11-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1699660800000,
+      "open": 37139.12,
+      "high": 37139.12,
+      "low": 37139.12,
+      "close": 37139.12,
+      "volume": 0,
+      "date_utc": "2023-11-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1699747200000,
+      "open": 37086.03,
+      "high": 37086.03,
+      "low": 37086.03,
+      "close": 37086.03,
+      "volume": 0,
+      "date_utc": "2023-11-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1699833600000,
+      "open": 36475.67,
+      "high": 36475.67,
+      "low": 36475.67,
+      "close": 36475.67,
+      "volume": 0,
+      "date_utc": "2023-11-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1699920000000,
+      "open": 35554.09,
+      "high": 35554.09,
+      "low": 35554.09,
+      "close": 35554.09,
+      "volume": 0,
+      "date_utc": "2023-11-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1700006400000,
+      "open": 37885.35,
+      "high": 37885.35,
+      "low": 37885.35,
+      "close": 37885.35,
+      "volume": 0,
+      "date_utc": "2023-11-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1700092800000,
+      "open": 36161.15,
+      "high": 36161.15,
+      "low": 36161.15,
+      "close": 36161.15,
+      "volume": 0,
+      "date_utc": "2023-11-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1700179200000,
+      "open": 36630.38,
+      "high": 36630.38,
+      "low": 36630.38,
+      "close": 36630.38,
+      "volume": 0,
+      "date_utc": "2023-11-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1700265600000,
+      "open": 36594.89,
+      "high": 36594.89,
+      "low": 36594.89,
+      "close": 36594.89,
+      "volume": 0,
+      "date_utc": "2023-11-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1700352000000,
+      "open": 37391.19,
+      "high": 37391.19,
+      "low": 37391.19,
+      "close": 37391.19,
+      "volume": 0,
+      "date_utc": "2023-11-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1700438400000,
+      "open": 37475.64,
+      "high": 37475.64,
+      "low": 37475.64,
+      "close": 37475.64,
+      "volume": 0,
+      "date_utc": "2023-11-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1700524800000,
+      "open": 35751.89,
+      "high": 35751.89,
+      "low": 35751.89,
+      "close": 35751.89,
+      "volume": 0,
+      "date_utc": "2023-11-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1700611200000,
+      "open": 37424.31,
+      "high": 37424.31,
+      "low": 37424.31,
+      "close": 37424.31,
+      "volume": 0,
+      "date_utc": "2023-11-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1700697600000,
+      "open": 37304.05,
+      "high": 37304.05,
+      "low": 37304.05,
+      "close": 37304.05,
+      "volume": 0,
+      "date_utc": "2023-11-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1700784000000,
+      "open": 37745.84,
+      "high": 37745.84,
+      "low": 37745.84,
+      "close": 37745.84,
+      "volume": 0,
+      "date_utc": "2023-11-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1700870400000,
+      "open": 37805.99,
+      "high": 37805.99,
+      "low": 37805.99,
+      "close": 37805.99,
+      "volume": 0,
+      "date_utc": "2023-11-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1700956800000,
+      "open": 37462.79,
+      "high": 37462.79,
+      "low": 37462.79,
+      "close": 37462.79,
+      "volume": 0,
+      "date_utc": "2023-11-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1701043200000,
+      "open": 37241.63,
+      "high": 37241.63,
+      "low": 37241.63,
+      "close": 37241.63,
+      "volume": 0,
+      "date_utc": "2023-11-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1701129600000,
+      "open": 37838.26,
+      "high": 37838.26,
+      "low": 37838.26,
+      "close": 37838.26,
+      "volume": 0,
+      "date_utc": "2023-11-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1701216000000,
+      "open": 37863.84,
+      "high": 37863.84,
+      "low": 37863.84,
+      "close": 37863.84,
+      "volume": 0,
+      "date_utc": "2023-11-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1701302400000,
+      "open": 37732.27,
+      "high": 37732.27,
+      "low": 37732.27,
+      "close": 37732.27,
+      "volume": 0,
+      "date_utc": "2023-11-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1701388800000,
+      "open": 38703.54,
+      "high": 38703.54,
+      "low": 38703.54,
+      "close": 38703.54,
+      "volume": 0,
+      "date_utc": "2023-12-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1701475200000,
+      "open": 39478.95,
+      "high": 39478.95,
+      "low": 39478.95,
+      "close": 39478.95,
+      "volume": 0,
+      "date_utc": "2023-12-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1701561600000,
+      "open": 39984.81,
+      "high": 39984.81,
+      "low": 39984.81,
+      "close": 39984.81,
+      "volume": 0,
+      "date_utc": "2023-12-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1701648000000,
+      "open": 41987.24,
+      "high": 41987.24,
+      "low": 41987.24,
+      "close": 41987.24,
+      "volume": 0,
+      "date_utc": "2023-12-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1701734400000,
+      "open": 44084.39,
+      "high": 44084.39,
+      "low": 44084.39,
+      "close": 44084.39,
+      "volume": 0,
+      "date_utc": "2023-12-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1701820800000,
+      "open": 43764.05,
+      "high": 43764.05,
+      "low": 43764.05,
+      "close": 43764.05,
+      "volume": 0,
+      "date_utc": "2023-12-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1701907200000,
+      "open": 43280.95,
+      "high": 43280.95,
+      "low": 43280.95,
+      "close": 43280.95,
+      "volume": 0,
+      "date_utc": "2023-12-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1701993600000,
+      "open": 44192.87,
+      "high": 44192.87,
+      "low": 44192.87,
+      "close": 44192.87,
+      "volume": 0,
+      "date_utc": "2023-12-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1702080000000,
+      "open": 43723.25,
+      "high": 43723.25,
+      "low": 43723.25,
+      "close": 43723.25,
+      "volume": 0,
+      "date_utc": "2023-12-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1702166400000,
+      "open": 43793.68,
+      "high": 43793.68,
+      "low": 43793.68,
+      "close": 43793.68,
+      "volume": 0,
+      "date_utc": "2023-12-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1702252800000,
+      "open": 41229.61,
+      "high": 41229.61,
+      "low": 41229.61,
+      "close": 41229.61,
+      "volume": 0,
+      "date_utc": "2023-12-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1702339200000,
+      "open": 41477.39,
+      "high": 41477.39,
+      "low": 41477.39,
+      "close": 41477.39,
+      "volume": 0,
+      "date_utc": "2023-12-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1702425600000,
+      "open": 42885.54,
+      "high": 42885.54,
+      "low": 42885.54,
+      "close": 42885.54,
+      "volume": 0,
+      "date_utc": "2023-12-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1702512000000,
+      "open": 43027.77,
+      "high": 43027.77,
+      "low": 43027.77,
+      "close": 43027.77,
+      "volume": 0,
+      "date_utc": "2023-12-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1702598400000,
+      "open": 41933.89,
+      "high": 41933.89,
+      "low": 41933.89,
+      "close": 41933.89,
+      "volume": 0,
+      "date_utc": "2023-12-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1702684800000,
+      "open": 42237.29,
+      "high": 42237.29,
+      "low": 42237.29,
+      "close": 42237.29,
+      "volume": 0,
+      "date_utc": "2023-12-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1702771200000,
+      "open": 41349.59,
+      "high": 41349.59,
+      "low": 41349.59,
+      "close": 41349.59,
+      "volume": 0,
+      "date_utc": "2023-12-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1702857600000,
+      "open": 42650.01,
+      "high": 42650.01,
+      "low": 42650.01,
+      "close": 42650.01,
+      "volume": 0,
+      "date_utc": "2023-12-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1702944000000,
+      "open": 42266.22,
+      "high": 42266.22,
+      "low": 42266.22,
+      "close": 42266.22,
+      "volume": 0,
+      "date_utc": "2023-12-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1703030400000,
+      "open": 43674.77,
+      "high": 43674.77,
+      "low": 43674.77,
+      "close": 43674.77,
+      "volume": 0,
+      "date_utc": "2023-12-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1703116800000,
+      "open": 43875.32,
+      "high": 43875.32,
+      "low": 43875.32,
+      "close": 43875.32,
+      "volume": 0,
+      "date_utc": "2023-12-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1703203200000,
+      "open": 44013.73,
+      "high": 44013.73,
+      "low": 44013.73,
+      "close": 44013.73,
+      "volume": 0,
+      "date_utc": "2023-12-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1703289600000,
+      "open": 43726.35,
+      "high": 43726.35,
+      "low": 43726.35,
+      "close": 43726.35,
+      "volume": 0,
+      "date_utc": "2023-12-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1703376000000,
+      "open": 43025.03,
+      "high": 43025.03,
+      "low": 43025.03,
+      "close": 43025.03,
+      "volume": 0,
+      "date_utc": "2023-12-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1703462400000,
+      "open": 43589.67,
+      "high": 43589.67,
+      "low": 43589.67,
+      "close": 43589.67,
+      "volume": 0,
+      "date_utc": "2023-12-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1703548800000,
+      "open": 42515.53,
+      "high": 42515.53,
+      "low": 42515.53,
+      "close": 42515.53,
+      "volume": 0,
+      "date_utc": "2023-12-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1703635200000,
+      "open": 43474.4,
+      "high": 43474.4,
+      "low": 43474.4,
+      "close": 43474.4,
+      "volume": 0,
+      "date_utc": "2023-12-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1703721600000,
+      "open": 42581.23,
+      "high": 42581.23,
+      "low": 42581.23,
+      "close": 42581.23,
+      "volume": 0,
+      "date_utc": "2023-12-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1703808000000,
+      "open": 42063.45,
+      "high": 42063.45,
+      "low": 42063.45,
+      "close": 42063.45,
+      "volume": 0,
+      "date_utc": "2023-12-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1703894400000,
+      "open": 42141.03,
+      "high": 42141.03,
+      "low": 42141.03,
+      "close": 42141.03,
+      "volume": 0,
+      "date_utc": "2023-12-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1703980800000,
+      "open": 42288.06,
+      "high": 42288.06,
+      "low": 42288.06,
+      "close": 42288.06,
+      "volume": 0,
+      "date_utc": "2023-12-31",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1704067200000,
+      "open": 44220.78,
+      "high": 44220.78,
+      "low": 44220.78,
+      "close": 44220.78,
+      "volume": 0,
+      "date_utc": "2024-01-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1704153600000,
+      "open": 44972.8,
+      "high": 44972.8,
+      "low": 44972.8,
+      "close": 44972.8,
+      "volume": 0,
+      "date_utc": "2024-01-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1704240000000,
+      "open": 42862.44,
+      "high": 42862.44,
+      "low": 42862.44,
+      "close": 42862.44,
+      "volume": 0,
+      "date_utc": "2024-01-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1704326400000,
+      "open": 44193.29,
+      "high": 44193.29,
+      "low": 44193.29,
+      "close": 44193.29,
+      "volume": 0,
+      "date_utc": "2024-01-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1704412800000,
+      "open": 44186.59,
+      "high": 44186.59,
+      "low": 44186.59,
+      "close": 44186.59,
+      "volume": 0,
+      "date_utc": "2024-01-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1704499200000,
+      "open": 43992.44,
+      "high": 43992.44,
+      "low": 43992.44,
+      "close": 43992.44,
+      "volume": 0,
+      "date_utc": "2024-01-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1704585600000,
+      "open": 43950.28,
+      "high": 43950.28,
+      "low": 43950.28,
+      "close": 43950.28,
+      "volume": 0,
+      "date_utc": "2024-01-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1704672000000,
+      "open": 46995.1,
+      "high": 46995.1,
+      "low": 46995.1,
+      "close": 46995.1,
+      "volume": 0,
+      "date_utc": "2024-01-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1704758400000,
+      "open": 46124.08,
+      "high": 46124.08,
+      "low": 46124.08,
+      "close": 46124.08,
+      "volume": 0,
+      "date_utc": "2024-01-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1704844800000,
+      "open": 46666.11,
+      "high": 46666.11,
+      "low": 46666.11,
+      "close": 46666.11,
+      "volume": 0,
+      "date_utc": "2024-01-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1704931200000,
+      "open": 46342.66,
+      "high": 46342.66,
+      "low": 46342.66,
+      "close": 46342.66,
+      "volume": 0,
+      "date_utc": "2024-01-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1705017600000,
+      "open": 42773.03,
+      "high": 42773.03,
+      "low": 42773.03,
+      "close": 42773.03,
+      "volume": 0,
+      "date_utc": "2024-01-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1705104000000,
+      "open": 42839.33,
+      "high": 42839.33,
+      "low": 42839.33,
+      "close": 42839.33,
+      "volume": 0,
+      "date_utc": "2024-01-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1705190400000,
+      "open": 41697.33,
+      "high": 41697.33,
+      "low": 41697.33,
+      "close": 41697.33,
+      "volume": 0,
+      "date_utc": "2024-01-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1705276800000,
+      "open": 42490.16,
+      "high": 42490.16,
+      "low": 42490.16,
+      "close": 42490.16,
+      "volume": 0,
+      "date_utc": "2024-01-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1705363200000,
+      "open": 43130.45,
+      "high": 43130.45,
+      "low": 43130.45,
+      "close": 43130.45,
+      "volume": 0,
+      "date_utc": "2024-01-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1705449600000,
+      "open": 42739.49,
+      "high": 42739.49,
+      "low": 42739.49,
+      "close": 42739.49,
+      "volume": 0,
+      "date_utc": "2024-01-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1705536000000,
+      "open": 41293.5,
+      "high": 41293.5,
+      "low": 41293.5,
+      "close": 41293.5,
+      "volume": 0,
+      "date_utc": "2024-01-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1705622400000,
+      "open": 41624.07,
+      "high": 41624.07,
+      "low": 41624.07,
+      "close": 41624.07,
+      "volume": 0,
+      "date_utc": "2024-01-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1705708800000,
+      "open": 41666.67,
+      "high": 41666.67,
+      "low": 41666.67,
+      "close": 41666.67,
+      "volume": 0,
+      "date_utc": "2024-01-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1705795200000,
+      "open": 41554.05,
+      "high": 41554.05,
+      "low": 41554.05,
+      "close": 41554.05,
+      "volume": 0,
+      "date_utc": "2024-01-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1705881600000,
+      "open": 39524.27,
+      "high": 39524.27,
+      "low": 39524.27,
+      "close": 39524.27,
+      "volume": 0,
+      "date_utc": "2024-01-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1705968000000,
+      "open": 39878.3,
+      "high": 39878.3,
+      "low": 39878.3,
+      "close": 39878.3,
+      "volume": 0,
+      "date_utc": "2024-01-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1706054400000,
+      "open": 40077.78,
+      "high": 40077.78,
+      "low": 40077.78,
+      "close": 40077.78,
+      "volume": 0,
+      "date_utc": "2024-01-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1706140800000,
+      "open": 39941.66,
+      "high": 39941.66,
+      "low": 39941.66,
+      "close": 39941.66,
+      "volume": 0,
+      "date_utc": "2024-01-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1706227200000,
+      "open": 41814.8,
+      "high": 41814.8,
+      "low": 41814.8,
+      "close": 41814.8,
+      "volume": 0,
+      "date_utc": "2024-01-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1706313600000,
+      "open": 42126.55,
+      "high": 42126.55,
+      "low": 42126.55,
+      "close": 42126.55,
+      "volume": 0,
+      "date_utc": "2024-01-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1706400000000,
+      "open": 42034.59,
+      "high": 42034.59,
+      "low": 42034.59,
+      "close": 42034.59,
+      "volume": 0,
+      "date_utc": "2024-01-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1706486400000,
+      "open": 43306.18,
+      "high": 43306.18,
+      "low": 43306.18,
+      "close": 43306.18,
+      "volume": 0,
+      "date_utc": "2024-01-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1706572800000,
+      "open": 42942.78,
+      "high": 42942.78,
+      "low": 42942.78,
+      "close": 42942.78,
+      "volume": 0,
+      "date_utc": "2024-01-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1706659200000,
+      "open": 42548.08,
+      "high": 42548.08,
+      "low": 42548.08,
+      "close": 42548.08,
+      "volume": 0,
+      "date_utc": "2024-01-31",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1706745600000,
+      "open": 43078.81,
+      "high": 43078.81,
+      "low": 43078.81,
+      "close": 43078.81,
+      "volume": 0,
+      "date_utc": "2024-02-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1706832000000,
+      "open": 43181.66,
+      "high": 43181.66,
+      "low": 43181.66,
+      "close": 43181.66,
+      "volume": 0,
+      "date_utc": "2024-02-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1706918400000,
+      "open": 43010.67,
+      "high": 43010.67,
+      "low": 43010.67,
+      "close": 43010.67,
+      "volume": 0,
+      "date_utc": "2024-02-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1707004800000,
+      "open": 42568.55,
+      "high": 42568.55,
+      "low": 42568.55,
+      "close": 42568.55,
+      "volume": 0,
+      "date_utc": "2024-02-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1707091200000,
+      "open": 42657.67,
+      "high": 42657.67,
+      "low": 42657.67,
+      "close": 42657.67,
+      "volume": 0,
+      "date_utc": "2024-02-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1707177600000,
+      "open": 43095.79,
+      "high": 43095.79,
+      "low": 43095.79,
+      "close": 43095.79,
+      "volume": 0,
+      "date_utc": "2024-02-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1707264000000,
+      "open": 44343.61,
+      "high": 44343.61,
+      "low": 44343.61,
+      "close": 44343.61,
+      "volume": 0,
+      "date_utc": "2024-02-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1707350400000,
+      "open": 45305.2,
+      "high": 45305.2,
+      "low": 45305.2,
+      "close": 45305.2,
+      "volume": 0,
+      "date_utc": "2024-02-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1707436800000,
+      "open": 47160.41,
+      "high": 47160.41,
+      "low": 47160.41,
+      "close": 47160.41,
+      "volume": 0,
+      "date_utc": "2024-02-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1707523200000,
+      "open": 47767.06,
+      "high": 47767.06,
+      "low": 47767.06,
+      "close": 47767.06,
+      "volume": 0,
+      "date_utc": "2024-02-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1707609600000,
+      "open": 48316.3,
+      "high": 48316.3,
+      "low": 48316.3,
+      "close": 48316.3,
+      "volume": 0,
+      "date_utc": "2024-02-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1707696000000,
+      "open": 49941.81,
+      "high": 49941.81,
+      "low": 49941.81,
+      "close": 49941.81,
+      "volume": 0,
+      "date_utc": "2024-02-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1707782400000,
+      "open": 49725.36,
+      "high": 49725.36,
+      "low": 49725.36,
+      "close": 49725.36,
+      "volume": 0,
+      "date_utc": "2024-02-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1707868800000,
+      "open": 51858.59,
+      "high": 51858.59,
+      "low": 51858.59,
+      "close": 51858.59,
+      "volume": 0,
+      "date_utc": "2024-02-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1707955200000,
+      "open": 51934.29,
+      "high": 51934.29,
+      "low": 51934.29,
+      "close": 51934.29,
+      "volume": 0,
+      "date_utc": "2024-02-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1708041600000,
+      "open": 52162.64,
+      "high": 52162.64,
+      "low": 52162.64,
+      "close": 52162.64,
+      "volume": 0,
+      "date_utc": "2024-02-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1708128000000,
+      "open": 51666.22,
+      "high": 51666.22,
+      "low": 51666.22,
+      "close": 51666.22,
+      "volume": 0,
+      "date_utc": "2024-02-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1708214400000,
+      "open": 52153.63,
+      "high": 52153.63,
+      "low": 52153.63,
+      "close": 52153.63,
+      "volume": 0,
+      "date_utc": "2024-02-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1708300800000,
+      "open": 51787.05,
+      "high": 51787.05,
+      "low": 51787.05,
+      "close": 51787.05,
+      "volume": 0,
+      "date_utc": "2024-02-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1708387200000,
+      "open": 52277.52,
+      "high": 52277.52,
+      "low": 52277.52,
+      "close": 52277.52,
+      "volume": 0,
+      "date_utc": "2024-02-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1708473600000,
+      "open": 51851.67,
+      "high": 51851.67,
+      "low": 51851.67,
+      "close": 51851.67,
+      "volume": 0,
+      "date_utc": "2024-02-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1708560000000,
+      "open": 51258.7,
+      "high": 51258.7,
+      "low": 51258.7,
+      "close": 51258.7,
+      "volume": 0,
+      "date_utc": "2024-02-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1708646400000,
+      "open": 50747.05,
+      "high": 50747.05,
+      "low": 50747.05,
+      "close": 50747.05,
+      "volume": 0,
+      "date_utc": "2024-02-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1708732800000,
+      "open": 51570.65,
+      "high": 51570.65,
+      "low": 51570.65,
+      "close": 51570.65,
+      "volume": 0,
+      "date_utc": "2024-02-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1708819200000,
+      "open": 51731,
+      "high": 51731,
+      "low": 51731,
+      "close": 51731,
+      "volume": 0,
+      "date_utc": "2024-02-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1708905600000,
+      "open": 54533.48,
+      "high": 54533.48,
+      "low": 54533.48,
+      "close": 54533.48,
+      "volume": 0,
+      "date_utc": "2024-02-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1708992000000,
+      "open": 57077.07,
+      "high": 57077.07,
+      "low": 57077.07,
+      "close": 57077.07,
+      "volume": 0,
+      "date_utc": "2024-02-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1709078400000,
+      "open": 62518.9,
+      "high": 62518.9,
+      "low": 62518.9,
+      "close": 62518.9,
+      "volume": 0,
+      "date_utc": "2024-02-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1709164800000,
+      "open": 61179.03,
+      "high": 61179.03,
+      "low": 61179.03,
+      "close": 61179.03,
+      "volume": 0,
+      "date_utc": "2024-02-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1709251200000,
+      "open": 62436.72,
+      "high": 62436.72,
+      "low": 62436.72,
+      "close": 62436.72,
+      "volume": 0,
+      "date_utc": "2024-03-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1709337600000,
+      "open": 62045.78,
+      "high": 62045.78,
+      "low": 62045.78,
+      "close": 62045.78,
+      "volume": 0,
+      "date_utc": "2024-03-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1709424000000,
+      "open": 63154.49,
+      "high": 63154.49,
+      "low": 63154.49,
+      "close": 63154.49,
+      "volume": 0,
+      "date_utc": "2024-03-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1709510400000,
+      "open": 68360.14,
+      "high": 68360.14,
+      "low": 68360.14,
+      "close": 68360.14,
+      "volume": 0,
+      "date_utc": "2024-03-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1709596800000,
+      "open": 63800.78,
+      "high": 63800.78,
+      "low": 63800.78,
+      "close": 63800.78,
+      "volume": 0,
+      "date_utc": "2024-03-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1709683200000,
+      "open": 66122.28,
+      "high": 66122.28,
+      "low": 66122.28,
+      "close": 66122.28,
+      "volume": 0,
+      "date_utc": "2024-03-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1709769600000,
+      "open": 66938.21,
+      "high": 66938.21,
+      "low": 66938.21,
+      "close": 66938.21,
+      "volume": 0,
+      "date_utc": "2024-03-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1709856000000,
+      "open": 68289.16,
+      "high": 68289.16,
+      "low": 68289.16,
+      "close": 68289.16,
+      "volume": 0,
+      "date_utc": "2024-03-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1709942400000,
+      "open": 68480,
+      "high": 68480,
+      "low": 68480,
+      "close": 68480,
+      "volume": 0,
+      "date_utc": "2024-03-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1710028800000,
+      "open": 69032.12,
+      "high": 69032.12,
+      "low": 69032.12,
+      "close": 69032.12,
+      "volume": 0,
+      "date_utc": "2024-03-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1710115200000,
+      "open": 72110.98,
+      "high": 72110.98,
+      "low": 72110.98,
+      "close": 72110.98,
+      "volume": 0,
+      "date_utc": "2024-03-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1710201600000,
+      "open": 71475.93,
+      "high": 71475.93,
+      "low": 71475.93,
+      "close": 71475.93,
+      "volume": 0,
+      "date_utc": "2024-03-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1710288000000,
+      "open": 73135.04,
+      "high": 73135.04,
+      "low": 73135.04,
+      "close": 73135.04,
+      "volume": 0,
+      "date_utc": "2024-03-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1710374400000,
+      "open": 71364.58,
+      "high": 71364.58,
+      "low": 71364.58,
+      "close": 71364.58,
+      "volume": 0,
+      "date_utc": "2024-03-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1710460800000,
+      "open": 69506.88,
+      "high": 69506.88,
+      "low": 69506.88,
+      "close": 69506.88,
+      "volume": 0,
+      "date_utc": "2024-03-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1710547200000,
+      "open": 65254.22,
+      "high": 65254.22,
+      "low": 65254.22,
+      "close": 65254.22,
+      "volume": 0,
+      "date_utc": "2024-03-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1710633600000,
+      "open": 68343.64,
+      "high": 68343.64,
+      "low": 68343.64,
+      "close": 68343.64,
+      "volume": 0,
+      "date_utc": "2024-03-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1710720000000,
+      "open": 67613.04,
+      "high": 67613.04,
+      "low": 67613.04,
+      "close": 67613.04,
+      "volume": 0,
+      "date_utc": "2024-03-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1710806400000,
+      "open": 61906.27,
+      "high": 61906.27,
+      "low": 61906.27,
+      "close": 61906.27,
+      "volume": 0,
+      "date_utc": "2024-03-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1710892800000,
+      "open": 67858.8,
+      "high": 67858.8,
+      "low": 67858.8,
+      "close": 67858.8,
+      "volume": 0,
+      "date_utc": "2024-03-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1710979200000,
+      "open": 65484.7,
+      "high": 65484.7,
+      "low": 65484.7,
+      "close": 65484.7,
+      "volume": 0,
+      "date_utc": "2024-03-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1711065600000,
+      "open": 63814.56,
+      "high": 63814.56,
+      "low": 63814.56,
+      "close": 63814.56,
+      "volume": 0,
+      "date_utc": "2024-03-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1711152000000,
+      "open": 63998.86,
+      "high": 63998.86,
+      "low": 63998.86,
+      "close": 63998.86,
+      "volume": 0,
+      "date_utc": "2024-03-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1711238400000,
+      "open": 67204.93,
+      "high": 67204.93,
+      "low": 67204.93,
+      "close": 67204.93,
+      "volume": 0,
+      "date_utc": "2024-03-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1711324800000,
+      "open": 69890.28,
+      "high": 69890.28,
+      "low": 69890.28,
+      "close": 69890.28,
+      "volume": 0,
+      "date_utc": "2024-03-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1711411200000,
+      "open": 69992.4,
+      "high": 69992.4,
+      "low": 69992.4,
+      "close": 69992.4,
+      "volume": 0,
+      "date_utc": "2024-03-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1711497600000,
+      "open": 69435.96,
+      "high": 69435.96,
+      "low": 69435.96,
+      "close": 69435.96,
+      "volume": 0,
+      "date_utc": "2024-03-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1711584000000,
+      "open": 70801.18,
+      "high": 70801.18,
+      "low": 70801.18,
+      "close": 70801.18,
+      "volume": 0,
+      "date_utc": "2024-03-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1711670400000,
+      "open": 69903.75,
+      "high": 69903.75,
+      "low": 69903.75,
+      "close": 69903.75,
+      "volume": 0,
+      "date_utc": "2024-03-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1711756800000,
+      "open": 69626.87,
+      "high": 69626.87,
+      "low": 69626.87,
+      "close": 69626.87,
+      "volume": 0,
+      "date_utc": "2024-03-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1711843200000,
+      "open": 71288.9,
+      "high": 71288.9,
+      "low": 71288.9,
+      "close": 71288.9,
+      "volume": 0,
+      "date_utc": "2024-03-31",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1711929600000,
+      "open": 69681.82,
+      "high": 69681.82,
+      "low": 69681.82,
+      "close": 69681.82,
+      "volume": 0,
+      "date_utc": "2024-04-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1712016000000,
+      "open": 65464.14,
+      "high": 65464.14,
+      "low": 65464.14,
+      "close": 65464.14,
+      "volume": 0,
+      "date_utc": "2024-04-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1712102400000,
+      "open": 65987.92,
+      "high": 65987.92,
+      "low": 65987.92,
+      "close": 65987.92,
+      "volume": 0,
+      "date_utc": "2024-04-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1712188800000,
+      "open": 68525.23,
+      "high": 68525.23,
+      "low": 68525.23,
+      "close": 68525.23,
+      "volume": 0,
+      "date_utc": "2024-04-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1712275200000,
+      "open": 67856.51,
+      "high": 67856.51,
+      "low": 67856.51,
+      "close": 67856.51,
+      "volume": 0,
+      "date_utc": "2024-04-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1712361600000,
+      "open": 68919.89,
+      "high": 68919.89,
+      "low": 68919.89,
+      "close": 68919.89,
+      "volume": 0,
+      "date_utc": "2024-04-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1712448000000,
+      "open": 69350.34,
+      "high": 69350.34,
+      "low": 69350.34,
+      "close": 69350.34,
+      "volume": 0,
+      "date_utc": "2024-04-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1712534400000,
+      "open": 71622.53,
+      "high": 71622.53,
+      "low": 71622.53,
+      "close": 71622.53,
+      "volume": 0,
+      "date_utc": "2024-04-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1712620800000,
+      "open": 69117.01,
+      "high": 69117.01,
+      "low": 69117.01,
+      "close": 69117.01,
+      "volume": 0,
+      "date_utc": "2024-04-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1712707200000,
+      "open": 70634.04,
+      "high": 70634.04,
+      "low": 70634.04,
+      "close": 70634.04,
+      "volume": 0,
+      "date_utc": "2024-04-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1712793600000,
+      "open": 70020.73,
+      "high": 70020.73,
+      "low": 70020.73,
+      "close": 70020.73,
+      "volume": 0,
+      "date_utc": "2024-04-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1712880000000,
+      "open": 67148.61,
+      "high": 67148.61,
+      "low": 67148.61,
+      "close": 67148.61,
+      "volume": 0,
+      "date_utc": "2024-04-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1712966400000,
+      "open": 64024.77,
+      "high": 64024.77,
+      "low": 64024.77,
+      "close": 64024.77,
+      "volume": 0,
+      "date_utc": "2024-04-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1713052800000,
+      "open": 65777.05,
+      "high": 65777.05,
+      "low": 65777.05,
+      "close": 65777.05,
+      "volume": 0,
+      "date_utc": "2024-04-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1713139200000,
+      "open": 63452.18,
+      "high": 63452.18,
+      "low": 63452.18,
+      "close": 63452.18,
+      "volume": 0,
+      "date_utc": "2024-04-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1713225600000,
+      "open": 63814.94,
+      "high": 63814.94,
+      "low": 63814.94,
+      "close": 63814.94,
+      "volume": 0,
+      "date_utc": "2024-04-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1713312000000,
+      "open": 61279.36,
+      "high": 61279.36,
+      "low": 61279.36,
+      "close": 61279.36,
+      "volume": 0,
+      "date_utc": "2024-04-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1713398400000,
+      "open": 63513.85,
+      "high": 63513.85,
+      "low": 63513.85,
+      "close": 63513.85,
+      "volume": 0,
+      "date_utc": "2024-04-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1713484800000,
+      "open": 63848.37,
+      "high": 63848.37,
+      "low": 63848.37,
+      "close": 63848.37,
+      "volume": 0,
+      "date_utc": "2024-04-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1713571200000,
+      "open": 64968.87,
+      "high": 64968.87,
+      "low": 64968.87,
+      "close": 64968.87,
+      "volume": 0,
+      "date_utc": "2024-04-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1713657600000,
+      "open": 64952.92,
+      "high": 64952.92,
+      "low": 64952.92,
+      "close": 64952.92,
+      "volume": 0,
+      "date_utc": "2024-04-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1713744000000,
+      "open": 66859.17,
+      "high": 66859.17,
+      "low": 66859.17,
+      "close": 66859.17,
+      "volume": 0,
+      "date_utc": "2024-04-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1713830400000,
+      "open": 66414.16,
+      "high": 66414.16,
+      "low": 66414.16,
+      "close": 66414.16,
+      "volume": 0,
+      "date_utc": "2024-04-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1713916800000,
+      "open": 64255.78,
+      "high": 64255.78,
+      "low": 64255.78,
+      "close": 64255.78,
+      "volume": 0,
+      "date_utc": "2024-04-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1714003200000,
+      "open": 64484.44,
+      "high": 64484.44,
+      "low": 64484.44,
+      "close": 64484.44,
+      "volume": 0,
+      "date_utc": "2024-04-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1714089600000,
+      "open": 63742.39,
+      "high": 63742.39,
+      "low": 63742.39,
+      "close": 63742.39,
+      "volume": 0,
+      "date_utc": "2024-04-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1714176000000,
+      "open": 63422,
+      "high": 63422,
+      "low": 63422,
+      "close": 63422,
+      "volume": 0,
+      "date_utc": "2024-04-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1714262400000,
+      "open": 63108.94,
+      "high": 63108.94,
+      "low": 63108.94,
+      "close": 63108.94,
+      "volume": 0,
+      "date_utc": "2024-04-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1714348800000,
+      "open": 63844.85,
+      "high": 63844.85,
+      "low": 63844.85,
+      "close": 63844.85,
+      "volume": 0,
+      "date_utc": "2024-04-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1714435200000,
+      "open": 60622.1,
+      "high": 60622.1,
+      "low": 60622.1,
+      "close": 60622.1,
+      "volume": 0,
+      "date_utc": "2024-04-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1714521600000,
+      "open": 58265.59,
+      "high": 58265.59,
+      "low": 58265.59,
+      "close": 58265.59,
+      "volume": 0,
+      "date_utc": "2024-05-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1714608000000,
+      "open": 59071.89,
+      "high": 59071.89,
+      "low": 59071.89,
+      "close": 59071.89,
+      "volume": 0,
+      "date_utc": "2024-05-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1714694400000,
+      "open": 62913.03,
+      "high": 62913.03,
+      "low": 62913.03,
+      "close": 62913.03,
+      "volume": 0,
+      "date_utc": "2024-05-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1714780800000,
+      "open": 63902.88,
+      "high": 63902.88,
+      "low": 63902.88,
+      "close": 63902.88,
+      "volume": 0,
+      "date_utc": "2024-05-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1714867200000,
+      "open": 64023.45,
+      "high": 64023.45,
+      "low": 64023.45,
+      "close": 64023.45,
+      "volume": 0,
+      "date_utc": "2024-05-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1714953600000,
+      "open": 63162.24,
+      "high": 63162.24,
+      "low": 63162.24,
+      "close": 63162.24,
+      "volume": 0,
+      "date_utc": "2024-05-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1715040000000,
+      "open": 62315.76,
+      "high": 62315.76,
+      "low": 62315.76,
+      "close": 62315.76,
+      "volume": 0,
+      "date_utc": "2024-05-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1715126400000,
+      "open": 61169.53,
+      "high": 61169.53,
+      "low": 61169.53,
+      "close": 61169.53,
+      "volume": 0,
+      "date_utc": "2024-05-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1715212800000,
+      "open": 63073.57,
+      "high": 63073.57,
+      "low": 63073.57,
+      "close": 63073.57,
+      "volume": 0,
+      "date_utc": "2024-05-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1715299200000,
+      "open": 60787.47,
+      "high": 60787.47,
+      "low": 60787.47,
+      "close": 60787.47,
+      "volume": 0,
+      "date_utc": "2024-05-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1715385600000,
+      "open": 60814.63,
+      "high": 60814.63,
+      "low": 60814.63,
+      "close": 60814.63,
+      "volume": 0,
+      "date_utc": "2024-05-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1715472000000,
+      "open": 61453.02,
+      "high": 61453.02,
+      "low": 61453.02,
+      "close": 61453.02,
+      "volume": 0,
+      "date_utc": "2024-05-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1715558400000,
+      "open": 62932.37,
+      "high": 62932.37,
+      "low": 62932.37,
+      "close": 62932.37,
+      "volume": 0,
+      "date_utc": "2024-05-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1715644800000,
+      "open": 61539.84,
+      "high": 61539.84,
+      "low": 61539.84,
+      "close": 61539.84,
+      "volume": 0,
+      "date_utc": "2024-05-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1715731200000,
+      "open": 66244.69,
+      "high": 66244.69,
+      "low": 66244.69,
+      "close": 66244.69,
+      "volume": 0,
+      "date_utc": "2024-05-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1715817600000,
+      "open": 65252.18,
+      "high": 65252.18,
+      "low": 65252.18,
+      "close": 65252.18,
+      "volume": 0,
+      "date_utc": "2024-05-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1715904000000,
+      "open": 67046.33,
+      "high": 67046.33,
+      "low": 67046.33,
+      "close": 67046.33,
+      "volume": 0,
+      "date_utc": "2024-05-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1715990400000,
+      "open": 66923.87,
+      "high": 66923.87,
+      "low": 66923.87,
+      "close": 66923.87,
+      "volume": 0,
+      "date_utc": "2024-05-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1716076800000,
+      "open": 66261.62,
+      "high": 66261.62,
+      "low": 66261.62,
+      "close": 66261.62,
+      "volume": 0,
+      "date_utc": "2024-05-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1716163200000,
+      "open": 71432.17,
+      "high": 71432.17,
+      "low": 71432.17,
+      "close": 71432.17,
+      "volume": 0,
+      "date_utc": "2024-05-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1716249600000,
+      "open": 70142.84,
+      "high": 70142.84,
+      "low": 70142.84,
+      "close": 70142.84,
+      "volume": 0,
+      "date_utc": "2024-05-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1716336000000,
+      "open": 69109.93,
+      "high": 69109.93,
+      "low": 69109.93,
+      "close": 69109.93,
+      "volume": 0,
+      "date_utc": "2024-05-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1716422400000,
+      "open": 67940.45,
+      "high": 67940.45,
+      "low": 67940.45,
+      "close": 67940.45,
+      "volume": 0,
+      "date_utc": "2024-05-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1716508800000,
+      "open": 68547.8,
+      "high": 68547.8,
+      "low": 68547.8,
+      "close": 68547.8,
+      "volume": 0,
+      "date_utc": "2024-05-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1716595200000,
+      "open": 69289.67,
+      "high": 69289.67,
+      "low": 69289.67,
+      "close": 69289.67,
+      "volume": 0,
+      "date_utc": "2024-05-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1716681600000,
+      "open": 68473.72,
+      "high": 68473.72,
+      "low": 68473.72,
+      "close": 68473.72,
+      "volume": 0,
+      "date_utc": "2024-05-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1716768000000,
+      "open": 69368.72,
+      "high": 69368.72,
+      "low": 69368.72,
+      "close": 69368.72,
+      "volume": 0,
+      "date_utc": "2024-05-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1716854400000,
+      "open": 68321.98,
+      "high": 68321.98,
+      "low": 68321.98,
+      "close": 68321.98,
+      "volume": 0,
+      "date_utc": "2024-05-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1716940800000,
+      "open": 67569.45,
+      "high": 67569.45,
+      "low": 67569.45,
+      "close": 67569.45,
+      "volume": 0,
+      "date_utc": "2024-05-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1717027200000,
+      "open": 68338.58,
+      "high": 68338.58,
+      "low": 68338.58,
+      "close": 68338.58,
+      "volume": 0,
+      "date_utc": "2024-05-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1717113600000,
+      "open": 67472.41,
+      "high": 67472.41,
+      "low": 67472.41,
+      "close": 67472.41,
+      "volume": 0,
+      "date_utc": "2024-05-31",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1717200000000,
+      "open": 67719.29,
+      "high": 67719.29,
+      "low": 67719.29,
+      "close": 67719.29,
+      "volume": 0,
+      "date_utc": "2024-06-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1717286400000,
+      "open": 67735.52,
+      "high": 67735.52,
+      "low": 67735.52,
+      "close": 67735.52,
+      "volume": 0,
+      "date_utc": "2024-06-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1717372800000,
+      "open": 68791,
+      "high": 68791,
+      "low": 68791,
+      "close": 68791,
+      "volume": 0,
+      "date_utc": "2024-06-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1717459200000,
+      "open": 70542.32,
+      "high": 70542.32,
+      "low": 70542.32,
+      "close": 70542.32,
+      "volume": 0,
+      "date_utc": "2024-06-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1717545600000,
+      "open": 71121.11,
+      "high": 71121.11,
+      "low": 71121.11,
+      "close": 71121.11,
+      "volume": 0,
+      "date_utc": "2024-06-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1717632000000,
+      "open": 70773.64,
+      "high": 70773.64,
+      "low": 70773.64,
+      "close": 70773.64,
+      "volume": 0,
+      "date_utc": "2024-06-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1717718400000,
+      "open": 69324.53,
+      "high": 69324.53,
+      "low": 69324.53,
+      "close": 69324.53,
+      "volume": 0,
+      "date_utc": "2024-06-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1717804800000,
+      "open": 69304.05,
+      "high": 69304.05,
+      "low": 69304.05,
+      "close": 69304.05,
+      "volume": 0,
+      "date_utc": "2024-06-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1717891200000,
+      "open": 69637.87,
+      "high": 69637.87,
+      "low": 69637.87,
+      "close": 69637.87,
+      "volume": 0,
+      "date_utc": "2024-06-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1717977600000,
+      "open": 69497.73,
+      "high": 69497.73,
+      "low": 69497.73,
+      "close": 69497.73,
+      "volume": 0,
+      "date_utc": "2024-06-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1718064000000,
+      "open": 67316.53,
+      "high": 67316.53,
+      "low": 67316.53,
+      "close": 67316.53,
+      "volume": 0,
+      "date_utc": "2024-06-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1718150400000,
+      "open": 68248.6,
+      "high": 68248.6,
+      "low": 68248.6,
+      "close": 68248.6,
+      "volume": 0,
+      "date_utc": "2024-06-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1718236800000,
+      "open": 66738.85,
+      "high": 66738.85,
+      "low": 66738.85,
+      "close": 66738.85,
+      "volume": 0,
+      "date_utc": "2024-06-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1718323200000,
+      "open": 66004.39,
+      "high": 66004.39,
+      "low": 66004.39,
+      "close": 66004.39,
+      "volume": 0,
+      "date_utc": "2024-06-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1718409600000,
+      "open": 66192,
+      "high": 66192,
+      "low": 66192,
+      "close": 66192,
+      "volume": 0,
+      "date_utc": "2024-06-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1718496000000,
+      "open": 66628.75,
+      "high": 66628.75,
+      "low": 66628.75,
+      "close": 66628.75,
+      "volume": 0,
+      "date_utc": "2024-06-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1718582400000,
+      "open": 66481.81,
+      "high": 66481.81,
+      "low": 66481.81,
+      "close": 66481.81,
+      "volume": 0,
+      "date_utc": "2024-06-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1718668800000,
+      "open": 65152.8,
+      "high": 65152.8,
+      "low": 65152.8,
+      "close": 65152.8,
+      "volume": 0,
+      "date_utc": "2024-06-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1718755200000,
+      "open": 64943.79,
+      "high": 64943.79,
+      "low": 64943.79,
+      "close": 64943.79,
+      "volume": 0,
+      "date_utc": "2024-06-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1718841600000,
+      "open": 64840.88,
+      "high": 64840.88,
+      "low": 64840.88,
+      "close": 64840.88,
+      "volume": 0,
+      "date_utc": "2024-06-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1718928000000,
+      "open": 64120.28,
+      "high": 64120.28,
+      "low": 64120.28,
+      "close": 64120.28,
+      "volume": 0,
+      "date_utc": "2024-06-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1719014400000,
+      "open": 64235.01,
+      "high": 64235.01,
+      "low": 64235.01,
+      "close": 64235.01,
+      "volume": 0,
+      "date_utc": "2024-06-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1719100800000,
+      "open": 63171.43,
+      "high": 63171.43,
+      "low": 63171.43,
+      "close": 63171.43,
+      "volume": 0,
+      "date_utc": "2024-06-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1719187200000,
+      "open": 60263,
+      "high": 60263,
+      "low": 60263,
+      "close": 60263,
+      "volume": 0,
+      "date_utc": "2024-06-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1719360000000,
+      "open": 60816.68,
+      "high": 60816.68,
+      "low": 60816.68,
+      "close": 60816.68,
+      "volume": 0,
+      "date_utc": "2024-06-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1719446400000,
+      "open": 61615.39,
+      "high": 61615.39,
+      "low": 61615.39,
+      "close": 61615.39,
+      "volume": 0,
+      "date_utc": "2024-06-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1719532800000,
+      "open": 60313.35,
+      "high": 60313.35,
+      "low": 60313.35,
+      "close": 60313.35,
+      "volume": 0,
+      "date_utc": "2024-06-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1719619200000,
+      "open": 60885.67,
+      "high": 60885.67,
+      "low": 60885.67,
+      "close": 60885.67,
+      "volume": 0,
+      "date_utc": "2024-06-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1719705600000,
+      "open": 62668.26,
+      "high": 62668.26,
+      "low": 62668.26,
+      "close": 62668.26,
+      "volume": 0,
+      "date_utc": "2024-06-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1719792000000,
+      "open": 62830.13,
+      "high": 62830.13,
+      "low": 62830.13,
+      "close": 62830.13,
+      "volume": 0,
+      "date_utc": "2024-07-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1719878400000,
+      "open": 62040.22,
+      "high": 62040.22,
+      "low": 62040.22,
+      "close": 62040.22,
+      "volume": 0,
+      "date_utc": "2024-07-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1719964800000,
+      "open": 60145.01,
+      "high": 60145.01,
+      "low": 60145.01,
+      "close": 60145.01,
+      "volume": 0,
+      "date_utc": "2024-07-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1720051200000,
+      "open": 57042.14,
+      "high": 57042.14,
+      "low": 57042.14,
+      "close": 57042.14,
+      "volume": 0,
+      "date_utc": "2024-07-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1720137600000,
+      "open": 56639.43,
+      "high": 56639.43,
+      "low": 56639.43,
+      "close": 56639.43,
+      "volume": 0,
+      "date_utc": "2024-07-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1720224000000,
+      "open": 58244.75,
+      "high": 58244.75,
+      "low": 58244.75,
+      "close": 58244.75,
+      "volume": 0,
+      "date_utc": "2024-07-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1720310400000,
+      "open": 55854.09,
+      "high": 55854.09,
+      "low": 55854.09,
+      "close": 55854.09,
+      "volume": 0,
+      "date_utc": "2024-07-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1720396800000,
+      "open": 56699.43,
+      "high": 56699.43,
+      "low": 56699.43,
+      "close": 56699.43,
+      "volume": 0,
+      "date_utc": "2024-07-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1720483200000,
+      "open": 58047.86,
+      "high": 58047.86,
+      "low": 58047.86,
+      "close": 58047.86,
+      "volume": 0,
+      "date_utc": "2024-07-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1720569600000,
+      "open": 57712.59,
+      "high": 57712.59,
+      "low": 57712.59,
+      "close": 57712.59,
+      "volume": 0,
+      "date_utc": "2024-07-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1720656000000,
+      "open": 57340.77,
+      "high": 57340.77,
+      "low": 57340.77,
+      "close": 57340.77,
+      "volume": 0,
+      "date_utc": "2024-07-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1720742400000,
+      "open": 57909.03,
+      "high": 57909.03,
+      "low": 57909.03,
+      "close": 57909.03,
+      "volume": 0,
+      "date_utc": "2024-07-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1720828800000,
+      "open": 59224.58,
+      "high": 59224.58,
+      "low": 59224.58,
+      "close": 59224.58,
+      "volume": 0,
+      "date_utc": "2024-07-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1720915200000,
+      "open": 60808.42,
+      "high": 60808.42,
+      "low": 60808.42,
+      "close": 60808.42,
+      "volume": 0,
+      "date_utc": "2024-07-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1721001600000,
+      "open": 64757.16,
+      "high": 64757.16,
+      "low": 64757.16,
+      "close": 64757.16,
+      "volume": 0,
+      "date_utc": "2024-07-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1721088000000,
+      "open": 65088.99,
+      "high": 65088.99,
+      "low": 65088.99,
+      "close": 65088.99,
+      "volume": 0,
+      "date_utc": "2024-07-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1721174400000,
+      "open": 64085.81,
+      "high": 64085.81,
+      "low": 64085.81,
+      "close": 64085.81,
+      "volume": 0,
+      "date_utc": "2024-07-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1721260800000,
+      "open": 63982.86,
+      "high": 63982.86,
+      "low": 63982.86,
+      "close": 63982.86,
+      "volume": 0,
+      "date_utc": "2024-07-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1721347200000,
+      "open": 66707.61,
+      "high": 66707.61,
+      "low": 66707.61,
+      "close": 66707.61,
+      "volume": 0,
+      "date_utc": "2024-07-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1721433600000,
+      "open": 67163.83,
+      "high": 67163.83,
+      "low": 67163.83,
+      "close": 67163.83,
+      "volume": 0,
+      "date_utc": "2024-07-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1721520000000,
+      "open": 68181.28,
+      "high": 68181.28,
+      "low": 68181.28,
+      "close": 68181.28,
+      "volume": 0,
+      "date_utc": "2024-07-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1721606400000,
+      "open": 67558.22,
+      "high": 67558.22,
+      "low": 67558.22,
+      "close": 67558.22,
+      "volume": 0,
+      "date_utc": "2024-07-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1721692800000,
+      "open": 65939.24,
+      "high": 65939.24,
+      "low": 65939.24,
+      "close": 65939.24,
+      "volume": 0,
+      "date_utc": "2024-07-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1721779200000,
+      "open": 65366.4,
+      "high": 65366.4,
+      "low": 65366.4,
+      "close": 65366.4,
+      "volume": 0,
+      "date_utc": "2024-07-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1721865600000,
+      "open": 65795.42,
+      "high": 65795.42,
+      "low": 65795.42,
+      "close": 65795.42,
+      "volume": 0,
+      "date_utc": "2024-07-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1721952000000,
+      "open": 67924.08,
+      "high": 67924.08,
+      "low": 67924.08,
+      "close": 67924.08,
+      "volume": 0,
+      "date_utc": "2024-07-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1722038400000,
+      "open": 67899.41,
+      "high": 67899.41,
+      "low": 67899.41,
+      "close": 67899.41,
+      "volume": 0,
+      "date_utc": "2024-07-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1722124800000,
+      "open": 68244.3,
+      "high": 68244.3,
+      "low": 68244.3,
+      "close": 68244.3,
+      "volume": 0,
+      "date_utc": "2024-07-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1722211200000,
+      "open": 66771.45,
+      "high": 66771.45,
+      "low": 66771.45,
+      "close": 66771.45,
+      "volume": 0,
+      "date_utc": "2024-07-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1722297600000,
+      "open": 66169.68,
+      "high": 66169.68,
+      "low": 66169.68,
+      "close": 66169.68,
+      "volume": 0,
+      "date_utc": "2024-07-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1722384000000,
+      "open": 64609.62,
+      "high": 64609.62,
+      "low": 64609.62,
+      "close": 64609.62,
+      "volume": 0,
+      "date_utc": "2024-07-31",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1722470400000,
+      "open": 65288.18,
+      "high": 65288.18,
+      "low": 65288.18,
+      "close": 65288.18,
+      "volume": 0,
+      "date_utc": "2024-08-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1722556800000,
+      "open": 61418.06,
+      "high": 61418.06,
+      "low": 61418.06,
+      "close": 61418.06,
+      "volume": 0,
+      "date_utc": "2024-08-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1722643200000,
+      "open": 60674.93,
+      "high": 60674.93,
+      "low": 60674.93,
+      "close": 60674.93,
+      "volume": 0,
+      "date_utc": "2024-08-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1722729600000,
+      "open": 58130.95,
+      "high": 58130.95,
+      "low": 58130.95,
+      "close": 58130.95,
+      "volume": 0,
+      "date_utc": "2024-08-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1722816000000,
+      "open": 54029.12,
+      "high": 54029.12,
+      "low": 54029.12,
+      "close": 54029.12,
+      "volume": 0,
+      "date_utc": "2024-08-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1722902400000,
+      "open": 56048.08,
+      "high": 56048.08,
+      "low": 56048.08,
+      "close": 56048.08,
+      "volume": 0,
+      "date_utc": "2024-08-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1722988800000,
+      "open": 55148.1,
+      "high": 55148.1,
+      "low": 55148.1,
+      "close": 55148.1,
+      "volume": 0,
+      "date_utc": "2024-08-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1723075200000,
+      "open": 61705.58,
+      "high": 61705.58,
+      "low": 61705.58,
+      "close": 61705.58,
+      "volume": 0,
+      "date_utc": "2024-08-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1723161600000,
+      "open": 60862.13,
+      "high": 60862.13,
+      "low": 60862.13,
+      "close": 60862.13,
+      "volume": 0,
+      "date_utc": "2024-08-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1723248000000,
+      "open": 60935.02,
+      "high": 60935.02,
+      "low": 60935.02,
+      "close": 60935.02,
+      "volume": 0,
+      "date_utc": "2024-08-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1723334400000,
+      "open": 58722.49,
+      "high": 58722.49,
+      "low": 58722.49,
+      "close": 58722.49,
+      "volume": 0,
+      "date_utc": "2024-08-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1723420800000,
+      "open": 59358.78,
+      "high": 59358.78,
+      "low": 59358.78,
+      "close": 59358.78,
+      "volume": 0,
+      "date_utc": "2024-08-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1723507200000,
+      "open": 60603.19,
+      "high": 60603.19,
+      "low": 60603.19,
+      "close": 60603.19,
+      "volume": 0,
+      "date_utc": "2024-08-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1723593600000,
+      "open": 58690.62,
+      "high": 58690.62,
+      "low": 58690.62,
+      "close": 58690.62,
+      "volume": 0,
+      "date_utc": "2024-08-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1723680000000,
+      "open": 57543.61,
+      "high": 57543.61,
+      "low": 57543.61,
+      "close": 57543.61,
+      "volume": 0,
+      "date_utc": "2024-08-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1723766400000,
+      "open": 58888.99,
+      "high": 58888.99,
+      "low": 58888.99,
+      "close": 58888.99,
+      "volume": 0,
+      "date_utc": "2024-08-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1723852800000,
+      "open": 59497.49,
+      "high": 59497.49,
+      "low": 59497.49,
+      "close": 59497.49,
+      "volume": 0,
+      "date_utc": "2024-08-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1723939200000,
+      "open": 58437.9,
+      "high": 58437.9,
+      "low": 58437.9,
+      "close": 58437.9,
+      "volume": 0,
+      "date_utc": "2024-08-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1724025600000,
+      "open": 59452.67,
+      "high": 59452.67,
+      "low": 59452.67,
+      "close": 59452.67,
+      "volume": 0,
+      "date_utc": "2024-08-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1724112000000,
+      "open": 59017.59,
+      "high": 59017.59,
+      "low": 59017.59,
+      "close": 59017.59,
+      "volume": 0,
+      "date_utc": "2024-08-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1724198400000,
+      "open": 61163.28,
+      "high": 61163.28,
+      "low": 61163.28,
+      "close": 61163.28,
+      "volume": 0,
+      "date_utc": "2024-08-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1724284800000,
+      "open": 60383.29,
+      "high": 60383.29,
+      "low": 60383.29,
+      "close": 60383.29,
+      "volume": 0,
+      "date_utc": "2024-08-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1724371200000,
+      "open": 64086.72,
+      "high": 64086.72,
+      "low": 64086.72,
+      "close": 64086.72,
+      "volume": 0,
+      "date_utc": "2024-08-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1724457600000,
+      "open": 64179.63,
+      "high": 64179.63,
+      "low": 64179.63,
+      "close": 64179.63,
+      "volume": 0,
+      "date_utc": "2024-08-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1724544000000,
+      "open": 64251.93,
+      "high": 64251.93,
+      "low": 64251.93,
+      "close": 64251.93,
+      "volume": 0,
+      "date_utc": "2024-08-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1724630400000,
+      "open": 62840,
+      "high": 62840,
+      "low": 62840,
+      "close": 62840,
+      "volume": 0,
+      "date_utc": "2024-08-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1724716800000,
+      "open": 59439.64,
+      "high": 59439.64,
+      "low": 59439.64,
+      "close": 59439.64,
+      "volume": 0,
+      "date_utc": "2024-08-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1724803200000,
+      "open": 59045.88,
+      "high": 59045.88,
+      "low": 59045.88,
+      "close": 59045.88,
+      "volume": 0,
+      "date_utc": "2024-08-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1724889600000,
+      "open": 59364.47,
+      "high": 59364.47,
+      "low": 59364.47,
+      "close": 59364.47,
+      "volume": 0,
+      "date_utc": "2024-08-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1724976000000,
+      "open": 59112.77,
+      "high": 59112.77,
+      "low": 59112.77,
+      "close": 59112.77,
+      "volume": 0,
+      "date_utc": "2024-08-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1725062400000,
+      "open": 58968.37,
+      "high": 58968.37,
+      "low": 58968.37,
+      "close": 58968.37,
+      "volume": 0,
+      "date_utc": "2024-08-31",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1725148800000,
+      "open": 57299,
+      "high": 57299,
+      "low": 57299,
+      "close": 57299,
+      "volume": 0,
+      "date_utc": "2024-09-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1725235200000,
+      "open": 59139.83,
+      "high": 59139.83,
+      "low": 59139.83,
+      "close": 59139.83,
+      "volume": 0,
+      "date_utc": "2024-09-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1725321600000,
+      "open": 57468.84,
+      "high": 57468.84,
+      "low": 57468.84,
+      "close": 57468.84,
+      "volume": 0,
+      "date_utc": "2024-09-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1725408000000,
+      "open": 57971,
+      "high": 57971,
+      "low": 57971,
+      "close": 57971,
+      "volume": 0,
+      "date_utc": "2024-09-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1725494400000,
+      "open": 56156.82,
+      "high": 56156.82,
+      "low": 56156.82,
+      "close": 56156.82,
+      "volume": 0,
+      "date_utc": "2024-09-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1725580800000,
+      "open": 53950.01,
+      "high": 53950.01,
+      "low": 53950.01,
+      "close": 53950.01,
+      "volume": 0,
+      "date_utc": "2024-09-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1725667200000,
+      "open": 54156.33,
+      "high": 54156.33,
+      "low": 54156.33,
+      "close": 54156.33,
+      "volume": 0,
+      "date_utc": "2024-09-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1725753600000,
+      "open": 54881.11,
+      "high": 54881.11,
+      "low": 54881.11,
+      "close": 54881.11,
+      "volume": 0,
+      "date_utc": "2024-09-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1725840000000,
+      "open": 57053.9,
+      "high": 57053.9,
+      "low": 57053.9,
+      "close": 57053.9,
+      "volume": 0,
+      "date_utc": "2024-09-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1725926400000,
+      "open": 57645.59,
+      "high": 57645.59,
+      "low": 57645.59,
+      "close": 57645.59,
+      "volume": 0,
+      "date_utc": "2024-09-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1726012800000,
+      "open": 57352.79,
+      "high": 57352.79,
+      "low": 57352.79,
+      "close": 57352.79,
+      "volume": 0,
+      "date_utc": "2024-09-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1726099200000,
+      "open": 58137.54,
+      "high": 58137.54,
+      "low": 58137.54,
+      "close": 58137.54,
+      "volume": 0,
+      "date_utc": "2024-09-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1726185600000,
+      "open": 60543.35,
+      "high": 60543.35,
+      "low": 60543.35,
+      "close": 60543.35,
+      "volume": 0,
+      "date_utc": "2024-09-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1726272000000,
+      "open": 60012.35,
+      "high": 60012.35,
+      "low": 60012.35,
+      "close": 60012.35,
+      "volume": 0,
+      "date_utc": "2024-09-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1726358400000,
+      "open": 59122.33,
+      "high": 59122.33,
+      "low": 59122.33,
+      "close": 59122.33,
+      "volume": 0,
+      "date_utc": "2024-09-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1726444800000,
+      "open": 58208.75,
+      "high": 58208.75,
+      "low": 58208.75,
+      "close": 58208.75,
+      "volume": 0,
+      "date_utc": "2024-09-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1726531200000,
+      "open": 60312.6,
+      "high": 60312.6,
+      "low": 60312.6,
+      "close": 60312.6,
+      "volume": 0,
+      "date_utc": "2024-09-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1726617600000,
+      "open": 61769.18,
+      "high": 61769.18,
+      "low": 61769.18,
+      "close": 61769.18,
+      "volume": 0,
+      "date_utc": "2024-09-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1726704000000,
+      "open": 62960.14,
+      "high": 62960.14,
+      "low": 62960.14,
+      "close": 62960.14,
+      "volume": 0,
+      "date_utc": "2024-09-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1726790400000,
+      "open": 63210.69,
+      "high": 63210.69,
+      "low": 63210.69,
+      "close": 63210.69,
+      "volume": 0,
+      "date_utc": "2024-09-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1726876800000,
+      "open": 63362.74,
+      "high": 63362.74,
+      "low": 63362.74,
+      "close": 63362.74,
+      "volume": 0,
+      "date_utc": "2024-09-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1726963200000,
+      "open": 63577.66,
+      "high": 63577.66,
+      "low": 63577.66,
+      "close": 63577.66,
+      "volume": 0,
+      "date_utc": "2024-09-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1727049600000,
+      "open": 63338.87,
+      "high": 63338.87,
+      "low": 63338.87,
+      "close": 63338.87,
+      "volume": 0,
+      "date_utc": "2024-09-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1727136000000,
+      "open": 64272.93,
+      "high": 64272.93,
+      "low": 64272.93,
+      "close": 64272.93,
+      "volume": 0,
+      "date_utc": "2024-09-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1727222400000,
+      "open": 63130.89,
+      "high": 63130.89,
+      "low": 63130.89,
+      "close": 63130.89,
+      "volume": 0,
+      "date_utc": "2024-09-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1727308800000,
+      "open": 65177.21,
+      "high": 65177.21,
+      "low": 65177.21,
+      "close": 65177.21,
+      "volume": 0,
+      "date_utc": "2024-09-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1727395200000,
+      "open": 65789,
+      "high": 65789,
+      "low": 65789,
+      "close": 65789,
+      "volume": 0,
+      "date_utc": "2024-09-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1727481600000,
+      "open": 65858.99,
+      "high": 65858.99,
+      "low": 65858.99,
+      "close": 65858.99,
+      "volume": 0,
+      "date_utc": "2024-09-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1727568000000,
+      "open": 65600.01,
+      "high": 65600.01,
+      "low": 65600.01,
+      "close": 65600.01,
+      "volume": 0,
+      "date_utc": "2024-09-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1727654400000,
+      "open": 63301.25,
+      "high": 63301.25,
+      "low": 63301.25,
+      "close": 63301.25,
+      "volume": 0,
+      "date_utc": "2024-09-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1727740800000,
+      "open": 60790,
+      "high": 60790,
+      "low": 60790,
+      "close": 60790,
+      "volume": 0,
+      "date_utc": "2024-10-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1727827200000,
+      "open": 60631.37,
+      "high": 60631.37,
+      "low": 60631.37,
+      "close": 60631.37,
+      "volume": 0,
+      "date_utc": "2024-10-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1727913600000,
+      "open": 60744.99,
+      "high": 60744.99,
+      "low": 60744.99,
+      "close": 60744.99,
+      "volume": 0,
+      "date_utc": "2024-10-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1728000000000,
+      "open": 62090.71,
+      "high": 62090.71,
+      "low": 62090.71,
+      "close": 62090.71,
+      "volume": 0,
+      "date_utc": "2024-10-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1728086400000,
+      "open": 62051.29,
+      "high": 62051.29,
+      "low": 62051.29,
+      "close": 62051.29,
+      "volume": 0,
+      "date_utc": "2024-10-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1728172800000,
+      "open": 62810.86,
+      "high": 62810.86,
+      "low": 62810.86,
+      "close": 62810.86,
+      "volume": 0,
+      "date_utc": "2024-10-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1728259200000,
+      "open": 62200.28,
+      "high": 62200.28,
+      "low": 62200.28,
+      "close": 62200.28,
+      "volume": 0,
+      "date_utc": "2024-10-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1728345600000,
+      "open": 62122.02,
+      "high": 62122.02,
+      "low": 62122.02,
+      "close": 62122.02,
+      "volume": 0,
+      "date_utc": "2024-10-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1728432000000,
+      "open": 60578.28,
+      "high": 60578.28,
+      "low": 60578.28,
+      "close": 60578.28,
+      "volume": 0,
+      "date_utc": "2024-10-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1728518400000,
+      "open": 60279.53,
+      "high": 60279.53,
+      "low": 60279.53,
+      "close": 60279.53,
+      "volume": 0,
+      "date_utc": "2024-10-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1728604800000,
+      "open": 62518.75,
+      "high": 62518.75,
+      "low": 62518.75,
+      "close": 62518.75,
+      "volume": 0,
+      "date_utc": "2024-10-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1728691200000,
+      "open": 63187.47,
+      "high": 63187.47,
+      "low": 63187.47,
+      "close": 63187.47,
+      "volume": 0,
+      "date_utc": "2024-10-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1728777600000,
+      "open": 62845.3,
+      "high": 62845.3,
+      "low": 62845.3,
+      "close": 62845.3,
+      "volume": 0,
+      "date_utc": "2024-10-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1728864000000,
+      "open": 66065.65,
+      "high": 66065.65,
+      "low": 66065.65,
+      "close": 66065.65,
+      "volume": 0,
+      "date_utc": "2024-10-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1728950400000,
+      "open": 67056.6,
+      "high": 67056.6,
+      "low": 67056.6,
+      "close": 67056.6,
+      "volume": 0,
+      "date_utc": "2024-10-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1729036800000,
+      "open": 67608.44,
+      "high": 67608.44,
+      "low": 67608.44,
+      "close": 67608.44,
+      "volume": 0,
+      "date_utc": "2024-10-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1729123200000,
+      "open": 67402.33,
+      "high": 67402.33,
+      "low": 67402.33,
+      "close": 67402.33,
+      "volume": 0,
+      "date_utc": "2024-10-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1729209600000,
+      "open": 68426.11,
+      "high": 68426.11,
+      "low": 68426.11,
+      "close": 68426.11,
+      "volume": 0,
+      "date_utc": "2024-10-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1729296000000,
+      "open": 68363.73,
+      "high": 68363.73,
+      "low": 68363.73,
+      "close": 68363.73,
+      "volume": 0,
+      "date_utc": "2024-10-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1729382400000,
+      "open": 69014.86,
+      "high": 69014.86,
+      "low": 69014.86,
+      "close": 69014.86,
+      "volume": 0,
+      "date_utc": "2024-10-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1729468800000,
+      "open": 67346.15,
+      "high": 67346.15,
+      "low": 67346.15,
+      "close": 67346.15,
+      "volume": 0,
+      "date_utc": "2024-10-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1729555200000,
+      "open": 67380.08,
+      "high": 67380.08,
+      "low": 67380.08,
+      "close": 67380.08,
+      "volume": 0,
+      "date_utc": "2024-10-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1729641600000,
+      "open": 66601.11,
+      "high": 66601.11,
+      "low": 66601.11,
+      "close": 66601.11,
+      "volume": 0,
+      "date_utc": "2024-10-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1729728000000,
+      "open": 68156.84,
+      "high": 68156.84,
+      "low": 68156.84,
+      "close": 68156.84,
+      "volume": 0,
+      "date_utc": "2024-10-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1729814400000,
+      "open": 66564.51,
+      "high": 66564.51,
+      "low": 66564.51,
+      "close": 66564.51,
+      "volume": 0,
+      "date_utc": "2024-10-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1729900800000,
+      "open": 67012.56,
+      "high": 67012.56,
+      "low": 67012.56,
+      "close": 67012.56,
+      "volume": 0,
+      "date_utc": "2024-10-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1729987200000,
+      "open": 67943.19,
+      "high": 67943.19,
+      "low": 67943.19,
+      "close": 67943.19,
+      "volume": 0,
+      "date_utc": "2024-10-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1730073600000,
+      "open": 69924.5,
+      "high": 69924.5,
+      "low": 69924.5,
+      "close": 69924.5,
+      "volume": 0,
+      "date_utc": "2024-10-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1730160000000,
+      "open": 72724.35,
+      "high": 72724.35,
+      "low": 72724.35,
+      "close": 72724.35,
+      "volume": 0,
+      "date_utc": "2024-10-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1730246400000,
+      "open": 72322.91,
+      "high": 72322.91,
+      "low": 72322.91,
+      "close": 72322.91,
+      "volume": 0,
+      "date_utc": "2024-10-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1730332800000,
+      "open": 70197.83,
+      "high": 70197.83,
+      "low": 70197.83,
+      "close": 70197.83,
+      "volume": 0,
+      "date_utc": "2024-10-31",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1730419200000,
+      "open": 69467.29,
+      "high": 69467.29,
+      "low": 69467.29,
+      "close": 69467.29,
+      "volume": 0,
+      "date_utc": "2024-11-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1730505600000,
+      "open": 69358.94,
+      "high": 69358.94,
+      "low": 69358.94,
+      "close": 69358.94,
+      "volume": 0,
+      "date_utc": "2024-11-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1730592000000,
+      "open": 68738.18,
+      "high": 68738.18,
+      "low": 68738.18,
+      "close": 68738.18,
+      "volume": 0,
+      "date_utc": "2024-11-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1730678400000,
+      "open": 67807.48,
+      "high": 67807.48,
+      "low": 67807.48,
+      "close": 67807.48,
+      "volume": 0,
+      "date_utc": "2024-11-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1730764800000,
+      "open": 69380.73,
+      "high": 69380.73,
+      "low": 69380.73,
+      "close": 69380.73,
+      "volume": 0,
+      "date_utc": "2024-11-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1730851200000,
+      "open": 75646.55,
+      "high": 75646.55,
+      "low": 75646.55,
+      "close": 75646.55,
+      "volume": 0,
+      "date_utc": "2024-11-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1730937600000,
+      "open": 75920,
+      "high": 75920,
+      "low": 75920,
+      "close": 75920,
+      "volume": 0,
+      "date_utc": "2024-11-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1731024000000,
+      "open": 76566.73,
+      "high": 76566.73,
+      "low": 76566.73,
+      "close": 76566.73,
+      "volume": 0,
+      "date_utc": "2024-11-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1731110400000,
+      "open": 76716.06,
+      "high": 76716.06,
+      "low": 76716.06,
+      "close": 76716.06,
+      "volume": 0,
+      "date_utc": "2024-11-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1731196800000,
+      "open": 80428.92,
+      "high": 80428.92,
+      "low": 80428.92,
+      "close": 80428.92,
+      "volume": 0,
+      "date_utc": "2024-11-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1731283200000,
+      "open": 88770.73,
+      "high": 88770.73,
+      "low": 88770.73,
+      "close": 88770.73,
+      "volume": 0,
+      "date_utc": "2024-11-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1731369600000,
+      "open": 88035.43,
+      "high": 88035.43,
+      "low": 88035.43,
+      "close": 88035.43,
+      "volume": 0,
+      "date_utc": "2024-11-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1731456000000,
+      "open": 90493.82,
+      "high": 90493.82,
+      "low": 90493.82,
+      "close": 90493.82,
+      "volume": 0,
+      "date_utc": "2024-11-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1731542400000,
+      "open": 87340.4,
+      "high": 87340.4,
+      "low": 87340.4,
+      "close": 87340.4,
+      "volume": 0,
+      "date_utc": "2024-11-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1731628800000,
+      "open": 91058.36,
+      "high": 91058.36,
+      "low": 91058.36,
+      "close": 91058.36,
+      "volume": 0,
+      "date_utc": "2024-11-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1731715200000,
+      "open": 90636.24,
+      "high": 90636.24,
+      "low": 90636.24,
+      "close": 90636.24,
+      "volume": 0,
+      "date_utc": "2024-11-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1731801600000,
+      "open": 89886.69,
+      "high": 89886.69,
+      "low": 89886.69,
+      "close": 89886.69,
+      "volume": 0,
+      "date_utc": "2024-11-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1731888000000,
+      "open": 90520.3,
+      "high": 90520.3,
+      "low": 90520.3,
+      "close": 90520.3,
+      "volume": 0,
+      "date_utc": "2024-11-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1731974400000,
+      "open": 92435.89,
+      "high": 92435.89,
+      "low": 92435.89,
+      "close": 92435.89,
+      "volume": 0,
+      "date_utc": "2024-11-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1732060800000,
+      "open": 94393.15,
+      "high": 94393.15,
+      "low": 94393.15,
+      "close": 94393.15,
+      "volume": 0,
+      "date_utc": "2024-11-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1732147200000,
+      "open": 98439.09,
+      "high": 98439.09,
+      "low": 98439.09,
+      "close": 98439.09,
+      "volume": 0,
+      "date_utc": "2024-11-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1732233600000,
+      "open": 99024.03,
+      "high": 99024.03,
+      "low": 99024.03,
+      "close": 99024.03,
+      "volume": 0,
+      "date_utc": "2024-11-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1732320000000,
+      "open": 97778.77,
+      "high": 97778.77,
+      "low": 97778.77,
+      "close": 97778.77,
+      "volume": 0,
+      "date_utc": "2024-11-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1732406400000,
+      "open": 98028.18,
+      "high": 98028.18,
+      "low": 98028.18,
+      "close": 98028.18,
+      "volume": 0,
+      "date_utc": "2024-11-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1732492800000,
+      "open": 93000.01,
+      "high": 93000.01,
+      "low": 93000.01,
+      "close": 93000.01,
+      "volume": 0,
+      "date_utc": "2024-11-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1732579200000,
+      "open": 91929.54,
+      "high": 91929.54,
+      "low": 91929.54,
+      "close": 91929.54,
+      "volume": 0,
+      "date_utc": "2024-11-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1732665600000,
+      "open": 95951.19,
+      "high": 95951.19,
+      "low": 95951.19,
+      "close": 95951.19,
+      "volume": 0,
+      "date_utc": "2024-11-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1732752000000,
+      "open": 95665.53,
+      "high": 95665.53,
+      "low": 95665.53,
+      "close": 95665.53,
+      "volume": 0,
+      "date_utc": "2024-11-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1732838400000,
+      "open": 97490.56,
+      "high": 97490.56,
+      "low": 97490.56,
+      "close": 97490.56,
+      "volume": 0,
+      "date_utc": "2024-11-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1732924800000,
+      "open": 96465.42,
+      "high": 96465.42,
+      "low": 96465.42,
+      "close": 96465.42,
+      "volume": 0,
+      "date_utc": "2024-11-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1733011200000,
+      "open": 97263.18,
+      "high": 97263.18,
+      "low": 97263.18,
+      "close": 97263.18,
+      "volume": 0,
+      "date_utc": "2024-12-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1733097600000,
+      "open": 95862.89,
+      "high": 95862.89,
+      "low": 95862.89,
+      "close": 95862.89,
+      "volume": 0,
+      "date_utc": "2024-12-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1733184000000,
+      "open": 95924.52,
+      "high": 95924.52,
+      "low": 95924.52,
+      "close": 95924.52,
+      "volume": 0,
+      "date_utc": "2024-12-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1733270400000,
+      "open": 98746.24,
+      "high": 98746.24,
+      "low": 98746.24,
+      "close": 98746.24,
+      "volume": 0,
+      "date_utc": "2024-12-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1733356800000,
+      "open": 97044.23,
+      "high": 97044.23,
+      "low": 97044.23,
+      "close": 97044.23,
+      "volume": 0,
+      "date_utc": "2024-12-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1733443200000,
+      "open": 99891.35,
+      "high": 99891.35,
+      "low": 99891.35,
+      "close": 99891.35,
+      "volume": 0,
+      "date_utc": "2024-12-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1733529600000,
+      "open": 99929.32,
+      "high": 99929.32,
+      "low": 99929.32,
+      "close": 99929.32,
+      "volume": 0,
+      "date_utc": "2024-12-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1733616000000,
+      "open": 101174.99,
+      "high": 101174.99,
+      "low": 101174.99,
+      "close": 101174.99,
+      "volume": 0,
+      "date_utc": "2024-12-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1733702400000,
+      "open": 97324.81,
+      "high": 97324.81,
+      "low": 97324.81,
+      "close": 97324.81,
+      "volume": 0,
+      "date_utc": "2024-12-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1733788800000,
+      "open": 96660.76,
+      "high": 96660.76,
+      "low": 96660.76,
+      "close": 96660.76,
+      "volume": 0,
+      "date_utc": "2024-12-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1733875200000,
+      "open": 101202.11,
+      "high": 101202.11,
+      "low": 101202.11,
+      "close": 101202.11,
+      "volume": 0,
+      "date_utc": "2024-12-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1733961600000,
+      "open": 100030.47,
+      "high": 100030.47,
+      "low": 100030.47,
+      "close": 100030.47,
+      "volume": 0,
+      "date_utc": "2024-12-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1734048000000,
+      "open": 101428.75,
+      "high": 101428.75,
+      "low": 101428.75,
+      "close": 101428.75,
+      "volume": 0,
+      "date_utc": "2024-12-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1734134400000,
+      "open": 101399.99,
+      "high": 101399.99,
+      "low": 101399.99,
+      "close": 101399.99,
+      "volume": 0,
+      "date_utc": "2024-12-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1734220800000,
+      "open": 104447.76,
+      "high": 104447.76,
+      "low": 104447.76,
+      "close": 104447.76,
+      "volume": 0,
+      "date_utc": "2024-12-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1734307200000,
+      "open": 106099.81,
+      "high": 106099.81,
+      "low": 106099.81,
+      "close": 106099.81,
+      "volume": 0,
+      "date_utc": "2024-12-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1734393600000,
+      "open": 106136.99,
+      "high": 106136.99,
+      "low": 106136.99,
+      "close": 106136.99,
+      "volume": 0,
+      "date_utc": "2024-12-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1734480000000,
+      "open": 100150.73,
+      "high": 100150.73,
+      "low": 100150.73,
+      "close": 100150.73,
+      "volume": 0,
+      "date_utc": "2024-12-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1734566400000,
+      "open": 97372.21,
+      "high": 97372.21,
+      "low": 97372.21,
+      "close": 97372.21,
+      "volume": 0,
+      "date_utc": "2024-12-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1734652800000,
+      "open": 97765,
+      "high": 97765,
+      "low": 97765,
+      "close": 97765,
+      "volume": 0,
+      "date_utc": "2024-12-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1734739200000,
+      "open": 97230.08,
+      "high": 97230.08,
+      "low": 97230.08,
+      "close": 97230.08,
+      "volume": 0,
+      "date_utc": "2024-12-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1734825600000,
+      "open": 95087.75,
+      "high": 95087.75,
+      "low": 95087.75,
+      "close": 95087.75,
+      "volume": 0,
+      "date_utc": "2024-12-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1734912000000,
+      "open": 94764.56,
+      "high": 94764.56,
+      "low": 94764.56,
+      "close": 94764.56,
+      "volume": 0,
+      "date_utc": "2024-12-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1734998400000,
+      "open": 98594.47,
+      "high": 98594.47,
+      "low": 98594.47,
+      "close": 98594.47,
+      "volume": 0,
+      "date_utc": "2024-12-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1735084800000,
+      "open": 99346.28,
+      "high": 99346.28,
+      "low": 99346.28,
+      "close": 99346.28,
+      "volume": 0,
+      "date_utc": "2024-12-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1735171200000,
+      "open": 95669.49,
+      "high": 95669.49,
+      "low": 95669.49,
+      "close": 95669.49,
+      "volume": 0,
+      "date_utc": "2024-12-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1735257600000,
+      "open": 94171.89,
+      "high": 94171.89,
+      "low": 94171.89,
+      "close": 94171.89,
+      "volume": 0,
+      "date_utc": "2024-12-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1735344000000,
+      "open": 95130.82,
+      "high": 95130.82,
+      "low": 95130.82,
+      "close": 95130.82,
+      "volume": 0,
+      "date_utc": "2024-12-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1735430400000,
+      "open": 93563.35,
+      "high": 93563.35,
+      "low": 93563.35,
+      "close": 93563.35,
+      "volume": 0,
+      "date_utc": "2024-12-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1735516800000,
+      "open": 92620.71,
+      "high": 92620.71,
+      "low": 92620.71,
+      "close": 92620.71,
+      "volume": 0,
+      "date_utc": "2024-12-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1735603200000,
+      "open": 93354.22,
+      "high": 93354.22,
+      "low": 93354.22,
+      "close": 93354.22,
+      "volume": 0,
+      "date_utc": "2024-12-31",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1735689600000,
+      "open": 94383.59,
+      "high": 94383.59,
+      "low": 94383.59,
+      "close": 94383.59,
+      "volume": 0,
+      "date_utc": "2025-01-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1735776000000,
+      "open": 96903.19,
+      "high": 96903.19,
+      "low": 96903.19,
+      "close": 96903.19,
+      "volume": 0,
+      "date_utc": "2025-01-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1735862400000,
+      "open": 98136.51,
+      "high": 98136.51,
+      "low": 98136.51,
+      "close": 98136.51,
+      "volume": 0,
+      "date_utc": "2025-01-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1735948800000,
+      "open": 98209.85,
+      "high": 98209.85,
+      "low": 98209.85,
+      "close": 98209.85,
+      "volume": 0,
+      "date_utc": "2025-01-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1736035200000,
+      "open": 98345.33,
+      "high": 98345.33,
+      "low": 98345.33,
+      "close": 98345.33,
+      "volume": 0,
+      "date_utc": "2025-01-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1736121600000,
+      "open": 102279.41,
+      "high": 102279.41,
+      "low": 102279.41,
+      "close": 102279.41,
+      "volume": 0,
+      "date_utc": "2025-01-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1736208000000,
+      "open": 96941.98,
+      "high": 96941.98,
+      "low": 96941.98,
+      "close": 96941.98,
+      "volume": 0,
+      "date_utc": "2025-01-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1736294400000,
+      "open": 95036.63,
+      "high": 95036.63,
+      "low": 95036.63,
+      "close": 95036.63,
+      "volume": 0,
+      "date_utc": "2025-01-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1736380800000,
+      "open": 92547.44,
+      "high": 92547.44,
+      "low": 92547.44,
+      "close": 92547.44,
+      "volume": 0,
+      "date_utc": "2025-01-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1736467200000,
+      "open": 94701.18,
+      "high": 94701.18,
+      "low": 94701.18,
+      "close": 94701.18,
+      "volume": 0,
+      "date_utc": "2025-01-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1736553600000,
+      "open": 94565.02,
+      "high": 94565.02,
+      "low": 94565.02,
+      "close": 94565.02,
+      "volume": 0,
+      "date_utc": "2025-01-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1736640000000,
+      "open": 94509.62,
+      "high": 94509.62,
+      "low": 94509.62,
+      "close": 94509.62,
+      "volume": 0,
+      "date_utc": "2025-01-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1736726400000,
+      "open": 94506.45,
+      "high": 94506.45,
+      "low": 94506.45,
+      "close": 94506.45,
+      "volume": 0,
+      "date_utc": "2025-01-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1736812800000,
+      "open": 96534.96,
+      "high": 96534.96,
+      "low": 96534.96,
+      "close": 96534.96,
+      "volume": 0,
+      "date_utc": "2025-01-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1736899200000,
+      "open": 100510.23,
+      "high": 100510.23,
+      "low": 100510.23,
+      "close": 100510.23,
+      "volume": 0,
+      "date_utc": "2025-01-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1736985600000,
+      "open": 99981.78,
+      "high": 99981.78,
+      "low": 99981.78,
+      "close": 99981.78,
+      "volume": 0,
+      "date_utc": "2025-01-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1737072000000,
+      "open": 104107,
+      "high": 104107,
+      "low": 104107,
+      "close": 104107,
+      "volume": 0,
+      "date_utc": "2025-01-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1737158400000,
+      "open": 104435,
+      "high": 104435,
+      "low": 104435,
+      "close": 104435,
+      "volume": 0,
+      "date_utc": "2025-01-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1737244800000,
+      "open": 101211.13,
+      "high": 101211.13,
+      "low": 101211.13,
+      "close": 101211.13,
+      "volume": 0,
+      "date_utc": "2025-01-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1737331200000,
+      "open": 102145.43,
+      "high": 102145.43,
+      "low": 102145.43,
+      "close": 102145.43,
+      "volume": 0,
+      "date_utc": "2025-01-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1737417600000,
+      "open": 106159.26,
+      "high": 106159.26,
+      "low": 106159.26,
+      "close": 106159.26,
+      "volume": 0,
+      "date_utc": "2025-01-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1737504000000,
+      "open": 103667.11,
+      "high": 103667.11,
+      "low": 103667.11,
+      "close": 103667.11,
+      "volume": 0,
+      "date_utc": "2025-01-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1737590400000,
+      "open": 103926.36,
+      "high": 103926.36,
+      "low": 103926.36,
+      "close": 103926.36,
+      "volume": 0,
+      "date_utc": "2025-01-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1737676800000,
+      "open": 104850.27,
+      "high": 104850.27,
+      "low": 104850.27,
+      "close": 104850.27,
+      "volume": 0,
+      "date_utc": "2025-01-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1737763200000,
+      "open": 104733.56,
+      "high": 104733.56,
+      "low": 104733.56,
+      "close": 104733.56,
+      "volume": 0,
+      "date_utc": "2025-01-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1737849600000,
+      "open": 102563,
+      "high": 102563,
+      "low": 102563,
+      "close": 102563,
+      "volume": 0,
+      "date_utc": "2025-01-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1737936000000,
+      "open": 102062.42,
+      "high": 102062.42,
+      "low": 102062.42,
+      "close": 102062.42,
+      "volume": 0,
+      "date_utc": "2025-01-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1738022400000,
+      "open": 101290,
+      "high": 101290,
+      "low": 101290,
+      "close": 101290,
+      "volume": 0,
+      "date_utc": "2025-01-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1738108800000,
+      "open": 103747.25,
+      "high": 103747.25,
+      "low": 103747.25,
+      "close": 103747.25,
+      "volume": 0,
+      "date_utc": "2025-01-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1738195200000,
+      "open": 104742.64,
+      "high": 104742.64,
+      "low": 104742.64,
+      "close": 104742.64,
+      "volume": 0,
+      "date_utc": "2025-01-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1738281600000,
+      "open": 102411.26,
+      "high": 102411.26,
+      "low": 102411.26,
+      "close": 102411.26,
+      "volume": 0,
+      "date_utc": "2025-01-31",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1738368000000,
+      "open": 100623.85,
+      "high": 100623.85,
+      "low": 100623.85,
+      "close": 100623.85,
+      "volume": 0,
+      "date_utc": "2025-02-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1738454400000,
+      "open": 97676.52,
+      "high": 97676.52,
+      "low": 97676.52,
+      "close": 97676.52,
+      "volume": 0,
+      "date_utc": "2025-02-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1738540800000,
+      "open": 101460.2,
+      "high": 101460.2,
+      "low": 101460.2,
+      "close": 101460.2,
+      "volume": 0,
+      "date_utc": "2025-02-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1738627200000,
+      "open": 97795.05,
+      "high": 97795.05,
+      "low": 97795.05,
+      "close": 97795.05,
+      "volume": 0,
+      "date_utc": "2025-02-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1738713600000,
+      "open": 96638.33,
+      "high": 96638.33,
+      "low": 96638.33,
+      "close": 96638.33,
+      "volume": 0,
+      "date_utc": "2025-02-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1738800000000,
+      "open": 96564.62,
+      "high": 96564.62,
+      "low": 96564.62,
+      "close": 96564.62,
+      "volume": 0,
+      "date_utc": "2025-02-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1738886400000,
+      "open": 96537.08,
+      "high": 96537.08,
+      "low": 96537.08,
+      "close": 96537.08,
+      "volume": 0,
+      "date_utc": "2025-02-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1738972800000,
+      "open": 96476.25,
+      "high": 96476.25,
+      "low": 96476.25,
+      "close": 96476.25,
+      "volume": 0,
+      "date_utc": "2025-02-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1739059200000,
+      "open": 96475.82,
+      "high": 96475.82,
+      "low": 96475.82,
+      "close": 96475.82,
+      "volume": 0,
+      "date_utc": "2025-02-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1739145600000,
+      "open": 97444.41,
+      "high": 97444.41,
+      "low": 97444.41,
+      "close": 97444.41,
+      "volume": 0,
+      "date_utc": "2025-02-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1739232000000,
+      "open": 95774.08,
+      "high": 95774.08,
+      "low": 95774.08,
+      "close": 95774.08,
+      "volume": 0,
+      "date_utc": "2025-02-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1739318400000,
+      "open": 97862.53,
+      "high": 97862.53,
+      "low": 97862.53,
+      "close": 97862.53,
+      "volume": 0,
+      "date_utc": "2025-02-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1739404800000,
+      "open": 96625.29,
+      "high": 96625.29,
+      "low": 96625.29,
+      "close": 96625.29,
+      "volume": 0,
+      "date_utc": "2025-02-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1739491200000,
+      "open": 97509.03,
+      "high": 97509.03,
+      "low": 97509.03,
+      "close": 97509.03,
+      "volume": 0,
+      "date_utc": "2025-02-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1739577600000,
+      "open": 97596.94,
+      "high": 97596.94,
+      "low": 97596.94,
+      "close": 97596.94,
+      "volume": 0,
+      "date_utc": "2025-02-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1739664000000,
+      "open": 96119.88,
+      "high": 96119.88,
+      "low": 96119.88,
+      "close": 96119.88,
+      "volume": 0,
+      "date_utc": "2025-02-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1739750400000,
+      "open": 95781.8,
+      "high": 95781.8,
+      "low": 95781.8,
+      "close": 95781.8,
+      "volume": 0,
+      "date_utc": "2025-02-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1739836800000,
+      "open": 95607.4,
+      "high": 95607.4,
+      "low": 95607.4,
+      "close": 95607.4,
+      "volume": 0,
+      "date_utc": "2025-02-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1739923200000,
+      "open": 96632.03,
+      "high": 96632.03,
+      "low": 96632.03,
+      "close": 96632.03,
+      "volume": 0,
+      "date_utc": "2025-02-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1740009600000,
+      "open": 98347.2,
+      "high": 98347.2,
+      "low": 98347.2,
+      "close": 98347.2,
+      "volume": 0,
+      "date_utc": "2025-02-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1740096000000,
+      "open": 96157.03,
+      "high": 96157.03,
+      "low": 96157.03,
+      "close": 96157.03,
+      "volume": 0,
+      "date_utc": "2025-02-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1740182400000,
+      "open": 96582.12,
+      "high": 96582.12,
+      "low": 96582.12,
+      "close": 96582.12,
+      "volume": 0,
+      "date_utc": "2025-02-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1740268800000,
+      "open": 96265.98,
+      "high": 96265.98,
+      "low": 96265.98,
+      "close": 96265.98,
+      "volume": 0,
+      "date_utc": "2025-02-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1740355200000,
+      "open": 91510.82,
+      "high": 91510.82,
+      "low": 91510.82,
+      "close": 91510.82,
+      "volume": 0,
+      "date_utc": "2025-02-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1740441600000,
+      "open": 88583.74,
+      "high": 88583.74,
+      "low": 88583.74,
+      "close": 88583.74,
+      "volume": 0,
+      "date_utc": "2025-02-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1740528000000,
+      "open": 84111.78,
+      "high": 84111.78,
+      "low": 84111.78,
+      "close": 84111.78,
+      "volume": 0,
+      "date_utc": "2025-02-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1740614400000,
+      "open": 84625.19,
+      "high": 84625.19,
+      "low": 84625.19,
+      "close": 84625.19,
+      "volume": 0,
+      "date_utc": "2025-02-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1740700800000,
+      "open": 84297.73,
+      "high": 84297.73,
+      "low": 84297.73,
+      "close": 84297.73,
+      "volume": 0,
+      "date_utc": "2025-02-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1740787200000,
+      "open": 86018.76,
+      "high": 86018.76,
+      "low": 86018.76,
+      "close": 86018.76,
+      "volume": 0,
+      "date_utc": "2025-03-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1740873600000,
+      "open": 94265.48,
+      "high": 94265.48,
+      "low": 94265.48,
+      "close": 94265.48,
+      "volume": 0,
+      "date_utc": "2025-03-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1740960000000,
+      "open": 86161.1,
+      "high": 86161.1,
+      "low": 86161.1,
+      "close": 86161.1,
+      "volume": 0,
+      "date_utc": "2025-03-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1741046400000,
+      "open": 87249.96,
+      "high": 87249.96,
+      "low": 87249.96,
+      "close": 87249.96,
+      "volume": 0,
+      "date_utc": "2025-03-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1741132800000,
+      "open": 90603.73,
+      "high": 90603.73,
+      "low": 90603.73,
+      "close": 90603.73,
+      "volume": 0,
+      "date_utc": "2025-03-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1741219200000,
+      "open": 89921.85,
+      "high": 89921.85,
+      "low": 89921.85,
+      "close": 89921.85,
+      "volume": 0,
+      "date_utc": "2025-03-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1741305600000,
+      "open": 86756.98,
+      "high": 86756.98,
+      "low": 86756.98,
+      "close": 86756.98,
+      "volume": 0,
+      "date_utc": "2025-03-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1741392000000,
+      "open": 86206.69,
+      "high": 86206.69,
+      "low": 86206.69,
+      "close": 86206.69,
+      "volume": 0,
+      "date_utc": "2025-03-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1741478400000,
+      "open": 80699.17,
+      "high": 80699.17,
+      "low": 80699.17,
+      "close": 80699.17,
+      "volume": 0,
+      "date_utc": "2025-03-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1741564800000,
+      "open": 78544.71,
+      "high": 78544.71,
+      "low": 78544.71,
+      "close": 78544.71,
+      "volume": 0,
+      "date_utc": "2025-03-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1741651200000,
+      "open": 82914.51,
+      "high": 82914.51,
+      "low": 82914.51,
+      "close": 82914.51,
+      "volume": 0,
+      "date_utc": "2025-03-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1741737600000,
+      "open": 83659.43,
+      "high": 83659.43,
+      "low": 83659.43,
+      "close": 83659.43,
+      "volume": 0,
+      "date_utc": "2025-03-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1741824000000,
+      "open": 81073.43,
+      "high": 81073.43,
+      "low": 81073.43,
+      "close": 81073.43,
+      "volume": 0,
+      "date_utc": "2025-03-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1741910400000,
+      "open": 83980.49,
+      "high": 83980.49,
+      "low": 83980.49,
+      "close": 83980.49,
+      "volume": 0,
+      "date_utc": "2025-03-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1741996800000,
+      "open": 84351.46,
+      "high": 84351.46,
+      "low": 84351.46,
+      "close": 84351.46,
+      "volume": 0,
+      "date_utc": "2025-03-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1742083200000,
+      "open": 82562.57,
+      "high": 82562.57,
+      "low": 82562.57,
+      "close": 82562.57,
+      "volume": 0,
+      "date_utc": "2025-03-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1742169600000,
+      "open": 84011.4,
+      "high": 84011.4,
+      "low": 84011.4,
+      "close": 84011.4,
+      "volume": 0,
+      "date_utc": "2025-03-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1742256000000,
+      "open": 82698.76,
+      "high": 82698.76,
+      "low": 82698.76,
+      "close": 82698.76,
+      "volume": 0,
+      "date_utc": "2025-03-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1742342400000,
+      "open": 86877.96,
+      "high": 86877.96,
+      "low": 86877.96,
+      "close": 86877.96,
+      "volume": 0,
+      "date_utc": "2025-03-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1742428800000,
+      "open": 84183.42,
+      "high": 84183.42,
+      "low": 84183.42,
+      "close": 84183.42,
+      "volume": 0,
+      "date_utc": "2025-03-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1742515200000,
+      "open": 84061.96,
+      "high": 84061.96,
+      "low": 84061.96,
+      "close": 84061.96,
+      "volume": 0,
+      "date_utc": "2025-03-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1742601600000,
+      "open": 83852.03,
+      "high": 83852.03,
+      "low": 83852.03,
+      "close": 83852.03,
+      "volume": 0,
+      "date_utc": "2025-03-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1742688000000,
+      "open": 86092.94,
+      "high": 86092.94,
+      "low": 86092.94,
+      "close": 86092.94,
+      "volume": 0,
+      "date_utc": "2025-03-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1742774400000,
+      "open": 87523.62,
+      "high": 87523.62,
+      "low": 87523.62,
+      "close": 87523.62,
+      "volume": 0,
+      "date_utc": "2025-03-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1742860800000,
+      "open": 87427.88,
+      "high": 87427.88,
+      "low": 87427.88,
+      "close": 87427.88,
+      "volume": 0,
+      "date_utc": "2025-03-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1742947200000,
+      "open": 86926.01,
+      "high": 86926.01,
+      "low": 86926.01,
+      "close": 86926.01,
+      "volume": 0,
+      "date_utc": "2025-03-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1743033600000,
+      "open": 87217.48,
+      "high": 87217.48,
+      "low": 87217.48,
+      "close": 87217.48,
+      "volume": 0,
+      "date_utc": "2025-03-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1743120000000,
+      "open": 84381.8,
+      "high": 84381.8,
+      "low": 84381.8,
+      "close": 84381.8,
+      "volume": 0,
+      "date_utc": "2025-03-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1743206400000,
+      "open": 82616.83,
+      "high": 82616.83,
+      "low": 82616.83,
+      "close": 82616.83,
+      "volume": 0,
+      "date_utc": "2025-03-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1743292800000,
+      "open": 82379.98,
+      "high": 82379.98,
+      "low": 82379.98,
+      "close": 82379.98,
+      "volume": 0,
+      "date_utc": "2025-03-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1743379200000,
+      "open": 82534.32,
+      "high": 82534.32,
+      "low": 82534.32,
+      "close": 82534.32,
+      "volume": 0,
+      "date_utc": "2025-03-31",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1743465600000,
+      "open": 85170.37,
+      "high": 85170.37,
+      "low": 85170.37,
+      "close": 85170.37,
+      "volume": 0,
+      "date_utc": "2025-04-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1743552000000,
+      "open": 82490.08,
+      "high": 82490.08,
+      "low": 82490.08,
+      "close": 82490.08,
+      "volume": 0,
+      "date_utc": "2025-04-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1743638400000,
+      "open": 83174.33,
+      "high": 83174.33,
+      "low": 83174.33,
+      "close": 83174.33,
+      "volume": 0,
+      "date_utc": "2025-04-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1743724800000,
+      "open": 83860.16,
+      "high": 83860.16,
+      "low": 83860.16,
+      "close": 83860.16,
+      "volume": 0,
+      "date_utc": "2025-04-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1743811200000,
+      "open": 83498.25,
+      "high": 83498.25,
+      "low": 83498.25,
+      "close": 83498.25,
+      "volume": 0,
+      "date_utc": "2025-04-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1743897600000,
+      "open": 78370.75,
+      "high": 78370.75,
+      "low": 78370.75,
+      "close": 78370.75,
+      "volume": 0,
+      "date_utc": "2025-04-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1743984000000,
+      "open": 79140.01,
+      "high": 79140.01,
+      "low": 79140.01,
+      "close": 79140.01,
+      "volume": 0,
+      "date_utc": "2025-04-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1744070400000,
+      "open": 76251.64,
+      "high": 76251.64,
+      "low": 76251.64,
+      "close": 76251.64,
+      "volume": 0,
+      "date_utc": "2025-04-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1744156800000,
+      "open": 82594.75,
+      "high": 82594.75,
+      "low": 82594.75,
+      "close": 82594.75,
+      "volume": 0,
+      "date_utc": "2025-04-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1744243200000,
+      "open": 79552.34,
+      "high": 79552.34,
+      "low": 79552.34,
+      "close": 79552.34,
+      "volume": 0,
+      "date_utc": "2025-04-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1744329600000,
+      "open": 83380.47,
+      "high": 83380.47,
+      "low": 83380.47,
+      "close": 83380.47,
+      "volume": 0,
+      "date_utc": "2025-04-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1744416000000,
+      "open": 85271.01,
+      "high": 85271.01,
+      "low": 85271.01,
+      "close": 85271.01,
+      "volume": 0,
+      "date_utc": "2025-04-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1744502400000,
+      "open": 83733.07,
+      "high": 83733.07,
+      "low": 83733.07,
+      "close": 83733.07,
+      "volume": 0,
+      "date_utc": "2025-04-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1744588800000,
+      "open": 84590.36,
+      "high": 84590.36,
+      "low": 84590.36,
+      "close": 84590.36,
+      "volume": 0,
+      "date_utc": "2025-04-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1744675200000,
+      "open": 83629.78,
+      "high": 83629.78,
+      "low": 83629.78,
+      "close": 83629.78,
+      "volume": 0,
+      "date_utc": "2025-04-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1744761600000,
+      "open": 84028.72,
+      "high": 84028.72,
+      "low": 84028.72,
+      "close": 84028.72,
+      "volume": 0,
+      "date_utc": "2025-04-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1744848000000,
+      "open": 84961.97,
+      "high": 84961.97,
+      "low": 84961.97,
+      "close": 84961.97,
+      "volume": 0,
+      "date_utc": "2025-04-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1744934400000,
+      "open": 84466.47,
+      "high": 84466.47,
+      "low": 84466.47,
+      "close": 84466.47,
+      "volume": 0,
+      "date_utc": "2025-04-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1745020800000,
+      "open": 85074.99,
+      "high": 85074.99,
+      "low": 85074.99,
+      "close": 85074.99,
+      "volume": 0,
+      "date_utc": "2025-04-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1745107200000,
+      "open": 85177.34,
+      "high": 85177.34,
+      "low": 85177.34,
+      "close": 85177.34,
+      "volume": 0,
+      "date_utc": "2025-04-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1745280000000,
+      "open": 93489.1,
+      "high": 93489.1,
+      "low": 93489.1,
+      "close": 93489.1,
+      "volume": 0,
+      "date_utc": "2025-04-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1745366400000,
+      "open": 93740.92,
+      "high": 93740.92,
+      "low": 93740.92,
+      "close": 93740.92,
+      "volume": 0,
+      "date_utc": "2025-04-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1745452800000,
+      "open": 94021.96,
+      "high": 94021.96,
+      "low": 94021.96,
+      "close": 94021.96,
+      "volume": 0,
+      "date_utc": "2025-04-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1745539200000,
+      "open": 94708.79,
+      "high": 94708.79,
+      "low": 94708.79,
+      "close": 94708.79,
+      "volume": 0,
+      "date_utc": "2025-04-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1745625600000,
+      "open": 94666.64,
+      "high": 94666.64,
+      "low": 94666.64,
+      "close": 94666.64,
+      "volume": 0,
+      "date_utc": "2025-04-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1745712000000,
+      "open": 93780.57,
+      "high": 93780.57,
+      "low": 93780.57,
+      "close": 93780.57,
+      "volume": 0,
+      "date_utc": "2025-04-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1745798400000,
+      "open": 95042.57,
+      "high": 95042.57,
+      "low": 95042.57,
+      "close": 95042.57,
+      "volume": 0,
+      "date_utc": "2025-04-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1745884800000,
+      "open": 94271.09,
+      "high": 94271.09,
+      "low": 94271.09,
+      "close": 94271.09,
+      "volume": 0,
+      "date_utc": "2025-04-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1745971200000,
+      "open": 94182.54,
+      "high": 94182.54,
+      "low": 94182.54,
+      "close": 94182.54,
+      "volume": 0,
+      "date_utc": "2025-04-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1746057600000,
+      "open": 96524.98,
+      "high": 96524.98,
+      "low": 96524.98,
+      "close": 96524.98,
+      "volume": 0,
+      "date_utc": "2025-05-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1746144000000,
+      "open": 96929.81,
+      "high": 96929.81,
+      "low": 96929.81,
+      "close": 96929.81,
+      "volume": 0,
+      "date_utc": "2025-05-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1746230400000,
+      "open": 95861.33,
+      "high": 95861.33,
+      "low": 95861.33,
+      "close": 95861.33,
+      "volume": 0,
+      "date_utc": "2025-05-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1746316800000,
+      "open": 94272.55,
+      "high": 94272.55,
+      "low": 94272.55,
+      "close": 94272.55,
+      "volume": 0,
+      "date_utc": "2025-05-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1746403200000,
+      "open": 94733.99,
+      "high": 94733.99,
+      "low": 94733.99,
+      "close": 94733.99,
+      "volume": 0,
+      "date_utc": "2025-05-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1746489600000,
+      "open": 96839.17,
+      "high": 96839.17,
+      "low": 96839.17,
+      "close": 96839.17,
+      "volume": 0,
+      "date_utc": "2025-05-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1746576000000,
+      "open": 97058.32,
+      "high": 97058.32,
+      "low": 97058.32,
+      "close": 97058.32,
+      "volume": 0,
+      "date_utc": "2025-05-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1746662400000,
+      "open": 103253.49,
+      "high": 103253.49,
+      "low": 103253.49,
+      "close": 103253.49,
+      "volume": 0,
+      "date_utc": "2025-05-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1746748800000,
+      "open": 102986.96,
+      "high": 102986.96,
+      "low": 102986.96,
+      "close": 102986.96,
+      "volume": 0,
+      "date_utc": "2025-05-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1746835200000,
+      "open": 104821.19,
+      "high": 104821.19,
+      "low": 104821.19,
+      "close": 104821.19,
+      "volume": 0,
+      "date_utc": "2025-05-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1746921600000,
+      "open": 104137.62,
+      "high": 104137.62,
+      "low": 104137.62,
+      "close": 104137.62,
+      "volume": 0,
+      "date_utc": "2025-05-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1747008000000,
+      "open": 102800.21,
+      "high": 102800.21,
+      "low": 102800.21,
+      "close": 102800.21,
+      "volume": 0,
+      "date_utc": "2025-05-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1747094400000,
+      "open": 104131.06,
+      "high": 104131.06,
+      "low": 104131.06,
+      "close": 104131.06,
+      "volume": 0,
+      "date_utc": "2025-05-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1747180800000,
+      "open": 103545.38,
+      "high": 103545.38,
+      "low": 103545.38,
+      "close": 103545.38,
+      "volume": 0,
+      "date_utc": "2025-05-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1747267200000,
+      "open": 103786.43,
+      "high": 103786.43,
+      "low": 103786.43,
+      "close": 103786.43,
+      "volume": 0,
+      "date_utc": "2025-05-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1747353600000,
+      "open": 103500.03,
+      "high": 103500.03,
+      "low": 103500.03,
+      "close": 103500.03,
+      "volume": 0,
+      "date_utc": "2025-05-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1747440000000,
+      "open": 103161.07,
+      "high": 103161.07,
+      "low": 103161.07,
+      "close": 103161.07,
+      "volume": 0,
+      "date_utc": "2025-05-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1747526400000,
+      "open": 106473.46,
+      "high": 106473.46,
+      "low": 106473.46,
+      "close": 106473.46,
+      "volume": 0,
+      "date_utc": "2025-05-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1747612800000,
+      "open": 105616.18,
+      "high": 105616.18,
+      "low": 105616.18,
+      "close": 105616.18,
+      "volume": 0,
+      "date_utc": "2025-05-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1747699200000,
+      "open": 106883.24,
+      "high": 106883.24,
+      "low": 106883.24,
+      "close": 106883.24,
+      "volume": 0,
+      "date_utc": "2025-05-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1747785600000,
+      "open": 109699.54,
+      "high": 109699.54,
+      "low": 109699.54,
+      "close": 109699.54,
+      "volume": 0,
+      "date_utc": "2025-05-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1747872000000,
+      "open": 111722.53,
+      "high": 111722.53,
+      "low": 111722.53,
+      "close": 111722.53,
+      "volume": 0,
+      "date_utc": "2025-05-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1747958400000,
+      "open": 107329.61,
+      "high": 107329.61,
+      "low": 107329.61,
+      "close": 107329.61,
+      "volume": 0,
+      "date_utc": "2025-05-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1748044800000,
+      "open": 107794.01,
+      "high": 107794.01,
+      "low": 107794.01,
+      "close": 107794.01,
+      "volume": 0,
+      "date_utc": "2025-05-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1748131200000,
+      "open": 109048.68,
+      "high": 109048.68,
+      "low": 109048.68,
+      "close": 109048.68,
+      "volume": 0,
+      "date_utc": "2025-05-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1748217600000,
+      "open": 109464.32,
+      "high": 109464.32,
+      "low": 109464.32,
+      "close": 109464.32,
+      "volume": 0,
+      "date_utc": "2025-05-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1748304000000,
+      "open": 108978.46,
+      "high": 108978.46,
+      "low": 108978.46,
+      "close": 108978.46,
+      "volume": 0,
+      "date_utc": "2025-05-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1748390400000,
+      "open": 107819.29,
+      "high": 107819.29,
+      "low": 107819.29,
+      "close": 107819.29,
+      "volume": 0,
+      "date_utc": "2025-05-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1748476800000,
+      "open": 105572.58,
+      "high": 105572.58,
+      "low": 105572.58,
+      "close": 105572.58,
+      "volume": 0,
+      "date_utc": "2025-05-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1748563200000,
+      "open": 104033.26,
+      "high": 104033.26,
+      "low": 104033.26,
+      "close": 104033.26,
+      "volume": 0,
+      "date_utc": "2025-05-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1748649600000,
+      "open": 104645.87,
+      "high": 104645.87,
+      "low": 104645.87,
+      "close": 104645.87,
+      "volume": 0,
+      "date_utc": "2025-05-31",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1748736000000,
+      "open": 105697.94,
+      "high": 105697.94,
+      "low": 105697.94,
+      "close": 105697.94,
+      "volume": 0,
+      "date_utc": "2025-06-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1748822400000,
+      "open": 105904.94,
+      "high": 105904.94,
+      "low": 105904.94,
+      "close": 105904.94,
+      "volume": 0,
+      "date_utc": "2025-06-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1748908800000,
+      "open": 105447.82,
+      "high": 105447.82,
+      "low": 105447.82,
+      "close": 105447.82,
+      "volume": 0,
+      "date_utc": "2025-06-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1748995200000,
+      "open": 104753.38,
+      "high": 104753.38,
+      "low": 104753.38,
+      "close": 104753.38,
+      "volume": 0,
+      "date_utc": "2025-06-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1749081600000,
+      "open": 101570.2,
+      "high": 101570.2,
+      "low": 101570.2,
+      "close": 101570.2,
+      "volume": 0,
+      "date_utc": "2025-06-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1749168000000,
+      "open": 104397.99,
+      "high": 104397.99,
+      "low": 104397.99,
+      "close": 104397.99,
+      "volume": 0,
+      "date_utc": "2025-06-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1749254400000,
+      "open": 105619.02,
+      "high": 105619.02,
+      "low": 105619.02,
+      "close": 105619.02,
+      "volume": 0,
+      "date_utc": "2025-06-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1749340800000,
+      "open": 105784.4,
+      "high": 105784.4,
+      "low": 105784.4,
+      "close": 105784.4,
+      "volume": 0,
+      "date_utc": "2025-06-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1749427200000,
+      "open": 110301.15,
+      "high": 110301.15,
+      "low": 110301.15,
+      "close": 110301.15,
+      "volume": 0,
+      "date_utc": "2025-06-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1749513600000,
+      "open": 110300.24,
+      "high": 110300.24,
+      "low": 110300.24,
+      "close": 110300.24,
+      "volume": 0,
+      "date_utc": "2025-06-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1749600000000,
+      "open": 108669.37,
+      "high": 108669.37,
+      "low": 108669.37,
+      "close": 108669.37,
+      "volume": 0,
+      "date_utc": "2025-06-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1749686400000,
+      "open": 105721.05,
+      "high": 105721.05,
+      "low": 105721.05,
+      "close": 105721.05,
+      "volume": 0,
+      "date_utc": "2025-06-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1749772800000,
+      "open": 106118.7,
+      "high": 106118.7,
+      "low": 106118.7,
+      "close": 106118.7,
+      "volume": 0,
+      "date_utc": "2025-06-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1749859200000,
+      "open": 105465.42,
+      "high": 105465.42,
+      "low": 105465.42,
+      "close": 105465.42,
+      "volume": 0,
+      "date_utc": "2025-06-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1749945600000,
+      "open": 105599.25,
+      "high": 105599.25,
+      "low": 105599.25,
+      "close": 105599.25,
+      "volume": 0,
+      "date_utc": "2025-06-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1750032000000,
+      "open": 106853.38,
+      "high": 106853.38,
+      "low": 106853.38,
+      "close": 106853.38,
+      "volume": 0,
+      "date_utc": "2025-06-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1750118400000,
+      "open": 104590.44,
+      "high": 104590.44,
+      "low": 104590.44,
+      "close": 104590.44,
+      "volume": 0,
+      "date_utc": "2025-06-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1750204800000,
+      "open": 104915.6,
+      "high": 104915.6,
+      "low": 104915.6,
+      "close": 104915.6,
+      "volume": 0,
+      "date_utc": "2025-06-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1750291200000,
+      "open": 104671.9,
+      "high": 104671.9,
+      "low": 104671.9,
+      "close": 104671.9,
+      "volume": 0,
+      "date_utc": "2025-06-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1750377600000,
+      "open": 103317.8,
+      "high": 103317.8,
+      "low": 103317.8,
+      "close": 103317.8,
+      "volume": 0,
+      "date_utc": "2025-06-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1750464000000,
+      "open": 102160.03,
+      "high": 102160.03,
+      "low": 102160.03,
+      "close": 102160.03,
+      "volume": 0,
+      "date_utc": "2025-06-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1750550400000,
+      "open": 100996.87,
+      "high": 100996.87,
+      "low": 100996.87,
+      "close": 100996.87,
+      "volume": 0,
+      "date_utc": "2025-06-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1750636800000,
+      "open": 105419.39,
+      "high": 105419.39,
+      "low": 105419.39,
+      "close": 105419.39,
+      "volume": 0,
+      "date_utc": "2025-06-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1750723200000,
+      "open": 106141,
+      "high": 106141,
+      "low": 106141,
+      "close": 106141,
+      "volume": 0,
+      "date_utc": "2025-06-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1750809600000,
+      "open": 107400.22,
+      "high": 107400.22,
+      "low": 107400.22,
+      "close": 107400.22,
+      "volume": 0,
+      "date_utc": "2025-06-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1750896000000,
+      "open": 107029.64,
+      "high": 107029.64,
+      "low": 107029.64,
+      "close": 107029.64,
+      "volume": 0,
+      "date_utc": "2025-06-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1750982400000,
+      "open": 107113.38,
+      "high": 107113.38,
+      "low": 107113.38,
+      "close": 107113.38,
+      "volume": 0,
+      "date_utc": "2025-06-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1751068800000,
+      "open": 107352.2,
+      "high": 107352.2,
+      "low": 107352.2,
+      "close": 107352.2,
+      "volume": 0,
+      "date_utc": "2025-06-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1751155200000,
+      "open": 108386.44,
+      "high": 108386.44,
+      "low": 108386.44,
+      "close": 108386.44,
+      "volume": 0,
+      "date_utc": "2025-06-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1751241600000,
+      "open": 107173.21,
+      "high": 107173.21,
+      "low": 107173.21,
+      "close": 107173.21,
+      "volume": 0,
+      "date_utc": "2025-06-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1751328000000,
+      "open": 105711.78,
+      "high": 105711.78,
+      "low": 105711.78,
+      "close": 105711.78,
+      "volume": 0,
+      "date_utc": "2025-07-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1751414400000,
+      "open": 108888.32,
+      "high": 108888.32,
+      "low": 108888.32,
+      "close": 108888.32,
+      "volume": 0,
+      "date_utc": "2025-07-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1751500800000,
+      "open": 109628.83,
+      "high": 109628.83,
+      "low": 109628.83,
+      "close": 109628.83,
+      "volume": 0,
+      "date_utc": "2025-07-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1751587200000,
+      "open": 108028.6,
+      "high": 108028.6,
+      "low": 108028.6,
+      "close": 108028.6,
+      "volume": 0,
+      "date_utc": "2025-07-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1751673600000,
+      "open": 108246.65,
+      "high": 108246.65,
+      "low": 108246.65,
+      "close": 108246.65,
+      "volume": 0,
+      "date_utc": "2025-07-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1751760000000,
+      "open": 109217.98,
+      "high": 109217.98,
+      "low": 109217.98,
+      "close": 109217.98,
+      "volume": 0,
+      "date_utc": "2025-07-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1751846400000,
+      "open": 108269.84,
+      "high": 108269.84,
+      "low": 108269.84,
+      "close": 108269.84,
+      "volume": 0,
+      "date_utc": "2025-07-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1751932800000,
+      "open": 108958.04,
+      "high": 108958.04,
+      "low": 108958.04,
+      "close": 108958.04,
+      "volume": 0,
+      "date_utc": "2025-07-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1752019200000,
+      "open": 111282.85,
+      "high": 111282.85,
+      "low": 111282.85,
+      "close": 111282.85,
+      "volume": 0,
+      "date_utc": "2025-07-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1752105600000,
+      "open": 116031.3,
+      "high": 116031.3,
+      "low": 116031.3,
+      "close": 116031.3,
+      "volume": 0,
+      "date_utc": "2025-07-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1752192000000,
+      "open": 117582.16,
+      "high": 117582.16,
+      "low": 117582.16,
+      "close": 117582.16,
+      "volume": 0,
+      "date_utc": "2025-07-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1752278400000,
+      "open": 117472.65,
+      "high": 117472.65,
+      "low": 117472.65,
+      "close": 117472.65,
+      "volume": 0,
+      "date_utc": "2025-07-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1752364800000,
+      "open": 119130.81,
+      "high": 119130.81,
+      "low": 119130.81,
+      "close": 119130.81,
+      "volume": 0,
+      "date_utc": "2025-07-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1752451200000,
+      "open": 119863.71,
+      "high": 119863.71,
+      "low": 119863.71,
+      "close": 119863.71,
+      "volume": 0,
+      "date_utc": "2025-07-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1752537600000,
+      "open": 117781.64,
+      "high": 117781.64,
+      "low": 117781.64,
+      "close": 117781.64,
+      "volume": 0,
+      "date_utc": "2025-07-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1752624000000,
+      "open": 118681.68,
+      "high": 118681.68,
+      "low": 118681.68,
+      "close": 118681.68,
+      "volume": 0,
+      "date_utc": "2025-07-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1752710400000,
+      "open": 119273.69,
+      "high": 119273.69,
+      "low": 119273.69,
+      "close": 119273.69,
+      "volume": 0,
+      "date_utc": "2025-07-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1752796800000,
+      "open": 118023.05,
+      "high": 118023.05,
+      "low": 118023.05,
+      "close": 118023.05,
+      "volume": 0,
+      "date_utc": "2025-07-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1752883200000,
+      "open": 117914.17,
+      "high": 117914.17,
+      "low": 117914.17,
+      "close": 117914.17,
+      "volume": 0,
+      "date_utc": "2025-07-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1752969600000,
+      "open": 117312.7,
+      "high": 117312.7,
+      "low": 117312.7,
+      "close": 117312.7,
+      "volume": 0,
+      "date_utc": "2025-07-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1753056000000,
+      "open": 117428.79,
+      "high": 117428.79,
+      "low": 117428.79,
+      "close": 117428.79,
+      "volume": 0,
+      "date_utc": "2025-07-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1753142400000,
+      "open": 120026.42,
+      "high": 120026.42,
+      "low": 120026.42,
+      "close": 120026.42,
+      "volume": 0,
+      "date_utc": "2025-07-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1753228800000,
+      "open": 118810.44,
+      "high": 118810.44,
+      "low": 118810.44,
+      "close": 118810.44,
+      "volume": 0,
+      "date_utc": "2025-07-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1753315200000,
+      "open": 118397.04,
+      "high": 118397.04,
+      "low": 118397.04,
+      "close": 118397.04,
+      "volume": 0,
+      "date_utc": "2025-07-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1753401600000,
+      "open": 117633.27,
+      "high": 117633.27,
+      "low": 117633.27,
+      "close": 117633.27,
+      "volume": 0,
+      "date_utc": "2025-07-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1753488000000,
+      "open": 117969.63,
+      "high": 117969.63,
+      "low": 117969.63,
+      "close": 117969.63,
+      "volume": 0,
+      "date_utc": "2025-07-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1753574400000,
+      "open": 119465.52,
+      "high": 119465.52,
+      "low": 119465.52,
+      "close": 119465.52,
+      "volume": 0,
+      "date_utc": "2025-07-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1753660800000,
+      "open": 118070.59,
+      "high": 118070.59,
+      "low": 118070.59,
+      "close": 118070.59,
+      "volume": 0,
+      "date_utc": "2025-07-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1753747200000,
+      "open": 117933.39,
+      "high": 117933.39,
+      "low": 117933.39,
+      "close": 117933.39,
+      "volume": 0,
+      "date_utc": "2025-07-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1753833600000,
+      "open": 117830.15,
+      "high": 117830.15,
+      "low": 117830.15,
+      "close": 117830.15,
+      "volume": 0,
+      "date_utc": "2025-07-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1753920000000,
+      "open": 115761.13,
+      "high": 115761.13,
+      "low": 115761.13,
+      "close": 115761.13,
+      "volume": 0,
+      "date_utc": "2025-07-31",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1754006400000,
+      "open": 113248.73,
+      "high": 113248.73,
+      "low": 113248.73,
+      "close": 113248.73,
+      "volume": 0,
+      "date_utc": "2025-08-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1754092800000,
+      "open": 112542.74,
+      "high": 112542.74,
+      "low": 112542.74,
+      "close": 112542.74,
+      "volume": 0,
+      "date_utc": "2025-08-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1754179200000,
+      "open": 114215.73,
+      "high": 114215.73,
+      "low": 114215.73,
+      "close": 114215.73,
+      "volume": 0,
+      "date_utc": "2025-08-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1754265600000,
+      "open": 115051.85,
+      "high": 115051.85,
+      "low": 115051.85,
+      "close": 115051.85,
+      "volume": 0,
+      "date_utc": "2025-08-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1754352000000,
+      "open": 114112.95,
+      "high": 114112.95,
+      "low": 114112.95,
+      "close": 114112.95,
+      "volume": 0,
+      "date_utc": "2025-08-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1754438400000,
+      "open": 115028.83,
+      "high": 115028.83,
+      "low": 115028.83,
+      "close": 115028.83,
+      "volume": 0,
+      "date_utc": "2025-08-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1754524800000,
+      "open": 117515.49,
+      "high": 117515.49,
+      "low": 117515.49,
+      "close": 117515.49,
+      "volume": 0,
+      "date_utc": "2025-08-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1754611200000,
+      "open": 116683.79,
+      "high": 116683.79,
+      "low": 116683.79,
+      "close": 116683.79,
+      "volume": 0,
+      "date_utc": "2025-08-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1754697600000,
+      "open": 116492.51,
+      "high": 116492.51,
+      "low": 116492.51,
+      "close": 116492.51,
+      "volume": 0,
+      "date_utc": "2025-08-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1754784000000,
+      "open": 119309.37,
+      "high": 119309.37,
+      "low": 119309.37,
+      "close": 119309.37,
+      "volume": 0,
+      "date_utc": "2025-08-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1754870400000,
+      "open": 118701.84,
+      "high": 118701.84,
+      "low": 118701.84,
+      "close": 118701.84,
+      "volume": 0,
+      "date_utc": "2025-08-11",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1754956800000,
+      "open": 120113.18,
+      "high": 120113.18,
+      "low": 120113.18,
+      "close": 120113.18,
+      "volume": 0,
+      "date_utc": "2025-08-12",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1755043200000,
+      "open": 123365.63,
+      "high": 123365.63,
+      "low": 123365.63,
+      "close": 123365.63,
+      "volume": 0,
+      "date_utc": "2025-08-13",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1755129600000,
+      "open": 118389.79,
+      "high": 118389.79,
+      "low": 118389.79,
+      "close": 118389.79,
+      "volume": 0,
+      "date_utc": "2025-08-14",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1755216000000,
+      "open": 117436.96,
+      "high": 117436.96,
+      "low": 117436.96,
+      "close": 117436.96,
+      "volume": 0,
+      "date_utc": "2025-08-15",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1755302400000,
+      "open": 117455.68,
+      "high": 117455.68,
+      "low": 117455.68,
+      "close": 117455.68,
+      "volume": 0,
+      "date_utc": "2025-08-16",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1755388800000,
+      "open": 117488.6,
+      "high": 117488.6,
+      "low": 117488.6,
+      "close": 117488.6,
+      "volume": 0,
+      "date_utc": "2025-08-17",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1755475200000,
+      "open": 116286.76,
+      "high": 116286.76,
+      "low": 116286.76,
+      "close": 116286.76,
+      "volume": 0,
+      "date_utc": "2025-08-18",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1755561600000,
+      "open": 112856.19,
+      "high": 112856.19,
+      "low": 112856.19,
+      "close": 112856.19,
+      "volume": 0,
+      "date_utc": "2025-08-19",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1755648000000,
+      "open": 114276,
+      "high": 114276,
+      "low": 114276,
+      "close": 114276,
+      "volume": 0,
+      "date_utc": "2025-08-20",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1755734400000,
+      "open": 112480.3,
+      "high": 112480.3,
+      "low": 112480.3,
+      "close": 112480.3,
+      "volume": 0,
+      "date_utc": "2025-08-21",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1755820800000,
+      "open": 116908.68,
+      "high": 116908.68,
+      "low": 116908.68,
+      "close": 116908.68,
+      "volume": 0,
+      "date_utc": "2025-08-22",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1755907200000,
+      "open": 115383.87,
+      "high": 115383.87,
+      "low": 115383.87,
+      "close": 115383.87,
+      "volume": 0,
+      "date_utc": "2025-08-23",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1755993600000,
+      "open": 113478,
+      "high": 113478,
+      "low": 113478,
+      "close": 113478,
+      "volume": 0,
+      "date_utc": "2025-08-24",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1756080000000,
+      "open": 110127.74,
+      "high": 110127.74,
+      "low": 110127.74,
+      "close": 110127.74,
+      "volume": 0,
+      "date_utc": "2025-08-25",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1756166400000,
+      "open": 111788.01,
+      "high": 111788.01,
+      "low": 111788.01,
+      "close": 111788.01,
+      "volume": 0,
+      "date_utc": "2025-08-26",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1756252800000,
+      "open": 111253.21,
+      "high": 111253.21,
+      "low": 111253.21,
+      "close": 111253.21,
+      "volume": 0,
+      "date_utc": "2025-08-27",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1756339200000,
+      "open": 112574.85,
+      "high": 112574.85,
+      "low": 112574.85,
+      "close": 112574.85,
+      "volume": 0,
+      "date_utc": "2025-08-28",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1756425600000,
+      "open": 108378.32,
+      "high": 108378.32,
+      "low": 108378.32,
+      "close": 108378.32,
+      "volume": 0,
+      "date_utc": "2025-08-29",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1756512000000,
+      "open": 108827.93,
+      "high": 108827.93,
+      "low": 108827.93,
+      "close": 108827.93,
+      "volume": 0,
+      "date_utc": "2025-08-30",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1756598400000,
+      "open": 108247.95,
+      "high": 108247.95,
+      "low": 108247.95,
+      "close": 108247.95,
+      "volume": 0,
+      "date_utc": "2025-08-31",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1756684800000,
+      "open": 109240.55,
+      "high": 109240.55,
+      "low": 109240.55,
+      "close": 109240.55,
+      "volume": 0,
+      "date_utc": "2025-09-01",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1756771200000,
+      "open": 111247.94,
+      "high": 111247.94,
+      "low": 111247.94,
+      "close": 111247.94,
+      "volume": 0,
+      "date_utc": "2025-09-02",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1756857600000,
+      "open": 111756.41,
+      "high": 111756.41,
+      "low": 111756.41,
+      "close": 111756.41,
+      "volume": 0,
+      "date_utc": "2025-09-03",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1756944000000,
+      "open": 110720.79,
+      "high": 110720.79,
+      "low": 110720.79,
+      "close": 110720.79,
+      "volume": 0,
+      "date_utc": "2025-09-04",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1757030400000,
+      "open": 110670.02,
+      "high": 110670.02,
+      "low": 110670.02,
+      "close": 110670.02,
+      "volume": 0,
+      "date_utc": "2025-09-05",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1757116800000,
+      "open": 110212.6,
+      "high": 110212.6,
+      "low": 110212.6,
+      "close": 110212.6,
+      "volume": 0,
+      "date_utc": "2025-09-06",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1757203200000,
+      "open": 111129.61,
+      "high": 111129.61,
+      "low": 111129.61,
+      "close": 111129.61,
+      "volume": 0,
+      "date_utc": "2025-09-07",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1757289600000,
+      "open": 112072.57,
+      "high": 112072.57,
+      "low": 112072.57,
+      "close": 112072.57,
+      "volume": 0,
+      "date_utc": "2025-09-08",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1757376000000,
+      "open": 111549.32,
+      "high": 111549.32,
+      "low": 111549.32,
+      "close": 111549.32,
+      "volume": 0,
+      "date_utc": "2025-09-09",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1757462400000,
+      "open": 113983.97,
+      "high": 113983.97,
+      "low": 113983.97,
+      "close": 113983.97,
+      "volume": 0,
+      "date_utc": "2025-09-10",
+      "source": "coinbase_historical"
+    },
+    {
+      "timestamp": 1757548800000,
+      "open": 115540,
+      "high": 115540,
+      "low": 115540,
+      "close": 115540,
+      "volume": 0,
+      "date_utc": "2025-09-11",
+      "source": "coinbase"
+    },
+    {
+      "timestamp": 1757635200000,
+      "open": 116106.03,
+      "high": 116106.03,
+      "low": 116106.03,
+      "close": 116106.03,
+      "volume": 0,
+      "date_utc": "2025-09-12",
+      "source": "coinbase"
+    },
+    {
+      "timestamp": 1757721600000,
+      "open": 115968.35,
+      "high": 115968.35,
+      "low": 115968.35,
+      "close": 115968.35,
+      "volume": 0,
+      "date_utc": "2025-09-13",
+      "source": "coinbase"
+    },
+    {
+      "timestamp": 1757808000000,
+      "open": 115314.13,
+      "high": 115314.13,
+      "low": 115314.13,
+      "close": 115314.13,
+      "volume": 0,
+      "date_utc": "2025-09-14",
+      "source": "coinbase"
+    },
+    {
+      "timestamp": 1757894400000,
+      "open": 115381.08,
+      "high": 115381.08,
+      "low": 115381.08,
+      "close": 115381.08,
+      "volume": 0,
+      "date_utc": "2025-09-15",
+      "source": "coinbase"
+    },
+    {
+      "timestamp": 1757980800000,
+      "open": 116832.56,
+      "high": 116832.56,
+      "low": 116832.56,
+      "close": 116832.56,
+      "volume": 0,
+      "date_utc": "2025-09-16",
+      "source": "coinbase"
+    },
+    {
+      "timestamp": 1758067200000,
+      "open": 116484.4,
+      "high": 116484.4,
+      "low": 116484.4,
+      "close": 116484.4,
+      "volume": 0,
+      "date_utc": "2025-09-17",
+      "source": "coinbase"
+    },
+    {
+      "timestamp": 1758153600000,
+      "open": 117117.99,
+      "high": 117117.99,
+      "low": 117117.99,
+      "close": 117117.99,
+      "volume": 0,
+      "date_utc": "2025-09-18",
+      "source": "coinbase"
+    },
+    {
+      "timestamp": 1758240000000,
+      "open": 115690.55,
+      "high": 115690.55,
+      "low": 115690.55,
+      "close": 115690.55,
+      "volume": 0,
+      "date_utc": "2025-09-19",
+      "source": "coinbase"
+    },
+    {
+      "timestamp": 1758326400000,
+      "open": 115752.4,
+      "high": 115752.4,
+      "low": 115752.4,
+      "close": 115752.4,
+      "volume": 0,
+      "date_utc": "2025-09-20",
+      "source": "coinbase"
+    },
+    {
+      "timestamp": 1758412800000,
+      "open": 115282.27,
+      "high": 115282.27,
+      "low": 115282.27,
+      "close": 115282.27,
+      "volume": 0,
+      "date_utc": "2025-09-21",
+      "source": "coinbase"
+    },
+    {
+      "timestamp": 1758499200000,
+      "open": 112736.59,
+      "high": 112736.59,
+      "low": 112736.59,
+      "close": 112736.59,
+      "volume": 0,
+      "date_utc": "2025-09-22",
+      "source": "coinbase"
+    },
+    {
+      "timestamp": 1758585600000,
+      "open": 112017.21,
+      "high": 112017.21,
+      "low": 112017.21,
+      "close": 112017.21,
+      "volume": 0,
+      "date_utc": "2025-09-23",
+      "source": "coinbase"
+    },
+    {
+      "timestamp": 1758672000000,
+      "open": 113348.17,
+      "high": 113348.17,
+      "low": 113348.17,
+      "close": 113348.17,
+      "volume": 0,
+      "date_utc": "2025-09-24",
+      "source": "coinbase"
+    },
+    {
+      "timestamp": 1758758400000,
+      "open": 109035.72,
+      "high": 109035.72,
+      "low": 109035.72,
+      "close": 109035.72,
+      "volume": 0,
+      "date_utc": "2025-09-25",
+      "source": "coinbase"
+    },
+    {
+      "timestamp": 1758844800000,
+      "open": 109697.29,
+      "high": 109697.29,
+      "low": 109697.29,
+      "close": 109697.29,
+      "volume": 0,
+      "date_utc": "2025-09-26",
+      "source": "coinbase"
+    },
+    {
+      "timestamp": 1758931200000,
+      "open": 109681.16,
+      "high": 109681.16,
+      "low": 109681.16,
+      "close": 109681.16,
+      "volume": 0,
+      "date_utc": "2025-09-27",
+      "source": "coinbase"
+    },
+    {
+      "timestamp": 1759017600000,
+      "open": 109598.11,
+      "high": 109598.11,
+      "low": 109598.11,
+      "close": 109598.11,
+      "volume": 0,
+      "date_utc": "2025-09-28",
+      "source": "coinbase"
+    }
+  ],
+  "parallelTime": 7,
+  "cachedAt": "2025-10-05T00:53:44.709Z",
+  "version": "1.0.0"
+}

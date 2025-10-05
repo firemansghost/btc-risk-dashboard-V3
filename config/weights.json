@@ -1,7 +1,7 @@
 {
-  "version": "v1.0.0",
-  "lastModified": "2025-01-20T00:00:00.000Z",
-  "description": "Single source of truth for all pillar, factor, and sub-factor weights",
+  "version": "v1.1.0",
+  "lastModified": "2025-10-05T00:00:00.000Z",
+  "description": "Single source of truth for all pillar, factor, and sub-factor weights - Rebalanced to prioritize Trend & Valuation",
   
   "pillars": {
     "liquidity": {
@@ -40,58 +40,58 @@
     "trend_valuation": {
       "label": "Trend & Valuation",
       "pillar": "momentum",
-      "weight": 0.20,
+      "weight": 0.25,
       "enabled": true,
-      "description": "BMSB-dominant cycle positioning with Mayer Multiple and RSI"
+      "description": "BMSB-dominant cycle positioning with Mayer Multiple and RSI - Most fundamental risk indicator"
     },
     "onchain": {
       "label": "On-chain Activity", 
       "pillar": "momentum",
-      "weight": 0.05,
+      "weight": 0.08,
       "enabled": true,
-      "description": "Network fees and mempool congestion"
+      "description": "Network fees and mempool congestion - Core Bitcoin metrics"
     },
     "stablecoins": {
       "label": "Stablecoins",
       "pillar": "liquidity", 
-      "weight": 0.15,
+      "weight": 0.18,
       "enabled": true,
-      "description": "Stablecoin supply growth and momentum"
+      "description": "Stablecoin supply growth and momentum - Enhanced with 7-coin coverage"
     },
     "net_liquidity": {
       "label": "Net Liquidity (FRED)",
       "pillar": "liquidity",
-      "weight": 0.15, 
+      "weight": 0.12, 
       "enabled": true,
-      "description": "Fed balance sheet minus RRP and TGA"
+      "description": "Fed balance sheet minus RRP and TGA - Important but less direct"
     },
     "etf_flows": {
       "label": "ETF Flows",
       "pillar": "liquidity",
-      "weight": 0.05,
+      "weight": 0.10,
       "enabled": true,
-      "description": "Bitcoin ETF flow momentum and diversification"
+      "description": "Bitcoin ETF flow momentum and diversification - Major institutional flow indicator"
     },
     "term_leverage": {
       "label": "Term Structure & Leverage",
       "pillar": "leverage",
-      "weight": 0.20,
+      "weight": 0.18,
       "enabled": true,
-      "description": "Funding rates, basis, and open interest"
+      "description": "Funding rates, basis, and open interest - Still important but less than valuation"
     },
     "macro_overlay": {
       "label": "Macro Overlay",
       "pillar": "macro",
-      "weight": 0.10,
+      "weight": 0.06,
       "enabled": true,
-      "description": "DXY, 2Y rates, and VIX"
+      "description": "DXY, 2Y rates, and VIX - External factor with reduced weight"
     },
     "social_interest": {
       "label": "Social Interest",
       "pillar": "social", 
-      "weight": 0.10,
+      "weight": 0.05,
       "enabled": true,
-      "description": "Google Trends and Fear & Greed Index"
+      "description": "Google Trends and Fear & Greed Index - Least predictive factor"
     }
   },
 
