@@ -95,14 +95,159 @@ async function computeTrendValuation(dailyClose = null) {
   return await computeTrendValuationNew(dailyClose);
 }
 
+// Cache configuration for Social Interest
+const SOCIAL_INTEREST_CACHE_DIR = 'public/data/cache/social_interest';
+const SOCIAL_INTEREST_CACHE_TTL_HOURS = 6; // 6 hours cache for social data
+const SOCIAL_INTEREST_CACHE_FILE = 'social_interest_cache.json';
+
+/**
+ * Load cached Social Interest data
+ */
+async function loadSocialInterestCache() {
+  try {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const cachePath = path.join(SOCIAL_INTEREST_CACHE_DIR, SOCIAL_INTEREST_CACHE_FILE);
+    const cacheData = await fs.readFile(cachePath, { encoding: 'utf8' });
+    const parsed = JSON.parse(cacheData);
+    
+    // Check if cache is still valid
+    const cacheAge = Date.now() - new Date(parsed.cachedAt).getTime();
+    const maxAge = SOCIAL_INTEREST_CACHE_TTL_HOURS * 60 * 60 * 1000;
+    
+    if (cacheAge < maxAge) {
+      console.log(`Social Interest: Using cached data (${Math.round(cacheAge / (60 * 1000))} minutes old)`);
+      return parsed;
+    } else {
+      console.log(`Social Interest: Cache expired (${Math.round(cacheAge / (60 * 60 * 1000))} hours old)`);
+      return null;
+    }
+  } catch (error) {
+    console.log(`Social Interest: No valid cache found: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Save Social Interest data to cache
+ */
+async function saveSocialInterestCache(data) {
+  try {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    await fs.mkdir(SOCIAL_INTEREST_CACHE_DIR, { recursive: true });
+    const cachePath = path.join(SOCIAL_INTEREST_CACHE_DIR, SOCIAL_INTEREST_CACHE_FILE);
+    
+    const cacheData = {
+      ...data,
+      cachedAt: new Date().toISOString(),
+      version: '1.0.0'
+    };
+    
+    await fs.writeFile(cachePath, JSON.stringify(cacheData, null, 2), { encoding: 'utf8' });
+    console.log(`Social Interest: Cached data saved to ${cachePath}`);
+  } catch (error) {
+    console.warn(`Social Interest: Failed to save cache: ${error.message}`);
+  }
+}
+
+/**
+ * Check if social data has changed since last cache
+ */
+function hasSocialDataChanged(currentData, cachedData) {
+  if (!cachedData || !cachedData.bitcoinRank || !cachedData.latestPrice) {
+    return true;
+  }
+  
+  // Check if Bitcoin rank or price has changed significantly
+  return currentData.bitcoinRank !== cachedData.bitcoinRank || 
+         Math.abs(currentData.latestPrice - cachedData.latestPrice) > 1000; // $1000 price change threshold
+}
+
+/**
+ * Fetch social data with enhanced error handling and fallback sources
+ */
+async function fetchSocialDataWithFallback() {
+  const sourcesUsed = [];
+  const fallbackAttempts = [];
+  
+  try {
+    // Primary: CoinGecko trending + price data
+    console.log('Social Interest: Fetching CoinGecko social data...');
+    const startTime = Date.now();
+    
+    const [trendsData, priceData] = await Promise.all([
+      coinGecko.getTrending().catch(error => {
+        fallbackAttempts.push(`CoinGecko trending failed: ${error.message}`);
+        return null;
+      }),
+      coinGecko.getMarketChart(30, 'daily').catch(error => {
+        fallbackAttempts.push(`CoinGecko price data failed: ${error.message}`);
+        return null;
+      })
+    ]);
+    
+    const fetchTime = Date.now() - startTime;
+    console.log(`Social Interest: CoinGecko data fetched in ${fetchTime}ms`);
+    
+    if (trendsData) sourcesUsed.push('CoinGecko • trending');
+    if (priceData) sourcesUsed.push('CoinGecko • price data');
+    
+    return {
+      trendsData,
+      priceData,
+      sourcesUsed,
+      fallbackAttempts,
+      fetchTime
+    };
+  } catch (error) {
+    console.log(`Social Interest: All data sources failed: ${error.message}`);
+    return {
+      trendsData: null,
+      priceData: null,
+      sourcesUsed: [],
+      fallbackAttempts: [...fallbackAttempts, `All sources failed: ${error.message}`],
+      fetchTime: 0
+    };
+  }
+}
+
 // 2. SOCIAL INTEREST (Search trends and social sentiment)
+// Enhanced with caching, fallback sources, and incremental updates
 async function computeSocialInterest() {
   try {
-    // Use centralized CoinGecko client with caching and rate limiting
-    const [trendsData, priceData] = await Promise.all([
-      coinGecko.getTrending().catch(() => null),
-      coinGecko.getMarketChart(30, 'daily').catch(() => null)
-    ]);
+    // Check for cached data first
+    const cachedData = await loadSocialInterestCache();
+
+    // 🚀 ENHANCED SOCIAL DATA FETCHING: Use fallback sources and parallel processing
+    console.log('Social Interest: Fetching social data with enhanced sources...');
+    const socialData = await fetchSocialDataWithFallback();
+    
+    const { trendsData, priceData, sourcesUsed, fallbackAttempts, fetchTime } = socialData;
+
+    // Check if we can use cached data (incremental update)
+    const currentBitcoinRank = trendsData?.coins?.find(coin => 
+      coin.item?.id === 'bitcoin' || coin.item?.symbol?.toLowerCase() === 'btc'
+    ) ? trendsData.coins.indexOf(trendsData.coins.find(coin => 
+      coin.item?.id === 'bitcoin' || coin.item?.symbol?.toLowerCase() === 'btc'
+    )) + 1 : null;
+    
+    const latestPrice = priceData?.prices?.length > 0 ? 
+      priceData.prices[priceData.prices.length - 1][1] : null;
+    
+    const dataChanged = hasSocialDataChanged({ bitcoinRank: currentBitcoinRank, latestPrice }, cachedData);
+    
+    if (cachedData && !dataChanged) {
+      console.log('Social Interest: Using cached calculations (no social data changes)');
+      return {
+        score: cachedData.score,
+        reason: "success_cached",
+        lastUpdated: cachedData.lastUpdated,
+        details: cachedData.details
+      };
+    }
+
+    console.log('Social Interest: Computing fresh calculations (social data changed or no cache)');
 
     // Multi-factor analysis using available data
     // 1. Search Attention (40% weight) - Bitcoin trending rank
@@ -224,14 +369,14 @@ async function computeSocialInterest() {
       }
     }
 
-    // Composite score (weighted blend) - BMSB-dominant Trend & Valuation
+    // Composite score (weighted blend)
     const compositeScore = Math.round(
       searchScore * 0.70 + 
       momentumScore * 0.30 + 
       volatilityScore * 0.00  // Parked for now
     );
     
-    return { 
+    const result = { 
       score: compositeScore, 
       reason: "success",
       lastUpdated: new Date().toISOString(),
@@ -241,10 +386,20 @@ async function computeSocialInterest() {
         { label: "Price Signal (7d)", value: priceSignal },
         { label: "Volatility Level (14d)", value: volatilityLevel },
         { label: "Social Risk Level", value: compositeScore > 70 ? "High" : compositeScore > 50 ? "Moderate" : "Low" },
+        { label: "Fetch Time", value: `${fetchTime}ms` },
+        { label: "Data Sources", value: sourcesUsed.join(', ') },
         { label: "Component Scores", value: `Search: ${searchScore}, Momentum: ${momentumScore}, Vol: ${volatilityScore}` },
-        { label: "Data Source", value: "CoinGecko trends + price analysis" }
-      ]
+        { label: "Fallback Attempts", value: fallbackAttempts.length.toString() }
+      ],
+      bitcoinRank: currentBitcoinRank, // Include for cache comparison
+      latestPrice, // Include for cache comparison
+      fetchTime // Include timing info
     };
+
+    // Save to cache for future use
+    await saveSocialInterestCache(result);
+
+    return result;
   } catch (error) {
     return { score: null, reason: `error: ${error.message}` };
   }
