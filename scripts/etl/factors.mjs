@@ -250,7 +250,112 @@ async function computeSocialInterest() {
   }
 }
 
+// Cache configuration for Net Liquidity
+const NET_LIQUIDITY_CACHE_DIR = 'public/data/cache/net_liquidity';
+const NET_LIQUIDITY_CACHE_TTL_HOURS = 24; // 24 hours cache for FRED data
+const NET_LIQUIDITY_CACHE_FILE = 'net_liquidity_cache.json';
+
+/**
+ * Load cached Net Liquidity data
+ */
+async function loadNetLiquidityCache() {
+  try {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const cachePath = path.join(NET_LIQUIDITY_CACHE_DIR, NET_LIQUIDITY_CACHE_FILE);
+    const cacheData = await fs.readFile(cachePath, { encoding: 'utf8' });
+    const parsed = JSON.parse(cacheData);
+    
+    // Check if cache is still valid
+    const cacheAge = Date.now() - new Date(parsed.cachedAt).getTime();
+    const maxAge = NET_LIQUIDITY_CACHE_TTL_HOURS * 60 * 60 * 1000;
+    
+    if (cacheAge < maxAge) {
+      console.log(`Net Liquidity: Using cached data (${Math.round(cacheAge / (60 * 1000))} minutes old)`);
+      return parsed;
+    } else {
+      console.log(`Net Liquidity: Cache expired (${Math.round(cacheAge / (60 * 60 * 1000))} hours old)`);
+      return null;
+    }
+  } catch (error) {
+    console.log(`Net Liquidity: No valid cache found: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Save Net Liquidity data to cache
+ */
+async function saveNetLiquidityCache(data) {
+  try {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    await fs.mkdir(NET_LIQUIDITY_CACHE_DIR, { recursive: true });
+    const cachePath = path.join(NET_LIQUIDITY_CACHE_DIR, NET_LIQUIDITY_CACHE_FILE);
+    
+    const cacheData = {
+      ...data,
+      cachedAt: new Date().toISOString(),
+      version: '1.0.0'
+    };
+    
+    await fs.writeFile(cachePath, JSON.stringify(cacheData, null, 2), { encoding: 'utf8' });
+    console.log(`Net Liquidity: Cached data saved to ${cachePath}`);
+  } catch (error) {
+    console.warn(`Net Liquidity: Failed to save cache: ${error.message}`);
+  }
+}
+
+/**
+ * Check if FRED data has changed since last cache
+ */
+function hasFredDataChanged(currentData, cachedData) {
+  if (!cachedData || !cachedData.latestWalclDate) {
+    return true;
+  }
+  
+  // Check if latest observation date has changed
+  return currentData.latestWalclDate !== cachedData.latestWalclDate;
+}
+
+/**
+ * Fetch FRED data with enhanced error handling and retry logic
+ */
+async function fetchFredDataWithRetry(seriesId, apiKey, startISO, endISO, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=w&aggregation_method=avg`;
+      
+      const response = await fetch(url, {
+        headers: { 'User-Agent': 'btc-risk-dashboard' },
+        cache: 'no-store'
+      });
+      
+      if (!response.ok) {
+        if (attempt < maxRetries) {
+          console.log(`Net Liquidity: FRED ${seriesId} attempt ${attempt} failed (${response.status}), retrying...`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+          continue;
+        }
+        throw new Error(`FRED API error for ${seriesId}: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log(`Net Liquidity: FRED ${seriesId} fetched successfully (${data.observations?.length || 0} observations)`);
+      return data;
+    } catch (error) {
+      if (attempt === maxRetries) {
+        console.log(`Net Liquidity: FRED ${seriesId} failed after ${maxRetries} attempts: ${error.message}`);
+        throw error;
+      }
+      console.log(`Net Liquidity: FRED ${seriesId} attempt ${attempt} failed: ${error.message}, retrying...`);
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+    }
+  }
+}
+
 // 3. NET LIQUIDITY (FRED data - requires API key)
+// Enhanced with caching, retry logic, and incremental updates
 async function computeNetLiquidity() {
   const apiKey = process.env.FRED_API_KEY;
   if (!apiKey) {
@@ -258,27 +363,44 @@ async function computeNetLiquidity() {
   }
 
   try {
+    // Check for cached data first
+    const cachedData = await loadNetLiquidityCache();
+
     const end = new Date();
     const start = new Date(end.getTime() - 365 * 24 * 60 * 60 * 1000); // 1 year
     const startISO = start.toISOString().slice(0, 10);
     const endISO = end.toISOString().slice(0, 10);
 
-    // Fetch FRED series in parallel
-    const [walcl, rrp, tga] = await Promise.all([
-      fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=WALCL&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=w&aggregation_method=avg`),
-      fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=RRPONTSYD&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=w&aggregation_method=avg`),
-      fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=WTREGEN&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=w&aggregation_method=avg`)
+    // 🚀 ENHANCED FRED FETCHING: Use retry logic and parallel processing
+    console.log('Net Liquidity: Fetching FRED data with retry logic...');
+    const startTime = Date.now();
+    
+    const [walclData, rrpData, tgaData] = await Promise.all([
+      fetchFredDataWithRetry('WALCL', apiKey, startISO, endISO),
+      fetchFredDataWithRetry('RRPONTSYD', apiKey, startISO, endISO),
+      fetchFredDataWithRetry('WTREGEN', apiKey, startISO, endISO)
     ]);
+    
+    const fetchTime = Date.now() - startTime;
+    console.log(`Net Liquidity: FRED data fetched in ${fetchTime}ms`);
 
-    if (!walcl.ok || !rrp.ok || !tga.ok) {
-      return { score: null, reason: "fred_api_error" };
+    // Check if we can use cached data (incremental update)
+    const latestWalclDate = walclData.observations?.length > 0 ? 
+      walclData.observations[walclData.observations.length - 1].date : null;
+    
+    const dataChanged = hasFredDataChanged({ latestWalclDate }, cachedData);
+    
+    if (cachedData && !dataChanged) {
+      console.log('Net Liquidity: Using cached calculations (no FRED data changes)');
+      return {
+        score: cachedData.score,
+        reason: "success_cached",
+        lastUpdated: cachedData.lastUpdated,
+        details: cachedData.details
+      };
     }
 
-    const [walclData, rrpData, tgaData] = await Promise.all([
-      walcl.json(),
-      rrp.json(),
-      tga.json()
-    ]);
+    console.log('Net Liquidity: Computing fresh calculations (FRED data changed or no cache)');
 
     // Extract values and calculate net liquidity time series
     // FRED API returns values in millions, so we need to convert them
@@ -288,8 +410,8 @@ async function computeNetLiquidity() {
       return Number.isFinite(val) ? val * 1e6 : null; // Convert millions to actual dollars
     }).filter(Number.isFinite) || [];
     
-    // Get the latest observation date for staleness detection
-    const latestWalclDate = walclObservations.length > 0 ? walclObservations[walclObservations.length - 1].date : null;
+    // Get the latest observation date for staleness detection (already declared above)
+    // const latestWalclDate = walclObservations.length > 0 ? walclObservations[walclObservations.length - 1].date : null;
     
     const rrpValues = rrpData.observations?.map(o => {
       const val = Number(o.value);
@@ -377,14 +499,14 @@ async function computeNetLiquidity() {
       }
     }
 
-    // Composite score (weighted blend) - BMSB-dominant Trend & Valuation
+    // Composite score (weighted blend)
     const compositeScore = Math.round(
       levelScore * 0.15 + 
       rocScore * 0.40 + 
       momentumScore * 0.45
     );
     
-    return { 
+    const result = { 
       score: compositeScore, 
       reason: "success",
       lastUpdated: latestWalclDate ? `${latestWalclDate}T00:00:00.000Z` : new Date().toISOString(),
@@ -395,10 +517,18 @@ async function computeNetLiquidity() {
         { label: "Net Liquidity", value: `$${(latest / 1e12).toFixed(1)}T` },
         { label: "4-week Change", value: `${roc4w >= 0 ? '+' : ''}${roc4w.toFixed(1)}%` },
         { label: "Level Percentile (1y)", value: `${(levelPercentile * 100).toFixed(0)}%` },
+        { label: "Fetch Time", value: `${fetchTime}ms` },
         { label: "Component Scores", value: `Level: ${levelScore}, RoC: ${rocScore}, Momentum: ${momentumScore}` },
         { label: "Data as of", value: latestWalclDate || "Unknown" }
-      ]
+      ],
+      latestWalclDate, // Include for cache comparison
+      fetchTime // Include timing info
     };
+
+    // Save to cache for future use
+    await saveNetLiquidityCache(result);
+
+    return result;
   } catch (error) {
     return { score: null, reason: `error: ${error.message}` };
   }
