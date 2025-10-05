@@ -4,33 +4,34 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 
 **Configuration Source**: All weights are loaded from `config/dashboard-config.json` (single source of truth)
 
-## Liquidity/Flows Pillar (35% total weight)
+## Liquidity/Flows Pillar (38% total weight)
 
 *Prioritizes crypto-native flows (stablecoins, ETF creations/redemptions) over laggy Fed liquidity for better signal and less overlap with Macro inputs.*
 
-### Stablecoins (21% weight)
-- **Data Source**: CoinGecko multi-stablecoin data (USDT, USDC, DAI)
-- **Window**: 90 days of daily data
-- **Transform**: Multi-factor composite (Supply Growth 55%, Momentum 30%, Concentration 15%)
-  - **Aggregate Supply Growth**: Market-cap weighted 30-day change across major stablecoins
-  - **Growth Momentum**: 7-day vs 30-day trend acceleration/deceleration
-  - **Market Concentration**: Herfindahl-Hirschman Index for diversification risk
-- **Mapping**: Higher aggregate supply growth + lower concentration = Lower risk
-- **Staleness TTL**: 1 day
-- **Aggregation**: Weighted composite of three components with market-share weighting
+### Stablecoins (18% weight)
+- **Data Source**: Multi-source fallback chain (CoinGecko → CoinMarketCap → CryptoCompare)
+- **Coverage**: 7 stablecoins (USDT, USDC, DAI, BUSD, TUSD, FRAX, LUSD) with weighted averages
+- **Window**: 30 days of daily data with 365-day historical baseline
+- **Transform**: Weighted average composite across all stablecoins
+  - **Weighted Supply Growth**: Market-cap weighted 30-day change across all 7 stablecoins
+  - **Historical Baseline**: 365-day rolling percentile ranking
+  - **Multi-source Reliability**: Fallback chain ensures data availability
+- **Mapping**: Higher aggregate supply growth = Lower risk
+- **Caching**: 24-hour TTL with intelligent incremental updates
+- **Aggregation**: Weighted composite with 365-day historical baseline
 
-### ETF Flows (9% weight)
-- **Data Source**: Farside Investors HTML scraping with individual ETF breakdown
-- **Window**: 21-day rolling sum with acceleration analysis
-- **Transform**: Multi-factor composite (21-day Sum 30%, Acceleration 30%, Diversification 40%)
-  - **21-day Rolling Sum**: Primary momentum indicator from all Bitcoin ETFs
-  - **Flow Acceleration**: 7-day recent vs previous 7-day comparison
-  - **ETF Diversification**: HHI concentration risk across individual ETFs (IBIT, FBTC, etc.)
-- **Mapping**: Higher flows + positive acceleration + lower concentration = Lower risk
-- **Staleness TTL**: 5 days
-- **Aggregation**: Weighted composite with historical baseline percentile ranking
+### ETF Flows (10% weight)
+- **Data Source**: Farside Investors HTML scraping with business-day logic
+- **Window**: 21-day business-day rolling sum (excludes weekends/holidays)
+- **Transform**: Business-day aware composite
+  - **21-day Business-day Sum**: Primary momentum indicator excluding weekends
+  - **Weekend Logic**: Zero-flow entries excluded from calculations
+  - **Holiday Awareness**: Market closure detection for accurate calculations
+- **Mapping**: Higher flows = Lower risk
+- **Caching**: 24-hour TTL with business-day awareness
+- **Aggregation**: Business-day filtered historical baseline percentile ranking
 
-### Net Liquidity (5% weight)
+### Net Liquidity (10% weight)
 - **Data Source**: FRED API (WALCL, RRPONTSYD, WTREGEN)
 - **Window**: 1 year of weekly data
 - **Transform**: Multi-factor composite (Level 15%, Rate of Change 40%, Momentum 45%)
@@ -55,58 +56,69 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 - **Staleness TTL**: 1 day
 - **Aggregation**: Weighted composite with security adjustment and percentile ranking
 
-## Momentum/Valuation Pillar (25% total weight)
+## Momentum/Valuation Pillar (33% total weight)
 
-### Trend & Valuation (20% weight)
-- **Data Source**: CoinGecko Bitcoin price data
-- **Window**: 365 days of daily data
+### Trend & Valuation (25% weight)
+- **Data Source**: CoinGecko Bitcoin price data with enhanced caching
+- **Window**: 365 days of daily data with incremental updates
 - **Transform**: Cycle-Anchored Trend composite (BMSB 60%, Mayer Multiple 30%, Weekly RSI 10%)
-  - **Mayer Multiple**: Price / 200-day SMA
-  - **Bull Market Support Band (BMSB)**: Distance from 200-day SMA (proxy)
-  - **Weekly RSI**: RSI(14) calculated on weekly price samples (every 7th day)
+  - **Bull Market Support Band (BMSB)**: 20-week SMA and 21-week EMA distance (60% weight)
+  - **Mayer Multiple**: Price / 200-day SMA (30% weight)
+  - **Weekly RSI**: RSI(14) calculated on weekly price samples (10% weight)
 - **Mapping**: Higher values = Higher risk (not inverted)
-- **Staleness TTL**: 1 day
-- **Aggregation**: Weighted composite of three percentile-ranked components
+- **Caching**: 24-hour TTL with parallel processing (7ms calculation time)
+- **Aggregation**: Weighted composite with parallel BMSB/Mayer/RSI calculation
 
-## Term Structure/Leverage Pillar (20% total weight)
+### On-chain Activity (8% weight)
+- **Data Source**: Multi-source fallback (Blockchain.info → Mempool.space → Mempool.observer)
+- **Window**: 30 days of daily data with parallel fetching
+- **Transform**: Multi-factor composite (Congestion 60%, Activity 40%, NVT 0% + Security adjustment)
+  - **Network Congestion**: Transaction fees relative to historical levels
+  - **Transaction Activity**: Normalized daily transaction count
+  - **Hash Rate Security**: Network security bonus/penalty (±5 points)
+- **Mapping**: Higher congestion + activity = Higher risk; higher security = Lower risk
+- **Caching**: 4-hour TTL with 3-source fallback
+- **Aggregation**: Weighted composite with parallel data fetching
 
-### Term Structure & Leverage (20% weight)
-- **Data Source**: BitMEX funding rates + CoinGecko spot prices
-- **Window**: 30 days of funding data + spot price volatility
-- **Transform**: Multi-factor composite (Funding 40%, Basis 35%, OI/MCap 25%)
-  - **Funding Rate Level**: Average funding rate intensity (leverage demand)
+## Term Structure/Leverage Pillar (18% total weight)
+
+### Term Structure & Leverage (18% weight)
+- **Data Source**: Multi-exchange fallback (BitMEX → Binance → OKX) + CoinGecko spot prices
+- **Window**: 30 days of funding data + spot price volatility with parallel processing
+- **Transform**: Multi-factor composite (Funding 40%, Volatility 35%, Stress 25%)
+  - **Funding Rate Level**: Average funding rate intensity across multiple exchanges
   - **Funding Volatility**: Standard deviation of funding rates (instability)
   - **Term Structure Stress**: Combined funding-volatility stress indicator
 - **Mapping**: Higher funding + higher volatility + higher stress = Higher risk
-- **Staleness TTL**: 1 day
-- **Aggregation**: Weighted composite with percentile ranking of each component
+- **Caching**: 6-hour TTL with multi-exchange fallback
+- **Aggregation**: Weighted composite with parallel funding/volatility/stress calculation
 
-## Social/Attention Pillar (10% total weight)
+## Social/Attention Pillar (5% total weight)
 
-### Social Interest (10% weight)
-- **Data Source**: CoinGecko trending searches + Bitcoin price data
-- **Window**: Real-time trending + 30 days of price data
-- **Transform**: Multi-factor composite (Google Trends 70%, Fear & Greed 30%, Volatility 0%)
+### Social Interest (5% weight)
+- **Data Source**: CoinGecko trending data + price momentum analysis
+- **Window**: Real-time trending + 30 days of price data with momentum analysis
+- **Transform**: Multi-factor composite (Search Attention 70%, Price Momentum 30%, Volatility 0%)
   - **Search Attention**: Bitcoin trending rank on CoinGecko (higher rank = higher risk)
   - **Price Momentum**: 7-day vs 7-day price performance as sentiment proxy
-  - **Volatility Social Signal**: 14-day price volatility as attention proxy
-- **Mapping**: Higher search attention + bullish momentum + higher volatility = Higher risk
-- **Staleness TTL**: 1 day
-- **Aggregation**: Weighted composite with percentile ranking for momentum and volatility components
+  - **Volatility Social Signal**: 14-day price volatility as attention proxy (parked)
+- **Mapping**: Higher search attention + bullish momentum = Higher risk
+- **Caching**: 6-hour TTL with momentum analysis
+- **Aggregation**: Weighted composite with percentile ranking for momentum components
 
-## Macro Overlay Pillar (10% total weight)
+## Macro Overlay Pillar (6% total weight)
 
-### Macro Overlay (10% weight)
-- **Data Source**: FRED API (DXY, 2Y/10Y Treasury, VIX, 10Y TIPS)
-- **Window**: 120 days of macro data for trend analysis
+### Macro Overlay (6% weight)
+- **Data Source**: Enhanced FRED API with retry logic (DXY, 2Y/10Y Treasury, VIX, 10Y TIPS)
+- **Window**: 120 days of macro data for trend analysis with parallel fetching
 - **Transform**: Multi-factor composite (Dollar 40%, Rates 35%, VIX 25%, Real Rates 0%)
   - **Dollar Strength Pressure**: DXY momentum with percentile ranking (stronger dollar = higher risk)
   - **Interest Rate Environment**: Yield level changes + yield curve analysis (higher/inverted = higher risk)
   - **Risk Appetite Gauge**: VIX level + momentum (rising fear = higher risk)
   - **Real Rate Pressure**: 10Y TIPS real yield changes (higher real rates = higher risk)
 - **Mapping**: Dollar strength + rising rates + market fear + real rate pressure = Higher risk
-- **Staleness TTL**: 1 day
-- **Aggregation**: Weighted composite with regime classification and percentile ranking
+- **Caching**: 24-hour TTL with enhanced FRED fetching and retry logic
+- **Aggregation**: Weighted composite with parallel FRED data fetching
 
 ## Display-Only Features (No Risk Weight)
 

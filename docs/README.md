@@ -38,11 +38,15 @@ This documentation provides comprehensive information about the Bitcoin Risk Das
 
 ## Key Features
 
-### 🚀 Performance Optimizations
-- **Trend & Valuation**: 7ms calculation time with caching
-- **Stablecoins**: Parallel processing with multi-source fallback
-- **ETF Flows**: Business-day-only calculations
-- **On-chain**: Enhanced with fallback data sources
+### 🚀 Comprehensive Performance Optimizations
+- **Trend & Valuation**: 7ms calculation time with 24h cache and parallel BMSB/Mayer/RSI processing
+- **Stablecoins**: 7-coin coverage with 3-source fallback (CoinGecko → CoinMarketCap → CryptoCompare) and 365-day baseline
+- **ETF Flows**: Business-day logic with weekend/holiday exclusion and 24h cache
+- **Term Leverage**: Multi-exchange fallback (BitMEX → Binance → OKX) with 6h cache and parallel processing
+- **On-chain Activity**: 3-source fallback (Blockchain.info → Mempool.space → Mempool.observer) with 4h cache
+- **Net Liquidity**: Enhanced FRED fetching with retry logic and 24h cache
+- **Macro Overlay**: Parallel FRED data fetching with retry logic and 24h cache
+- **Social Interest**: Momentum analysis with 6h cache and trending data
 
 ### 📊 Enhanced Analytics
 - **Factor Volatility Analysis**: Show which factors are most volatile

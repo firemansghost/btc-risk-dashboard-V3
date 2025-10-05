@@ -16,15 +16,17 @@ The Bitcoin Risk Dashboard provides institutional-grade risk assessment for Bitc
 ## Five-Pillar Framework
 
 ### Current Weights (Single Source of Truth: `config/dashboard-config.json`)
-- **Liquidity/Flows (35%)**: Stablecoins (21%), ETF Flows (9%), Net Liquidity (5%)
+- **Liquidity/Flows (38%)**: Stablecoins (18%), ETF Flows (10%), Net Liquidity (10%)
   - *Prioritizes crypto-native flows (stablecoins, ETF creations/redemptions) over laggy Fed liquidity*
-  - *ETF Flows includes per-ETF breakdown with individual fund flows, 21-day rolling sums, and cumulative totals*
-- **Momentum/Valuation (25%)**: Trend & Valuation (20%), On-chain Activity (5%)
-  - *Maintains pillar orthogonality while keeping trend analysis strong*
-- **Term Structure/Leverage (20%)**: Term Structure & Leverage (20%)
-- **Macro Overlay (10%)**: Macro Overlay (10%)
-  - *Net Liquidity also appears here as context only (not double-counted)*
-- **Social/Attention (10%)**: Social Interest (10%)
+  - *Enhanced with 7-coin stablecoin coverage, business-day ETF logic, and multi-source fallbacks*
+- **Momentum/Valuation (33%)**: Trend & Valuation (25%), On-chain Activity (8%)
+  - *Trend & Valuation now leads with highest weight, enhanced with parallel processing and caching*
+- **Term Structure/Leverage (18%)**: Term Structure & Leverage (18%)
+  - *Enhanced with multi-exchange fallback (BitMEX → Binance → OKX) and intelligent caching*
+- **Macro Overlay (6%)**: Macro Overlay (6%)
+  - *Enhanced with retry logic and parallel FRED fetching*
+- **Social/Attention (5%)**: Social Interest (5%)
+  - *Enhanced with momentum analysis and intelligent caching*
 
 **Configuration Architecture:**
 - All weights are dynamically loaded from `config/dashboard-config.json`
@@ -34,12 +36,32 @@ The Bitcoin Risk Dashboard provides institutional-grade risk assessment for Bitc
 
 ### Risk Calculation Pipeline
 
-1. **Data Collection**: Real-time APIs (FRED, CoinGecko, Farside, Alternative.me)
-2. **Normalization**: Convert raw metrics to standardized values
-3. **Z-Score Calculation**: Statistical normalization using historical baselines
-4. **Logistic Mapping**: Transform z-scores to 0-100 risk scores using sigmoid function
-5. **EWMA Smoothing**: Apply exponential weighted moving average for stability
-6. **Weight Aggregation**: Combine pillar scores using configurable weights
+1. **Data Collection**: Multi-source APIs with intelligent fallback chains
+2. **Caching Layer**: Factor-level caching with appropriate TTLs (4-24 hours)
+3. **Parallel Processing**: Concurrent data fetching and calculation optimization
+4. **Normalization**: Convert raw metrics to standardized values
+5. **Z-Score Calculation**: Statistical normalization using historical baselines
+6. **Logistic Mapping**: Transform z-scores to 0-100 risk scores using sigmoid function
+7. **EWMA Smoothing**: Apply exponential weighted moving average for stability
+8. **Weight Aggregation**: Combine pillar scores using configurable weights
+
+### Comprehensive System Optimizations
+
+**Performance Enhancements:**
+- **Intelligent Caching**: All 8 factors use sophisticated caching with appropriate TTLs
+- **Parallel Processing**: Concurrent data fetching and calculation optimization
+- **Multi-source Fallbacks**: Enhanced reliability with fallback data sources
+- **Business-day Logic**: ETF Flows exclude weekends and holidays for accurate calculations
+
+**Factor-specific Improvements:**
+- **Trend & Valuation**: 7ms calculation time with parallel BMSB/Mayer/RSI processing
+- **Stablecoins**: 7-coin coverage with 3-source fallback and 365-day historical baseline
+- **ETF Flows**: Business-day awareness with weekend/holiday exclusion
+- **Term Leverage**: Multi-exchange fallback (BitMEX → Binance → OKX) with 6h cache
+- **On-chain Activity**: 3-source fallback (Blockchain.info → Mempool.space → Mempool.observer)
+- **Net Liquidity**: Enhanced FRED fetching with retry logic and 24h cache
+- **Macro Overlay**: Parallel FRED data fetching with retry logic
+- **Social Interest**: Momentum analysis with 6h cache and trending data
 
 ### Staleness & Re-weighting
 
