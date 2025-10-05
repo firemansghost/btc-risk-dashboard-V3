@@ -1,7 +1,7 @@
 {
   "ok": true,
   "version": "v3.1.0",
-  "as_of_utc": "2025-10-05T02:06:23.567Z",
+  "as_of_utc": "2025-10-05T02:07:19.265Z",
   "composite_score": 62,
   "composite_raw": 62,
   "band": {
@@ -25,7 +25,7 @@
       "score": 53,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-05T02:06:21.346Z",
+      "last_utc": "2025-10-05T02:07:16.416Z",
       "details": [
         {
           "label": "Price vs 200-day SMA (Mayer)",
@@ -41,15 +41,15 @@
         },
         {
           "label": "BTC Price (daily close)",
-          "value": "$122,432"
+          "value": "$122,444.59"
         },
         {
           "label": "200-day SMA",
-          "value": "$105,657.562"
+          "value": "$105,657.625"
         },
         {
           "label": "Weekly Close (for BMSB)",
-          "value": "$122,432"
+          "value": "$122,444.59"
         },
         {
           "label": "Price source",
@@ -65,20 +65,20 @@
         },
         {
           "label": "BMSB (20W SMA / 21W EMA)",
-          "value": "$112,486.796 / $110,616.529"
+          "value": "$112,487.425 / $110,617.674"
         },
         {
           "label": "50-week SMA diagnostic",
-          "value": "Above 50W SMA ($100,028.218)"
+          "value": "Above 50W SMA ($100,028.47)"
         },
         {
           "label": "Component Scores",
-          "value": "BMSB: 57, Mayer: 46, RSI: 50"
+          "value": "BMSB: 57, Mayer: 46, RSI: 51"
         }
       ],
       "sma50wDiagnostic": {
-        "sma50": 100028.2178,
-        "currentClose": 122432,
+        "sma50": 100028.4696,
+        "currentClose": 122444.59,
         "isBelow": false,
         "consecutiveWeeksBelow": 0,
         "showWarning": false
@@ -126,7 +126,7 @@
       "score": 82,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-05T02:06:21.287Z",
+      "last_utc": "2025-10-05T02:07:16.388Z",
       "details": [
         {
           "label": "Total Market Cap",
@@ -7210,7 +7210,7 @@
         },
         {
           "label": "Fetch Time",
-          "value": "376ms"
+          "value": "595ms"
         },
         {
           "label": "Component Scores",
@@ -7231,7 +7231,7 @@
       "score": 73,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-05T02:06:21.937Z",
+      "last_utc": "2025-10-05T02:07:16.845Z",
       "details": [
         {
           "label": "Current Funding Rate",
@@ -7263,7 +7263,7 @@
         },
         {
           "label": "Calculation Method",
-          "value": "Parallel processing (2ms)"
+          "value": "Parallel processing (1ms)"
         },
         {
           "label": "Component Scores",
@@ -7280,7 +7280,7 @@
       "score": 69,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-05T02:06:21.682Z",
+      "last_utc": "2025-10-05T02:07:16.972Z",
       "details": [
         {
           "label": "Macro Regime",
@@ -7325,7 +7325,7 @@
       "score": 55,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-05T02:06:21.349Z",
+      "last_utc": "2025-10-05T02:07:16.419Z",
       "details": [
         {
           "label": "Search Attention",
@@ -7359,8 +7359,8 @@
     }
   ],
   "btc": {
-    "spot_usd": 122432,
-    "as_of_utc": "2025-10-05T02:06:23.567Z",
+    "spot_usd": 122444.59,
+    "as_of_utc": "2025-10-05T02:07:19.265Z",
     "source": "Coinbase"
   },
   "provenance": [],
@@ -7373,7 +7373,7 @@
   "cycle_adjustment": {
     "adj_pts": 0,
     "residual_z": null,
-    "last_utc": "2025-10-05T02:06:23.565Z",
+    "last_utc": "2025-10-05T02:07:19.264Z",
     "source": "ETL fallback",
     "reason": "insufficient_historical_data"
   },
@@ -7382,9 +7382,9 @@
     "r_1d": 0,
     "sigma": 0,
     "z": 0,
-    "ref_close": 122432,
-    "spot": 122432,
-    "last_utc": "2025-10-05T02:06:23.565Z",
+    "ref_close": 122444.59,
+    "spot": 122444.59,
+    "last_utc": "2025-10-05T02:07:19.264Z",
     "source": "ETL fallback",
     "reason": "insufficient_historical_data"
   },
