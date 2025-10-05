@@ -206,7 +206,7 @@ export default function RealDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6 py-4 sm:py-6">
             <div className="flex-1">
-              <div className="font-bold tracking-tight text-xl sm:text-2xl md:text-3xl text-gray-900 mb-4">
+              <div className="text-display mb-4">
                 <a href="/" className="hover:text-emerald-600 transition-colors">GhostGauge</a>
               </div>
               
@@ -215,7 +215,7 @@ export default function RealDashboard() {
                 {/* Prominent G-Score Card - Unified Vertical Layout */}
                 <div className="bg-white border-2 border-gray-300 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-200 ring-1 ring-gray-200">
                   <div className="flex items-center justify-between mb-4">
-                    <h1 className="text-sm font-bold text-gray-600 uppercase tracking-wide">
+                    <h1 className="text-caption">
                       Bitcoin G-Score
                     </h1>
                     {(() => {
@@ -245,13 +245,13 @@ export default function RealDashboard() {
                     
                     {/* Score Display - Centered below gauge */}
                     <div className="text-center space-y-2">
-                      <div className="text-5xl font-bold text-gray-900">
+                      <div className="text-score">
                         {latest?.composite_score ?? '—'}
                       </div>
                       <div className={`inline-flex items-center px-3 py-2 rounded-full text-base font-semibold ${getBandColorClasses(latest?.band?.label ?? '')}`}>
                         {latest?.band?.label ?? '—'}
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-body-small">
                         {getBandRecommendation(latest?.band)}
                       </div>
                     </div>
@@ -261,11 +261,11 @@ export default function RealDashboard() {
                 {/* Bitcoin Price Card */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wide">Bitcoin Price</h3>
+                    <h3 className="text-caption">Bitcoin Price</h3>
                     <AlertBell />
                   </div>
-                  <div className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">{latest?.btc?.spot_usd ? fmtUsd0(latest.btc.spot_usd) : 'N/A'}</div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-price mb-2">{latest?.btc?.spot_usd ? fmtUsd0(latest.btc.spot_usd) : 'N/A'}</div>
+                  <div className="text-body-small text-gray-500">
                     {formatSourceTimestamp('Coinbase (daily close)', latest?.btc?.as_of_utc || '—')}
                   </div>
                 </div>
@@ -502,20 +502,20 @@ export default function RealDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 lg:mb-8">
           {/* Composite Score */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">BTC G-Score</h3>
-            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{latest?.composite_score ?? '—'}</div>
+            <h3 className="text-label mb-2">BTC G-Score</h3>
+            <div className="text-metric mb-1">{latest?.composite_score ?? '—'}</div>
             
             {/* Risk Band with Colorized Box */}
             <div className="mb-3">
               <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
-                <span className="text-xs text-gray-600">Band:</span>
+                <span className="text-body-small text-gray-600">Band:</span>
                 {latest?.band && (
                   <span className={`px-2 py-1 rounded border text-xs font-medium w-fit ${getBandColorClasses(latest.band.color)}`}>
                     {latest.band.label}
                   </span>
                 )}
               </div>
-              <div className="text-xs text-gray-600 sm:ml-10">
+              <div className="text-body-small text-gray-600 sm:ml-10">
                 {getBandRecommendation(latest?.band)}
               </div>
             </div>
@@ -707,7 +707,7 @@ export default function RealDashboard() {
               <div className="mb-4 pr-16 sm:pr-20"> {/* Add right padding to avoid badge lane */}
                 {/* Header Row - Title and Pillar */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-900">{factor.label}</h3>
+                  <h3 className="text-heading-3">{factor.label}</h3>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium w-fit ${getPillarBadgeClasses(factor.pillar)}`}>
                     {getPillarLabel(factor.pillar)}
                   </span>
@@ -777,7 +777,7 @@ export default function RealDashboard() {
                 </div>
                 
                 {/* Status Info */}
-                <div className="text-sm text-gray-600">
+                <div className="text-body-small text-gray-600">
                   Status: <span className={`font-medium ${
                     factor.status === 'fresh' ? 'text-green-600' : 
                     factor.status === 'stale' ? 'text-yellow-600' : 
@@ -787,12 +787,12 @@ export default function RealDashboard() {
                     {factor.status || staleness.level}
                   </span>
                   {factor.status === 'excluded' && factor.reason && (
-                    <span className="ml-2 text-xs text-gray-500">({factor.reason})</span>
+                    <span className="ml-2 text-body-small text-gray-500">({factor.reason})</span>
                   )}
                 </div>
                 
                 {/* What's Inside Bullets */}
-                <div className="mt-3 text-sm text-gray-600">
+                <div className="mt-3 text-body-small text-gray-600">
                   <div className="font-medium text-gray-700 mb-1">What's inside:</div>
                   <ul className="space-y-1">
                     {subSignals.slice(0, 3).map((signal, idx) => (

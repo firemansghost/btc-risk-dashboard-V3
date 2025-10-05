@@ -13,3 +13,72 @@ body {
   @apply bg-gray-50 text-gray-900 antialiased;
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
+
+/* Typography Scale - Cohesive Hierarchy */
+@layer components {
+  /* Primary Headings - Hero sections, main titles */
+  .text-hero {
+    @apply text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900;
+  }
+  
+  .text-display {
+    @apply text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900;
+  }
+  
+  /* Secondary Headings - Section titles, card headers */
+  .text-heading-1 {
+    @apply text-2xl sm:text-3xl font-bold text-gray-900;
+  }
+  
+  .text-heading-2 {
+    @apply text-xl sm:text-2xl font-semibold text-gray-900;
+  }
+  
+  .text-heading-3 {
+    @apply text-lg sm:text-xl font-semibold text-gray-900;
+  }
+  
+  /* Body Text - Main content */
+  .text-body-large {
+    @apply text-lg font-normal text-gray-700 leading-relaxed;
+  }
+  
+  .text-body {
+    @apply text-base font-normal text-gray-700 leading-relaxed;
+  }
+  
+  .text-body-small {
+    @apply text-sm font-normal text-gray-600 leading-relaxed;
+  }
+  
+  /* Captions and Labels */
+  .text-caption {
+    @apply text-sm font-medium text-gray-500 uppercase tracking-wide;
+  }
+  
+  .text-label {
+    @apply text-xs font-medium text-gray-500 uppercase tracking-wider;
+  }
+  
+  /* Specialized Text */
+  .text-score {
+    @apply text-5xl sm:text-6xl font-bold text-gray-900;
+  }
+  
+  .text-price {
+    @apply text-3xl sm:text-4xl font-bold text-gray-900;
+  }
+  
+  .text-metric {
+    @apply text-2xl sm:text-3xl font-bold text-gray-900;
+  }
+  
+  /* Interactive Text */
+  .text-link {
+    @apply text-sm font-medium text-emerald-600 hover:text-emerald-700 underline transition-colors;
+  }
+  
+  .text-link-large {
+    @apply text-base font-medium text-emerald-600 hover:text-emerald-700 underline transition-colors;
+  }
+}

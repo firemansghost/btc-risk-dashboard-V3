@@ -36,8 +36,8 @@ export default function MethodologyPage() {
     <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Methodology & Risk Factor Breakdown</h1>
-        <p className="text-gray-600 text-sm sm:text-base">
+        <h1 className="text-heading-1 mb-4">Methodology & Risk Factor Breakdown</h1>
+        <p className="text-body text-gray-600">
           A transparent, data-driven approach to Bitcoin risk assessment using five independent pillars.
         </p>
       </div>
@@ -60,9 +60,9 @@ export default function MethodologyPage() {
 
       {/* Overview */}
       <section id="overview" className="mb-12">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Overview</h2>
+        <h2 className="text-heading-2 mb-4">Overview</h2>
         <div className="bg-white rounded-xl border p-6">
-          <p className="text-gray-700 leading-relaxed">
+          <p className="text-body text-gray-700">
             The Bitcoin Risk Dashboard provides a data-driven composite score (0–100) based on a weighted blend of independent pillars. 
             Each pillar captures different aspects of market risk: liquidity conditions, momentum indicators, leverage metrics, 
             social sentiment, and macro overlays. The system is updated daily with transparent, documented data sources and 

@@ -887,8 +887,8 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
   if (!explanation) {
     return (
       <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 ${className}`}>
-        <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Score Insights</h3>
-        <p className="text-sm text-gray-500">Unable to load insights</p>
+        <h3 className="text-caption mb-2">Score Insights</h3>
+        <p className="text-body-small text-gray-500">Unable to load insights</p>
       </div>
     );
   }
@@ -953,8 +953,8 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             <span className="text-2xl">🧠</span>
           </div>
           <div>
-            <h3 className="text-xl font-bold text-gray-900">Score Insights</h3>
-            <p className="text-sm text-gray-600">Comprehensive analysis of Bitcoin's risk landscape</p>
+            <h3 className="text-heading-2">Score Insights</h3>
+            <p className="text-body-small text-gray-600">Comprehensive analysis of Bitcoin's risk landscape</p>
           </div>
         </div>
         <button
@@ -970,13 +970,13 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <span className="text-lg">🎯</span>
-            <span className="text-sm font-medium text-gray-700">G-Score</span>
+            <span className="text-body-small font-medium text-gray-700">G-Score</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className={`text-2xl font-bold ${getScoreColor(explanation.totalScore)}`}>
+            <span className={`text-metric ${getScoreColor(explanation.totalScore)}`}>
               {explanation.totalScore}
             </span>
-            <span className="text-xs text-gray-500">/ 100</span>
+            <span className="text-body-small text-gray-500">/ 100</span>
           </div>
         </div>
         
