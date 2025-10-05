@@ -1,0 +1,28 @@
+{
+  "timestamp": "2025-10-05T21:44:01.432Z",
+  "analysis": {
+    "bundleAnalyzer": "Completed - Check .next/analyze/ for visual reports",
+    "dependencies": {
+      "total": 16,
+      "production": 7,
+      "development": 9,
+      "heavy": [
+        "next",
+        "react",
+        "react-dom",
+        "recharts",
+        "@next/bundle-analyzer",
+        "@types/react",
+        "tailwindcss",
+        "typescript"
+      ]
+    },
+    "recommendations": [
+      "Review bundle analyzer reports in .next/analyze/",
+      "Check for unused dependencies with \"npx depcheck\"",
+      "Consider code splitting for large components",
+      "Optimize imports to reduce bundle size",
+      "Replace heavy dependencies with lighter alternatives"
+    ]
+  }
+}

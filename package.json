@@ -19,25 +19,29 @@
     "etl:backtesting": "node scripts/etl/weekly-backtesting.mjs",
     "og:png": "node scripts/gen-og.mjs",
     "webhook:dev": "node tools/webhook-receiver-dev.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "analyze": "cross-env ANALYZE=true npm run build",
+    "analyze:server": "cross-env BUNDLE_ANALYZE=server npm run build",
+    "analyze:browser": "cross-env BUNDLE_ANALYZE=browser npm run build",
+    "analyze:full": "node scripts/analyze-bundle.mjs"
   },
   "engines": {
     "node": ">=20 <21"
   },
   "dependencies": {
-    "express": "^5.1.0",
+    "autoprefixer": "^10.4.21",
     "next": "^15.5.0",
+    "postcss": "^8.5.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-markdown": "^10.1.0",
     "recharts": "^3.1.2",
     "swr": "^2.3.6"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^15.5.4",
     "@types/node": "24.3.1",
     "@types/react": "^19.0.0",
-    "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.6",
+    "cross-env": "^10.1.0",
     "sharp": "^0.34.4",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.7.0",
