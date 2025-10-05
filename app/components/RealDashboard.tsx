@@ -24,7 +24,7 @@ import SatoshisPerDollarCard from './SatoshisPerDollarCard';
 import RadialGauge from './RadialGauge';
 import AlertBell from './AlertBell';
 import ScoreInsightsCard from './ScoreInsightsCard';
-import SkeletonLoader, { SkeletonDashboard } from './SkeletonLoader';
+import SkeletonLoader, { SkeletonDashboard, SkeletonCard } from './SkeletonLoader';
 import LazyLoader from './LazyLoader';
 import PerformanceMonitor from './PerformanceMonitor';
 
