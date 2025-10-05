@@ -7,6 +7,112 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  
+  // Advanced webpack optimizations
+  webpack: (config, { dev, isServer }) => {
+    // Tree-shaking optimization
+    config.optimization = {
+      ...config.optimization,
+      usedExports: true,
+      sideEffects: false,
+      providedExports: true,
+    };
+
+    // Aggressive code splitting optimization
+    config.optimization.splitChunks = {
+      chunks: 'all',
+      minSize: 10000,
+      maxSize: 100000,
+      cacheGroups: {
+        // React chunks - highest priority
+        react: {
+          test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+          name: 'react',
+          chunks: 'all',
+          priority: 30,
+          enforce: true,
+        },
+        // Next.js chunks
+        nextjs: {
+          test: /[\\/]node_modules[\\/]next[\\/]/,
+          name: 'nextjs',
+          chunks: 'all',
+          priority: 25,
+          enforce: true,
+        },
+        // Chart libraries
+        charts: {
+          test: /[\\/]node_modules[\\/](recharts|d3|chart\.js)[\\/]/,
+          name: 'charts',
+          chunks: 'all',
+          priority: 20,
+          enforce: true,
+        },
+        // UI libraries
+        ui: {
+          test: /[\\/]node_modules[\\/](tailwindcss|@tailwindcss)[\\/]/,
+          name: 'ui',
+          chunks: 'all',
+          priority: 15,
+          enforce: true,
+        },
+        // Other vendor chunks
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all',
+          priority: 10,
+          enforce: true,
+        },
+        // Common chunks
+        common: {
+          name: 'common',
+          minChunks: 2,
+          chunks: 'all',
+          priority: 5,
+          reuseExistingChunk: true,
+          enforce: true,
+        },
+        // Default chunks
+        default: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true,
+          enforce: true,
+        },
+      },
+    };
+
+    // Performance optimization
+    config.performance = {
+      hints: 'warning',
+      maxEntrypointSize: 500000,
+      maxAssetSize: 500000,
+      assetFilter: (assetFilename: string) => {
+        return !assetFilename.endsWith('.map');
+      },
+    };
+
+    // Module optimization
+    config.module.rules.push({
+      test: /\.js$/,
+      sideEffects: false,
+    });
+
+    return config;
+  },
+
+  // Experimental features for better performance
+  experimental: {
+    optimizeCss: true,
+    optimizePackageImports: ['recharts', 'react-icons'],
+  },
+
+  // Compiler optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+
   images: {
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],

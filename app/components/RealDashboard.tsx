@@ -44,20 +44,7 @@ const EtfPerformanceAnalysis = dynamic(() => import('./EtfPerformanceAnalysis'),
   loading: () => <div className="h-32 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center"><div className="spinner spinner-sm"></div></div>,
   ssr: false
 });
-import WeightsLauncher from './WeightsLauncher';
 
-// Dynamic imports for chart components
-const HistoryChart = dynamic(() => import('./HistoryChart'), {
-  loading: () => <div className="h-64 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center"><div className="spinner spinner-lg"></div></div>,
-  ssr: false
-});
-
-const RadialGauge = dynamic(() => import('./RadialGauge'), {
-  loading: () => <div className="h-32 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center"><div className="spinner spinner-sm"></div></div>,
-  ssr: false
-});
-
-// Dynamic imports for heavy card components
 const BtcGoldCard = dynamic(() => import('./BtcGoldCard'), {
   loading: () => <div className="h-32 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center"><div className="spinner spinner-sm"></div></div>,
   ssr: false
@@ -72,6 +59,19 @@ const ScoreInsightsCard = dynamic(() => import('./ScoreInsightsCard'), {
   loading: () => <div className="h-64 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center"><div className="spinner spinner-md"></div></div>,
   ssr: false
 });
+
+// Dynamic imports for chart components
+const HistoryChart = dynamic(() => import('./HistoryChart'), {
+  loading: () => <div className="h-64 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center"><div className="spinner spinner-lg"></div></div>,
+  ssr: false
+});
+
+const RadialGauge = dynamic(() => import('./RadialGauge'), {
+  loading: () => <div className="h-32 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center"><div className="spinner spinner-sm"></div></div>,
+  ssr: false
+});
+
+import WeightsLauncher from './WeightsLauncher';
 
 import AlertBell from './AlertBell';
 import SkeletonLoader, { SkeletonDashboard, SkeletonCard } from './SkeletonLoader';
