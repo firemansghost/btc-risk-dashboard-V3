@@ -1040,6 +1040,230 @@ body {
   }
 }
 
+/* Mobile-First Responsive Design */
+@layer components {
+  /* Touch-Friendly Buttons */
+  .btn-touch {
+    @apply min-h-[44px] min-w-[44px] px-4 py-3 text-base font-medium;
+  }
+  
+  .btn-touch-sm {
+    @apply min-h-[36px] min-w-[36px] px-3 py-2 text-sm;
+  }
+  
+  .btn-touch-lg {
+    @apply min-h-[52px] min-w-[52px] px-6 py-4 text-lg;
+  }
+  
+  /* Mobile Grid System */
+  .mobile-grid-1 {
+    @apply grid grid-cols-1 gap-4;
+  }
+  
+  .mobile-grid-2 {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+  }
+  
+  .mobile-grid-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4;
+  }
+  
+  .mobile-grid-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4;
+  }
+  
+  /* Mobile Spacing */
+  .mobile-padding {
+    @apply px-4 py-4 sm:px-6 sm:py-6;
+  }
+  
+  .mobile-margin {
+    @apply mx-4 my-4 sm:mx-6 sm:my-6;
+  }
+  
+  .mobile-gap {
+    @apply gap-4 sm:gap-6;
+  }
+  
+  /* Collapsible Sections */
+  .collapsible {
+    @apply overflow-hidden transition-all duration-300 ease-in-out;
+  }
+  
+  .collapsible-closed {
+    @apply max-h-0 opacity-0;
+  }
+  
+  .collapsible-open {
+    @apply max-h-screen opacity-100;
+  }
+  
+  .collapsible-trigger {
+    @apply flex items-center justify-between w-full p-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer;
+  }
+  
+  .collapsible-content {
+    @apply p-4 bg-white border-t border-gray-200;
+  }
+  
+  /* Swipe Gestures */
+  .swipe-container {
+    @apply relative overflow-hidden touch-pan-x;
+  }
+  
+  .swipe-item {
+    @apply flex-shrink-0 w-full transition-transform duration-300 ease-out;
+  }
+  
+  .swipe-indicators {
+    @apply flex justify-center space-x-2 mt-4;
+  }
+  
+  .swipe-indicator {
+    @apply w-2 h-2 rounded-full bg-gray-300 transition-colors;
+  }
+  
+  .swipe-indicator-active {
+    @apply bg-emerald-500;
+  }
+  
+  /* Mobile Cards */
+  .mobile-card {
+    @apply card-elevated card-md mobile-padding;
+  }
+  
+  .mobile-card-compact {
+    @apply card-elevated card-sm p-3;
+  }
+  
+  .mobile-card-expanded {
+    @apply card-elevated card-lg mobile-padding;
+  }
+  
+  /* Mobile Typography */
+  .mobile-heading {
+    @apply text-xl font-bold sm:text-2xl;
+  }
+  
+  .mobile-subheading {
+    @apply text-lg font-semibold sm:text-xl;
+  }
+  
+  .mobile-body {
+    @apply text-base sm:text-lg;
+  }
+  
+  .mobile-caption {
+    @apply text-sm sm:text-base;
+  }
+  
+  /* Mobile Navigation */
+  .mobile-nav {
+    @apply fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden;
+  }
+  
+  .mobile-nav-item {
+    @apply flex flex-col items-center justify-center p-2 text-xs font-medium text-gray-600 hover:text-emerald-600 transition-colors;
+  }
+  
+  .mobile-nav-item-active {
+    @apply text-emerald-600;
+  }
+  
+  /* Mobile Modals */
+  .mobile-modal {
+    @apply fixed inset-0 z-50 bg-white md:bg-black md:bg-opacity-50 md:backdrop-blur-sm;
+  }
+  
+  .mobile-modal-content {
+    @apply h-full md:h-auto md:max-h-[90vh] md:rounded-lg md:shadow-xl;
+  }
+  
+  .mobile-modal-header {
+    @apply flex items-center justify-between p-4 border-b border-gray-200 md:rounded-t-lg;
+  }
+  
+  .mobile-modal-body {
+    @apply flex-1 overflow-y-auto p-4;
+  }
+  
+  .mobile-modal-footer {
+    @apply p-4 border-t border-gray-200 md:rounded-b-lg;
+  }
+  
+  /* Mobile Tables */
+  .mobile-table {
+    @apply w-full overflow-x-auto;
+  }
+  
+  .mobile-table-cell {
+    @apply px-3 py-2 text-sm border-b border-gray-200;
+  }
+  
+  .mobile-table-header {
+    @apply mobile-table-cell font-medium bg-gray-50;
+  }
+  
+  /* Mobile Forms */
+  .mobile-form {
+    @apply space-y-4;
+  }
+  
+  .mobile-form-group {
+    @apply space-y-2;
+  }
+  
+  .mobile-form-label {
+    @apply block text-sm font-medium text-gray-700;
+  }
+  
+  .mobile-form-input {
+    @apply w-full px-3 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500;
+  }
+  
+  /* Mobile Charts */
+  .mobile-chart {
+    @apply w-full h-64 sm:h-80 lg:h-96;
+  }
+  
+  .mobile-chart-container {
+    @apply relative w-full overflow-hidden;
+  }
+  
+  /* Mobile Utilities */
+  .mobile-only {
+    @apply block md:hidden;
+  }
+  
+  .desktop-only {
+    @apply hidden md:block;
+  }
+  
+  .mobile-stack {
+    @apply flex flex-col space-y-4;
+  }
+  
+  .mobile-horizontal {
+    @apply flex flex-row space-x-4 overflow-x-auto;
+  }
+  
+  .mobile-center {
+    @apply flex items-center justify-center;
+  }
+  
+  .mobile-full-width {
+    @apply w-full;
+  }
+  
+  .mobile-scroll {
+    @apply overflow-x-auto;
+  }
+  
+  .mobile-no-scroll {
+    @apply overflow-hidden;
+  }
+}
+
 /* Navigation Enhancements */
 @layer components {
   /* Sticky Navigation */

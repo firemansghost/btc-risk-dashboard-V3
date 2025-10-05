@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import SiteFooter from './components/SiteFooter';
 import Navigation from './components/Navigation';
+import MobileBottomNav from './components/MobileBottomNav';
 import GlobalClientErrorBar from './components/GlobalClientErrorBar';
 import { assertEnv } from '@/lib/assertEnv';
 
@@ -99,12 +100,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen antialiased">
         <GlobalClientErrorBar />
         <Navigation />
-        <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-20 md:pb-6">
           <main>
             {children}
           </main>
           <SiteFooter />
         </div>
+        <MobileBottomNav />
       </body>
     </html>
   );

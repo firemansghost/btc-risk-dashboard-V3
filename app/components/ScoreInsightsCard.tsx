@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { calculateContribution, getFactorStaleness, sortFactorsByContribution, getFactorTTL } from '@/lib/factorUtils';
 import { formatFriendlyTimestamp } from '@/lib/dateUtils';
+import MobileCollapsible from './MobileCollapsible';
 
 interface ScoreInsightsCardProps {
   latest: any;
@@ -871,7 +872,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
   if (loading) {
     return (
-      <div className={`card-elevated card-md card-hover chart-container ${className}`}>
+      <div className={`mobile-card chart-container ${className}`}>
         <div className="chart-loading">
           <div className="chart-skeleton-title mb-4"></div>
           <div className="space-y-2">
@@ -885,8 +886,8 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
   }
 
   if (!explanation) {
-    return (
-      <div className={`card-elevated card-md card-hover ${className}`}>
+  return (
+    <div className={`mobile-card ${className}`}>
         <h3 className="text-caption mb-2">Score Insights</h3>
         <p className="text-body-small text-gray-500">Unable to load insights</p>
       </div>
@@ -1098,15 +1099,13 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       </div>
 
       {/* Risk Breakdown Section */}
-      <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 shadow-sm">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="bg-gray-200 p-2 rounded-lg">
-            <span className="text-lg">📊</span>
-          </div>
-          <h4 className="text-base font-semibold text-gray-800">Risk Breakdown</h4>
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+      <MobileCollapsible 
+        title="Risk Breakdown" 
+        icon="📊" 
+        defaultOpen={true}
+        className="mb-6"
+      >
+        <div className="mobile-grid-3 gap-3 text-xs">
           <div className="text-center">
             <div className="text-lg font-bold text-gray-900">
               {explanation.totalScore}
@@ -1140,16 +1139,15 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             <div className="text-gray-500">Current Context</div>
           </div>
         </div>
-      </div>
+      </MobileCollapsible>
 
       {/* Risk Contributors Section */}
-      <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-200 shadow-sm">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="bg-red-200 p-2 rounded-lg">
-            <span className="text-lg">🔴</span>
-          </div>
-          <h4 className="text-base font-semibold text-red-800">Top Risk Contributors</h4>
-        </div>
+      <MobileCollapsible 
+        title="Risk Contributors" 
+        icon="🔴" 
+        badge={explanation.keyDrivers.length}
+        className="mb-6"
+      >
         
         <div className="space-y-2">
           {(() => {
@@ -1251,16 +1249,15 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             ));
           })()}
         </div>
-      </div>
+      </MobileCollapsible>
 
       {/* Risk Mitigators Section */}
-      <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200 shadow-sm">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="bg-green-200 p-2 rounded-lg">
-            <span className="text-lg">🟢</span>
-          </div>
-          <h4 className="text-base font-semibold text-green-800">Top Risk Mitigators</h4>
-        </div>
+      <MobileCollapsible 
+        title="Risk Mitigators" 
+        icon="🟢" 
+        badge={explanation.keyDrivers.filter(f => f.score < 50).length}
+        className="mb-6"
+      >
         
         <div className="space-y-2">
           {(() => {
@@ -1356,7 +1353,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             ));
           })()}
         </div>
-      </div>
+      </MobileCollapsible>
 
       {/* Context Explanation Section */}
       <div className="mb-6 p-5 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200 shadow-sm">

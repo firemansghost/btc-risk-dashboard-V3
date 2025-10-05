@@ -211,11 +211,11 @@ export default function RealDashboard() {
               </div>
               
               {/* Top Row: G-Score Card + Bitcoin Price Card */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 grid-spacing mb-8">
+              <div className="mobile-grid-2 mb-8">
                 {/* Prominent G-Score Card - Unified Vertical Layout */}
                 <div className="card-floating card-md border-2 border-gray-300 ring-1 ring-gray-200 card-hover">
                   <div className="flex items-center justify-between mb-4">
-                    <h1 className="text-caption">
+                    <h1 className="mobile-subheading">
                       Bitcoin G-Score
                     </h1>
                     {(() => {
@@ -499,7 +499,7 @@ export default function RealDashboard() {
         )}
 
         {/* Key Metrics Cards - Balanced 2x2 Layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 grid-spacing mb-6 lg:mb-8">
+        <div className="mobile-grid-2 mb-6 lg:mb-8">
           {/* Composite Score */}
           <div className="card-metric">
             <h3 className="text-label mb-2">BTC G-Score</h3>
@@ -647,7 +647,7 @@ export default function RealDashboard() {
         {/* Factor Cards */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Risk Factor Breakdown</h2>
+            <h2 className="mobile-heading">Risk Factor Breakdown</h2>
             <a 
               href="/methodology#factors" 
               className="text-sm text-blue-600 hover:text-blue-700 font-medium border-b border-blue-200 hover:border-blue-300 transition-colors"
@@ -661,7 +661,7 @@ export default function RealDashboard() {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 grid-spacing mb-6 lg:mb-8">
+        <div className="mobile-grid-2 mb-6 lg:mb-8">
           {sortFactorsByContribution(latest?.factors || []).map((factor: any) => {
             const contribution = calculateContribution(factor.score, factor.weight_pct);
             const factorTTL = getFactorTTL(factor.key);
