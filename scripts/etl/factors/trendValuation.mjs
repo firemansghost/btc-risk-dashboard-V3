@@ -1,5 +1,158 @@
 // scripts/etl/factors/trendValuation.mjs
 // Trend & Valuation factor with true BMSB calculation and unified Coinbase price source
+// Enhanced with caching, incremental updates, and parallel processing
+
+import { promises as fs } from 'node:fs';
+import { join } from 'node:path';
+
+// Cache configuration
+const CACHE_DIR = '../../public/data/cache/trend_valuation';
+const CACHE_TTL_HOURS = 24; // Cache for 24 hours
+const CACHE_FILE = 'trend_valuation_cache.json';
+
+/**
+ * Load cached Trend & Valuation data
+ * @returns {Object|null} Cached data or null
+ */
+async function loadTrendValuationCache() {
+  try {
+    const cachePath = join(CACHE_DIR, CACHE_FILE);
+    const cacheData = await fs.readFile(cachePath, 'utf8');
+    const parsed = JSON.parse(cacheData);
+    
+    // Check if cache is still valid
+    const cacheAge = Date.now() - new Date(parsed.cachedAt).getTime();
+    const maxAge = CACHE_TTL_HOURS * 60 * 60 * 1000;
+    
+    if (cacheAge < maxAge) {
+      console.log(`Trend & Valuation: Using cached data (${Math.round(cacheAge / (60 * 1000))} minutes old)`);
+      return parsed;
+    } else {
+      console.log(`Trend & Valuation: Cache expired (${Math.round(cacheAge / (60 * 60 * 1000))} hours old)`);
+      return null;
+    }
+  } catch (error) {
+    console.log(`Trend & Valuation: No valid cache found: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Save Trend & Valuation data to cache
+ * @param {Object} data - Data to cache
+ */
+async function saveTrendValuationCache(data) {
+  try {
+    await fs.mkdir(CACHE_DIR, { recursive: true });
+    const cachePath = join(CACHE_DIR, CACHE_FILE);
+    
+    const cacheData = {
+      ...data,
+      cachedAt: new Date().toISOString(),
+      version: '1.0.0'
+    };
+    
+    await fs.writeFile(cachePath, JSON.stringify(cacheData, null, 2));
+    console.log(`Trend & Valuation: Cached data saved to ${cachePath}`);
+  } catch (error) {
+    console.warn(`Trend & Valuation: Failed to save cache: ${error.message}`);
+  }
+}
+
+/**
+ * Check if price data has changed since last cache
+ * @param {Array} currentCandles - Current price data
+ * @param {Object} cachedData - Cached data
+ * @returns {boolean} True if data has changed
+ */
+function hasPriceDataChanged(currentCandles, cachedData) {
+  if (!cachedData || !cachedData.candles || !cachedData.candles.length) {
+    return true;
+  }
+  
+  const currentLatest = currentCandles[currentCandles.length - 1];
+  const cachedLatest = cachedData.candles[cachedData.candles.length - 1];
+  
+  // Check if latest candle has changed
+  return !currentLatest || !cachedLatest || 
+         currentLatest.timestamp !== cachedLatest.timestamp ||
+         currentLatest.close !== cachedLatest.close;
+}
+
+/**
+ * Calculate BMSB component in parallel
+ * @param {Array} weeklyCloses - Weekly close data
+ * @returns {Promise<Object>} BMSB calculation result
+ */
+async function calculateBMSBComponent(weeklyCloses) {
+  return new Promise((resolve) => {
+    // Use setImmediate for non-blocking execution
+    setImmediate(() => {
+      const bmsb = calculateBMSB(weeklyCloses);
+      resolve({
+        component: 'bmsb',
+        data: bmsb,
+        weight: 0.6
+      });
+    });
+  });
+}
+
+/**
+ * Calculate Mayer Multiple component in parallel
+ * @param {Array} dailyCloses - Daily close data
+ * @param {number} currentPrice - Current price
+ * @returns {Promise<Object>} Mayer Multiple calculation result
+ */
+async function calculateMayerComponent(dailyCloses, currentPrice) {
+  return new Promise((resolve) => {
+    setImmediate(() => {
+      const sma200Series = sma(dailyCloses, 200);
+      const latestSMA200 = sma200Series[sma200Series.length - 1];
+      const mayerMultiple = currentPrice / latestSMA200;
+      
+      // Calculate percentile for scoring
+      const mayerSeries = dailyCloses.map((price, i) => 
+        i >= 199 ? price / sma200Series[i - 199] : NaN
+      ).filter(Number.isFinite);
+      
+      const prMayer = percentileRank(mayerSeries, mayerMultiple);
+      const sMayer = Number.isFinite(prMayer) ? riskFromPercentile(prMayer, { invert: true, k: 3 }) : null;
+      
+      resolve({
+        component: 'mayer',
+        data: { mayerMultiple, latestSMA200, prMayer },
+        score: sMayer,
+        weight: 0.3
+      });
+    });
+  });
+}
+
+/**
+ * Calculate RSI component in parallel
+ * @param {Array} weeklyClosePrices - Weekly close prices
+ * @returns {Promise<Object>} RSI calculation result
+ */
+async function calculateRSIComponent(weeklyClosePrices) {
+  return new Promise((resolve) => {
+    setImmediate(() => {
+      const weeklyRSI = calculateRSI(weeklyClosePrices, 14);
+      const latestWeeklyRSI = weeklyRSI[weeklyRSI.length - 1];
+      
+      // Calculate percentile for scoring
+      const prRsi = percentileRank(weeklyRSI, latestWeeklyRSI);
+      const sRsi = Number.isFinite(prRsi) ? riskFromPercentile(prRsi, { invert: false, k: 3 }) : null;
+      
+      resolve({
+        component: 'rsi',
+        data: { latestWeeklyRSI, prRsi },
+        score: sRsi,
+        weight: 0.1
+      });
+    });
+  });
+}
 
 /**
  * Simple Moving Average calculation
@@ -297,11 +450,15 @@ function calculateBMSB(weeklyCloses) {
 
 /**
  * Compute Trend & Valuation factor with true BMSB and unified Coinbase price source
+ * Enhanced with caching, incremental updates, and parallel processing
  * @param {number} dailyClose - Daily close price from main ETL (for consistency)
  * @returns {Object} Factor computation result
  */
 export async function computeTrendValuation(dailyClose = null) {
   try {
+    // Check for cached data first
+    const cachedData = await loadTrendValuationCache();
+    
     // Load price history from unified CSV (Alpha Vantage backfill + Coinbase primary)
     const { candles, provenance } = await loadPriceHistoryForTrend();
     
@@ -314,25 +471,31 @@ export async function computeTrendValuation(dailyClose = null) {
       };
     }
 
+    // Check if we can use cached data (incremental update)
+    const dataChanged = hasPriceDataChanged(candles, cachedData);
+    
+    if (cachedData && !dataChanged) {
+      console.log('Trend & Valuation: Using cached calculations (no price data changes)');
+      return {
+        score: cachedData.score,
+        reason: "success_cached",
+        lastUpdated: cachedData.lastUpdated,
+        details: cachedData.details,
+        bmsb: cachedData.bmsb,
+        weeklyClose: cachedData.weeklyClose,
+        weekEnd: cachedData.weekEnd,
+        sma50wDiagnostic: cachedData.sma50wDiagnostic,
+        provenance: cachedData.provenance || [provenance]
+      };
+    }
+
+    console.log('Trend & Valuation: Computing fresh calculations (price data changed or no cache)');
+
     // Extract daily closes for calculations
     const dailyCloses = candles.map(c => c.close);
     
     // Use provided daily close for consistency, or fall back to latest from candles
     const currentPrice = dailyClose || dailyCloses[dailyCloses.length - 1];
-    
-    // Calculate 200-day SMA for Mayer Multiple
-    const sma200Series = sma(dailyCloses, 200);
-    if (sma200Series.length === 0) {
-      return { 
-        score: null, 
-        reason: "sma200_calculation_failed",
-        lastUpdated: new Date().toISOString(),
-        provenance: [provenance]
-      };
-    }
-    
-    const latestSMA200 = sma200Series[sma200Series.length - 1];
-    const mayerMultiple = currentPrice / latestSMA200;
     
     // Create weekly closes using ISO week boundaries
     const weeklyCloses = createWeeklyCloses(candles);
@@ -346,11 +509,28 @@ export async function computeTrendValuation(dailyClose = null) {
       };
     }
 
-    // Calculate true BMSB (20-week SMA + 21-week EMA)
-    const bmsb = calculateBMSB(weeklyCloses);
+    // Extract weekly close prices for RSI calculation
+    const weeklyClosePrices = weeklyCloses.map(w => w.close);
+
+    // 🚀 PARALLEL PROCESSING: Calculate all components simultaneously
+    console.log('Trend & Valuation: Computing components in parallel...');
+    const startTime = Date.now();
+    
+    const [bmsbResult, mayerResult, rsiResult] = await Promise.all([
+      calculateBMSBComponent(weeklyCloses),
+      calculateMayerComponent(dailyCloses, currentPrice),
+      calculateRSIComponent(weeklyClosePrices)
+    ]);
+    
+    const parallelTime = Date.now() - startTime;
+    console.log(`Trend & Valuation: Parallel calculations completed in ${parallelTime}ms`);
+
+    // Extract results
+    const bmsb = bmsbResult.data;
+    const mayerData = mayerResult.data;
+    const rsiData = rsiResult.data;
     
     // Calculate 50-week SMA diagnostic (display-only, not part of score)
-    const weeklyClosePrices = weeklyCloses.map(w => w.close);
     let sma50wDiagnostic = null;
     
     if (weeklyClosePrices.length >= 50) {
@@ -377,32 +557,11 @@ export async function computeTrendValuation(dailyClose = null) {
       };
     }
     
-    // Calculate Weekly RSI(14) using weekly closes
-    const weeklyRSI = calculateRSI(weeklyClosePrices, 14);
-    
-    if (weeklyRSI.length === 0) {
-      return { 
-        score: null, 
-        reason: "rsi_calculation_failed",
-        lastUpdated: new Date().toISOString(),
-        provenance: [provenance]
-      };
-    }
-
-    const latestWeeklyRSI = weeklyRSI[weeklyRSI.length - 1];
+    // Extract component scores from parallel results
+    const sMayer = mayerResult.score;
+    const sRsi = rsiResult.score;
+    const latestWeeklyRSI = rsiData.latestWeeklyRSI;
     const latestWeeklyClose = weeklyClosePrices[weeklyClosePrices.length - 1];
-
-    // Calculate percentile ranks for scoring
-    const mayerSeries = dailyCloses.map((price, i) => 
-      i >= 199 ? price / sma200Series[i - 199] : NaN
-    ).filter(Number.isFinite);
-    
-    const prMayer = percentileRank(mayerSeries, mayerMultiple);
-    const prRsi = percentileRank(weeklyRSI, latestWeeklyRSI);
-
-    // Calculate individual component scores
-    const sMayer = Number.isFinite(prMayer) ? riskFromPercentile(prMayer, { invert: true, k: 3 }) : null;
-    const sRsi = Number.isFinite(prRsi) ? riskFromPercentile(prRsi, { invert: false, k: 3 }) : null;
     
     // BMSB score calculation
     let sBmsb = null;
@@ -449,7 +608,7 @@ export async function computeTrendValuation(dailyClose = null) {
                        'Coinbase (daily close)';
     
     const details = [
-      { label: "Price vs 200-day SMA (Mayer)", value: mayerMultiple.toFixed(2) },
+      { label: "Price vs 200-day SMA (Mayer)", value: mayerData.mayerMultiple.toFixed(2) },
       { 
         label: "Bull Market Support Band", 
         value: bmsb.status === 'insufficient_history' ? 'Insufficient history' :
@@ -458,10 +617,11 @@ export async function computeTrendValuation(dailyClose = null) {
       },
       { label: "Weekly momentum (RSI)", value: latestWeeklyRSI.toFixed(1) },
       { label: "BTC Price (daily close)", value: `$${currentPrice.toLocaleString()}` },
-      { label: "200-day SMA", value: `$${latestSMA200.toLocaleString()}` },
+      { label: "200-day SMA", value: `$${mayerData.latestSMA200.toLocaleString()}` },
       { label: "Weekly Close (for BMSB)", value: `$${latestWeeklyClose.toLocaleString()}` },
       { label: "Price source", value: sourceInfo },
-      { label: "Historical data points", value: `${candles.length} days` }
+      { label: "Historical data points", value: `${candles.length} days` },
+      { label: "Calculation method", value: `Parallel processing (${parallelTime}ms)` }
     ];
 
     // Add BMSB band details if available
@@ -488,7 +648,7 @@ export async function computeTrendValuation(dailyClose = null) {
       value: `BMSB: ${sBmsb || 'N/A'}, Mayer: ${sMayer || 'N/A'}, RSI: ${sRsi || 'N/A'}`
     });
 
-    return {
+    const result = {
       score,
       reason: "success",
       lastUpdated: new Date().toISOString(),
@@ -497,8 +657,15 @@ export async function computeTrendValuation(dailyClose = null) {
       weeklyClose: latestWeeklyClose,
       weekEnd: weeklyCloses[weeklyCloses.length - 1].weekEnd,
       sma50wDiagnostic,
-      provenance: [provenance]
+      provenance: [provenance],
+      candles, // Include candles for cache comparison
+      parallelTime // Include timing info
     };
+
+    // Save to cache for future use
+    await saveTrendValuationCache(result);
+
+    return result;
 
   } catch (error) {
     return { 
