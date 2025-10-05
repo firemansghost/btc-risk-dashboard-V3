@@ -1,7 +1,7 @@
 {
   "ok": true,
   "version": "v3.1.0",
-  "as_of_utc": "2025-10-05T02:26:00.010Z",
+  "as_of_utc": "2025-10-05T02:27:37.249Z",
   "composite_score": 62,
   "composite_raw": 62,
   "band": {
@@ -25,7 +25,7 @@
       "score": 53,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-05T02:25:57.342Z",
+      "last_utc": "2025-10-05T02:27:34.784Z",
       "details": [
         {
           "label": "Price vs 200-day SMA (Mayer)",
@@ -41,15 +41,15 @@
         },
         {
           "label": "BTC Price (daily close)",
-          "value": "$122,553.41"
+          "value": "$122,639.69"
         },
         {
           "label": "200-day SMA",
-          "value": "$105,658.169"
+          "value": "$105,658.601"
         },
         {
           "label": "Weekly Close (for BMSB)",
-          "value": "$122,553.41"
+          "value": "$122,639.69"
         },
         {
           "label": "Price source",
@@ -61,15 +61,15 @@
         },
         {
           "label": "Calculation method",
-          "value": "Parallel processing (4ms)"
+          "value": "Parallel processing (5ms)"
         },
         {
           "label": "BMSB (20W SMA / 21W EMA)",
-          "value": "$112,492.867 / $110,627.566"
+          "value": "$112,497.18 / $110,635.41"
         },
         {
           "label": "50-week SMA diagnostic",
-          "value": "Above 50W SMA ($100,030.646)"
+          "value": "Above 50W SMA ($100,032.372)"
         },
         {
           "label": "Component Scores",
@@ -77,8 +77,8 @@
         }
       ],
       "sma50wDiagnostic": {
-        "sma50": 100030.646,
-        "currentClose": 122553.41,
+        "sma50": 100032.3716,
+        "currentClose": 122639.69,
         "isBelow": false,
         "consecutiveWeeksBelow": 0,
         "showWarning": false
@@ -126,7 +126,7 @@
       "score": 82,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-05T02:25:57.304Z",
+      "last_utc": "2025-10-05T02:27:34.629Z",
       "details": [
         {
           "label": "Total Market Cap",
@@ -174,7 +174,7 @@
       "weight_pct": 10,
       "score": 43,
       "status": "fresh",
-      "reason": "fresh (34.4h old)",
+      "reason": "fresh (34.5h old)",
       "last_utc": "2025-10-03T16:00:00.000Z",
       "details": [
         {
@@ -7181,7 +7181,7 @@
       "weight_pct": 10,
       "score": 62,
       "status": "fresh",
-      "reason": "fresh (98.4h old)",
+      "reason": "fresh (98.5h old)",
       "last_utc": "2025-10-01T00:00:00.000Z",
       "details": [
         {
@@ -7210,7 +7210,7 @@
         },
         {
           "label": "Fetch Time",
-          "value": "574ms"
+          "value": "451ms"
         },
         {
           "label": "Component Scores",
@@ -7231,7 +7231,7 @@
       "score": 73,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-05T02:25:57.693Z",
+      "last_utc": "2025-10-05T02:27:35.323Z",
       "details": [
         {
           "label": "Current Funding Rate",
@@ -7280,7 +7280,7 @@
       "score": 69,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-05T02:25:57.892Z",
+      "last_utc": "2025-10-05T02:27:35.332Z",
       "details": [
         {
           "label": "Macro Regime",
@@ -7308,7 +7308,7 @@
         },
         {
           "label": "Fetch Time",
-          "value": "579ms"
+          "value": "696ms"
         },
         {
           "label": "Component Scores",
@@ -7329,7 +7329,7 @@
       "score": 55,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-05T02:25:57.344Z",
+      "last_utc": "2025-10-05T02:27:34.787Z",
       "details": [
         {
           "label": "Search Attention",
@@ -7353,7 +7353,7 @@
         },
         {
           "label": "Fetch Time",
-          "value": "27ms"
+          "value": "145ms"
         },
         {
           "label": "Data Sources",
@@ -7371,8 +7371,8 @@
     }
   ],
   "btc": {
-    "spot_usd": 122553.41,
-    "as_of_utc": "2025-10-05T02:26:00.010Z",
+    "spot_usd": 122639.69,
+    "as_of_utc": "2025-10-05T02:27:37.249Z",
     "source": "Coinbase"
   },
   "provenance": [],
@@ -7385,7 +7385,7 @@
   "cycle_adjustment": {
     "adj_pts": 0,
     "residual_z": null,
-    "last_utc": "2025-10-05T02:26:00.008Z",
+    "last_utc": "2025-10-05T02:27:37.247Z",
     "source": "ETL fallback",
     "reason": "insufficient_historical_data"
   },
@@ -7394,9 +7394,9 @@
     "r_1d": 0,
     "sigma": 0,
     "z": 0,
-    "ref_close": 122553.41,
-    "spot": 122553.41,
-    "last_utc": "2025-10-05T02:26:00.008Z",
+    "ref_close": 122639.69,
+    "spot": 122639.69,
+    "last_utc": "2025-10-05T02:27:37.247Z",
     "source": "ETL fallback",
     "reason": "insufficient_historical_data"
   },
