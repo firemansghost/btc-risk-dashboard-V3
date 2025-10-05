@@ -370,11 +370,11 @@ export default function RealDashboard() {
                     }}
                     disabled={loading || refreshing}
                     aria-busy={refreshing}
-                    className="btn-primary px-3 sm:px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm sm:text-base btn-hover btn-active"
+                    className="btn btn-solid btn-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                   >
                   {refreshing ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
+                      <div className="spinner spinner-sm mr-1"></div>
                       <span>Refreshing…</span>
                     </>
                   ) : (
@@ -757,19 +757,19 @@ export default function RealDashboard() {
                   <div className="flex items-center space-x-2 sm:space-x-3">
                     <button
                       onClick={() => openHistoryModal({key: factor.key, label: factor.label})}
-                      className="text-sm text-primary hover:text-primary-hover font-medium px-2 py-1 rounded hover:bg-emerald-50 transition-smooth focus-ring"
+                      className="btn btn-sm btn-ghost"
                     >
                       History
                     </button>
                     <button
                       onClick={() => openEnhancedDetails({key: factor.key, label: factor.label})}
-                      className="text-sm text-accent hover:text-accent-hover font-medium px-2 py-1 rounded hover:bg-violet-50 transition-smooth focus-ring"
+                      className="btn btn-sm btn-accent"
                     >
                       Enhanced Details
                     </button>
                     <a 
                       href="/methodology" 
-                      className="text-sm text-primary hover:text-primary-hover font-medium px-2 py-1 rounded hover:bg-emerald-50 transition-smooth focus-ring"
+                      className="btn btn-sm btn-ghost"
                     >
                       What's this?
                     </a>

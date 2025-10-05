@@ -331,7 +331,7 @@ export default function MethodologyPage() {
           <div className="mt-4">
             <button
               onClick={() => window.open('/api/config', '_blank')}
-              className="btn-primary px-4 py-2 rounded-lg btn-hover btn-active focus-ring"
+              className="btn btn-solid btn-lg"
             >
               View Current Config
             </button>

@@ -959,7 +959,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         </div>
         <button
           onClick={() => setExpanded(!expanded)}
-          className="px-3 py-1.5 text-xs font-medium text-accent bg-violet-50 hover:bg-violet-100 rounded-lg transition-smooth border border-violet-200 focus-ring"
+          className="btn btn-sm btn-accent"
         >
           {expanded ? 'Show Less' : 'Show More'}
         </button>
