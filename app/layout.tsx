@@ -5,6 +5,8 @@ import SiteFooter from './components/SiteFooter';
 import Navigation from './components/Navigation';
 import MobileBottomNav from './components/MobileBottomNav';
 import GlobalClientErrorBar from './components/GlobalClientErrorBar';
+import OfflineFallback, { OfflineIndicator } from './components/OfflineFallback';
+import ServiceWorkerProvider from './components/ServiceWorkerProvider';
 import { assertEnv } from '@/lib/assertEnv';
 
 const inter = Inter({ 
@@ -98,15 +100,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-screen antialiased">
-        <GlobalClientErrorBar />
-        <Navigation />
-        <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-20 md:pb-6">
-          <main>
-            {children}
-          </main>
-          <SiteFooter />
-        </div>
-        <MobileBottomNav />
+        <ServiceWorkerProvider>
+          <OfflineFallback>
+            <GlobalClientErrorBar />
+            <Navigation />
+            <OfflineIndicator />
+            <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-20 md:pb-6">
+              <main>
+                {children}
+              </main>
+              <SiteFooter />
+            </div>
+            <MobileBottomNav />
+          </OfflineFallback>
+        </ServiceWorkerProvider>
       </body>
     </html>
   );
