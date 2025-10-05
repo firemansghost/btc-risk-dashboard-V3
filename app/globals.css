@@ -1040,6 +1040,117 @@ body {
   }
 }
 
+/* Navigation Enhancements */
+@layer components {
+  /* Sticky Navigation */
+  .nav-sticky {
+    @apply sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 transition-all duration-300;
+  }
+  
+  .nav-sticky-scrolled {
+    @apply bg-white/98 shadow-sm;
+  }
+  
+  /* Mobile Navigation */
+  .nav-mobile-menu {
+    @apply md:hidden border-t border-gray-200 py-4 space-y-1;
+  }
+  
+  .nav-mobile-item {
+    @apply flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors;
+  }
+  
+  .nav-mobile-item-active {
+    @apply bg-emerald-50 text-emerald-700;
+  }
+  
+  .nav-mobile-item-inactive {
+    @apply text-gray-600 hover:text-gray-900 hover:bg-gray-50;
+  }
+  
+  /* Breadcrumbs */
+  .breadcrumb {
+    @apply flex items-center space-x-2 text-sm text-gray-500;
+  }
+  
+  .breadcrumb-item {
+    @apply hover:text-gray-700 transition-colors;
+  }
+  
+  .breadcrumb-item-current {
+    @apply text-gray-900 font-medium;
+  }
+  
+  .breadcrumb-item-inactive {
+    @apply text-gray-500;
+  }
+  
+  .breadcrumb-separator {
+    @apply w-4 h-4 mx-2 text-gray-400;
+  }
+  
+  /* Search Modal */
+  .search-modal-backdrop {
+    @apply fixed inset-0 bg-black/50 backdrop-blur-sm;
+  }
+  
+  .search-modal-container {
+    @apply relative min-h-screen flex items-start justify-center p-4 pt-20;
+  }
+  
+  .search-modal-content {
+    @apply relative w-full max-w-2xl;
+  }
+  
+  .search-input {
+    @apply w-full px-4 py-3 pl-12 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500;
+  }
+  
+  .search-results {
+    @apply max-h-96 overflow-y-auto divide-y divide-gray-100;
+  }
+  
+  .search-result-item {
+    @apply block p-4 hover:bg-gray-50 transition-colors;
+  }
+  
+  .search-result-item-selected {
+    @apply bg-emerald-50;
+  }
+  
+  .search-result-icon {
+    @apply text-2xl;
+  }
+  
+  .search-result-content {
+    @apply flex-1 min-w-0;
+  }
+  
+  .search-result-title {
+    @apply text-sm font-medium text-gray-900 truncate;
+  }
+  
+  .search-result-category {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800;
+  }
+  
+  .search-result-description {
+    @apply mt-1 text-sm text-gray-500;
+  }
+  
+  .search-footer {
+    @apply p-4 border-t border-gray-200 bg-gray-50;
+  }
+  
+  .search-footer-help {
+    @apply flex items-center justify-between text-xs text-gray-500;
+  }
+  
+  .search-footer-shortcuts {
+    @apply flex items-center space-x-4;
+  }
+}
+
 /* Component Library & Standardization */
 @layer components {
   /* Button Variants */

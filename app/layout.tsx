@@ -98,8 +98,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen antialiased">
         <GlobalClientErrorBar />
+        <Navigation />
         <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-          <Navigation />
           <main>
             {children}
           </main>
