@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-10-05T02:18:06.462Z",
+  "timestamp": "2025-10-05T02:26:00.147Z",
   "sources": [
     {
       "source": "blockchain_info",
@@ -13,7 +13,7 @@
           "url": "https://api.blockchain.info/charts/mempool-size?timespan=7days&format=json",
           "status": "success",
           "lastUpdate": "2025-09-30T17:45:00.000Z",
-          "stalenessHours": 104.55224027777778,
+          "stalenessHours": 104.68358444444445,
           "error": null
         },
         {
@@ -21,13 +21,13 @@
           "url": "https://api.blockchain.info/charts/transaction-fees?timespan=7days&format=json",
           "status": "success",
           "lastUpdate": "2025-09-29T00:00:00.000Z",
-          "stalenessHours": 146.302385,
+          "stalenessHours": 146.43372694444443,
           "error": null
         }
       ],
       "alerts": [
-        "⚠️ mempool-size: Data is 104.6h old (max: 48h)",
-        "⚠️ transaction-fees: Data is 146.3h old (max: 48h)",
+        "⚠️ mempool-size: Data is 104.7h old (max: 48h)",
+        "⚠️ transaction-fees: Data is 146.4h old (max: 48h)",
         "❌ fees-usd: HTTP 404"
       ]
     },
