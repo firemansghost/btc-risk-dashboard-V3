@@ -2266,3 +2266,135 @@ body {
     @apply h-16 w-16 text-lg;
   }
 }
+
+/* ========================================
+   GLASSMORPHISM EFFECTS - Stage 1
+   ======================================== */
+
+/* Glassmorphism Base Classes */
+@layer components {
+  /* Primary Glassmorphism Effects */
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+  
+  .glass-sm {
+    @apply bg-white/5 backdrop-blur-sm border border-white/10;
+  }
+  
+  .glass-md {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+  
+  .glass-lg {
+    @apply bg-white/15 backdrop-blur-lg border border-white/25;
+  }
+  
+  .glass-xl {
+    @apply bg-white/20 backdrop-blur-xl border border-white/30;
+  }
+  
+  /* Glassmorphism with Color Tints */
+  .glass-blue {
+    @apply bg-blue-500/10 backdrop-blur-md border border-blue-500/20;
+  }
+  
+  .glass-green {
+    @apply bg-green-500/10 backdrop-blur-md border border-green-500/20;
+  }
+  
+  .glass-purple {
+    @apply bg-purple-500/10 backdrop-blur-md border border-purple-500/20;
+  }
+  
+  .glass-amber {
+    @apply bg-amber-500/10 backdrop-blur-md border border-amber-500/20;
+  }
+  
+  .glass-red {
+    @apply bg-red-500/10 backdrop-blur-md border border-red-500/20;
+  }
+  
+  /* Glassmorphism with Dark Backgrounds */
+  .glass-dark {
+    @apply bg-black/10 backdrop-blur-md border border-black/20;
+  }
+  
+  .glass-dark-sm {
+    @apply bg-black/5 backdrop-blur-sm border border-black/10;
+  }
+  
+  .glass-dark-md {
+    @apply bg-black/10 backdrop-blur-md border border-black/20;
+  }
+  
+  .glass-dark-lg {
+    @apply bg-black/15 backdrop-blur-lg border border-black/25;
+  }
+  
+  .glass-dark-xl {
+    @apply bg-black/20 backdrop-blur-xl border border-black/30;
+  }
+  
+  /* Glassmorphism Interactive States */
+  .glass-hover {
+    @apply transition-all duration-300 hover:bg-white/20 hover:backdrop-blur-lg hover:border-white/30;
+  }
+  
+  .glass-focus {
+    @apply focus:bg-white/20 focus:backdrop-blur-lg focus:border-white/30 focus:ring-2 focus:ring-white/30;
+  }
+  
+  .glass-active {
+    @apply active:bg-white/25 active:backdrop-blur-xl active:border-white/35;
+  }
+  
+  /* Glassmorphism with Shadows */
+  .glass-shadow {
+    @apply shadow-lg shadow-black/10;
+  }
+  
+  .glass-shadow-lg {
+    @apply shadow-xl shadow-black/15;
+  }
+  
+  .glass-shadow-xl {
+    @apply shadow-2xl shadow-black/20;
+  }
+  
+  /* Glassmorphism Modals */
+  .glass-modal {
+    @apply glass-lg glass-shadow-xl rounded-xl;
+  }
+  
+  .glass-modal-backdrop {
+    @apply fixed inset-0 bg-black/20 backdrop-blur-sm;
+  }
+  
+  /* Glassmorphism Navigation */
+  .glass-nav {
+    @apply glass-md glass-shadow backdrop-blur-md;
+  }
+  
+  .glass-nav-sticky {
+    @apply glass-lg glass-shadow-lg backdrop-blur-lg;
+  }
+  
+  /* Glassmorphism Cards */
+  .glass-card {
+    @apply glass-sm glass-shadow rounded-lg;
+  }
+  
+  .glass-card-hover {
+    @apply glass-card glass-hover;
+  }
+  
+  /* Glassmorphism Overlays */
+  .glass-overlay {
+    @apply glass-dark-md glass-shadow-lg;
+  }
+  
+  .glass-overlay-light {
+    @apply glass-md glass-shadow-lg;
+  }
+}

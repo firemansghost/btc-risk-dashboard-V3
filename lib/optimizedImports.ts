@@ -23,7 +23,7 @@ export function createOptimizedImport<T = ComponentType<any>>(
     dashboard: DashboardLoadingFallback,
   }[options.type];
 
-  return dynamic(importFn, {
+  return dynamic(importFn as any, {
     loading: loadingFallback,
     ssr: false,
     // Add priority-based loading
@@ -77,7 +77,7 @@ export const createBundleSplitImport = <T = ComponentType<any>>(
   // Create a webpack chunk name for better bundle splitting
   const webpackChunkName = `chunk-${chunkName}`;
   
-  return dynamic(importFn, {
+  return dynamic(importFn as any, {
     loading: {
       modal: ModalLoadingFallback,
       card: CardLoadingFallback,

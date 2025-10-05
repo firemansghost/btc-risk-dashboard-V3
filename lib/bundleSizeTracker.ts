@@ -287,14 +287,14 @@ export class BundleSizeTracker {
   }
 
   // Generate optimization recommendations
-  private generateRecommendations(): void {
+  private generateRecommendations(): string[] {
     const latest = this.metrics[this.metrics.length - 1];
-    if (!latest) return;
+    if (!latest) return [];
 
     const recommendations: string[] = [];
 
     // Bundle size recommendations
-    if (latest.totalSize > this.thresholds.totalSize.target) {
+    if (latest.totalSize > this.thresholds.totalSize.warning) {
       recommendations.push('Consider implementing more aggressive code splitting');
       recommendations.push('Review and remove unused dependencies');
       recommendations.push('Optimize images and assets');
@@ -317,6 +317,8 @@ export class BundleSizeTracker {
 
     // Store recommendations (would be stored in a recommendations property)
     console.log('Bundle optimization recommendations:', recommendations);
+    
+    return recommendations;
   }
 
   // Generate bundle size history report
@@ -366,15 +368,7 @@ export class BundleSizeTracker {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
-  private analyzeTrends(): any {
-    // Would implement actual trend analysis
-    return {};
-  }
 
-  private generateRecommendations(): string[] {
-    // Would implement actual recommendation generation
-    return [];
-  }
 }
 
 // Global bundle size tracker instance

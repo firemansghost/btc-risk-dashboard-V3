@@ -22,13 +22,36 @@ export interface PerformanceThresholds {
   bundleSize: {
     warning: number;
     error: number;
-  critical: number;
-  target: number;
-  ideal: number;
-  current: number;
-  trend: 'improving' | 'stable' | 'degrading';
-  change: number;
-  changePercent: number;
+    critical: number;
+    target: number;
+    ideal: number;
+    current: number;
+    trend: 'improving' | 'stable' | 'degrading';
+    change: number;
+    changePercent: number;
+  };
+  loadTime: {
+    warning: number;
+    error: number;
+    critical: number;
+    target: number;
+    ideal: number;
+    current: number;
+    trend: 'improving' | 'stable' | 'degrading';
+    change: number;
+    changePercent: number;
+  };
+  memoryUsage: {
+    warning: number;
+    error: number;
+    critical: number;
+    target: number;
+    ideal: number;
+    current: number;
+    trend: 'improving' | 'stable' | 'degrading';
+    change: number;
+    changePercent: number;
+  };
 }
 
 export interface RegressionAlert {
