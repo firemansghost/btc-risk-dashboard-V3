@@ -47,282 +47,136 @@ export default function MethodologyPage() {
           <a href="#g-score" className="text-link link-hover link-focus">BTC G-Score</a>
           <a href="#bands" className="text-link link-hover link-focus">Risk Bands</a>
           <a href="#factors" className="text-link link-hover link-focus">Risk Factors</a>
-          <a href="#weights" className="text-link link-hover link-focus">Weights</a>
+          <a href="#calculation" className="text-link link-hover link-focus">Calculation</a>
+          <a href="#interactive" className="text-link link-hover link-focus">Interactive Example</a>
+          <a href="#disclaimer" className="text-link link-hover link-focus">Disclaimer</a>
         </nav>
       </div>
 
-      {/* Overview Section */}
-      <section id="overview" className="section-spacing">
-        <h2 className="text-heading-2 mb-4">Overview</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card-elevated">
-            <h3 className="text-heading-3 mb-3">Five Pillars of Risk</h3>
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <main className="lg:col-span-2 space-y-10">
+          {/* Overview */}
+          <section id="overview" className="card-section">
+            <h2 className="text-heading-2 mb-4">Overview</h2>
             <p className="text-body mb-4">
-              Our methodology evaluates Bitcoin risk across five independent pillars, each contributing to a composite G-Score.
+              The Bitcoin Risk Dashboard provides a comprehensive, data-driven assessment of Bitcoin's market health and risk profile. Our methodology is built upon five independent pillars, each representing a critical aspect of Bitcoin's ecosystem.
             </p>
-            <ul className="list-disc list-inside space-y-2 text-body">
-              <li><strong>Momentum/Valuation:</strong> Technical indicators and valuation metrics</li>
-              <li><strong>On-Chain:</strong> Network health and transaction patterns</li>
-              <li><strong>Macro:</strong> Economic indicators and market sentiment</li>
-              <li><strong>Regulatory:</strong> Policy environment and institutional adoption</li>
-              <li><strong>Technical:</strong> Network security and infrastructure</li>
-            </ul>
-          </div>
-          
-          <div className="card-elevated">
-            <h3 className="text-heading-3 mb-3">Composite G-Score</h3>
+            <p className="text-body">
+              By analyzing a diverse set of on-chain, market, and macroeconomic factors, we aim to offer a transparent and objective view, helping users understand potential risks and opportunities.
+            </p>
+          </section>
+
+          {/* BTC G-Score */}
+          <section id="g-score" className="card-section">
+            <h2 className="text-heading-2 mb-4">The BTC G-Score</h2>
             <p className="text-body mb-4">
-              The G-Score ranges from 0-100, where higher scores indicate lower risk and better investment conditions.
+              The BTC G-Score is a composite metric, ranging from 0 to 100, that quantifies Bitcoin's overall risk. A higher score indicates lower risk and a healthier market environment, while a lower score suggests increased risk and potential volatility.
             </p>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-body">Score Range</span>
-                <span className="text-caption font-medium">0 - 100</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-body">Update Frequency</span>
-                <span className="text-caption font-medium">Daily</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-body">Data Sources</span>
-                <span className="text-caption font-medium">Multiple APIs</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+            <p className="text-body">
+              The score is calculated by aggregating individual factor scores, weighted by their contribution to each of the five pillars.
+            </p>
+          </section>
 
-      {/* G-Score Section */}
-      <section id="g-score" className="section-spacing">
-        <h2 className="text-heading-2 mb-4">BTC G-Score Calculation</h2>
-        <div className="card-elevated">
-          <h3 className="text-heading-3 mb-4">How It Works</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="text-heading-4 mb-3">Weighted Average</h4>
-              <p className="text-body mb-4">
-                Each pillar contributes a weighted score to the final G-Score, with weights determined by historical performance and market relevance.
-              </p>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-body">Momentum/Valuation</span>
-                  <span className="text-caption font-medium">25%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-body">On-Chain</span>
-                  <span className="text-caption font-medium">20%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-body">Macro</span>
-                  <span className="text-caption font-medium">20%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-body">Regulatory</span>
-                  <span className="text-caption font-medium">20%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-body">Technical</span>
-                  <span className="text-caption font-medium">15%</span>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="text-heading-4 mb-3">Score Interpretation</h4>
-              <p className="text-body mb-4">
-                The G-Score provides a normalized risk assessment that accounts for multiple market factors simultaneously.
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 bg-emerald-500 rounded"></div>
-                  <span className="text-body">80-100: Low Risk</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 bg-yellow-500 rounded"></div>
-                  <span className="text-body">60-79: Moderate Risk</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 bg-orange-500 rounded"></div>
-                  <span className="text-body">40-59: High Risk</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 bg-red-500 rounded"></div>
-                  <span className="text-body">0-39: Very High Risk</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Risk Bands Section */}
-      <section id="bands" className="section-spacing">
-        <h2 className="text-heading-2 mb-4">Risk Bands</h2>
-        <div className="card-elevated">
-          <p className="text-body mb-6">
-            Risk bands provide context for interpreting G-Scores and help categorize market conditions.
-          </p>
-          
-          {config?.bands ? (
-            <div className="space-y-4">
-              {config.bands.map((band) => (
+          {/* Risk Bands */}
+          <section id="bands" className="card-section">
+            <h2 className="text-heading-2 mb-4">Risk Bands & Interpretations</h2>
+            <p className="text-body mb-4">
+              The G-Score is categorized into five distinct risk bands, each with a clear interpretation and recommended action. These bands provide a quick visual cue for the current market sentiment and risk level.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {config?.bands.map(band => (
                 <div key={band.key} className={`p-4 rounded-lg border ${getBandColor(band.color)}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-heading-4">{band.label}</h3>
-                    <span className="text-caption font-medium">
-                      {band.range[0]}-{band.range[1]}
-                    </span>
-                  </div>
-                  <p className="text-body">{band.recommendation}</p>
+                  <h3 className="font-semibold text-lg mb-1">{band.label} ({band.range[0]}-{band.range[1]})</h3>
+                  <p className="text-sm">{band.recommendation}</p>
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="text-center py-8">
-              <div className="text-caption text-gray-500">Loading risk bands...</div>
-            </div>
-          )}
-        </div>
-      </section>
+          </section>
 
-      {/* Risk Factors Section */}
-      <section id="factors" className="section-spacing">
-        <h2 className="text-heading-2 mb-4">Risk Factors</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card-elevated">
-            <h3 className="text-heading-3 mb-3">Momentum/Valuation</h3>
+          {/* Risk Factors */}
+          <section id="factors" className="card-section">
+            <h2 className="text-heading-2 mb-4">Key Risk Factors</h2>
             <p className="text-body mb-4">
-              Technical indicators and valuation metrics that assess Bitcoin's price momentum and relative value.
+              Each pillar is composed of several underlying risk factors. These factors are carefully selected based on their historical correlation with Bitcoin's price movements and market cycles.
             </p>
-            <ul className="list-disc list-inside space-y-2 text-body">
-              <li>Bull Market Support Band (BMSB) distance</li>
-              <li>Relative Strength Index (RSI)</li>
-              <li>Moving averages convergence</li>
-              <li>Price-to-earnings ratios</li>
-            </ul>
-          </div>
-          
-          <div className="card-elevated">
-            <h3 className="text-heading-3 mb-3">On-Chain Metrics</h3>
-            <p className="text-body mb-4">
-              Network health indicators that reflect Bitcoin's fundamental strength and usage patterns.
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-body">
-              <li>Network hash rate</li>
-              <li>Transaction volume</li>
-              <li>Active addresses</li>
-              <li>Mining difficulty</li>
-            </ul>
-          </div>
-          
-          <div className="card-elevated">
-            <h3 className="text-heading-3 mb-3">Macro Environment</h3>
-            <p className="text-body mb-4">
-              Economic indicators and market sentiment that influence Bitcoin's adoption and price.
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-body">
-              <li>Inflation rates</li>
-              <li>Interest rates</li>
-              <li>Market volatility</li>
-              <li>Institutional adoption</li>
-            </ul>
-          </div>
-          
-          <div className="card-elevated">
-            <h3 className="text-heading-3 mb-3">Regulatory Environment</h3>
-            <p className="text-body mb-4">
-              Policy developments and regulatory clarity that affect Bitcoin's legal status and adoption.
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-body">
-              <li>Regulatory clarity</li>
-              <li>Government adoption</li>
-              <li>Tax treatment</li>
-              <li>Legal framework</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* Weights Section */}
-      <section id="weights" className="section-spacing">
-        <h2 className="text-heading-2 mb-4">Factor Weights</h2>
-        <div className="card-elevated">
-          <h3 className="text-heading-3 mb-4">Dynamic Weighting</h3>
-          <p className="text-body mb-6">
-            Factor weights are dynamically adjusted based on market conditions and historical performance to ensure the G-Score remains relevant and accurate.
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="text-heading-4 mb-3">Current Weights</h4>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-body">Momentum/Valuation</span>
-                  <span className="text-caption font-medium">25%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-body">On-Chain</span>
-                  <span className="text-caption font-medium">20%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-body">Macro</span>
-                  <span className="text-caption font-medium">20%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-body">Regulatory</span>
-                  <span className="text-caption font-medium">20%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-body">Technical</span>
-                  <span className="text-caption font-medium">15%</span>
-                </div>
+            <div className="space-y-6">
+              <div className="p-4 border rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">Momentum/Valuation Factors</h3>
+                <p className="text-sm text-gray-600">Price momentum, valuation metrics, and market sentiment indicators.</p>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">On-Chain Factors</h3>
+                <p className="text-sm text-gray-600">Network activity, transaction volume, and blockchain health metrics.</p>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">Macro Factors</h3>
+                <p className="text-sm text-gray-600">Economic indicators, inflation, and global market conditions.</p>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">Regulatory Factors</h3>
+                <p className="text-sm text-gray-600">Government policies, regulatory developments, and legal framework.</p>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">Technical Factors</h3>
+                <p className="text-sm text-gray-600">Chart patterns, technical indicators, and market structure.</p>
               </div>
             </div>
-            
-            <div>
-              <h4 className="text-heading-4 mb-3">Weight Adjustment</h4>
-              <p className="text-body mb-4">
-                Weights are recalculated based on:
-              </p>
-              <ul className="list-disc list-inside space-y-2 text-body">
-                <li>Historical performance</li>
-                <li>Market volatility</li>
-                <li>Correlation analysis</li>
-                <li>Regime changes</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      {/* Footer */}
-      <div className="section-spacing">
-        <div className="card-elevated">
-          <h3 className="text-heading-3 mb-4">Data Sources & Methodology</h3>
-          <p className="text-body mb-4">
-            Our methodology combines multiple data sources and analytical approaches to provide a comprehensive risk assessment.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="text-heading-4 mb-3">Data Sources</h4>
-              <ul className="list-disc list-inside space-y-2 text-body">
-                <li>CoinGecko API</li>
-                <li>Blockchain.info</li>
-                <li>Federal Reserve Economic Data</li>
-                <li>Regulatory databases</li>
-              </ul>
+          {/* Calculation */}
+          <section id="calculation" className="card-section">
+            <h2 className="text-heading-2 mb-4">Calculation Methodology</h2>
+            <p className="text-body mb-4">
+              The G-Score calculation involves several steps:
+            </p>
+            <ol className="list-decimal list-inside text-body space-y-2">
+              <li><strong>Data Normalization:</strong> Raw data for each factor is normalized to a 0-100 scale.</li>
+              <li><strong>Factor Scoring:</strong> Each normalized factor is assigned a score based on its current value relative to historical trends.</li>
+              <li><strong>Pillar Aggregation:</strong> Factor scores are aggregated within each of the five pillars, applying predefined weights.</li>
+              <li><strong>Composite G-Score:</strong> Pillar scores are then combined, with their own weights, to produce the final BTC G-Score.</li>
+            </ol>
+            <p className="text-body mt-4">
+              This multi-layered approach ensures that the G-Score is robust and reflective of diverse market conditions.
+            </p>
+          </section>
+
+          {/* Interactive Example */}
+          <section id="interactive" className="card-section">
+            <h2 className="text-heading-2 mb-4">Interactive Example</h2>
+            <p className="text-body mb-4">
+              Adjust the weights of the main pillars below to see how they influence the overall G-Score. This interactive tool helps in understanding the sensitivity of the composite score to different market aspects.
+            </p>
+            {/* Placeholder for InteractiveExample component */}
+            <div className="bg-gray-100 p-6 rounded-lg text-center text-gray-600">
+              Interactive Example Placeholder
             </div>
-            <div>
-              <h4 className="text-heading-4 mb-3">Update Frequency</h4>
-              <ul className="list-disc list-inside space-y-2 text-body">
-                <li>Real-time price data</li>
-                <li>Daily on-chain metrics</li>
-                <li>Weekly macro indicators</li>
-                <li>Monthly regulatory updates</li>
-              </ul>
-            </div>
+          </section>
+
+          {/* Disclaimer */}
+          <section id="disclaimer" className="card-section">
+            <h2 className="text-heading-2 mb-4">Disclaimer</h2>
+            <p className="text-sm text-gray-600">
+              The information provided on this dashboard is for informational purposes only and does not constitute financial advice. Bitcoin and other cryptocurrencies are highly volatile assets. Please do your own research and consult with a qualified financial professional before making any investment decisions. Past performance is not indicative of future results.
+            </p>
+          </section>
+        </main>
+
+        <aside className="lg:col-span-1">
+          {/* Table of Contents Placeholder */}
+          <div className="sticky top-4 bg-white p-6 rounded-lg shadow-lg">
+            <h3 className="text-lg font-semibold mb-4">Table of Contents</h3>
+            <ul className="space-y-2 text-sm text-gray-700">
+              <li><a href="#overview" className="hover:text-blue-600">Overview</a></li>
+              <li><a href="#g-score" className="hover:text-blue-600">The BTC G-Score</a></li>
+              <li><a href="#bands" className="hover:text-blue-600">Risk Bands & Interpretations</a></li>
+              <li><a href="#factors" className="hover:text-blue-600">Key Risk Factors</a></li>
+              <li><a href="#calculation" className="hover:text-blue-600">Calculation Methodology</a></li>
+              <li><a href="#interactive" className="hover:text-blue-600">Interactive Example</a></li>
+              <li><a href="#disclaimer" className="hover:text-blue-600">Disclaimer</a></li>
+            </ul>
           </div>
-        </div>
+        </aside>
       </div>
     </div>
   );
