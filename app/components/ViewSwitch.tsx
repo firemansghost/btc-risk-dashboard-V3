@@ -1,8 +1,11 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import SimpleDashboard from './SimpleDashboard';
-import RealDashboard from './RealDashboard';
+import { createCardImport } from '@/lib/dynamicImports';
+
+// Dynamic imports for dashboard components
+const SimpleDashboard = createCardImport(() => import('./SimpleDashboard'));
+const RealDashboard = createCardImport(() => import('./RealDashboard'));
 
 export default function ViewSwitch() {
   const sp = useSearchParams();

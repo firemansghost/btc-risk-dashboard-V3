@@ -11,19 +11,29 @@ import { formatSourceTimestamp } from '@/lib/sourceUtils';
 import { calculateContribution, getFactorStaleness, getFactorSubSignals, sortFactorsByContribution, getFactorTTL, getFactorCadence } from '@/lib/factorUtils';
 import SystemStatusCard from './SystemStatusCard';
 import RiskBandLegend from './RiskBandLegend';
-import WhatIfWeightsModal from './WhatIfWeightsModal';
-import ProvenanceModal from './ProvenanceModal';
-import FactorHistoryModal from './FactorHistoryModal';
-import EnhancedFactorDetails from './EnhancedFactorDetails';
-import EtfBreakdownModal from './EtfBreakdownModal';
-import EtfPerformanceAnalysis from './EtfPerformanceAnalysis';
+import { createModalImport, createCardImport, createChartImport } from '@/lib/dynamicImports';
+
+// Dynamic imports for heavy modal components
+const WhatIfWeightsModal = createModalImport(() => import('./WhatIfWeightsModal'));
+const ProvenanceModal = createModalImport(() => import('./ProvenanceModal'));
+const FactorHistoryModal = createModalImport(() => import('./FactorHistoryModal'));
+const EtfBreakdownModal = createModalImport(() => import('./EtfBreakdownModal'));
+
+// Dynamic imports for heavy card components
+const EnhancedFactorDetails = createCardImport(() => import('./EnhancedFactorDetails'));
+const EtfPerformanceAnalysis = createCardImport(() => import('./EtfPerformanceAnalysis'));
 import WeightsLauncher from './WeightsLauncher';
-import HistoryChart from './HistoryChart';
-import BtcGoldCard from './BtcGoldCard';
-import SatoshisPerDollarCard from './SatoshisPerDollarCard';
-import RadialGauge from './RadialGauge';
+
+// Dynamic imports for chart components
+const HistoryChart = createChartImport(() => import('./HistoryChart'));
+const RadialGauge = createCardImport(() => import('./RadialGauge'));
+
+// Dynamic imports for heavy card components
+const BtcGoldCard = createCardImport(() => import('./BtcGoldCard'));
+const SatoshisPerDollarCard = createCardImport(() => import('./SatoshisPerDollarCard'));
+const ScoreInsightsCard = createCardImport(() => import('./ScoreInsightsCard'));
+
 import AlertBell from './AlertBell';
-import ScoreInsightsCard from './ScoreInsightsCard';
 import SkeletonLoader, { SkeletonDashboard, SkeletonCard } from './SkeletonLoader';
 import LazyLoader from './LazyLoader';
 import PerformanceMonitor from './PerformanceMonitor';
