@@ -97,28 +97,185 @@ export default function MethodologyPageSimple() {
         <section id="factors" className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-2xl font-semibold mb-4">Key Risk Factors</h2>
           <p className="mb-4">
-            Each pillar is composed of several underlying risk factors. These factors are carefully selected based on their historical correlation with Bitcoin's price movements and market cycles.
+            The G-Score is calculated using eight carefully selected risk factors across five pillars. Each factor is weighted based on its historical correlation with Bitcoin's price movements and market cycles.
           </p>
-          <div className="space-y-4">
-            <div className="p-4 border rounded-lg">
-              <h3 className="text-lg font-semibold mb-2">Momentum/Valuation Factors</h3>
-              <p className="text-sm text-gray-600">Price momentum, valuation metrics, and market sentiment indicators.</p>
+          
+          {/* Factor Overview */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3">Factor Weight Distribution</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="text-sm font-medium text-blue-900">Trend & Valuation</div>
+                <div className="text-lg font-bold text-blue-600">25%</div>
+              </div>
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="text-sm font-medium text-green-900">Stablecoins</div>
+                <div className="text-lg font-bold text-green-600">18%</div>
+              </div>
+              <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                <div className="text-sm font-medium text-purple-900">Term Structure</div>
+                <div className="text-lg font-bold text-purple-600">18%</div>
+              </div>
+              <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                <div className="text-sm font-medium text-orange-900">ETF Flows</div>
+                <div className="text-lg font-bold text-orange-600">10%</div>
+              </div>
             </div>
-            <div className="p-4 border rounded-lg">
-              <h3 className="text-lg font-semibold mb-2">On-Chain Factors</h3>
-              <p className="text-sm text-gray-600">Network activity, transaction volume, and blockchain health metrics.</p>
+          </div>
+
+          {/* Detailed Factor Breakdown */}
+          <div className="space-y-6">
+            {/* Liquidity/Flows Pillar */}
+            <div className="p-4 border border-gray-200 rounded-lg">
+              <h3 className="text-lg font-semibold mb-3 text-green-700">Liquidity/Flows Pillar (38% total weight)</h3>
+              <div className="space-y-4">
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <h4 className="font-semibold text-green-800 mb-2">Stablecoins (18% weight)</h4>
+                  <p className="text-sm text-green-700 mb-2">
+                    <strong>Data Source:</strong> Multi-source fallback (CoinGecko → CoinMarketCap → CryptoCompare)
+                  </p>
+                  <p className="text-sm text-green-700 mb-2">
+                    <strong>Coverage:</strong> 7 stablecoins (USDT, USDC, DAI, BUSD, TUSD, FRAX, LUSD)
+                  </p>
+                  <p className="text-sm text-green-700">
+                    <strong>Logic:</strong> Higher aggregate supply growth = Lower risk. Uses 30-day weighted average with 365-day historical baseline.
+                  </p>
+                </div>
+                
+                <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                  <h4 className="font-semibold text-orange-800 mb-2">ETF Flows (10% weight)</h4>
+                  <p className="text-sm text-orange-700 mb-2">
+                    <strong>Data Source:</strong> Farside Investors HTML scraping with business-day logic
+                  </p>
+                  <p className="text-sm text-orange-700 mb-2">
+                    <strong>Window:</strong> 21-day business-day rolling sum (excludes weekends/holidays)
+                  </p>
+                  <p className="text-sm text-orange-700">
+                    <strong>Logic:</strong> Higher flows = Lower risk. Business-day aware calculations for accurate institutional flow tracking.
+                  </p>
+                </div>
+                
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-semibold text-blue-800 mb-2">Net Liquidity (10% weight)</h4>
+                  <p className="text-sm text-blue-700 mb-2">
+                    <strong>Data Source:</strong> FRED API (WALCL, RRPONTSYD, WTREGEN)
+                  </p>
+                  <p className="text-sm text-blue-700 mb-2">
+                    <strong>Components:</strong> Fed Balance Sheet - Reverse Repo - Treasury General Account
+                  </p>
+                  <p className="text-sm text-blue-700">
+                    <strong>Logic:</strong> Higher liquidity growth = Lower risk. Multi-factor composite with 4-week rate of change and 12-week momentum.
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="p-4 border rounded-lg">
-              <h3 className="text-lg font-semibold mb-2">Macro Factors</h3>
-              <p className="text-sm text-gray-600">Economic indicators, inflation, and global market conditions.</p>
+
+            {/* Momentum/Valuation Pillar */}
+            <div className="p-4 border border-gray-200 rounded-lg">
+              <h3 className="text-lg font-semibold mb-3 text-blue-700">Momentum/Valuation Pillar (33% total weight)</h3>
+              <div className="space-y-4">
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-semibold text-blue-800 mb-2">Trend & Valuation (25% weight)</h4>
+                  <p className="text-sm text-blue-700 mb-2">
+                    <strong>Data Source:</strong> CoinGecko Bitcoin price data with enhanced caching
+                  </p>
+                  <p className="text-sm text-blue-700 mb-2">
+                    <strong>Components:</strong> Bull Market Support Band (60%), Mayer Multiple (30%), Weekly RSI (10%)
+                  </p>
+                  <p className="text-sm text-blue-700">
+                    <strong>Logic:</strong> Higher values = Higher risk. Most fundamental risk indicator providing cycle positioning.
+                  </p>
+                </div>
+                
+                <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+                  <h4 className="font-semibold text-indigo-800 mb-2">On-chain Activity (8% weight)</h4>
+                  <p className="text-sm text-indigo-700 mb-2">
+                    <strong>Data Source:</strong> Multi-source fallback (Blockchain.info → Mempool.space → Mempool.observer)
+                  </p>
+                  <p className="text-sm text-indigo-700 mb-2">
+                    <strong>Components:</strong> Network Congestion (60%), Transaction Activity (40%), Hash Rate Security (±5 points)
+                  </p>
+                  <p className="text-sm text-indigo-700">
+                    <strong>Logic:</strong> Higher congestion + activity = Higher risk; higher security = Lower risk.
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="p-4 border rounded-lg">
-              <h3 className="text-lg font-semibold mb-2">Regulatory Factors</h3>
-              <p className="text-sm text-gray-600">Government policies, regulatory developments, and legal framework.</p>
+
+            {/* Term Structure/Leverage Pillar */}
+            <div className="p-4 border border-gray-200 rounded-lg">
+              <h3 className="text-lg font-semibold mb-3 text-purple-700">Term Structure/Leverage Pillar (18% total weight)</h3>
+              <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                <h4 className="font-semibold text-purple-800 mb-2">Term Structure & Leverage (18% weight)</h4>
+                <p className="text-sm text-purple-700 mb-2">
+                  <strong>Data Source:</strong> Multi-exchange fallback (BitMEX → Binance → OKX) + CoinGecko spot prices
+                </p>
+                <p className="text-sm text-purple-700 mb-2">
+                  <strong>Components:</strong> Funding Rate Level (40%), Funding Volatility (35%), Term Structure Stress (25%)
+                </p>
+                <p className="text-sm text-purple-700">
+                  <strong>Logic:</strong> Higher funding + higher volatility + higher stress = Higher risk. Critical for understanding market stress and leverage cycles.
+                </p>
+              </div>
             </div>
-            <div className="p-4 border rounded-lg">
-              <h3 className="text-lg font-semibold mb-2">Technical Factors</h3>
-              <p className="text-sm text-gray-600">Chart patterns, technical indicators, and market structure.</p>
+
+            {/* Social/Attention Pillar */}
+            <div className="p-4 border border-gray-200 rounded-lg">
+              <h3 className="text-lg font-semibold mb-3 text-yellow-700">Social/Attention Pillar (5% total weight)</h3>
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <h4 className="font-semibold text-yellow-800 mb-2">Social Interest (5% weight)</h4>
+                <p className="text-sm text-yellow-700 mb-2">
+                  <strong>Data Source:</strong> CoinGecko trending data + price momentum analysis
+                </p>
+                <p className="text-sm text-yellow-700 mb-2">
+                  <strong>Components:</strong> Search Attention (70%), Price Momentum (30%)
+                </p>
+                <p className="text-sm text-yellow-700">
+                  <strong>Logic:</strong> Higher search attention + bullish momentum = Higher risk. Least predictive but useful sentiment indicator.
+                </p>
+              </div>
+            </div>
+
+            {/* Macro Overlay Pillar */}
+            <div className="p-4 border border-gray-200 rounded-lg">
+              <h3 className="text-lg font-semibold mb-3 text-red-700">Macro Overlay Pillar (6% total weight)</h3>
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <h4 className="font-semibold text-red-800 mb-2">Macro Overlay (6% weight)</h4>
+                <p className="text-sm text-red-700 mb-2">
+                  <strong>Data Source:</strong> Enhanced FRED API (DXY, 2Y/10Y Treasury, VIX, 10Y TIPS)
+                </p>
+                <p className="text-sm text-red-700 mb-2">
+                  <strong>Components:</strong> Dollar Strength (40%), Interest Rates (35%), VIX Risk Appetite (25%)
+                </p>
+                <p className="text-sm text-red-700">
+                  <strong>Logic:</strong> Dollar strength + rising rates + market fear = Higher risk. External macroeconomic factors.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Data Quality & Reliability */}
+          <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <h3 className="text-lg font-semibold mb-3">Data Quality & Reliability</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h4 className="font-semibold mb-2">Quality Controls</h4>
+                <ul className="text-sm text-gray-700 space-y-1">
+                  <li>• Schema tripwires for format changes</li>
+                  <li>• Z-score tripwires for outliers</li>
+                  <li>• Cache fallbacks for API failures</li>
+                  <li>• Retry logic with exponential backoff</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Reliability Features</h4>
+                <ul className="text-sm text-gray-700 space-y-1">
+                  <li>• Multi-source fallback chains</li>
+                  <li>• Business-day aware calculations</li>
+                  <li>• Historical baseline comparisons</li>
+                  <li>• Real-time staleness detection</li>
+                </ul>
+              </div>
             </div>
           </div>
         </section>
