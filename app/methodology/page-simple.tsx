@@ -158,7 +158,7 @@ export default function MethodologyPageSimple() {
                 
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
-                  <p className="text-sm text-gray-700">Daily; stale >48h</p>
+                  <p className="text-sm text-gray-700">Daily; stale &gt;48h</p>
                 </div>
                 
                 <div>
@@ -208,7 +208,7 @@ export default function MethodologyPageSimple() {
                 
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
-                  <p className="text-sm text-gray-700">Daily; stale >48h</p>
+                  <p className="text-sm text-gray-700">Daily; stale &gt;48h</p>
                 </div>
                 
                 <div>
@@ -258,7 +258,7 @@ export default function MethodologyPageSimple() {
                 
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
-                  <p className="text-sm text-gray-700">Weekly; stale >8 days</p>
+                  <p className="text-sm text-gray-700">Weekly; stale &gt;8 days</p>
                 </div>
                 
                 <div>
@@ -308,7 +308,7 @@ export default function MethodologyPageSimple() {
                 
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
-                  <p className="text-sm text-gray-700">Business days; stale >72h</p>
+                  <p className="text-sm text-gray-700">Business days; stale &gt;72h</p>
                 </div>
                 
                 <div>
@@ -358,7 +358,7 @@ export default function MethodologyPageSimple() {
                 
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
-                  <p className="text-sm text-gray-700">Daily; stale >24h</p>
+                  <p className="text-sm text-gray-700">Daily; stale &gt;24h</p>
                 </div>
                 
                 <div>
@@ -408,7 +408,7 @@ export default function MethodologyPageSimple() {
                 
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
-                  <p className="text-sm text-gray-700">6-hour; stale >12h</p>
+                  <p className="text-sm text-gray-700">6-hour; stale &gt;12h</p>
                 </div>
                 
                 <div>
@@ -458,7 +458,7 @@ export default function MethodologyPageSimple() {
                 
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
-                  <p className="text-sm text-gray-700">6-hour; stale >12h</p>
+                  <p className="text-sm text-gray-700">6-hour; stale &gt;12h</p>
                 </div>
                 
                 <div>
@@ -508,7 +508,7 @@ export default function MethodologyPageSimple() {
                 
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
-                  <p className="text-sm text-gray-700">Daily; stale >48h</p>
+                  <p className="text-sm text-gray-700">Daily; stale &gt;48h</p>
                 </div>
                 
                 <div>
