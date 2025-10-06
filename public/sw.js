@@ -1,9 +1,9 @@
 // Service Worker for Bitcoin Risk Dashboard
 // Provides offline support and caching for better performance
 
-const CACHE_NAME = 'btc-risk-dashboard-v1';
-const STATIC_CACHE = 'btc-static-v1';
-const DYNAMIC_CACHE = 'btc-dynamic-v1';
+const CACHE_NAME = 'btc-risk-dashboard-v2';
+const STATIC_CACHE = 'btc-static-v2';
+const DYNAMIC_CACHE = 'btc-dynamic-v2';
 
 // Files to cache immediately
 const STATIC_FILES = [
@@ -118,23 +118,60 @@ function isAPIRoute(request) {
   return API_ROUTES.some(route => url.pathname.startsWith(route));
 }
 
-// Handle static files - cache first strategy
+// Handle static files - network first strategy for pages, cache first for assets
 async function handleStaticFile(request) {
+  const url = new URL(request.url);
+  const isPage = url.pathname === '/' || 
+                 url.pathname.startsWith('/methodology') || 
+                 url.pathname.startsWith('/etf-predictions') || 
+                 url.pathname.startsWith('/strategy-analysis') ||
+                 url.pathname.startsWith('/alerts') ||
+                 url.pathname.startsWith('/data-sources') ||
+                 url.pathname.startsWith('/disclaimer') ||
+                 url.pathname.startsWith('/brand') ||
+                 url.pathname.startsWith('/sats') ||
+                 url.pathname.startsWith('/xau') ||
+                 url.pathname.startsWith('/what-is-risk');
+  
   try {
-    const cache = await caches.open(STATIC_CACHE);
-    const cachedResponse = await cache.match(request);
-    
-    if (cachedResponse) {
-      return cachedResponse;
+    // For pages, use network first strategy to ensure fresh content
+    if (isPage) {
+      try {
+        const networkResponse = await fetch(request);
+        
+        if (networkResponse.ok) {
+          const cache = await caches.open(STATIC_CACHE);
+          cache.put(request, networkResponse.clone());
+          return networkResponse;
+        }
+      } catch (error) {
+        console.log('Service Worker: Network failed for page, trying cache');
+      }
+      
+      // Fallback to cache for pages
+      const cache = await caches.open(STATIC_CACHE);
+      const cachedResponse = await cache.match(request);
+      
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+    } else {
+      // For assets (JS, CSS, images), use cache first strategy
+      const cache = await caches.open(STATIC_CACHE);
+      const cachedResponse = await cache.match(request);
+      
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      
+      const networkResponse = await fetch(request);
+      
+      if (networkResponse.ok) {
+        cache.put(request, networkResponse.clone());
+      }
+      
+      return networkResponse;
     }
-    
-    const networkResponse = await fetch(request);
-    
-    if (networkResponse.ok) {
-      cache.put(request, networkResponse.clone());
-    }
-    
-    return networkResponse;
   } catch (error) {
     console.error('Service Worker: Failed to handle static file', error);
     return new Response('Offline - Static file not available', { 

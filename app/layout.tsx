@@ -7,6 +7,7 @@ import MobileBottomNav from './components/MobileBottomNav';
 import GlobalClientErrorBar from './components/GlobalClientErrorBar';
 import OfflineFallback, { OfflineIndicator } from './components/OfflineFallback';
 import ServiceWorkerProvider from './components/ServiceWorkerProvider';
+import CacheBuster from './components/CacheBuster';
 import { assertEnv } from '@/lib/assertEnv';
 
 const inter = Inter({ 
@@ -101,6 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen antialiased">
         <ServiceWorkerProvider>
+          <CacheBuster />
           <OfflineFallback>
             <GlobalClientErrorBar />
             <Navigation />
