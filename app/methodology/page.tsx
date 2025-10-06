@@ -55,7 +55,7 @@ export default function MethodologyPage() {
       <section id="overview" className="section-spacing">
         <h2 className="text-heading-2 mb-4">Overview</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card-elevated">
+          <div className="card-elevated card-md">
             <h3 className="text-heading-3 mb-3">Five Pillars of Risk</h3>
             <p className="text-body mb-4">
               Our methodology evaluates Bitcoin risk across five independent pillars, each contributing to a composite G-Score.
@@ -69,7 +69,7 @@ export default function MethodologyPage() {
             </ul>
           </div>
           
-          <div className="card-elevated">
+          <div className="card-elevated card-md">
             <h3 className="text-heading-3 mb-3">Composite G-Score</h3>
             <p className="text-body mb-4">
               The G-Score ranges from 0-100, where higher scores indicate lower risk and better investment conditions.
@@ -95,7 +95,7 @@ export default function MethodologyPage() {
       {/* G-Score Section */}
       <section id="g-score" className="section-spacing">
         <h2 className="text-heading-2 mb-4">BTC G-Score Calculation</h2>
-        <div className="card-elevated">
+        <div className="card-elevated card-md">
           <h3 className="text-heading-3 mb-4">How It Works</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -158,7 +158,7 @@ export default function MethodologyPage() {
       {/* Risk Bands Section */}
       <section id="bands" className="section-spacing">
         <h2 className="text-heading-2 mb-4">Risk Bands</h2>
-        <div className="card-elevated">
+        <div className="card-elevated card-md">
           <p className="text-body mb-6">
             Risk bands provide context for interpreting G-Scores and help categorize market conditions.
           </p>
@@ -647,7 +647,7 @@ export default function MethodologyPage() {
       {/* Weights Section */}
       <section id="weights" className="section-spacing">
         <h2 className="text-heading-2 mb-4">Factor Weights</h2>
-        <div className="card-elevated">
+        <div className="card-elevated card-md">
           <h3 className="text-heading-3 mb-4">Dynamic Weighting</h3>
           <p className="text-body mb-6">
             Factor weights are dynamically adjusted based on market conditions and historical performance to ensure the G-Score remains relevant and accurate.
@@ -698,7 +698,7 @@ export default function MethodologyPage() {
 
       {/* Footer */}
       <div className="section-spacing">
-        <div className="card-elevated">
+        <div className="card-elevated card-md">
           <h3 className="text-heading-3 mb-4">Data Sources & Methodology</h3>
           <p className="text-body mb-4">
             Our methodology combines multiple data sources and analytical approaches to provide a comprehensive risk assessment.
