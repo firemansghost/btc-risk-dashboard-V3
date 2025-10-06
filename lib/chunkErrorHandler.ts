@@ -1,12 +1,6 @@
 // Chunk loading error handler for dynamic imports
 // This handles cases where chunks fail to load due to cache clearing or network issues
 
-interface ChunkErrorHandler {
-  retryCount: number;
-  maxRetries: number;
-  retryDelay: number;
-}
-
 class ChunkErrorHandler {
   private retryCount = 0;
   private maxRetries = 3;
@@ -33,7 +27,7 @@ class ChunkErrorHandler {
   }
 
   // Clear chunk cache to force fresh loading
-  private async clearChunkCache(): Promise<void> {
+  async clearChunkCache(): Promise<void> {
     if (typeof window === 'undefined') return;
 
     try {
