@@ -1,13 +1,36 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import StrategyComparisonCard from '../components/StrategyComparisonCard';
-import StrategyTester from '../components/StrategyTester';
-import BacktestingInsights from '../components/BacktestingInsights';
-import RiskBandAnalysis from '../components/RiskBandAnalysis';
-import InvestmentGlossary from '../components/InvestmentGlossary';
-import BacktestingStatus from '../components/BacktestingStatus';
-import BacktestingDisclosures from '../components/BacktestingDisclosures';
+import React, { useState, Suspense } from 'react';
+import dynamic from 'next/dynamic';
+
+// Dynamic imports to reduce bundle size
+const StrategyComparisonCard = dynamic(() => import('../components/StrategyComparisonCard'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>
+});
+
+const StrategyTester = dynamic(() => import('../components/StrategyTester'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>
+});
+
+const BacktestingInsights = dynamic(() => import('../components/BacktestingInsights'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>
+});
+
+const RiskBandAnalysis = dynamic(() => import('../components/RiskBandAnalysis'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>
+});
+
+const InvestmentGlossary = dynamic(() => import('../components/InvestmentGlossary'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>
+});
+
+const BacktestingStatus = dynamic(() => import('../components/BacktestingStatus'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>
+});
+
+const BacktestingDisclosures = dynamic(() => import('../components/BacktestingDisclosures'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>
+});
 
 export default function StrategyAnalysisPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'tester' | 'insights' | 'risk-bands' | 'glossary'>('overview');
@@ -128,13 +151,19 @@ export default function StrategyAnalysisPage() {
             </div>
 
             {/* Backtesting Status */}
-            <BacktestingStatus />
+            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>}>
+              <BacktestingStatus />
+            </Suspense>
 
             {/* Disclosures */}
-            <BacktestingDisclosures />
+            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>}>
+              <BacktestingDisclosures />
+            </Suspense>
 
             {/* Strategy Comparison */}
-            <StrategyComparisonCard />
+            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>}>
+              <StrategyComparisonCard />
+            </Suspense>
           </div>
         )}
 
@@ -146,7 +175,9 @@ export default function StrategyAnalysisPage() {
                 Test different investment strategies powered by the <strong>Bitcoin G-Score</strong> with your own parameters and see projected returns
               </p>
             </div>
-            <StrategyTester />
+            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>}>
+              <StrategyTester />
+            </Suspense>
           </div>
         )}
 
@@ -158,9 +189,15 @@ export default function StrategyAnalysisPage() {
                 Discover the most important findings from our comprehensive <strong>Bitcoin G-Score</strong> backtesting analysis
               </p>
             </div>
-            <BacktestingStatus />
-            <BacktestingDisclosures />
-            <BacktestingInsights />
+            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>}>
+              <BacktestingStatus />
+            </Suspense>
+            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>}>
+              <BacktestingDisclosures />
+            </Suspense>
+            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>}>
+              <BacktestingInsights />
+            </Suspense>
           </div>
         )}
 
@@ -172,15 +209,23 @@ export default function StrategyAnalysisPage() {
                 Analysis of how different <strong>Bitcoin G-Score</strong> risk bands perform in different market conditions
               </p>
             </div>
-            <BacktestingStatus />
-            <BacktestingDisclosures />
-            <RiskBandAnalysis />
+            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>}>
+              <BacktestingStatus />
+            </Suspense>
+            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>}>
+              <BacktestingDisclosures />
+            </Suspense>
+            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>}>
+              <RiskBandAnalysis />
+            </Suspense>
           </div>
         )}
 
         {activeTab === 'glossary' && (
           <div className="space-y-8">
-            <InvestmentGlossary />
+            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>}>
+              <InvestmentGlossary />
+            </Suspense>
           </div>
         )}
       </div>
