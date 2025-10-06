@@ -286,12 +286,7 @@ export default function RealDashboard() {
                 </div>
               </div>
 
-              {/* Score Insights Card - Right under main cards */}
-              <div className="mb-6 lg:mb-8">
-                <ScoreInsightsCard latest={latest} className="h-full" />
-              </div>
-              
-              {/* Refresh Dashboard Button - Moved below top cards */}
+              {/* Refresh Dashboard Button and Descriptive Text - Moved between top cards and Score Insights */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mt-6 mb-4">
                 {refreshMessage && (
                   <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-md">
@@ -441,6 +436,11 @@ export default function RealDashboard() {
               <p className="text-sm text-gray-500 mt-2">
                 <a href="/methodology#btc-g-score" className="text-link link-hover link-focus">New here? What the G-Score means →</a> · <a href="/alerts" className="text-link link-hover link-focus">View Alerts →</a>
               </p>
+
+              {/* Score Insights Card - Right under main cards */}
+              <div className="mb-6 lg:mb-8">
+                <ScoreInsightsCard latest={latest} className="h-full" />
+              </div>
             </div>
           </div>
         </div>
