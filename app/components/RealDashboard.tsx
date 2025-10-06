@@ -14,10 +14,7 @@ import RiskBandLegend from './RiskBandLegend';
 import dynamic from 'next/dynamic';
 
 // Dynamic imports for heavy modal components
-const WhatIfWeightsModal = dynamic(() => import('./WhatIfWeightsModal'), {
-  loading: () => <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"><div className="spinner spinner-lg"></div></div>,
-  ssr: false
-});
+import WhatIfWeightsModal from './WhatIfWeightsModal';
 
 const ProvenanceModal = dynamic(() => import('./ProvenanceModal'), {
   loading: () => <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"><div className="spinner spinner-lg"></div></div>,
