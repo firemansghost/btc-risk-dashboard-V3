@@ -228,7 +228,7 @@ export default function RealDashboard() {
               {/* Top Row: G-Score Card + Bitcoin Price Card */}
               <div className="mobile-grid-2 mb-8">
                 {/* Prominent G-Score Card - Unified Vertical Layout */}
-                <div className="card-floating card-md border-2 border-gray-300 ring-1 ring-gray-200 card-hover">
+                <div className="glass-card glass-shadow-lg card-md border border-white/20 card-hover">
                   <div className="flex items-center justify-between mb-4">
                     <h1 className="mobile-subheading">
                       Bitcoin G-Score
@@ -274,7 +274,7 @@ export default function RealDashboard() {
                 </div>
 
                 {/* Bitcoin Price Card */}
-                <div className="card-elevated card-md card-hover">
+                <div className="glass-card glass-shadow card-md card-hover">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-caption">Bitcoin Price</h3>
                     <AlertBell />
@@ -516,7 +516,7 @@ export default function RealDashboard() {
         {/* Key Metrics Cards - Balanced 2x2 Layout */}
         <div className="mobile-grid-2 mb-6 lg:mb-8">
           {/* Composite Score */}
-          <div className="card-metric">
+          <div className="glass-sm card-metric">
             <h3 className="text-label mb-2">BTC G-Score</h3>
             <div className="text-metric mb-1">{latest?.composite_score ?? '—'}</div>
             
@@ -629,7 +629,7 @@ export default function RealDashboard() {
 
 
           {/* Model Version */}
-          <div className="card-metric">
+          <div className="glass-sm card-metric">
             <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Model Version</h3>
             <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{latest?.model_version ?? 'v3'}</div>
             <div className="text-xs text-gray-600">Five-pillar framework</div>
@@ -690,7 +690,7 @@ export default function RealDashboard() {
                 delay={index * 100}
                 fallback={<SkeletonLoader isLoading={true}><SkeletonCard type="factor" /></SkeletonLoader>}
               >
-                <div className="card-factor card-hover card-click">
+                <div className="glass-card glass-shadow card-factor card-hover card-click">
                   {/* Reserved Badge Lane - Top Right */}
                   <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex flex-col gap-1 items-end">
                     <span 
@@ -991,7 +991,7 @@ export default function RealDashboard() {
           delay={500}
           fallback={<SkeletonLoader isLoading={true}><SkeletonCard type="chart" size="lg" /></SkeletonLoader>}
         >
-          <div className="card-elevated card-lg mb-8 chart-container chart-responsive">
+          <div className="glass-card glass-shadow-lg card-lg mb-8 chart-container chart-responsive">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Historical G-Score</h3>
             <HistoryChart />
           </div>
