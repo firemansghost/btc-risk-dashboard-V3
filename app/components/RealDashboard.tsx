@@ -13,60 +13,18 @@ import SystemStatusCard from './SystemStatusCard';
 import RiskBandLegend from './RiskBandLegend';
 import dynamic from 'next/dynamic';
 
-// Dynamic imports for heavy modal components
+// Import all components directly to avoid chunk loading issues
 import WhatIfWeightsModal from './WhatIfWeightsModal';
-
-const ProvenanceModal = dynamic(() => import('./ProvenanceModal'), {
-  loading: () => <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"><div className="spinner spinner-lg"></div></div>,
-  ssr: false
-});
-
-const FactorHistoryModal = dynamic(() => import('./FactorHistoryModal'), {
-  loading: () => <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"><div className="spinner spinner-lg"></div></div>,
-  ssr: false
-});
-
-const EtfBreakdownModal = dynamic(() => import('./EtfBreakdownModal'), {
-  loading: () => <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"><div className="spinner spinner-lg"></div></div>,
-  ssr: false
-});
-
-// Dynamic imports for heavy card components
-const EnhancedFactorDetails = dynamic(() => import('./EnhancedFactorDetails'), {
-  loading: () => <div className="h-32 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center"><div className="spinner spinner-sm"></div></div>,
-  ssr: false
-});
-
-const EtfPerformanceAnalysis = dynamic(() => import('./EtfPerformanceAnalysis'), {
-  loading: () => <div className="h-32 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center"><div className="spinner spinner-sm"></div></div>,
-  ssr: false
-});
-
-const BtcGoldCard = dynamic(() => import('./BtcGoldCard'), {
-  loading: () => <div className="h-32 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center"><div className="spinner spinner-sm"></div></div>,
-  ssr: false
-});
-
-const SatoshisPerDollarCard = dynamic(() => import('./SatoshisPerDollarCard'), {
-  loading: () => <div className="h-32 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center"><div className="spinner spinner-sm"></div></div>,
-  ssr: false
-});
-
-const ScoreInsightsCard = dynamic(() => import('./ScoreInsightsCard'), {
-  loading: () => <div className="h-64 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center"><div className="spinner spinner-md"></div></div>,
-  ssr: false
-});
-
-// Dynamic imports for chart components
-const HistoryChart = dynamic(() => import('./HistoryChart'), {
-  loading: () => <div className="h-64 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center"><div className="spinner spinner-lg"></div></div>,
-  ssr: false
-});
-
-const RadialGauge = dynamic(() => import('./RadialGauge'), {
-  loading: () => <div className="h-32 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center"><div className="spinner spinner-sm"></div></div>,
-  ssr: false
-});
+import ProvenanceModal from './ProvenanceModal';
+import FactorHistoryModal from './FactorHistoryModal';
+import EtfBreakdownModal from './EtfBreakdownModal';
+import EnhancedFactorDetails from './EnhancedFactorDetails';
+import EtfPerformanceAnalysis from './EtfPerformanceAnalysis';
+import BtcGoldCard from './BtcGoldCard';
+import SatoshisPerDollarCard from './SatoshisPerDollarCard';
+import ScoreInsightsCard from './ScoreInsightsCard';
+import HistoryChart from './HistoryChart';
+import RadialGauge from './RadialGauge';
 
 import WeightsLauncher from './WeightsLauncher';
 
