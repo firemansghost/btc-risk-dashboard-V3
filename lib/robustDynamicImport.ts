@@ -1,6 +1,5 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
-import { createChunkSafeDynamicImport } from './chunkErrorHandler';
 
 // Enhanced dynamic import with chunk error handling
 export function createRobustDynamicImport<T = any>(
@@ -14,14 +13,7 @@ export function createRobustDynamicImport<T = any>(
 ) {
   const { loading, fallback, chunkName, ssr = false } = options;
   
-  // Create a chunk-safe import function
-  const safeImportFn = createChunkSafeDynamicImport(importFn, {
-    loading,
-    fallback,
-    chunkName
-  });
-  
-  return dynamic(safeImportFn, {
+  return dynamic(importFn, {
     loading: loading || (() => React.createElement('div', { 
       className: 'animate-pulse bg-gray-200 rounded-lg h-32' 
     })),
