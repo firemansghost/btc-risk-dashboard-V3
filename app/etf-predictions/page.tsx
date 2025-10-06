@@ -1,29 +1,29 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 
 // Force no caching for this page
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 // Dynamic imports with proper error boundaries
-const IndividualETFPredictions = dynamic(() => import('../components/IndividualETFPredictions'), {
+const IndividualETFPredictions = dynamicImport(() => import('../components/IndividualETFPredictions'), {
   loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>,
   ssr: false
 });
 
-const PredictionChart = dynamic(() => import('../components/PredictionChart'), {
+const PredictionChart = dynamicImport(() => import('../components/PredictionChart'), {
   loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>,
   ssr: false
 });
 
-const ModelPerformance = dynamic(() => import('../components/ModelPerformance'), {
+const ModelPerformance = dynamicImport(() => import('../components/ModelPerformance'), {
   loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>,
   ssr: false
 });
 
-const PredictionSettings = dynamic(() => import('../components/PredictionSettings'), {
+const PredictionSettings = dynamicImport(() => import('../components/PredictionSettings'), {
   loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>,
   ssr: false
 });
