@@ -3,21 +3,25 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 
-// Dynamic imports to reduce bundle size
+// Dynamic imports with proper error boundaries
 const IndividualETFPredictions = dynamic(() => import('../components/IndividualETFPredictions'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>,
+  ssr: false
 });
 
 const PredictionChart = dynamic(() => import('../components/PredictionChart'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>,
+  ssr: false
 });
 
 const ModelPerformance = dynamic(() => import('../components/ModelPerformance'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>,
+  ssr: false
 });
 
 const PredictionSettings = dynamic(() => import('../components/PredictionSettings'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>,
+  ssr: false
 });
 
 // Trading day utilities
@@ -290,14 +294,59 @@ function ForecastCard({
   );
 }
 
+// Error boundary component
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('ETF Predictions Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="flex items-center">
+            <div className="text-red-600 mr-3">⚠️</div>
+            <div>
+              <h3 className="text-sm font-medium text-red-800">Component Error</h3>
+              <p className="text-sm text-red-600 mt-1">There was an error loading this component.</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 // Main page component with comprehensive features
 export default function ETFPredictionsPage() {
   const [data, setData] = useState<PredictionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Handle client-side mounting
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch prediction data from API
   useEffect(() => {
+    if (!mounted) return;
+
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -335,7 +384,7 @@ export default function ETFPredictionsPage() {
     };
 
     fetchData();
-  }, []);
+  }, [mounted]);
 
   const handleRetry = () => {
     setError(null);
@@ -343,6 +392,18 @@ export default function ETFPredictionsPage() {
     // Trigger re-fetch by updating a dependency
     window.location.reload();
   };
+
+  // Don't render until mounted to prevent hydration issues
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading ETF Predictions...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -475,17 +536,21 @@ export default function ETFPredictionsPage() {
           {/* Individual ETF Predictions */}
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h3 className="text-xl font-semibold mb-4">Individual ETF Analysis</h3>
-            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>}>
-              <IndividualETFPredictions />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>}>
+                <IndividualETFPredictions />
+              </Suspense>
+            </ErrorBoundary>
           </div>
 
           {/* Prediction Chart */}
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h3 className="text-xl font-semibold mb-4">Flow Trends & Predictions</h3>
-            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>}>
-              <PredictionChart />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>}>
+                <PredictionChart />
+              </Suspense>
+            </ErrorBoundary>
           </div>
         </div>
 
@@ -494,17 +559,21 @@ export default function ETFPredictionsPage() {
           {/* Model Performance */}
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h3 className="text-xl font-semibold mb-4">Model Performance</h3>
-            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>}>
-              <ModelPerformance />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>}>
+                <ModelPerformance />
+              </Suspense>
+            </ErrorBoundary>
           </div>
 
           {/* Prediction Settings */}
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h3 className="text-xl font-semibold mb-4">Prediction Settings</h3>
-            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>}>
-              <PredictionSettings />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>}>
+                <PredictionSettings />
+              </Suspense>
+            </ErrorBoundary>
           </div>
         </div>
 
