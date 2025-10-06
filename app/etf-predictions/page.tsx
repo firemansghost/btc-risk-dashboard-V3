@@ -3,6 +3,10 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 
+// Force no caching for this page
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // Dynamic imports with proper error boundaries
 const IndividualETFPredictions = dynamic(() => import('../components/IndividualETFPredictions'), {
   loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>,
@@ -338,9 +342,27 @@ export default function ETFPredictionsPage() {
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  // Handle client-side mounting
+  // Handle client-side mounting and force refresh
   useEffect(() => {
     setMounted(true);
+    
+    // Clear any cached data
+    if (typeof window !== 'undefined') {
+      // Force refresh of the page data
+      const timestamp = new Date().getTime();
+      const url = `/api/etf-predictions?t=${timestamp}`;
+      
+      // Clear any existing cache
+      if ('caches' in window) {
+        caches.keys().then(names => {
+          names.forEach(name => {
+            if (name.includes('etf-predictions') || name.includes('nextjs')) {
+              caches.delete(name);
+            }
+          });
+        });
+      }
+    }
   }, []);
 
   // Fetch prediction data from API
@@ -352,7 +374,17 @@ export default function ETFPredictionsPage() {
         setLoading(true);
         setError(null);
         
-        const response = await fetch('/api/etf-predictions');
+        // Add timestamp to prevent caching
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/api/etf-predictions?t=${timestamp}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
+        
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -389,7 +421,7 @@ export default function ETFPredictionsPage() {
   const handleRetry = () => {
     setError(null);
     setLoading(true);
-    // Trigger re-fetch by updating a dependency
+    // Force a complete page reload to clear any cache
     window.location.reload();
   };
 
