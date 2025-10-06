@@ -1,9 +1,9 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 
-// Enhanced dynamic import with chunk error handling
-export function createRobustDynamicImport<T = any>(
-  importFn: () => Promise<{ default: T }>,
+// Simplified dynamic import with basic error handling
+export function createRobustDynamicImport(
+  importFn: () => Promise<any>,
   options: {
     loading?: () => React.ReactElement;
     fallback?: () => React.ReactElement;
@@ -17,12 +17,7 @@ export function createRobustDynamicImport<T = any>(
     loading: loading || (() => React.createElement('div', { 
       className: 'animate-pulse bg-gray-200 rounded-lg h-32' 
     })),
-    ssr,
-    // Add error boundary for chunk loading failures
-    onError: (error) => {
-      console.warn('Dynamic import error:', error);
-      // Don't throw, let the fallback handle it
-    }
+    ssr: ssr
   });
 }
 
