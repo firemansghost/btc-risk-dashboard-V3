@@ -1470,11 +1470,11 @@ body {
   
   /* Loading Overlays */
   .loading-overlay {
-    @apply absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10;
+    @apply absolute inset-0 glass-overlay-light flex items-center justify-center z-10;
   }
   
   .loading-overlay-dark {
-    @apply absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-10;
+    @apply absolute inset-0 glass-overlay flex items-center justify-center z-10;
   }
   
   /* Skeleton Card Variants */
@@ -1728,15 +1728,15 @@ body {
   
   /* Mobile Modals */
   .mobile-modal {
-    @apply fixed inset-0 z-50 bg-white md:bg-black md:bg-opacity-50 md:backdrop-blur-sm;
+    @apply fixed inset-0 z-50 bg-white md:glass-modal-backdrop;
   }
   
   .mobile-modal-content {
-    @apply h-full md:h-auto md:max-h-[90vh] md:rounded-lg md:shadow-xl;
+    @apply h-full md:h-auto md:max-h-[90vh] md:glass-modal md:rounded-lg md:shadow-xl;
   }
   
   .mobile-modal-header {
-    @apply flex items-center justify-between p-4 border-b border-gray-200 md:rounded-t-lg;
+    @apply glass-sm flex items-center justify-between p-4 border-b border-white/20 md:rounded-t-lg;
   }
   
   .mobile-modal-body {
@@ -1744,7 +1744,7 @@ body {
   }
   
   .mobile-modal-footer {
-    @apply p-4 border-t border-gray-200 md:rounded-b-lg;
+    @apply glass-sm p-4 border-t border-white/20 md:rounded-b-lg;
   }
   
   /* Mobile Tables */

@@ -134,16 +134,16 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div 
-        className="search-modal-backdrop"
+        className="glass-modal-backdrop"
         onClick={onClose}
       />
       
       {/* Modal */}
       <div className="search-modal-container">
         <div className="search-modal-content">
-          <div className="card-elevated card-lg bg-white">
+          <div className="glass-modal card-lg">
             {/* Search Input */}
-            <div className="p-6 border-b border-gray-200">
+            <div className="glass-sm p-6 border-b border-white/20">
               <div className="relative">
                 <input
                   ref={inputRef}
@@ -151,14 +151,14 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search pages, features, and content..."
-                  className="search-input"
+                  className="glass-sm search-input focus:glass-focus"
                 />
                 <svg className="absolute left-4 top-4 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <button
                   onClick={onClose}
-                  className="absolute right-4 top-4 p-1 text-gray-400 hover:text-gray-600"
+                  className="glass-sm absolute right-4 top-4 p-1 text-gray-400 hover:text-gray-600 hover:glass-hover"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -176,8 +176,8 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       key={result.href}
                       href={result.href}
                       onClick={onClose}
-                      className={`search-result-item ${
-                        index === selectedIndex ? 'search-result-item-selected' : ''
+                      className={`glass-sm search-result-item hover:glass-hover ${
+                        index === selectedIndex ? 'glass-blue search-result-item-selected' : ''
                       }`}
                     >
                       <div className="flex items-start space-x-3">
