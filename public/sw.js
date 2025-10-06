@@ -60,9 +60,13 @@ self.addEventListener('activate', (event) => {
         return Promise.all(
           cacheNames
             .filter((cacheName) => {
+              // Only delete old caches, preserve current ones and Next.js chunks
               return cacheName !== CACHE_NAME && 
                      cacheName !== STATIC_CACHE && 
-                     cacheName !== DYNAMIC_CACHE;
+                     cacheName !== DYNAMIC_CACHE &&
+                     !cacheName.includes('nextjs') &&
+                     !cacheName.includes('chunk') &&
+                     !cacheName.includes('webpack');
             })
             .map((cacheName) => {
               console.log('Service Worker: Deleting old cache', cacheName);

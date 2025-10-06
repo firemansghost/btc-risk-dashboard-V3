@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { checkAndForceRefresh, CACHE_BUST_VERSION } from '@/lib/cacheBusting';
+import { CACHE_BUST_VERSION } from '@/lib/cacheBusting';
+import { setupChunkErrorHandling } from '@/lib/chunkErrorHandler';
 
 interface CacheBusterProps {
   enabled?: boolean;
@@ -15,8 +16,16 @@ export default function CacheBuster({
   useEffect(() => {
     if (!enabled) return;
     
-    // Check if we need to force a refresh
-    checkAndForceRefresh();
+    // Setup chunk error handling to prevent chunk loading failures
+    setupChunkErrorHandling();
+    
+    // Only check version on initial load, don't force refresh aggressively
+    const storedVersion = localStorage.getItem('app-version');
+    if (storedVersion !== version) {
+      localStorage.setItem('app-version', version);
+      // Don't force refresh immediately, let the user continue
+      console.log('App version updated to', version);
+    }
     
     // Add a version meta tag to help with debugging
     const metaVersion = document.querySelector('meta[name="app-version"]');

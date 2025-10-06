@@ -1,36 +1,43 @@
 'use client';
 
 import React, { useState, Suspense } from 'react';
-import dynamic from 'next/dynamic';
+import { createRobustCardImport, createRobustModalImport } from '@/lib/robustDynamicImport';
 
-// Dynamic imports to reduce bundle size
-const StrategyComparisonCard = dynamic(() => import('../components/StrategyComparisonCard'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>
-});
+// Robust dynamic imports with chunk error handling
+const StrategyComparisonCard = createRobustCardImport(
+  () => import('../components/StrategyComparisonCard'),
+  'strategy-comparison'
+);
 
-const StrategyTester = dynamic(() => import('../components/StrategyTester'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>
-});
+const StrategyTester = createRobustCardImport(
+  () => import('../components/StrategyTester'),
+  'strategy-tester'
+);
 
-const BacktestingInsights = dynamic(() => import('../components/BacktestingInsights'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>
-});
+const BacktestingInsights = createRobustCardImport(
+  () => import('../components/BacktestingInsights'),
+  'backtesting-insights'
+);
 
-const RiskBandAnalysis = dynamic(() => import('../components/RiskBandAnalysis'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>
-});
+const RiskBandAnalysis = createRobustCardImport(
+  () => import('../components/RiskBandAnalysis'),
+  'risk-band-analysis'
+);
 
-const InvestmentGlossary = dynamic(() => import('../components/InvestmentGlossary'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>
-});
+const InvestmentGlossary = createRobustCardImport(
+  () => import('../components/InvestmentGlossary'),
+  'investment-glossary'
+);
 
-const BacktestingStatus = dynamic(() => import('../components/BacktestingStatus'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>
-});
+const BacktestingStatus = createRobustCardImport(
+  () => import('../components/BacktestingStatus'),
+  'backtesting-status'
+);
 
-const BacktestingDisclosures = dynamic(() => import('../components/BacktestingDisclosures'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>
-});
+const BacktestingDisclosures = createRobustCardImport(
+  () => import('../components/BacktestingDisclosures'),
+  'backtesting-disclosures'
+);
 
 export default function StrategyAnalysisPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'tester' | 'insights' | 'risk-bands' | 'glossary'>('overview');

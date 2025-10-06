@@ -1,31 +1,31 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import dynamicImport from 'next/dynamic';
+import { createRobustCardImport, createRobustChartImport } from '@/lib/robustDynamicImport';
 
 // Note: This is a client component, so we can't use server-side exports like dynamic or revalidate
 // Caching prevention is handled through the API calls with cache-busting timestamps
 
-// Dynamic imports with proper error boundaries
-const IndividualETFPredictions = dynamicImport(() => import('../components/IndividualETFPredictions'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>,
-  ssr: false
-});
+// Robust dynamic imports with chunk error handling
+const IndividualETFPredictions = createRobustCardImport(
+  () => import('../components/IndividualETFPredictions'),
+  'individual-etf-predictions'
+);
 
-const PredictionChart = dynamicImport(() => import('../components/PredictionChart'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>,
-  ssr: false
-});
+const PredictionChart = createRobustChartImport(
+  () => import('../components/PredictionChart'),
+  'prediction-chart'
+);
 
-const ModelPerformance = dynamicImport(() => import('../components/ModelPerformance'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>,
-  ssr: false
-});
+const ModelPerformance = createRobustCardImport(
+  () => import('../components/ModelPerformance'),
+  'model-performance'
+);
 
-const PredictionSettings = dynamicImport(() => import('../components/PredictionSettings'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>,
-  ssr: false
-});
+const PredictionSettings = createRobustCardImport(
+  () => import('../components/PredictionSettings'),
+  'prediction-settings'
+);
 
 // Trading day utilities
 function isBusinessDay(date: Date): boolean {
