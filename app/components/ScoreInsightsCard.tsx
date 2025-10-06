@@ -44,7 +44,10 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     factorCorrelations: false,
     riskConcentration: false,
     dataConfidence: false,
-    recommendations: false
+    recommendations: false,
+    scoreMakesSense: false,
+    actionableInsights: false,
+    smartContextAnalysis: false
   });
 
   // Toggle individual section expansion
@@ -1353,13 +1356,22 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
       {/* Context Explanation Section */}
       <div className="mb-6 p-5 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200 shadow-sm">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="bg-blue-200 p-2 rounded-lg">
-            <span className="text-lg">💡</span>
+        <div 
+          className="flex items-center justify-between cursor-pointer mb-4"
+          onClick={() => toggleSection('scoreMakesSense')}
+        >
+          <div className="flex items-center gap-3">
+            <div className="bg-blue-200 p-2 rounded-lg">
+              <span className="text-lg">💡</span>
+            </div>
+            <h4 className="text-base font-semibold text-blue-800">Why This Score Makes Sense</h4>
           </div>
-          <h4 className="text-base font-semibold text-blue-800">Why This Score Makes Sense</h4>
+          <span className="text-lg transition-transform duration-200">
+            {expandedSections.scoreMakesSense ? '🔽' : '▶️'}
+          </span>
         </div>
         
+        {expandedSections.scoreMakesSense && (
         <div className="text-sm text-gray-700 space-y-2">
           {(() => {
             // Determine market context and explain why the score makes sense
@@ -1443,17 +1455,27 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             }
           })()}
         </div>
+        )}
       </div>
 
       {/* Actionable Insights Section */}
       <div className="mb-6 p-5 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200 shadow-sm">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="bg-purple-200 p-2 rounded-lg">
-            <span className="text-lg">🎯</span>
+        <div 
+          className="flex items-center justify-between cursor-pointer mb-4"
+          onClick={() => toggleSection('actionableInsights')}
+        >
+          <div className="flex items-center gap-3">
+            <div className="bg-purple-200 p-2 rounded-lg">
+              <span className="text-lg">🎯</span>
+            </div>
+            <h4 className="text-base font-semibold text-purple-800">Actionable Insights</h4>
           </div>
-          <h4 className="text-base font-semibold text-purple-800">Actionable Insights</h4>
+          <span className="text-lg transition-transform duration-200">
+            {expandedSections.actionableInsights ? '🔽' : '▶️'}
+          </span>
         </div>
         
+        {expandedSections.actionableInsights && (
         <div className="space-y-3">
           {(() => {
             // Generate actionable insights based on current factors and market conditions
@@ -1562,17 +1584,27 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             ));
           })()}
         </div>
+        )}
       </div>
 
       {/* Smart Context Section */}
       <div className="mb-6 p-5 bg-gradient-to-r from-indigo-50 to-purple-100 rounded-xl border border-indigo-200 shadow-sm">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="bg-indigo-200 p-2 rounded-lg">
-            <span className="text-lg">🧠</span>
+        <div 
+          className="flex items-center justify-between cursor-pointer mb-4"
+          onClick={() => toggleSection('smartContextAnalysis')}
+        >
+          <div className="flex items-center gap-3">
+            <div className="bg-indigo-200 p-2 rounded-lg">
+              <span className="text-lg">🧠</span>
+            </div>
+            <h4 className="text-base font-semibold text-indigo-800">Smart Context Analysis</h4>
           </div>
-          <h4 className="text-base font-semibold text-indigo-800">Smart Context Analysis</h4>
+          <span className="text-lg transition-transform duration-200">
+            {expandedSections.smartContextAnalysis ? '🔽' : '▶️'}
+          </span>
         </div>
         
+        {expandedSections.smartContextAnalysis && (
         <div className="space-y-4">
           {(() => {
             // Generate smart context based on current market conditions and historical data
@@ -1691,6 +1723,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             ));
           })()}
         </div>
+        )}
       </div>
 
       {/* Factor Volatility Analysis */}
