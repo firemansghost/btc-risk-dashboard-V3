@@ -1,3 +1,4 @@
+import React from 'react';
 import dynamic from 'next/dynamic';
 import { createChunkSafeDynamicImport } from './chunkErrorHandler';
 
@@ -21,7 +22,9 @@ export function createRobustDynamicImport<T = any>(
   });
   
   return dynamic(safeImportFn, {
-    loading: loading || (() => <div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>),
+    loading: loading || (() => React.createElement('div', { 
+      className: 'animate-pulse bg-gray-200 rounded-lg h-32' 
+    })),
     ssr,
     // Add error boundary for chunk loading failures
     onError: (error) => {
@@ -34,8 +37,12 @@ export function createRobustDynamicImport<T = any>(
 // Pre-configured robust dynamic imports for common patterns
 export const createRobustModalImport = (importFn: () => Promise<any>, chunkName?: string) => {
   return createRobustDynamicImport(importFn, {
-    loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>,
-    fallback: () => <div className="text-center p-4 text-gray-500">Modal failed to load</div>,
+    loading: () => React.createElement('div', { 
+      className: 'animate-pulse bg-gray-200 rounded-lg h-64' 
+    }),
+    fallback: () => React.createElement('div', { 
+      className: 'text-center p-4 text-gray-500' 
+    }, 'Modal failed to load'),
     chunkName,
     ssr: false
   });
@@ -43,8 +50,12 @@ export const createRobustModalImport = (importFn: () => Promise<any>, chunkName?
 
 export const createRobustCardImport = (importFn: () => Promise<any>, chunkName?: string) => {
   return createRobustDynamicImport(importFn, {
-    loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>,
-    fallback: () => <div className="text-center p-4 text-gray-500">Card failed to load</div>,
+    loading: () => React.createElement('div', { 
+      className: 'animate-pulse bg-gray-200 rounded-lg h-32' 
+    }),
+    fallback: () => React.createElement('div', { 
+      className: 'text-center p-4 text-gray-500' 
+    }, 'Card failed to load'),
     chunkName,
     ssr: false
   });
@@ -52,8 +63,12 @@ export const createRobustCardImport = (importFn: () => Promise<any>, chunkName?:
 
 export const createRobustChartImport = (importFn: () => Promise<any>, chunkName?: string) => {
   return createRobustDynamicImport(importFn, {
-    loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>,
-    fallback: () => <div className="text-center p-4 text-gray-500">Chart failed to load</div>,
+    loading: () => React.createElement('div', { 
+      className: 'animate-pulse bg-gray-200 rounded-lg h-64' 
+    }),
+    fallback: () => React.createElement('div', { 
+      className: 'text-center p-4 text-gray-500' 
+    }, 'Chart failed to load'),
     chunkName,
     ssr: false
   });
