@@ -86,7 +86,7 @@ export default function Navigation() {
   return (
     <>
       {/* Sticky Navigation */}
-      <nav className={`nav-sticky ${isScrolled ? 'nav-sticky-scrolled' : ''}`}>
+      <nav className={`glass-nav ${isScrolled ? 'glass-nav-sticky' : ''}`}>
         <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -102,8 +102,8 @@ export default function Navigation() {
                   href={item.href}
                   className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 min-w-0 flex-shrink-0 ${
                     pathname === item.href
-                      ? 'bg-emerald-50 text-emerald-700 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'glass-blue text-blue-900 border border-blue-300/50'
+                      : 'text-gray-600 hover:text-gray-900 hover:glass-hover'
                   }`}
                 >
                   <span className="hidden lg:inline mr-2">{item.icon}</span>
@@ -117,7 +117,7 @@ export default function Navigation() {
               {/* Search Button */}
               <button
                 onClick={handleSearchClick}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                className="glass-sm p-2 text-gray-500 hover:text-gray-700 hover:glass-hover rounded-md transition-all duration-200"
                 aria-label="Search"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,7 +128,7 @@ export default function Navigation() {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                className="glass-sm md:hidden p-2 text-gray-500 hover:text-gray-700 hover:glass-hover rounded-md transition-all duration-200"
                 aria-label="Toggle menu"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,7 +141,7 @@ export default function Navigation() {
 
           {/* Mobile Menu */}
           {isMobileMenuOpen && (
-            <div className="nav-mobile-menu">
+            <div className="glass-sm nav-mobile-menu">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
@@ -149,8 +149,8 @@ export default function Navigation() {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`nav-mobile-item ${
                     pathname === item.href
-                      ? 'nav-mobile-item-active'
-                      : 'nav-mobile-item-inactive'
+                      ? 'glass-blue text-blue-900 border border-blue-300/50'
+                      : 'text-gray-600 hover:text-gray-900 hover:glass-hover'
                   }`}
                 >
                   <span className="mr-3">{item.icon}</span>
@@ -172,7 +172,7 @@ export default function Navigation() {
       {breadcrumbs.length > 1 && (
         <nav className="mb-4 sm:mb-6" aria-label="Breadcrumb">
           <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <ol className="breadcrumb">
+            <ol className="glass-sm breadcrumb rounded-lg p-2">
               {breadcrumbs.map((crumb, index) => (
                 <li key={crumb.href} className="flex items-center">
                   {index > 0 && (
@@ -184,8 +184,8 @@ export default function Navigation() {
                     href={crumb.href}
                     className={`breadcrumb-item ${
                       index === breadcrumbs.length - 1 
-                        ? 'breadcrumb-item-current' 
-                        : 'breadcrumb-item-inactive'
+                        ? 'glass-blue text-blue-900 border border-blue-300/50 px-2 py-1 rounded-md' 
+                        : 'text-gray-600 hover:text-gray-900 hover:glass-hover px-2 py-1 rounded-md'
                     }`}
                   >
                     {crumb.label}
