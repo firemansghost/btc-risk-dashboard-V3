@@ -61,7 +61,9 @@ export function clearAllStorage(): void {
     if ('indexedDB' in window) {
       indexedDB.databases?.().then(databases => {
         databases.forEach(db => {
-          indexedDB.deleteDatabase(db.name);
+          if (db.name) {
+            indexedDB.deleteDatabase(db.name);
+          }
         });
       });
     }
