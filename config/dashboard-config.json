@@ -224,7 +224,7 @@
       "label": "Moderate Buying", 
       "range": [35, 49], 
       "color": "yellow", 
-      "recommendation": "Reduce position size",
+      "recommendation": "Selective buying opportunities",
       "order": 3
     },
     { 

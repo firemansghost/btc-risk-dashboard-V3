@@ -10,7 +10,7 @@ export default function WhatIsRiskPage() {
   const riskBands = [
     { min: 0, max: 14, label: 'Aggressive Buying', color: 'green', description: 'Market gives you a friendlier spread. Historically better entry points.' },
     { min: 15, max: 34, label: 'Regular DCA Buying', color: 'green', description: 'Good conditions for regular purchases. Continue your strategy.' },
-    { min: 35, max: 49, label: 'Moderate Buying', color: 'yellow', description: 'Balanced conditions. Reduce position size and be more selective.' },
+    { min: 35, max: 49, label: 'Moderate Buying', color: 'yellow', description: 'Balanced conditions. Selective buying opportunities available.' },
     { min: 50, max: 64, label: 'Hold & Wait', color: 'orange', description: 'Hold existing positions. Wait for better conditions.' },
     { min: 65, max: 79, label: 'Reduce Risk', color: 'red', description: 'Consider taking profits. The spread is getting tough.' },
     { min: 80, max: 100, label: 'High Risk', color: 'red', description: 'Tough spread—mistakes cost more. Size down your conviction.' }
