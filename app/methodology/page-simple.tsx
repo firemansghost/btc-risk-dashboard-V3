@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import GlassmorphismTest from '../components/GlassmorphismTest';
 
 type Band = { key: string; label: string; range: [number, number]; color: string; recommendation: string };
 type Config = { bands: Band[]; factors: any[] };
@@ -55,10 +54,6 @@ export default function MethodologyPageSimple() {
       {/* Main Content */}
       <div className="space-y-8">
         
-        {/* Glassmorphism Test Component */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <GlassmorphismTest />
-        </div>
         
         {/* Overview */}
         <section id="overview" className="bg-white p-6 rounded-lg shadow">
