@@ -138,10 +138,10 @@ export default function FactorHistoryModal({ isOpen, onClose, factorKey, factorL
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white rounded-lg max-w-6xl w-full max-h-[95vh] overflow-hidden">
+    <div className="glass-modal-backdrop fixed inset-0 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="glass-modal rounded-lg max-w-6xl w-full max-h-[95vh] overflow-hidden">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 sm:p-6 border-b gap-4">
+        <div className="glass-sm flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 sm:p-6 border-b border-white/20 gap-4">
           <div>
             <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
               {factorLabel} - History
@@ -154,7 +154,7 @@ export default function FactorHistoryModal({ isOpen, onClose, factorKey, factorL
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 self-start sm:self-auto"
+            className="glass-sm text-gray-400 hover:text-gray-600 hover:glass-hover self-start sm:self-auto transition-all duration-200 p-1 rounded"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
