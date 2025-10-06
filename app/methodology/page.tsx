@@ -205,12 +205,28 @@ export default function MethodologyPage() {
               <div className="text-lg font-bold text-green-600">18%</div>
             </div>
             <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
-              <div className="text-sm font-medium text-purple-900">Term Structure</div>
+              <div className="text-sm font-medium text-purple-900">Term Structure & Leverage</div>
               <div className="text-lg font-bold text-purple-600">18%</div>
             </div>
             <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
               <div className="text-sm font-medium text-orange-900">ETF Flows</div>
               <div className="text-lg font-bold text-orange-600">10%</div>
+            </div>
+            <div className="p-3 bg-cyan-50 border border-cyan-200 rounded-lg">
+              <div className="text-sm font-medium text-cyan-900">Net Liquidity (FRED)</div>
+              <div className="text-lg font-bold text-cyan-600">10%</div>
+            </div>
+            <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+              <div className="text-sm font-medium text-indigo-900">On-chain Activity</div>
+              <div className="text-lg font-bold text-indigo-600">8%</div>
+            </div>
+            <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+              <div className="text-sm font-medium text-gray-900">Macro Overlay</div>
+              <div className="text-lg font-bold text-gray-600">6%</div>
+            </div>
+            <div className="p-3 bg-pink-50 border border-pink-200 rounded-lg">
+              <div className="text-sm font-medium text-pink-900">Social Interest</div>
+              <div className="text-lg font-bold text-pink-600">5%</div>
             </div>
           </div>
         </div>
