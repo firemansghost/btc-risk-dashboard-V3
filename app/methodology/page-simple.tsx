@@ -123,133 +123,405 @@ export default function MethodologyPageSimple() {
             </div>
           </div>
 
-          {/* Detailed Factor Breakdown */}
-          <div className="space-y-6">
-            {/* Liquidity/Flows Pillar */}
-            <div className="p-4 border border-gray-200 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3 text-green-700">Liquidity/Flows Pillar (38% total weight)</h3>
+          {/* Detailed Factor Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Trend & Valuation Factor Card */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full">Momentum / Valuation</span>
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Trend & Valuation</h3>
+              
               <div className="space-y-4">
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <h4 className="font-semibold text-green-800 mb-2">Stablecoins (18% weight)</h4>
-                  <p className="text-sm text-green-700 mb-2">
-                    <strong>Data Source:</strong> Multi-source fallback (CoinGecko → CoinMarketCap → CryptoCompare)
-                  </p>
-                  <p className="text-sm text-green-700 mb-2">
-                    <strong>Coverage:</strong> 7 stablecoins (USDT, USDC, DAI, BUSD, TUSD, FRAX, LUSD)
-                  </p>
-                  <p className="text-sm text-green-700">
-                    <strong>Logic:</strong> Higher aggregate supply growth = Lower risk. Uses 30-day weighted average with 365-day historical baseline.
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">What we look at</h4>
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    <li>• Price vs 200-day SMA (Mayer Multiple)</li>
+                    <li>• Distance to Bull Market Support Band (20W SMA / 21W EMA)</li>
+                    <li>• Weekly momentum (RSI proxy)</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Why it matters</h4>
+                  <p className="text-sm text-gray-700">
+                    Captures overextension versus long-term trend; extended runs above trend often cool. Most fundamental risk indicator providing cycle positioning.
                   </p>
                 </div>
                 
-                <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                  <h4 className="font-semibold text-orange-800 mb-2">ETF Flows (10% weight)</h4>
-                  <p className="text-sm text-orange-700 mb-2">
-                    <strong>Data Source:</strong> Farside Investors HTML scraping with business-day logic
-                  </p>
-                  <p className="text-sm text-orange-700 mb-2">
-                    <strong>Window:</strong> 21-day business-day rolling sum (excludes weekends/holidays)
-                  </p>
-                  <p className="text-sm text-orange-700">
-                    <strong>Logic:</strong> Higher flows = Lower risk. Business-day aware calculations for accurate institutional flow tracking.
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">How it affects risk</h4>
+                  <p className="text-sm text-gray-700">
+                    ↑ stretch above trend ↑ risk; below trend ↓ risk
                   </p>
                 </div>
                 
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 className="font-semibold text-blue-800 mb-2">Net Liquidity (10% weight)</h4>
-                  <p className="text-sm text-blue-700 mb-2">
-                    <strong>Data Source:</strong> FRED API (WALCL, RRPONTSYD, WTREGEN)
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
+                  <p className="text-sm text-gray-700">Daily; stale >48h</p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
+                  <p className="text-sm text-gray-700">
+                    <a href="https://coingecko.com" className="text-blue-600 hover:underline">CoinGecko</a> price data, Rolling SMAs/EMA
                   </p>
-                  <p className="text-sm text-blue-700 mb-2">
-                    <strong>Components:</strong> Fed Balance Sheet - Reverse Repo - Treasury General Account
-                  </p>
-                  <p className="text-sm text-blue-700">
-                    <strong>Logic:</strong> Higher liquidity growth = Lower risk. Multi-factor composite with 4-week rate of change and 12-week momentum.
-                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Caveats</h4>
+                  <p className="text-sm text-gray-700">Trend can stay elevated in strong markets.</p>
                 </div>
               </div>
             </div>
 
-            {/* Momentum/Valuation Pillar */}
-            <div className="p-4 border border-gray-200 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3 text-blue-700">Momentum/Valuation Pillar (33% total weight)</h3>
+            {/* Stablecoins Factor Card */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">Liquidity / Flows</span>
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Stablecoins</h3>
+              
               <div className="space-y-4">
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 className="font-semibold text-blue-800 mb-2">Trend & Valuation (25% weight)</h4>
-                  <p className="text-sm text-blue-700 mb-2">
-                    <strong>Data Source:</strong> CoinGecko Bitcoin price data with enhanced caching
-                  </p>
-                  <p className="text-sm text-blue-700 mb-2">
-                    <strong>Components:</strong> Bull Market Support Band (60%), Mayer Multiple (30%), Weekly RSI (10%)
-                  </p>
-                  <p className="text-sm text-blue-700">
-                    <strong>Logic:</strong> Higher values = Higher risk. Most fundamental risk indicator providing cycle positioning.
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">What we look at</h4>
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    <li>• 30-day change in total USDT/USDC (and 5 others)</li>
+                    <li>• Market-cap weighted supply growth</li>
+                    <li>• 365-day historical baseline percentile</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Why it matters</h4>
+                  <p className="text-sm text-gray-700">
+                    Stablecoin supply precedes on-exchange buying capacity. Crypto-native liquidity indicator with enhanced 7-coin coverage.
                   </p>
                 </div>
                 
-                <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
-                  <h4 className="font-semibold text-indigo-800 mb-2">On-chain Activity (8% weight)</h4>
-                  <p className="text-sm text-indigo-700 mb-2">
-                    <strong>Data Source:</strong> Multi-source fallback (Blockchain.info → Mempool.space → Mempool.observer)
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">How it affects risk</h4>
+                  <p className="text-sm text-gray-700">
+                    ↑ supply growth ↓ risk; contractions ↑ risk
                   </p>
-                  <p className="text-sm text-indigo-700 mb-2">
-                    <strong>Components:</strong> Network Congestion (60%), Transaction Activity (40%), Hash Rate Security (±5 points)
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
+                  <p className="text-sm text-gray-700">Daily; stale >48h</p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
+                  <p className="text-sm text-gray-700">
+                    <a href="https://coingecko.com" className="text-blue-600 hover:underline">CoinGecko</a>, <a href="https://coinmarketcap.com" className="text-blue-600 hover:underline">CoinMarketCap</a>, <a href="https://cryptocompare.com" className="text-blue-600 hover:underline">CryptoCompare</a>
                   </p>
-                  <p className="text-sm text-indigo-700">
-                    <strong>Logic:</strong> Higher congestion + activity = Higher risk; higher security = Lower risk.
-                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Caveats</h4>
+                  <p className="text-sm text-gray-700">Exchange behavior and chain migrations can add noise.</p>
                 </div>
               </div>
             </div>
 
-            {/* Term Structure/Leverage Pillar */}
-            <div className="p-4 border border-gray-200 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3 text-purple-700">Term Structure/Leverage Pillar (18% total weight)</h3>
-              <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                <h4 className="font-semibold text-purple-800 mb-2">Term Structure & Leverage (18% weight)</h4>
-                <p className="text-sm text-purple-700 mb-2">
-                  <strong>Data Source:</strong> Multi-exchange fallback (BitMEX → Binance → OKX) + CoinGecko spot prices
-                </p>
-                <p className="text-sm text-purple-700 mb-2">
-                  <strong>Components:</strong> Funding Rate Level (40%), Funding Volatility (35%), Term Structure Stress (25%)
-                </p>
-                <p className="text-sm text-purple-700">
-                  <strong>Logic:</strong> Higher funding + higher volatility + higher stress = Higher risk. Critical for understanding market stress and leverage cycles.
-                </p>
+            {/* Net Liquidity Factor Card */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">Liquidity / Flows</span>
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Net Liquidity</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">What we look at</h4>
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    <li>• Fed balance sheet (WALCL)</li>
+                    <li>• Reverse Repo (RRPONTSYD)</li>
+                    <li>• Treasury General Account (WTREGEN) → net liquidity proxy</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Why it matters</h4>
+                  <p className="text-sm text-gray-700">
+                    Liquidity conditions shape risk appetite; shrinking liquidity pressures risk assets. Fed balance sheet backdrop for market conditions.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">How it affects risk</h4>
+                  <p className="text-sm text-gray-700">
+                    ↓ net liquidity / negative Δ ↑ risk; ↑ liquidity ↓ risk
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
+                  <p className="text-sm text-gray-700">Weekly; stale >8 days</p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
+                  <p className="text-sm text-gray-700">
+                    <a href="https://fred.stlouisfed.org" className="text-blue-600 hover:underline">St. Louis Fed (FRED)</a>
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Caveats</h4>
+                  <p className="text-sm text-gray-700">Macro proxy; indirect for BTC.</p>
+                </div>
               </div>
             </div>
 
-            {/* Social/Attention Pillar */}
-            <div className="p-4 border border-gray-200 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3 text-yellow-700">Social/Attention Pillar (5% total weight)</h3>
-              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <h4 className="font-semibold text-yellow-800 mb-2">Social Interest (5% weight)</h4>
-                <p className="text-sm text-yellow-700 mb-2">
-                  <strong>Data Source:</strong> CoinGecko trending data + price momentum analysis
-                </p>
-                <p className="text-sm text-yellow-700 mb-2">
-                  <strong>Components:</strong> Search Attention (70%), Price Momentum (30%)
-                </p>
-                <p className="text-sm text-yellow-700">
-                  <strong>Logic:</strong> Higher search attention + bullish momentum = Higher risk. Least predictive but useful sentiment indicator.
-                </p>
+            {/* ETF Flows Factor Card */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">Liquidity / Flows</span>
+              </div>
+              <h3 className="text-xl font-semibold mb-4">ETF Flows</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">What we look at</h4>
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    <li>• US spot BTC ETF net creations/redemptions</li>
+                    <li>• 21-day business-day flow momentum</li>
+                    <li>• Weekend/holiday exclusion logic</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Why it matters</h4>
+                  <p className="text-sm text-gray-700">
+                    Proxies institutional demand via regulated vehicles. Major institutional adoption indicator with business-day awareness.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">How it affects risk</h4>
+                  <p className="text-sm text-gray-700">
+                    ↑ sustained inflows ↓ risk; persistent outflows ↑ risk
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
+                  <p className="text-sm text-gray-700">Business days; stale >72h</p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
+                  <p className="text-sm text-gray-700">
+                    <a href="https://farside.co" className="text-blue-600 hover:underline">Farside Provider CSVs</a>
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Caveats</h4>
+                  <p className="text-sm text-gray-700">Holidays/reporting lags.</p>
+                </div>
               </div>
             </div>
 
-            {/* Macro Overlay Pillar */}
-            <div className="p-4 border border-gray-200 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3 text-red-700">Macro Overlay Pillar (6% total weight)</h3>
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <h4 className="font-semibold text-red-800 mb-2">Macro Overlay (6% weight)</h4>
-                <p className="text-sm text-red-700 mb-2">
-                  <strong>Data Source:</strong> Enhanced FRED API (DXY, 2Y/10Y Treasury, VIX, 10Y TIPS)
-                </p>
-                <p className="text-sm text-red-700 mb-2">
-                  <strong>Components:</strong> Dollar Strength (40%), Interest Rates (35%), VIX Risk Appetite (25%)
-                </p>
-                <p className="text-sm text-red-700">
-                  <strong>Logic:</strong> Dollar strength + rising rates + market fear = Higher risk. External macroeconomic factors.
-                </p>
+            {/* On-chain Activity Factor Card */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">Momentum / Valuation</span>
+              </div>
+              <h3 className="text-xl font-semibold mb-4">On-chain Activity</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">What we look at</h4>
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    <li>• Network congestion (transaction fees vs historical)</li>
+                    <li>• Transaction activity (normalized daily count)</li>
+                    <li>• Hash rate security bonus/penalty (±5 points)</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Why it matters</h4>
+                  <p className="text-sm text-gray-700">
+                    Core Bitcoin network metrics. Network congestion and activity indicate usage pressure and potential stress.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">How it affects risk</h4>
+                  <p className="text-sm text-gray-700">
+                    ↑ congestion + activity ↑ risk; ↑ security ↓ risk
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
+                  <p className="text-sm text-gray-700">Daily; stale >24h</p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
+                  <p className="text-sm text-gray-700">
+                    <a href="https://blockchain.info" className="text-blue-600 hover:underline">Blockchain.info</a>, <a href="https://mempool.space" className="text-blue-600 hover:underline">Mempool.space</a>, <a href="https://mempool.observer" className="text-blue-600 hover:underline">Mempool.observer</a>
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Caveats</h4>
+                  <p className="text-sm text-gray-700">Network upgrades and fee market changes can affect metrics.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Term Structure & Leverage Factor Card */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded-full">Term Structure / Leverage</span>
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Term Structure & Leverage</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">What we look at</h4>
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    <li>• Funding rate level across exchanges</li>
+                    <li>• Funding rate volatility (instability)</li>
+                    <li>• Term structure stress indicator</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Why it matters</h4>
+                  <p className="text-sm text-gray-700">
+                    Derivatives market health and leverage cycles. Critical for understanding market stress and funding conditions.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">How it affects risk</h4>
+                  <p className="text-sm text-gray-700">
+                    ↑ funding + ↑ volatility + ↑ stress ↑ risk
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
+                  <p className="text-sm text-gray-700">6-hour; stale >12h</p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
+                  <p className="text-sm text-gray-700">
+                    <a href="https://bitmex.com" className="text-blue-600 hover:underline">BitMEX</a>, <a href="https://binance.com" className="text-blue-600 hover:underline">Binance</a>, <a href="https://okx.com" className="text-blue-600 hover:underline">OKX</a>
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Caveats</h4>
+                  <p className="text-sm text-gray-700">Exchange-specific funding rate differences can vary.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Social Interest Factor Card */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-700 rounded-full">Social / Attention</span>
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Social Interest</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">What we look at</h4>
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    <li>• Bitcoin trending rank on CoinGecko</li>
+                    <li>• 7-day vs 7-day price momentum</li>
+                    <li>• Search attention patterns</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Why it matters</h4>
+                  <p className="text-sm text-gray-700">
+                    Sentiment indicator and attention proxy. Least predictive but useful for understanding market psychology.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">How it affects risk</h4>
+                  <p className="text-sm text-gray-700">
+                    ↑ search attention + ↑ momentum ↑ risk
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
+                  <p className="text-sm text-gray-700">6-hour; stale >12h</p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
+                  <p className="text-sm text-gray-700">
+                    <a href="https://coingecko.com" className="text-blue-600 hover:underline">CoinGecko</a> trending data, Price momentum analysis
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Caveats</h4>
+                  <p className="text-sm text-gray-700">Social sentiment can be manipulated and is least predictive.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Macro Overlay Factor Card */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-700 rounded-full">Macro Overlay</span>
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Macro Overlay</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">What we look at</h4>
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    <li>• Dollar strength (DXY momentum)</li>
+                    <li>• Interest rate environment (2Y/10Y Treasury)</li>
+                    <li>• Risk appetite gauge (VIX level + momentum)</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Why it matters</h4>
+                  <p className="text-sm text-gray-700">
+                    External macroeconomic factors. Dollar strength, rising rates, and market fear affect risk asset performance.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">How it affects risk</h4>
+                  <p className="text-sm text-gray-700">
+                    ↑ dollar strength + ↑ rates + ↑ fear ↑ risk
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
+                  <p className="text-sm text-gray-700">Daily; stale >48h</p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
+                  <p className="text-sm text-gray-700">
+                    <a href="https://fred.stlouisfed.org" className="text-blue-600 hover:underline">St. Louis Fed (FRED)</a> API
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Caveats</h4>
+                  <p className="text-sm text-gray-700">Macro factors are indirect and can have delayed effects on BTC.</p>
+                </div>
               </div>
             </div>
           </div>
