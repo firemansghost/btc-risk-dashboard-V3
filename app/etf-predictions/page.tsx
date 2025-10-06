@@ -3,9 +3,8 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import dynamicImport from 'next/dynamic';
 
-// Force no caching for this page
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Note: This is a client component, so we can't use server-side exports like dynamic or revalidate
+// Caching prevention is handled through the API calls with cache-busting timestamps
 
 // Dynamic imports with proper error boundaries
 const IndividualETFPredictions = dynamicImport(() => import('../components/IndividualETFPredictions'), {
