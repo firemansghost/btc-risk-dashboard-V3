@@ -257,10 +257,10 @@ export default function WhatIfWeightsModal({ isOpen, onClose }: WhatIfWeightsMod
   ) || [];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" role="dialog" aria-modal>
-      <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+    <div className="glass-modal-backdrop fixed inset-0 flex items-center justify-center z-50 p-4" role="dialog" aria-modal>
+      <div className="glass-modal bg-white/80 backdrop-blur-xl rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-white/20">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="glass-sm flex items-center justify-between p-6 border-b border-white/20">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">What-If Weights</h2>
             {config?.digest && (
@@ -302,23 +302,23 @@ export default function WhatIfWeightsModal({ isOpen, onClose }: WhatIfWeightsMod
           {config && latestSnapshot && !loading && !error && (
             <>
               {/* Tabs */}
-              <div className="flex gap-2 mb-6 border-b border-gray-200">
+              <div className="glass-sm flex gap-2 mb-6 border-b border-white/20 p-2 rounded-lg">
                 <button
                   onClick={() => setTab('pillars')}
-                  className={`px-4 py-2 text-sm font-medium ${
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
                     tab === 'pillars' 
-                      ? 'text-emerald-600 border-b-2 border-emerald-600' 
-                      : 'text-gray-600 hover:text-gray-800'
+                      ? 'glass-blue text-blue-900 border border-blue-300/50' 
+                      : 'text-gray-600 hover:text-gray-800 hover:glass-hover'
                   }`}
                 >
                   Pillars
                 </button>
                 <button
                   onClick={() => setTab('advanced')}
-                  className={`px-4 py-2 text-sm font-medium ${
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
                     tab === 'advanced' 
-                      ? 'text-emerald-600 border-b-2 border-emerald-600' 
-                      : 'text-gray-600 hover:text-gray-800'
+                      ? 'glass-blue text-blue-900 border border-blue-300/50' 
+                      : 'text-gray-600 hover:text-gray-800 hover:glass-hover'
                   }`}
                 >
                   Advanced
@@ -327,7 +327,7 @@ export default function WhatIfWeightsModal({ isOpen, onClose }: WhatIfWeightsMod
 
               {/* Preview Card */}
               {preview && (
-                <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+                <div className="glass-card mb-6 p-4 rounded-lg border border-white/20">
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-sm text-gray-500 mb-1">Preview Composite Score</div>
@@ -445,12 +445,12 @@ export default function WhatIfWeightsModal({ isOpen, onClose }: WhatIfWeightsMod
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
+        <div className="glass-sm flex items-center justify-between p-6 border-t border-white/20">
           <button
             onClick={resetSliders}
             disabled={!config}
             title="Restore configuration defaults (no persistence)"
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="glass-sm px-4 py-2 text-sm font-medium text-gray-700 rounded-lg hover:glass-hover focus:glass-focus active:glass-active disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           >
             Reset to Defaults
           </button>
@@ -458,13 +458,13 @@ export default function WhatIfWeightsModal({ isOpen, onClose }: WhatIfWeightsMod
             <button
               onClick={copyConfigJSON}
               disabled={!config}
-              className="px-4 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="glass-green px-4 py-2 text-sm font-medium text-green-800 rounded-lg hover:glass-hover focus:glass-focus active:glass-active disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               Copy Config JSON
             </button>
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700"
+              className="glass-blue px-4 py-2 text-sm font-medium text-blue-900 rounded-lg hover:glass-hover focus:glass-focus active:glass-active transition-all duration-200"
             >
               Close
             </button>
