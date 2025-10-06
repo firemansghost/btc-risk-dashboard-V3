@@ -135,19 +135,19 @@ export default function MethodologyPage() {
               <div className="space-y-2">
                 <div className="flex items-center gap-3">
                   <div className="w-4 h-4 bg-emerald-500 rounded"></div>
-                  <span className="text-body">80-100: Low Risk</span>
+                  <span className="text-body">0-34: Low Risk (Aggressive & DCA Buying)</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-4 h-4 bg-yellow-500 rounded"></div>
-                  <span className="text-body">60-79: Moderate Risk</span>
+                  <span className="text-body">35-64: Moderate Risk (Moderate Buying & Hold)</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-4 h-4 bg-orange-500 rounded"></div>
-                  <span className="text-body">40-59: High Risk</span>
+                  <span className="text-body">65-79: High Risk (Reduce Risk)</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-4 h-4 bg-red-500 rounded"></div>
-                  <span className="text-body">0-39: Very High Risk</span>
+                  <span className="text-body">80-100: Very High Risk (High Risk)</span>
                 </div>
               </div>
             </div>
