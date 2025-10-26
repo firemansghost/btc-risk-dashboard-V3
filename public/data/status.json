@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-10-25T11:17:49.840Z",
+  "updated_at": "2025-10-26T11:18:07.953Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -29,7 +29,7 @@
       "name": "Stooq",
       "ok": true,
       "url": "https://stooq.com/",
-      "ms": 863,
+      "ms": 944,
       "fallback": false,
       "cache_used": false,
       "fallback_used": false
@@ -38,49 +38,49 @@
       "name": "History: trend_valuation",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 39
+      "total_rows": 40
     },
     {
       "name": "History: onchain",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 60
+      "total_rows": 61
     },
     {
       "name": "History: stablecoins",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 58
+      "total_rows": 59
     },
     {
       "name": "History: etf_flows",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 453
+      "total_rows": 454
     },
     {
       "name": "History: net_liquidity",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 110
+      "total_rows": 111
     },
     {
       "name": "History: term_leverage",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 54
+      "total_rows": 55
     },
     {
       "name": "History: macro_overlay",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 39
+      "total_rows": 40
     },
     {
       "name": "History: social_interest",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 39
+      "total_rows": 40
     }
   ],
   "factors_computed": 8,
@@ -89,7 +89,7 @@
     "status": "success",
     "source": "Stooq",
     "fallback_used": false,
-    "latency_ms": 863
+    "latency_ms": 944
   },
   "satoshis_per_dollar": {
     "status": "success",
@@ -97,16 +97,16 @@
     "derived": true
   },
   "etf_schema_hash": "cd3800",
-  "etf_schema_last_check": "2025-10-25T11:17:34.964Z",
+  "etf_schema_last_check": "2025-10-26T11:17:53.494Z",
   "price_history": {
     "total_rows": 729,
-    "oldest_date": "2023-10-26",
-    "newest_date": "2025-10-25",
+    "oldest_date": "2023-10-27",
+    "newest_date": "2025-10-26",
     "alpha_vantage_backfill": null,
     "coinbase_daily_update": {
       "status": "success",
       "rows_fetched": 14,
-      "ms": 73
+      "ms": 106
     },
     "drift_check": null
   }
