@@ -7,42 +7,42 @@ const factorMetadata: Record<string, { sources: string[], description: string, c
   'stablecoins': {
     sources: ['CoinGecko', 'Tether', 'Circle'],
     description: 'Stablecoin Supply & Market Share',
-    csvFile: 'stablecoins_30d.csv'
+    csvFile: 'signals/stablecoins_30d.csv'
   },
   'etf_flows': {
     sources: ['Farside', 'SEC Filings'],
     description: 'Bitcoin ETF Flow Data',
-    csvFile: 'etf_flows_21d.csv'
+    csvFile: 'signals/etf_flows_21d.csv'
   },
   'net_liquidity': {
     sources: ['FRED (St. Louis Fed)', 'Federal Reserve'],
     description: 'Net Liquidity Indicators',
-    csvFile: 'net_liquidity_20d.csv'
+    csvFile: 'signals/net_liquidity_20d.csv'
   },
   'trend_valuation': {
     sources: ['Coinbase', 'Bitcoin Historical Data'],
     description: 'Trend & Valuation Analysis',
-    csvFile: 'mayer_multiple.csv'
+    csvFile: 'signals/mayer_multiple.csv'
   },
   'onchain': {
     sources: ['Blockchain.info', 'Mempool.space', 'Coinbase'],
     description: 'On-chain Activity Metrics',
-    csvFile: 'onchain_activity.csv'
+    csvFile: 'signals/onchain_activity.csv'
   },
   'term_leverage': {
     sources: ['Deribit', 'Binance', 'OKX'],
     description: 'Term Structure & Leverage',
-    csvFile: 'funding_7d.csv'
+    csvFile: 'signals/funding_7d.csv'
   },
   'macro_overlay': {
     sources: ['FRED', 'Federal Reserve', 'TradingView'],
     description: 'Macroeconomic Overlay',
-    csvFile: 'dxy_20d.csv'
+    csvFile: 'signals/dxy_20d.csv'
   },
   'social_interest': {
     sources: ['Alternative.me', 'Fear & Greed Index'],
     description: 'Social Interest & Sentiment',
-    csvFile: 'fear_greed.csv'
+    csvFile: 'signals/fear_greed.csv'
   }
 };
 
