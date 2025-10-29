@@ -1,5 +1,7 @@
 'use client';
 
+console.log('QuickGlanceAltDelta: FILE LOADED');
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -170,9 +172,14 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
   // Don't show if user hasn't visited sandbox or if we don't have scores yet
   console.log('QuickGlanceAltDelta: Render check', { hasVisitedSandbox, lastPreset, altScore, officialScore });
   
+  // TEMPORARY: Always show something for debugging
   if (!hasVisitedSandbox || !altScore || !officialScore) {
     console.log('QuickGlanceAltDelta: Not showing - missing data');
-    return null;
+    return (
+      <div className="mb-3 p-2 bg-yellow-100 border border-yellow-300 rounded text-sm">
+        DEBUG: QuickGlanceAltDelta loaded but not showing (visited: {hasVisitedSandbox ? 'yes' : 'no'}, altScore: {altScore}, officialScore: {officialScore})
+      </div>
+    );
   }
 
   const delta = altScore - officialScore;
