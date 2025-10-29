@@ -75,6 +75,32 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     }
   };
 
+  // Load factor analysis data
+  const [factorAnalysisData, setFactorAnalysisData] = useState<any>(null);
+  
+  const loadFactorAnalysisData = async () => {
+    try {
+      const [volatilityRes, correlationRes] = await Promise.all([
+        fetch('/data/factor_volatility_metrics.json', { cache: 'no-store' }),
+        fetch('/data/factor_correlation_analysis.json', { cache: 'no-store' })
+      ]);
+      
+      if (volatilityRes.ok && correlationRes.ok) {
+        const [volatility, correlation] = await Promise.all([
+          volatilityRes.json(),
+          correlationRes.json()
+        ]);
+        
+        setFactorAnalysisData({
+          volatility: volatility.factors,
+          correlation: correlation.correlationMatrix
+        });
+      }
+    } catch (error) {
+      console.error('Error loading factor analysis data:', error);
+    }
+  };
+
   // Get score changes from historical data
   const getScoreChanges = () => {
     if (!explanation || !historicalData?.points || historicalData.points.length < 2) return null;
@@ -404,31 +430,13 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
   // Get factor correlation analysis
   const getFactorCorrelations = () => {
-    console.log('getFactorCorrelations: Starting analysis', {
-      hasExplanation: !!explanation,
-      hasHistoricalData: !!historicalData,
-      pointsLength: historicalData?.points?.length || 0,
-      keyDriversLength: explanation?.keyDrivers?.length || 0
-    });
-    
-    if (!explanation || !historicalData?.points || historicalData.points.length < 1) {
-      console.log('getFactorCorrelations: Insufficient data', {
-        hasExplanation: !!explanation,
-        hasHistoricalData: !!historicalData,
-        pointsLength: historicalData?.points?.length || 0,
-        required: 1
-      });
+    if (!factorAnalysisData?.correlation) {
+      console.log('getFactorCorrelations: No correlation data available');
       return null;
     }
 
-    const currentFactors = explanation.keyDrivers;
-    const points = historicalData.points;
-    
-    console.log('getFactorCorrelations: Data check', {
-      currentFactors: currentFactors.map(f => ({ key: f.key, label: f.label })),
-      pointsSample: points.slice(0, 2).map((p: any) => Object.keys(p)),
-      pointsLength: points.length
-    });
+    const correlationMatrix = factorAnalysisData.correlation;
+    const currentFactors = explanation?.keyDrivers || [];
     
     // Calculate correlations between all factor pairs
     const correlations = [];
@@ -438,66 +446,42 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         const factorA = currentFactors[i];
         const factorB = currentFactors[j];
         
-        // Get factor scores over time
-        const factorAScores = points.map((point: any) => point[factorA.key] || 0).filter((score: any) => !isNaN(score));
-        const factorBScores = points.map((point: any) => point[factorB.key] || 0).filter((score: any) => !isNaN(score));
+        // Get correlation from the matrix
+        const correlation = correlationMatrix[factorA.key]?.[factorB.key];
         
-        console.log(`getFactorCorrelations: Checking ${factorA.key} vs ${factorB.key}`, {
-          factorAScoresLength: factorAScores.length,
-          factorBScoresLength: factorBScores.length,
-          factorAScores: factorAScores.slice(0, 3),
-          factorBScores: factorBScores.slice(0, 3)
-        });
-        
-        if (factorAScores.length < 1 || factorBScores.length < 1) {
-          console.log(`getFactorCorrelations: Skipping ${factorA.key} vs ${factorB.key} - insufficient data`);
-          continue;
+        if (correlation === undefined || correlation === null) {
+          continue; // No correlation data for this pair
         }
         
-        // For single data point, show current scores as baseline
-        let correlation, strength, direction, icon, color, context;
+        // Determine correlation strength and direction
+        let strength = 'weak';
+        let direction = 'neutral';
+        let icon = '➡️';
+        let color = 'gray';
         
-        if (factorAScores.length === 1 && factorBScores.length === 1) {
-          correlation = 0; // No correlation with single point
-          strength = 'stable';
-          direction = 'baseline';
-          icon = '📊📊';
-          color = 'gray';
-          context = `${factorA.label} (${factorAScores[0].toFixed(1)}) and ${factorB.label} (${factorBScores[0].toFixed(1)}) - correlation analysis requires more historical data`;
+        if (Math.abs(correlation) >= 0.7) {
+          strength = 'strong';
+        } else if (Math.abs(correlation) >= 0.4) {
+          strength = 'moderate';
+        }
+        
+        if (correlation > 0.3) {
+          direction = 'positive';
+          icon = '📈📈';
+          color = 'green';
+        } else if (correlation < -0.3) {
+          direction = 'negative';
+          icon = '📉📈';
+          color = 'red';
+        }
+        
+        let context = '';
+        if (direction === 'positive') {
+          context = `${factorA.label} and ${factorB.label} move together - when one rises, the other tends to rise`;
+        } else if (direction === 'negative') {
+          context = `${factorA.label} and ${factorB.label} move opposite - when one rises, the other tends to fall`;
         } else {
-          // Calculate Pearson correlation coefficient for multiple data points
-          correlation = calculateCorrelation(factorAScores, factorBScores);
-          
-          // Determine correlation strength and direction
-          strength = 'weak';
-          direction = 'neutral';
-          icon = '➡️';
-          color = 'gray';
-          
-          if (Math.abs(correlation) >= 0.7) {
-            strength = 'strong';
-          } else if (Math.abs(correlation) >= 0.4) {
-            strength = 'moderate';
-          }
-          
-          if (correlation > 0.3) {
-            direction = 'positive';
-            icon = '📈📈';
-            color = 'green';
-          } else if (correlation < -0.3) {
-            direction = 'negative';
-            icon = '📉📈';
-            color = 'red';
-          }
-          
-          context = '';
-          if (direction === 'positive') {
-            context = `${factorA.label} and ${factorB.label} move together - when one rises, the other tends to rise`;
-          } else if (direction === 'negative') {
-            context = `${factorA.label} and ${factorB.label} move opposite - when one rises, the other tends to fall`;
-          } else {
-            context = `${factorA.label} and ${factorB.label} show little relationship`;
-          }
+          context = `${factorA.label} and ${factorB.label} show little relationship`;
         }
         
         correlations.push({
@@ -514,16 +498,6 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         });
       }
     }
-    
-    console.log('getFactorCorrelations: Final results', {
-      correlationsFound: correlations.length,
-      correlations: correlations.map(c => ({
-        pair: `${c.factorALabel} ↔ ${c.factorBLabel}`,
-        correlation: c.correlation,
-        strength: c.strength,
-        direction: c.direction
-      }))
-    });
     
     // Sort by absolute correlation strength (highest first)
     return correlations.sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation));
@@ -546,70 +520,44 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
   // Get factor volatility analysis
   const getFactorVolatility = () => {
-    if (!explanation || !historicalData?.points || historicalData.points.length < 1) {
-      console.log('getFactorVolatility: Insufficient data', {
-        hasExplanation: !!explanation,
-        hasHistoricalData: !!historicalData,
-        pointsLength: historicalData?.points?.length || 0,
-        required: 1
-      });
+    if (!factorAnalysisData?.volatility) {
+      console.log('getFactorVolatility: No volatility data available');
       return null;
     }
 
-    const currentFactors = explanation.keyDrivers;
-    const points = historicalData.points;
+    const volatilityData = factorAnalysisData.volatility;
+    const currentFactors = explanation?.keyDrivers || [];
     
-    // Calculate volatility for each factor over available historical data
+    // Map current factors to volatility data
     const factorVolatility = currentFactors.map(factor => {
-      const factorScores = points.map((point: any) => point[factor.key] || 0).filter((score: any) => !isNaN(score));
+      const volData = volatilityData[factor.key];
       
-      if (factorScores.length < 1) {
-        return null; // Not enough data
+      if (!volData) {
+        return null; // No volatility data for this factor
       }
       
-      // For single data point, show current score as baseline
-      if (factorScores.length === 1) {
-        const currentScore = factorScores[0];
-        const volatility = 0; // No volatility with single point
-        const volatilityLevel = 'stable';
-        const context = `${factor.label} shows current score of ${currentScore.toFixed(1)}, volatility analysis requires more historical data`;
-        
-        return {
-          key: factor.key,
-          label: factor.label,
-          volatility,
-          volatilityLevel,
-          context
-        };
-      }
-      
-      // Calculate standard deviation (volatility) for multiple data points
-      const mean = factorScores.reduce((sum: any, score: any) => sum + score, 0) / factorScores.length;
-      const variance = factorScores.reduce((sum: any, score: any) => sum + Math.pow(score - mean, 2), 0) / factorScores.length;
-      const volatility = Math.sqrt(variance);
-      
-      // Determine volatility level
+      // Map volatility level to our format
       let volatilityLevel = 'low';
-      if (volatility > 2.0) volatilityLevel = 'high';
-      else if (volatility > 1.0) volatilityLevel = 'medium';
+      if (volData.volatilityLevel === 'High') volatilityLevel = 'high';
+      else if (volData.volatilityLevel === 'Medium') volatilityLevel = 'medium';
       
       let context = '';
       if (volatilityLevel === 'high') {
-        context = `${factor.label} shows high volatility, contributing significant risk to the overall score`;
+        context = `${factor.label} shows high volatility (${volData.stdDev.toFixed(1)}σ), contributing significant risk to the overall score`;
       } else if (volatilityLevel === 'medium') {
-        context = `${factor.label} shows moderate volatility with some risk contribution`;
+        context = `${factor.label} shows moderate volatility (${volData.stdDev.toFixed(1)}σ) with some risk contribution`;
       } else {
-        context = `${factor.label} shows low volatility, providing stable risk assessment`;
+        context = `${factor.label} shows low volatility (${volData.stdDev.toFixed(1)}σ), providing stable risk assessment`;
       }
       
       return {
         key: factor.key,
         label: factor.label,
-        volatility,
+        volatility: volData.stdDev,
         volatilityLevel,
         context
       };
-    }).filter(factor => factor !== null); // Remove factors with insufficient data
+    }).filter(factor => factor !== null); // Remove factors with no data
     
     // Sort by volatility (highest first)
     return factorVolatility.sort((a, b) => b.volatility - a.volatility);
@@ -811,6 +759,9 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
     // Load historical data for score comparison
     loadHistoricalData();
+    
+    // Load factor analysis data
+    loadFactorAnalysisData();
 
     try {
       const factors = latest.factors || [];
