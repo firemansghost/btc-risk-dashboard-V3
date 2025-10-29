@@ -30,22 +30,20 @@ export async function GET(request: NextRequest) {
     const headers = lines[0].split(',');
     
     // Find column indices
-    const dateIndex = headers.indexOf('date_utc');
+    const dateIndex = headers.indexOf('date');
     const factorColumns = {
-      trend_valuation: headers.indexOf('trend_valuation'),
-      stablecoins: headers.indexOf('stablecoins'),
-      etf_flows: headers.indexOf('etf_flows'),
-      net_liquidity: headers.indexOf('net_liquidity'),
-      term_leverage: headers.indexOf('term_leverage'),
-      macro_overlay: headers.indexOf('macro_overlay'),
-      social_interest: headers.indexOf('social_interest'),
-      onchain: headers.indexOf('onchain')
+      trend_valuation: headers.indexOf('trend_valuation_score'),
+      stablecoins: headers.indexOf('stablecoins_score'),
+      etf_flows: headers.indexOf('etf_flows_score'),
+      net_liquidity: headers.indexOf('net_liquidity_score'),
+      term_leverage: headers.indexOf('term_leverage_score'),
+      macro_overlay: headers.indexOf('macro_overlay_score'),
+      social_interest: headers.indexOf('social_interest_score'),
+      onchain: headers.indexOf('onchain_score')
     };
     
     const compositeIndex = headers.indexOf('composite_score');
-    const cycleIndex = headers.indexOf('cycle_adj');
-    const spikeIndex = headers.indexOf('spike_adj');
-    const bandIndex = headers.indexOf('band_label');
+    const bandIndex = headers.indexOf('composite_band');
 
     // Parse data rows (skip header)
     const data = [];
@@ -73,8 +71,8 @@ export async function GET(request: NextRequest) {
           date_utc: dateUtc,
           factor_scores: factorScores,
           official_composite: parseFloat(row[compositeIndex]) || 0,
-          cycle_adj: parseFloat(row[cycleIndex]) || 0,
-          spike_adj: parseFloat(row[spikeIndex]) || 0,
+          cycle_adj: 0, // No cycle adjustment data in this CSV
+          spike_adj: 0, // No spike adjustment data in this CSV
           official_band: row[bandIndex] || 'Unknown'
         });
       }
