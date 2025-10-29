@@ -56,6 +56,9 @@ export default function MethodologyPage() {
         <p className="text-body text-gray-600">
           A transparent, data-driven approach to Bitcoin risk assessment using five independent pillars.
         </p>
+        <div className="mt-2 text-sm text-gray-500">
+          v1.1 — Pillars set to 30/30/20/10/10 (Oct 2025). Prior config (38/33/18/6/5) retired.
+        </div>
       </div>
 
       {/* Navigation */}
@@ -90,7 +93,7 @@ export default function MethodologyPage() {
           <div className="card-elevated card-md">
             <h3 className="text-heading-3 mb-3">Composite G-Score</h3>
             <p className="text-body mb-4">
-              The G-Score ranges from 0-100, where higher scores indicate lower risk and better investment conditions.
+              The G-Score ranges from 0–100; higher = higher market risk.
             </p>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -223,7 +226,7 @@ export default function MethodologyPage() {
                     <div key={factor.key} className={`p-3 ${pillarColor.replace('text-', 'bg-').replace('-800', '-50')} border ${pillarColor.replace('text-', 'border-').replace('-800', '-200')} rounded-lg`}>
                       <div className={`text-sm font-medium ${pillarColor}`}>{factor.label}</div>
                       <div className={`text-lg font-bold ${pillarColor.replace('text-', 'text-').replace('-800', '-600')}`}>
-                        {(factor.weight * 100).toFixed(1)}%
+                        {factor.weight > 1 ? (factor.weight).toFixed(1) : (factor.weight * 100).toFixed(1)}%
                       </div>
                     </div>
                   );
@@ -244,6 +247,10 @@ export default function MethodologyPage() {
               <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full">Momentum / Valuation</span>
             </div>
             <h3 className="text-xl font-semibold mb-4">Trend & Valuation</h3>
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="text-sm font-medium text-blue-900 mb-1">Internal Weight Split</div>
+              <div className="text-sm text-blue-800">BMSB 60% • Mayer 30% • RSI 10%</div>
+            </div>
             
             <div className="space-y-4">
               <div>
@@ -684,7 +691,7 @@ export default function MethodologyPage() {
                     .map((pillar) => (
                     <div key={pillar.label} className="flex items-center justify-between">
                       <span className="text-body">{pillar.label}</span>
-                      <span className="text-caption font-medium">{(pillar.weight * 100).toFixed(0)}%</span>
+                      <span className="text-caption font-medium">{pillar.weight > 1 ? (pillar.weight).toFixed(0) : (pillar.weight * 100).toFixed(0)}%</span>
                     </div>
                   ))}
                 </div>
