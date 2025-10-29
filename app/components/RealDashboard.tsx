@@ -27,6 +27,7 @@ import HistoryChart from './HistoryChart';
 import RadialGauge from './RadialGauge';
 
 import WeightsLauncher from './WeightsLauncher';
+import AssetSwitcher from './AssetSwitcher';
 
 import AlertBell from './AlertBell';
 import SkeletonLoader, { SkeletonDashboard, SkeletonCard } from './SkeletonLoader';
@@ -224,6 +225,9 @@ export default function RealDashboard() {
               <div className="text-display mb-4">
                 <a href="/" className="text-primary hover:text-primary-hover transition-colors">GhostGauge</a>
               </div>
+              
+              {/* Asset Switcher */}
+              <AssetSwitcher className="mb-6" />
               
               {/* Top Row: G-Score Card + Bitcoin Price Card */}
               <div className="mobile-grid-2 mb-8">

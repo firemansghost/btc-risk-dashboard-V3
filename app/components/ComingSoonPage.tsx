@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import AssetSwitcher from './AssetSwitcher';
 
 interface ComingSoonPageProps {
   asset: string;
@@ -53,6 +54,10 @@ export default function ComingSoonPage({
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             {assetDisplay} G-Score — Coming Soon
           </h1>
+          
+          {/* Asset Switcher */}
+          <AssetSwitcher className="mb-6" />
+          
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             We're adapting the GhostGauge framework to {assetDisplay}. Same 0–100 score and band taxonomy, 
             with factors tuned to {assetDisplay}'s market structure.

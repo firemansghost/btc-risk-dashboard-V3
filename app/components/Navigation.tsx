@@ -26,6 +26,7 @@ export default function Navigation() {
 
   const navItems = [
     { href: '/', label: 'Overview', icon: '📊' },
+    { href: '/assets', label: 'Assets', icon: '🏛️' },
     { href: '/methodology', label: 'Methodology', icon: '📋' },
     { href: '/strategy-analysis', label: 'Strategy Analysis', icon: '📈' },
     { href: '/etf-predictions', label: 'ETF Predictions', icon: '💰' },
