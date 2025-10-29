@@ -3,7 +3,25 @@
 import { useEffect, useState } from 'react';
 
 type Band = { key: string; label: string; range: [number, number]; color: string; recommendation: string };
-type Config = { bands: Band[]; factors: any[] };
+type Factor = { 
+  key: string; 
+  label: string; 
+  weight: number; 
+  pillar: string; 
+  enabled: boolean;
+  subweights?: { [key: string]: number };
+};
+type Pillar = { 
+  label: string; 
+  weight: number; 
+  color: string; 
+  description: string;
+};
+type Config = { 
+  bands: Band[]; 
+  factors: { [key: string]: Factor };
+  pillars: { [key: string]: Pillar };
+};
 
 export default function MethodologyPage() {
   const [config, setConfig] = useState<Config | null>(null);
@@ -61,11 +79,11 @@ export default function MethodologyPage() {
               Our methodology evaluates Bitcoin risk across five independent pillars, each contributing to a composite G-Score.
             </p>
             <ul className="list-disc list-inside space-y-2 text-body">
-              <li><strong>Momentum/Valuation:</strong> Technical indicators and valuation metrics</li>
-              <li><strong>On-Chain:</strong> Network health and transaction patterns</li>
-              <li><strong>Macro:</strong> Economic indicators and market sentiment</li>
-              <li><strong>Regulatory:</strong> Policy environment and institutional adoption</li>
-              <li><strong>Technical:</strong> Network security and infrastructure</li>
+              <li><strong>Liquidity/Flows:</strong> ETF flows, stablecoin supply, net liquidity</li>
+              <li><strong>Momentum/Valuation:</strong> Price trends, technical indicators, valuation metrics</li>
+              <li><strong>Term Structure/Leverage:</strong> Derivatives and funding rates</li>
+              <li><strong>Macro Overlay:</strong> Macroeconomic conditions and market sentiment</li>
+              <li><strong>Social/Attention:</strong> Social sentiment indicators and attention metrics</li>
             </ul>
           </div>
           
@@ -103,28 +121,22 @@ export default function MethodologyPage() {
               <p className="text-body mb-4">
                 Each pillar contributes a weighted score to the final G-Score, with weights determined by historical performance and market relevance.
               </p>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-body">Momentum/Valuation</span>
-                  <span className="text-caption font-medium">25%</span>
+              {config?.pillars ? (
+                <div className="space-y-2">
+                  {Object.values(config.pillars)
+                    .sort((a, b) => a.label.localeCompare(b.label))
+                    .map((pillar) => (
+                    <div key={pillar.label} className="flex justify-between">
+                      <span className="text-body">{pillar.label}</span>
+                      <span className="text-caption font-medium">{(pillar.weight * 100).toFixed(0)}%</span>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-body">On-Chain</span>
-                  <span className="text-caption font-medium">20%</span>
+              ) : (
+                <div className="text-center py-4">
+                  <div className="text-caption text-gray-500">Loading pillar weights...</div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-body">Macro</span>
-                  <span className="text-caption font-medium">20%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-body">Regulatory</span>
-                  <span className="text-caption font-medium">20%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-body">Technical</span>
-                  <span className="text-caption font-medium">15%</span>
-                </div>
-              </div>
+              )}
             </div>
             
             <div>
@@ -132,24 +144,28 @@ export default function MethodologyPage() {
               <p className="text-body mb-4">
                 The G-Score provides a normalized risk assessment that accounts for multiple market factors simultaneously.
               </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 bg-emerald-500 rounded"></div>
-                  <span className="text-body">0-34: Low Risk (Aggressive & DCA Buying)</span>
+              {config?.bands ? (
+                <div className="space-y-2">
+                  {config.bands.map((band) => (
+                    <div key={band.key} className="flex items-center gap-3">
+                      <div className={`w-4 h-4 rounded ${
+                        band.color === 'green' ? 'bg-emerald-500' :
+                        band.color === 'yellow' ? 'bg-yellow-500' :
+                        band.color === 'orange' ? 'bg-orange-500' :
+                        band.color === 'red' ? 'bg-red-500' :
+                        'bg-gray-500'
+                      }`}></div>
+                      <span className="text-body">
+                        {band.range[0]}-{band.range[1]}: {band.label} — {band.recommendation}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 bg-yellow-500 rounded"></div>
-                  <span className="text-body">35-64: Moderate Risk (Moderate Buying & Hold)</span>
+              ) : (
+                <div className="text-center py-4">
+                  <div className="text-caption text-gray-500">Loading risk bands...</div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 bg-orange-500 rounded"></div>
-                  <span className="text-body">65-79: High Risk (Reduce Risk)</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 bg-red-500 rounded"></div>
-                  <span className="text-body">80-100: Very High Risk (High Risk)</span>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -195,40 +211,29 @@ export default function MethodologyPage() {
         {/* Factor Overview */}
         <div className="mb-6">
           <h3 className="text-heading-3 mb-3">Factor Weight Distribution</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="text-sm font-medium text-blue-900">Trend & Valuation</div>
-              <div className="text-lg font-bold text-blue-600">25%</div>
+          {config?.factors ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              {Object.values(config.factors)
+                .filter(factor => factor.enabled)
+                .sort((a, b) => b.weight - a.weight)
+                .map((factor) => {
+                  const pillar = config.pillars[factor.pillar];
+                  const pillarColor = pillar?.color || 'gray';
+                  return (
+                    <div key={factor.key} className={`p-3 ${pillarColor.replace('text-', 'bg-').replace('-800', '-50')} border ${pillarColor.replace('text-', 'border-').replace('-800', '-200')} rounded-lg`}>
+                      <div className={`text-sm font-medium ${pillarColor}`}>{factor.label}</div>
+                      <div className={`text-lg font-bold ${pillarColor.replace('text-', 'text-').replace('-800', '-600')}`}>
+                        {(factor.weight * 100).toFixed(1)}%
+                      </div>
+                    </div>
+                  );
+                })}
             </div>
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <div className="text-sm font-medium text-green-900">Stablecoins</div>
-              <div className="text-lg font-bold text-green-600">18%</div>
+          ) : (
+            <div className="text-center py-4">
+              <div className="text-caption text-gray-500">Loading factor weights...</div>
             </div>
-            <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
-              <div className="text-sm font-medium text-purple-900">Term Structure & Leverage</div>
-              <div className="text-lg font-bold text-purple-600">18%</div>
-            </div>
-            <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-              <div className="text-sm font-medium text-orange-900">ETF Flows</div>
-              <div className="text-lg font-bold text-orange-600">10%</div>
-            </div>
-            <div className="p-3 bg-cyan-50 border border-cyan-200 rounded-lg">
-              <div className="text-sm font-medium text-cyan-900">Net Liquidity (FRED)</div>
-              <div className="text-lg font-bold text-cyan-600">10%</div>
-            </div>
-            <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
-              <div className="text-sm font-medium text-indigo-900">On-chain Activity</div>
-              <div className="text-lg font-bold text-indigo-600">8%</div>
-            </div>
-            <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-              <div className="text-sm font-medium text-gray-900">Macro Overlay</div>
-              <div className="text-lg font-bold text-gray-600">6%</div>
-            </div>
-            <div className="p-3 bg-pink-50 border border-pink-200 rounded-lg">
-              <div className="text-sm font-medium text-pink-900">Social Interest</div>
-              <div className="text-lg font-bold text-pink-600">5%</div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Detailed Factor Cards */}
@@ -672,28 +677,22 @@ export default function MethodologyPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h4 className="text-heading-4 mb-3">Current Weights</h4>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-body">Liquidity/Flows</span>
-                  <span className="text-caption font-medium">30%</span>
+              {config?.pillars ? (
+                <div className="space-y-3">
+                  {Object.values(config.pillars)
+                    .sort((a, b) => b.weight - a.weight)
+                    .map((pillar) => (
+                    <div key={pillar.label} className="flex items-center justify-between">
+                      <span className="text-body">{pillar.label}</span>
+                      <span className="text-caption font-medium">{(pillar.weight * 100).toFixed(0)}%</span>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-body">Momentum/Valuation</span>
-                  <span className="text-caption font-medium">30%</span>
+              ) : (
+                <div className="text-center py-4">
+                  <div className="text-caption text-gray-500">Loading weights...</div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-body">Term Structure/Leverage</span>
-                  <span className="text-caption font-medium">20%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-body">Macro Overlay</span>
-                  <span className="text-caption font-medium">10%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-body">Social/Attention</span>
-                  <span className="text-caption font-medium">10%</span>
-                </div>
-              </div>
+              )}
             </div>
             
             <div>
