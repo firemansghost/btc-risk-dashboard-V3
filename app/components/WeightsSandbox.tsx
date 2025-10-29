@@ -132,7 +132,7 @@ export default function WeightsSandbox() {
     };
 
     loadData();
-  }, [selectedWindow, selectedPreset]);
+  }, [selectedWindow]);
 
   // Track preset changes for Phase 5 hook
   useEffect(() => {
