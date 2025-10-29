@@ -27,7 +27,7 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
   }, []);
 
   useEffect(() => {
-    if (hasVisitedSandbox && lastPreset && lastPreset !== 'official_30_30') {
+    if (hasVisitedSandbox && lastPreset) {
       // Fetch the latest data to calculate alt score
       fetchAltScore();
     }
@@ -152,14 +152,19 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
     router.push('/lab/weights');
   };
 
-  // Don't show if user hasn't visited sandbox or if it's the official preset
-  if (!hasVisitedSandbox || lastPreset === 'official_30_30' || !altScore || !officialScore) {
+  // Don't show if user hasn't visited sandbox or if we don't have scores yet
+  if (!hasVisitedSandbox || !altScore || !officialScore) {
     return null;
   }
 
   const delta = altScore - officialScore;
   const deltaText = delta > 0 ? `+${delta}` : delta.toString();
   const bandComparison = getBandComparison(altScore, officialScore);
+
+  // Don't show if it's the official preset and delta is 0
+  if (lastPreset === 'official_30_30' && delta === 0) {
+    return null;
+  }
 
   return (
     <div className={`mb-3 ${className}`}>

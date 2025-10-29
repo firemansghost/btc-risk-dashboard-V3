@@ -122,7 +122,6 @@ export default function WeightsSandbox() {
         
         // Store sandbox visit for Phase 5 hook
         localStorage.setItem('ghostgauge-sandbox-visited', 'true');
-        localStorage.setItem('ghostgauge-sandbox-last-preset', selectedPreset);
         
       } catch (err) {
         console.error('Sandbox data load error:', err);
@@ -134,6 +133,13 @@ export default function WeightsSandbox() {
 
     loadData();
   }, [selectedWindow, selectedPreset]);
+
+  // Track preset changes for Phase 5 hook
+  useEffect(() => {
+    if (selectedPreset) {
+      localStorage.setItem('ghostgauge-sandbox-last-preset', selectedPreset);
+    }
+  }, [selectedPreset]);
 
   // Compute alternative scores
   const computedData = useMemo(() => {
