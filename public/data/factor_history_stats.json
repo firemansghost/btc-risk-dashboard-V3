@@ -4,8 +4,8 @@
   "factorStats": {
     "trend_valuation": {
       "dataPoints": 41,
-      "mean": 64.17,
-      "stdDev": 14.3,
+      "mean": 64.12,
+      "stdDev": 14.35,
       "min": 45,
       "max": 95,
       "range": 50,
@@ -14,20 +14,21 @@
       }
     },
     "onchain": {
-      "dataPoints": 41,
-      "mean": 68.44,
-      "stdDev": 20.47,
+      "dataPoints": 40,
+      "mean": 69.2,
+      "stdDev": 20.15,
       "min": 35,
       "max": 98,
       "range": 63,
       "statusCounts": {
-        "fresh": 41
+        "fresh": 40,
+        "unknown": 1
       }
     },
     "stablecoins": {
       "dataPoints": 40,
-      "mean": 63.73,
-      "stdDev": 18.24,
+      "mean": 63,
+      "stdDev": 18.07,
       "min": 34,
       "max": 95,
       "range": 61,
@@ -38,8 +39,8 @@
     },
     "etf_flows": {
       "dataPoints": 41,
-      "mean": 64.93,
-      "stdDev": 15.84,
+      "mean": 65.88,
+      "stdDev": 15.66,
       "min": 33,
       "max": 95,
       "range": 62,
@@ -49,8 +50,8 @@
     },
     "net_liquidity": {
       "dataPoints": 41,
-      "mean": 65.61,
-      "stdDev": 13.42,
+      "mean": 65.46,
+      "stdDev": 13.49,
       "min": 48,
       "max": 95,
       "range": 47,
@@ -60,19 +61,20 @@
     },
     "term_leverage": {
       "dataPoints": 41,
-      "mean": 68.24,
-      "stdDev": 13.6,
-      "min": 42,
+      "mean": 67.34,
+      "stdDev": 14.83,
+      "min": 30,
       "max": 95,
-      "range": 53,
+      "range": 65,
       "statusCounts": {
-        "fresh": 41
+        "fresh": 40,
+        "stale": 1
       }
     },
     "macro_overlay": {
       "dataPoints": 41,
-      "mean": 66.98,
-      "stdDev": 12.93,
+      "mean": 66.54,
+      "stdDev": 13.15,
       "min": 42,
       "max": 95,
       "range": 53,
@@ -82,8 +84,8 @@
     },
     "social_interest": {
       "dataPoints": 41,
-      "mean": 64.34,
-      "stdDev": 18.06,
+      "mean": 64.66,
+      "stdDev": 18.01,
       "min": 38,
       "max": 96,
       "range": 58,

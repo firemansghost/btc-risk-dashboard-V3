@@ -257,12 +257,12 @@ async function loadRiskBands() {
   
   // Fallback to hardcoded bands if config fails
   riskBands = [
-    { key: 'aggressive_buy', label: 'Aggressive Buying', range: [0, 14], color: 'green', recommendation: 'Max allocation' },
-    { key: 'dca_buy', label: 'Regular DCA Buying', range: [15, 34], color: 'green', recommendation: 'Continue regular purchases' },
-    { key: 'moderate_buy', label: 'Moderate Buying', range: [35, 49], color: 'yellow', recommendation: 'Selective buying opportunities' },
-    { key: 'hold_wait', label: 'Hold & Wait', range: [50, 64], color: 'orange', recommendation: 'Hold existing positions' },
-    { key: 'reduce_risk', label: 'Reduce Risk', range: [65, 79], color: 'red', recommendation: 'Consider taking profits' },
-    { key: 'high_risk', label: 'High Risk', range: [80, 100], color: 'red', recommendation: 'Significant risk of correction' }
+    { key: 'aggressive_buy', label: 'Aggressive Buying', range: [0, 14], color: 'green', recommendation: 'Historically depressed/washed-out conditions.' },
+    { key: 'dca_buy', label: 'Regular DCA Buying', range: [15, 34], color: 'green', recommendation: 'Favorable long-term conditions; take your time.' },
+    { key: 'moderate_buy', label: 'Moderate Buying', range: [35, 49], color: 'yellow', recommendation: 'Moderate buying opportunities.' },
+    { key: 'hold_wait', label: 'Hold & Wait', range: [50, 64], color: 'orange', recommendation: 'Hold core; buy dips selectively.' },
+    { key: 'reduce_risk', label: 'Reduce Risk', range: [65, 79], color: 'red', recommendation: 'Trim risk; tighten risk controls.' },
+    { key: 'high_risk', label: 'High Risk', range: [80, 100], color: 'red', recommendation: 'Crowded tape; prone to disorderly moves.' }
   ];
   console.log('ETL: Using fallback risk bands');
   return riskBands;
