@@ -28,6 +28,7 @@ import RadialGauge from './RadialGauge';
 
 import WeightsLauncher from './WeightsLauncher';
 import AssetSwitcher from './AssetSwitcher';
+import QuickGlanceAltDelta from './QuickGlanceAltDelta';
 
 import AlertBell from './AlertBell';
 import SkeletonLoader, { SkeletonDashboard, SkeletonCard } from './SkeletonLoader';
@@ -250,6 +251,9 @@ export default function RealDashboard() {
                       );
                     })()}
                   </div>
+                  
+                  {/* Quick Glance Alt Delta */}
+                  <QuickGlanceAltDelta />
                   
                   
                   {/* Unified Vertical Layout: Gauge on top, Score below */}

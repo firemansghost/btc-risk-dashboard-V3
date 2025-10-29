@@ -1692,6 +1692,9 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
               {expandedSections.factorVolatility ? '🔽' : '▶️'}
             </span>
           </div>
+          <div className="text-xs text-gray-500 mb-3">
+            As of {new Date().toISOString().split('T')[0]} {new Date().toISOString().split('T')[1].split('.')[0]} UTC · 30-day stdev, 90-day correlations
+          </div>
           {expandedSections.factorVolatility && (
           <div className="space-y-3">
             {getFactorVolatility()!.slice(0, expanded ? undefined : 3).map((factor, idx) => (
