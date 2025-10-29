@@ -74,7 +74,17 @@ export default function MethodologyPage() {
 
       {/* Overview Section */}
       <section id="overview" className="section-spacing">
-        <h2 className="text-heading-2 mb-4">Overview</h2>
+        <h2 className="text-heading-2 mb-4">What the G-Score is</h2>
+        <p className="text-body text-gray-600 mb-6">
+          The GhostGauge G-Score is a daily composite from 0–100 where higher = higher market risk (more crowding, leverage, froth). It's informational context—not advice. All inputs use UTC timestamps and finalized data.
+        </p>
+        
+        <h3 className="text-heading-3 mb-4">How it's made (in one breath)</h3>
+        <p className="text-body text-gray-600 mb-6">
+          Each factor is normalized vs its own history, winsorized, mapped to 0–100, then combined by pillar weights. Two small adjustments can apply: Cycle (Power-Law) and Spike (Volatility). Price source for all price-based signals is the Coinbase daily close (UTC) for consistency.
+        </p>
+        
+        <h3 className="text-heading-3 mb-4">The Five Pillars (SSOT)</h3>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="card-elevated card-md">
             <h3 className="text-heading-3 mb-3">Five Pillars of Risk</h3>
@@ -82,32 +92,49 @@ export default function MethodologyPage() {
               Our methodology evaluates Bitcoin risk across five independent pillars, each contributing to a composite G-Score.
             </p>
             <ul className="list-disc list-inside space-y-2 text-body">
-              <li><strong>Liquidity/Flows:</strong> ETF flows, stablecoin supply, net liquidity</li>
-              <li><strong>Momentum/Valuation:</strong> Price trends, technical indicators, valuation metrics</li>
-              <li><strong>Term Structure/Leverage:</strong> Derivatives and funding rates</li>
-              <li><strong>Macro Overlay:</strong> Macroeconomic conditions and market sentiment</li>
-              <li><strong>Social/Attention:</strong> Social sentiment indicators and attention metrics</li>
+              <li><strong>Liquidity/Flows — 30%:</strong> Stablecoins (18%), ETF Flows (7.7%), Net Liquidity (4.3%). Captures "is money coming in or out?" breadth and participation.</li>
+              <li><strong>Momentum/Valuation — 30%:</strong> Trend & Valuation (BMSB 60%, Mayer 30%, RSI 10%). Anchors where price sits vs regime and long-trend stretch.</li>
+              <li><strong>Term Structure/Leverage — 20%:</strong> Futures/derivatives term structure and leverage conditions; stress here often precedes spot.</li>
+              <li><strong>Macro Overlay — 10%:</strong> Macro context relevant to Bitcoin (e.g., liquidity proxies, rates) summarized into a single overlay.</li>
+              <li><strong>Social/Attention — 10%:</strong> A light measure of narrative intensity and attention—supporting signal, not the star.</li>
             </ul>
           </div>
           
           <div className="card-elevated card-md">
-            <h3 className="text-heading-3 mb-3">Composite G-Score</h3>
-            <p className="text-body mb-4">
-              The G-Score ranges from 0–100; higher = higher market risk.
-            </p>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-body">Score Range</span>
-                <span className="text-caption font-medium">0 - 100</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-body">Update Frequency</span>
-                <span className="text-caption font-medium">Daily</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-body">Data Sources</span>
-                <span className="text-caption font-medium">Multiple APIs</span>
-              </div>
+            <h3 className="text-heading-3 mb-3">Adjustments (small, additive)</h3>
+            <ul className="list-disc list-inside space-y-2 text-body">
+              <li><strong>Cycle (Power-Law):</strong> Activates only when price deviates &gt;30% from a long-term power-law trend; capped ±2.0 points.</li>
+              <li><strong>Spike (Volatility):</strong> Activates when the daily move &gt; 2× recent (20-day EWMA) volatility; capped ±1.5 points.</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className="mt-8">
+          <h3 className="text-heading-3 mb-4">Band Legend (how to read the number)</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <div className="w-4 h-4 rounded bg-emerald-500"></div>
+              <span className="text-body"><strong>0–14:</strong> Aggressive Buying — Historically depressed/washed-out conditions.</span>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="w-4 h-4 rounded bg-yellow-500"></div>
+              <span className="text-body"><strong>15–34:</strong> Regular DCA Buying — Favorable long-term conditions; take your time.</span>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="w-4 h-4 rounded bg-yellow-500"></div>
+              <span className="text-body"><strong>35–49:</strong> Moderate Buying — Moderate buying opportunities.</span>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="w-4 h-4 rounded bg-orange-500"></div>
+              <span className="text-body"><strong>50–64:</strong> Hold & Wait — Hold core; buy dips selectively.</span>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="w-4 h-4 rounded bg-orange-500"></div>
+              <span className="text-body"><strong>65–79:</strong> Reduce Risk — Trim risk; tighten risk controls.</span>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <div className="w-4 h-4 rounded bg-red-500"></div>
+              <span className="text-body"><strong>80–100:</strong> High Risk — Crowded tape; prone to disorderly moves.</span>
             </div>
           </div>
         </div>
@@ -121,6 +148,32 @@ export default function MethodologyPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h4 className="text-heading-4 mb-3">Weighted Average</h4>
+              <p className="text-body mb-4">
+                Each pillar contributes a weighted score to the final G-Score, with weights determined by historical performance and market relevance.
+              </p>
+              {config?.pillars ? (
+                <div className="space-y-2">
+                  {Object.values(config.pillars)
+                    .sort((a, b) => a.label.localeCompare(b.label))
+                    .map((pillar) => (
+                    <div key={pillar.label} className="flex justify-between">
+                      <span className="text-body">{pillar.label}</span>
+                      <span className="text-caption font-medium">{pillar.weight > 1 ? (pillar.weight).toFixed(0) : (pillar.weight * 100).toFixed(0)}%</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <div className="text-caption text-gray-500">Loading pillar weights...</div>
+                </div>
+              )}
+            </div>
+            
+            <div>
+              <h4 className="text-heading-4 mb-3">Score Interpretation</h4>
+              <p className="text-body mb-4">
+                The G-Score provides a normalized risk assessment that accounts for multiple market factors simultaneously.
+              </p>
               <p className="text-body mb-4">
                 Each pillar contributes a weighted score to the final G-Score, with weights determined by historical performance and market relevance.
               </p>
@@ -165,8 +218,31 @@ export default function MethodologyPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-4">
-                  <div className="text-caption text-gray-500">Loading risk bands...</div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 rounded bg-emerald-500"></div>
+                    <span className="text-body">0–14: Aggressive Buying — Historically depressed/washed-out conditions.</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 rounded bg-yellow-500"></div>
+                    <span className="text-body">15–34: Regular DCA Buying — Favorable long-term conditions; take your time.</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 rounded bg-yellow-500"></div>
+                    <span className="text-body">35–49: Moderate Buying — Moderate buying opportunities.</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 rounded bg-orange-500"></div>
+                    <span className="text-body">50–64: Hold & Wait — Hold core; buy dips selectively.</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 rounded bg-orange-500"></div>
+                    <span className="text-body">65–79: Reduce Risk — Trim risk; tighten risk controls.</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 rounded bg-red-500"></div>
+                    <span className="text-body">80–100: High Risk — Crowded tape; prone to disorderly moves.</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -729,10 +805,10 @@ export default function MethodologyPage() {
             <div>
               <h4 className="text-heading-4 mb-3">Data Sources</h4>
               <ul className="list-disc list-inside space-y-2 text-body">
-                <li>CoinGecko API</li>
+                <li>Coinbase daily close (UTC)</li>
                 <li>Blockchain.info</li>
                 <li>Federal Reserve Economic Data</li>
-                <li>Regulatory databases</li>
+                <li>Alternative.me Fear & Greed Index</li>
               </ul>
             </div>
             <div>
@@ -746,6 +822,13 @@ export default function MethodologyPage() {
             </div>
           </div>
         </div>
+      </div>
+      
+      {/* Model Version Note */}
+      <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+        <p className="text-sm text-gray-600">
+          <strong>Model version:</strong> v1.1 — Pillars set to 30/30/20/10/10 (Oct 2025). Prior config (38/33/18/6/5) retired.
+        </p>
       </div>
     </div>
   );
