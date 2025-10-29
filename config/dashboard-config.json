@@ -13,35 +13,35 @@
   "pillars": {
     "liquidity": {
       "label": "Liquidity / Flows",
-      "weight": 0.38,
+      "weight": 0.30,
       "color": "bg-blue-100 text-blue-800 border-blue-200",
       "description": "ETF flows, stablecoin supply, net liquidity",
       "order": 1
     },
     "momentum": {
       "label": "Momentum / Valuation", 
-      "weight": 0.33,
+      "weight": 0.30,
       "color": "bg-green-100 text-green-800 border-green-200",
       "description": "Price trends, on-chain activity",
       "order": 2
     },
     "leverage": {
       "label": "Term Structure / Leverage",
-      "weight": 0.18,
+      "weight": 0.20,
       "color": "bg-orange-100 text-orange-800 border-orange-200", 
       "description": "Derivatives and funding rates",
       "order": 3
     },
     "macro": {
       "label": "Macro Overlay",
-      "weight": 0.06,
+      "weight": 0.10,
       "color": "bg-gray-100 text-gray-800 border-gray-200",
       "description": "Macroeconomic conditions",
       "order": 4
     },
     "social": {
       "label": "Social / Attention",
-      "weight": 0.05,
+      "weight": 0.10,
       "color": "bg-purple-100 text-purple-800 border-purple-200",
       "description": "Social sentiment indicators",
       "order": 5
@@ -52,7 +52,7 @@
     "trend_valuation": {
       "label": "Trend & Valuation",
       "pillar": "momentum",
-      "weight": 0.25,
+      "weight": 0.30,
       "enabled": true,
       "order": 1,
       "description": "Cycle-Anchored Trend (BMSB-led) with Mayer Multiple and RSI - Most fundamental risk indicator",
@@ -65,10 +65,10 @@
     "onchain": {
       "label": "On-chain Activity", 
       "pillar": "momentum",
-      "weight": 0.08,
-      "enabled": true,
+      "weight": 0.00,
+      "enabled": false,
       "order": 2,
-      "description": "Network fees and mempool congestion - Core Bitcoin metrics",
+      "description": "Network fees and mempool congestion - Core Bitcoin metrics (moved to Trend & Valuation)",
       "staleness": {
         "ttl_hours": 96,
         "market_dependent": false,
@@ -91,7 +91,7 @@
     "etf_flows": {
       "label": "ETF Flows",
       "pillar": "liquidity",
-      "weight": 0.10,
+      "weight": 0.077,
       "enabled": true,
       "order": 4,
       "description": "Bitcoin ETF flow momentum and diversification - Major institutional flow indicator",
@@ -104,7 +104,7 @@
     "net_liquidity": {
       "label": "Net Liquidity (FRED)",
       "pillar": "liquidity",
-      "weight": 0.10, 
+      "weight": 0.043, 
       "enabled": true,
       "order": 5,
       "description": "Fed balance sheet minus RRP and TGA - backdrop liquidity",
@@ -115,14 +115,14 @@
       },
       "context_display": {
         "also_show_in": "macro",
-        "context_label": "Context only — scored under Liquidity (5%)",
+        "context_label": "Context only — scored under Liquidity (4.3%)",
         "rationale": "Provides macro context without double-counting in composite score"
       }
     },
     "term_leverage": {
       "label": "Term Structure & Leverage",
       "pillar": "leverage",
-      "weight": 0.18,
+      "weight": 0.20,
       "enabled": true,
       "order": 6,
       "description": "Funding rates, basis, and open interest",
@@ -135,7 +135,7 @@
     "macro_overlay": {
       "label": "Macro Overlay",
       "pillar": "macro",
-      "weight": 0.06,
+      "weight": 0.10,
       "enabled": true,
       "order": 7,
       "description": "DXY, 2Y rates, and VIX",
@@ -148,7 +148,7 @@
     "social_interest": {
       "label": "Social Interest",
       "pillar": "social", 
-      "weight": 0.05,
+      "weight": 0.10,
       "enabled": true,
       "order": 8,
       "description": "Google Trends and Fear & Greed Index",
@@ -208,7 +208,7 @@
       "label": "Aggressive Buying", 
       "range": [0, 14], 
       "color": "green", 
-      "recommendation": "Max allocation",
+      "recommendation": "Historically depressed/washed-out conditions",
       "order": 1
     },
     { 
@@ -216,7 +216,7 @@
       "label": "Regular DCA Buying", 
       "range": [15, 34], 
       "color": "green", 
-      "recommendation": "Continue regular purchases",
+      "recommendation": "Favorable long-term conditions; take your time",
       "order": 2
     },
     { 
@@ -224,7 +224,7 @@
       "label": "Moderate Buying", 
       "range": [35, 49], 
       "color": "yellow", 
-      "recommendation": "Selective buying opportunities",
+      "recommendation": "Moderate buying opportunities",
       "order": 3
     },
     { 
@@ -232,7 +232,7 @@
       "label": "Hold & Wait", 
       "range": [50, 64], 
       "color": "orange", 
-      "recommendation": "Hold existing positions",
+      "recommendation": "Hold core; buy dips selectively",
       "order": 4
     },
     { 
@@ -240,7 +240,7 @@
       "label": "Reduce Risk", 
       "range": [65, 79], 
       "color": "red", 
-      "recommendation": "Consider taking profits",
+      "recommendation": "Trim risk; tighten risk controls",
       "order": 5
     },
     { 
@@ -248,7 +248,7 @@
       "label": "High Risk", 
       "range": [80, 100], 
       "color": "red", 
-      "recommendation": "Significant risk of correction",
+      "recommendation": "Crowded tape; prone to disorderly moves",
       "order": 6
     }
   ],

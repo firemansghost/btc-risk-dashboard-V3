@@ -674,24 +674,24 @@ export default function MethodologyPage() {
               <h4 className="text-heading-4 mb-3">Current Weights</h4>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
+                  <span className="text-body">Liquidity/Flows</span>
+                  <span className="text-caption font-medium">30%</span>
+                </div>
+                <div className="flex items-center justify-between">
                   <span className="text-body">Momentum/Valuation</span>
-                  <span className="text-caption font-medium">25%</span>
+                  <span className="text-caption font-medium">30%</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-body">On-Chain</span>
+                  <span className="text-body">Term Structure/Leverage</span>
                   <span className="text-caption font-medium">20%</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-body">Macro</span>
-                  <span className="text-caption font-medium">20%</span>
+                  <span className="text-body">Macro Overlay</span>
+                  <span className="text-caption font-medium">10%</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-body">Regulatory</span>
-                  <span className="text-caption font-medium">20%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-body">Technical</span>
-                  <span className="text-caption font-medium">15%</span>
+                  <span className="text-body">Social/Attention</span>
+                  <span className="text-caption font-medium">10%</span>
                 </div>
               </div>
             </div>

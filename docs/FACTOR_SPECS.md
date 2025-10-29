@@ -4,7 +4,7 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 
 **Configuration Source**: All weights are loaded from `config/dashboard-config.json` (single source of truth)
 
-## Liquidity/Flows Pillar (38% total weight)
+## Liquidity/Flows Pillar (30% total weight)
 
 *Prioritizes crypto-native flows (stablecoins, ETF creations/redemptions) over laggy Fed liquidity for better signal and less overlap with Macro inputs.*
 
@@ -20,7 +20,7 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 - **Caching**: 24-hour TTL with intelligent incremental updates
 - **Aggregation**: Weighted composite with 365-day historical baseline
 
-### ETF Flows (10% weight)
+### ETF Flows (7.7% weight)
 - **Data Source**: Farside Investors HTML scraping with business-day logic
 - **Window**: 21-day business-day rolling sum (excludes weekends/holidays)
 - **Transform**: Business-day aware composite
@@ -31,7 +31,7 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 - **Caching**: 24-hour TTL with business-day awareness
 - **Aggregation**: Business-day filtered historical baseline percentile ranking
 
-### Net Liquidity (10% weight)
+### Net Liquidity (4.3% weight)
 - **Data Source**: FRED API (WALCL, RRPONTSYD, WTREGEN)
 - **Window**: 1 year of weekly data
 - **Transform**: Multi-factor composite (Level 15%, Rate of Change 40%, Momentum 45%)
@@ -56,9 +56,9 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 - **Staleness TTL**: 1 day
 - **Aggregation**: Weighted composite with security adjustment and percentile ranking
 
-## Momentum/Valuation Pillar (33% total weight)
+## Momentum/Valuation Pillar (30% total weight)
 
-### Trend & Valuation (25% weight)
+### Trend & Valuation (30% weight)
 - **Data Source**: CoinGecko Bitcoin price data with enhanced caching
 - **Window**: 365 days of daily data with incremental updates
 - **Transform**: Cycle-Anchored Trend composite (BMSB 60%, Mayer Multiple 30%, Weekly RSI 10%)
@@ -69,7 +69,7 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 - **Caching**: 24-hour TTL with parallel processing (7ms calculation time)
 - **Aggregation**: Weighted composite with parallel BMSB/Mayer/RSI calculation
 
-### On-chain Activity (8% weight)
+### On-chain Activity (0% weight - Disabled)
 - **Data Source**: Multi-source fallback (Blockchain.info → Mempool.space → Mempool.observer)
 - **Window**: 30 days of daily data with parallel fetching
 - **Transform**: Multi-factor composite (Congestion 60%, Activity 40%, NVT 0% + Security adjustment)
@@ -80,9 +80,9 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 - **Caching**: 4-hour TTL with 3-source fallback
 - **Aggregation**: Weighted composite with parallel data fetching
 
-## Term Structure/Leverage Pillar (18% total weight)
+## Term Structure/Leverage Pillar (20% total weight)
 
-### Term Structure & Leverage (18% weight)
+### Term Structure & Leverage (20% weight)
 - **Data Source**: Multi-exchange fallback (BitMEX → Binance → OKX) + CoinGecko spot prices
 - **Window**: 30 days of funding data + spot price volatility with parallel processing
 - **Transform**: Multi-factor composite (Funding 40%, Volatility 35%, Stress 25%)
@@ -93,9 +93,9 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 - **Caching**: 6-hour TTL with multi-exchange fallback
 - **Aggregation**: Weighted composite with parallel funding/volatility/stress calculation
 
-## Social/Attention Pillar (5% total weight)
+## Social/Attention Pillar (10% total weight)
 
-### Social Interest (5% weight)
+### Social Interest (10% weight)
 - **Data Source**: CoinGecko trending data + price momentum analysis
 - **Window**: Real-time trending + 30 days of price data with momentum analysis
 - **Transform**: Multi-factor composite (Search Attention 70%, Price Momentum 30%, Volatility 0%)
@@ -106,9 +106,9 @@ Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
 - **Caching**: 6-hour TTL with momentum analysis
 - **Aggregation**: Weighted composite with percentile ranking for momentum components
 
-## Macro Overlay Pillar (6% total weight)
+## Macro Overlay Pillar (10% total weight)
 
-### Macro Overlay (6% weight)
+### Macro Overlay (10% weight)
 - **Data Source**: Enhanced FRED API with retry logic (DXY, 2Y/10Y Treasury, VIX, 10Y TIPS)
 - **Window**: 120 days of macro data for trend analysis with parallel fetching
 - **Transform**: Multi-factor composite (Dollar 40%, Rates 35%, VIX 25%, Real Rates 0%)

@@ -1,9 +1,9 @@
 {
   "ok": true,
   "version": "v3.1.0",
-  "as_of_utc": "2025-10-06T11:19:14.041Z",
-  "composite_score": 61,
-  "composite_raw": 61,
+  "as_of_utc": "2025-10-29T15:42:29.269Z",
+  "composite_score": 57,
+  "composite_raw": 57,
   "band": {
     "key": "hold___wait",
     "label": "Hold & Wait",
@@ -20,36 +20,36 @@
       "key": "trend_valuation",
       "label": "Trend & Valuation",
       "pillar": "momentum",
-      "weight": 25,
-      "weight_pct": 25,
-      "score": 53,
+      "weight": 30,
+      "weight_pct": 30,
+      "score": 51,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-06T11:19:00.172Z",
+      "last_utc": "2025-10-29T15:42:03.123Z",
       "details": [
         {
           "label": "Price vs 200-day SMA (Mayer)",
-          "value": "1.17"
+          "value": "1.05"
         },
         {
           "label": "Bull Market Support Band",
-          "value": "above (+10.1%)"
+          "value": "inside (+0.0%)"
         },
         {
           "label": "Weekly momentum (RSI)",
-          "value": "64.5"
+          "value": "52.9"
         },
         {
           "label": "BTC Price (daily close)",
-          "value": "$123,944.69"
+          "value": "$111,847.66"
         },
         {
           "label": "200-day SMA",
-          "value": "$105,852.197"
+          "value": "$106,873.406"
         },
         {
           "label": "Weekly Close (for BMSB)",
-          "value": "$123,944.69"
+          "value": "$111,847.66"
         },
         {
           "label": "Price source",
@@ -57,51 +57,51 @@
         },
         {
           "label": "Historical data points",
-          "value": "729 days"
+          "value": "751 days"
         },
         {
           "label": "Calculation method",
-          "value": "Parallel processing (6ms)"
+          "value": "Parallel processing (5ms)"
         },
         {
           "label": "BMSB (20W SMA / 21W EMA)",
-          "value": "$113,286.036 / $111,918.163"
+          "value": "$113,032.428 / $110,659.781"
         },
         {
           "label": "50-week SMA diagnostic",
-          "value": "Above 50W SMA ($101,170.024)"
+          "value": "Above 50W SMA ($102,314.885)"
         },
         {
           "label": "Component Scores",
-          "value": "BMSB: 57, Mayer: 46, RSI: 52"
+          "value": "BMSB: 50, Mayer: 58, RSI: 37"
         }
       ],
       "sma50wDiagnostic": {
-        "sma50": 101170.02360000001,
-        "currentClose": 123944.69,
+        "sma50": 102314.885,
+        "currentClose": 111847.66,
         "isBelow": false,
         "consecutiveWeeksBelow": 0,
         "showWarning": false
       }
     },
     {
-      "key": "onchain",
-      "label": "On-chain Activity",
-      "pillar": "momentum",
-      "weight": 8,
-      "weight_pct": 8,
-      "score": 38,
+      "key": "stablecoins",
+      "label": "Stablecoins",
+      "pillar": "liquidity",
+      "weight": 18,
+      "weight_pct": 18,
+      "score": 53,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-06T11:19:01.252Z",
+      "last_utc": "2025-10-29T15:42:03.934Z",
       "details": [
         {
           "label": "Mempool 7d avg (MB)",
-          "value": "54.0"
+          "value": "72.0"
         },
         {
           "label": "Fees 7d avg (USD)",
-          "value": "$373480"
+          "value": "$386001"
         },
         {
           "label": "Data Sources",
@@ -109,7 +109,7 @@
         },
         {
           "label": "Calculation Method",
-          "value": "Parallel processing (1074ms)"
+          "value": "Parallel processing (808ms)"
         },
         {
           "label": "Fallback Attempts",
@@ -118,19 +118,19 @@
       ]
     },
     {
-      "key": "stablecoins",
-      "label": "Stablecoins",
+      "key": "etf_flows",
+      "label": "ETF Flows",
       "pillar": "liquidity",
-      "weight": 18,
-      "weight_pct": 18,
+      "weight": 7.7,
+      "weight_pct": 7.7,
       "score": 82,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-06T11:19:12.320Z",
+      "last_utc": "2025-10-29T15:42:15.148Z",
       "details": [
         {
           "label": "Total Market Cap",
-          "value": "$257.3B"
+          "value": "$264.7B"
         },
         {
           "label": "Dominant Stablecoin",
@@ -146,7 +146,7 @@
         },
         {
           "label": "Market Concentration",
-          "value": "HHI: 5592"
+          "value": "HHI: 5625"
         },
         {
           "label": "Supply Growth Percentile",
@@ -154,7 +154,7 @@
         },
         {
           "label": "Historical Baseline",
-          "value": "1 data points (weighted average of 7 stablecoins)"
+          "value": "2 data points (weighted average of 7 stablecoins)"
         },
         {
           "label": "Stablecoin Coverage",
@@ -162,68 +162,68 @@
         },
         {
           "label": "Component Scores",
-          "value": "Supply: 95, Momentum: 70, Concentration: 55.91596686917345"
+          "value": "Supply: 95, Momentum: 70, Concentration: 56.25024526284498"
         }
       ]
     },
     {
-      "key": "etf_flows",
-      "label": "ETF Flows",
+      "key": "net_liquidity",
+      "label": "Net Liquidity (FRED)",
       "pillar": "liquidity",
-      "weight": 10,
-      "weight_pct": 10,
-      "score": 43,
+      "weight": 4.3,
+      "weight_pct": 4.3,
+      "score": 56,
       "status": "fresh",
-      "reason": "fresh (67.3h old)",
-      "last_utc": "2025-10-03T16:00:00.000Z",
+      "reason": "fresh (-0.3h old)",
+      "last_utc": "2025-10-29T16:00:00.000Z",
       "details": [
         {
           "label": "Latest Daily Flow",
-          "value": "$985",
-          "tooltip": "Exact: $985.1 (2025-10-03)"
+          "value": "$0",
+          "tooltip": "Exact: $0 (2025-10-29)"
         },
         {
           "label": "21-day Rolling Sum",
-          "value": "$5.4K",
-          "tooltip": "Exact: $5,388.7 (21-day momentum)"
+          "value": "$3.6K",
+          "tooltip": "Exact: $3,587.1 (21-day momentum)"
         },
         {
           "label": "7-day Recent Flows",
-          "value": "$2.6K"
+          "value": "$322"
         },
         {
           "label": "Flow Acceleration",
-          "value": "+$2.2K"
+          "value": "$-655"
         },
         {
           "label": "Diversification (HHI)",
-          "value": "Medium"
+          "value": "High"
         },
         {
           "label": "21-day Percentile",
-          "value": "45%"
+          "value": "26%"
         },
         {
           "label": "21-day Z-Score",
-          "value": "-0.24σ",
-          "tooltip": "Normal: -0.24σ from mean"
+          "value": "-0.94σ",
+          "tooltip": "Normal: -0.94σ from mean"
         },
         {
           "label": "Component Scores",
-          "value": "21d: 58, Accel: 7, Diversif: 59.712977938020714"
+          "value": "21d: 81, Accel: 71, Diversif: 25.181477825561938"
         },
         {
           "label": "Total Flows (all time)",
-          "value": "$60.0K",
-          "tooltip": "Exact: $60,016.6 (since ETF inception)"
+          "value": "$51.6K",
+          "tooltip": "Exact: $51,571.9 (since ETF inception)"
         },
         {
           "label": "Data Points",
-          "value": "450"
+          "value": "375"
         },
         {
           "label": "Last Update",
-          "value": "3.5 days ago"
+          "value": "0.7 days ago"
         }
       ],
       "individualEtfFlows": [
@@ -324,22 +324,6 @@
           }
         },
         {
-          "date": "2024-01-22",
-          "flows": {
-            "ibit": 260.6,
-            "fbtc": 158.7,
-            "bitb": 41.6,
-            "arkb": 65,
-            "btco": 5.6,
-            "ezbc": 4.7,
-            "brrr": 9.7,
-            "hodl": 6.8,
-            "btcw": 0.4,
-            "gbtc": -640.5,
-            "btc": 158.7
-          }
-        },
-        {
           "date": "2024-01-23",
           "flows": {
             "ibit": 160.1,
@@ -401,22 +385,6 @@
             "btcw": 0,
             "gbtc": -255.1,
             "btc": 100.1
-          }
-        },
-        {
-          "date": "2024-01-29",
-          "flows": {
-            "ibit": 198.4,
-            "fbtc": 208.2,
-            "bitb": 20,
-            "arkb": 17.2,
-            "btco": 3,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -191.7,
-            "btc": 208.2
           }
         },
         {
@@ -484,22 +452,6 @@
           }
         },
         {
-          "date": "2024-02-05",
-          "flows": {
-            "ibit": 137.3,
-            "fbtc": 38,
-            "bitb": 0,
-            "arkb": 0,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0.7,
-            "gbtc": -107.9,
-            "btc": 38
-          }
-        },
-        {
           "date": "2024-02-06",
           "flows": {
             "ibit": 45.2,
@@ -561,22 +513,6 @@
             "btcw": 0.5,
             "gbtc": -51.8,
             "btc": 188.4
-          }
-        },
-        {
-          "date": "2024-02-12",
-          "flows": {
-            "ibit": 374.7,
-            "fbtc": 151.9,
-            "bitb": 33,
-            "arkb": 40,
-            "btco": -20.8,
-            "ezbc": 0,
-            "brrr": 1.1,
-            "hodl": 8.5,
-            "btcw": 0,
-            "gbtc": -95,
-            "btc": 151.9
           }
         },
         {
@@ -708,22 +644,6 @@
           }
         },
         {
-          "date": "2024-02-26",
-          "flows": {
-            "ibit": 111.8,
-            "fbtc": 243.3,
-            "bitb": 37.2,
-            "arkb": 130.6,
-            "btco": 4.4,
-            "ezbc": 7.9,
-            "brrr": 0,
-            "hodl": 6.2,
-            "btcw": 0.9,
-            "gbtc": -22.4,
-            "btc": 243.3
-          }
-        },
-        {
           "date": "2024-02-27",
           "flows": {
             "ibit": 520.2,
@@ -785,22 +705,6 @@
             "btcw": 0,
             "gbtc": -492.4,
             "btc": 49.3
-          }
-        },
-        {
-          "date": "2024-03-04",
-          "flows": {
-            "ibit": 420.1,
-            "fbtc": 404.6,
-            "bitb": 90.9,
-            "arkb": 38.2,
-            "btco": -25.7,
-            "ezbc": 7.8,
-            "brrr": 3.7,
-            "hodl": -5.7,
-            "btcw": -3.2,
-            "gbtc": -368,
-            "btc": 404.6
           }
         },
         {
@@ -868,22 +772,6 @@
           }
         },
         {
-          "date": "2024-03-11",
-          "flows": {
-            "ibit": 562.9,
-            "fbtc": 215.5,
-            "bitb": 49.8,
-            "arkb": 13,
-            "btco": -9.7,
-            "ezbc": 0,
-            "brrr": 43.4,
-            "hodl": 118.8,
-            "btcw": 5.8,
-            "gbtc": -494.1,
-            "btc": 215.5
-          }
-        },
-        {
           "date": "2024-03-12",
           "flows": {
             "ibit": 849,
@@ -945,22 +833,6 @@
             "btcw": 3.3,
             "gbtc": -139.4,
             "btc": 155.6
-          }
-        },
-        {
-          "date": "2024-03-18",
-          "flows": {
-            "ibit": 451.5,
-            "fbtc": 5.9,
-            "bitb": 17.6,
-            "arkb": 2.7,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 4.8,
-            "hodl": 5.7,
-            "btcw": 0,
-            "gbtc": -642.5,
-            "btc": 5.9
           }
         },
         {
@@ -1028,22 +900,6 @@
           }
         },
         {
-          "date": "2024-03-25",
-          "flows": {
-            "ibit": 35.5,
-            "fbtc": 261.8,
-            "bitb": 14,
-            "arkb": 0,
-            "btco": 18.5,
-            "ezbc": 20.5,
-            "brrr": 11.2,
-            "hodl": 4,
-            "btcw": 0,
-            "gbtc": -350.1,
-            "btc": 261.8
-          }
-        },
-        {
           "date": "2024-03-26",
           "flows": {
             "ibit": 162.2,
@@ -1089,22 +945,6 @@
             "btcw": 0,
             "gbtc": -104.9,
             "btc": 68.1
-          }
-        },
-        {
-          "date": "2024-04-01",
-          "flows": {
-            "ibit": 165.9,
-            "fbtc": 44,
-            "bitb": 1.1,
-            "arkb": -0.3,
-            "btco": 4.2,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 2,
-            "btcw": 0,
-            "gbtc": -302.6,
-            "btc": 44
           }
         },
         {
@@ -1172,22 +1012,6 @@
           }
         },
         {
-          "date": "2024-04-08",
-          "flows": {
-            "ibit": 21.3,
-            "fbtc": 6.3,
-            "bitb": 40.3,
-            "arkb": 9.3,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 2.3,
-            "gbtc": -303.3,
-            "btc": 6.3
-          }
-        },
-        {
           "date": "2024-04-09",
           "flows": {
             "ibit": 128.7,
@@ -1248,22 +1072,6 @@
             "hodl": 0,
             "btcw": 0,
             "gbtc": -166.2,
-            "btc": 0
-          }
-        },
-        {
-          "date": "2024-04-15",
-          "flows": {
-            "ibit": 73.4,
-            "fbtc": 0,
-            "bitb": 0,
-            "arkb": 0,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -110.1,
             "btc": 0
           }
         },
@@ -1332,22 +1140,6 @@
           }
         },
         {
-          "date": "2024-04-22",
-          "flows": {
-            "ibit": 19.7,
-            "fbtc": 34.8,
-            "bitb": 2.2,
-            "arkb": 22.6,
-            "btco": 2.7,
-            "ezbc": 7.7,
-            "brrr": 0,
-            "hodl": 7.5,
-            "btcw": 0,
-            "gbtc": -35,
-            "btc": 34.8
-          }
-        },
-        {
           "date": "2024-04-23",
           "flows": {
             "ibit": 37.9,
@@ -1409,22 +1201,6 @@
             "btcw": 0,
             "gbtc": -82.4,
             "btc": -2.8
-          }
-        },
-        {
-          "date": "2024-04-29",
-          "flows": {
-            "ibit": 0,
-            "fbtc": -6.9,
-            "bitb": 6.8,
-            "arkb": -31.3,
-            "btco": 0,
-            "ezbc": 1.8,
-            "brrr": 2.7,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -24.7,
-            "btc": -6.9
           }
         },
         {
@@ -1492,22 +1268,6 @@
           }
         },
         {
-          "date": "2024-05-06",
-          "flows": {
-            "ibit": 21.5,
-            "fbtc": 99.2,
-            "bitb": 2.1,
-            "arkb": 75.6,
-            "btco": 11.1,
-            "ezbc": 1.8,
-            "brrr": 0,
-            "hodl": 1.8,
-            "btcw": 0,
-            "gbtc": 3.9,
-            "btc": 99.2
-          }
-        },
-        {
           "date": "2024-05-07",
           "flows": {
             "ibit": 0,
@@ -1572,22 +1332,6 @@
           }
         },
         {
-          "date": "2024-05-13",
-          "flows": {
-            "ibit": 0,
-            "fbtc": 38.6,
-            "bitb": 20.3,
-            "arkb": 0,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 7.1,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": 38.6
-          }
-        },
-        {
           "date": "2024-05-14",
           "flows": {
             "ibit": 0,
@@ -1649,22 +1393,6 @@
             "btcw": 0,
             "gbtc": 31.6,
             "btc": 99.4
-          }
-        },
-        {
-          "date": "2024-05-20",
-          "flows": {
-            "ibit": 66.4,
-            "fbtc": 64,
-            "bitb": 24,
-            "arkb": 68.3,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 5.2,
-            "gbtc": 9.3,
-            "btc": 64
           }
         },
         {
@@ -1796,22 +1524,6 @@
           }
         },
         {
-          "date": "2024-06-03",
-          "flows": {
-            "ibit": 0,
-            "fbtc": 77,
-            "bitb": 14.3,
-            "arkb": 10.7,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 2,
-            "btcw": 1.1,
-            "gbtc": 0,
-            "btc": 77
-          }
-        },
-        {
           "date": "2024-06-04",
           "flows": {
             "ibit": 274.4,
@@ -1873,22 +1585,6 @@
             "btcw": 0,
             "gbtc": -36.3,
             "btc": 0
-          }
-        },
-        {
-          "date": "2024-06-10",
-          "flows": {
-            "ibit": 6.3,
-            "fbtc": -3,
-            "bitb": 7.6,
-            "arkb": 0,
-            "btco": -20.5,
-            "ezbc": 0,
-            "brrr": -15.8,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -39.5,
-            "btc": -3
           }
         },
         {
@@ -1956,22 +1652,6 @@
           }
         },
         {
-          "date": "2024-06-17",
-          "flows": {
-            "ibit": 0,
-            "fbtc": -92,
-            "bitb": 2.9,
-            "arkb": -50,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": -3.8,
-            "btcw": 0,
-            "gbtc": -3,
-            "btc": -92
-          }
-        },
-        {
           "date": "2024-06-18",
           "flows": {
             "ibit": 0,
@@ -2017,22 +1697,6 @@
             "btcw": 0,
             "gbtc": -34.2,
             "btc": -44.8
-          }
-        },
-        {
-          "date": "2024-06-24",
-          "flows": {
-            "ibit": 0,
-            "fbtc": -35.2,
-            "bitb": -8.2,
-            "arkb": -7.2,
-            "btco": -2.4,
-            "ezbc": -20.9,
-            "brrr": 0,
-            "hodl": -10.2,
-            "btcw": 0,
-            "gbtc": -90.4,
-            "btc": -35.2
           }
         },
         {
@@ -2100,22 +1764,6 @@
           }
         },
         {
-          "date": "2024-07-01",
-          "flows": {
-            "ibit": 0,
-            "fbtc": 65,
-            "bitb": 41.4,
-            "arkb": 12.7,
-            "btco": 3.2,
-            "ezbc": 1.8,
-            "brrr": 0,
-            "hodl": 5.4,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": 65
-          }
-        },
-        {
           "date": "2024-07-02",
           "flows": {
             "ibit": 14.1,
@@ -2161,22 +1809,6 @@
             "btcw": 0,
             "gbtc": -28.6,
             "btc": 117.4
-          }
-        },
-        {
-          "date": "2024-07-08",
-          "flows": {
-            "ibit": 187.2,
-            "fbtc": 61.5,
-            "bitb": 11,
-            "arkb": 8.4,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 1.6,
-            "btcw": 0,
-            "gbtc": 25.1,
-            "btc": 61.5
           }
         },
         {
@@ -2244,22 +1876,6 @@
           }
         },
         {
-          "date": "2024-07-15",
-          "flows": {
-            "ibit": 117.2,
-            "fbtc": 36.1,
-            "bitb": 15.2,
-            "arkb": 117.2,
-            "btco": 7.9,
-            "ezbc": 3.7,
-            "brrr": 0,
-            "hodl": 3.6,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": 36.1
-          }
-        },
-        {
           "date": "2024-07-16",
           "flows": {
             "ibit": 260.2,
@@ -2321,22 +1937,6 @@
             "btcw": 1.8,
             "gbtc": 20.3,
             "btc": 141
-          }
-        },
-        {
-          "date": "2024-07-22",
-          "flows": {
-            "ibit": 526.7,
-            "fbtc": 23.7,
-            "bitb": -47.7,
-            "arkb": 0,
-            "btco": 13.7,
-            "ezbc": 7.9,
-            "brrr": 0,
-            "hodl": -38.4,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": 23.7
           }
         },
         {
@@ -2404,22 +2004,6 @@
           }
         },
         {
-          "date": "2024-07-29",
-          "flows": {
-            "ibit": 205.6,
-            "fbtc": -5.9,
-            "bitb": -21.3,
-            "arkb": 0,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -54.3,
-            "btc": -5.9
-          }
-        },
-        {
           "date": "2024-07-30",
           "flows": {
             "ibit": 74.9,
@@ -2481,22 +2065,6 @@
             "btcw": 0,
             "gbtc": -45.9,
             "btc": -104.1
-          }
-        },
-        {
-          "date": "2024-08-05",
-          "flows": {
-            "ibit": 0,
-            "fbtc": -58,
-            "bitb": 2.9,
-            "arkb": -69,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 3,
-            "btcw": 0,
-            "gbtc": -69.1,
-            "btc": -58
           }
         },
         {
@@ -2564,22 +2132,6 @@
           }
         },
         {
-          "date": "2024-08-12",
-          "flows": {
-            "ibit": 13.4,
-            "fbtc": 0,
-            "bitb": -17.1,
-            "arkb": 35.4,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -11.8,
-            "btc": 0
-          }
-        },
-        {
           "date": "2024-08-13",
           "flows": {
             "ibit": 34.6,
@@ -2644,22 +2196,6 @@
           }
         },
         {
-          "date": "2024-08-19",
-          "flows": {
-            "ibit": 92.7,
-            "fbtc": 3.9,
-            "bitb": -25.7,
-            "arkb": 0,
-            "btco": -8.8,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": 3.9
-          }
-        },
-        {
           "date": "2024-08-20",
           "flows": {
             "ibit": 55.4,
@@ -2721,22 +2257,6 @@
             "btcw": 0,
             "gbtc": -35.6,
             "btc": 64
-          }
-        },
-        {
-          "date": "2024-08-26",
-          "flows": {
-            "ibit": 224.1,
-            "fbtc": -8.3,
-            "bitb": -16.6,
-            "arkb": 0,
-            "btco": 0,
-            "ezbc": 5.5,
-            "brrr": 0,
-            "hodl": -7.2,
-            "btcw": 5.1,
-            "gbtc": 0,
-            "btc": -8.3
           }
         },
         {
@@ -2868,22 +2388,6 @@
           }
         },
         {
-          "date": "2024-09-09",
-          "flows": {
-            "ibit": -9.1,
-            "fbtc": 28.6,
-            "bitb": 22,
-            "arkb": 6.8,
-            "btco": 3.1,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -22.8,
-            "btc": 28.6
-          }
-        },
-        {
           "date": "2024-09-10",
           "flows": {
             "ibit": 0,
@@ -2945,22 +2449,6 @@
             "btcw": 0,
             "gbtc": 6.7,
             "btc": 102.1
-          }
-        },
-        {
-          "date": "2024-09-16",
-          "flows": {
-            "ibit": 15.8,
-            "fbtc": 5.1,
-            "bitb": 0,
-            "arkb": 0,
-            "btco": 0,
-            "ezbc": 5,
-            "brrr": 0,
-            "hodl": 4.9,
-            "btcw": 0,
-            "gbtc": -20.8,
-            "btc": 5.1
           }
         },
         {
@@ -3028,22 +2516,6 @@
           }
         },
         {
-          "date": "2024-09-23",
-          "flows": {
-            "ibit": 11.5,
-            "fbtc": 24.9,
-            "bitb": 0,
-            "arkb": 0,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -40.3,
-            "btc": 24.9
-          }
-        },
-        {
           "date": "2024-09-24",
           "flows": {
             "ibit": 98.9,
@@ -3105,22 +2577,6 @@
             "btcw": 0,
             "gbtc": 26.2,
             "btc": 123.6
-          }
-        },
-        {
-          "date": "2024-09-30",
-          "flows": {
-            "ibit": 72.2,
-            "fbtc": 8.3,
-            "bitb": -9.7,
-            "arkb": -9.5,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": 8.3
           }
         },
         {
@@ -3188,22 +2644,6 @@
           }
         },
         {
-          "date": "2024-10-07",
-          "flows": {
-            "ibit": 97.9,
-            "fbtc": 103.7,
-            "bitb": 13.1,
-            "arkb": 12.6,
-            "btco": 2.5,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 5.4,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": 103.7
-          }
-        },
-        {
           "date": "2024-10-08",
           "flows": {
             "ibit": 39.6,
@@ -3265,22 +2705,6 @@
             "btcw": 0,
             "gbtc": -22.1,
             "btc": 117.1
-          }
-        },
-        {
-          "date": "2024-10-14",
-          "flows": {
-            "ibit": 79.5,
-            "fbtc": 239.3,
-            "bitb": 100.2,
-            "arkb": 69.8,
-            "btco": 4.9,
-            "ezbc": 5.7,
-            "brrr": 2.8,
-            "hodl": 11.2,
-            "btcw": 0,
-            "gbtc": 37.8,
-            "btc": 239.3
           }
         },
         {
@@ -3348,22 +2772,6 @@
           }
         },
         {
-          "date": "2024-10-21",
-          "flows": {
-            "ibit": 329,
-            "fbtc": 5.9,
-            "bitb": -22.1,
-            "arkb": -6.1,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": -7.6,
-            "btcw": 0,
-            "gbtc": -4.8,
-            "btc": 5.9
-          }
-        },
-        {
           "date": "2024-10-22",
           "flows": {
             "ibit": 43,
@@ -3425,22 +2833,6 @@
             "btcw": 0,
             "gbtc": 0,
             "btc": 56.9
-          }
-        },
-        {
-          "date": "2024-10-28",
-          "flows": {
-            "ibit": 315.2,
-            "fbtc": 44.1,
-            "bitb": 38.7,
-            "arkb": 59.8,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": 44.1
           }
         },
         {
@@ -3508,22 +2900,6 @@
           }
         },
         {
-          "date": "2024-11-04",
-          "flows": {
-            "ibit": 38.4,
-            "fbtc": -169.6,
-            "bitb": -79.8,
-            "arkb": -138.3,
-            "btco": 0,
-            "ezbc": -17.6,
-            "brrr": -5.7,
-            "hodl": -15.3,
-            "btcw": 0,
-            "gbtc": -63.7,
-            "btc": -169.6
-          }
-        },
-        {
           "date": "2024-11-05",
           "flows": {
             "ibit": -44.2,
@@ -3585,22 +2961,6 @@
             "btcw": 0,
             "gbtc": 0,
             "btc": 33.5
-          }
-        },
-        {
-          "date": "2024-11-11",
-          "flows": {
-            "ibit": 756.5,
-            "fbtc": 135.1,
-            "bitb": 42.7,
-            "arkb": 108.6,
-            "btco": 8.7,
-            "ezbc": 10.1,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": 24.2,
-            "btc": 135.1
           }
         },
         {
@@ -3668,22 +3028,6 @@
           }
         },
         {
-          "date": "2024-11-18",
-          "flows": {
-            "ibit": 89.3,
-            "fbtc": 60,
-            "bitb": 24.4,
-            "arkb": 13.2,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 7.7,
-            "btcw": 0,
-            "gbtc": 5.8,
-            "btc": 60
-          }
-        },
-        {
           "date": "2024-11-19",
           "flows": {
             "ibit": 216.1,
@@ -3748,22 +3092,6 @@
           }
         },
         {
-          "date": "2024-11-25",
-          "flows": {
-            "ibit": 267.8,
-            "fbtc": -134.7,
-            "bitb": -280.7,
-            "arkb": -110.9,
-            "btco": -10.9,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": -8.1,
-            "btcw": 0,
-            "gbtc": -158.2,
-            "btc": -134.7
-          }
-        },
-        {
           "date": "2024-11-26",
           "flows": {
             "ibit": 0,
@@ -3809,22 +3137,6 @@
             "btcw": 0,
             "gbtc": 0,
             "btc": 106.5
-          }
-        },
-        {
-          "date": "2024-12-02",
-          "flows": {
-            "ibit": 338.3,
-            "fbtc": 25.1,
-            "bitb": 0,
-            "arkb": 17.2,
-            "btco": 0,
-            "ezbc": 5.6,
-            "brrr": 0,
-            "hodl": -10.9,
-            "btcw": 0,
-            "gbtc": -28.1,
-            "btc": 25.1
           }
         },
         {
@@ -3892,22 +3204,6 @@
           }
         },
         {
-          "date": "2024-12-09",
-          "flows": {
-            "ibit": 394.1,
-            "fbtc": 175.5,
-            "bitb": -39,
-            "arkb": -34.3,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -24.4,
-            "btc": 175.5
-          }
-        },
-        {
           "date": "2024-12-10",
           "flows": {
             "ibit": 295.6,
@@ -3969,22 +3265,6 @@
             "btcw": 7,
             "gbtc": -105.8,
             "btc": 60
-          }
-        },
-        {
-          "date": "2024-12-16",
-          "flows": {
-            "ibit": 418.2,
-            "fbtc": 116.1,
-            "bitb": 30.7,
-            "arkb": 47.7,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": 17.6,
-            "btc": 116.1
           }
         },
         {
@@ -4052,22 +3332,6 @@
           }
         },
         {
-          "date": "2024-12-23",
-          "flows": {
-            "ibit": 31.7,
-            "fbtc": -146,
-            "bitb": -23.7,
-            "arkb": -15.7,
-            "btco": -25.6,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": -2.6,
-            "btcw": 0,
-            "gbtc": -38.4,
-            "btc": -146
-          }
-        },
-        {
           "date": "2024-12-24",
           "flows": {
             "ibit": -188.7,
@@ -4113,22 +3377,6 @@
             "btcw": 0,
             "gbtc": 3.7,
             "btc": -208.2
-          }
-        },
-        {
-          "date": "2024-12-30",
-          "flows": {
-            "ibit": -36.5,
-            "fbtc": -154.6,
-            "bitb": -31.4,
-            "arkb": -26.4,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -134.5,
-            "btc": -154.6
           }
         },
         {
@@ -4180,22 +3428,6 @@
           }
         },
         {
-          "date": "2025-01-06",
-          "flows": {
-            "ibit": 209.1,
-            "fbtc": 370.2,
-            "bitb": 71.2,
-            "arkb": 152.9,
-            "btco": 0,
-            "ezbc": 8.9,
-            "brrr": 0,
-            "hodl": 17.3,
-            "btcw": 0,
-            "gbtc": 73.8,
-            "btc": 370.2
-          }
-        },
-        {
           "date": "2025-01-07",
           "flows": {
             "ibit": 596.1,
@@ -4241,22 +3473,6 @@
             "btcw": 0,
             "gbtc": 13.5,
             "btc": 16.6
-          }
-        },
-        {
-          "date": "2025-01-13",
-          "flows": {
-            "ibit": 29.5,
-            "fbtc": -113.6,
-            "bitb": -18.6,
-            "arkb": -92.4,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -89,
-            "btc": -113.6
           }
         },
         {
@@ -4388,22 +3604,6 @@
           }
         },
         {
-          "date": "2025-01-27",
-          "flows": {
-            "ibit": 63.9,
-            "fbtc": -268.6,
-            "bitb": -88.6,
-            "arkb": -50.1,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": -5.7,
-            "btcw": 0,
-            "gbtc": -108.5,
-            "btc": -268.6
-          }
-        },
-        {
           "date": "2025-01-28",
           "flows": {
             "ibit": 30.1,
@@ -4468,22 +3668,6 @@
           }
         },
         {
-          "date": "2025-02-03",
-          "flows": {
-            "ibit": 0,
-            "fbtc": -177.6,
-            "bitb": -5.5,
-            "arkb": -50.7,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": -8.6,
-            "btcw": 0,
-            "gbtc": 8,
-            "btc": -177.6
-          }
-        },
-        {
           "date": "2025-02-04",
           "flows": {
             "ibit": 249,
@@ -4545,22 +3729,6 @@
             "btcw": 0,
             "gbtc": 0,
             "btc": 52.5
-          }
-        },
-        {
-          "date": "2025-02-10",
-          "flows": {
-            "ibit": 55.4,
-            "fbtc": -136.1,
-            "bitb": 0,
-            "arkb": 0,
-            "btco": -34,
-            "ezbc": -19.8,
-            "brrr": 0,
-            "hodl": -5.5,
-            "btcw": 0,
-            "gbtc": -46.3,
-            "btc": -136.1
           }
         },
         {
@@ -4692,22 +3860,6 @@
           }
         },
         {
-          "date": "2025-02-24",
-          "flows": {
-            "ibit": -158.6,
-            "fbtc": -247,
-            "bitb": -10.3,
-            "arkb": -22.6,
-            "btco": -15,
-            "ezbc": 0,
-            "brrr": -26.9,
-            "hodl": -7.3,
-            "btcw": -12.5,
-            "gbtc": -59.5,
-            "btc": -247
-          }
-        },
-        {
           "date": "2025-02-25",
           "flows": {
             "ibit": -164.4,
@@ -4769,22 +3921,6 @@
             "btcw": 0,
             "gbtc": -33.3,
             "btc": 176
-          }
-        },
-        {
-          "date": "2025-03-03",
-          "flows": {
-            "ibit": -78,
-            "fbtc": 0,
-            "bitb": 0,
-            "arkb": 58.2,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -54.4,
-            "btc": 0
           }
         },
         {
@@ -4852,22 +3988,6 @@
           }
         },
         {
-          "date": "2025-03-10",
-          "flows": {
-            "ibit": -89.2,
-            "fbtc": -134,
-            "bitb": -6.8,
-            "arkb": -90.9,
-            "btco": -14.2,
-            "ezbc": -13.6,
-            "brrr": -3.2,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -20.6,
-            "btc": -134
-          }
-        },
-        {
           "date": "2025-03-11",
           "flows": {
             "ibit": -151.3,
@@ -4929,22 +4049,6 @@
             "btcw": 0,
             "gbtc": 0,
             "btc": 9.2
-          }
-        },
-        {
-          "date": "2025-03-17",
-          "flows": {
-            "ibit": 42.3,
-            "fbtc": 127.3,
-            "bitb": 2.3,
-            "arkb": 88.5,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": 127.3
           }
         },
         {
@@ -5012,22 +4116,6 @@
           }
         },
         {
-          "date": "2025-03-24",
-          "flows": {
-            "ibit": 18.1,
-            "fbtc": 82.9,
-            "bitb": 19.2,
-            "arkb": -41,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": -4.5,
-            "hodl": 5,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": 82.9
-          }
-        },
-        {
           "date": "2025-03-25",
           "flows": {
             "ibit": 42,
@@ -5092,22 +4180,6 @@
           }
         },
         {
-          "date": "2025-03-31",
-          "flows": {
-            "ibit": 15.1,
-            "fbtc": 0,
-            "bitb": -19.9,
-            "arkb": -23.2,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": -10.6,
-            "hodl": 0,
-            "btcw": -32.6,
-            "gbtc": 0,
-            "btc": 0
-          }
-        },
-        {
           "date": "2025-04-01",
           "flows": {
             "ibit": 0,
@@ -5168,22 +4240,6 @@
             "hodl": 0,
             "btcw": 0,
             "gbtc": -25.2,
-            "btc": 0
-          }
-        },
-        {
-          "date": "2025-04-07",
-          "flows": {
-            "ibit": 0,
-            "fbtc": 0,
-            "bitb": 0,
-            "arkb": -4.7,
-            "btco": -12.9,
-            "ezbc": 0,
-            "brrr": -5.3,
-            "hodl": -6.1,
-            "btcw": -6.2,
-            "gbtc": -74,
             "btc": 0
           }
         },
@@ -5252,22 +4308,6 @@
           }
         },
         {
-          "date": "2025-04-14",
-          "flows": {
-            "ibit": 36.7,
-            "fbtc": -35.2,
-            "bitb": 0,
-            "arkb": 0,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": -35.2
-          }
-        },
-        {
           "date": "2025-04-15",
           "flows": {
             "ibit": 38.2,
@@ -5313,22 +4353,6 @@
             "btcw": 0,
             "gbtc": 0,
             "btc": 25.9
-          }
-        },
-        {
-          "date": "2025-04-21",
-          "flows": {
-            "ibit": 41.6,
-            "fbtc": 87.6,
-            "bitb": 45.1,
-            "arkb": 116.1,
-            "btco": 0,
-            "ezbc": 10.1,
-            "brrr": 6.1,
-            "hodl": 11.7,
-            "btcw": 0,
-            "gbtc": 36.6,
-            "btc": 87.6
           }
         },
         {
@@ -5396,22 +4420,6 @@
           }
         },
         {
-          "date": "2025-04-28",
-          "flows": {
-            "ibit": 970.9,
-            "fbtc": -86.9,
-            "bitb": -21.1,
-            "arkb": -226.3,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": -2.7,
-            "btcw": 0,
-            "gbtc": -42.7,
-            "btc": -86.9
-          }
-        },
-        {
           "date": "2025-04-29",
           "flows": {
             "ibit": 216.7,
@@ -5473,22 +4481,6 @@
             "btcw": 0,
             "gbtc": 0,
             "btc": 0
-          }
-        },
-        {
-          "date": "2025-05-05",
-          "flows": {
-            "ibit": 531.2,
-            "fbtc": -57.8,
-            "bitb": -22.7,
-            "arkb": -6.1,
-            "btco": 0,
-            "ezbc": -2.7,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -16.4,
-            "btc": -57.8
           }
         },
         {
@@ -5556,22 +4548,6 @@
           }
         },
         {
-          "date": "2025-05-12",
-          "flows": {
-            "ibit": 69.4,
-            "fbtc": -11.1,
-            "bitb": -17.7,
-            "arkb": 0,
-            "btco": -2.5,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -32.9,
-            "btc": -11.1
-          }
-        },
-        {
           "date": "2025-05-13",
           "flows": {
             "ibit": 0,
@@ -5633,22 +4609,6 @@
             "btcw": 0,
             "gbtc": 0,
             "btc": 67.9
-          }
-        },
-        {
-          "date": "2025-05-19",
-          "flows": {
-            "ibit": 305.9,
-            "fbtc": 188.1,
-            "bitb": 16,
-            "arkb": 155.3,
-            "btco": -5.3,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 7.4,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": 188.1
           }
         },
         {
@@ -5780,22 +4740,6 @@
           }
         },
         {
-          "date": "2025-06-02",
-          "flows": {
-            "ibit": -130.4,
-            "fbtc": -50.1,
-            "bitb": 3.4,
-            "arkb": -73.9,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -16.5,
-            "btc": -50.1
-          }
-        },
-        {
           "date": "2025-06-03",
           "flows": {
             "ibit": 58,
@@ -5857,22 +4801,6 @@
             "btcw": 0,
             "gbtc": 0,
             "btc": 22.8
-          }
-        },
-        {
-          "date": "2025-06-09",
-          "flows": {
-            "ibit": 120.9,
-            "fbtc": 173,
-            "bitb": 68.5,
-            "arkb": 10.8,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 7.7,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": 173
           }
         },
         {
@@ -5940,22 +4868,6 @@
           }
         },
         {
-          "date": "2025-06-16",
-          "flows": {
-            "ibit": 266.6,
-            "fbtc": 83,
-            "bitb": 41.4,
-            "arkb": 3.6,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": 12.8,
-            "btc": 83
-          }
-        },
-        {
           "date": "2025-06-17",
           "flows": {
             "ibit": 639.2,
@@ -6001,22 +4913,6 @@
             "btcw": 0,
             "gbtc": 0,
             "btc": -40.5
-          }
-        },
-        {
-          "date": "2025-06-23",
-          "flows": {
-            "ibit": 217.6,
-            "fbtc": 105.7,
-            "bitb": 14.6,
-            "arkb": 2.1,
-            "btco": 6.2,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -5.7,
-            "btc": 105.7
           }
         },
         {
@@ -6084,22 +4980,6 @@
           }
         },
         {
-          "date": "2025-06-30",
-          "flows": {
-            "ibit": 112.3,
-            "fbtc": 0,
-            "bitb": 0,
-            "arkb": -10.2,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": 0
-          }
-        },
-        {
           "date": "2025-07-01",
           "flows": {
             "ibit": 0,
@@ -6145,22 +5025,6 @@
             "btcw": 0,
             "gbtc": 0,
             "btc": 237.1
-          }
-        },
-        {
-          "date": "2025-07-07",
-          "flows": {
-            "ibit": 164.6,
-            "fbtc": 66,
-            "bitb": 0,
-            "arkb": -10.1,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -10.2,
-            "btc": 66
           }
         },
         {
@@ -6228,22 +5092,6 @@
           }
         },
         {
-          "date": "2025-07-14",
-          "flows": {
-            "ibit": 394.7,
-            "fbtc": -26.1,
-            "bitb": 7.2,
-            "arkb": -99.6,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 8.5,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": -26.1
-          }
-        },
-        {
           "date": "2025-07-15",
           "flows": {
             "ibit": 416.3,
@@ -6305,22 +5153,6 @@
             "btcw": 3.1,
             "gbtc": -81.3,
             "btc": -17.9
-          }
-        },
-        {
-          "date": "2025-07-21",
-          "flows": {
-            "ibit": 0,
-            "fbtc": -12.8,
-            "bitb": -1.9,
-            "arkb": -77.5,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": -2.5,
-            "btcw": 0,
-            "gbtc": -36.7,
-            "btc": -12.8
           }
         },
         {
@@ -6388,22 +5220,6 @@
           }
         },
         {
-          "date": "2025-07-28",
-          "flows": {
-            "ibit": 147.4,
-            "fbtc": 30.9,
-            "bitb": -14.8,
-            "arkb": -17.4,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": 30.9
-          }
-        },
-        {
           "date": "2025-07-29",
           "flows": {
             "ibit": 157.6,
@@ -6465,22 +5281,6 @@
             "btcw": 0,
             "gbtc": -66.8,
             "btc": -331.4
-          }
-        },
-        {
-          "date": "2025-08-04",
-          "flows": {
-            "ibit": -292.2,
-            "fbtc": -40.1,
-            "bitb": 18.7,
-            "arkb": 0,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": -9.9,
-            "btc": -40.1
           }
         },
         {
@@ -6548,22 +5348,6 @@
           }
         },
         {
-          "date": "2025-08-11",
-          "flows": {
-            "ibit": 138.2,
-            "fbtc": 13,
-            "bitb": 5.2,
-            "arkb": 0,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": 7.5,
-            "btc": 13
-          }
-        },
-        {
           "date": "2025-08-12",
           "flows": {
             "ibit": 111.4,
@@ -6624,22 +5408,6 @@
             "hodl": 0,
             "btcw": 0,
             "gbtc": -81.8,
-            "btc": 0
-          }
-        },
-        {
-          "date": "2025-08-18",
-          "flows": {
-            "ibit": -68.7,
-            "fbtc": 0,
-            "bitb": 12.7,
-            "arkb": -65.7,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": 0,
             "btc": 0
           }
         },
@@ -6705,22 +5473,6 @@
             "btcw": 0,
             "gbtc": 6.4,
             "btc": 50.9
-          }
-        },
-        {
-          "date": "2025-08-25",
-          "flows": {
-            "ibit": 63.4,
-            "fbtc": 65.6,
-            "bitb": 15.2,
-            "arkb": 61.2,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": 6.3,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": 65.6
           }
         },
         {
@@ -6852,22 +5604,6 @@
           }
         },
         {
-          "date": "2025-09-08",
-          "flows": {
-            "ibit": 25.5,
-            "fbtc": 156.5,
-            "bitb": 42.7,
-            "arkb": 89.5,
-            "btco": 6.7,
-            "ezbc": 6.5,
-            "brrr": 0,
-            "hodl": 20.6,
-            "btcw": 0,
-            "gbtc": 4.4,
-            "btc": 156.5
-          }
-        },
-        {
           "date": "2025-09-09",
           "flows": {
             "ibit": 169.3,
@@ -6929,22 +5665,6 @@
             "btcw": 0,
             "gbtc": 0,
             "btc": 315.2
-          }
-        },
-        {
-          "date": "2025-09-15",
-          "flows": {
-            "ibit": 261.8,
-            "fbtc": 7.5,
-            "bitb": -18.8,
-            "arkb": 0,
-            "btco": 0,
-            "ezbc": 3.3,
-            "brrr": 0,
-            "hodl": 0,
-            "btcw": 0,
-            "gbtc": 0,
-            "btc": 7.5
           }
         },
         {
@@ -7012,22 +5732,6 @@
           }
         },
         {
-          "date": "2025-09-22",
-          "flows": {
-            "ibit": 0,
-            "fbtc": -276.7,
-            "bitb": 0,
-            "arkb": -52.3,
-            "btco": 0,
-            "ezbc": 0,
-            "brrr": 0,
-            "hodl": -9.5,
-            "btcw": 0,
-            "gbtc": -24.6,
-            "btc": -276.7
-          }
-        },
-        {
           "date": "2025-09-23",
           "flows": {
             "ibit": 2.5,
@@ -7089,22 +5793,6 @@
             "btcw": 0,
             "gbtc": -17.1,
             "btc": -300.4
-          }
-        },
-        {
-          "date": "2025-09-29",
-          "flows": {
-            "ibit": -46.6,
-            "fbtc": 298.7,
-            "bitb": 47.2,
-            "arkb": 62.2,
-            "btco": 35.3,
-            "ezbc": 16.5,
-            "brrr": 0,
-            "hodl": 30.7,
-            "btcw": 0,
-            "gbtc": 26.9,
-            "btc": 298.7
           }
         },
         {
@@ -7170,19 +5858,227 @@
             "gbtc": 18.3,
             "btc": 69.6
           }
+        },
+        {
+          "date": "2025-10-07",
+          "flows": {
+            "ibit": 899.4,
+            "fbtc": 0,
+            "bitb": 0,
+            "arkb": 0,
+            "btco": 0,
+            "ezbc": 0,
+            "brrr": 4.8,
+            "hodl": 0,
+            "btcw": 0,
+            "gbtc": -28.6,
+            "btc": 0
+          }
+        },
+        {
+          "date": "2025-10-08",
+          "flows": {
+            "ibit": 426.2,
+            "fbtc": 0,
+            "bitb": 13.4,
+            "arkb": 0,
+            "btco": 0,
+            "ezbc": 0,
+            "brrr": 0,
+            "hodl": 0,
+            "btcw": 0,
+            "gbtc": 0,
+            "btc": 0
+          }
+        },
+        {
+          "date": "2025-10-09",
+          "flows": {
+            "ibit": 255.5,
+            "fbtc": -13.2,
+            "bitb": 6.6,
+            "arkb": -5.6,
+            "btco": 0,
+            "ezbc": 0,
+            "brrr": 0,
+            "hodl": 0,
+            "btcw": 0,
+            "gbtc": -45.5,
+            "btc": -13.2
+          }
+        },
+        {
+          "date": "2025-10-10",
+          "flows": {
+            "ibit": 74.2,
+            "fbtc": -10.2,
+            "bitb": -37.4,
+            "arkb": -6.2,
+            "btco": 0,
+            "ezbc": 0,
+            "brrr": 0,
+            "hodl": 0,
+            "btcw": 0,
+            "gbtc": -19.2,
+            "btc": -10.2
+          }
+        },
+        {
+          "date": "2025-10-14",
+          "flows": {
+            "ibit": -30.8,
+            "fbtc": 132.7,
+            "bitb": 8,
+            "arkb": 6.8,
+            "btco": 0,
+            "ezbc": 0,
+            "brrr": -14,
+            "hodl": 0,
+            "btcw": 0,
+            "gbtc": 0,
+            "btc": 132.7
+          }
+        },
+        {
+          "date": "2025-10-15",
+          "flows": {
+            "ibit": -10.1,
+            "fbtc": 0,
+            "bitb": 0,
+            "arkb": 0,
+            "btco": -11.1,
+            "ezbc": 0,
+            "brrr": 0,
+            "hodl": 0,
+            "btcw": 0,
+            "gbtc": -82.9,
+            "btc": 0
+          }
+        },
+        {
+          "date": "2025-10-16",
+          "flows": {
+            "ibit": -29.5,
+            "fbtc": -132,
+            "bitb": -20.6,
+            "arkb": -275.2,
+            "btco": 0,
+            "ezbc": 0,
+            "brrr": 0,
+            "hodl": -6.1,
+            "btcw": 0,
+            "gbtc": -45,
+            "btc": -132
+          }
+        },
+        {
+          "date": "2025-10-17",
+          "flows": {
+            "ibit": -268.6,
+            "fbtc": -67.4,
+            "bitb": 0,
+            "arkb": 0,
+            "btco": 0,
+            "ezbc": 0,
+            "brrr": -5.6,
+            "hodl": 0,
+            "btcw": 0,
+            "gbtc": -25,
+            "btc": -67.4
+          }
+        },
+        {
+          "date": "2025-10-21",
+          "flows": {
+            "ibit": 210.9,
+            "fbtc": 34.1,
+            "bitb": 20.1,
+            "arkb": 162.9,
+            "btco": 8.9,
+            "ezbc": 6.5,
+            "brrr": 2.5,
+            "hodl": 17.4,
+            "btcw": 0,
+            "gbtc": 0,
+            "btc": 34.1
+          }
+        },
+        {
+          "date": "2025-10-22",
+          "flows": {
+            "ibit": 73.6,
+            "fbtc": -56.6,
+            "bitb": -10,
+            "arkb": -53.9,
+            "btco": 0,
+            "ezbc": 0,
+            "brrr": 2.1,
+            "hodl": 0,
+            "btcw": 0,
+            "gbtc": -56.6,
+            "btc": -56.6
+          }
+        },
+        {
+          "date": "2025-10-23",
+          "flows": {
+            "ibit": 107.8,
+            "fbtc": 7.2,
+            "bitb": 17.4,
+            "arkb": -55,
+            "btco": 0,
+            "ezbc": 0,
+            "brrr": 0,
+            "hodl": 0,
+            "btcw": 0,
+            "gbtc": -60.5,
+            "btc": 7.2
+          }
+        },
+        {
+          "date": "2025-10-24",
+          "flows": {
+            "ibit": 32.7,
+            "fbtc": 57.9,
+            "bitb": 0,
+            "arkb": 0,
+            "btco": 0,
+            "ezbc": 0,
+            "brrr": 0,
+            "hodl": 0,
+            "btcw": 0,
+            "gbtc": 0,
+            "btc": 57.9
+          }
+        },
+        {
+          "date": "2025-10-28",
+          "flows": {
+            "ibit": 59.6,
+            "fbtc": 67,
+            "bitb": 0,
+            "arkb": 75.8,
+            "btco": 0,
+            "ezbc": 0,
+            "brrr": 0,
+            "hodl": 0,
+            "btcw": 0,
+            "gbtc": 0,
+            "btc": 67
+          }
         }
       ]
     },
     {
-      "key": "net_liquidity",
-      "label": "Net Liquidity (FRED)",
-      "pillar": "liquidity",
-      "weight": 10,
-      "weight_pct": 10,
-      "score": 62,
-      "status": "fresh",
-      "reason": "fresh (131.3h old)",
-      "last_utc": "2025-10-01T00:00:00.000Z",
+      "key": "term_leverage",
+      "label": "Term Structure & Leverage",
+      "pillar": "leverage",
+      "weight": 20,
+      "weight_pct": 20,
+      "score": 30,
+      "status": "stale",
+      "reason": "success -> stale_beyond_ttl (7.7d old)",
+      "last_utc": "2025-10-22T00:00:00.000Z",
       "details": [
         {
           "label": "Fed Balance Sheet (WALCL)",
@@ -7202,48 +6098,48 @@
         },
         {
           "label": "4-week Change",
-          "value": "-0.2%"
+          "value": "-0.3%"
         },
         {
           "label": "Level Percentile (1y)",
-          "value": "2%"
+          "value": "4%"
         },
         {
           "label": "Fetch Time",
-          "value": "472ms"
+          "value": "626ms"
         },
         {
           "label": "Component Scores",
-          "value": "Level: 95, RoC: 15, Momentum: 93"
+          "value": "Level: 94, RoC: 29, Momentum: 10"
         },
         {
           "label": "Data as of",
-          "value": "2025-10-01"
+          "value": "2025-10-22"
         }
       ]
     },
     {
-      "key": "term_leverage",
-      "label": "Term Structure & Leverage",
-      "pillar": "leverage",
-      "weight": 18,
-      "weight_pct": 18,
-      "score": 67,
+      "key": "macro_overlay",
+      "label": "Macro Overlay",
+      "pillar": "macro",
+      "weight": 10,
+      "weight_pct": 10,
+      "score": 51,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-06T11:19:00.819Z",
+      "last_utc": "2025-10-29T15:42:03.504Z",
       "details": [
         {
           "label": "Current Funding Rate",
-          "value": "0.0100%"
+          "value": "-0.0018%"
         },
         {
           "label": "30-day Average",
-          "value": "0.0020%"
+          "value": "0.0052%"
         },
         {
           "label": "Price Volatility (30d)",
-          "value": "1.41%"
+          "value": "2.18%"
         },
         {
           "label": "Leverage Regime",
@@ -7255,7 +6151,7 @@
         },
         {
           "label": "30-day Range",
-          "value": "-0.0140% - 0.0100%"
+          "value": "-0.0151% - 0.0100%"
         },
         {
           "label": "Data Source",
@@ -7267,56 +6163,7 @@
         },
         {
           "label": "Component Scores",
-          "value": "Funding: 55, Vol: 78, Stress: 71"
-        }
-      ]
-    },
-    {
-      "key": "macro_overlay",
-      "label": "Macro Overlay",
-      "pillar": "macro",
-      "weight": 6,
-      "weight_pct": 6,
-      "score": 69,
-      "status": "fresh",
-      "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-06T11:19:00.789Z",
-      "details": [
-        {
-          "label": "Macro Regime",
-          "value": "Neutral"
-        },
-        {
-          "label": "Dollar Trend (20d)",
-          "value": "Stable (0.2%)"
-        },
-        {
-          "label": "Rate Environment",
-          "value": "Neutral (1.1%)"
-        },
-        {
-          "label": "VIX Level",
-          "value": "16.6 (63%ile)"
-        },
-        {
-          "label": "Yield Curve (10Y-2Y)",
-          "value": "0.55%"
-        },
-        {
-          "label": "Real Rate (10Y TIPS)",
-          "value": "1.76%"
-        },
-        {
-          "label": "Fetch Time",
-          "value": "657ms"
-        },
-        {
-          "label": "Component Scores",
-          "value": "Dollar: 52, Rates: 88, VIX: 69, Real: 95"
-        },
-        {
-          "label": "Current Levels",
-          "value": "DXY: 120.9, 2Y: 3.55%, VIX: 16.6"
+          "value": "Funding: 31, Vol: 73, Stress: 54"
         }
       ]
     },
@@ -7324,55 +6171,55 @@
       "key": "social_interest",
       "label": "Social Interest",
       "pillar": "social",
-      "weight": 5,
-      "weight_pct": 5,
-      "score": 55,
+      "weight": 10,
+      "weight_pct": 10,
+      "score": 68,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-10-06T11:19:00.174Z",
+      "last_utc": "2025-10-29T15:42:03.487Z",
       "details": [
         {
-          "label": "Search Attention",
-          "value": "Moderate"
-        },
-        {
-          "label": "Bitcoin Trending Rank",
-          "value": "#9"
-        },
-        {
-          "label": "Price Signal (7d)",
+          "label": "Macro Regime",
           "value": "Neutral"
         },
         {
-          "label": "Volatility Level (14d)",
-          "value": "Low"
+          "label": "Dollar Trend (20d)",
+          "value": "Stable (0.4%)"
         },
         {
-          "label": "Social Risk Level",
-          "value": "Moderate"
+          "label": "Rate Environment",
+          "value": "Neutral (-4.1%)"
+        },
+        {
+          "label": "VIX Level",
+          "value": "16.4 (59%ile)"
+        },
+        {
+          "label": "Yield Curve (10Y-2Y)",
+          "value": "0.53%"
+        },
+        {
+          "label": "Real Rate (10Y TIPS)",
+          "value": "1.73%"
         },
         {
           "label": "Fetch Time",
-          "value": "37ms"
-        },
-        {
-          "label": "Data Sources",
-          "value": "CoinGecko • trending, CoinGecko • price data"
+          "value": "567ms"
         },
         {
           "label": "Component Scores",
-          "value": "Search: 55, Momentum: 54, Vol: 7"
+          "value": "Dollar: 80, Rates: 57, VIX: 64, Real: 78"
         },
         {
-          "label": "Fallback Attempts",
-          "value": "0"
+          "label": "Current Levels",
+          "value": "DXY: 121.3, 2Y: 3.48%, VIX: 16.4"
         }
       ]
     }
   ],
   "btc": {
-    "spot_usd": 123944.69,
-    "as_of_utc": "2025-10-06T11:19:14.041Z",
+    "spot_usd": 111847.66,
+    "as_of_utc": "2025-10-29T15:42:29.269Z",
     "source": "Coinbase"
   },
   "provenance": [],
@@ -7385,7 +6232,7 @@
   "cycle_adjustment": {
     "adj_pts": 0,
     "residual_z": null,
-    "last_utc": "2025-10-06T11:19:14.039Z",
+    "last_utc": "2025-10-29T15:42:29.266Z",
     "source": "ETL fallback",
     "reason": "insufficient_historical_data"
   },
@@ -7394,15 +6241,11 @@
     "r_1d": 0,
     "sigma": 0,
     "z": 0,
-    "ref_close": 123944.69,
-    "spot": 123944.69,
-    "last_utc": "2025-10-06T11:19:14.039Z",
+    "ref_close": 111847.66,
+    "spot": 111847.66,
+    "last_utc": "2025-10-29T15:42:29.266Z",
     "source": "ETL fallback",
     "reason": "insufficient_historical_data"
   },
-  "config_digest": "etl_real_factors",
-  "cross": {
-    "btc_per_oz": 27.693638913170787,
-    "oz_per_btc": 0.036109375266116114
-  }
+  "config_digest": "etl_real_factors"
 }

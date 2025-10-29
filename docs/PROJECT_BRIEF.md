@@ -16,16 +16,17 @@ The Bitcoin Risk Dashboard provides institutional-grade risk assessment for Bitc
 ## Five-Pillar Framework
 
 ### Current Weights (Single Source of Truth: `config/dashboard-config.json`)
-- **Liquidity/Flows (38%)**: Stablecoins (18%), ETF Flows (10%), Net Liquidity (10%)
+- **Liquidity/Flows (30%)**: Stablecoins (18%), ETF Flows (7.7%), Net Liquidity (4.3%)
   - *Prioritizes crypto-native flows (stablecoins, ETF creations/redemptions) over laggy Fed liquidity*
   - *Enhanced with 7-coin stablecoin coverage, business-day ETF logic, and multi-source fallbacks*
-- **Momentum/Valuation (33%)**: Trend & Valuation (25%), On-chain Activity (8%)
-  - *Trend & Valuation now leads with highest weight, enhanced with parallel processing and caching*
-- **Term Structure/Leverage (18%)**: Term Structure & Leverage (18%)
+- **Momentum/Valuation (30%)**: Trend & Valuation (30%)
+  - *Trend & Valuation leads with highest weight, enhanced with parallel processing and caching*
+  - *Internal split: BMSB 60%, Mayer Multiple 30%, Weekly RSI 10%*
+- **Term Structure/Leverage (20%)**: Term Structure & Leverage (20%)
   - *Enhanced with multi-exchange fallback (BitMEX → Binance → OKX) and intelligent caching*
-- **Macro Overlay (6%)**: Macro Overlay (6%)
+- **Macro Overlay (10%)**: Macro Overlay (10%)
   - *Enhanced with retry logic and parallel FRED fetching*
-- **Social/Attention (5%)**: Social Interest (5%)
+- **Social/Attention (10%)**: Social Interest (10%)
   - *Enhanced with momentum analysis and intelligent caching*
 
 **Configuration Architecture:**
@@ -111,9 +112,9 @@ The Bitcoin Risk Dashboard provides institutional-grade risk assessment for Bitc
 
 ## Risk Bands
 
-- **0-14**: Aggressive Buying (extreme opportunity)
-- **15-34**: Regular DCA Buying (good opportunity)
-- **35-49**: Moderate Buying (reduce position size)
-- **50-64**: Hold & Wait (hold existing positions)
-- **65-79**: Reduce Risk (consider taking profits)
-- **80-100**: High Risk (significant risk of correction)
+- **0-14**: Aggressive Buying — Historically depressed/washed-out conditions.
+- **15-34**: Regular DCA Buying — Favorable long-term conditions; take your time.
+- **35-49**: Moderate Buying — Moderate buying opportunities.
+- **50-64**: Hold & Wait — Hold core; buy dips selectively.
+- **65-79**: Reduce Risk — Trim risk; tighten risk controls.
+- **80-100**: High Risk — Crowded tape; prone to disorderly moves.

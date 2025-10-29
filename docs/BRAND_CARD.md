@@ -102,12 +102,12 @@ Headlines, UI chips, social posts, casual usage.
 
 ## Risk bands (display + copy — align with app defaults)
 
-• 0–15 Aggressive Buying
-• 15–35 Regular DCA Buying
-• 35–55 Hold / Neutral
-• 55–70 Begin Scaling Out
-• 70–85 Increase Selling
-• 85–100 Maximum Selling
+• 0–14 Aggressive Buying — Historically depressed/washed-out conditions.
+• 15–34 Regular DCA Buying — Favorable long-term conditions; take your time.
+• 35–49 Moderate Buying — Moderate buying opportunities.
+• 50–64 Hold & Wait — Hold core; buy dips selectively.
+• 65–79 Reduce Risk — Trim risk; tighten risk controls.
+• 80–100 High Risk — Crowded tape; prone to disorderly moves.
 
 *(Note: these bands are configurable in app config; keep brand copy in sync with the live config and use live config as main source)*
 
@@ -164,7 +164,7 @@ ETH G-Score: 48 (Hold/Neutral). Compare BTC/ETH drivers on GhostGauge.
 
 ## How the metric works (brief public summary)
 
-• **Inputs → Pillars**: Liquidity/Flows (35%), Momentum/Valuation (25%), Term Structure/Leverage (20%), Macro (10%), Social/Attention (10%).
+• **Inputs → Pillars**: Liquidity/Flows (30%), Momentum/Valuation (30%), Term Structure/Leverage (20%), Macro (10%), Social/Attention (10%).
 
 • **Normalization**: Winsorize tails → z-score vs history → apply direction (invert where "more = less risk") → logistic map to 0–100.
 

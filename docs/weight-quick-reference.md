@@ -4,37 +4,37 @@
 
 | Factor | Weight | Pillar | Key Components |
 |--------|--------|--------|----------------|
-| **Trend & Valuation** | **25%** | Momentum | BMSB (60%), Mayer Multiple (30%), RSI (10%) |
+| **Trend & Valuation** | **30%** | Momentum | BMSB (60%), Mayer Multiple (30%), RSI (10%) |
 | **Stablecoins** | **18%** | Liquidity | 7-coin weighted average (USDT, USDC, DAI, BUSD, TUSD, FRAX, LUSD) |
-| **Term Leverage** | **18%** | Leverage | Funding rates, basis, open interest |
-| **ETF Flows** | **10%** | Liquidity | 21-day rolling sum (business days only) |
-| **Net Liquidity** | **10%** | Liquidity | Fed balance sheet minus RRP and TGA |
-| **On-chain** | **8%** | Momentum | Network fees, mempool congestion |
-| **Macro Overlay** | **6%** | Macro | DXY, 2Y rates, VIX |
-| **Social Interest** | **5%** | Social | Google Trends, Fear & Greed Index |
+| **Term Leverage** | **20%** | Leverage | Funding rates, basis, open interest |
+| **ETF Flows** | **7.7%** | Liquidity | 21-day rolling sum (business days only) |
+| **Net Liquidity** | **4.3%** | Liquidity | Fed balance sheet minus RRP and TGA |
+| **On-chain** | **0%** | Momentum | Network fees, mempool congestion (disabled) |
+| **Macro Overlay** | **10%** | Macro | DXY, 2Y rates, VIX |
+| **Social Interest** | **10%** | Social | Google Trends, Fear & Greed Index |
 
 ## Pillar Distribution
 
 | Pillar | Total Weight | Factors |
 |--------|--------------|---------|
-| **Momentum** | **33%** | Trend & Valuation (25%) + On-chain (8%) |
-| **Liquidity** | **38%** | Stablecoins (18%) + ETF Flows (10%) + Net Liquidity (10%) |
-| **Leverage** | **18%** | Term Structure & Leverage (18%) |
-| **Macro** | **6%** | Macro Overlay (6%) |
-| **Social** | **5%** | Social Interest (5%) |
+| **Momentum** | **30%** | Trend & Valuation (30%) |
+| **Liquidity** | **30%** | Stablecoins (18%) + ETF Flows (7.7%) + Net Liquidity (4.3%) |
+| **Leverage** | **20%** | Term Structure & Leverage (20%) |
+| **Macro** | **10%** | Macro Overlay (10%) |
+| **Social** | **10%** | Social Interest (10%) |
 
 ## Key Changes from v2.0.0
 
 | Factor | Change | Impact |
 |--------|--------|--------|
-| **Trend & Valuation** | 20% → 25% (+5%) | 🎯 **Highest weight - most fundamental** |
+| **Trend & Valuation** | 20% → 30% (+10%) | 🎯 **Highest weight - most fundamental** |
 | **Stablecoins** | 21% → 18% (-3%) | Still high due to 7-coin coverage |
-| **ETF Flows** | 9% → 10% (+1%) | Major institutional indicator |
-| **On-chain** | 5% → 8% (+3%) | Core Bitcoin metrics |
-| **Term Leverage** | 20% → 18% (-2%) | Still important but less than valuation |
-| **Social Interest** | 10% → 5% (-5%) | Least predictive factor |
-| **Net Liquidity** | 5% → 10% (+5%) | Important backdrop liquidity |
-| **Macro Overlay** | 10% → 6% (-4%) | External factor with reduced weight |
+| **ETF Flows** | 9% → 7.7% (-1.3%) | Major institutional indicator |
+| **On-chain** | 5% → 0% (-5%) | Disabled - moved to Trend & Valuation |
+| **Term Leverage** | 20% → 20% (0%) | Maintained importance |
+| **Social Interest** | 10% → 10% (0%) | Maintained weight |
+| **Net Liquidity** | 5% → 4.3% (-0.7%) | Reduced backdrop liquidity |
+| **Macro Overlay** | 10% → 10% (0%) | Maintained weight |
 
 ## Performance Optimizations
 
