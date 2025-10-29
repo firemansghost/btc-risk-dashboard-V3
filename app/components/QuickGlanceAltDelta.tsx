@@ -20,9 +20,12 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
     const visited = localStorage.getItem('ghostgauge-sandbox-visited');
     const preset = localStorage.getItem('ghostgauge-sandbox-last-preset');
     
+    console.log('QuickGlanceAltDelta: localStorage check', { visited, preset });
+    
     if (visited === 'true') {
       setHasVisitedSandbox(true);
       setLastPreset(preset);
+      console.log('QuickGlanceAltDelta: Setting state', { hasVisitedSandbox: true, lastPreset: preset });
     }
   }, []);
 
@@ -34,14 +37,20 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
   }, [hasVisitedSandbox, lastPreset]);
 
   const fetchAltScore = async () => {
-    if (!lastPreset) return;
+    if (!lastPreset) {
+      console.log('QuickGlanceAltDelta: fetchAltScore - no lastPreset');
+      return;
+    }
     
+    console.log('QuickGlanceAltDelta: fetchAltScore - starting', { lastPreset });
     setLoading(true);
     try {
       const response = await fetch('/api/sandbox/factors?window=30');
       if (!response.ok) throw new Error('Failed to fetch data');
       
       const data = await response.json();
+      console.log('QuickGlanceAltDelta: fetchAltScore - data received', { factorsCount: data.factors?.length });
+      
       if (data.factors && data.factors.length > 0) {
         // Get the latest day's data
         const latestDay = data.factors[0];
@@ -49,6 +58,8 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
         // Calculate alt score based on preset
         const altScore = calculateAltScore(latestDay, lastPreset);
         const officialScore = latestDay.official_g_score;
+        
+        console.log('QuickGlanceAltDelta: fetchAltScore - calculated scores', { altScore, officialScore });
         
         setAltScore(altScore);
         setOfficialScore(officialScore);
@@ -153,7 +164,10 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
   };
 
   // Don't show if user hasn't visited sandbox or if we don't have scores yet
+  console.log('QuickGlanceAltDelta: Render check', { hasVisitedSandbox, lastPreset, altScore, officialScore });
+  
   if (!hasVisitedSandbox || !altScore || !officialScore) {
+    console.log('QuickGlanceAltDelta: Not showing - missing data');
     return null;
   }
 
