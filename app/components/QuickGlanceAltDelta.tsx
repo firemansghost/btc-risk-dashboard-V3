@@ -3,11 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
+console.log('QuickGlanceAltDelta: Component loaded');
+
 interface QuickGlanceAltDeltaProps {
   className?: string;
 }
 
 export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDeltaProps) {
+  console.log('QuickGlanceAltDelta: Component function called');
+  
   const [hasVisitedSandbox, setHasVisitedSandbox] = useState(false);
   const [lastPreset, setLastPreset] = useState<string | null>(null);
   const [altScore, setAltScore] = useState<number | null>(null);
