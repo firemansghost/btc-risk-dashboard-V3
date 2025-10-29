@@ -52,14 +52,25 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
     setLoading(true);
     try {
       const response = await fetch('/api/sandbox/factors?window=30');
-      if (!response.ok) throw new Error('Failed to fetch data');
+      console.log('QuickGlanceAltDelta: fetchAltScore - response status', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log('QuickGlanceAltDelta: fetchAltScore - error response', errorText);
+        throw new Error(`Failed to fetch data: ${response.status} ${errorText}`);
+      }
       
       const data = await response.json();
-      console.log('QuickGlanceAltDelta: fetchAltScore - data received', { factorsCount: data.factors?.length });
+      console.log('QuickGlanceAltDelta: fetchAltScore - data received', { 
+        ok: data.ok, 
+        factorsCount: data.factors?.length,
+        dataKeys: Object.keys(data)
+      });
       
       if (data.factors && data.factors.length > 0) {
         // Get the latest day's data
         const latestDay = data.factors[0];
+        console.log('QuickGlanceAltDelta: fetchAltScore - latestDay', latestDay);
         
         // Calculate alt score based on preset
         const altScore = calculateAltScore(latestDay, lastPreset);
@@ -69,9 +80,11 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
         
         setAltScore(altScore);
         setOfficialScore(officialScore);
+      } else {
+        console.log('QuickGlanceAltDelta: fetchAltScore - no factors data');
       }
     } catch (error) {
-      console.error('Error fetching alt score:', error);
+      console.error('QuickGlanceAltDelta: fetchAltScore - error:', error);
     } finally {
       setLoading(false);
     }
