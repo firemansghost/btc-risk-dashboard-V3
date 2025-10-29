@@ -2,6 +2,9 @@
 
 import React, { useEffect, useState, ReactElement } from 'react';
 
+type Band = { key: string; label: string; range: [number, number]; color: string; recommendation: string };
+type ApiConfig = { ok: boolean; config?: { bands: Band[] }; digest?: string };
+
 interface RadialGaugeProps {
   score: number;
   bandLabel: string;
@@ -19,6 +22,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
   const [animatedScore, setAnimatedScore] = useState(score);
   const [isAnimating, setIsAnimating] = useState(false);
   const [tooltip, setTooltip] = useState<TooltipData>({ x: 0, y: 0, content: '', visible: false });
+  const [configBands, setConfigBands] = useState<Band[] | null>(null);
   const [focusedElement, setFocusedElement] = useState<string | null>(null);
   const [needleAngle, setNeedleAngle] = useState(0);
   const [bandsVisible, setBandsVisible] = useState(false);
@@ -27,6 +31,24 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
   const [isLoading, setIsLoading] = useState(true);
   const [particles, setParticles] = useState<Array<{id: number, x: number, y: number, opacity: number}>>([]);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  // Fetch config for band descriptions
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/config', { cache: 'no-store' });
+        const json: ApiConfig = await res.json();
+        if (!alive) return;
+        if (json.ok && json.config?.bands) {
+          setConfigBands(json.config.bands);
+        }
+      } catch (err) {
+        console.warn('Failed to load config:', err);
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
 
   // Gauge configuration (moved up to avoid dependency issues)
   const centerX = 140;
@@ -252,15 +274,24 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
     return segments;
   };
 
-  // Helper function to get band recommendations
+  // Helper function to get band recommendations from SSOT
   const getBandRecommendation = (bandLabel: string): string => {
+    // Use SSOT descriptions from config if available
+    if (configBands) {
+      const band = configBands.find(b => b.label === bandLabel);
+      if (band?.recommendation) {
+        return band.recommendation;
+      }
+    }
+    
+    // Fallback to SSOT descriptions if config not loaded
     const recommendations: { [key: string]: string } = {
-      'Aggressive Buying': 'High confidence buying opportunity',
-      'Regular DCA Buying': 'Good time for dollar-cost averaging',
-      'Moderate Buying': 'Consider small position additions',
-      'Hold & Wait': 'Hold existing positions',
-      'Reduce Risk': 'Consider reducing exposure',
-      'High Risk': 'High risk environment - be cautious'
+      'Aggressive Buying': 'Historically depressed/washed-out conditions.',
+      'Regular DCA Buying': 'Favorable long-term conditions; take your time.',
+      'Moderate Buying': 'Moderate buying opportunities.',
+      'Hold & Wait': 'Hold core; buy dips selectively.',
+      'Reduce Risk': 'Trim risk; tighten risk controls.',
+      'High Risk': 'Crowded tape; prone to disorderly moves.'
     };
     return recommendations[bandLabel] || 'Risk assessment';
   };

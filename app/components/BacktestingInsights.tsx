@@ -210,7 +210,7 @@ export default function BacktestingInsights() {
           <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg">
             <div>
               <div className="font-medium text-orange-900">Hold & Wait</div>
-              <div className="text-sm text-orange-700">Hold existing positions</div>
+              <div className="text-sm text-orange-700">Hold core; buy dips selectively.</div>
             </div>
             <div className="text-right">
               <div className="text-lg font-bold text-orange-600">65.6%</div>
