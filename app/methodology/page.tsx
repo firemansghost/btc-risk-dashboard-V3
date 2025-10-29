@@ -163,34 +163,27 @@ export default function MethodologyPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-4">
-                  <div className="text-caption text-gray-500">Loading pillar weights...</div>
-                </div>
-              )}
-            </div>
-            
-            <div>
-              <h4 className="text-heading-4 mb-3">Score Interpretation</h4>
-              <p className="text-body mb-4">
-                The G-Score provides a normalized risk assessment that accounts for multiple market factors simultaneously.
-              </p>
-              <p className="text-body mb-4">
-                Each pillar contributes a weighted score to the final G-Score, with weights determined by historical performance and market relevance.
-              </p>
-              {config?.pillars ? (
                 <div className="space-y-2">
-                  {Object.values(config.pillars)
-                    .sort((a, b) => a.label.localeCompare(b.label))
-                    .map((pillar) => (
-                    <div key={pillar.label} className="flex justify-between">
-                      <span className="text-body">{pillar.label}</span>
-                      <span className="text-caption font-medium">{(pillar.weight * 100).toFixed(0)}%</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-4">
-                  <div className="text-caption text-gray-500">Loading pillar weights...</div>
+                  <div className="flex justify-between">
+                    <span className="text-body">Liquidity/Flows</span>
+                    <span className="text-caption font-medium">30%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-body">Momentum/Valuation</span>
+                    <span className="text-caption font-medium">30%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-body">Term Structure/Leverage</span>
+                    <span className="text-caption font-medium">20%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-body">Macro Overlay</span>
+                    <span className="text-caption font-medium">10%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-body">Social/Attention</span>
+                    <span className="text-caption font-medium">10%</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -360,7 +353,7 @@ export default function MethodologyPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
                 <p className="text-sm text-gray-700">
-                  <a href="https://coingecko.com" className="text-blue-600 hover:underline">CoinGecko</a> price data, Rolling SMAs/EMA
+                  Coinbase daily close (UTC), Rolling SMAs/EMA
                 </p>
               </div>
               
@@ -410,7 +403,7 @@ export default function MethodologyPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
                 <p className="text-sm text-gray-700">
-                  <a href="https://coingecko.com" className="text-blue-600 hover:underline">CoinGecko</a>, <a href="https://coinmarketcap.com" className="text-blue-600 hover:underline">CoinMarketCap</a>, <a href="https://cryptocompare.com" className="text-blue-600 hover:underline">CryptoCompare</a>
+                  Coinbase daily close (UTC), Fear & Greed Index, Social sentiment analysis
                 </p>
               </div>
               
@@ -632,7 +625,7 @@ export default function MethodologyPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">What we look at</h4>
                 <ul className="text-sm text-gray-700 space-y-1">
-                  <li>• Bitcoin trending rank on CoinGecko</li>
+                  <li>• Bitcoin trending rank and social attention</li>
                   <li>• 7-day vs 7-day price momentum</li>
                   <li>• Search attention patterns</li>
                 </ul>
@@ -660,7 +653,7 @@ export default function MethodologyPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
                 <p className="text-sm text-gray-700">
-                  <a href="https://coingecko.com" className="text-blue-600 hover:underline">CoinGecko</a> trending data, Price momentum analysis
+                  Coinbase daily close (UTC), Social sentiment analysis, Price momentum analysis
                 </p>
               </div>
               
@@ -752,9 +745,9 @@ export default function MethodologyPage() {
       <section id="weights" className="section-spacing">
         <h2 className="text-heading-2 mb-4">Factor Weights</h2>
         <div className="card-elevated card-md">
-          <h3 className="text-heading-3 mb-4">Dynamic Weighting</h3>
+          <h3 className="text-heading-3 mb-4">Current Weights (v1.1)</h3>
           <p className="text-body mb-6">
-            Factor weights are dynamically adjusted based on market conditions and historical performance to ensure the G-Score remains relevant and accurate.
+            Liquidity/Flows 30%, Momentum/Valuation 30%, Term Structure/Leverage 20%, Macro Overlay 10%, Social/Attention 10%. Weights are fixed; each factor is normalized vs its history.
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
