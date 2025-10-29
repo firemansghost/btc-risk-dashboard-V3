@@ -86,11 +86,17 @@ export async function GET(request: NextRequest) {
     const configPath = path.join(process.cwd(), 'config', 'dashboard-config.json');
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
+    // Convert factors object to array for the component
+    const factorsArray = Object.entries(config.factors).map(([key, factor]) => ({
+      key,
+      ...(typeof factor === 'object' && factor !== null ? factor : {})
+    }));
+
     return NextResponse.json({
       ok: true,
       data: recentData,
       config: {
-        factors: config.factors,
+        factors: factorsArray,
         bands: config.bands,
         pillars: config.pillars
       },
