@@ -32,7 +32,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
   const [particles, setParticles] = useState<Array<{id: number, x: number, y: number, opacity: number}>>([]);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
-  // Fetch config for band descriptions
+  // Fetch config for band descriptions (SSOT v1.1)
   useEffect(() => {
     let alive = true;
     (async () => {
