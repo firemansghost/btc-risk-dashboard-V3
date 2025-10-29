@@ -79,19 +79,29 @@ export async function GET(
     const csvContent = await fs.readFile(csvPath, 'utf8');
     const lines = csvContent.trim().split('\n');
     
-    if (lines.length <= 1) {
+    if (lines.length <= 2) {
+      return NextResponse.json({ error: 'No data available' }, { status: 404 });
+    }
+
+    // Skip duplicate header rows and find the actual data
+    let dataStartIndex = 1;
+    while (dataStartIndex < lines.length && lines[dataStartIndex].startsWith('date,')) {
+      dataStartIndex++;
+    }
+    
+    if (dataStartIndex >= lines.length) {
       return NextResponse.json({ error: 'No data available' }, { status: 404 });
     }
 
     const headers = lines[0].split(',');
-    const data = lines.slice(1).map(line => {
+    const data = lines.slice(dataStartIndex).map(line => {
       const values = line.split(',');
       const row: Record<string, string> = {};
       headers.forEach((header, index) => {
         row[header] = values[index] || '';
       });
       return row;
-    });
+    }).filter(row => row.date && row.date !== 'date'); // Filter out any remaining header rows
 
     // Sort by date (newest first) and limit range
     const sortedData = data.sort((a, b) => b.date.localeCompare(a.date));
@@ -127,11 +137,15 @@ export async function GET(
     // Standardize the data format
     const standardizedData = limitedData.map((row, index) => {
       const currentScore = parseFloat(row.score || '0');
+      
+      // Calculate Δ vs Prior (current - previous day)
+      // Since data is sorted newest first, previous day is at index + 1
       const priorScore = index < limitedData.length - 1 ? 
         parseFloat(limitedData[index + 1].score || '0') : null;
-      const change = priorScore !== null ? currentScore - priorScore : 0;
+      const change = priorScore !== null ? currentScore - priorScore : null;
       
-      // Calculate 30-day average
+      // Calculate 30-day average (rolling window)
+      // For each day, look at the next 30 days (including current day)
       const thirtyDaySlice = limitedData.slice(index, Math.min(index + 30, limitedData.length));
       const avg30d = thirtyDaySlice.length >= 30 ? 
         thirtyDaySlice.reduce((sum, d) => sum + parseFloat(d.score || '0'), 0) / thirtyDaySlice.length : 
@@ -140,7 +154,7 @@ export async function GET(
       return {
         date_utc: row.date,
         score: currentScore.toFixed(1),
-        change_vs_prior: change.toFixed(1),
+        change_vs_prior: change !== null ? change.toFixed(1) : '—',
         avg_30d: avg30d ? avg30d.toFixed(1) : 'n/a',
         status: row.status || 'fresh'
       };
