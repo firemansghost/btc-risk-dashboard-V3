@@ -100,8 +100,8 @@ export interface RiskConfig {
 const DEFAULT_CONFIG: RiskConfig = {
   // Pillar definitions with corrected weights (sum = 100%)
   pillars: [
-    { key: 'liquidity', label: 'Liquidity / Flows', color: 'bg-blue-100 text-blue-800 border-blue-200', weight: 35 },
-    { key: 'momentum', label: 'Momentum / Valuation', color: 'bg-green-100 text-green-800 border-green-200', weight: 25 },
+    { key: 'liquidity', label: 'Liquidity / Flows', color: 'bg-blue-100 text-blue-800 border-blue-200', weight: 30 },
+    { key: 'momentum', label: 'Momentum / Valuation', color: 'bg-green-100 text-green-800 border-green-200', weight: 30 },
     { key: 'leverage', label: 'Term Structure / Leverage', color: 'bg-orange-100 text-orange-800 border-orange-200', weight: 20 },
     { key: 'macro', label: 'Macro Overlay', color: 'bg-gray-100 text-gray-800 border-gray-200', weight: 10 },
     { key: 'social', label: 'Social / Attention', color: 'bg-purple-100 text-purple-800 border-purple-200', weight: 10 }
@@ -109,11 +109,11 @@ const DEFAULT_CONFIG: RiskConfig = {
 
   // Factor definitions with corrected weights (sum = 100%)
   factors: [
-    { key: 'trend_valuation', label: 'Trend & Valuation', pillar: 'momentum', weight: 20, enabled: true },
-    { key: 'onchain', label: 'On-chain Activity', pillar: 'momentum', weight: 5, enabled: true },
-    { key: 'stablecoins', label: 'Stablecoins', pillar: 'liquidity', weight: 15, enabled: true },
-    { key: 'net_liquidity', label: 'Net Liquidity (FRED)', pillar: 'liquidity', weight: 15, enabled: true },
-    { key: 'etf_flows', label: 'ETF Flows', pillar: 'liquidity', weight: 5, enabled: true },
+    { key: 'trend_valuation', label: 'Trend & Valuation', pillar: 'momentum', weight: 30, enabled: true },
+    { key: 'onchain', label: 'On-chain Activity', pillar: 'momentum', weight: 0, enabled: false },
+    { key: 'stablecoins', label: 'Stablecoins', pillar: 'liquidity', weight: 18, enabled: true },
+    { key: 'net_liquidity', label: 'Net Liquidity (FRED)', pillar: 'liquidity', weight: 4.3, enabled: true },
+    { key: 'etf_flows', label: 'ETF Flows', pillar: 'liquidity', weight: 7.7, enabled: true },
     { key: 'term_leverage', label: 'Term Structure & Leverage', pillar: 'leverage', weight: 20, enabled: true },
     { key: 'macro_overlay', label: 'Macro Overlay', pillar: 'macro', weight: 10, enabled: true },
     { key: 'social_interest', label: 'Social Interest', pillar: 'social', weight: 10, enabled: true }
@@ -261,7 +261,7 @@ export function getConfig(): RiskConfig {
     }
   }
   
-  // Always load risk bands from dashboard-config.json
+  // Always load full configuration from dashboard-config.json (SSOT)
   try {
     const fs = require('fs');
     const path = require('path');
@@ -269,12 +269,25 @@ export function getConfig(): RiskConfig {
     const dashboardConfigFile = fs.readFileSync(dashboardConfigPath, 'utf8');
     const dashboardConfig = JSON.parse(dashboardConfigFile);
     
+    // Load pillars from dashboard-config.json
+    if (dashboardConfig.pillars && typeof dashboardConfig.pillars === 'object') {
+      config.pillars = Object.values(dashboardConfig.pillars);
+      console.log('Config: Loaded pillars from dashboard-config.json');
+    }
+    
+    // Load factors from dashboard-config.json
+    if (dashboardConfig.factors && typeof dashboardConfig.factors === 'object') {
+      config.factors = Object.values(dashboardConfig.factors);
+      console.log('Config: Loaded factors from dashboard-config.json');
+    }
+    
+    // Load risk bands from dashboard-config.json
     if (dashboardConfig.bands && Array.isArray(dashboardConfig.bands)) {
       config.bands = dashboardConfig.bands;
       console.log('Config: Loaded risk bands from dashboard-config.json');
     }
   } catch (error) {
-    console.warn('Config: Failed to load risk bands from dashboard-config.json, using defaults:', error);
+    console.warn('Config: Failed to load configuration from dashboard-config.json, using defaults:', error);
   }
   
   // Validate and cache
