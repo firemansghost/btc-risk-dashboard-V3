@@ -84,7 +84,9 @@ export async function GET(request: NextRequest) {
 
     // Load current config for factor weights and bands
     const configPath = path.join(process.cwd(), 'config', 'dashboard-config.json');
+    console.log('Sandbox API: Loading config from:', configPath);
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    console.log('Sandbox API: Config loaded successfully, factors:', Object.keys(config.factors || {}));
 
     // Convert factors object to array for the component
     const factorsArray = Object.entries(config.factors).map(([key, factor]) => ({
@@ -92,7 +94,7 @@ export async function GET(request: NextRequest) {
       ...(typeof factor === 'object' && factor !== null ? factor : {})
     }));
 
-    return NextResponse.json({
+    const response = {
       ok: true,
       data: recentData,
       config: {
@@ -103,7 +105,12 @@ export async function GET(request: NextRequest) {
       window_days: windowDays,
       total_days: recentData.length,
       generated_utc: new Date().toISOString()
-    });
+    };
+    
+    console.log('Sandbox API: Response config factors count:', response.config.factors.length);
+    console.log('Sandbox API: Response data count:', response.data.length);
+    
+    return NextResponse.json(response);
 
   } catch (error) {
     console.error('Sandbox factors API error:', error);
