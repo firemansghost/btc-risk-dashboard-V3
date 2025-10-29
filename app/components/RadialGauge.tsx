@@ -280,7 +280,6 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
     if (configBands) {
       const band = configBands.find(b => b.label === bandLabel);
       if (band?.recommendation) {
-        console.log('Using SSOT config for band:', bandLabel, '->', band.recommendation);
         return band.recommendation;
       }
     }
@@ -294,7 +293,6 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
       'Reduce Risk': 'Trim risk; tighten risk controls.',
       'High Risk': 'Crowded tape; prone to disorderly moves.'
     };
-    console.log('Using fallback for band:', bandLabel, '->', recommendations[bandLabel]);
     return recommendations[bandLabel] || 'Risk assessment';
   };
 
