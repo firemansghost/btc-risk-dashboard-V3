@@ -94,16 +94,27 @@ export async function GET(request: NextRequest) {
       ...(typeof factor === 'object' && factor !== null ? factor : {})
     }));
 
+    // Map official band labels to SSOT bands based on numeric score
+    const mapOfficialBand = (score: number) => {
+      const band = (config.bands || []).find((b: any) => score >= b.range[0] && score <= b.range[1]);
+      return band ? band.label : 'Unknown';
+    };
+
+    const normalizedData = recentData.map((row: any) => ({
+      ...row,
+      official_band: mapOfficialBand(row.official_composite)
+    }));
+
     const response = {
       ok: true,
-      data: recentData,
+      data: normalizedData,
       config: {
         factors: factorsArray,
         bands: config.bands,
         pillars: config.pillars
       },
       window_days: windowDays,
-      total_days: recentData.length,
+      total_days: normalizedData.length,
       generated_utc: new Date().toISOString()
     };
     

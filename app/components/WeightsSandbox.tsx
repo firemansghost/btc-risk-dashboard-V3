@@ -149,26 +149,27 @@ export default function WeightsSandbox() {
     if (!preset) return [];
 
     return data.map(day => {
-      // Get factor weights from config
-      const factorWeights: Record<string, number> = {};
-      config.factors.forEach(factor => {
-        if (factor.enabled && day.factor_scores[factor.key] !== undefined) {
-          factorWeights[factor.key] = factor.weight;
-        }
-      });
+      // Collect active factors and weights
+      const activeFactors = config.factors.filter(f => f.enabled && day.factor_scores[f.key] !== undefined);
 
-      // Calculate pillar scores using current factor weights
+      // Group by pillar and compute normalized pillar averages (0-100)
       const pillarScores: Record<string, number> = {};
-      Object.entries(factorWeights).forEach(([factorKey, factorWeight]) => {
-        const factor = config.factors.find(f => f.key === factorKey);
-        if (factor && day.factor_scores[factorKey] !== undefined) {
-          const pillar = factor.pillar;
-          if (!pillarScores[pillar]) pillarScores[pillar] = 0;
-          pillarScores[pillar] += day.factor_scores[factorKey] * factorWeight;
+      const pillarWeightSums: Record<string, number> = {};
+      activeFactors.forEach(f => {
+        const pillar = f.pillar;
+        pillarWeightSums[pillar] = (pillarWeightSums[pillar] || 0) + f.weight;
+      });
+
+      activeFactors.forEach(f => {
+        const pillar = f.pillar;
+        const wSum = pillarWeightSums[pillar] || 0;
+        if (wSum > 0) {
+          const normalizedWeight = f.weight / wSum;
+          pillarScores[pillar] = (pillarScores[pillar] || 0) + day.factor_scores[f.key] * normalizedWeight;
         }
       });
 
-      // Apply alternative pillar weights
+      // Apply alternative pillar weights to pillar averages
       let altComposite = 0;
       Object.entries(preset.weights).forEach(([pillarKey, pillarWeight]) => {
         if (pillarScores[pillarKey] !== undefined) {
