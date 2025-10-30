@@ -8,6 +8,7 @@ type FactorScores = Record<string, number>;
 type SandboxData = {
   date_utc: string;
   factor_scores: FactorScores;
+  factor_statuses?: Record<string, string>;
   official_composite: number;
   cycle_adj: number;
   spike_adj: number;
