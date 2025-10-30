@@ -448,6 +448,43 @@ export default function WeightsSandbox() {
                todayData.delta > 0 ? ' (↑ one band)' : ' (↓ one band)'}
             </div>
           </div>
+
+          {/* Alt Pillar Contributions (score × alt weight) */}
+          <div className="mt-6">
+            <h3 className="text-sm font-semibold text-gray-800 mb-2">Alt pillar contributions (today)</h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pillar</th>
+                    <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Pillar score</th>
+                    <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Alt weight</th>
+                    <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Contribution</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {Object.entries(preset?.weights || {}).map(([pillarKey, w]) => {
+                    const score = todayData.pillar_scores?.[pillarKey] ?? 0;
+                    const contrib = score * w;
+                    const label = pillarKey
+                      .replace('liquidity', 'Liquidity / Flows')
+                      .replace('momentum', 'Momentum / Valuation')
+                      .replace('term', 'Term Structure / Leverage')
+                      .replace('macro', 'Macro Overlay')
+                      .replace('social', 'Social / Attention');
+                    return (
+                      <tr key={pillarKey}>
+                        <td className="px-4 py-2 text-sm text-gray-900">{label}</td>
+                        <td className="px-4 py-2 text-sm text-gray-700 text-right">{score.toFixed(1)}</td>
+                        <td className="px-4 py-2 text-sm text-gray-700 text-right">{(w * 100).toFixed(0)}%</td>
+                        <td className="px-4 py-2 text-sm text-gray-900 text-right">{contrib.toFixed(1)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 
