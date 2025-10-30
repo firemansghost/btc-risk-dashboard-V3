@@ -1,18 +1,13 @@
 'use client';
 
-console.log('QuickGlanceAltDelta: FILE LOADED');
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-console.log('QuickGlanceAltDelta: Component loaded');
 
 interface QuickGlanceAltDeltaProps {
   className?: string;
 }
 
 export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDeltaProps) {
-  console.log('QuickGlanceAltDelta: Component function called');
   
   const [hasVisitedSandbox, setHasVisitedSandbox] = useState(false);
   const [lastPreset, setLastPreset] = useState<string | null>(null);
@@ -26,12 +21,9 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
     const visited = localStorage.getItem('ghostgauge-sandbox-visited');
     const preset = localStorage.getItem('ghostgauge-sandbox-last-preset');
     
-    console.log('QuickGlanceAltDelta: localStorage check', { visited, preset });
-    
     if (visited === 'true') {
       setHasVisitedSandbox(true);
       setLastPreset(preset);
-      console.log('QuickGlanceAltDelta: Setting state', { hasVisitedSandbox: true, lastPreset: preset });
     }
   }, []);
 
@@ -44,48 +36,34 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
 
   const fetchAltScore = async () => {
     if (!lastPreset) {
-      console.log('QuickGlanceAltDelta: fetchAltScore - no lastPreset');
       return;
     }
     
-    console.log('QuickGlanceAltDelta: fetchAltScore - starting', { lastPreset });
     setLoading(true);
     try {
       const response = await fetch('/api/sandbox/factors?window=30');
-      console.log('QuickGlanceAltDelta: fetchAltScore - response status', response.status);
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.log('QuickGlanceAltDelta: fetchAltScore - error response', errorText);
         throw new Error(`Failed to fetch data: ${response.status} ${errorText}`);
       }
       
       const result = await response.json();
-      console.log('QuickGlanceAltDelta: fetchAltScore - data received', { 
-        ok: result.ok,
-        dataLen: Array.isArray(result.data) ? result.data.length : 'n/a',
-        keys: Object.keys(result)
-      });
 
       const rows = Array.isArray(result.data) ? result.data : [];
       if (rows.length > 0) {
         const latestDay = rows[rows.length - 1];
-        console.log('QuickGlanceAltDelta: fetchAltScore - latestDay', latestDay);
 
         const alt = calculateAltScore(latestDay, lastPreset);
         const official = typeof latestDay.official_composite === 'number' ? Math.round(latestDay.official_composite) : null;
-
-        console.log('QuickGlanceAltDelta: fetchAltScore - calculated scores', { alt, official });
 
         if (official !== null) {
           setAltScore(alt);
           setOfficialScore(official);
         }
-      } else {
-        console.log('QuickGlanceAltDelta: fetchAltScore - no data rows');
       }
     } catch (error) {
-      console.error('QuickGlanceAltDelta: fetchAltScore - error:', error);
+      console.error('QuickGlanceAltDelta error:', error);
     } finally {
       setLoading(false);
     }
@@ -185,16 +163,8 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
   };
 
   // Don't show if user hasn't visited sandbox or if we don't have scores yet
-  console.log('QuickGlanceAltDelta: Render check', { hasVisitedSandbox, lastPreset, altScore, officialScore });
-  
-  // TEMPORARY: Always show something for debugging
   if (!hasVisitedSandbox || !altScore || !officialScore) {
-    console.log('QuickGlanceAltDelta: Not showing - missing data');
-    return (
-      <div className="mb-3 p-2 bg-yellow-100 border border-yellow-300 rounded text-sm">
-        DEBUG: QuickGlanceAltDelta loaded but not showing (visited: {hasVisitedSandbox ? 'yes' : 'no'}, altScore: {altScore}, officialScore: {officialScore})
-      </div>
-    );
+    return null;
   }
 
   const delta = altScore - officialScore;
@@ -202,15 +172,14 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
   const bandComparison = getBandComparison(altScore, officialScore);
 
   // Don't show if it's the official preset and delta is 0
-  if (lastPreset === 'official_30_30' && delta === 0) {
-    return null;
-  }
+  if (lastPreset === 'official_30_30' && delta === 0) return null;
 
   return (
     <div className={`mb-3 ${className}`}>
       <button
         onClick={handleClick}
         className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+        aria-label={`Open weights sandbox. Alt preset ${getPresetLabel(lastPreset || 'official_30_30')}: ${deltaText} points, ${bandComparison}`}
         title="Compare different weight mixes"
       >
         <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
