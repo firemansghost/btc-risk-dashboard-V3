@@ -341,7 +341,7 @@ export default function WeightsSandbox() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" aria-label="Weights Sandbox experimental comparison">
       {/* Header */}
       <div className="text-center">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -469,6 +469,9 @@ export default function WeightsSandbox() {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Alt
+                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-700 align-middle">
+                    ALT: {preset?.key.replace('_', ' ').toUpperCase()}
+                  </span>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Delta
@@ -577,6 +580,11 @@ export default function WeightsSandbox() {
             <p className="mt-1">Bands are context, not advice. All times UTC.</p>
           </div>
         </div>
+      </div>
+
+      {/* Provenance */}
+      <div className="text-xs text-gray-500 text-center">
+        Model version v1.1 — Presets are informational and do not change the official G-Score. All times UTC.
       </div>
     </div>
   );
