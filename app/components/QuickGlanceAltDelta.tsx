@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { analytics } from '@/lib/analytics';
 
 interface QuickGlanceAltDeltaProps {
   className?: string;
@@ -159,6 +160,8 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
   };
 
   const handleClick = () => {
+    const delta = (altScore ?? 0) - (officialScore ?? 0);
+    analytics.quickGlanceClicked(lastPreset, delta);
     router.push('/lab/weights');
   };
 

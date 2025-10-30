@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { formatFriendlyTimestamp } from '@/lib/dateUtils';
+import { analytics } from '@/lib/analytics';
 
 type FactorScores = Record<string, number>;
 
@@ -123,7 +124,6 @@ export default function WeightsSandbox() {
         
         // Store sandbox visit for Phase 5 hook
         localStorage.setItem('ghostgauge-sandbox-visited', 'true');
-        
       } catch (err) {
         console.error('Sandbox data load error:', err);
         setError(err instanceof Error ? err.message : 'Failed to load sandbox data');
@@ -133,6 +133,7 @@ export default function WeightsSandbox() {
     };
 
     loadData();
+    analytics.sandboxOpened('direct');
   }, [selectedWindow]);
 
   // Track preset changes for Phase 5 hook
@@ -297,6 +298,8 @@ export default function WeightsSandbox() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+
+    analytics.csvExported(preset.key, selectedWindow);
   };
 
   if (loading) {
@@ -389,7 +392,7 @@ export default function WeightsSandbox() {
                     name="preset"
                     value={preset.key}
                     checked={selectedPreset === preset.key}
-                    onChange={(e) => setSelectedPreset(e.target.value)}
+                    onChange={(e) => { setSelectedPreset(e.target.value); analytics.presetChanged(e.target.value); }}
                     className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                     aria-checked={selectedPreset === preset.key}
                     aria-label={`${preset.label}. ${preset.description}`}
@@ -414,7 +417,7 @@ export default function WeightsSandbox() {
             </label>
             <select
               value={selectedWindow}
-              onChange={(e) => setSelectedWindow(parseInt(e.target.value))}
+              onChange={(e) => { const days = parseInt(e.target.value); setSelectedWindow(days); analytics.windowChanged(days); }}
               className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             >
               {WINDOW_OPTIONS.map((option) => (
