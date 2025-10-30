@@ -368,10 +368,10 @@ export default function WeightsSandbox() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Preset Selector */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label id="preset-label" className="block text-sm font-medium text-gray-700 mb-3">
               Weight Preset
             </label>
-            <div className="space-y-2">
+            <div role="radiogroup" aria-labelledby="preset-label" className="space-y-2">
               {PRESETS.map((preset) => (
                 <label key={preset.key} className="flex items-start">
                   <input
@@ -381,6 +381,8 @@ export default function WeightsSandbox() {
                     checked={selectedPreset === preset.key}
                     onChange={(e) => setSelectedPreset(e.target.value)}
                     className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    aria-checked={selectedPreset === preset.key}
+                    aria-label={`${preset.label}. ${preset.description}`}
                   />
                   <div className="ml-3">
                     <div className="text-sm font-medium text-gray-900">
@@ -439,7 +441,7 @@ export default function WeightsSandbox() {
             </div>
           </div>
           
-          <div className="mt-4 text-center">
+          <div className="mt-4 text-center" aria-live="polite">
             <div className="text-lg font-medium text-gray-900">
               {todayData.delta > 0 ? '+' : ''}{todayData.delta.toFixed(1)} points
               {todayData.official_band === todayData.alt_band ? ' (same band)' : 
@@ -568,6 +570,7 @@ export default function WeightsSandbox() {
             <button
               onClick={exportCSV}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              aria-label={`Export CSV for preset ${preset?.key || 'official_30_30'} and window ${selectedWindow} days`}
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
