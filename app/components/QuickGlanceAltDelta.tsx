@@ -60,28 +60,29 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
         throw new Error(`Failed to fetch data: ${response.status} ${errorText}`);
       }
       
-      const data = await response.json();
+      const result = await response.json();
       console.log('QuickGlanceAltDelta: fetchAltScore - data received', { 
-        ok: data.ok, 
-        factorsCount: data.factors?.length,
-        dataKeys: Object.keys(data)
+        ok: result.ok,
+        dataLen: Array.isArray(result.data) ? result.data.length : 'n/a',
+        keys: Object.keys(result)
       });
-      
-      if (data.factors && data.factors.length > 0) {
-        // Get the latest day's data
-        const latestDay = data.factors[0];
+
+      const rows = Array.isArray(result.data) ? result.data : [];
+      if (rows.length > 0) {
+        const latestDay = rows[rows.length - 1];
         console.log('QuickGlanceAltDelta: fetchAltScore - latestDay', latestDay);
-        
-        // Calculate alt score based on preset
-        const altScore = calculateAltScore(latestDay, lastPreset);
-        const officialScore = latestDay.official_g_score;
-        
-        console.log('QuickGlanceAltDelta: fetchAltScore - calculated scores', { altScore, officialScore });
-        
-        setAltScore(altScore);
-        setOfficialScore(officialScore);
+
+        const alt = calculateAltScore(latestDay, lastPreset);
+        const official = typeof latestDay.official_composite === 'number' ? Math.round(latestDay.official_composite) : null;
+
+        console.log('QuickGlanceAltDelta: fetchAltScore - calculated scores', { alt, official });
+
+        if (official !== null) {
+          setAltScore(alt);
+          setOfficialScore(official);
+        }
       } else {
-        console.log('QuickGlanceAltDelta: fetchAltScore - no factors data');
+        console.log('QuickGlanceAltDelta: fetchAltScore - no data rows');
       }
     } catch (error) {
       console.error('QuickGlanceAltDelta: fetchAltScore - error:', error);
@@ -100,21 +101,22 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
     };
 
     const weights = presetWeights[preset as keyof typeof presetWeights];
-    if (!weights) return dayData.official_g_score;
+    if (!weights) return Math.round(dayData.official_composite ?? 0);
 
     // Calculate weighted average using the preset weights
     let weightedSum = 0;
     let totalWeight = 0;
 
     // Map factor scores to pillars and apply weights
+    const fs = dayData.factor_scores || {};
     const factorScores = {
-      stablecoins: dayData.stablecoins_score || 0,
-      etf_flows: dayData.etf_flows_score || 0,
-      net_liquidity: dayData.net_liquidity_score || 0,
-      trend_valuation: dayData.trend_valuation_score || 0,
-      term_leverage: dayData.term_leverage_score || 0,
-      macro_overlay: dayData.macro_overlay_score || 0,
-      social_interest: dayData.social_interest_score || 0
+      stablecoins: fs.stablecoins ?? 0,
+      etf_flows: fs.etf_flows ?? 0,
+      net_liquidity: fs.net_liquidity ?? 0,
+      trend_valuation: fs.trend_valuation ?? 0,
+      term_leverage: fs.term_leverage ?? 0,
+      macro_overlay: fs.macro_overlay ?? 0,
+      social_interest: fs.social_interest ?? 0
     };
 
     // Liquidity pillar (stablecoins + etf_flows + net_liquidity)
@@ -142,7 +144,7 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
     );
     totalWeight = weights.liquidity + weights.momentum + weights.term + weights.macro + weights.social;
 
-    return totalWeight > 0 ? Math.round(weightedSum / totalWeight) : dayData.official_g_score;
+    return totalWeight > 0 ? Math.round(weightedSum / totalWeight) : Math.round(dayData.official_composite ?? 0);
   };
 
   const getPresetLabel = (preset: string): string => {
