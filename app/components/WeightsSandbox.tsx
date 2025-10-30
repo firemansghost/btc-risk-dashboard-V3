@@ -368,6 +368,9 @@ export default function WeightsSandbox() {
             </span>
           </div>
         </div>
+        <div className="mt-3 text-xs text-gray-500">
+          Model v1.1 · Finalized days only · UTC timestamps · Same exclusion/renormalization as production
+        </div>
       </div>
 
       {/* Controls */}
@@ -562,6 +565,9 @@ export default function WeightsSandbox() {
       <div className="bg-white rounded-lg shadow">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">Band Distribution</h2>
+          <p className="mt-1 text-sm text-gray-600">
+            Time spent in each risk band over the selected {selectedWindow}-day window
+          </p>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
