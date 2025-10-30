@@ -41,6 +41,16 @@ export async function GET(request: NextRequest) {
       social_interest: headers.indexOf('social_interest_score'),
       onchain: headers.indexOf('onchain_score')
     };
+    const statusColumns = {
+      trend_valuation: headers.indexOf('trend_valuation_status'),
+      stablecoins: headers.indexOf('stablecoins_status'),
+      etf_flows: headers.indexOf('etf_flows_status'),
+      net_liquidity: headers.indexOf('net_liquidity_status'),
+      term_leverage: headers.indexOf('term_leverage_status'),
+      macro_overlay: headers.indexOf('macro_overlay_status'),
+      social_interest: headers.indexOf('social_interest_status'),
+      onchain: headers.indexOf('onchain_status')
+    } as const;
     
     const compositeIndex = headers.indexOf('composite_score');
     const bandIndex = headers.indexOf('composite_band');
@@ -54,14 +64,19 @@ export async function GET(request: NextRequest) {
       const dateUtc = row[dateIndex];
       if (!dateUtc) continue;
 
-      // Extract factor scores (0-100)
+      // Extract factor scores (0-100) and statuses
       const factorScores: Record<string, number> = {};
+      const factorStatuses: Record<string, string> = {};
       for (const [factor, colIndex] of Object.entries(factorColumns)) {
         if (colIndex >= 0 && row[colIndex] && row[colIndex] !== '') {
           const score = parseFloat(row[colIndex]);
           if (!isNaN(score) && score >= 0 && score <= 100) {
             factorScores[factor] = score;
           }
+        }
+        const sIdx = (statusColumns as any)[factor];
+        if (typeof sIdx === 'number' && sIdx >= 0) {
+          factorStatuses[factor] = row[sIdx] || '';
         }
       }
 
@@ -70,6 +85,7 @@ export async function GET(request: NextRequest) {
         data.push({
           date_utc: dateUtc,
           factor_scores: factorScores,
+          factor_statuses: factorStatuses,
           official_composite: parseFloat(row[compositeIndex]) || 0,
           cycle_adj: 0, // No cycle adjustment data in this CSV
           spike_adj: 0, // No spike adjustment data in this CSV

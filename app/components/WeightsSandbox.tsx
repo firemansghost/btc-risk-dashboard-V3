@@ -149,8 +149,14 @@ export default function WeightsSandbox() {
     if (!preset) return [];
 
     return data.map(day => {
-      // Collect active factors and weights
-      const activeFactors = config.factors.filter(f => f.enabled && day.factor_scores[f.key] !== undefined);
+      // Collect active factors and weights (respect daily status: include only 'fresh')
+      const activeFactors = config.factors.filter(f => {
+        if (!f.enabled) return false;
+        const hasScore = day.factor_scores[f.key] !== undefined;
+        const status = day.factor_statuses ? day.factor_statuses[f.key] : 'fresh';
+        const isFresh = status === 'fresh';
+        return hasScore && isFresh;
+      });
 
       // Group by pillar and compute normalized pillar averages (0-100)
       const pillarScores: Record<string, number> = {};
