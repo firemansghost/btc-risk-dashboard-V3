@@ -1,9 +1,9 @@
 {
-  "updated_at": "2025-10-31T11:20:04.637Z",
-  "date": "2025-10-31",
-  "btc_close_usd": 109618.2,
-  "sats_per_usd": 912.2572711465797,
-  "usd_per_sat": 0.001096182,
+  "updated_at": "2025-11-01T11:18:22.321Z",
+  "date": "2025-11-01",
+  "btc_close_usd": 110119.99,
+  "sats_per_usd": 908.1003367326858,
+  "usd_per_sat": 0.0011011999,
   "provenance": [
     {
       "name": "BTC daily close (Coinbase)",
