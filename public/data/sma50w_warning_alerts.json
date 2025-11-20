@@ -1,5 +1,26 @@
 [
   {
+    "id": "400fb710e22764c3",
+    "type": "sma50w_warning",
+    "timestamp": "2025-11-20T11:21:59.951Z",
+    "severity": "medium",
+    "title": "50-Week SMA Warning",
+    "message": "Bitcoin has closed below 50W SMA for 2 consecutive weeks",
+    "details": {
+      "sma50": 102768.62520000001,
+      "current_close": 91687.13,
+      "consecutive_weeks_below": 2,
+      "is_below": true,
+      "price_vs_sma": "-10.78"
+    },
+    "action_required": "Monitor for potential trend change",
+    "context": "Alert generated based on current conditions",
+    "recommendations": [
+      "Monitor situation for further developments"
+    ],
+    "generated_at": "2025-11-20T11:21:59.960Z"
+  },
+  {
     "id": "6765002813c54155",
     "type": "sma50w_warning",
     "timestamp": "2025-11-19T11:22:00.649Z",
@@ -18,7 +39,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-19T11:22:00.657Z"
+    "generated_at": "2025-11-20T11:21:59.960Z"
   },
   {
     "id": "763fd10e7ba041a7",
@@ -39,7 +60,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-19T11:22:00.657Z"
+    "generated_at": "2025-11-20T11:21:59.960Z"
   },
   {
     "id": "0cead8149372949f",
@@ -60,6 +81,6 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-19T11:22:00.657Z"
+    "generated_at": "2025-11-20T11:21:59.960Z"
   }
 ]
