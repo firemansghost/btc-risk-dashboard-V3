@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-11-22T11:18:18.076Z",
+  "timestamp": "2025-11-23T11:19:23.890Z",
   "sources": [
     {
       "source": "blockchain_info",
@@ -13,7 +13,7 @@
           "url": "https://api.blockchain.info/charts/mempool-size?timespan=7days&format=json",
           "status": "success",
           "lastUpdate": "2025-11-17T06:15:00.000Z",
-          "stalenessHours": 125.05518694444444,
+          "stalenessHours": 149.073425,
           "error": null
         },
         {
@@ -26,7 +26,7 @@
         }
       ],
       "alerts": [
-        "⚠️ mempool-size: Data is 125.1h old (max: 48h)",
+        "⚠️ mempool-size: Data is 149.1h old (max: 48h)",
         "❓ transaction-fees: Could not determine last update time",
         "❌ fees-usd: HTTP 404"
       ]
