@@ -1,5 +1,26 @@
 [
   {
+    "id": "26b1ea03ae5aed37",
+    "type": "sma50w_warning",
+    "timestamp": "2025-11-24T11:22:48.018Z",
+    "severity": "medium",
+    "title": "50-Week SMA Warning",
+    "message": "Bitcoin has closed below 50W SMA for 3 consecutive weeks",
+    "details": {
+      "sma50": 102302.93640000002,
+      "current_close": 86042.17,
+      "consecutive_weeks_below": 3,
+      "is_below": true,
+      "price_vs_sma": "-15.89"
+    },
+    "action_required": "Monitor for potential trend change",
+    "context": "Alert generated based on current conditions",
+    "recommendations": [
+      "Monitor situation for further developments"
+    ],
+    "generated_at": "2025-11-24T11:22:48.027Z"
+  },
+  {
     "id": "44c5cd99d97620a9",
     "type": "sma50w_warning",
     "timestamp": "2025-11-23T11:19:23.805Z",
@@ -18,7 +39,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-23T11:19:23.814Z"
+    "generated_at": "2025-11-24T11:22:48.026Z"
   },
   {
     "id": "ffb365f627c44790",
@@ -39,7 +60,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-23T11:19:23.813Z"
+    "generated_at": "2025-11-24T11:22:48.027Z"
   },
   {
     "id": "fed72c0d8ad08157",
@@ -60,7 +81,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-23T11:19:23.814Z"
+    "generated_at": "2025-11-24T11:22:48.027Z"
   },
   {
     "id": "400fb710e22764c3",
@@ -81,7 +102,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-23T11:19:23.814Z"
+    "generated_at": "2025-11-24T11:22:48.027Z"
   },
   {
     "id": "6765002813c54155",
@@ -102,7 +123,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-23T11:19:23.814Z"
+    "generated_at": "2025-11-24T11:22:48.027Z"
   },
   {
     "id": "763fd10e7ba041a7",
@@ -123,7 +144,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-23T11:19:23.814Z"
+    "generated_at": "2025-11-24T11:22:48.027Z"
   },
   {
     "id": "0cead8149372949f",
@@ -144,6 +165,6 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-23T11:19:23.814Z"
+    "generated_at": "2025-11-24T11:22:48.027Z"
   }
 ]
