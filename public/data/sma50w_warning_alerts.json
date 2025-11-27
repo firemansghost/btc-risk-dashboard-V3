@@ -1,5 +1,26 @@
 [
   {
+    "id": "028c7f6051dc68ee",
+    "type": "sma50w_warning",
+    "timestamp": "2025-11-27T11:23:04.040Z",
+    "severity": "medium",
+    "title": "50-Week SMA Warning",
+    "message": "Bitcoin has closed below 50W SMA for 3 consecutive weeks",
+    "details": {
+      "sma50": 102410.21020000003,
+      "current_close": 91405.86,
+      "consecutive_weeks_below": 3,
+      "is_below": true,
+      "price_vs_sma": "-10.75"
+    },
+    "action_required": "Monitor for potential trend change",
+    "context": "Alert generated based on current conditions",
+    "recommendations": [
+      "Monitor situation for further developments"
+    ],
+    "generated_at": "2025-11-27T11:23:04.049Z"
+  },
+  {
     "id": "8e309f5c6da8d731",
     "type": "sma50w_warning",
     "timestamp": "2025-11-26T11:22:49.018Z",
@@ -18,7 +39,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-26T11:22:49.027Z"
+    "generated_at": "2025-11-27T11:23:04.048Z"
   },
   {
     "id": "ad8ac8d3f16b635d",
@@ -39,7 +60,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-26T11:22:49.026Z"
+    "generated_at": "2025-11-27T11:23:04.048Z"
   },
   {
     "id": "26b1ea03ae5aed37",
@@ -60,7 +81,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-26T11:22:49.026Z"
+    "generated_at": "2025-11-27T11:23:04.048Z"
   },
   {
     "id": "44c5cd99d97620a9",
@@ -81,7 +102,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-26T11:22:49.026Z"
+    "generated_at": "2025-11-27T11:23:04.048Z"
   },
   {
     "id": "ffb365f627c44790",
@@ -102,7 +123,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-26T11:22:49.026Z"
+    "generated_at": "2025-11-27T11:23:04.048Z"
   },
   {
     "id": "fed72c0d8ad08157",
@@ -123,7 +144,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-26T11:22:49.026Z"
+    "generated_at": "2025-11-27T11:23:04.048Z"
   },
   {
     "id": "400fb710e22764c3",
@@ -144,7 +165,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-26T11:22:49.026Z"
+    "generated_at": "2025-11-27T11:23:04.048Z"
   },
   {
     "id": "6765002813c54155",
@@ -165,7 +186,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-26T11:22:49.026Z"
+    "generated_at": "2025-11-27T11:23:04.048Z"
   },
   {
     "id": "763fd10e7ba041a7",
@@ -186,7 +207,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-26T11:22:49.027Z"
+    "generated_at": "2025-11-27T11:23:04.048Z"
   },
   {
     "id": "0cead8149372949f",
@@ -207,6 +228,6 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2025-11-26T11:22:49.027Z"
+    "generated_at": "2025-11-27T11:23:04.049Z"
   }
 ]
