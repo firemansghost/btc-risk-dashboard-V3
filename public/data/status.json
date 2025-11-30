@@ -1,5 +1,5 @@
 {
-  "updated_at": "2025-11-29T11:19:30.749Z",
+  "updated_at": "2025-11-30T11:19:36.373Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -29,7 +29,7 @@
       "name": "Stooq",
       "ok": true,
       "url": "https://stooq.com/",
-      "ms": 978,
+      "ms": 1014,
       "fallback": false,
       "cache_used": false,
       "fallback_used": false
@@ -38,37 +38,37 @@
       "name": "History: trend_valuation",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 53
+      "total_rows": 54
     },
     {
       "name": "History: stablecoins",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 73
+      "total_rows": 74
     },
     {
       "name": "History: etf_flows",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 468
+      "total_rows": 469
     },
     {
       "name": "History: net_liquidity",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 124
+      "total_rows": 125
     },
     {
       "name": "History: macro_overlay",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 53
+      "total_rows": 54
     },
     {
       "name": "History: social_interest",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 53
+      "total_rows": 54
     }
   ],
   "factors_computed": 7,
@@ -77,7 +77,7 @@
     "status": "success",
     "source": "Stooq",
     "fallback_used": false,
-    "latency_ms": 978
+    "latency_ms": 1014
   },
   "satoshis_per_dollar": {
     "status": "success",
@@ -85,16 +85,16 @@
     "derived": true
   },
   "etf_schema_hash": "cd3800",
-  "etf_schema_last_check": "2025-11-29T11:19:16.662Z",
+  "etf_schema_last_check": "2025-11-30T11:19:21.060Z",
   "price_history": {
     "total_rows": 729,
-    "oldest_date": "2023-11-30",
-    "newest_date": "2025-11-29",
+    "oldest_date": "2023-12-01",
+    "newest_date": "2025-11-30",
     "alpha_vantage_backfill": null,
     "coinbase_daily_update": {
       "status": "success",
       "rows_fetched": 14,
-      "ms": 184
+      "ms": 144
     },
     "drift_check": null
   }
