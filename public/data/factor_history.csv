@@ -78,3 +78,4 @@ date,trend_valuation_score,trend_valuation_status,onchain_score,onchain_status,s
 2025-12-04,50,fresh,null,unknown,50,fresh,82,fresh,44,fresh,37,stale,59,fresh,56,fresh,55,
 2025-12-05,50,fresh,null,unknown,47,fresh,82,fresh,45,fresh,37,stale,57,fresh,45,fresh,52,
 2025-12-06,49,fresh,null,unknown,41,fresh,82,fresh,43,fresh,62,stale,53,fresh,36,fresh,49,
+2025-12-07,49,fresh,null,unknown,62,fresh,82,fresh,41,fresh,62,stale,55,fresh,33,fresh,53,

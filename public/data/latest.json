@@ -1,7 +1,7 @@
 {
   "ok": true,
   "version": "v3.1.0",
-  "as_of_utc": "2025-12-06T11:19:44.317Z",
+  "as_of_utc": "2025-12-07T11:19:43.702Z",
   "composite_score": 53,
   "composite_raw": 53,
   "band": {
@@ -22,10 +22,10 @@
       "pillar": "momentum",
       "weight": 30,
       "weight_pct": 30,
-      "score": 49,
+      "score": 48,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-12-06T11:19:30.284Z",
+      "last_utc": "2025-12-07T11:19:29.710Z",
       "details": [
         {
           "label": "Price vs 200-day SMA (Mayer)",
@@ -33,23 +33,23 @@
         },
         {
           "label": "Bull Market Support Band",
-          "value": "below (-16.0%)"
+          "value": "below (-16.3%)"
         },
         {
           "label": "Weekly momentum (RSI)",
-          "value": "38.5"
+          "value": "38.3"
         },
         {
           "label": "BTC Price (daily close)",
-          "value": "$89,589.6"
+          "value": "$89,284.38"
         },
         {
           "label": "200-day SMA",
-          "value": "$109,285.016"
+          "value": "$109,201.48"
         },
         {
           "label": "Weekly Close (for BMSB)",
-          "value": "$89,589.6"
+          "value": "$89,284.38"
         },
         {
           "label": "Price source",
@@ -61,11 +61,11 @@
         },
         {
           "label": "Calculation method",
-          "value": "Parallel processing (7ms)"
+          "value": "Parallel processing (6ms)"
         },
         {
           "label": "BMSB (20W SMA / 21W EMA)",
-          "value": "$109,206.241 / $104,080.392"
+          "value": "$109,190.979 / $104,063.145"
         },
         {
           "label": "50-week SMA diagnostic",
@@ -73,12 +73,12 @@
         },
         {
           "label": "Component Scores",
-          "value": "BMSB: 38, Mayer: 80, RSI: 20"
+          "value": "BMSB: 37, Mayer: 79, RSI: 20"
         }
       ],
       "sma50wDiagnostic": {
-        "sma50": 102258.83540000001,
-        "currentClose": 89589.6,
+        "sma50": 102273.41580000002,
+        "currentClose": 89284.38,
         "isBelow": true,
         "consecutiveWeeksBelow": 4,
         "showWarning": true
@@ -90,18 +90,18 @@
       "pillar": "liquidity",
       "weight": 18,
       "weight_pct": 18,
-      "score": 62,
+      "score": 63,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-12-06T11:19:31.347Z",
+      "last_utc": "2025-12-07T11:19:30.836Z",
       "details": [
         {
           "label": "Mempool 7d avg (MB)",
-          "value": "71.0"
+          "value": "70.0"
         },
         {
           "label": "Fees 7d avg (USD)",
-          "value": "$290904"
+          "value": "$292138"
         },
         {
           "label": "Data Sources",
@@ -109,7 +109,7 @@
         },
         {
           "label": "Calculation Method",
-          "value": "Parallel processing (1057ms)"
+          "value": "Parallel processing (1119ms)"
         },
         {
           "label": "Fallback Attempts",
@@ -126,7 +126,7 @@
       "score": 82,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-12-06T11:19:42.547Z",
+      "last_utc": "2025-12-07T11:19:41.942Z",
       "details": [
         {
           "label": "Total Market Cap",
@@ -154,7 +154,7 @@
         },
         {
           "label": "Historical Baseline",
-          "value": "40 data points (weighted average of 7 stablecoins)"
+          "value": "41 data points (weighted average of 7 stablecoins)"
         },
         {
           "label": "Stablecoin Coverage",
@@ -162,7 +162,7 @@
         },
         {
           "label": "Component Scores",
-          "value": "Supply: 95, Momentum: 70, Concentration: 56.23611047084793"
+          "value": "Supply: 95, Momentum: 70, Concentration: 56.23766363567157"
         }
       ]
     },
@@ -174,7 +174,7 @@
       "weight_pct": 4.3,
       "score": 41,
       "status": "fresh",
-      "reason": "fresh (19.3h old)",
+      "reason": "fresh (43.3h old)",
       "last_utc": "2025-12-05T16:00:00.000Z",
       "details": [
         {
@@ -223,7 +223,7 @@
         },
         {
           "label": "Last Update",
-          "value": "1.5 days ago"
+          "value": "2.5 days ago"
         }
       ],
       "individualEtfFlows": [
@@ -7885,7 +7885,7 @@
       "weight_pct": 20,
       "score": 62,
       "status": "stale",
-      "reason": "success -> stale_beyond_ttl (3.5d old)",
+      "reason": "success -> stale_beyond_ttl (4.5d old)",
       "last_utc": "2025-12-03T00:00:00.000Z",
       "details": [
         {
@@ -7914,7 +7914,7 @@
         },
         {
           "label": "Fetch Time",
-          "value": "593ms"
+          "value": "653ms"
         },
         {
           "label": "Component Scores",
@@ -7935,15 +7935,15 @@
       "score": 55,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-12-06T11:19:30.856Z",
+      "last_utc": "2025-12-07T11:19:30.188Z",
       "details": [
         {
           "label": "Current Funding Rate",
-          "value": "0.0040%"
+          "value": "-0.0024%"
         },
         {
           "label": "30-day Average",
-          "value": "0.0003%"
+          "value": "0.0002%"
         },
         {
           "label": "Price Volatility (30d)",
@@ -7981,10 +7981,10 @@
       "pillar": "social",
       "weight": 10,
       "weight_pct": 10,
-      "score": 33,
+      "score": 30,
       "status": "fresh",
       "reason": "fresh (0.0h old)",
-      "last_utc": "2025-12-06T11:19:31.201Z",
+      "last_utc": "2025-12-07T11:19:30.794Z",
       "details": [
         {
           "label": "Macro Regime",
@@ -8000,7 +8000,7 @@
         },
         {
           "label": "VIX Level",
-          "value": "15.8 (32%ile)"
+          "value": "15.8 (31%ile)"
         },
         {
           "label": "Yield Curve (10Y-2Y)",
@@ -8012,11 +8012,11 @@
         },
         {
           "label": "Fetch Time",
-          "value": "943ms"
+          "value": "1109ms"
         },
         {
           "label": "Component Scores",
-          "value": "Dollar: 33, Rates: 41, VIX: 20, Real: 66"
+          "value": "Dollar: 30, Rates: 39, VIX: 19, Real: 65"
         },
         {
           "label": "Current Levels",
@@ -8026,8 +8026,8 @@
     }
   ],
   "btc": {
-    "spot_usd": 89589.6,
-    "as_of_utc": "2025-12-06T11:19:44.317Z",
+    "spot_usd": 89284.38,
+    "as_of_utc": "2025-12-07T11:19:43.702Z",
     "source": "Coinbase"
   },
   "provenance": [],
@@ -8040,7 +8040,7 @@
   "cycle_adjustment": {
     "adj_pts": 0,
     "residual_z": null,
-    "last_utc": "2025-12-06T11:19:44.316Z",
+    "last_utc": "2025-12-07T11:19:43.700Z",
     "source": "ETL fallback",
     "reason": "insufficient_historical_data"
   },
@@ -8049,9 +8049,9 @@
     "r_1d": 0,
     "sigma": 0,
     "z": 0,
-    "ref_close": 89589.6,
-    "spot": 89589.6,
-    "last_utc": "2025-12-06T11:19:44.316Z",
+    "ref_close": 89284.38,
+    "spot": 89284.38,
+    "last_utc": "2025-12-07T11:19:43.700Z",
     "source": "ETL fallback",
     "reason": "insufficient_historical_data"
   },
