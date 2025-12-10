@@ -53,13 +53,16 @@ jobs:
         retention-days: 30
     
     - name: Summarize bundle size report
+      continue-on-error: true
       run: |
         if [ -f bundle-size-report.json ]; then
           echo "## Bundle Size Summary"
-          echo "Total Size: $(jq -r '.metrics.totalSize' bundle-size-report.json)"
-          echo "Gzipped Size: $(jq -r '.metrics.gzippedSize' bundle-size-report.json)"
-          echo "Chunks: $(jq -r '.metrics.chunkCount' bundle-size-report.json)"
-          echo "Alerts: $(jq -r '.alerts | length' bundle-size-report.json)"
+          echo "Total Size: $(jq -r '.metrics.totalSize' bundle-size-report.json 2>/dev/null || echo 'N/A')"
+          echo "Gzipped Size: $(jq -r '.metrics.gzippedSize' bundle-size-report.json 2>/dev/null || echo 'N/A')"
+          echo "Chunks: $(jq -r '.metrics.chunkCount' bundle-size-report.json 2>/dev/null || echo 'N/A')"
+          echo "Alerts: $(jq -r '.alerts | length' bundle-size-report.json 2>/dev/null || echo '0')"
+        else
+          echo "Bundle size report not found"
         fi
     
     - name: Comment on PR with bundle size changes
