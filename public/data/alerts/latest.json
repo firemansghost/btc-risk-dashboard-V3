@@ -1,125 +1,23 @@
 {
-  "timestamp": "2025-10-30T11:20:37.217Z",
-  "total_alerts": 275,
+  "timestamp": "2025-12-10T11:24:13.864Z",
+  "total_alerts": 281,
   "alerts": [
     {
-      "id": "21585b96cc8ca8a0",
+      "id": "dd85281797a1dd37",
       "type": "factor_change",
       "severity": "high",
-      "timestamp": "2025-10-30T11:20:37.207Z",
-      "factor": "Net Liquidity",
-      "factorKey": "net_liquidity",
-      "title": "📊 HIGH: Net Liquidity Factor Changed",
-      "message": "Net Liquidity decreased significantly: 56 → 34 (-22.0 points)",
-      "data": {
-        "factor": "Net Liquidity",
-        "factorKey": "net_liquidity",
-        "previous_score": 56,
-        "current_score": 34,
-        "change_points": -22,
-        "change_percentage": -39.285714285714285,
-        "severity": "high",
-        "weight": 5
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
-    },
-    {
-      "id": "314b3c31c02bf6e9",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-29T19:37:18.593Z",
-      "factor": "Macro Overlay",
-      "factorKey": "macro_overlay",
-      "title": "📊 MEDIUM: Macro Overlay Factor Changed",
-      "message": "Macro Overlay decreased significantly: 69 → 51 (-18.0 points)",
-      "data": {
-        "factor": "Macro Overlay",
-        "factorKey": "macro_overlay",
-        "previous_score": 69,
-        "current_score": 51,
-        "change_points": -18,
-        "change_percentage": -26.08695652173913,
-        "severity": "medium",
-        "weight": 10
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "1d053c02dc0efa7d",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-29T19:37:18.593Z",
-      "factor": "Social Interest",
-      "factorKey": "social_interest",
-      "title": "📊 MEDIUM: Social Interest Factor Changed",
-      "message": "Social Interest increased significantly: 55 → 68 (+13.0 points)",
-      "data": {
-        "factor": "Social Interest",
-        "factorKey": "social_interest",
-        "previous_score": 55,
-        "current_score": 68,
-        "change_points": 13,
-        "change_percentage": 23.636363636363637,
-        "severity": "medium",
-        "weight": 10
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 22nd consecutive day of improving trend.",
-      "trend": "improving",
-      "consecutiveDays": 2,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "2cdcebdddce260e8",
-      "type": "factor_change",
-      "severity": "high",
-      "timestamp": "2025-10-29T19:37:18.592Z",
+      "timestamp": "2025-12-10T11:24:13.853Z",
       "factor": "Stablecoins",
       "factorKey": "stablecoins",
       "title": "📊 HIGH: Stablecoins Factor Changed",
-      "message": "Stablecoins decreased significantly: 82 → 53 (-29.0 points)",
+      "message": "Stablecoins decreased significantly: 63 → 42 (-21.0 points)",
       "data": {
         "factor": "Stablecoins",
         "factorKey": "stablecoins",
-        "previous_score": 82,
-        "current_score": 53,
-        "change_points": -29,
-        "change_percentage": -35.36585365853659,
+        "previous_score": 63,
+        "current_score": 42,
+        "change_points": -21,
+        "change_percentage": -33.33333333333333,
         "severity": "high",
         "weight": 21
       },
@@ -136,26 +34,26 @@
       "recommendations": [
         "Positive momentum - consider if trend will continue"
       ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
+      "generated_at": "2025-12-10T11:24:13.860Z"
     },
     {
-      "id": "290f1c598318fcc3",
+      "id": "3a1801ac009c2abf",
       "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-29T19:37:18.592Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 CRITICAL: ETF Flows Factor Changed",
-      "message": "ETF Flows increased significantly: 43 → 82 (+39.0 points)",
+      "severity": "medium",
+      "timestamp": "2025-12-10T11:24:13.853Z",
+      "factor": "Net Liquidity",
+      "factorKey": "net_liquidity",
+      "title": "📊 MEDIUM: Net Liquidity Factor Changed",
+      "message": "Net Liquidity increased significantly: 41 → 51 (+10.0 points)",
       "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 43,
-        "current_score": 82,
-        "change_points": 39,
-        "change_percentage": 90.69767441860465,
-        "severity": "critical",
-        "weight": 9
+        "factor": "Net Liquidity",
+        "factorKey": "net_liquidity",
+        "previous_score": 41,
+        "current_score": 51,
+        "change_points": 10,
+        "change_percentage": 24.390243902439025,
+        "severity": "medium",
+        "weight": 5
       },
       "actions": [
         "Review factor details and recent changes",
@@ -164,203 +62,87 @@
         "Check data source reliability",
         "Review related market indicators"
       ],
-      "context": "Factor is in extremely high territory.",
+      "context": "Factor showing normal variation",
       "trend": "declining",
       "consecutiveDays": 1,
       "recommendations": [
-        "Consider reducing exposure - factor in extreme high territory",
         "Watch for continued decline - may indicate weakening fundamentals"
       ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
+      "generated_at": "2025-12-10T11:24:13.860Z"
     },
     {
-      "id": "5fbda5773b400d76",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-29T19:37:18.592Z",
-      "factor": "Net Liquidity",
-      "factorKey": "net_liquidity",
-      "title": "📊 LOW: Net Liquidity Factor Changed",
-      "message": "Net Liquidity decreased significantly: 62 → 56 (-6.0 points)",
-      "data": {
-        "factor": "Net Liquidity",
-        "factorKey": "net_liquidity",
-        "previous_score": 62,
-        "current_score": 56,
-        "change_points": -6,
-        "change_percentage": -9.67741935483871,
-        "severity": "low",
-        "weight": 5
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "20e92a90c39f0188",
-      "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-29T19:37:18.592Z",
-      "factor": "Term Structure & Leverage",
-      "factorKey": "term_leverage",
-      "title": "📊 CRITICAL: Term Structure & Leverage Factor Changed",
-      "message": "Term Structure & Leverage decreased significantly: 69 → 30 (-39.0 points)",
-      "data": {
-        "factor": "Term Structure & Leverage",
-        "factorKey": "term_leverage",
-        "previous_score": 69,
-        "current_score": 30,
-        "change_points": -39,
-        "change_percentage": -56.52173913043478,
-        "severity": "critical",
-        "weight": 20
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "1dbd2c80c82ba3b1",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-29T15:42:29.465Z",
-      "factor": "Net Liquidity",
-      "factorKey": "net_liquidity",
-      "title": "📊 LOW: Net Liquidity Factor Changed",
-      "message": "Net Liquidity decreased significantly: 62 → 56 (-6.0 points)",
-      "data": {
-        "factor": "Net Liquidity",
-        "factorKey": "net_liquidity",
-        "previous_score": 62,
-        "current_score": 56,
-        "change_points": -6,
-        "change_percentage": -9.67741935483871,
-        "severity": "low",
-        "weight": 5
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "2193b34ca53f5b21",
-      "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-29T15:42:29.465Z",
-      "factor": "Term Structure & Leverage",
-      "factorKey": "term_leverage",
-      "title": "📊 CRITICAL: Term Structure & Leverage Factor Changed",
-      "message": "Term Structure & Leverage decreased significantly: 69 → 30 (-39.0 points)",
-      "data": {
-        "factor": "Term Structure & Leverage",
-        "factorKey": "term_leverage",
-        "previous_score": 69,
-        "current_score": 30,
-        "change_points": -39,
-        "change_percentage": -56.52173913043478,
-        "severity": "critical",
-        "weight": 20
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "6af73709d752e450",
+      "id": "c1b88c53815f2998",
       "type": "factor_change",
       "severity": "medium",
-      "timestamp": "2025-10-29T15:42:29.465Z",
-      "factor": "Macro Overlay",
-      "factorKey": "macro_overlay",
-      "title": "📊 MEDIUM: Macro Overlay Factor Changed",
-      "message": "Macro Overlay decreased significantly: 69 → 51 (-18.0 points)",
-      "data": {
-        "factor": "Macro Overlay",
-        "factorKey": "macro_overlay",
-        "previous_score": 69,
-        "current_score": 51,
-        "change_points": -18,
-        "change_percentage": -26.08695652173913,
-        "severity": "medium",
-        "weight": 10
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "38bcef9ccdd39444",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-29T15:42:29.465Z",
+      "timestamp": "2025-12-10T11:24:13.853Z",
       "factor": "Social Interest",
       "factorKey": "social_interest",
       "title": "📊 MEDIUM: Social Interest Factor Changed",
-      "message": "Social Interest increased significantly: 55 → 68 (+13.0 points)",
+      "message": "Social Interest increased significantly: 30 → 46 (+16.0 points)",
       "data": {
         "factor": "Social Interest",
         "factorKey": "social_interest",
-        "previous_score": 55,
-        "current_score": 68,
-        "change_points": 13,
-        "change_percentage": 23.636363636363637,
+        "previous_score": 30,
+        "current_score": 46,
+        "change_points": 16,
+        "change_percentage": 53.333333333333336,
         "severity": "medium",
         "weight": 10
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "declining",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "7900890959fc77d3",
+      "type": "sma50w_warning",
+      "timestamp": "2025-12-10T11:24:13.801Z",
+      "severity": "high",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 5 consecutive weeks",
+      "details": {
+        "sma50": 102270.43340000002,
+        "current_close": 92296.32,
+        "consecutive_weeks_below": 5,
+        "is_below": true,
+        "price_vs_sma": "-9.75"
+      },
+      "action_required": "Consider reducing risk exposure",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.811Z"
+    },
+    {
+      "id": "89f6244f986094de",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-12-09T11:24:38.736Z",
+      "factor": "Stablecoins",
+      "factorKey": "stablecoins",
+      "title": "📊 MEDIUM: Stablecoins Factor Changed",
+      "message": "Stablecoins decreased significantly: 63 → 52 (-11.0 points)",
+      "data": {
+        "factor": "Stablecoins",
+        "factorKey": "stablecoins",
+        "previous_score": 63,
+        "current_score": 52,
+        "change_points": -11,
+        "change_percentage": -17.46031746031746,
+        "severity": "medium",
+        "weight": 21
       },
       "actions": [
         "Review factor details and recent changes",
@@ -375,59 +157,66 @@
       "recommendations": [
         "Positive momentum - consider if trend will continue"
       ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
+      "generated_at": "2025-12-10T11:24:13.859Z"
     },
     {
-      "id": "c79d5980764ba5b6",
-      "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-29T15:42:29.464Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 CRITICAL: ETF Flows Factor Changed",
-      "message": "ETF Flows increased significantly: 43 → 82 (+39.0 points)",
-      "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 43,
-        "current_score": 82,
-        "change_points": 39,
-        "change_percentage": 90.69767441860465,
-        "severity": "critical",
-        "weight": 9
+      "id": "028287b1845f3ae5",
+      "type": "sma50w_warning",
+      "timestamp": "2025-12-09T11:24:38.685Z",
+      "severity": "high",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 5 consecutive weeks",
+      "details": {
+        "sma50": 102229.00020000001,
+        "current_close": 90224.66,
+        "consecutive_weeks_below": 5,
+        "is_below": true,
+        "price_vs_sma": "-11.74"
       },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor is in extremely high territory.",
-      "trend": "declining",
-      "consecutiveDays": 1,
+      "action_required": "Consider reducing risk exposure",
+      "context": "Alert generated based on current conditions",
       "recommendations": [
-        "Consider reducing exposure - factor in extreme high territory",
-        "Watch for continued decline - may indicate weakening fundamentals"
+        "Monitor situation for further developments"
       ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
+      "generated_at": "2025-12-10T11:24:13.810Z"
     },
     {
-      "id": "b4db3eb947880084",
+      "id": "ec7d27270b01b721",
+      "type": "sma50w_warning",
+      "timestamp": "2025-12-08T11:24:13.372Z",
+      "severity": "high",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 5 consecutive weeks",
+      "details": {
+        "sma50": 102267.18680000001,
+        "current_close": 92133.99,
+        "consecutive_weeks_below": 5,
+        "is_below": true,
+        "price_vs_sma": "-9.91"
+      },
+      "action_required": "Consider reducing risk exposure",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.810Z"
+    },
+    {
+      "id": "a5c40b453cbfe706",
       "type": "factor_change",
       "severity": "high",
-      "timestamp": "2025-10-29T15:42:29.463Z",
+      "timestamp": "2025-12-07T11:19:43.793Z",
       "factor": "Stablecoins",
       "factorKey": "stablecoins",
       "title": "📊 HIGH: Stablecoins Factor Changed",
-      "message": "Stablecoins decreased significantly: 82 → 53 (-29.0 points)",
+      "message": "Stablecoins increased significantly: 41 → 63 (+22.0 points)",
       "data": {
         "factor": "Stablecoins",
         "factorKey": "stablecoins",
-        "previous_score": 82,
-        "current_score": 53,
-        "change_points": -29,
-        "change_percentage": -35.36585365853659,
+        "previous_score": 41,
+        "current_score": 63,
+        "change_points": 22,
+        "change_percentage": 53.65853658536586,
         "severity": "high",
         "weight": 21
       },
@@ -438,715 +227,32 @@
         "Check data source reliability",
         "Review related market indicators"
       ],
-      "context": "Factor showing normal variation",
+      "context": "This is the 22nd consecutive day of improving trend.",
       "trend": "improving",
-      "consecutiveDays": 1,
+      "consecutiveDays": 2,
       "recommendations": [
         "Positive momentum - consider if trend will continue"
       ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
+      "generated_at": "2025-12-10T11:24:13.859Z"
     },
     {
-      "id": "c9354edc7b0e75ab",
+      "id": "a662a2fc4c244687",
       "type": "factor_change",
       "severity": "low",
-      "timestamp": "2025-10-06T11:19:14.128Z",
-      "factor": "Term Structure & Leverage",
-      "factorKey": "term_leverage",
-      "title": "📊 LOW: Term Structure & Leverage Factor Changed",
-      "message": "Term Structure & Leverage decreased significantly: 73 → 67 (-6.0 points)",
+      "timestamp": "2025-12-07T11:19:43.793Z",
+      "factor": "Social Interest",
+      "factorKey": "social_interest",
+      "title": "📊 LOW: Social Interest Factor Changed",
+      "message": "Social Interest decreased significantly: 36 → 30 (-6.0 points)",
       "data": {
-        "factor": "Term Structure & Leverage",
-        "factorKey": "term_leverage",
-        "previous_score": 73,
-        "current_score": 67,
+        "factor": "Social Interest",
+        "factorKey": "social_interest",
+        "previous_score": 36,
+        "current_score": 30,
         "change_points": -6,
-        "change_percentage": -8.21917808219178,
-        "severity": "low",
-        "weight": 20
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "83eba52cff5db58e",
-      "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-05T11:16:38.718Z",
-      "factor": "Stablecoins",
-      "factorKey": "stablecoins",
-      "title": "📊 CRITICAL: Stablecoins Factor Changed",
-      "message": "Stablecoins increased significantly: 34 → 82 (+48.0 points)",
-      "data": {
-        "factor": "Stablecoins",
-        "factorKey": "stablecoins",
-        "previous_score": 34,
-        "current_score": 82,
-        "change_points": 48,
-        "change_percentage": 141.1764705882353,
-        "severity": "critical",
-        "weight": 21
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor is in extremely high territory.",
-      "trend": "declining",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Consider reducing exposure - factor in extreme high territory",
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "c1534c571f2a6af3",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-05T11:16:38.718Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 MEDIUM: ETF Flows Factor Changed",
-      "message": "ETF Flows increased significantly: 33 → 43 (+10.0 points)",
-      "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 33,
-        "current_score": 43,
-        "change_points": 10,
-        "change_percentage": 30.303030303030305,
-        "severity": "medium",
-        "weight": 9
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 22nd consecutive day of improving trend.",
-      "trend": "improving",
-      "consecutiveDays": 2,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "d222e494bf0eb334",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-05T11:16:38.718Z",
-      "factor": "Term Structure & Leverage",
-      "factorKey": "term_leverage",
-      "title": "📊 LOW: Term Structure & Leverage Factor Changed",
-      "message": "Term Structure & Leverage decreased significantly: 78 → 69 (-9.0 points)",
-      "data": {
-        "factor": "Term Structure & Leverage",
-        "factorKey": "term_leverage",
-        "previous_score": 78,
-        "current_score": 69,
-        "change_points": -9,
-        "change_percentage": -11.538461538461538,
-        "severity": "low",
-        "weight": 20
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "80f46ebb7261de84",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-05T01:48:12.806Z",
-      "factor": "Term Structure & Leverage",
-      "factorKey": "term_leverage",
-      "title": "📊 LOW: Term Structure & Leverage Factor Changed",
-      "message": "Term Structure & Leverage decreased significantly: 78 → 73 (-5.0 points)",
-      "data": {
-        "factor": "Term Structure & Leverage",
-        "factorKey": "term_leverage",
-        "previous_score": 78,
-        "current_score": 73,
-        "change_points": -5,
-        "change_percentage": -6.41025641025641,
-        "severity": "low",
-        "weight": 20
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "8b36d299518748f9",
-      "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-05T01:28:14.844Z",
-      "factor": "Stablecoins",
-      "factorKey": "stablecoins",
-      "title": "📊 CRITICAL: Stablecoins Factor Changed",
-      "message": "Stablecoins increased significantly: 34 → 82 (+48.0 points)",
-      "data": {
-        "factor": "Stablecoins",
-        "factorKey": "stablecoins",
-        "previous_score": 34,
-        "current_score": 82,
-        "change_points": 48,
-        "change_percentage": 141.1764705882353,
-        "severity": "critical",
-        "weight": 21
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor is in extremely high territory.",
-      "trend": "declining",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Consider reducing exposure - factor in extreme high territory",
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "b416c4fc537d2e3e",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-05T01:28:14.844Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 MEDIUM: ETF Flows Factor Changed",
-      "message": "ETF Flows increased significantly: 33 → 43 (+10.0 points)",
-      "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 33,
-        "current_score": 43,
-        "change_points": 10,
-        "change_percentage": 30.303030303030305,
-        "severity": "medium",
-        "weight": 9
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 22nd consecutive day of improving trend.",
-      "trend": "improving",
-      "consecutiveDays": 2,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "03d8ec66661260c2",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-05T00:22:43.506Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 MEDIUM: ETF Flows Factor Changed",
-      "message": "ETF Flows increased significantly: 33 → 43 (+10.0 points)",
-      "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 33,
-        "current_score": 43,
-        "change_points": 10,
-        "change_percentage": 30.303030303030305,
-        "severity": "medium",
-        "weight": 9
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 22nd consecutive day of improving trend.",
-      "trend": "improving",
-      "consecutiveDays": 2,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "7acb68513dc36d78",
-      "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-05T00:05:40.281Z",
-      "factor": "Stablecoins",
-      "factorKey": "stablecoins",
-      "title": "📊 CRITICAL: Stablecoins Factor Changed",
-      "message": "Stablecoins increased significantly: 34 → 82 (+48.0 points)",
-      "data": {
-        "factor": "Stablecoins",
-        "factorKey": "stablecoins",
-        "previous_score": 34,
-        "current_score": 82,
-        "change_points": 48,
-        "change_percentage": 141.1764705882353,
-        "severity": "critical",
-        "weight": 21
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor is in extremely high territory.",
-      "trend": "declining",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Consider reducing exposure - factor in extreme high territory",
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "c24787c964715b4e",
-      "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-04T23:29:26.643Z",
-      "factor": "Stablecoins",
-      "factorKey": "stablecoins",
-      "title": "📊 CRITICAL: Stablecoins Factor Changed",
-      "message": "Stablecoins increased significantly: 37 → 72 (+35.0 points)",
-      "data": {
-        "factor": "Stablecoins",
-        "factorKey": "stablecoins",
-        "previous_score": 37,
-        "current_score": 72,
-        "change_points": 35,
-        "change_percentage": 94.5945945945946,
-        "severity": "critical",
-        "weight": 21
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 55th consecutive day of declining trend.",
-      "trend": "declining",
-      "consecutiveDays": 5,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "98ff51ce74db74dc",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-04T23:11:47.435Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 MEDIUM: ETF Flows Factor Changed",
-      "message": "ETF Flows decreased significantly: 44 → 33 (-11.0 points)",
-      "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 44,
-        "current_score": 33,
-        "change_points": -11,
-        "change_percentage": -25,
-        "severity": "medium",
-        "weight": 9
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "0bad19f55ad71deb",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-04T23:11:47.435Z",
-      "factor": "Macro Overlay",
-      "factorKey": "macro_overlay",
-      "title": "📊 LOW: Macro Overlay Factor Changed",
-      "message": "Macro Overlay increased significantly: 60 → 69 (+9.0 points)",
-      "data": {
-        "factor": "Macro Overlay",
-        "factorKey": "macro_overlay",
-        "previous_score": 60,
-        "current_score": 69,
-        "change_points": 9,
-        "change_percentage": 15,
+        "change_percentage": -16.666666666666664,
         "severity": "low",
         "weight": 10
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 33rd consecutive day of improving trend.",
-      "trend": "improving",
-      "consecutiveDays": 3,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "ab1390ef5817a8f5",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-04T21:55:58.752Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 MEDIUM: ETF Flows Factor Changed",
-      "message": "ETF Flows decreased significantly: 44 → 33 (-11.0 points)",
-      "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 44,
-        "current_score": 33,
-        "change_points": -11,
-        "change_percentage": -25,
-        "severity": "medium",
-        "weight": 9
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "9e0a8e9e25c55512",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-04T21:55:58.752Z",
-      "factor": "Macro Overlay",
-      "factorKey": "macro_overlay",
-      "title": "📊 LOW: Macro Overlay Factor Changed",
-      "message": "Macro Overlay increased significantly: 60 → 69 (+9.0 points)",
-      "data": {
-        "factor": "Macro Overlay",
-        "factorKey": "macro_overlay",
-        "previous_score": 60,
-        "current_score": 69,
-        "change_points": 9,
-        "change_percentage": 15,
-        "severity": "low",
-        "weight": 10
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 33rd consecutive day of improving trend.",
-      "trend": "improving",
-      "consecutiveDays": 3,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "b5b8016fc9c21d10",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-04T11:16:44.640Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 MEDIUM: ETF Flows Factor Changed",
-      "message": "ETF Flows decreased significantly: 44 → 33 (-11.0 points)",
-      "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 44,
-        "current_score": 33,
-        "change_points": -11,
-        "change_percentage": -25,
-        "severity": "medium",
-        "weight": 9
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "a32dfe53da32a7c1",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-04T11:16:44.640Z",
-      "factor": "Macro Overlay",
-      "factorKey": "macro_overlay",
-      "title": "📊 LOW: Macro Overlay Factor Changed",
-      "message": "Macro Overlay increased significantly: 60 → 69 (+9.0 points)",
-      "data": {
-        "factor": "Macro Overlay",
-        "factorKey": "macro_overlay",
-        "previous_score": 60,
-        "current_score": 69,
-        "change_points": 9,
-        "change_percentage": 15,
-        "severity": "low",
-        "weight": 10
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 33rd consecutive day of improving trend.",
-      "trend": "improving",
-      "consecutiveDays": 3,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "1d16dfb0ec9697b8",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-04T01:55:36.346Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 MEDIUM: ETF Flows Factor Changed",
-      "message": "ETF Flows decreased significantly: 44 → 33 (-11.0 points)",
-      "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 44,
-        "current_score": 33,
-        "change_points": -11,
-        "change_percentage": -25,
-        "severity": "medium",
-        "weight": 9
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.212Z"
-    },
-    {
-      "id": "3ba3b85c96bda3db",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-04T01:55:36.346Z",
-      "factor": "Macro Overlay",
-      "factorKey": "macro_overlay",
-      "title": "📊 LOW: Macro Overlay Factor Changed",
-      "message": "Macro Overlay increased significantly: 60 → 69 (+9.0 points)",
-      "data": {
-        "factor": "Macro Overlay",
-        "factorKey": "macro_overlay",
-        "previous_score": 60,
-        "current_score": 69,
-        "change_points": 9,
-        "change_percentage": 15,
-        "severity": "low",
-        "weight": 10
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 33rd consecutive day of improving trend.",
-      "trend": "improving",
-      "consecutiveDays": 3,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "a26b4b4d6bf9f273",
-      "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-03T20:53:29.432Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 CRITICAL: ETF Flows Factor Changed",
-      "message": "ETF Flows decreased significantly: 75 → 44 (-31.0 points)",
-      "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 75,
-        "current_score": 44,
-        "change_points": -31,
-        "change_percentage": -41.333333333333336,
-        "severity": "critical",
-        "weight": 9
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "f8bfa73629c437bc",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-03T20:53:29.432Z",
-      "factor": "Macro Overlay",
-      "factorKey": "macro_overlay",
-      "title": "📊 MEDIUM: Macro Overlay Factor Changed",
-      "message": "Macro Overlay increased significantly: 59 → 70 (+11.0 points)",
-      "data": {
-        "factor": "Macro Overlay",
-        "factorKey": "macro_overlay",
-        "previous_score": 59,
-        "current_score": 70,
-        "change_points": 11,
-        "change_percentage": 18.64406779661017,
-        "severity": "medium",
-        "weight": 10
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 22nd consecutive day of improving trend.",
-      "trend": "improving",
-      "consecutiveDays": 2,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "c16e3c5bb1a6ded1",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-03T20:53:29.431Z",
-      "factor": "Stablecoins",
-      "factorKey": "stablecoins",
-      "title": "📊 LOW: Stablecoins Factor Changed",
-      "message": "Stablecoins decreased significantly: 39 → 34 (-5.0 points)",
-      "data": {
-        "factor": "Stablecoins",
-        "factorKey": "stablecoins",
-        "previous_score": 39,
-        "current_score": 34,
-        "change_points": -5,
-        "change_percentage": -12.82051282051282,
-        "severity": "low",
-        "weight": 21
       },
       "actions": [
         "Review factor details and recent changes",
@@ -1161,297 +267,46 @@
       "recommendations": [
         "Watch for continued decline - may indicate weakening fundamentals"
       ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
+      "generated_at": "2025-12-10T11:24:13.859Z"
     },
     {
-      "id": "6ee6bfb9e2f22f9d",
-      "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-03T11:18:54.263Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 CRITICAL: ETF Flows Factor Changed",
-      "message": "ETF Flows decreased significantly: 75 → 44 (-31.0 points)",
-      "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 75,
-        "current_score": 44,
-        "change_points": -31,
-        "change_percentage": -41.333333333333336,
-        "severity": "critical",
-        "weight": 9
+      "id": "90519264ad310069",
+      "type": "sma50w_warning",
+      "timestamp": "2025-12-07T11:19:43.741Z",
+      "severity": "high",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 4 consecutive weeks",
+      "details": {
+        "sma50": 102273.41580000002,
+        "current_close": 89284.38,
+        "consecutive_weeks_below": 4,
+        "is_below": true,
+        "price_vs_sma": "-12.70"
       },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
+      "action_required": "Consider reducing risk exposure",
+      "context": "Alert generated based on current conditions",
       "recommendations": [
-        "Positive momentum - consider if trend will continue"
+        "Monitor situation for further developments"
       ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
+      "generated_at": "2025-12-10T11:24:13.810Z"
     },
     {
-      "id": "ee15dba0d3af3886",
+      "id": "d0675b889cf939cd",
       "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-02T22:44:04.665Z",
-      "factor": "On-chain Activity",
-      "factorKey": "onchain",
-      "title": "📊 CRITICAL: On-chain Activity Factor Changed",
-      "message": "On-chain Activity decreased significantly: 84 → 41 (-43.0 points)",
-      "data": {
-        "factor": "On-chain Activity",
-        "factorKey": "onchain",
-        "previous_score": 84,
-        "current_score": 41,
-        "change_points": -43,
-        "change_percentage": -51.19047619047619,
-        "severity": "critical",
-        "weight": 5
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "3fa11790feec927f",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-02T22:44:04.665Z",
+      "severity": "medium",
+      "timestamp": "2025-12-06T11:19:44.408Z",
       "factor": "Stablecoins",
       "factorKey": "stablecoins",
-      "title": "📊 LOW: Stablecoins Factor Changed",
-      "message": "Stablecoins decreased significantly: 47 → 39 (-8.0 points)",
+      "title": "📊 MEDIUM: Stablecoins Factor Changed",
+      "message": "Stablecoins increased significantly: 47 → 62 (+15.0 points)",
       "data": {
         "factor": "Stablecoins",
         "factorKey": "stablecoins",
         "previous_score": 47,
-        "current_score": 39,
-        "change_points": -8,
-        "change_percentage": -17.02127659574468,
-        "severity": "low",
-        "weight": 21
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 33rd consecutive day of declining trend.",
-      "trend": "declining",
-      "consecutiveDays": 3,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "5805f7336c771681",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-02T22:44:04.665Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 MEDIUM: ETF Flows Factor Changed",
-      "message": "ETF Flows increased significantly: 62 → 75 (+13.0 points)",
-      "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 62,
-        "current_score": 75,
-        "change_points": 13,
-        "change_percentage": 20.967741935483872,
-        "severity": "medium",
-        "weight": 9
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 22nd consecutive day of improving trend.",
-      "trend": "improving",
-      "consecutiveDays": 2,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "ff135ffd45eae7a3",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-02T22:44:04.665Z",
-      "factor": "Net Liquidity",
-      "factorKey": "net_liquidity",
-      "title": "📊 MEDIUM: Net Liquidity Factor Changed",
-      "message": "Net Liquidity increased significantly: 51 → 62 (+11.0 points)",
-      "data": {
-        "factor": "Net Liquidity",
-        "factorKey": "net_liquidity",
-        "previous_score": 51,
         "current_score": 62,
-        "change_points": 11,
-        "change_percentage": 21.568627450980394,
-        "severity": "medium",
-        "weight": 5
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "declining",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "b58e142207b8c107",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-02T22:44:04.665Z",
-      "factor": "Term Structure & Leverage",
-      "factorKey": "term_leverage",
-      "title": "📊 LOW: Term Structure & Leverage Factor Changed",
-      "message": "Term Structure & Leverage increased significantly: 71 → 79 (+8.0 points)",
-      "data": {
-        "factor": "Term Structure & Leverage",
-        "factorKey": "term_leverage",
-        "previous_score": 71,
-        "current_score": 79,
-        "change_points": 8,
-        "change_percentage": 11.267605633802818,
-        "severity": "low",
-        "weight": 20
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "declining",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "efe6f0b4af0d3a9d",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-02T22:44:04.665Z",
-      "factor": "Social Interest",
-      "factorKey": "social_interest",
-      "title": "📊 MEDIUM: Social Interest Factor Changed",
-      "message": "Social Interest increased significantly: 40 → 55 (+15.0 points)",
-      "data": {
-        "factor": "Social Interest",
-        "factorKey": "social_interest",
-        "previous_score": 40,
-        "current_score": 55,
         "change_points": 15,
-        "change_percentage": 37.5,
+        "change_percentage": 31.914893617021278,
         "severity": "medium",
-        "weight": 10
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "declining",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "44d0fe7abb392b96",
-      "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-02T21:10:44.989Z",
-      "factor": "On-chain Activity",
-      "factorKey": "onchain",
-      "title": "📊 CRITICAL: On-chain Activity Factor Changed",
-      "message": "On-chain Activity decreased significantly: 84 → 41 (-43.0 points)",
-      "data": {
-        "factor": "On-chain Activity",
-        "factorKey": "onchain",
-        "previous_score": 84,
-        "current_score": 41,
-        "change_points": -43,
-        "change_percentage": -51.19047619047619,
-        "severity": "critical",
-        "weight": 5
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "2373fee27ab3a52d",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-02T21:10:44.989Z",
-      "factor": "Stablecoins",
-      "factorKey": "stablecoins",
-      "title": "📊 LOW: Stablecoins Factor Changed",
-      "message": "Stablecoins decreased significantly: 47 → 39 (-8.0 points)",
-      "data": {
-        "factor": "Stablecoins",
-        "factorKey": "stablecoins",
-        "previous_score": 47,
-        "current_score": 39,
-        "change_points": -8,
-        "change_percentage": -17.02127659574468,
-        "severity": "low",
         "weight": 21
       },
       "actions": [
@@ -1461,201 +316,31 @@
         "Check data source reliability",
         "Review related market indicators"
       ],
-      "context": "This is the 33rd consecutive day of declining trend.",
-      "trend": "declining",
-      "consecutiveDays": 3,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "b2647ee3d695dc36",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-02T21:10:44.989Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 MEDIUM: ETF Flows Factor Changed",
-      "message": "ETF Flows increased significantly: 62 → 75 (+13.0 points)",
-      "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 62,
-        "current_score": 75,
-        "change_points": 13,
-        "change_percentage": 20.967741935483872,
-        "severity": "medium",
-        "weight": 9
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 22nd consecutive day of improving trend.",
+      "context": "Factor showing normal variation",
       "trend": "improving",
-      "consecutiveDays": 2,
+      "consecutiveDays": 1,
       "recommendations": [
         "Positive momentum - consider if trend will continue"
       ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
+      "generated_at": "2025-12-10T11:24:13.859Z"
     },
     {
-      "id": "2b80c7738d224df7",
+      "id": "3ae52187bfe031f7",
       "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-02T21:10:44.989Z",
+      "severity": "high",
+      "timestamp": "2025-12-06T11:19:44.408Z",
       "factor": "Term Structure & Leverage",
       "factorKey": "term_leverage",
-      "title": "📊 LOW: Term Structure & Leverage Factor Changed",
-      "message": "Term Structure & Leverage increased significantly: 71 → 79 (+8.0 points)",
+      "title": "📊 HIGH: Term Structure & Leverage Factor Changed",
+      "message": "Term Structure & Leverage increased significantly: 37 → 62 (+25.0 points)",
       "data": {
         "factor": "Term Structure & Leverage",
         "factorKey": "term_leverage",
-        "previous_score": 71,
-        "current_score": 79,
-        "change_points": 8,
-        "change_percentage": 11.267605633802818,
-        "severity": "low",
-        "weight": 20
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "declining",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "23897c0dcb364308",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-02T21:10:44.989Z",
-      "factor": "Social Interest",
-      "factorKey": "social_interest",
-      "title": "📊 MEDIUM: Social Interest Factor Changed",
-      "message": "Social Interest increased significantly: 40 → 55 (+15.0 points)",
-      "data": {
-        "factor": "Social Interest",
-        "factorKey": "social_interest",
-        "previous_score": 40,
-        "current_score": 55,
-        "change_points": 15,
-        "change_percentage": 37.5,
-        "severity": "medium",
-        "weight": 10
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "declining",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "e0b413b1a22c5f55",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-02T20:42:23.257Z",
-      "factor": "Net Liquidity",
-      "factorKey": "net_liquidity",
-      "title": "📊 MEDIUM: Net Liquidity Factor Changed",
-      "message": "Net Liquidity increased significantly: 51 → 62 (+11.0 points)",
-      "data": {
-        "factor": "Net Liquidity",
-        "factorKey": "net_liquidity",
-        "previous_score": 51,
+        "previous_score": 37,
         "current_score": 62,
-        "change_points": 11,
-        "change_percentage": 21.568627450980394,
-        "severity": "medium",
-        "weight": 5
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "declining",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "3fdd40a128ac3c13",
-      "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-02T20:19:35.095Z",
-      "factor": "On-chain Activity",
-      "factorKey": "onchain",
-      "title": "📊 CRITICAL: On-chain Activity Factor Changed",
-      "message": "On-chain Activity decreased significantly: 84 → 39 (-45.0 points)",
-      "data": {
-        "factor": "On-chain Activity",
-        "factorKey": "onchain",
-        "previous_score": 84,
-        "current_score": 39,
-        "change_points": -45,
-        "change_percentage": -53.57142857142857,
-        "severity": "critical",
-        "weight": 5
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "65d464e0e446b7c0",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-02T20:03:28.834Z",
-      "factor": "Term Structure & Leverage",
-      "factorKey": "term_leverage",
-      "title": "📊 LOW: Term Structure & Leverage Factor Changed",
-      "message": "Term Structure & Leverage increased significantly: 71 → 79 (+8.0 points)",
-      "data": {
-        "factor": "Term Structure & Leverage",
-        "factorKey": "term_leverage",
-        "previous_score": 71,
-        "current_score": 79,
-        "change_points": 8,
-        "change_percentage": 11.267605633802818,
-        "severity": "low",
+        "change_points": 25,
+        "change_percentage": 67.56756756756756,
+        "severity": "high",
         "weight": 20
       },
       "actions": [
@@ -1671,24 +356,24 @@
       "recommendations": [
         "Watch for continued decline - may indicate weakening fundamentals"
       ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
+      "generated_at": "2025-12-10T11:24:13.859Z"
     },
     {
-      "id": "dc0f6d2fa4aca879",
+      "id": "4baf32f52c8af9c8",
       "type": "factor_change",
       "severity": "medium",
-      "timestamp": "2025-10-02T20:03:28.834Z",
+      "timestamp": "2025-12-06T11:19:44.408Z",
       "factor": "Social Interest",
       "factorKey": "social_interest",
       "title": "📊 MEDIUM: Social Interest Factor Changed",
-      "message": "Social Interest increased significantly: 40 → 55 (+15.0 points)",
+      "message": "Social Interest decreased significantly: 45 → 33 (-12.0 points)",
       "data": {
         "factor": "Social Interest",
         "factorKey": "social_interest",
-        "previous_score": 40,
-        "current_score": 55,
-        "change_points": 15,
-        "change_percentage": 37.5,
+        "previous_score": 45,
+        "current_score": 33,
+        "change_points": -12,
+        "change_percentage": -26.666666666666668,
         "severity": "medium",
         "weight": 10
       },
@@ -1699,746 +384,812 @@
         "Check data source reliability",
         "Review related market indicators"
       ],
-      "context": "Factor showing normal variation",
+      "context": "This is the 33rd consecutive day of declining trend.",
       "trend": "declining",
-      "consecutiveDays": 1,
+      "consecutiveDays": 3,
       "recommendations": [
         "Watch for continued decline - may indicate weakening fundamentals"
       ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
+      "generated_at": "2025-12-10T11:24:13.859Z"
     },
     {
-      "id": "3518440ebcc5ef4d",
+      "id": "56f23f20b442ed89",
+      "type": "sma50w_warning",
+      "timestamp": "2025-12-06T11:19:44.357Z",
+      "severity": "high",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 4 consecutive weeks",
+      "details": {
+        "sma50": 102258.83540000001,
+        "current_close": 89589.6,
+        "consecutive_weeks_below": 4,
+        "is_below": true,
+        "price_vs_sma": "-12.39"
+      },
+      "action_required": "Consider reducing risk exposure",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.810Z"
+    },
+    {
+      "id": "6c089843982d4c02",
       "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-02T20:03:28.833Z",
-      "factor": "On-chain Activity",
-      "factorKey": "onchain",
-      "title": "📊 CRITICAL: On-chain Activity Factor Changed",
-      "message": "On-chain Activity decreased significantly: 84 → 41 (-43.0 points)",
+      "severity": "high",
+      "timestamp": "2025-12-05T11:23:47.407Z",
+      "factor": "Social Interest",
+      "factorKey": "social_interest",
+      "title": "📊 HIGH: Social Interest Factor Changed",
+      "message": "Social Interest decreased significantly: 56 → 36 (-20.0 points)",
       "data": {
-        "factor": "On-chain Activity",
-        "factorKey": "onchain",
-        "previous_score": 84,
+        "factor": "Social Interest",
+        "factorKey": "social_interest",
+        "previous_score": 56,
+        "current_score": 36,
+        "change_points": -20,
+        "change_percentage": -35.714285714285715,
+        "severity": "high",
+        "weight": 10
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 22nd consecutive day of declining trend.",
+      "trend": "declining",
+      "consecutiveDays": 2,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "7a2c623de6d80896",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-12-05T11:23:47.406Z",
+      "factor": "Stablecoins",
+      "factorKey": "stablecoins",
+      "title": "📊 LOW: Stablecoins Factor Changed",
+      "message": "Stablecoins decreased significantly: 50 → 41 (-9.0 points)",
+      "data": {
+        "factor": "Stablecoins",
+        "factorKey": "stablecoins",
+        "previous_score": 50,
         "current_score": 41,
-        "change_points": -43,
-        "change_percentage": -51.19047619047619,
-        "severity": "critical",
-        "weight": 5
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "0b26d4796aa11367",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-02T20:03:28.833Z",
-      "factor": "Stablecoins",
-      "factorKey": "stablecoins",
-      "title": "📊 LOW: Stablecoins Factor Changed",
-      "message": "Stablecoins decreased significantly: 47 → 40 (-7.0 points)",
-      "data": {
-        "factor": "Stablecoins",
-        "factorKey": "stablecoins",
-        "previous_score": 47,
-        "current_score": 40,
-        "change_points": -7,
-        "change_percentage": -14.893617021276595,
-        "severity": "low",
-        "weight": 21
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 33rd consecutive day of declining trend.",
-      "trend": "declining",
-      "consecutiveDays": 3,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "447635c9384c1162",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-02T20:03:28.833Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 MEDIUM: ETF Flows Factor Changed",
-      "message": "ETF Flows increased significantly: 62 → 75 (+13.0 points)",
-      "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 62,
-        "current_score": 75,
-        "change_points": 13,
-        "change_percentage": 20.967741935483872,
-        "severity": "medium",
-        "weight": 9
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 22nd consecutive day of improving trend.",
-      "trend": "improving",
-      "consecutiveDays": 2,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "3cd4cafd4de53d55",
-      "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-02T18:24:59.236Z",
-      "factor": "On-chain Activity",
-      "factorKey": "onchain",
-      "title": "📊 CRITICAL: On-chain Activity Factor Changed",
-      "message": "On-chain Activity decreased significantly: 84 → 38 (-46.0 points)",
-      "data": {
-        "factor": "On-chain Activity",
-        "factorKey": "onchain",
-        "previous_score": 84,
-        "current_score": 38,
-        "change_points": -46,
-        "change_percentage": -54.761904761904766,
-        "severity": "critical",
-        "weight": 5
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "f1440caa2c0827a7",
-      "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-02T18:11:42.285Z",
-      "factor": "On-chain Activity",
-      "factorKey": "onchain",
-      "title": "📊 CRITICAL: On-chain Activity Factor Changed",
-      "message": "On-chain Activity decreased significantly: 84 → 41 (-43.0 points)",
-      "data": {
-        "factor": "On-chain Activity",
-        "factorKey": "onchain",
-        "previous_score": 84,
-        "current_score": 41,
-        "change_points": -43,
-        "change_percentage": -51.19047619047619,
-        "severity": "critical",
-        "weight": 5
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "47762b9f84bc57e0",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-02T18:11:42.285Z",
-      "factor": "Stablecoins",
-      "factorKey": "stablecoins",
-      "title": "📊 LOW: Stablecoins Factor Changed",
-      "message": "Stablecoins decreased significantly: 47 → 40 (-7.0 points)",
-      "data": {
-        "factor": "Stablecoins",
-        "factorKey": "stablecoins",
-        "previous_score": 47,
-        "current_score": 40,
-        "change_points": -7,
-        "change_percentage": -14.893617021276595,
-        "severity": "low",
-        "weight": 21
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 33rd consecutive day of declining trend.",
-      "trend": "declining",
-      "consecutiveDays": 3,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.213Z"
-    },
-    {
-      "id": "7d555b283ff8d72b",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-02T18:11:42.285Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 MEDIUM: ETF Flows Factor Changed",
-      "message": "ETF Flows increased significantly: 62 → 75 (+13.0 points)",
-      "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 62,
-        "current_score": 75,
-        "change_points": 13,
-        "change_percentage": 20.967741935483872,
-        "severity": "medium",
-        "weight": 9
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 22nd consecutive day of improving trend.",
-      "trend": "improving",
-      "consecutiveDays": 2,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
-    },
-    {
-      "id": "e3fea65f748f5d13",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-02T18:11:42.285Z",
-      "factor": "Term Structure & Leverage",
-      "factorKey": "term_leverage",
-      "title": "📊 LOW: Term Structure & Leverage Factor Changed",
-      "message": "Term Structure & Leverage increased significantly: 71 → 76 (+5.0 points)",
-      "data": {
-        "factor": "Term Structure & Leverage",
-        "factorKey": "term_leverage",
-        "previous_score": 71,
-        "current_score": 76,
-        "change_points": 5,
-        "change_percentage": 7.042253521126761,
-        "severity": "low",
-        "weight": 20
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "declining",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
-    },
-    {
-      "id": "90d3a9b5e77aed81",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-02T18:11:42.285Z",
-      "factor": "Social Interest",
-      "factorKey": "social_interest",
-      "title": "📊 MEDIUM: Social Interest Factor Changed",
-      "message": "Social Interest increased significantly: 40 → 55 (+15.0 points)",
-      "data": {
-        "factor": "Social Interest",
-        "factorKey": "social_interest",
-        "previous_score": 40,
-        "current_score": 55,
-        "change_points": 15,
-        "change_percentage": 37.5,
-        "severity": "medium",
-        "weight": 10
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "declining",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
-    },
-    {
-      "id": "669a65b288676a06",
-      "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-02T15:20:11.433Z",
-      "factor": "On-chain Activity",
-      "factorKey": "onchain",
-      "title": "📊 CRITICAL: On-chain Activity Factor Changed",
-      "message": "On-chain Activity decreased significantly: 84 → 38 (-46.0 points)",
-      "data": {
-        "factor": "On-chain Activity",
-        "factorKey": "onchain",
-        "previous_score": 84,
-        "current_score": 38,
-        "change_points": -46,
-        "change_percentage": -54.761904761904766,
-        "severity": "critical",
-        "weight": 5
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
-    },
-    {
-      "id": "c36360dc7d29c3b1",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-02T15:20:11.433Z",
-      "factor": "Stablecoins",
-      "factorKey": "stablecoins",
-      "title": "📊 LOW: Stablecoins Factor Changed",
-      "message": "Stablecoins decreased significantly: 47 → 40 (-7.0 points)",
-      "data": {
-        "factor": "Stablecoins",
-        "factorKey": "stablecoins",
-        "previous_score": 47,
-        "current_score": 40,
-        "change_points": -7,
-        "change_percentage": -14.893617021276595,
-        "severity": "low",
-        "weight": 21
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 33rd consecutive day of declining trend.",
-      "trend": "declining",
-      "consecutiveDays": 3,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
-    },
-    {
-      "id": "fd52f550b56901df",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-02T15:20:11.433Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 MEDIUM: ETF Flows Factor Changed",
-      "message": "ETF Flows increased significantly: 62 → 75 (+13.0 points)",
-      "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 62,
-        "current_score": 75,
-        "change_points": 13,
-        "change_percentage": 20.967741935483872,
-        "severity": "medium",
-        "weight": 9
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 22nd consecutive day of improving trend.",
-      "trend": "improving",
-      "consecutiveDays": 2,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
-    },
-    {
-      "id": "b8a2637dfe01c49c",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-02T15:20:11.433Z",
-      "factor": "Term Structure & Leverage",
-      "factorKey": "term_leverage",
-      "title": "📊 LOW: Term Structure & Leverage Factor Changed",
-      "message": "Term Structure & Leverage increased significantly: 71 → 76 (+5.0 points)",
-      "data": {
-        "factor": "Term Structure & Leverage",
-        "factorKey": "term_leverage",
-        "previous_score": 71,
-        "current_score": 76,
-        "change_points": 5,
-        "change_percentage": 7.042253521126761,
-        "severity": "low",
-        "weight": 20
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "declining",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
-    },
-    {
-      "id": "36d0d5229013fa41",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-02T15:20:11.433Z",
-      "factor": "Social Interest",
-      "factorKey": "social_interest",
-      "title": "📊 MEDIUM: Social Interest Factor Changed",
-      "message": "Social Interest increased significantly: 40 → 55 (+15.0 points)",
-      "data": {
-        "factor": "Social Interest",
-        "factorKey": "social_interest",
-        "previous_score": 40,
-        "current_score": 55,
-        "change_points": 15,
-        "change_percentage": 37.5,
-        "severity": "medium",
-        "weight": 10
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "declining",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
-    },
-    {
-      "id": "373001e35c757bb2",
-      "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-02T11:18:20.635Z",
-      "factor": "On-chain Activity",
-      "factorKey": "onchain",
-      "title": "📊 CRITICAL: On-chain Activity Factor Changed",
-      "message": "On-chain Activity decreased significantly: 84 → 39 (-45.0 points)",
-      "data": {
-        "factor": "On-chain Activity",
-        "factorKey": "onchain",
-        "previous_score": 84,
-        "current_score": 39,
-        "change_points": -45,
-        "change_percentage": -53.57142857142857,
-        "severity": "critical",
-        "weight": 5
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
-    },
-    {
-      "id": "615cbe82b9a1d961",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-02T11:18:20.635Z",
-      "factor": "Stablecoins",
-      "factorKey": "stablecoins",
-      "title": "📊 LOW: Stablecoins Factor Changed",
-      "message": "Stablecoins decreased significantly: 47 → 40 (-7.0 points)",
-      "data": {
-        "factor": "Stablecoins",
-        "factorKey": "stablecoins",
-        "previous_score": 47,
-        "current_score": 40,
-        "change_points": -7,
-        "change_percentage": -14.893617021276595,
-        "severity": "low",
-        "weight": 21
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 33rd consecutive day of declining trend.",
-      "trend": "declining",
-      "consecutiveDays": 3,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
-    },
-    {
-      "id": "0f9f8c86391919da",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-02T11:18:20.635Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 MEDIUM: ETF Flows Factor Changed",
-      "message": "ETF Flows increased significantly: 62 → 75 (+13.0 points)",
-      "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 62,
-        "current_score": 75,
-        "change_points": 13,
-        "change_percentage": 20.967741935483872,
-        "severity": "medium",
-        "weight": 9
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 22nd consecutive day of improving trend.",
-      "trend": "improving",
-      "consecutiveDays": 2,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
-    },
-    {
-      "id": "ed3915afcf60f185",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-02T11:18:20.635Z",
-      "factor": "Social Interest",
-      "factorKey": "social_interest",
-      "title": "📊 MEDIUM: Social Interest Factor Changed",
-      "message": "Social Interest increased significantly: 40 → 55 (+15.0 points)",
-      "data": {
-        "factor": "Social Interest",
-        "factorKey": "social_interest",
-        "previous_score": 40,
-        "current_score": 55,
-        "change_points": 15,
-        "change_percentage": 37.5,
-        "severity": "medium",
-        "weight": 10
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "declining",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
-    },
-    {
-      "id": "df325f40ae12fd79",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-02T03:11:21.157Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 MEDIUM: ETF Flows Factor Changed",
-      "message": "ETF Flows increased significantly: 62 → 75 (+13.0 points)",
-      "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 62,
-        "current_score": 75,
-        "change_points": 13,
-        "change_percentage": 20.967741935483872,
-        "severity": "medium",
-        "weight": 9
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "This is the 22nd consecutive day of improving trend.",
-      "trend": "improving",
-      "consecutiveDays": 2,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
-    },
-    {
-      "id": "d0d15c0c85e04dd8",
-      "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-02T03:11:21.157Z",
-      "factor": "Social Interest",
-      "factorKey": "social_interest",
-      "title": "📊 MEDIUM: Social Interest Factor Changed",
-      "message": "Social Interest increased significantly: 40 → 55 (+15.0 points)",
-      "data": {
-        "factor": "Social Interest",
-        "factorKey": "social_interest",
-        "previous_score": 40,
-        "current_score": 55,
-        "change_points": 15,
-        "change_percentage": 37.5,
-        "severity": "medium",
-        "weight": 10
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "declining",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Watch for continued decline - may indicate weakening fundamentals"
-      ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
-    },
-    {
-      "id": "a6fea56c8fabc0a7",
-      "type": "factor_change",
-      "severity": "critical",
-      "timestamp": "2025-10-02T03:11:21.156Z",
-      "factor": "On-chain Activity",
-      "factorKey": "onchain",
-      "title": "📊 CRITICAL: On-chain Activity Factor Changed",
-      "message": "On-chain Activity decreased significantly: 84 → 41 (-43.0 points)",
-      "data": {
-        "factor": "On-chain Activity",
-        "factorKey": "onchain",
-        "previous_score": 84,
-        "current_score": 41,
-        "change_points": -43,
-        "change_percentage": -51.19047619047619,
-        "severity": "critical",
-        "weight": 5
-      },
-      "actions": [
-        "Review factor details and recent changes",
-        "Consider implications for market outlook",
-        "Monitor for continued factor volatility",
-        "Check data source reliability",
-        "Review related market indicators"
-      ],
-      "context": "Factor showing normal variation",
-      "trend": "improving",
-      "consecutiveDays": 1,
-      "recommendations": [
-        "Positive momentum - consider if trend will continue"
-      ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
-    },
-    {
-      "id": "27c83f796783a675",
-      "type": "factor_change",
-      "severity": "low",
-      "timestamp": "2025-10-02T03:11:21.156Z",
-      "factor": "Stablecoins",
-      "factorKey": "stablecoins",
-      "title": "📊 LOW: Stablecoins Factor Changed",
-      "message": "Stablecoins decreased significantly: 47 → 38 (-9.0 points)",
-      "data": {
-        "factor": "Stablecoins",
-        "factorKey": "stablecoins",
-        "previous_score": 47,
-        "current_score": 38,
         "change_points": -9,
-        "change_percentage": -19.148936170212767,
+        "change_percentage": -18,
         "severity": "low",
         "weight": 21
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "improving",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "a8b0716219fc3025",
+      "type": "factor_change",
+      "severity": "high",
+      "timestamp": "2025-12-05T11:23:47.406Z",
+      "factor": "Term Structure & Leverage",
+      "factorKey": "term_leverage",
+      "title": "📊 HIGH: Term Structure & Leverage Factor Changed",
+      "message": "Term Structure & Leverage increased significantly: 37 → 62 (+25.0 points)",
+      "data": {
+        "factor": "Term Structure & Leverage",
+        "factorKey": "term_leverage",
+        "previous_score": 37,
+        "current_score": 62,
+        "change_points": 25,
+        "change_percentage": 67.56756756756756,
+        "severity": "high",
+        "weight": 20
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "declining",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "21f864b11ff0de97",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-12-05T11:23:47.406Z",
+      "factor": "Macro Overlay",
+      "factorKey": "macro_overlay",
+      "title": "📊 LOW: Macro Overlay Factor Changed",
+      "message": "Macro Overlay decreased significantly: 59 → 53 (-6.0 points)",
+      "data": {
+        "factor": "Macro Overlay",
+        "factorKey": "macro_overlay",
+        "previous_score": 59,
+        "current_score": 53,
+        "change_points": -6,
+        "change_percentage": -10.16949152542373,
+        "severity": "low",
+        "weight": 10
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "improving",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "05f1078c0a5cd847",
+      "type": "sma50w_warning",
+      "timestamp": "2025-12-05T11:23:47.350Z",
+      "severity": "high",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 4 consecutive weeks",
+      "details": {
+        "sma50": 102317.03240000003,
+        "current_close": 91465.21,
+        "consecutive_weeks_below": 4,
+        "is_below": true,
+        "price_vs_sma": "-10.61"
+      },
+      "action_required": "Consider reducing risk exposure",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.810Z"
+    },
+    {
+      "id": "666dacde8237e39c",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-12-04T11:24:45.862Z",
+      "factor": "Stablecoins",
+      "factorKey": "stablecoins",
+      "title": "📊 LOW: Stablecoins Factor Changed",
+      "message": "Stablecoins increased significantly: 40 → 47 (+7.0 points)",
+      "data": {
+        "factor": "Stablecoins",
+        "factorKey": "stablecoins",
+        "previous_score": 40,
+        "current_score": 47,
+        "change_points": 7,
+        "change_percentage": 17.5,
+        "severity": "low",
+        "weight": 21
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 33rd consecutive day of improving trend.",
+      "trend": "improving",
+      "consecutiveDays": 3,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "ca729433f7b71a62",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-12-04T11:24:45.862Z",
+      "factor": "Social Interest",
+      "factorKey": "social_interest",
+      "title": "📊 LOW: Social Interest Factor Changed",
+      "message": "Social Interest increased significantly: 37 → 45 (+8.0 points)",
+      "data": {
+        "factor": "Social Interest",
+        "factorKey": "social_interest",
+        "previous_score": 37,
+        "current_score": 45,
+        "change_points": 8,
+        "change_percentage": 21.62162162162162,
+        "severity": "low",
+        "weight": 10
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "declining",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "167e72ee27516d59",
+      "type": "sma50w_warning",
+      "timestamp": "2025-12-04T11:24:45.811Z",
+      "severity": "high",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 4 consecutive weeks",
+      "details": {
+        "sma50": 102350.98300000002,
+        "current_close": 93162.74,
+        "consecutive_weeks_below": 4,
+        "is_below": true,
+        "price_vs_sma": "-8.98"
+      },
+      "action_required": "Consider reducing risk exposure",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.810Z"
+    },
+    {
+      "id": "e4269483df924900",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-12-03T11:24:13.090Z",
+      "factor": "Social Interest",
+      "factorKey": "social_interest",
+      "title": "📊 MEDIUM: Social Interest Factor Changed",
+      "message": "Social Interest decreased significantly: 66 → 56 (-10.0 points)",
+      "data": {
+        "factor": "Social Interest",
+        "factorKey": "social_interest",
+        "previous_score": 66,
+        "current_score": 56,
+        "change_points": -10,
+        "change_percentage": -15.151515151515152,
+        "severity": "medium",
+        "weight": 10
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 22nd consecutive day of declining trend.",
+      "trend": "declining",
+      "consecutiveDays": 2,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "65754a01c489b636",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-12-03T11:24:13.089Z",
+      "factor": "Stablecoins",
+      "factorKey": "stablecoins",
+      "title": "📊 MEDIUM: Stablecoins Factor Changed",
+      "message": "Stablecoins increased significantly: 37 → 50 (+13.0 points)",
+      "data": {
+        "factor": "Stablecoins",
+        "factorKey": "stablecoins",
+        "previous_score": 37,
+        "current_score": 50,
+        "change_points": 13,
+        "change_percentage": 35.13513513513514,
+        "severity": "medium",
+        "weight": 21
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 22nd consecutive day of improving trend.",
+      "trend": "improving",
+      "consecutiveDays": 2,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "6c6f549e9f2380e7",
+      "type": "sma50w_warning",
+      "timestamp": "2025-12-03T11:24:13.038Z",
+      "severity": "high",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 4 consecutive weeks",
+      "details": {
+        "sma50": 102347.70260000002,
+        "current_close": 92998.72,
+        "consecutive_weeks_below": 4,
+        "is_below": true,
+        "price_vs_sma": "-9.13"
+      },
+      "action_required": "Consider reducing risk exposure",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.810Z"
+    },
+    {
+      "id": "f46e7ea4f34d999b",
+      "type": "factor_change",
+      "severity": "high",
+      "timestamp": "2025-12-02T11:24:49.169Z",
+      "factor": "Social Interest",
+      "factorKey": "social_interest",
+      "title": "📊 HIGH: Social Interest Factor Changed",
+      "message": "Social Interest decreased significantly: 66 → 37 (-29.0 points)",
+      "data": {
+        "factor": "Social Interest",
+        "factorKey": "social_interest",
+        "previous_score": 66,
+        "current_score": 37,
+        "change_points": -29,
+        "change_percentage": -43.93939393939394,
+        "severity": "high",
+        "weight": 10
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "declining",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "56d927193e3fdac0",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-12-02T11:24:49.168Z",
+      "factor": "Macro Overlay",
+      "factorKey": "macro_overlay",
+      "title": "📊 LOW: Macro Overlay Factor Changed",
+      "message": "Macro Overlay increased significantly: 53 → 59 (+6.0 points)",
+      "data": {
+        "factor": "Macro Overlay",
+        "factorKey": "macro_overlay",
+        "previous_score": 53,
+        "current_score": 59,
+        "change_points": 6,
+        "change_percentage": 11.320754716981133,
+        "severity": "low",
+        "weight": 10
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 22nd consecutive day of improving trend.",
+      "trend": "improving",
+      "consecutiveDays": 2,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "eab0fb7108e5f613",
+      "type": "sma50w_warning",
+      "timestamp": "2025-12-02T11:24:49.115Z",
+      "severity": "high",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 4 consecutive weeks",
+      "details": {
+        "sma50": 102231.19500000002,
+        "current_close": 87173.34,
+        "consecutive_weeks_below": 4,
+        "is_below": true,
+        "price_vs_sma": "-14.73"
+      },
+      "action_required": "Consider reducing risk exposure",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.810Z"
+    },
+    {
+      "id": "d394b2092de7ffd6",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-12-01T11:23:26.270Z",
+      "factor": "Stablecoins",
+      "factorKey": "stablecoins",
+      "title": "📊 LOW: Stablecoins Factor Changed",
+      "message": "Stablecoins decreased significantly: 44 → 37 (-7.0 points)",
+      "data": {
+        "factor": "Stablecoins",
+        "factorKey": "stablecoins",
+        "previous_score": 44,
+        "current_score": 37,
+        "change_points": -7,
+        "change_percentage": -15.909090909090908,
+        "severity": "low",
+        "weight": 21
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "improving",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "30ff598ae0c87e06",
+      "type": "sma50w_warning",
+      "timestamp": "2025-12-01T11:23:26.220Z",
+      "severity": "high",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 4 consecutive weeks",
+      "details": {
+        "sma50": 102216.26800000003,
+        "current_close": 86426.99,
+        "consecutive_weeks_below": 4,
+        "is_below": true,
+        "price_vs_sma": "-15.45"
+      },
+      "action_required": "Consider reducing risk exposure",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.810Z"
+    },
+    {
+      "id": "55750eb97102e8ea",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-11-30T11:19:34.207Z",
+      "factor": "Term Structure & Leverage",
+      "factorKey": "term_leverage",
+      "title": "📊 MEDIUM: Term Structure & Leverage Factor Changed",
+      "message": "Term Structure & Leverage decreased significantly: 52 → 37 (-15.0 points)",
+      "data": {
+        "factor": "Term Structure & Leverage",
+        "factorKey": "term_leverage",
+        "previous_score": 52,
+        "current_score": 37,
+        "change_points": -15,
+        "change_percentage": -28.846153846153843,
+        "severity": "medium",
+        "weight": 20
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 22nd consecutive day of declining trend.",
+      "trend": "declining",
+      "consecutiveDays": 2,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "8bc63b93f4918dee",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-11-30T11:19:34.207Z",
+      "factor": "Social Interest",
+      "factorKey": "social_interest",
+      "title": "📊 MEDIUM: Social Interest Factor Changed",
+      "message": "Social Interest decreased significantly: 84 → 66 (-18.0 points)",
+      "data": {
+        "factor": "Social Interest",
+        "factorKey": "social_interest",
+        "previous_score": 84,
+        "current_score": 66,
+        "change_points": -18,
+        "change_percentage": -21.428571428571427,
+        "severity": "medium",
+        "weight": 10
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 66th consecutive day of declining trend.",
+      "trend": "declining",
+      "consecutiveDays": 6,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "5be0011ef56b172c",
+      "type": "sma50w_warning",
+      "timestamp": "2025-11-30T11:19:34.160Z",
+      "severity": "medium",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 3 consecutive weeks",
+      "details": {
+        "sma50": 102407.69880000003,
+        "current_close": 91280.29,
+        "consecutive_weeks_below": 3,
+        "is_below": true,
+        "price_vs_sma": "-10.87"
+      },
+      "action_required": "Monitor for potential trend change",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.810Z"
+    },
+    {
+      "id": "b6de24ecbab6bba2",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-11-29T11:19:29.539Z",
+      "factor": "Stablecoins",
+      "factorKey": "stablecoins",
+      "title": "📊 LOW: Stablecoins Factor Changed",
+      "message": "Stablecoins increased significantly: 35 → 44 (+9.0 points)",
+      "data": {
+        "factor": "Stablecoins",
+        "factorKey": "stablecoins",
+        "previous_score": 35,
+        "current_score": 44,
+        "change_points": 9,
+        "change_percentage": 25.71428571428571,
+        "severity": "low",
+        "weight": 21
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "declining",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "478d5c463117b013",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-11-29T11:19:29.539Z",
+      "factor": "Term Structure & Leverage",
+      "factorKey": "term_leverage",
+      "title": "📊 MEDIUM: Term Structure & Leverage Factor Changed",
+      "message": "Term Structure & Leverage decreased significantly: 51 → 37 (-14.0 points)",
+      "data": {
+        "factor": "Term Structure & Leverage",
+        "factorKey": "term_leverage",
+        "previous_score": 51,
+        "current_score": 37,
+        "change_points": -14,
+        "change_percentage": -27.450980392156865,
+        "severity": "medium",
+        "weight": 20
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "declining",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "9aa09516d8406cab",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-11-29T11:19:29.539Z",
+      "factor": "Macro Overlay",
+      "factorKey": "macro_overlay",
+      "title": "📊 MEDIUM: Macro Overlay Factor Changed",
+      "message": "Macro Overlay increased significantly: 47 → 57 (+10.0 points)",
+      "data": {
+        "factor": "Macro Overlay",
+        "factorKey": "macro_overlay",
+        "previous_score": 47,
+        "current_score": 57,
+        "change_points": 10,
+        "change_percentage": 21.27659574468085,
+        "severity": "medium",
+        "weight": 10
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 22nd consecutive day of improving trend.",
+      "trend": "improving",
+      "consecutiveDays": 2,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "b524aa86eb00fd70",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-11-29T11:19:29.539Z",
+      "factor": "Social Interest",
+      "factorKey": "social_interest",
+      "title": "📊 MEDIUM: Social Interest Factor Changed",
+      "message": "Social Interest decreased significantly: 85 → 66 (-19.0 points)",
+      "data": {
+        "factor": "Social Interest",
+        "factorKey": "social_interest",
+        "previous_score": 85,
+        "current_score": 66,
+        "change_points": -19,
+        "change_percentage": -22.35294117647059,
+        "severity": "medium",
+        "weight": 10
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 55th consecutive day of declining trend.",
+      "trend": "declining",
+      "consecutiveDays": 5,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "a9d7bf1128a698ef",
+      "type": "sma50w_warning",
+      "timestamp": "2025-11-29T11:19:29.488Z",
+      "severity": "medium",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 3 consecutive weeks",
+      "details": {
+        "sma50": 102417.164,
+        "current_close": 90590.39,
+        "consecutive_weeks_below": 3,
+        "is_below": true,
+        "price_vs_sma": "-11.55"
+      },
+      "action_required": "Monitor for potential trend change",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.810Z"
+    },
+    {
+      "id": "7368de80c1c9cc2f",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-11-28T11:22:32.248Z",
+      "factor": "Stablecoins",
+      "factorKey": "stablecoins",
+      "title": "📊 MEDIUM: Stablecoins Factor Changed",
+      "message": "Stablecoins increased significantly: 35 → 48 (+13.0 points)",
+      "data": {
+        "factor": "Stablecoins",
+        "factorKey": "stablecoins",
+        "previous_score": 35,
+        "current_score": 48,
+        "change_points": 13,
+        "change_percentage": 37.142857142857146,
+        "severity": "medium",
+        "weight": 21
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "declining",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "dc54f4ca9ddeb088",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-11-28T11:22:32.248Z",
+      "factor": "Net Liquidity",
+      "factorKey": "net_liquidity",
+      "title": "📊 LOW: Net Liquidity Factor Changed",
+      "message": "Net Liquidity decreased significantly: 52 → 46 (-6.0 points)",
+      "data": {
+        "factor": "Net Liquidity",
+        "factorKey": "net_liquidity",
+        "previous_score": 52,
+        "current_score": 46,
+        "change_points": -6,
+        "change_percentage": -11.538461538461538,
+        "severity": "low",
+        "weight": 5
       },
       "actions": [
         "Review factor details and recent changes",
@@ -2453,26 +1204,26 @@
       "recommendations": [
         "Watch for continued decline - may indicate weakening fundamentals"
       ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
+      "generated_at": "2025-12-10T11:24:13.859Z"
     },
     {
-      "id": "acedbcbbe110e16d",
+      "id": "3a522d4b321f4897",
       "type": "factor_change",
-      "severity": "medium",
-      "timestamp": "2025-10-02T01:03:30.890Z",
-      "factor": "ETF Flows",
-      "factorKey": "etf_flows",
-      "title": "📊 MEDIUM: ETF Flows Factor Changed",
-      "message": "ETF Flows increased significantly: 62 → 75 (+13.0 points)",
+      "severity": "low",
+      "timestamp": "2025-11-28T11:22:32.248Z",
+      "factor": "Macro Overlay",
+      "factorKey": "macro_overlay",
+      "title": "📊 LOW: Macro Overlay Factor Changed",
+      "message": "Macro Overlay increased significantly: 47 → 55 (+8.0 points)",
       "data": {
-        "factor": "ETF Flows",
-        "factorKey": "etf_flows",
-        "previous_score": 62,
-        "current_score": 75,
-        "change_points": 13,
-        "change_percentage": 20.967741935483872,
-        "severity": "medium",
-        "weight": 9
+        "factor": "Macro Overlay",
+        "factorKey": "macro_overlay",
+        "previous_score": 47,
+        "current_score": 55,
+        "change_points": 8,
+        "change_percentage": 17.02127659574468,
+        "severity": "low",
+        "weight": 10
       },
       "actions": [
         "Review factor details and recent changes",
@@ -2481,7 +1232,1153 @@
         "Check data source reliability",
         "Review related market indicators"
       ],
-      "generated_at": "2025-10-30T11:20:37.214Z"
+      "context": "Factor showing normal variation",
+      "trend": "declining",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "64f482682dccb9c8",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-11-28T11:22:32.248Z",
+      "factor": "Social Interest",
+      "factorKey": "social_interest",
+      "title": "📊 LOW: Social Interest Factor Changed",
+      "message": "Social Interest decreased significantly: 89 → 84 (-5.0 points)",
+      "data": {
+        "factor": "Social Interest",
+        "factorKey": "social_interest",
+        "previous_score": 89,
+        "current_score": 84,
+        "change_points": -5,
+        "change_percentage": -5.617977528089887,
+        "severity": "low",
+        "weight": 10
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor is in extremely high territory.",
+      "trend": "improving",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Consider reducing exposure - factor in extreme high territory",
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "307919339d4dae08",
+      "type": "sma50w_warning",
+      "timestamp": "2025-11-28T11:22:32.198Z",
+      "severity": "medium",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 3 consecutive weeks",
+      "details": {
+        "sma50": 102405.33260000004,
+        "current_close": 91161.98,
+        "consecutive_weeks_below": 3,
+        "is_below": true,
+        "price_vs_sma": "-10.98"
+      },
+      "action_required": "Monitor for potential trend change",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.810Z"
+    },
+    {
+      "id": "f0dea787505c73a3",
+      "type": "factor_change",
+      "severity": "high",
+      "timestamp": "2025-11-27T11:23:04.089Z",
+      "factor": "Net Liquidity",
+      "factorKey": "net_liquidity",
+      "title": "📊 HIGH: Net Liquidity Factor Changed",
+      "message": "Net Liquidity decreased significantly: 75 → 46 (-29.0 points)",
+      "data": {
+        "factor": "Net Liquidity",
+        "factorKey": "net_liquidity",
+        "previous_score": 75,
+        "current_score": 46,
+        "change_points": -29,
+        "change_percentage": -38.666666666666664,
+        "severity": "high",
+        "weight": 5
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 22nd consecutive day of declining trend.",
+      "trend": "declining",
+      "consecutiveDays": 2,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "8e6524b004924e18",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-11-27T11:23:04.089Z",
+      "factor": "Social Interest",
+      "factorKey": "social_interest",
+      "title": "📊 LOW: Social Interest Factor Changed",
+      "message": "Social Interest decreased significantly: 91 → 85 (-6.0 points)",
+      "data": {
+        "factor": "Social Interest",
+        "factorKey": "social_interest",
+        "previous_score": 91,
+        "current_score": 85,
+        "change_points": -6,
+        "change_percentage": -6.593406593406594,
+        "severity": "low",
+        "weight": 10
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor is in extremely high territory.",
+      "trend": "improving",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Consider reducing exposure - factor in extreme high territory",
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "028c7f6051dc68ee",
+      "type": "sma50w_warning",
+      "timestamp": "2025-11-27T11:23:04.040Z",
+      "severity": "medium",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 3 consecutive weeks",
+      "details": {
+        "sma50": 102410.21020000003,
+        "current_close": 91405.86,
+        "consecutive_weeks_below": 3,
+        "is_below": true,
+        "price_vs_sma": "-10.75"
+      },
+      "action_required": "Monitor for potential trend change",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.810Z"
+    },
+    {
+      "id": "5dd8fee23da44113",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-11-26T11:22:49.068Z",
+      "factor": "Net Liquidity",
+      "factorKey": "net_liquidity",
+      "title": "📊 MEDIUM: Net Liquidity Factor Changed",
+      "message": "Net Liquidity decreased significantly: 62 → 52 (-10.0 points)",
+      "data": {
+        "factor": "Net Liquidity",
+        "factorKey": "net_liquidity",
+        "previous_score": 62,
+        "current_score": 52,
+        "change_points": -10,
+        "change_percentage": -16.129032258064516,
+        "severity": "medium",
+        "weight": 5
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 22nd consecutive day of improving trend.",
+      "trend": "improving",
+      "consecutiveDays": 2,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "8e309f5c6da8d731",
+      "type": "sma50w_warning",
+      "timestamp": "2025-11-26T11:22:49.018Z",
+      "severity": "medium",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 3 consecutive weeks",
+      "details": {
+        "sma50": 102320.13840000001,
+        "current_close": 86902.27,
+        "consecutive_weeks_below": 3,
+        "is_below": true,
+        "price_vs_sma": "-15.07"
+      },
+      "action_required": "Monitor for potential trend change",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.810Z"
+    },
+    {
+      "id": "0424cddbe44cf3ab",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-11-25T11:23:15.806Z",
+      "factor": "Net Liquidity",
+      "factorKey": "net_liquidity",
+      "title": "📊 MEDIUM: Net Liquidity Factor Changed",
+      "message": "Net Liquidity increased significantly: 62 → 75 (+13.0 points)",
+      "data": {
+        "factor": "Net Liquidity",
+        "factorKey": "net_liquidity",
+        "previous_score": 62,
+        "current_score": 75,
+        "change_points": 13,
+        "change_percentage": 20.967741935483872,
+        "severity": "medium",
+        "weight": 5
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "declining",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "ad8ac8d3f16b635d",
+      "type": "sma50w_warning",
+      "timestamp": "2025-11-25T11:23:15.755Z",
+      "severity": "medium",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 3 consecutive weeks",
+      "details": {
+        "sma50": 102327.89300000003,
+        "current_close": 87290,
+        "consecutive_weeks_below": 3,
+        "is_below": true,
+        "price_vs_sma": "-14.70"
+      },
+      "action_required": "Monitor for potential trend change",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.810Z"
+    },
+    {
+      "id": "26b1ea03ae5aed37",
+      "type": "sma50w_warning",
+      "timestamp": "2025-11-24T11:22:48.018Z",
+      "severity": "medium",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 3 consecutive weeks",
+      "details": {
+        "sma50": 102302.93640000002,
+        "current_close": 86042.17,
+        "consecutive_weeks_below": 3,
+        "is_below": true,
+        "price_vs_sma": "-15.89"
+      },
+      "action_required": "Monitor for potential trend change",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.810Z"
+    },
+    {
+      "id": "44c5cd99d97620a9",
+      "type": "sma50w_warning",
+      "timestamp": "2025-11-23T11:19:23.805Z",
+      "severity": "medium",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 2 consecutive weeks",
+      "details": {
+        "sma50": 102653.48860000001,
+        "current_close": 85930.3,
+        "consecutive_weeks_below": 2,
+        "is_below": true,
+        "price_vs_sma": "-16.29"
+      },
+      "action_required": "Monitor for potential trend change",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.811Z"
+    },
+    {
+      "id": "4ec3caedb47cc255",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-11-22T11:18:18.029Z",
+      "factor": "Trend & Valuation",
+      "factorKey": "trend_valuation",
+      "title": "📊 LOW: Trend & Valuation Factor Changed",
+      "message": "Trend & Valuation decreased significantly: 50 → 44 (-6.0 points)",
+      "data": {
+        "factor": "Trend & Valuation",
+        "factorKey": "trend_valuation",
+        "previous_score": 50,
+        "current_score": 44,
+        "change_points": -6,
+        "change_percentage": -12,
+        "severity": "low",
+        "weight": 20
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 33rd consecutive day of declining trend.",
+      "trend": "declining",
+      "consecutiveDays": 3,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "666d486f82d55f31",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-11-22T11:18:18.029Z",
+      "factor": "Term Structure & Leverage",
+      "factorKey": "term_leverage",
+      "title": "📊 LOW: Term Structure & Leverage Factor Changed",
+      "message": "Term Structure & Leverage decreased significantly: 60 → 51 (-9.0 points)",
+      "data": {
+        "factor": "Term Structure & Leverage",
+        "factorKey": "term_leverage",
+        "previous_score": 60,
+        "current_score": 51,
+        "change_points": -9,
+        "change_percentage": -15,
+        "severity": "low",
+        "weight": 20
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "improving",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.859Z"
+    },
+    {
+      "id": "ffb365f627c44790",
+      "type": "sma50w_warning",
+      "timestamp": "2025-11-22T11:18:17.979Z",
+      "severity": "medium",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 2 consecutive weeks",
+      "details": {
+        "sma50": 102610.68480000002,
+        "current_close": 83923.94,
+        "consecutive_weeks_below": 2,
+        "is_below": true,
+        "price_vs_sma": "-18.21"
+      },
+      "action_required": "Monitor for potential trend change",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.811Z"
+    },
+    {
+      "id": "4e0de5d374b8ce3a",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-11-21T11:21:06.400Z",
+      "factor": "Net Liquidity",
+      "factorKey": "net_liquidity",
+      "title": "📊 MEDIUM: Net Liquidity Factor Changed",
+      "message": "Net Liquidity decreased significantly: 81 → 64 (-17.0 points)",
+      "data": {
+        "factor": "Net Liquidity",
+        "factorKey": "net_liquidity",
+        "previous_score": 81,
+        "current_score": 64,
+        "change_points": -17,
+        "change_percentage": -20.98765432098765,
+        "severity": "medium",
+        "weight": 5
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "improving",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "a097ef18551354e8",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-11-21T11:21:06.400Z",
+      "factor": "Term Structure & Leverage",
+      "factorKey": "term_leverage",
+      "title": "📊 LOW: Term Structure & Leverage Factor Changed",
+      "message": "Term Structure & Leverage decreased significantly: 60 → 51 (-9.0 points)",
+      "data": {
+        "factor": "Term Structure & Leverage",
+        "factorKey": "term_leverage",
+        "previous_score": 60,
+        "current_score": 51,
+        "change_points": -9,
+        "change_percentage": -15,
+        "severity": "low",
+        "weight": 20
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "improving",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "2f216541c40131d1",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-11-21T11:21:06.399Z",
+      "factor": "Trend & Valuation",
+      "factorKey": "trend_valuation",
+      "title": "📊 MEDIUM: Trend & Valuation Factor Changed",
+      "message": "Trend & Valuation decreased significantly: 51 → 41 (-10.0 points)",
+      "data": {
+        "factor": "Trend & Valuation",
+        "factorKey": "trend_valuation",
+        "previous_score": 51,
+        "current_score": 41,
+        "change_points": -10,
+        "change_percentage": -19.607843137254903,
+        "severity": "medium",
+        "weight": 20
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 22nd consecutive day of declining trend.",
+      "trend": "declining",
+      "consecutiveDays": 2,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "fed72c0d8ad08157",
+      "type": "sma50w_warning",
+      "timestamp": "2025-11-21T11:21:06.350Z",
+      "severity": "medium",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 2 consecutive weeks",
+      "details": {
+        "sma50": 102593.51860000001,
+        "current_close": 82931.8,
+        "consecutive_weeks_below": 2,
+        "is_below": true,
+        "price_vs_sma": "-19.16"
+      },
+      "action_required": "Monitor for potential trend change",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.811Z"
+    },
+    {
+      "id": "400fb710e22764c3",
+      "type": "sma50w_warning",
+      "timestamp": "2025-11-20T11:21:59.951Z",
+      "severity": "medium",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 2 consecutive weeks",
+      "details": {
+        "sma50": 102768.62520000001,
+        "current_close": 91687.13,
+        "consecutive_weeks_below": 2,
+        "is_below": true,
+        "price_vs_sma": "-10.78"
+      },
+      "action_required": "Monitor for potential trend change",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.811Z"
+    },
+    {
+      "id": "225546d04c3d7761",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-11-19T11:22:00.699Z",
+      "factor": "Net Liquidity",
+      "factorKey": "net_liquidity",
+      "title": "📊 LOW: Net Liquidity Factor Changed",
+      "message": "Net Liquidity increased significantly: 75 → 81 (+6.0 points)",
+      "data": {
+        "factor": "Net Liquidity",
+        "factorKey": "net_liquidity",
+        "previous_score": 75,
+        "current_score": 81,
+        "change_points": 6,
+        "change_percentage": 8,
+        "severity": "low",
+        "weight": 5
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 22nd consecutive day of declining trend. Factor is in extremely high territory.",
+      "trend": "declining",
+      "consecutiveDays": 2,
+      "recommendations": [
+        "Consider reducing exposure - factor in extreme high territory",
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "6765002813c54155",
+      "type": "sma50w_warning",
+      "timestamp": "2025-11-19T11:22:00.649Z",
+      "severity": "medium",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 2 consecutive weeks",
+      "details": {
+        "sma50": 102767.9688,
+        "current_close": 91654.31,
+        "consecutive_weeks_below": 2,
+        "is_below": true,
+        "price_vs_sma": "-10.81"
+      },
+      "action_required": "Monitor for potential trend change",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.811Z"
+    },
+    {
+      "id": "99bf502e70cc3f5f",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-11-18T11:23:28.374Z",
+      "factor": "Net Liquidity",
+      "factorKey": "net_liquidity",
+      "title": "📊 MEDIUM: Net Liquidity Factor Changed",
+      "message": "Net Liquidity decreased significantly: 75 → 59 (-16.0 points)",
+      "data": {
+        "factor": "Net Liquidity",
+        "factorKey": "net_liquidity",
+        "previous_score": 75,
+        "current_score": 59,
+        "change_points": -16,
+        "change_percentage": -21.333333333333336,
+        "severity": "medium",
+        "weight": 5
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "declining",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "f3bd110deb739dad",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-11-18T11:23:28.373Z",
+      "factor": "Stablecoins",
+      "factorKey": "stablecoins",
+      "title": "📊 MEDIUM: Stablecoins Factor Changed",
+      "message": "Stablecoins decreased significantly: 51 → 34 (-17.0 points)",
+      "data": {
+        "factor": "Stablecoins",
+        "factorKey": "stablecoins",
+        "previous_score": 51,
+        "current_score": 34,
+        "change_points": -17,
+        "change_percentage": -33.33333333333333,
+        "severity": "medium",
+        "weight": 21
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "improving",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "763fd10e7ba041a7",
+      "type": "sma50w_warning",
+      "timestamp": "2025-11-18T11:23:28.324Z",
+      "severity": "medium",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 2 consecutive weeks",
+      "details": {
+        "sma50": 102762.45000000001,
+        "current_close": 91378.37,
+        "consecutive_weeks_below": 2,
+        "is_below": true,
+        "price_vs_sma": "-11.08"
+      },
+      "action_required": "Monitor for potential trend change",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.811Z"
+    },
+    {
+      "id": "11ec64ab2dbca08f",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-11-17T11:22:01.478Z",
+      "factor": "Stablecoins",
+      "factorKey": "stablecoins",
+      "title": "📊 LOW: Stablecoins Factor Changed",
+      "message": "Stablecoins decreased significantly: 40 → 34 (-6.0 points)",
+      "data": {
+        "factor": "Stablecoins",
+        "factorKey": "stablecoins",
+        "previous_score": 40,
+        "current_score": 34,
+        "change_points": -6,
+        "change_percentage": -15,
+        "severity": "low",
+        "weight": 21
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 22nd consecutive day of improving trend.",
+      "trend": "improving",
+      "consecutiveDays": 2,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "0cead8149372949f",
+      "type": "sma50w_warning",
+      "timestamp": "2025-11-17T11:22:01.429Z",
+      "severity": "medium",
+      "title": "50-Week SMA Warning",
+      "message": "Bitcoin has closed below 50W SMA for 2 consecutive weeks",
+      "details": {
+        "sma50": 102847.45780000002,
+        "current_close": 95628.76,
+        "consecutive_weeks_below": 2,
+        "is_below": true,
+        "price_vs_sma": "-7.02"
+      },
+      "action_required": "Monitor for potential trend change",
+      "context": "Alert generated based on current conditions",
+      "recommendations": [
+        "Monitor situation for further developments"
+      ],
+      "generated_at": "2025-12-10T11:24:13.811Z"
+    },
+    {
+      "id": "143bd0802943fed8",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-11-16T11:18:57.162Z",
+      "factor": "Stablecoins",
+      "factorKey": "stablecoins",
+      "title": "📊 LOW: Stablecoins Factor Changed",
+      "message": "Stablecoins increased significantly: 44 → 51 (+7.0 points)",
+      "data": {
+        "factor": "Stablecoins",
+        "factorKey": "stablecoins",
+        "previous_score": 44,
+        "current_score": 51,
+        "change_points": 7,
+        "change_percentage": 15.909090909090908,
+        "severity": "low",
+        "weight": 21
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "improving",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "57e75ca0742952dc",
+      "type": "factor_change",
+      "severity": "high",
+      "timestamp": "2025-11-16T11:18:57.162Z",
+      "factor": "Net Liquidity",
+      "factorKey": "net_liquidity",
+      "title": "📊 HIGH: Net Liquidity Factor Changed",
+      "message": "Net Liquidity increased significantly: 49 → 75 (+26.0 points)",
+      "data": {
+        "factor": "Net Liquidity",
+        "factorKey": "net_liquidity",
+        "previous_score": 49,
+        "current_score": 75,
+        "change_points": 26,
+        "change_percentage": 53.06122448979592,
+        "severity": "high",
+        "weight": 5
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "declining",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "87462ce2550a74b1",
+      "type": "factor_change",
+      "severity": "high",
+      "timestamp": "2025-11-15T11:18:36.002Z",
+      "factor": "Net Liquidity",
+      "factorKey": "net_liquidity",
+      "title": "📊 HIGH: Net Liquidity Factor Changed",
+      "message": "Net Liquidity increased significantly: 54 → 75 (+21.0 points)",
+      "data": {
+        "factor": "Net Liquidity",
+        "factorKey": "net_liquidity",
+        "previous_score": 54,
+        "current_score": 75,
+        "change_points": 21,
+        "change_percentage": 38.88888888888889,
+        "severity": "high",
+        "weight": 5
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 44th consecutive day of declining trend.",
+      "trend": "declining",
+      "consecutiveDays": 4,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "507d06864af39440",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-11-15T11:18:36.002Z",
+      "factor": "Term Structure & Leverage",
+      "factorKey": "term_leverage",
+      "title": "📊 MEDIUM: Term Structure & Leverage Factor Changed",
+      "message": "Term Structure & Leverage increased significantly: 50 → 60 (+10.0 points)",
+      "data": {
+        "factor": "Term Structure & Leverage",
+        "factorKey": "term_leverage",
+        "previous_score": 50,
+        "current_score": 60,
+        "change_points": 10,
+        "change_percentage": 20,
+        "severity": "medium",
+        "weight": 20
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 22nd consecutive day of improving trend.",
+      "trend": "improving",
+      "consecutiveDays": 2,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "7ba971b7a61efdad",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-11-14T11:21:35.735Z",
+      "factor": "Net Liquidity",
+      "factorKey": "net_liquidity",
+      "title": "📊 LOW: Net Liquidity Factor Changed",
+      "message": "Net Liquidity decreased significantly: 55 → 49 (-6.0 points)",
+      "data": {
+        "factor": "Net Liquidity",
+        "factorKey": "net_liquidity",
+        "previous_score": 55,
+        "current_score": 49,
+        "change_points": -6,
+        "change_percentage": -10.909090909090908,
+        "severity": "low",
+        "weight": 5
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 33rd consecutive day of declining trend.",
+      "trend": "declining",
+      "consecutiveDays": 3,
+      "recommendations": [
+        "Watch for continued decline - may indicate weakening fundamentals"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "f6aa91a1c01fb0cb",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-11-14T11:21:35.735Z",
+      "factor": "Term Structure & Leverage",
+      "factorKey": "term_leverage",
+      "title": "📊 MEDIUM: Term Structure & Leverage Factor Changed",
+      "message": "Term Structure & Leverage increased significantly: 50 → 60 (+10.0 points)",
+      "data": {
+        "factor": "Term Structure & Leverage",
+        "factorKey": "term_leverage",
+        "previous_score": 50,
+        "current_score": 60,
+        "change_points": 10,
+        "change_percentage": 20,
+        "severity": "medium",
+        "weight": 20
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "improving",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "062c7d8fa41aadee",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-11-14T11:21:35.734Z",
+      "factor": "Stablecoins",
+      "factorKey": "stablecoins",
+      "title": "📊 LOW: Stablecoins Factor Changed",
+      "message": "Stablecoins decreased significantly: 50 → 44 (-6.0 points)",
+      "data": {
+        "factor": "Stablecoins",
+        "factorKey": "stablecoins",
+        "previous_score": 50,
+        "current_score": 44,
+        "change_points": -6,
+        "change_percentage": -12,
+        "severity": "low",
+        "weight": 21
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "improving",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "3f73d8a048ec7def",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-11-13T11:22:41.853Z",
+      "factor": "Stablecoins",
+      "factorKey": "stablecoins",
+      "title": "📊 MEDIUM: Stablecoins Factor Changed",
+      "message": "Stablecoins decreased significantly: 58 → 42 (-16.0 points)",
+      "data": {
+        "factor": "Stablecoins",
+        "factorKey": "stablecoins",
+        "previous_score": 58,
+        "current_score": 42,
+        "change_points": -16,
+        "change_percentage": -27.586206896551722,
+        "severity": "medium",
+        "weight": 21
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "improving",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "d1210fe5b10064f3",
+      "type": "factor_change",
+      "severity": "critical",
+      "timestamp": "2025-11-13T11:22:41.853Z",
+      "factor": "Net Liquidity",
+      "factorKey": "net_liquidity",
+      "title": "📊 CRITICAL: Net Liquidity Factor Changed",
+      "message": "Net Liquidity decreased significantly: 91 → 54 (-37.0 points)",
+      "data": {
+        "factor": "Net Liquidity",
+        "factorKey": "net_liquidity",
+        "previous_score": 91,
+        "current_score": 54,
+        "change_points": -37,
+        "change_percentage": -40.65934065934066,
+        "severity": "critical",
+        "weight": 5
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor showing normal variation",
+      "trend": "improving",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "8dffc7d6152c5f97",
+      "type": "factor_change",
+      "severity": "low",
+      "timestamp": "2025-11-12T11:22:11.059Z",
+      "factor": "Stablecoins",
+      "factorKey": "stablecoins",
+      "title": "📊 LOW: Stablecoins Factor Changed",
+      "message": "Stablecoins increased significantly: 45 → 50 (+5.0 points)",
+      "data": {
+        "factor": "Stablecoins",
+        "factorKey": "stablecoins",
+        "previous_score": 45,
+        "current_score": 50,
+        "change_points": 5,
+        "change_percentage": 11.11111111111111,
+        "severity": "low",
+        "weight": 21
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 22nd consecutive day of improving trend.",
+      "trend": "improving",
+      "consecutiveDays": 2,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "78b1a077a1bc5d7d",
+      "type": "factor_change",
+      "severity": "medium",
+      "timestamp": "2025-11-12T11:22:11.059Z",
+      "factor": "Net Liquidity",
+      "factorKey": "net_liquidity",
+      "title": "📊 MEDIUM: Net Liquidity Factor Changed",
+      "message": "Net Liquidity decreased significantly: 66 → 55 (-11.0 points)",
+      "data": {
+        "factor": "Net Liquidity",
+        "factorKey": "net_liquidity",
+        "previous_score": 66,
+        "current_score": 55,
+        "change_points": -11,
+        "change_percentage": -16.666666666666664,
+        "severity": "medium",
+        "weight": 5
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "This is the 22nd consecutive day of improving trend.",
+      "trend": "improving",
+      "consecutiveDays": 2,
+      "recommendations": [
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
+    },
+    {
+      "id": "582abc8a26c3a760",
+      "type": "factor_change",
+      "severity": "high",
+      "timestamp": "2025-11-11T11:22:05.953Z",
+      "factor": "Net Liquidity",
+      "factorKey": "net_liquidity",
+      "title": "📊 HIGH: Net Liquidity Factor Changed",
+      "message": "Net Liquidity increased significantly: 66 → 91 (+25.0 points)",
+      "data": {
+        "factor": "Net Liquidity",
+        "factorKey": "net_liquidity",
+        "previous_score": 66,
+        "current_score": 91,
+        "change_points": 25,
+        "change_percentage": 37.878787878787875,
+        "severity": "high",
+        "weight": 5
+      },
+      "actions": [
+        "Review factor details and recent changes",
+        "Consider implications for market outlook",
+        "Monitor for continued factor volatility",
+        "Check data source reliability",
+        "Review related market indicators"
+      ],
+      "context": "Factor is in extremely high territory.",
+      "trend": "improving",
+      "consecutiveDays": 1,
+      "recommendations": [
+        "Consider reducing exposure - factor in extreme high territory",
+        "Positive momentum - consider if trend will continue"
+      ],
+      "generated_at": "2025-12-10T11:24:13.860Z"
     },
     {
       "id": "staleness_alert_etf_flows_1758903758398",
