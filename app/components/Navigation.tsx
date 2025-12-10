@@ -158,7 +158,8 @@ export default function Navigation() {
                   onClick={() => {
                     setIsMobileMenuOpen(false);
                     if (item.href === '/assets') {
-                      analytics.assetsPageClicked();
+                      const config = getConfig();
+                      analytics.assetsPageClicked(config.model_version || 'v1.1');
                     }
                   }}
                   className={`nav-mobile-item ${
