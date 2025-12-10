@@ -839,9 +839,22 @@ export default function MethodologyPage() {
               ) : configError ? (
                 <div className="text-center py-4">
                   {lastKnownConfig?.pillars ? (
-                    <div className="text-caption text-gray-600">
-                      {configError}; showing last-known values. As of {new Date().toISOString().split('T')[0]} UTC.
-                    </div>
+                    <>
+                      <div className="text-caption text-gray-600 mb-3">
+                        {configError}; showing last-known values.
+                      </div>
+                      <div className="space-y-3">
+                        {Object.values(lastKnownConfig.pillars)
+                          .sort((a, b) => b.weight - a.weight)
+                          .map((pillar) => (
+                            <div key={pillar.label} className="flex items-center justify-between">
+                              <span className="text-body">{pillar.label}</span>
+                              <span className="text-caption font-medium">{pillar.weight > 1 ? (pillar.weight).toFixed(0) : (pillar.weight * 100).toFixed(0)}%</span>
+                            </div>
+                          ))}
+                      </div>
+                      <div className="text-sm text-gray-500 mt-2">As of {new Date().toISOString().split('T')[0]} UTC</div>
+                    </>
                   ) : (
                     <div className="text-caption text-gray-600">
                       Couldn't load configuration. Please refresh the page.
