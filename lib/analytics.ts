@@ -67,7 +67,7 @@ export const analytics = {
   },
   assetsPageClicked(modelVersion: string = 'v1.1') {
     track({ 
-      event: 'assets_tab_click', 
+      event: 'assets_page_click', 
       category: 'navigation', 
       action: 'assets_page',
       model_version: modelVersion,

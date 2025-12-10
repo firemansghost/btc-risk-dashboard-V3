@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import SearchModal from './SearchModal';
 import { analytics } from '@/lib/analytics';
-import { getConfig } from '@/lib/riskConfig';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -13,9 +12,21 @@ export default function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [modelVersion, setModelVersion] = useState<string>('v1.1');
 
   useEffect(() => {
     setMounted(true);
+    // Fetch model_version from API (client-safe)
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(data => {
+        if (data?.ok && data.config?.model_version) {
+          setModelVersion(data.config.model_version);
+        }
+      })
+      .catch(() => {
+        // Silent fallback to default
+      });
   }, []);
 
   useEffect(() => {
@@ -110,8 +121,7 @@ export default function Navigation() {
                   }`}
                   onClick={() => {
                     if (item.href === '/assets') {
-                      const config = getConfig();
-                      analytics.assetsPageClicked(config.model_version || 'v1.1');
+                      analytics.assetsPageClicked(modelVersion);
                     }
                   }}
                 >
@@ -158,8 +168,7 @@ export default function Navigation() {
                   onClick={() => {
                     setIsMobileMenuOpen(false);
                     if (item.href === '/assets') {
-                      const config = getConfig();
-                      analytics.assetsPageClicked(config.model_version || 'v1.1');
+                      analytics.assetsPageClicked(modelVersion);
                     }
                   }}
                   className={`nav-mobile-item ${

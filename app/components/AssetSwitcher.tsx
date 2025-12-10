@@ -12,9 +12,21 @@ interface AssetSwitcherProps {
 export default function AssetSwitcher({ className = '' }: AssetSwitcherProps) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const [modelVersion, setModelVersion] = useState<string>('v1.1');
 
   useEffect(() => {
     setMounted(true);
+    // Fetch model_version from API (client-safe)
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(data => {
+        if (data?.ok && data.config?.model_version) {
+          setModelVersion(data.config.model_version);
+        }
+      })
+      .catch(() => {
+        // Silent fallback to default
+      });
   }, []);
 
   const assets = [
@@ -67,9 +79,7 @@ export default function AssetSwitcher({ className = '' }: AssetSwitcherProps) {
             }`}
             onClick={() => {
               if (currentAsset !== asset.key) {
-                const { getConfig } = require('@/lib/riskConfig');
-                const config = getConfig();
-                analytics.assetsTabClicked(asset.key.toUpperCase(), config.model_version || 'v1.1');
+                analytics.assetsTabClicked(asset.key.toUpperCase(), modelVersion);
               }
             }}
           >

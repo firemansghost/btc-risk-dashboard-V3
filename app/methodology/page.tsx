@@ -296,7 +296,13 @@ export default function MethodologyPage() {
                 <div className="text-sm text-gray-500 mt-2">As of {new Date().toISOString().split('T')[0]} UTC</div>
               )}
             </div>
-          ) : null}
+          ) : (
+            <div className="text-center py-8">
+              <div className="text-caption text-gray-500">
+                Loading risk bands configuration...
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -334,7 +340,13 @@ export default function MethodologyPage() {
                 {configError}; showing last-known values. As of {new Date().toISOString().split('T')[0]} UTC.
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div className="text-center py-4">
+              <div className="text-caption text-gray-500">
+                Loading factor weights configuration...
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Detailed Factor Cards */}
@@ -799,7 +811,13 @@ export default function MethodologyPage() {
                     {configError}; showing last-known values. As of {new Date().toISOString().split('T')[0]} UTC.
                   </div>
                 </div>
-              ) : null}
+              ) : (
+                <div className="text-center py-4">
+                  <div className="text-caption text-gray-500">
+                    Loading pillar weights configuration...
+                  </div>
+                </div>
+              )}
             </div>
             
             <div>
