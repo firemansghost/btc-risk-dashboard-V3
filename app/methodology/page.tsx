@@ -342,9 +342,29 @@ export default function MethodologyPage() {
           ) : configError ? (
             <div className="text-center py-4">
               {lastKnownConfig?.factors ? (
-                <div className="text-caption text-gray-600">
-                  {configError}; showing last-known values. As of {new Date().toISOString().split('T')[0]} UTC.
-                </div>
+                <>
+                  <div className="text-caption text-gray-600 mb-3">
+                    {configError}; showing last-known values.
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {Object.values(lastKnownConfig.factors)
+                      .filter(factor => factor.enabled)
+                      .sort((a, b) => b.weight - a.weight)
+                      .map((factor) => {
+                        const pillar = lastKnownConfig.pillars?.[factor.pillar];
+                        const pillarColor = pillar?.color || 'gray';
+                        return (
+                          <div key={factor.key} className={`p-3 ${pillarColor.replace('text-', 'bg-').replace('-800', '-50')} border ${pillarColor.replace('text-', 'border-').replace('-800', '-200')} rounded-lg`}>
+                            <div className={`text-sm font-medium ${pillarColor}`}>{factor.label}</div>
+                            <div className={`text-lg font-bold ${pillarColor.replace('text-', 'text-').replace('-800', '-600')}`}>
+                              {factor.weight > 1 ? (factor.weight).toFixed(1) : (factor.weight * 100).toFixed(1)}%
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                  <div className="text-sm text-gray-500 mt-2">As of {new Date().toISOString().split('T')[0]} UTC</div>
+                </>
               ) : (
                 <div className="text-caption text-gray-600">
                   Couldn't load configuration. Please refresh the page.
