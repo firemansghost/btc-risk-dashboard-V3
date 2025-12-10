@@ -12,6 +12,10 @@ on:
 jobs:
   bundle-size-tracking:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: write
     
     steps:
     - name: Checkout code
@@ -49,7 +53,8 @@ jobs:
         retention-days: 30
     
     - name: Comment on PR with bundle size changes
-      if: github.event_name == 'pull_request'
+      if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+      continue-on-error: true
       uses: actions/github-script@v7
       with:
         script: |
@@ -86,7 +91,7 @@ jobs:
                 });
               }
               
-              github.rest.issues.createComment({
+              await github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -94,11 +99,16 @@ jobs:
               });
             }
           } catch (error) {
-            console.error('Failed to create PR comment:', error);
+            if (error.status === 403 || error.status === 404) {
+              console.log('Skipping PR comment: insufficient permissions or PR from fork');
+            } else {
+              console.error('Failed to create PR comment:', error.message);
+            }
           }
     
     - name: Create GitHub issue for critical alerts
-      if: failure()
+      if: failure() && github.event.pull_request.head.repo.full_name == github.repository
+      continue-on-error: true
       uses: actions/github-script@v7
       with:
         script: |
@@ -133,7 +143,7 @@ jobs:
                   issueBody += `- ${rec}\n`;
                 });
                 
-                github.rest.issues.create({
+                await github.rest.issues.create({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   title: `🚨 Critical Bundle Size Alert - ${report.summary.buildId}`,
@@ -143,11 +153,16 @@ jobs:
               }
             }
           } catch (error) {
-            console.error('Failed to create GitHub issue:', error);
+            if (error.status === 403 || error.status === 404) {
+              console.log('Skipping issue creation: insufficient permissions or PR from fork');
+            } else {
+              console.error('Failed to create GitHub issue:', error.message);
+            }
           }
     
     - name: Update bundle size badge
-      if: success()
+      if: success() && github.event_name != 'pull_request'
+      continue-on-error: true
       uses: actions/github-script@v7
       with:
         script: |

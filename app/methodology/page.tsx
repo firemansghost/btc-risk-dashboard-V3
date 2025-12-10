@@ -275,25 +275,30 @@ export default function MethodologyPage() {
             </div>
           ) : configError ? (
             <div className="text-center py-8">
-              <div className="text-caption text-gray-600 mb-2">
-                {configError}; showing last-known values.
-              </div>
               {lastKnownConfig?.bands ? (
-                <div className="space-y-4 mt-4">
-                  {lastKnownConfig.bands.map((band) => (
-                    <div key={band.key} className={`p-4 rounded-lg border ${getBandColor(band.color)}`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-heading-4">{band.label}</h3>
-                        <span className="text-caption font-medium">
-                          {band.range[0]}-{band.range[1]}
-                        </span>
+                <>
+                  <div className="text-caption text-gray-600 mb-2">
+                    {configError}; showing last-known values.
+                  </div>
+                  <div className="space-y-4 mt-4">
+                    {lastKnownConfig.bands.map((band) => (
+                      <div key={band.key} className={`p-4 rounded-lg border ${getBandColor(band.color)}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="text-heading-4">{band.label}</h3>
+                          <span className="text-caption font-medium">
+                            {band.range[0]}-{band.range[1]}
+                          </span>
+                        </div>
+                        <p className="text-body">{band.recommendation}</p>
                       </div>
-                      <p className="text-body">{band.recommendation}</p>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                  <div className="text-sm text-gray-500 mt-2">As of {new Date().toISOString().split('T')[0]} UTC</div>
+                </>
               ) : (
-                <div className="text-sm text-gray-500 mt-2">As of {new Date().toISOString().split('T')[0]} UTC</div>
+                <div className="text-caption text-gray-600">
+                  Couldn't load configuration. Please refresh the page.
+                </div>
               )}
             </div>
           ) : (
@@ -336,9 +341,15 @@ export default function MethodologyPage() {
             </div>
           ) : configError ? (
             <div className="text-center py-4">
-              <div className="text-caption text-gray-600">
-                {configError}; showing last-known values. As of {new Date().toISOString().split('T')[0]} UTC.
-              </div>
+              {lastKnownConfig?.factors ? (
+                <div className="text-caption text-gray-600">
+                  {configError}; showing last-known values. As of {new Date().toISOString().split('T')[0]} UTC.
+                </div>
+              ) : (
+                <div className="text-caption text-gray-600">
+                  Couldn't load configuration. Please refresh the page.
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-4">
@@ -807,9 +818,15 @@ export default function MethodologyPage() {
                 </div>
               ) : configError ? (
                 <div className="text-center py-4">
-                  <div className="text-caption text-gray-600">
-                    {configError}; showing last-known values. As of {new Date().toISOString().split('T')[0]} UTC.
-                  </div>
+                  {lastKnownConfig?.pillars ? (
+                    <div className="text-caption text-gray-600">
+                      {configError}; showing last-known values. As of {new Date().toISOString().split('T')[0]} UTC.
+                    </div>
+                  ) : (
+                    <div className="text-caption text-gray-600">
+                      Couldn't load configuration. Please refresh the page.
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-4">
