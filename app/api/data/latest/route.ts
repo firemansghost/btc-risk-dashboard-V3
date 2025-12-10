@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { getConfig } from '@/lib/riskConfig';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -107,8 +108,7 @@ export async function GET() {
       ],
       model_version: (() => {
         try {
-          const { getConfig } = require('@/lib/riskConfig');
-          return getConfig().model_version;
+          return getConfig().model_version || 'v1.1';
         } catch {
           return 'v1.1'; // Fallback to SSOT model_version
         }
