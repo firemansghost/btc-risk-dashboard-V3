@@ -10,6 +10,14 @@ type AnalyticsEvent = {
 };
 
 export function track(event: AnalyticsEvent): void {
+  // Gate behind env var and production mode
+  const analyticsEnabled = process.env.NEXT_PUBLIC_ANALYTICS_ENABLED === 'true';
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  if (!analyticsEnabled || !isProduction) {
+    return; // Silent no-op in dev or when flag is off
+  }
+  
   if (typeof window === 'undefined') return;
   try {
     const payload = { ...event, ts: Date.now() };
@@ -57,11 +65,12 @@ export const analytics = {
       utc: new Date().toISOString()
     });
   },
-  assetsPageClicked() {
+  assetsPageClicked(modelVersion: string = 'v1.1') {
     track({ 
       event: 'assets_tab_click', 
       category: 'navigation', 
-      action: 'assets_page', 
+      action: 'assets_page',
+      model_version: modelVersion,
       utc: new Date().toISOString()
     });
   }

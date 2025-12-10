@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import SearchModal from './SearchModal';
 import { analytics } from '@/lib/analytics';
+import { getConfig } from '@/lib/riskConfig';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -109,7 +110,8 @@ export default function Navigation() {
                   }`}
                   onClick={() => {
                     if (item.href === '/assets') {
-                      analytics.assetsPageClicked();
+                      const config = getConfig();
+                      analytics.assetsPageClicked(config.model_version || 'v1.1');
                     }
                   }}
                 >

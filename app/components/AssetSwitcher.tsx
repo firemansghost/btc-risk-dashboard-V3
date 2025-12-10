@@ -67,7 +67,9 @@ export default function AssetSwitcher({ className = '' }: AssetSwitcherProps) {
             }`}
             onClick={() => {
               if (currentAsset !== asset.key) {
-                analytics.assetsTabClicked(asset.key.toUpperCase());
+                const { getConfig } = require('@/lib/riskConfig');
+                const config = getConfig();
+                analytics.assetsTabClicked(asset.key.toUpperCase(), config.model_version || 'v1.1');
               }
             }}
           >
