@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import crypto from "node:crypto";
+import path from "node:path";
 import { computeAllFactors } from "./factors.mjs";
 
 // Helper function to create HMAC signature for webhook
@@ -784,9 +785,21 @@ async function main() {
   }
   await fs.writeFile("public/data/history.csv", lines.join("\n"));
 
+  // Load model_version from SSOT
+  let modelVersion = 'v1.1'; // Default fallback
+  try {
+    const dashboardConfigPath = path.join(process.cwd(), 'config', 'dashboard-config.json');
+    const dashboardConfigContent = await fs.readFile(dashboardConfigPath, 'utf8');
+    const dashboardConfig = JSON.parse(dashboardConfigContent);
+    if (dashboardConfig.model_version) {
+      modelVersion = dashboardConfig.model_version;
+    }
+  } catch (error) {
+    console.warn('Could not load model_version from SSOT, using default:', error.message);
+  }
+
   const latest = {
     ok: true,
-    version: "v3.1.0",
     as_of_utc: new Date().toISOString(),
     composite_score: finalComposite,
     composite_raw: composite,
@@ -805,7 +818,7 @@ async function main() {
       source: 'Coinbase'
     },
     provenance: [],
-    model_version: "v3.1.0",
+    model_version: modelVersion,
     transform: {},
     // Legacy nudges preserved for backward-compat clients
     adjustments: { cycle_nudge: 0.0, spike_nudge: 0.0 },

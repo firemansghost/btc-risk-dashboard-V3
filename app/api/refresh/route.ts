@@ -170,7 +170,7 @@ async function buildLatest(forceRealTime = false) {
         factors,
         btc: { spot_usd: etlData.price_usd, as_of_utc: etlData.updated_at, source: 'ETL pipeline' },
         provenance: [{ url: 'ETL pipeline', ok: true, status: 200, ms: 0, note: 'Computed via ETL pipeline' }],
-        model_version: etlData.version || 'v3.1.0',
+        model_version: config.model_version, // Use model_version from SSOT
         config_digest: "etl",
         transform: {},
       }
@@ -333,7 +333,7 @@ async function buildLatest(forceRealTime = false) {
         factors,
         btc: { spot_usd: spot.usd, as_of_utc: spot.as_of_utc, source: 'coinbase' },
         provenance: prov,
-        model_version: config.version, // Use config version
+        model_version: config.model_version, // Use config model_version from SSOT
         config_digest: getConfigDigest(), // Add config digest
         transform: { // Use config normalization settings
           winsor: config.normalization.winsor,

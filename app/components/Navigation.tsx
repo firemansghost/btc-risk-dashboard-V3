@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import SearchModal from './SearchModal';
+import { analytics } from '@/lib/analytics';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -106,6 +107,11 @@ export default function Navigation() {
                       ? 'glass-blue text-blue-900 border border-blue-300/50'
                       : 'text-gray-600 hover:text-gray-900 hover:glass-hover'
                   }`}
+                  onClick={() => {
+                    if (item.href === '/assets') {
+                      analytics.assetsPageClicked();
+                    }
+                  }}
                 >
                   <span className="hidden lg:inline mr-2">{item.icon}</span>
                   {item.label}
@@ -147,7 +153,12 @@ export default function Navigation() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    if (item.href === '/assets') {
+                      analytics.assetsPageClicked();
+                    }
+                  }}
                   className={`nav-mobile-item ${
                     pathname === item.href
                       ? 'glass-blue text-blue-900 border border-blue-300/50'

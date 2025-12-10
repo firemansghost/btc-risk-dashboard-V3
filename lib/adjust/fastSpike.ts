@@ -125,7 +125,7 @@ export async function computeFastSpike(): Promise<SpikeAdjustment> {
     if (z > CFG.zClip) z = CFG.zClip;
     if (z < -CFG.zClip) z = -CFG.zClip;
 
-    // 5) Map to adjustment points
+    // 5) Map to adjustment points (capped at ±1.5 per canon)
     let adj = Math.tanh(z / CFG.zScale) * CFG.maxPoints;
     
     // Direction policy: by default up moves increase risk, down moves reduce risk
@@ -133,7 +133,10 @@ export async function computeFastSpike(): Promise<SpikeAdjustment> {
       adj = Math.abs(adj);
     }
     
-    const adj_pts = Math.round(adj);
+    // Apply canonical cap of ±1.5
+    adj = Math.max(-1.5, Math.min(1.5, adj));
+    
+    const adj_pts = Math.round(adj * 10) / 10; // Round to 1 decimal
 
     return {
       adj_pts,

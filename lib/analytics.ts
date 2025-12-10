@@ -46,6 +46,24 @@ export const analytics = {
   },
   quickGlanceClicked(presetKey: string | null, delta: number) {
     track({ event: 'quick_glance_clicked', category: 'sandbox', action: 'open', label: presetKey ?? 'unknown', value: delta });
+  },
+  assetsTabClicked(asset: string, modelVersion: string = 'v1.1') {
+    track({ 
+      event: 'assets_tab_click', 
+      category: 'navigation', 
+      action: 'asset_switch', 
+      label: asset,
+      model_version: modelVersion,
+      utc: new Date().toISOString()
+    });
+  },
+  assetsPageClicked() {
+    track({ 
+      event: 'assets_tab_click', 
+      category: 'navigation', 
+      action: 'assets_page', 
+      utc: new Date().toISOString()
+    });
   }
 };
 

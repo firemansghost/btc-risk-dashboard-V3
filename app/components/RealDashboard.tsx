@@ -652,7 +652,7 @@ export default function RealDashboard() {
           {/* Model Version */}
           <div className="glass-sm card-metric">
             <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Model Version</h3>
-            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{latest?.model_version ?? 'v3'}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{latest?.model_version ?? 'v1.1'}</div>
             <div className="text-xs text-gray-600">Five-pillar framework</div>
           </div>
 

@@ -105,7 +105,14 @@ export async function GET() {
           note: 'Computed via ETL pipeline'
         }
       ],
-      model_version: etlData.version || 'v3.1.0',
+      model_version: (() => {
+        try {
+          const { getConfig } = require('@/lib/riskConfig');
+          return getConfig().model_version;
+        } catch {
+          return 'v1.1'; // Fallback to SSOT model_version
+        }
+      })(),
       transform: {},
       config_digest: etlData.config_digest || "etl"
     };

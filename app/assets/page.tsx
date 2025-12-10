@@ -147,4 +147,7 @@ export default function AssetsPage() {
 export const metadata = {
   title: 'GhostGauge Assets — Multi-Asset Risk Framework',
   description: 'Risk assessment frameworks adapted for different asset classes. Same proven methodology, tuned for each market\'s unique characteristics.',
+  alternates: {
+    canonical: '/assets',
+  },
 };

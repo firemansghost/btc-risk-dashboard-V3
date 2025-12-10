@@ -32,5 +32,9 @@ export default function GoldPage() {
 export const metadata = {
   title: 'GhostGauge — Gold G-Score — Coming Soon',
   description: 'We\'re adapting the GhostGauge framework to Gold. Same 0–100 score and band taxonomy, with factors tuned to XAU\'s market structure.',
-  robots: 'noindex',
+  robots: {
+    index: false,
+    follow: false,
+  },
+  // TODO: When live, change to: robots: { index: true }, and add canonical: '/gold'
 };

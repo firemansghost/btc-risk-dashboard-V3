@@ -25,6 +25,8 @@ type Config = {
 
 export default function MethodologyPage() {
   const [config, setConfig] = useState<Config | null>(null);
+  const [configError, setConfigError] = useState<string | null>(null);
+  const [lastKnownConfig, setLastKnownConfig] = useState<Config | null>(null);
 
   useEffect(() => {
     fetch('/api/config')
@@ -32,9 +34,15 @@ export default function MethodologyPage() {
       .then(data => {
         if (data?.ok && data.config) {
           setConfig(data.config);
+          setLastKnownConfig(data.config);
+          setConfigError(null);
+        } else {
+          setConfigError('Couldn\'t load the latest config');
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setConfigError('Couldn\'t load the latest config');
+      });
   }, []);
 
   const getBandColor = (color: string) => {
@@ -265,11 +273,30 @@ export default function MethodologyPage() {
                 </div>
               ))}
             </div>
-          ) : (
+          ) : configError ? (
             <div className="text-center py-8">
-              <div className="text-caption text-gray-500">Loading risk bands...</div>
+              <div className="text-caption text-gray-600 mb-2">
+                {configError}; showing last-known values.
+              </div>
+              {lastKnownConfig?.bands ? (
+                <div className="space-y-4 mt-4">
+                  {lastKnownConfig.bands.map((band) => (
+                    <div key={band.key} className={`p-4 rounded-lg border ${getBandColor(band.color)}`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-heading-4">{band.label}</h3>
+                        <span className="text-caption font-medium">
+                          {band.range[0]}-{band.range[1]}
+                        </span>
+                      </div>
+                      <p className="text-body">{band.recommendation}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-gray-500 mt-2">As of {new Date().toISOString().split('T')[0]} UTC</div>
+              )}
             </div>
-          )}
+          ) : null}
         </div>
       </section>
 
@@ -301,11 +328,13 @@ export default function MethodologyPage() {
                   );
                 })}
             </div>
-          ) : (
+          ) : configError ? (
             <div className="text-center py-4">
-              <div className="text-caption text-gray-500">Loading factor weights...</div>
+              <div className="text-caption text-gray-600">
+                {configError}; showing last-known values. As of {new Date().toISOString().split('T')[0]} UTC.
+              </div>
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Detailed Factor Cards */}
@@ -764,11 +793,13 @@ export default function MethodologyPage() {
                     </div>
                   ))}
                 </div>
-              ) : (
+              ) : configError ? (
                 <div className="text-center py-4">
-                  <div className="text-caption text-gray-500">Loading weights...</div>
+                  <div className="text-caption text-gray-600">
+                    {configError}; showing last-known values. As of {new Date().toISOString().split('T')[0]} UTC.
+                  </div>
                 </div>
-              )}
+              ) : null}
             </div>
             
             <div>

@@ -88,7 +88,8 @@ export interface RiskConfig {
   freshness: FreshnessConfig;
   
   // Metadata
-  version: string;
+  model_version: string;
+  ssot_version: string;
   lastModified: string;
   digest?: string;
 }
@@ -169,8 +170,9 @@ const DEFAULT_CONFIG: RiskConfig = {
     }
   },
 
-  // Metadata
-  version: 'v3.3.0',
+  // Metadata (will be overridden by SSOT)
+  model_version: 'v1.1',
+  ssot_version: '2.1.0',
   lastModified: new Date().toISOString()
 };
 
@@ -285,6 +287,14 @@ export function getConfig(): RiskConfig {
     if (dashboardConfig.bands && Array.isArray(dashboardConfig.bands)) {
       config.bands = dashboardConfig.bands;
       console.log('Config: Loaded risk bands from dashboard-config.json');
+    }
+    
+    // Load version metadata from dashboard-config.json
+    if (dashboardConfig.model_version) {
+      config.model_version = dashboardConfig.model_version;
+    }
+    if (dashboardConfig.ssot_version) {
+      config.ssot_version = dashboardConfig.ssot_version;
     }
   } catch (error) {
     console.warn('Config: Failed to load configuration from dashboard-config.json, using defaults:', error);

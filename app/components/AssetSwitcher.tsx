@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { analytics } from '@/lib/analytics';
 
 interface AssetSwitcherProps {
   className?: string;
@@ -64,6 +65,11 @@ export default function AssetSwitcher({ className = '' }: AssetSwitcherProps) {
                 ? 'glass-blue text-blue-900 border border-blue-300/50'
                 : 'text-gray-600 hover:text-gray-900 hover:glass-hover'
             }`}
+            onClick={() => {
+              if (currentAsset !== asset.key) {
+                analytics.assetsTabClicked(asset.key.toUpperCase());
+              }
+            }}
           >
             <span className="mr-1">{asset.icon}</span>
             {asset.label}

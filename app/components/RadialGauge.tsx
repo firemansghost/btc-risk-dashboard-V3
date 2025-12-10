@@ -470,7 +470,7 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
         aria-atomic="true"
       >
         {/* Gradient definitions for enhanced visual effects */}
-        <defs>
+        <defs aria-hidden="true">
           <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.6"/>
             <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.9"/>
@@ -607,17 +607,19 @@ export default function RadialGauge({ score, bandLabel, className = '' }: Radial
         />
         
         {/* Subtle particle effects */}
-        {particles.map((particle) => (
-          <circle
-            key={particle.id}
-            cx={particle.x}
-            cy={particle.y}
-            r="2"
-            fill="#3B82F6"
-            opacity={particle.opacity}
-            className="animate-pulse"
-          />
-        ))}
+        <g aria-hidden="true">
+          {particles.map((particle) => (
+            <circle
+              key={particle.id}
+              cx={particle.x}
+              cy={particle.y}
+              r="2"
+              fill="#3B82F6"
+              opacity={particle.opacity}
+              className="animate-pulse"
+            />
+          ))}
+        </g>
         
         {/* Enhanced Tooltip */}
         {tooltip.visible && (

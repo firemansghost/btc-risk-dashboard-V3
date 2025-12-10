@@ -1,5 +1,6 @@
 {
-  "version": "2.1.0",
+  "model_version": "v1.1",
+  "ssot_version": "2.1.0",
   "lastModified": "2025-10-05T00:00:00.000Z",
   "description": "SINGLE SOURCE OF TRUTH for all dashboard configuration - pillars, factors, weights, bands, and sub-weights - Rebalanced to prioritize Trend & Valuation",
   
@@ -257,12 +258,14 @@
     "cycle": {
       "enabled": true,
       "description": "Long-term cycle positioning adjustment based on halving cycles and macro conditions",
-      "range": [-10, 10]
+      "range": [-2.0, 2.0],
+      "cap": 2.0
     },
     "spike": {
       "enabled": true,
       "description": "Short-term volatility spike adjustment for rapid price movements",
-      "range": [-5, 5]
+      "range": [-1.5, 1.5],
+      "cap": 1.5
     }
   }
 }
