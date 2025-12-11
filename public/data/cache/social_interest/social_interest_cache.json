@@ -1,0 +1,48 @@
+{
+  "score": 78,
+  "reason": "success",
+  "lastUpdated": "2025-12-11T16:24:27.045Z",
+  "details": [
+    {
+      "label": "Search Attention",
+      "value": "High"
+    },
+    {
+      "label": "Bitcoin Trending Rank",
+      "value": "#5"
+    },
+    {
+      "label": "Price Signal (7d)",
+      "value": "Bullish"
+    },
+    {
+      "label": "Volatility Level (14d)",
+      "value": "Moderate"
+    },
+    {
+      "label": "Social Risk Level",
+      "value": "High"
+    },
+    {
+      "label": "Fetch Time",
+      "value": "22ms"
+    },
+    {
+      "label": "Data Sources",
+      "value": "CoinGecko • trending, CoinGecko • price data"
+    },
+    {
+      "label": "Component Scores",
+      "value": "Search: 70, Momentum: 95, Vol: 95"
+    },
+    {
+      "label": "Fallback Attempts",
+      "value": "0"
+    }
+  ],
+  "bitcoinRank": 5,
+  "latestPrice": 110588.79953292229,
+  "fetchTime": 22,
+  "cachedAt": "2025-12-11T16:24:27.046Z",
+  "version": "1.0.0"
+}
