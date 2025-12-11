@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import SearchModal from './SearchModal';
+import { analytics } from '@/lib/analytics';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -11,9 +12,21 @@ export default function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [modelVersion, setModelVersion] = useState<string>('v1.1');
 
   useEffect(() => {
     setMounted(true);
+    // Fetch model_version from API (client-safe)
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(data => {
+        if (data?.ok && data.config?.model_version) {
+          setModelVersion(data.config.model_version);
+        }
+      })
+      .catch(() => {
+        // Silent fallback to default
+      });
   }, []);
 
   useEffect(() => {
@@ -106,6 +119,11 @@ export default function Navigation() {
                       ? 'glass-blue text-blue-900 border border-blue-300/50'
                       : 'text-gray-600 hover:text-gray-900 hover:glass-hover'
                   }`}
+                  onClick={() => {
+                    if (item.href === '/assets') {
+                      analytics.assetsPageClicked(modelVersion);
+                    }
+                  }}
                 >
                   <span className="hidden lg:inline mr-2">{item.icon}</span>
                   {item.label}
@@ -147,7 +165,12 @@ export default function Navigation() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    if (item.href === '/assets') {
+                      analytics.assetsPageClicked(modelVersion);
+                    }
+                  }}
                   className={`nav-mobile-item ${
                     pathname === item.href
                       ? 'glass-blue text-blue-900 border border-blue-300/50'

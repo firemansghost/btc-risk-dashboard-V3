@@ -12,6 +12,10 @@ on:
 jobs:
   bundle-size-tracking:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: write
     
     steps:
     - name: Checkout code
@@ -48,8 +52,22 @@ jobs:
         path: bundle-size-report.json
         retention-days: 30
     
+    - name: Summarize bundle size report
+      continue-on-error: true
+      run: |
+        if [ -f bundle-size-report.json ]; then
+          echo "## Bundle Size Summary"
+          echo "Total Size: $(jq -r '.metrics.totalSize' bundle-size-report.json 2>/dev/null || echo 'N/A')"
+          echo "Gzipped Size: $(jq -r '.metrics.gzippedSize' bundle-size-report.json 2>/dev/null || echo 'N/A')"
+          echo "Chunks: $(jq -r '.metrics.chunkCount' bundle-size-report.json 2>/dev/null || echo 'N/A')"
+          echo "Alerts: $(jq -r '.alerts | length' bundle-size-report.json 2>/dev/null || echo '0')"
+        else
+          echo "Bundle size report not found"
+        fi
+    
     - name: Comment on PR with bundle size changes
-      if: github.event_name == 'pull_request'
+      if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+      continue-on-error: true
       uses: actions/github-script@v7
       with:
         script: |
@@ -86,7 +104,7 @@ jobs:
                 });
               }
               
-              github.rest.issues.createComment({
+              await github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -94,11 +112,16 @@ jobs:
               });
             }
           } catch (error) {
-            console.error('Failed to create PR comment:', error);
+            if (error.status === 403 || error.status === 404) {
+              console.log('Skipping PR comment: insufficient permissions or PR from fork');
+            } else {
+              console.error('Failed to create PR comment:', error.message);
+            }
           }
     
     - name: Create GitHub issue for critical alerts
-      if: failure()
+      if: failure() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+      continue-on-error: true
       uses: actions/github-script@v7
       with:
         script: |
@@ -133,7 +156,7 @@ jobs:
                   issueBody += `- ${rec}\n`;
                 });
                 
-                github.rest.issues.create({
+                await github.rest.issues.create({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   title: `🚨 Critical Bundle Size Alert - ${report.summary.buildId}`,
@@ -143,11 +166,16 @@ jobs:
               }
             }
           } catch (error) {
-            console.error('Failed to create GitHub issue:', error);
+            if (error.status === 403 || error.status === 404) {
+              console.log('Skipping issue creation: insufficient permissions or PR from fork');
+            } else {
+              console.error('Failed to create GitHub issue:', error.message);
+            }
           }
     
     - name: Update bundle size badge
-      if: success()
+      if: success() && github.event_name != 'pull_request'
+      continue-on-error: true
       uses: actions/github-script@v7
       with:
         script: |

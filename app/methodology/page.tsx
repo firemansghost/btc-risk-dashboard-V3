@@ -25,6 +25,8 @@ type Config = {
 
 export default function MethodologyPage() {
   const [config, setConfig] = useState<Config | null>(null);
+  const [configError, setConfigError] = useState<string | null>(null);
+  const [lastKnownConfig, setLastKnownConfig] = useState<Config | null>(null);
 
   useEffect(() => {
     fetch('/api/config')
@@ -32,9 +34,15 @@ export default function MethodologyPage() {
       .then(data => {
         if (data?.ok && data.config) {
           setConfig(data.config);
+          setLastKnownConfig(data.config);
+          setConfigError(null);
+        } else {
+          setConfigError('Couldn\'t load the latest config');
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setConfigError('Couldn\'t load the latest config');
+      });
   }, []);
 
   const getBandColor = (color: string) => {
@@ -265,9 +273,39 @@ export default function MethodologyPage() {
                 </div>
               ))}
             </div>
+          ) : configError ? (
+            <div className="text-center py-8">
+              {lastKnownConfig?.bands ? (
+                <>
+                  <div className="text-caption text-gray-600 mb-2">
+                    {configError}; showing last-known values.
+                  </div>
+                  <div className="space-y-4 mt-4">
+                    {lastKnownConfig.bands.map((band) => (
+                      <div key={band.key} className={`p-4 rounded-lg border ${getBandColor(band.color)}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="text-heading-4">{band.label}</h3>
+                          <span className="text-caption font-medium">
+                            {band.range[0]}-{band.range[1]}
+                          </span>
+                        </div>
+                        <p className="text-body">{band.recommendation}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="text-sm text-gray-500 mt-2">As of {new Date().toISOString().split('T')[0]} UTC</div>
+                </>
+              ) : (
+                <div className="text-caption text-gray-600">
+                  Couldn't load configuration. Please refresh the page.
+                </div>
+              )}
+            </div>
           ) : (
             <div className="text-center py-8">
-              <div className="text-caption text-gray-500">Loading risk bands...</div>
+              <div className="text-caption text-gray-500">
+                Loading risk bands configuration...
+              </div>
             </div>
           )}
         </div>
@@ -301,9 +339,43 @@ export default function MethodologyPage() {
                   );
                 })}
             </div>
+          ) : configError ? (
+            <div className="text-center py-4">
+              {lastKnownConfig?.factors ? (
+                <>
+                  <div className="text-caption text-gray-600 mb-3">
+                    {configError}; showing last-known values.
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {Object.values(lastKnownConfig.factors)
+                      .filter(factor => factor.enabled)
+                      .sort((a, b) => b.weight - a.weight)
+                      .map((factor) => {
+                        const pillar = lastKnownConfig.pillars?.[factor.pillar];
+                        const pillarColor = pillar?.color || 'gray';
+                        return (
+                          <div key={factor.key} className={`p-3 ${pillarColor.replace('text-', 'bg-').replace('-800', '-50')} border ${pillarColor.replace('text-', 'border-').replace('-800', '-200')} rounded-lg`}>
+                            <div className={`text-sm font-medium ${pillarColor}`}>{factor.label}</div>
+                            <div className={`text-lg font-bold ${pillarColor.replace('text-', 'text-').replace('-800', '-600')}`}>
+                              {factor.weight > 1 ? (factor.weight).toFixed(1) : (factor.weight * 100).toFixed(1)}%
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                  <div className="text-sm text-gray-500 mt-2">As of {new Date().toISOString().split('T')[0]} UTC</div>
+                </>
+              ) : (
+                <div className="text-caption text-gray-600">
+                  Couldn't load configuration. Please refresh the page.
+                </div>
+              )}
+            </div>
           ) : (
             <div className="text-center py-4">
-              <div className="text-caption text-gray-500">Loading factor weights...</div>
+              <div className="text-caption text-gray-500">
+                Loading factor weights configuration...
+              </div>
             </div>
           )}
         </div>
@@ -764,9 +836,36 @@ export default function MethodologyPage() {
                     </div>
                   ))}
                 </div>
+              ) : configError ? (
+                <div className="text-center py-4">
+                  {lastKnownConfig?.pillars ? (
+                    <>
+                      <div className="text-caption text-gray-600 mb-3">
+                        {configError}; showing last-known values.
+                      </div>
+                      <div className="space-y-3">
+                        {Object.values(lastKnownConfig.pillars)
+                          .sort((a, b) => b.weight - a.weight)
+                          .map((pillar) => (
+                            <div key={pillar.label} className="flex items-center justify-between">
+                              <span className="text-body">{pillar.label}</span>
+                              <span className="text-caption font-medium">{pillar.weight > 1 ? (pillar.weight).toFixed(0) : (pillar.weight * 100).toFixed(0)}%</span>
+                            </div>
+                          ))}
+                      </div>
+                      <div className="text-sm text-gray-500 mt-2">As of {new Date().toISOString().split('T')[0]} UTC</div>
+                    </>
+                  ) : (
+                    <div className="text-caption text-gray-600">
+                      Couldn't load configuration. Please refresh the page.
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="text-center py-4">
-                  <div className="text-caption text-gray-500">Loading weights...</div>
+                  <div className="text-caption text-gray-500">
+                    Loading pillar weights configuration...
+                  </div>
                 </div>
               )}
             </div>

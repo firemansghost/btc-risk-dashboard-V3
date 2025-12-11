@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { analytics } from '@/lib/analytics';
 
 interface AssetSwitcherProps {
   className?: string;
@@ -11,9 +12,21 @@ interface AssetSwitcherProps {
 export default function AssetSwitcher({ className = '' }: AssetSwitcherProps) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const [modelVersion, setModelVersion] = useState<string>('v1.1');
 
   useEffect(() => {
     setMounted(true);
+    // Fetch model_version from API (client-safe)
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(data => {
+        if (data?.ok && data.config?.model_version) {
+          setModelVersion(data.config.model_version);
+        }
+      })
+      .catch(() => {
+        // Silent fallback to default
+      });
   }, []);
 
   const assets = [
@@ -64,6 +77,11 @@ export default function AssetSwitcher({ className = '' }: AssetSwitcherProps) {
                 ? 'glass-blue text-blue-900 border border-blue-300/50'
                 : 'text-gray-600 hover:text-gray-900 hover:glass-hover'
             }`}
+            onClick={() => {
+              if (currentAsset !== asset.key) {
+                analytics.assetsTabClicked(asset.key.toUpperCase(), modelVersion);
+              }
+            }}
           >
             <span className="mr-1">{asset.icon}</span>
             {asset.label}

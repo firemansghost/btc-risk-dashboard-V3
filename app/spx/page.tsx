@@ -32,5 +32,9 @@ export default function SPXPage() {
 export const metadata = {
   title: 'GhostGauge — S&P 500 G-Score — Coming Soon',
   description: 'We\'re adapting the GhostGauge framework to S&P 500. Same 0–100 score and band taxonomy, with factors tuned to SPX\'s market structure.',
-  robots: 'noindex',
+  robots: {
+    index: false,
+    follow: false,
+  },
+  // TODO: When live, change to: robots: { index: true }, and add canonical: '/spx'
 };

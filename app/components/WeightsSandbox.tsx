@@ -351,7 +351,7 @@ export default function WeightsSandbox() {
   }
 
   return (
-    <div className="space-y-8" aria-label="Weights Sandbox experimental comparison">
+    <div className="space-y-8" aria-label="Experimental mode. This view does not change the official G-Score.">
       {/* Header */}
       <div className="text-center">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">

@@ -17,3 +17,19 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .vercel
+
+# internal docs
+docs/_internal/
+*_CHECKPOINT*.md
+*_RESUME*.md
+*_STATUS*.md
+*_STEP*.md
+*_BLOCKER*.md
+T_*.md
+GHOSTGAUGE_*.md
+FINAL_*.md
+PR_SUMMARY.md
+
+# node_modules (ensure all subdirs ignored)
+node_modules/
+**/node_modules/

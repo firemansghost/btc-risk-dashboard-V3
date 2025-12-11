@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { getConfig } from '@/lib/riskConfig';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -105,7 +106,13 @@ export async function GET() {
           note: 'Computed via ETL pipeline'
         }
       ],
-      model_version: etlData.version || 'v3.1.0',
+      model_version: (() => {
+        try {
+          return getConfig().model_version || 'v1.1';
+        } catch {
+          return 'v1.1'; // Fallback to SSOT model_version
+        }
+      })(),
       transform: {},
       config_digest: etlData.config_digest || "etl"
     };
