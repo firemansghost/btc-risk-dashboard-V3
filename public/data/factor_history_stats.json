@@ -4,7 +4,7 @@
   "factorStats": {
     "trend_valuation": {
       "dataPoints": 84,
-      "mean": 56.56,
+      "mean": 56.55,
       "stdDev": 12.55,
       "min": 41,
       "max": 95,
@@ -27,8 +27,8 @@
     },
     "stablecoins": {
       "dataPoints": 83,
-      "mean": 52.87,
-      "stdDev": 17.07,
+      "mean": 52.84,
+      "stdDev": 17.09,
       "min": 32,
       "max": 95,
       "range": 63,
@@ -50,8 +50,8 @@
     },
     "net_liquidity": {
       "dataPoints": 84,
-      "mean": 61.69,
-      "stdDev": 13.99,
+      "mean": 61.93,
+      "stdDev": 13.98,
       "min": 34,
       "max": 95,
       "range": 61,
@@ -73,8 +73,8 @@
     },
     "macro_overlay": {
       "dataPoints": 84,
-      "mean": 58.13,
-      "stdDev": 12.67,
+      "mean": 58.11,
+      "stdDev": 12.68,
       "min": 42,
       "max": 95,
       "range": 53,
@@ -84,8 +84,8 @@
     },
     "social_interest": {
       "dataPoints": 84,
-      "mean": 70.71,
-      "stdDev": 20.64,
+      "mean": 70.6,
+      "stdDev": 20.81,
       "min": 30,
       "max": 96,
       "range": 66,
