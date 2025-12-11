@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "url";
 import { computeAllFactors } from "./factors.mjs";
-import { getDashboardConfig, getModelVersion, getSsotVersion } from "../lib/config-loader.mjs";
+import { getDashboardConfig, getModelVersion, getSsotVersion } from "../../lib/config-loader.mjs";
 
 // Resolve absolute paths
 const __filename = fileURLToPath(import.meta.url);

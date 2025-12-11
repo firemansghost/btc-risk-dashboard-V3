@@ -23,10 +23,10 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Use Node 20
+      - name: Use Node 20.18.0
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "20.18.0"
 
       - name: Install deps
         run: npm ci --ignore-scripts --no-audit --fund=false

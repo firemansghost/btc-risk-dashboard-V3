@@ -1677,7 +1677,7 @@ async function checkSchemaTripwire(currentHash) {
 // Helper function to clean old cache files
 async function cleanOldCacheFiles() {
   try {
-    const fs = await import('node:fs');
+    const fs = await import('node:fs/promises');
     const path = await import('node:path');
     
     const cacheDir = 'public/data/cache/etf';
@@ -1691,11 +1691,11 @@ async function cleanOldCacheFiles() {
     for (const file of files) {
       if (file.endsWith('.html')) {
         const filePath = path.join(cacheDir, file);
-        const stats = fs.statSync(filePath);
+        const stats = await fs.stat(filePath);
         const age = now.getTime() - stats.mtime.getTime();
         
         if (age > maxAge) {
-          fs.unlinkSync(filePath);
+          await fs.unlink(filePath);
           cleaned++;
         }
       }
@@ -2702,7 +2702,7 @@ async function computeBtcGoldRates() {
 // Helper function to clean old stablecoins cache files
 async function cleanOldStablecoinsCacheFiles() {
   try {
-    const fs = await import('node:fs');
+    const fs = await import('node:fs/promises');
     const path = await import('node:path');
     
     const cacheDir = 'public/data/cache/stablecoins';
@@ -2716,11 +2716,11 @@ async function cleanOldStablecoinsCacheFiles() {
     for (const file of files) {
       if (file.endsWith('.json')) {
         const filePath = path.join(cacheDir, file);
-        const stats = fs.statSync(filePath);
+        const stats = await fs.stat(filePath);
         const age = now.getTime() - stats.mtime.getTime();
         
         if (age > maxAge) {
-          fs.unlinkSync(filePath);
+          await fs.unlink(filePath);
           cleaned++;
         }
       }
