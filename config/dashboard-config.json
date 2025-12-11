@@ -129,6 +129,7 @@
       "description": "Funding rates, basis, and open interest",
       "staleness": {
         "ttl_hours": 6,
+        "stale_beyond_hours": 12,
         "market_dependent": true,
         "business_days_only": false
       }

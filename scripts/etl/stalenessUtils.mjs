@@ -62,13 +62,15 @@ export function getDataAgeDays(dataTimestamp) {
  * @param {boolean} options.marketDependent - Whether factor depends on market hours
  * @param {boolean} options.businessDaysOnly - Whether to only count business days
  * @param {string} options.factorName - Factor name for logging
+ * @param {number} options.staleBeyondHours - Hours beyond which data is considered stale (defaults to ttlHours * 2)
  * @returns {Object} {isStale: boolean, reason: string, ageHours: number, ageDays: number}
  */
 export function checkStaleness(dataTimestamp, ttlHours, options = {}) {
   const {
     marketDependent = false,
     businessDaysOnly = false,
-    factorName = 'unknown'
+    factorName = 'unknown',
+    staleBeyondHours = ttlHours * 2
   } = options;
 
   if (!dataTimestamp) {
@@ -85,11 +87,21 @@ export function checkStaleness(dataTimestamp, ttlHours, options = {}) {
   const ageHours = getDataAgeHours(dataTimestamp);
   const ageDays = getDataAgeDays(dataTimestamp);
 
-  // Basic TTL check
+  // Basic TTL check - fresh if within TTL
   if (ageHours <= ttlHours) {
     return {
       isStale: false,
       reason: 'fresh',
+      ageHours,
+      ageDays
+    };
+  }
+  
+  // Stale beyond threshold check
+  if (ageHours > staleBeyondHours) {
+    return {
+      isStale: true,
+      reason: 'stale_beyond_ttl',
       ageHours,
       ageDays
     };
@@ -167,7 +179,19 @@ export function getStalenessStatus(factorResult, ttlHours, options = {}) {
   }
 
   // Check if factor result includes its own timestamp
-  const dataTimestamp = factorResult.lastUpdated || factorResult.timestamp || new Date().toISOString();
+  // IMPORTANT: Only use lastUpdated, never fall back to timestamp (which might be from funding data)
+  const dataTimestamp = factorResult.lastUpdated || new Date().toISOString();
+  
+  // Debug: log if timestamp seems old
+  if (factorResult.lastUpdated) {
+    const ageHours = getDataAgeHours(factorResult.lastUpdated);
+    if (ageHours > 24) {
+      console.warn(`[staleness] ${options.factorName || 'unknown'}: lastUpdated=${factorResult.lastUpdated}, age=${ageHours.toFixed(1)}h`);
+    }
+  } else if (factorResult.timestamp) {
+    // Warn if we're falling back to timestamp (shouldn't happen)
+    console.warn(`[staleness] ${options.factorName || 'unknown'}: WARNING - using timestamp fallback (${factorResult.timestamp}) instead of lastUpdated`);
+  }
   
   const stalenessCheck = checkStaleness(dataTimestamp, ttlHours, options);
   
@@ -215,10 +239,11 @@ export const STALENESS_CONFIG = {
     description: 'CoinGecko 24/7 price data, 1-day TTL'
   },
   term_leverage: {
-    ttlHours: 24, // 1 day
-    marketDependent: false, // Funding rates are 24/7
+    ttlHours: 6, // 6 hours (from SSOT)
+    staleBeyondHours: 12, // 12 hours (from SSOT)
+    marketDependent: true, // Market-dependent per SSOT
     businessDaysOnly: false,
-    description: 'BitMEX funding rates 24/7, 1-day TTL'
+    description: 'BitMEX funding rates 24/7, 6h TTL, 12h stale threshold'
   },
   onchain: {
     ttlHours: 96, // 4 days
@@ -241,13 +266,34 @@ export const STALENESS_CONFIG = {
 };
 
 /**
- * Get staleness configuration for a factor
+ * Get staleness configuration for a factor from SSOT
  * @param {string} factorKey 
  * @returns {Object} Staleness configuration
  */
-export function getStalenessConfig(factorKey) {
+export async function getStalenessConfig(factorKey) {
+  try {
+    // Load from SSOT config
+    const { loadDashboardConfig } = await import('../../lib/config-loader.mjs');
+    const config = await loadDashboardConfig();
+    const factorConfig = config.factors[factorKey];
+    
+    if (factorConfig && factorConfig.staleness) {
+      return {
+        ttlHours: factorConfig.staleness.ttl_hours || 24,
+        staleBeyondHours: factorConfig.staleness.stale_beyond_hours || (factorConfig.staleness.ttl_hours * 2) || 12,
+        marketDependent: factorConfig.staleness.market_dependent || false,
+        businessDaysOnly: factorConfig.staleness.business_days_only || false,
+        description: `SSOT config: ${factorConfig.staleness.ttl_hours}h TTL, ${factorConfig.staleness.stale_beyond_hours || (factorConfig.staleness.ttl_hours * 2) || 12}h stale threshold`
+      };
+    }
+  } catch (error) {
+    console.warn(`[staleness] Failed to load SSOT config for ${factorKey}, using fallback: ${error.message}`);
+  }
+  
+  // Fallback to hardcoded config
   return STALENESS_CONFIG[factorKey] || {
     ttlHours: 24,
+    staleBeyondHours: 12,
     marketDependent: false,
     businessDaysOnly: false,
     description: 'Default 1-day TTL'

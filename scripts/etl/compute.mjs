@@ -356,7 +356,57 @@ async function runSelfCheck() {
       process.exit(1);
     }
 
-    // 5. Print success banner
+    // 5. Check for stale factors in cache (pre-flight TTL audit)
+    const { getStalenessConfig, getDataAgeHours } = await import('./stalenessUtils.mjs');
+    const configForStaleness = await getDashboardConfig();
+    const factors = Object.entries(configForStaleness.factors).filter(([_, f]) => f.enabled);
+    
+    let staleFactors = [];
+    for (const [factorKey, factorConfig] of factors) {
+      if (!factorConfig.staleness) continue;
+      
+      try {
+        const cachePath = path.join(cacheDir, factorKey, `${factorKey}_cache.json`);
+        if (await fs.access(cachePath).then(() => true).catch(() => false)) {
+          const cacheContent = await fs.readFile(cachePath, 'utf8');
+          const cacheData = JSON.parse(cacheContent);
+          const lastUpdated = cacheData.lastUpdated || cacheData.cachedAt;
+          
+          if (lastUpdated) {
+            const stalenessConfig = await getStalenessConfig(factorKey);
+            const ageHours = getDataAgeHours(lastUpdated);
+            
+            if (ageHours > stalenessConfig.staleBeyondHours) {
+              staleFactors.push({
+                key: factorKey,
+                lastUpdated,
+                ageHours: ageHours.toFixed(1),
+                ttl: stalenessConfig.ttlHours,
+                staleBeyond: stalenessConfig.staleBeyondHours
+              });
+            }
+          }
+        }
+      } catch (error) {
+        // Cache file doesn't exist or is invalid, skip
+      }
+    }
+    
+    if (staleFactors.length > 0) {
+      console.log(`[ETL self-check] WARNING: ${staleFactors.length} factor(s) are STALE in cache:`);
+      for (const factor of staleFactors) {
+        console.log(`[ETL self-check]   ${factor.key}: last_updated_utc=${factor.lastUpdated}, age_hours=${factor.ageHours}, ttl=${factor.ttl}, stale>${factor.staleBeyond}`);
+      }
+      
+      // Exit non-zero if 3+ consecutive days stale (72+ hours)
+      const criticalStale = staleFactors.filter(f => parseFloat(f.ageHours) >= 72);
+      if (criticalStale.length > 0) {
+        console.error(`[ETL self-check] CRITICAL: ${criticalStale.length} factor(s) stale for 3+ days. Exiting.`);
+        process.exit(1);
+      }
+    }
+
+    // 6. Print success banner
     console.log(`[ETL self-check] model_version=${modelVersion} • ssot_version=${ssotVersion} • node=${process.version} • cwd=${process.cwd()}`);
     console.log(`[ETL self-check] OK (cache write/read verified at ${cacheDir})`);
   } catch (error) {
@@ -947,6 +997,23 @@ async function main() {
     // File doesn't exist or is invalid, start fresh
   }
   
+  // Get term_leverage status for transparency
+  const termFactor = factorResults.factors.find(f => f.key === 'term_leverage');
+  let termLeverageStatus = null;
+  if (termFactor) {
+    const { getStalenessConfig } = await import('./stalenessUtils.mjs');
+    const stalenessConfig = await getStalenessConfig('term_leverage');
+    termLeverageStatus = {
+      status: termFactor.status,
+      last_updated_utc: termFactor.last_utc || termFactor.lastUpdated || null,
+      providers: termFactor.providers || { bitmex: 'unknown', binance: 'unknown', okx: 'unknown' },
+      ttl_hours: stalenessConfig.ttlHours,
+      stale_beyond_hours: stalenessConfig.staleBeyondHours || (stalenessConfig.ttlHours * 2),
+      score: termFactor.score,
+      reason: termFactor.reason
+    };
+  }
+  
   const status = {
     ...existingStatus, // Preserve existing data like etf_schema_hash
     updated_at: new Date().toISOString(),
@@ -964,6 +1031,7 @@ async function main() {
     ],
     factors_computed: factorResults.factors.length,
     factors_successful: factorResults.factors.filter(f => f.status === 'fresh').length,
+    term_leverage: termLeverageStatus,
     gold_cross_rates: goldResult.success ? {
       status: "success",
       source: goldResult.data.provenance[0]?.name || "unknown",

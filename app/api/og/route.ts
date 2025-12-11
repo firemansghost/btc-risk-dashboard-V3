@@ -16,7 +16,7 @@ function getBandColor(bandColor: string): string {
 export async function GET(request: NextRequest) {
   try {
     // Read the latest data
-    const latestData = await fetch(`${request.nextUrl.origin}/data/latest.json`, {
+    const latestData = await fetch(`${request.nextUrl.origin}/api/data/latest-file?v=${Date.now()}`, {
       cache: 'no-store'
     });
     

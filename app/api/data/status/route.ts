@@ -1,0 +1,64 @@
+// app/api/data/status/route.ts
+// API route to serve status.json with proper cache headers
+import { NextResponse } from 'next/server';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export async function GET() {
+  try {
+    // Read from public/data/status.json (where ETL writes)
+    const possiblePaths = [
+      path.join(process.cwd(), 'public', 'data', 'status.json'),
+      path.join(process.cwd(), '..', 'public', 'data', 'status.json'),
+      './public/data/status.json',
+      '../public/data/status.json'
+    ];
+    
+    let content = null;
+    let filePath = null;
+    
+    for (const testPath of possiblePaths) {
+      try {
+        content = await fs.readFile(testPath, 'utf8');
+        filePath = testPath;
+        break;
+      } catch (e) {
+        // Try next path
+      }
+    }
+    
+    if (!content) {
+      throw new Error('Could not find status.json in any expected location');
+    }
+    
+    const statusData = JSON.parse(content);
+    
+    // Return with no-cache headers to prevent edge/browser caching
+    return NextResponse.json(statusData, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'X-Content-Type-Options': 'nosniff',
+        'X-File-Path': filePath || 'unknown'
+      }
+    });
+  } catch (error) {
+    console.error('API Error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ 
+      error: `Error: ${errorMessage}`,
+      details: String(error)
+    }, { 
+      status: 404,
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+      }
+    });
+  }
+}
+

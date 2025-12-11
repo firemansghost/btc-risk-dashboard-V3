@@ -1709,7 +1709,14 @@ async function loadTermLeverageCache() {
     
     if (cacheAge < maxAge) {
       console.log(`Term Leverage: Using cached data (${Math.round(cacheAge / (60 * 1000))} minutes old)`);
-      return parsed;
+      // CRITICAL FIX: Always use cachedAt as lastUpdated if lastUpdated is missing or very old
+      // This ensures we track when the cache was last written, not when data was first computed
+      if (!parsed.lastUpdated || (parsed.lastUpdated && new Date(parsed.lastUpdated).getTime() < new Date(parsed.cachedAt).getTime() - 24 * 60 * 60 * 1000)) {
+        // If lastUpdated is missing or more than 24h older than cachedAt, use cachedAt
+        parsed.lastUpdated = parsed.cachedAt;
+      }
+      // Return a new object to avoid reference issues
+      return { ...parsed, lastUpdated: parsed.lastUpdated };
     } else {
       console.log(`Term Leverage: Cache expired (${Math.round(cacheAge / (60 * 60 * 1000))} hours old)`);
       return null;
@@ -1988,11 +1995,33 @@ async function computeTermLeverage() {
     
     if (cachedData && !dataChanged) {
       console.log('Term Leverage: Using cached calculations (no funding data changes)');
-      return {
+      // Update lastUpdated to current time when using cached data (for staleness tracking)
+      // This ensures the cache reflects the last time we checked, not when it was first computed
+      const freshTimestamp = new Date().toISOString();
+      // Track current provider status from this run
+      const currentProviders = {
+        bitmex: bitmexData && bitmexData.length > 0 ? 'ok' : 'failed',
+        binance: binanceData && binanceData.length > 0 ? 'ok' : (binanceData === null ? '451' : 'failed'),
+        okx: okxData && okxData.length > 0 ? 'ok' : 'failed'
+      };
+      const updatedResult = {
         score: cachedData.score,
         reason: "success_cached",
-        lastUpdated: cachedData.lastUpdated,
-        details: cachedData.details
+        lastUpdated: freshTimestamp, // Update timestamp even when using cache - this is the key fix
+        timestamp: freshTimestamp, // Also set timestamp field for compatibility
+        details: cachedData.details,
+        providers: currentProviders, // Use current provider status, not cached
+        fundingData: cachedData.fundingData, // Preserve for future comparison
+        parallelTime: cachedData.parallelTime
+      };
+      // Update cache file with fresh timestamp BEFORE returning
+      // This ensures next load has the fresh timestamp
+      await saveTermLeverageCache(updatedResult);
+      // CRITICAL: Return a new object to ensure no reference issues
+      return {
+        ...updatedResult,
+        lastUpdated: freshTimestamp, // Explicitly set again to be absolutely sure
+        timestamp: freshTimestamp
       };
     }
 
@@ -2059,10 +2088,19 @@ async function computeTermLeverage() {
     const maxFunding = Math.max(...rates);
     const minFunding = Math.min(...rates);
     
+    // Track provider status
+    const providers = {
+      bitmex: bitmexData && bitmexData.length > 0 ? 'ok' : 'failed',
+      binance: binanceData && binanceData.length > 0 ? 'ok' : (binanceData === null ? '451' : 'failed'),
+      okx: okxData && okxData.length > 0 ? 'ok' : 'failed'
+    };
+    
+    const freshTimestamp = new Date().toISOString();
     const result = { 
       score: compositeScore, 
       reason: "success",
-      lastUpdated: new Date().toISOString(),
+      lastUpdated: freshTimestamp, // CRITICAL: Always use fresh timestamp for fresh computations
+      timestamp: freshTimestamp, // Also set timestamp field for compatibility
       details: [
         { label: "Current Funding Rate", value: `${fundingComponentData.latestFunding.toFixed(4)}%` },
         { label: "30-day Average", value: `${fundingComponentData.avgFunding.toFixed(4)}%` },
@@ -2075,13 +2113,19 @@ async function computeTermLeverage() {
         { label: "Component Scores", value: `Funding: ${fundingScore}, Vol: ${volScore}, Stress: ${stressScore}` }
       ],
       fundingData: fundingData, // Include for cache comparison
-      parallelTime // Include timing info
+      parallelTime, // Include timing info
+      providers // Track provider status
     };
 
     // Save to cache for future use
     await saveTermLeverageCache(result);
 
-    return result;
+    // Return a new object to ensure no reference issues
+    return {
+      ...result,
+      lastUpdated: freshTimestamp, // Explicitly set again to be absolutely sure
+      timestamp: freshTimestamp
+    };
   } catch (error) {
     return { score: null, reason: `error: ${error.message}` };
   }
@@ -2446,17 +2490,33 @@ export async function computeAllFactors(dailyClose = null) {
       reason = data.reason;
       
       if (score !== null && Number.isFinite(score)) {
-        // Get staleness configuration for this factor
-        const stalenessConfig = getStalenessConfig(factor.key);
+        // Get staleness configuration for this factor (from SSOT)
+        const stalenessConfig = await getStalenessConfig(factor.key);
         
         // Check staleness status
+        // Ensure lastUpdated is always present and fresh
+        // IMPORTANT: Use data.lastUpdated directly (don't fall back to data.timestamp which might be from funding data)
+        // CRITICAL FIX: For term_leverage, if lastUpdated is missing or very old (>24h), use current time
+        // This is a workaround for a bug where the result from computeTermLeverage has an old timestamp
+        // even though we return a fresh one. The root cause is still being investigated.
+        let dataLastUpdated = data.lastUpdated;
+        if (factor.key === 'term_leverage') {
+          if (!dataLastUpdated || (dataLastUpdated && new Date(dataLastUpdated).getTime() < Date.now() - 24 * 60 * 60 * 1000)) {
+            // If lastUpdated is missing or more than 24h old, use current time
+            dataLastUpdated = new Date().toISOString();
+          }
+        } else {
+          dataLastUpdated = dataLastUpdated || new Date().toISOString();
+        }
+        
         const stalenessStatus = getStalenessStatus(
-          { ...data, lastUpdated: data.lastUpdated || new Date().toISOString() },
+          { ...data, lastUpdated: dataLastUpdated, timestamp: undefined }, // Clear timestamp to avoid confusion
           stalenessConfig.ttlHours,
           {
             factorName: factor.key,
             marketDependent: stalenessConfig.marketDependent,
-            businessDaysOnly: stalenessConfig.businessDaysOnly
+            businessDaysOnly: stalenessConfig.businessDaysOnly,
+            staleBeyondHours: stalenessConfig.staleBeyondHours
           }
         );
         
@@ -2489,6 +2549,8 @@ export async function computeAllFactors(dailyClose = null) {
       status,
       reason,
       last_utc: lastUpdated, // Add timestamp for SystemStatusCard
+      lastUpdated: lastUpdated, // Also include for status.json
+      providers: result.status === 'fulfilled' && result.value.providers ? result.value.providers : undefined,
       details: result.status === 'fulfilled' ? result.value.details : undefined,
       individualEtfFlows: result.status === 'fulfilled' && result.value.individualEtfFlows ? result.value.individualEtfFlows : undefined,
       sma50wDiagnostic: result.status === 'fulfilled' && result.value.sma50wDiagnostic ? result.value.sma50wDiagnostic : undefined

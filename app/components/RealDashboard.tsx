@@ -149,10 +149,12 @@ export default function RealDashboard() {
   const load = useCallback(async () => {
     setError(null); setLoading(true); startedAt.current = Date.now();
     try {
+      // Use API routes with cache-busting to avoid edge/browser caching
+      const cacheBuster = `?v=${Date.now()}`;
       const [r1, r2] = await Promise.race([
         Promise.all([
-          fetch('/data/latest.json', { cache:'no-store' }),
-          fetch('/data/status.json', { cache:'no-store' }),
+          fetch(`/api/data/latest-file${cacheBuster}`, { cache:'no-store' }),
+          fetch(`/api/data/status${cacheBuster}`, { cache:'no-store' }),
         ]),
         new Promise<never>((_, rej) => setTimeout(() => rej(new Error('Timeout 12s: fetch artifacts')), 12000)),
       ]);
@@ -851,6 +853,22 @@ export default function RealDashboard() {
                 </div>
               </div>
               
+              {/* Debug Details (only for term_leverage when debug flag is on) */}
+              {factor.key === 'term_leverage' && process.env.NEXT_PUBLIC_DEBUG_FACTORS === 'true' && status && (
+                <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200 text-xs font-mono">
+                  <div className="font-semibold text-blue-800 mb-2">Debug Details (Term Leverage):</div>
+                  <div className="space-y-1 text-blue-700">
+                    <div>Last updated (UTC): {status.term_leverage?.last_updated_utc || 'N/A'}</div>
+                    <div>Status: {status.term_leverage?.status || 'N/A'} {status.term_leverage?.reason ? `(${status.term_leverage.reason})` : ''}</div>
+                    <div>Endpoint: /api/data/status</div>
+                    <div>Cache-Control: no-store, no-cache, must-revalidate</div>
+                    <div>Factor status from latest.json: {factor.status}</div>
+                    <div>Factor reason from latest.json: {factor.reason || 'N/A'}</div>
+                    <div>Factor last_utc from latest.json: {factor.last_utc || 'N/A'}</div>
+                  </div>
+                </div>
+              )}
+
               {/* Excluded Factor State */}
               {staleness.level === 'excluded' ? (
                 <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">

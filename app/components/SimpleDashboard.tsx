@@ -30,7 +30,7 @@ export default function SimpleDashboard() {
       try {
         console.log('SimpleDashboard: Loading data...');
         
-        const response = await fetch('/data/latest.json', { 
+        const response = await fetch(`/api/data/latest-file?v=${Date.now()}`, { 
           cache: 'no-store',
           headers: {
             'Cache-Control': 'no-cache'
