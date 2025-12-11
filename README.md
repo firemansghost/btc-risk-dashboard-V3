@@ -1,3 +1,5 @@
+[![Bundle Size](https://img.shields.io/badge/bundle%20size-3.43 MB-blue)](https://github.com/firemansghost/btc-risk-dashboard-V3/actions)
+
 # Bitcoin Risk Dashboard
 
 A real-time Bitcoin risk assessment dashboard that provides a 0-100 risk score based on five analytical pillars: Liquidity, Momentum, Leverage, Macro, and Social factors. The system offers complete transparency with detailed factor breakdowns, historical tracking, and configurable weights.
