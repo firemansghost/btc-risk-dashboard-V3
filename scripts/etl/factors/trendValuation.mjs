@@ -80,6 +80,30 @@ function hasPriceDataChanged(currentCandles, cachedData) {
 }
 
 /**
+ * Check if unified price history CSV has been modified since cache was created
+ * @param {string} csvPath - Path to price history CSV
+ * @param {Object} cachedData - Cached data with cachedAt timestamp
+ * @returns {Promise<boolean>} True if CSV is newer than cache
+ */
+async function hasPriceHistoryCsvChanged(csvPath, cachedData) {
+  if (!cachedData || !cachedData.cachedAt) {
+    return true; // No cache, must recompute
+  }
+  
+  try {
+    const csvStats = await fs.stat(csvPath);
+    const cacheTime = new Date(cachedData.cachedAt).getTime();
+    const csvMtime = csvStats.mtime.getTime();
+    
+    // If CSV was modified after cache was created, recompute
+    return csvMtime > cacheTime;
+  } catch (error) {
+    // CSV doesn't exist or can't be read, assume changed
+    return true;
+  }
+}
+
+/**
  * Calculate BMSB component in parallel
  * @param {Array} weeklyCloses - Weekly close data
  * @returns {Promise<Object>} BMSB calculation result
@@ -472,14 +496,33 @@ export async function computeTrendValuation(dailyClose = null) {
     }
 
     // Check if we can use cached data (incremental update)
-    const dataChanged = hasPriceDataChanged(candles, cachedData);
+    // Also check if unified price history CSV has been modified
+    const priceHistoryCsvPath = join('../../public/data/btc_price_history.csv');
+    const csvChanged = await hasPriceHistoryCsvChanged(priceHistoryCsvPath, cachedData);
+    const dataChanged = hasPriceDataChanged(candles, cachedData) || csvChanged;
     
-    if (cachedData && !dataChanged) {
+    // Also check cache age against TTL (6h) and stale_beyond_hours (12h)
+    let cacheTooOld = false;
+    if (cachedData && cachedData.cachedAt) {
+      const { getStalenessConfig, getDataAgeHours } = await import('../stalenessUtils.mjs');
+      const stalenessConfig = await getStalenessConfig('trend_valuation');
+      const ageHours = getDataAgeHours(cachedData.cachedAt);
+      
+      // Recompute if cache is older than stale_beyond_hours (12h) or TTL (6h) if we're being strict
+      if (ageHours > stalenessConfig.staleBeyondHours || ageHours > stalenessConfig.ttlHours) {
+        cacheTooOld = true;
+      }
+    }
+    
+    if (cachedData && !dataChanged && !cacheTooOld) {
       console.log('Trend & Valuation: Using cached calculations (no price data changes)');
-      return {
+      // Update lastUpdated to current time when using cached data (for staleness tracking)
+      const freshTimestamp = new Date().toISOString();
+      const updatedResult = {
         score: cachedData.score,
         reason: "success_cached",
-        lastUpdated: cachedData.lastUpdated,
+        lastUpdated: freshTimestamp, // Update timestamp even when using cache
+        timestamp: freshTimestamp,
         details: cachedData.details,
         bmsb: cachedData.bmsb,
         weeklyClose: cachedData.weeklyClose,
@@ -487,6 +530,9 @@ export async function computeTrendValuation(dailyClose = null) {
         sma50wDiagnostic: cachedData.sma50wDiagnostic,
         provenance: cachedData.provenance || [provenance]
       };
+      // Update cache file with fresh timestamp
+      await saveTrendValuationCache(updatedResult);
+      return updatedResult;
     }
 
     console.log('Trend & Valuation: Computing fresh calculations (price data changed or no cache)');

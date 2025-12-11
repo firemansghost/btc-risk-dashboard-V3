@@ -306,6 +306,95 @@ function riskBand(score) {
 }
 
 /**
+ * Post-compute health check: Verify all required factors are fresh after recompute
+ */
+async function runPostComputeHealthCheck(factorResults, statusData) {
+  const softFail = process.argv.includes('--soft-fail');
+  
+  try {
+    // Re-read status.json to get the latest state
+    let status;
+    try {
+      const statusContent = await fs.readFile("public/data/status.json", "utf8");
+      status = JSON.parse(statusContent);
+    } catch (error) {
+      console.warn(`[ETL post-check] Could not read status.json: ${error.message}`);
+      if (!softFail) process.exit(1);
+      return;
+    }
+    
+    // Get enabled factors from SSOT
+    const config = await getDashboardConfig();
+    const enabledFactors = Object.entries(config.factors)
+      .filter(([_, f]) => f.enabled)
+      .map(([key, _]) => key);
+    
+    const { getStalenessConfig, getDataAgeHours } = await import('./stalenessUtils.mjs');
+    
+    let failedFactors = [];
+    
+    for (const factorKey of enabledFactors) {
+      // Find factor in results
+      const factorResult = factorResults.factors.find(f => f.key === factorKey);
+      if (!factorResult) {
+        failedFactors.push({
+          key: factorKey,
+          reason: 'not_computed',
+          last_updated_utc: null
+        });
+        continue;
+      }
+      
+      // Check if factor is fresh
+      if (factorResult.status !== 'fresh') {
+        const lastUpdated = factorResult.last_utc || factorResult.lastUpdated || null;
+        failedFactors.push({
+          key: factorKey,
+          reason: factorResult.reason || factorResult.status || 'unknown',
+          last_updated_utc: lastUpdated
+        });
+        continue;
+      }
+      
+      // Verify timestamp is within TTL
+      const lastUpdated = factorResult.last_utc || factorResult.lastUpdated;
+      if (lastUpdated) {
+        const stalenessConfig = await getStalenessConfig(factorKey);
+        const ageHours = getDataAgeHours(lastUpdated);
+        
+        if (ageHours > stalenessConfig.ttlHours) {
+          failedFactors.push({
+            key: factorKey,
+            reason: `age_exceeds_ttl (${ageHours.toFixed(1)}h > ${stalenessConfig.ttlHours}h)`,
+            last_updated_utc: lastUpdated
+          });
+        }
+      }
+    }
+    
+    if (failedFactors.length > 0) {
+      console.error(`[ETL post-check] FAIL: ${failedFactors.length} required factor(s) not fresh after recompute:`);
+      for (const factor of failedFactors) {
+        console.error(`[ETL post-check]   ${factor.key} reason=${factor.reason} last_updated_utc=${factor.last_updated_utc || 'null'}`);
+      }
+      
+      if (!softFail) {
+        process.exit(1);
+      } else {
+        console.warn(`[ETL post-check] Soft-fail mode: continuing despite failures`);
+      }
+    } else {
+      console.log(`[ETL post-check] OK: all required factors fresh`);
+    }
+  } catch (error) {
+    console.error(`[ETL post-check] Error during health check: ${error.message}`);
+    if (!softFail) {
+      process.exit(1);
+    }
+  }
+}
+
+/**
  * ETL Self-Check: Validate config and cache writeability before heavy work
  */
 async function runSelfCheck() {
@@ -356,18 +445,23 @@ async function runSelfCheck() {
       process.exit(1);
     }
 
-    // 5. Check for stale factors in cache (pre-flight TTL audit)
+    // 5. Check for stale factors in cache and purge them (pre-flight TTL audit)
     const { getStalenessConfig, getDataAgeHours } = await import('./stalenessUtils.mjs');
+    const { purgeFactorCache } = await import('./factors.mjs');
     const configForStaleness = await getDashboardConfig();
     const factors = Object.entries(configForStaleness.factors).filter(([_, f]) => f.enabled);
     
     let staleFactors = [];
+    let purgedCount = 0;
+    
     for (const [factorKey, factorConfig] of factors) {
       if (!factorConfig.staleness) continue;
       
       try {
         const cachePath = path.join(cacheDir, factorKey, `${factorKey}_cache.json`);
-        if (await fs.access(cachePath).then(() => true).catch(() => false)) {
+        const cacheExists = await fs.access(cachePath).then(() => true).catch(() => false);
+        
+        if (cacheExists) {
           const cacheContent = await fs.readFile(cachePath, 'utf8');
           const cacheData = JSON.parse(cacheContent);
           const lastUpdated = cacheData.lastUpdated || cacheData.cachedAt;
@@ -376,7 +470,9 @@ async function runSelfCheck() {
             const stalenessConfig = await getStalenessConfig(factorKey);
             const ageHours = getDataAgeHours(lastUpdated);
             
-            if (ageHours > stalenessConfig.staleBeyondHours) {
+            // Purge if cache is older than stale_beyond_hours (or 24h as fallback)
+            const purgeThreshold = stalenessConfig.staleBeyondHours || 24;
+            if (ageHours > purgeThreshold) {
               staleFactors.push({
                 key: factorKey,
                 lastUpdated,
@@ -384,6 +480,13 @@ async function runSelfCheck() {
                 ttl: stalenessConfig.ttlHours,
                 staleBeyond: stalenessConfig.staleBeyondHours
               });
+              
+              // Purge the stale cache
+              const purged = await purgeFactorCache(factorKey, cachePath);
+              if (purged) {
+                purgedCount++;
+                console.log(`[ETL self-check] purged stale cache: ${factorKey} (age=${ageHours.toFixed(1)}h, stale>${purgeThreshold}h)`);
+              }
             }
           }
         }
@@ -392,23 +495,22 @@ async function runSelfCheck() {
       }
     }
     
-    if (staleFactors.length > 0) {
-      console.log(`[ETL self-check] WARNING: ${staleFactors.length} factor(s) are STALE in cache:`);
+    if (staleFactors.length > 0 && purgedCount === 0) {
+      console.log(`[ETL self-check] WARNING: ${staleFactors.length} factor(s) are STALE in cache (purge attempted but failed):`);
       for (const factor of staleFactors) {
         console.log(`[ETL self-check]   ${factor.key}: last_updated_utc=${factor.lastUpdated}, age_hours=${factor.ageHours}, ttl=${factor.ttl}, stale>${factor.staleBeyond}`);
       }
-      
-      // Exit non-zero if 3+ consecutive days stale (72+ hours)
-      const criticalStale = staleFactors.filter(f => parseFloat(f.ageHours) >= 72);
-      if (criticalStale.length > 0) {
-        console.error(`[ETL self-check] CRITICAL: ${criticalStale.length} factor(s) stale for 3+ days. Exiting.`);
-        process.exit(1);
-      }
+    } else if (purgedCount > 0) {
+      console.log(`[ETL self-check] purged ${purgedCount} stale cache file(s) - will recompute`);
     }
 
     // 6. Print success banner
     console.log(`[ETL self-check] model_version=${modelVersion} • ssot_version=${ssotVersion} • node=${process.version} • cwd=${process.cwd()}`);
-    console.log(`[ETL self-check] OK (cache write/read verified at ${cacheDir})`);
+    if (purgedCount > 0) {
+      console.log(`[ETL self-check] OK (cache write/read verified at ${cacheDir}, ${purgedCount} stale cache(s) purged)`);
+    } else {
+      console.log(`[ETL self-check] OK (cache write/read verified at ${cacheDir})`);
+    }
   } catch (error) {
     console.error(`[ETL self-check] Failed: ${error.message}`);
     process.exit(1);
@@ -416,6 +518,38 @@ async function runSelfCheck() {
 }
 
 async function main() {
+  // Check for force-recompute flag
+  const forceRecomputeArg = process.argv.find(arg => arg.startsWith('--force-recompute='));
+  const forceRecomputeTarget = forceRecomputeArg ? forceRecomputeArg.split('=')[1] : null;
+  
+  // Purge caches if force-recompute is requested
+  if (forceRecomputeTarget) {
+    const { purgeFactorCache } = await import('./factors.mjs');
+    const cacheDir = path.resolve(process.cwd(), 'public/data/cache');
+    const config = await getDashboardConfig();
+    const factors = Object.entries(config.factors).filter(([_, f]) => f.enabled);
+    
+    if (forceRecomputeTarget === 'all') {
+      console.log(`[ETL] Force-recompute: purging all factor caches`);
+      for (const [factorKey, _] of factors) {
+        const cachePath = path.join(cacheDir, factorKey, `${factorKey}_cache.json`);
+        const purged = await purgeFactorCache(factorKey, cachePath);
+        if (purged) {
+          console.log(`[ETL] purged cache: ${factorKey}`);
+        }
+      }
+    } else {
+      // Purge specific factor
+      const cachePath = path.join(cacheDir, forceRecomputeTarget, `${forceRecomputeTarget}_cache.json`);
+      const purged = await purgeFactorCache(forceRecomputeTarget, cachePath);
+      if (purged) {
+        console.log(`[ETL] purged cache: ${forceRecomputeTarget}`);
+      } else {
+        console.log(`[ETL] cache not found for ${forceRecomputeTarget} (will recompute anyway)`);
+      }
+    }
+  }
+  
   // Run self-check first (fail-fast)
   await runSelfCheck();
   
@@ -1151,7 +1285,17 @@ async function main() {
   await fs.writeFile(satsCsvPath, satsCsvLines.join("\n"));
   console.log(`Satoshis per dollar: 1 USD = ${Math.round(satsPerUsd).toLocaleString()} sats, 1 sat = $${usdPerSat.toFixed(8)}`);
 
-  console.log(`ETL compute OK for ${y.date}`);
+  // Post-compute health check: verify all required factors are fresh
+  await runPostComputeHealthCheck(factorResults, status);
+
+  // Print per-factor freshness summary
+  console.log(`\n[ETL post-check] Factor freshness summary:`);
+  for (const factor of factorResults.factors) {
+    const statusIcon = factor.status === 'fresh' ? '✅' : factor.status === 'stale' ? '⚠️' : '❌';
+    console.log(`[ETL post-check]   ${statusIcon} ${factor.key}: ${factor.status} (${factor.reason || 'N/A'})`);
+  }
+
+  console.log(`\nETL compute OK for ${y.date}`);
   console.log(`Composite score: ${composite} (${band.name})`);
   console.log(`Factors: ${factorResults.factors.filter(f => f.status === 'fresh').length}/${factorResults.factors.length} successful`);
   

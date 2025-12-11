@@ -69,6 +69,35 @@ async function ensureDir(dirPath) {
   }
 }
 
+/**
+ * Purge stale cache for a factor
+ * @param {string} factorKey - Factor key (e.g., 'trend_valuation')
+ * @param {string} cachePath - Full path to cache file or directory
+ * @returns {Promise<boolean>} True if purged, false if not found or error
+ */
+export async function purgeFactorCache(factorKey, cachePath) {
+  try {
+    const stats = await fs.stat(cachePath).catch(() => null);
+    if (!stats) {
+      return false; // Cache doesn't exist
+    }
+    
+    if (stats.isFile()) {
+      await fs.unlink(cachePath);
+      return true;
+    } else if (stats.isDirectory()) {
+      // Remove entire directory
+      await fs.rm(cachePath, { recursive: true, force: true });
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.warn(`[purge] Failed to purge cache for ${factorKey} at ${cachePath}: ${error.message}`);
+    return false;
+  }
+}
+
 // Simple percentile rank calculation
 function percentileRank(arr, value) {
   const sorted = arr.filter(Number.isFinite).sort((a, b) => a - b);

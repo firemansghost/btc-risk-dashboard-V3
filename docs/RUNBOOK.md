@@ -362,6 +362,99 @@ curl -X POST http://localhost:8787/alerts \
 - **Health Check**: `/health` endpoint for monitoring
 - **Event Database**: Stores processed events in `tmp/webhook-events.json`
 
+## ETL Self-Check & Cache Management
+
+### Self-Check Behavior
+
+The ETL self-check runs before factor computation and performs the following:
+
+1. **Config Validation**: Verifies `model_version` is present in SSOT config
+2. **Cache Writeability Test**: Ensures `public/data/cache` is writable
+3. **Stale Cache Detection & Purge**: Automatically purges caches older than `stale_beyond_hours` (or 24h fallback)
+4. **Banner Output**: Prints model version, Node version, and working directory
+
+**Key Change**: The self-check no longer hard-fails on stale caches. Instead, it:
+- Logs a WARNING for stale factors
+- Automatically purges stale caches
+- Proceeds with recomputation
+- Only fails if recompute cannot achieve freshness (post-check)
+
+### Post-Compute Health Check
+
+After all factors are computed, the ETL runs a post-compute health check that:
+- Re-reads `status.json` to verify final state
+- Checks all enabled factors are `status: "fresh"`
+- Verifies timestamps are within TTL windows
+- **Fails the job** if any required factor is not fresh after recompute
+
+### CLI Flags
+
+```bash
+# Skip pre-compute self-check (post-check still runs)
+node scripts/etl/compute.mjs --no-selfcheck
+# or
+SELF_CHECK=0 node scripts/etl/compute.mjs
+
+# Force recompute specific factor
+node scripts/etl/compute.mjs --force-recompute=trend_valuation
+
+# Force recompute all factors
+node scripts/etl/compute.mjs --force-recompute=all
+
+# Soft-fail mode (warn but don't exit on post-check failures)
+node scripts/etl/compute.mjs --soft-fail
+```
+
+### Purge Rules
+
+Caches are automatically purged when:
+- Cache age > `stale_beyond_hours` (from SSOT config)
+- Cache age > 24h (fallback if `stale_beyond_hours` not set)
+- `--force-recompute` flag is used
+
+### Manual Factor Recompute
+
+To manually force recompute a single factor:
+
+```bash
+# Purge and recompute trend_valuation
+node scripts/etl/compute.mjs --force-recompute=trend_valuation
+
+# Purge and recompute all factors
+node scripts/etl/compute.mjs --force-recompute=all
+```
+
+### Trend & Valuation Specific Guard
+
+The Trend & Valuation factor has additional guards:
+- Always recomputes if unified price history CSV (`public/data/btc_price_history.csv`) mtime is newer than cache
+- Always recomputes if cache is missing
+- Always recomputes if cache age > TTL (6h) or stale_beyond_hours (12h)
+- Updates `lastUpdated` timestamp even when using cached calculations
+
+### Expected Log Output
+
+**Successful run with stale cache purge:**
+```
+[ETL self-check] model_version=v1.1 • ssot_version=2.1.0 • node=v20.18.0 • cwd=/path/to/repo
+[ETL self-check] purged stale cache: trend_valuation (age=25.3h, stale>12h)
+[ETL self-check] OK (cache write/read verified at /path/to/repo/public/data/cache, 1 stale cache(s) purged)
+...
+[ETL post-check] OK: all required factors fresh
+[ETL post-check] Factor freshness summary:
+[ETL post-check]   ✅ trend_valuation: fresh (fresh (0.0h old))
+[ETL post-check]   ✅ term_leverage: fresh (fresh (0.0h old))
+...
+```
+
+**Failed run (upstream down):**
+```
+[ETL self-check] purged stale cache: term_leverage (age=48.2h, stale>12h)
+...
+[ETL post-check] FAIL: 1 required factor(s) not fresh after recompute:
+[ETL post-check]   term_leverage reason=no_funding_data_any_source last_updated_utc=null
+```
+
 ## Monitoring
 
 ### Health Checks
