@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "url";
 import { computeAllFactors } from "./factors.mjs";
 import { getDashboardConfig, getModelVersion, getSsotVersion } from "../../lib/config-loader.mjs";
+import { fallbackTracker, resetFallbackTracker } from "./fetch-helper.mjs";
 
 // Resolve absolute paths
 const __filename = fileURLToPath(import.meta.url);
@@ -247,10 +248,9 @@ async function loadRiskBands() {
   if (riskBands) return riskBands;
   
   try {
-    const fs = await import('fs');
     const path = await import('path');
     const dashboardConfigPath = path.join(process.cwd(), 'config', 'dashboard-config.json');
-    const dashboardConfigFile = fs.readFileSync(dashboardConfigPath, 'utf8');
+    const dashboardConfigFile = await fs.readFile(dashboardConfigPath, 'utf8');
     const dashboardConfig = JSON.parse(dashboardConfigFile);
     
     if (dashboardConfig.bands && Array.isArray(dashboardConfig.bands)) {
@@ -1086,6 +1086,15 @@ async function main() {
   console.log(`ETL compute OK for ${y.date}`);
   console.log(`Composite score: ${composite} (${band.name})`);
   console.log(`Factors: ${factorResults.factors.filter(f => f.status === 'fresh').length}/${factorResults.factors.length} successful`);
+  
+  // Print end-of-run summary
+  const fallbackCounts = Object.entries(fallbackTracker)
+    .filter(([_, count]) => count > 0)
+    .map(([factor, count]) => `${factor}:${count}`)
+    .join(', ');
+  
+  const fallbackSummary = fallbackCounts ? `fallbacks: {${fallbackCounts}}` : 'fallbacks: {}';
+  console.log(`[ETL summary] ${fallbackSummary}`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

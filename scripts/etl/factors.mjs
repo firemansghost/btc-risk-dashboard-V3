@@ -7,9 +7,9 @@
 // ============================================================================
 
 import fs from 'node:fs/promises';
-import { existsSync } from 'node:fs'; // Only for legacy compatibility checks
 import path from 'node:path';
 import { fileURLToPath } from 'url';
+import { fetchWithRetry, fetchJsonWithRetry, logFallback } from './fetch-helper.mjs';
 
 // Resolve absolute paths for cache directories
 const __filename = fileURLToPath(import.meta.url);
@@ -474,10 +474,9 @@ const NET_LIQUIDITY_CACHE_FILE = 'net_liquidity_cache.json';
  */
 async function loadNetLiquidityCache() {
   try {
-    const fs = await import('node:fs');
     const path = await import('node:path');
     const cachePath = path.join(NET_LIQUIDITY_CACHE_DIR, NET_LIQUIDITY_CACHE_FILE);
-    const cacheData = await fs.readFile(cachePath, { encoding: 'utf8' });
+    const cacheData = await fs.readFile(cachePath, 'utf8');
     const parsed = JSON.parse(cacheData);
     
     // Check if cache is still valid
@@ -502,7 +501,6 @@ async function loadNetLiquidityCache() {
  */
 async function saveNetLiquidityCache(data) {
   try {
-    const fs = await import('node:fs');
     const path = await import('node:path');
     await fs.mkdir(NET_LIQUIDITY_CACHE_DIR, { recursive: true });
     const cachePath = path.join(NET_LIQUIDITY_CACHE_DIR, NET_LIQUIDITY_CACHE_FILE);
@@ -513,7 +511,7 @@ async function saveNetLiquidityCache(data) {
       version: '1.0.0'
     };
     
-    await fs.writeFile(cachePath, JSON.stringify(cacheData, null, 2), { encoding: 'utf8' });
+    await fs.writeFile(cachePath, JSON.stringify(cacheData, null, 2), 'utf8');
     console.log(`Net Liquidity: Cached data saved to ${cachePath}`);
   } catch (error) {
     console.warn(`Net Liquidity: Failed to save cache: ${error.message}`);
@@ -536,35 +534,25 @@ function hasFredDataChanged(currentData, cachedData) {
  * Fetch FRED data with enhanced error handling and retry logic
  */
 async function fetchFredDataWithRetry(seriesId, apiKey, startISO, endISO, maxRetries = 3) {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=w&aggregation_method=avg`;
-      
-      const response = await fetch(url, {
-        headers: { 'User-Agent': 'btc-risk-dashboard' },
-        cache: 'no-store'
-      });
-      
-      if (!response.ok) {
-        if (attempt < maxRetries) {
-          console.log(`Net Liquidity: FRED ${seriesId} attempt ${attempt} failed (${response.status}), retrying...`);
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
-          continue;
-        }
-        throw new Error(`FRED API error for ${seriesId}: ${response.status}`);
+  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=w&aggregation_method=avg`;
+  
+  try {
+    const response = await fetchWithRetry(url, {
+      cache: 'no-store'
+    }, {
+      maxRetries,
+      baseDelay: 1000,
+      onRetry: (attempt, info) => {
+        console.log(`Net Liquidity: FRED ${seriesId} attempt ${attempt} failed (${info.status || 'error'}), retrying...`);
       }
-      
-      const data = await response.json();
-      console.log(`Net Liquidity: FRED ${seriesId} fetched successfully (${data.observations?.length || 0} observations)`);
-      return data;
-    } catch (error) {
-      if (attempt === maxRetries) {
-        console.log(`Net Liquidity: FRED ${seriesId} failed after ${maxRetries} attempts: ${error.message}`);
-        throw error;
-      }
-      console.log(`Net Liquidity: FRED ${seriesId} attempt ${attempt} failed: ${error.message}, retrying...`);
-      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-    }
+    });
+    
+    const data = await response.json();
+    console.log(`Net Liquidity: FRED ${seriesId} fetched successfully (${data.observations?.length || 0} observations)`);
+    return data;
+  } catch (error) {
+    console.log(`Net Liquidity: FRED ${seriesId} failed after ${maxRetries} attempts: ${error.message}`);
+    throw error;
   }
 }
 
@@ -936,61 +924,53 @@ async function computeStablecoins() {
           
           // Source 1: CoinGecko (primary) - Only fetch 30 days for incremental updates
           try {
-            const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=30&interval=daily`);
+            const response = await fetchWithRetry(
+              `https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=30&interval=daily`,
+              {},
+              { maxRetries: 3, baseDelay: 1500 }
+            );
             
-            if (response.ok) {
-              coinData = await response.json();
-              dataSource = 'CoinGecko';
-              console.log(`Stablecoins: ${coin.symbol} data received from CoinGecko`);
-            } else if (response.status === 429) {
-              console.log(`Stablecoins: CoinGecko rate limited for ${coin.symbol}, trying fallback...`);
-            } else {
-              console.log(`Stablecoins: CoinGecko failed for ${coin.symbol}: ${response.status}, trying fallback...`);
-            }
+            coinData = await response.json();
+            dataSource = 'CoinGecko';
+            console.log(`Stablecoins: ${coin.symbol} data received from CoinGecko`);
           } catch (error) {
-            console.log(`Stablecoins: CoinGecko error for ${coin.symbol}: ${error.message}, trying fallback...`);
-          }
-          
-          // Source 2: CoinMarketCap (fallback)
-          if (!coinData) {
+            // Source 2: CoinMarketCap (fallback)
             try {
-              const cmcResponse = await fetch(`https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/historical?id=${coin.cmcId || coin.id}&time_start=${new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()}&time_end=${new Date().toISOString()}`, {
-                headers: {
-                  'X-CMC_PRO_API_KEY': process.env.CMC_API_KEY || '',
-                  'Accept': 'application/json'
-                }
-              });
+              const cmcResponse = await fetchWithRetry(
+                `https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/historical?id=${coin.cmcId || coin.id}&time_start=${new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()}&time_end=${new Date().toISOString()}`,
+                {
+                  headers: {
+                    'X-CMC_PRO_API_KEY': process.env.CMC_API_KEY || '',
+                    'Accept': 'application/json'
+                  }
+                },
+                { maxRetries: 2, baseDelay: 1000 }
+              );
               
-              if (cmcResponse.ok) {
-                const cmcData = await cmcResponse.json();
-                // Convert CMC format to CoinGecko format
-                coinData = convertCmcToCoinGeckoFormat(cmcData, coin.symbol);
-                dataSource = 'CoinMarketCap';
-                console.log(`Stablecoins: ${coin.symbol} data received from CoinMarketCap`);
-              } else {
-                console.log(`Stablecoins: CoinMarketCap failed for ${coin.symbol}: ${cmcResponse.status}`);
-              }
-            } catch (error) {
-              console.log(`Stablecoins: CoinMarketCap error for ${coin.symbol}: ${error.message}`);
-            }
-          }
-          
-          // Source 3: CryptoCompare (final fallback) - Only fetch 30 days
-          if (!coinData) {
-            try {
-              const ccResponse = await fetch(`https://min-api.cryptocompare.com/data/v2/histoday?fsym=${coin.symbol}&tsym=USD&limit=30&api_key=${process.env.CRYPTOCOMPARE_API_KEY || ''}`);
-              
-              if (ccResponse.ok) {
+              const cmcData = await cmcResponse.json();
+              // Convert CMC format to CoinGecko format
+              coinData = convertCmcToCoinGeckoFormat(cmcData, coin.symbol);
+              dataSource = 'CoinMarketCap';
+              logFallback('stablecoins', 'CoinGecko', 'CoinMarketCap');
+              console.log(`Stablecoins: ${coin.symbol} data received from CoinMarketCap`);
+            } catch (cmcError) {
+              // Source 3: CryptoCompare (final fallback) - Only fetch 30 days
+              try {
+                const ccResponse = await fetchWithRetry(
+                  `https://min-api.cryptocompare.com/data/v2/histoday?fsym=${coin.symbol}&tsym=USD&limit=30&api_key=${process.env.CRYPTOCOMPARE_API_KEY || ''}`,
+                  {},
+                  { maxRetries: 2, baseDelay: 1000 }
+                );
+                
                 const ccData = await ccResponse.json();
                 // Convert CryptoCompare format to CoinGecko format
                 coinData = convertCryptoCompareToCoinGeckoFormat(ccData, coin.symbol);
                 dataSource = 'CryptoCompare';
+                logFallback('stablecoins', 'CoinGecko', 'CryptoCompare');
                 console.log(`Stablecoins: ${coin.symbol} data received from CryptoCompare`);
-              } else {
-                console.log(`Stablecoins: CryptoCompare failed for ${coin.symbol}: ${ccResponse.status}`);
+              } catch (ccError) {
+                console.log(`Stablecoins: All data sources failed for ${coin.symbol}`);
               }
-            } catch (error) {
-              console.log(`Stablecoins: CryptoCompare error for ${coin.symbol}: ${error.message}`);
             }
           }
           
@@ -1215,19 +1195,18 @@ async function computeEtfFlows() {
       
       for (const url of urls) {
         try {
-          const res = await fetch(url, { 
+          const res = await fetchWithRetry(url, { 
             headers: { 
               "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36",
               "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
               "Accept-Language": "en-US,en;q=0.9",
               "Cache-Control": "no-cache"
             }
-          });
-          if (res.ok) {
-            html = await res.text();
-            successfulUrl = url;
-            break;
-          }
+          }, { maxRetries: 2, baseDelay: 1000 });
+          
+          html = await res.text();
+          successfulUrl = url;
+          break;
         } catch (error) {
           continue;
         }
@@ -1719,10 +1698,9 @@ const TERM_LEVERAGE_CACHE_FILE = 'term_leverage_cache.json';
  */
 async function loadTermLeverageCache() {
   try {
-    const fs = await import('node:fs');
     const path = await import('node:path');
     const cachePath = path.join(TERM_LEVERAGE_CACHE_DIR, TERM_LEVERAGE_CACHE_FILE);
-    const cacheData = await fs.readFile(cachePath, { encoding: 'utf8' });
+    const cacheData = await fs.readFile(cachePath, 'utf8');
     const parsed = JSON.parse(cacheData);
     
     // Check if cache is still valid
@@ -1747,7 +1725,6 @@ async function loadTermLeverageCache() {
  */
 async function saveTermLeverageCache(data) {
   try {
-    const fs = await import('node:fs');
     const path = await import('node:path');
     await fs.mkdir(TERM_LEVERAGE_CACHE_DIR, { recursive: true });
     const cachePath = path.join(TERM_LEVERAGE_CACHE_DIR, TERM_LEVERAGE_CACHE_FILE);
@@ -1758,7 +1735,7 @@ async function saveTermLeverageCache(data) {
       version: '1.0.0'
     };
     
-    await fs.writeFile(cachePath, JSON.stringify(cacheData, null, 2), { encoding: 'utf8' });
+    await fs.writeFile(cachePath, JSON.stringify(cacheData, null, 2), 'utf8');
     console.log(`Term Leverage: Cached data saved to ${cachePath}`);
   } catch (error) {
     console.warn(`Term Leverage: Failed to save cache: ${error.message}`);
@@ -1787,13 +1764,11 @@ function hasFundingDataChanged(currentFundingData, cachedData) {
  */
 async function fetchBitmexFundingData() {
   try {
-    const response = await fetch("https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&count=30&reverse=true", 
-      { headers: { "User-Agent": "btc-risk-etl" } });
-    
-    if (!response.ok) {
-      console.log(`Term Leverage: BitMEX failed with status ${response.status}`);
-      return null;
-    }
+    const response = await fetchWithRetry(
+      "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&count=30&reverse=true",
+      { headers: { "User-Agent": "btc-risk-etl" } },
+      { maxRetries: 2, baseDelay: 1000 }
+    );
     
     const data = await response.json();
     console.log(`Term Leverage: BitMEX data received (${data.length} records)`);
@@ -1809,17 +1784,20 @@ async function fetchBitmexFundingData() {
  */
 async function fetchBinanceFundingData() {
   try {
-    const response = await fetch("https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=30");
-    
-    if (!response.ok) {
-      console.log(`Term Leverage: Binance failed with status ${response.status}`);
-      return null;
-    }
+    const response = await fetchWithRetry(
+      "https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=30",
+      {},
+      { maxRetries: 2, baseDelay: 1000 }
+    );
     
     const data = await response.json();
     console.log(`Term Leverage: Binance data received (${data.length} records)`);
     return data;
   } catch (error) {
+    // Binance 451 means unavailable, use fallback
+    if (error.message.includes('451')) {
+      logFallback('term', 'Binance', 'BitMEX/OKX');
+    }
     console.log(`Term Leverage: Binance error: ${error.message}`);
     return null;
   }
@@ -1830,12 +1808,11 @@ async function fetchBinanceFundingData() {
  */
 async function fetchOKXFundingData() {
   try {
-    const response = await fetch("https://www.okx.com/api/v5/public/funding-rate-history?instId=BTC-USDT-SWAP&limit=30");
-    
-    if (!response.ok) {
-      console.log(`Term Leverage: OKX failed with status ${response.status}`);
-      return null;
-    }
+    const response = await fetchWithRetry(
+      "https://www.okx.com/api/v5/public/funding-rate-history?instId=BTC-USDT-SWAP&limit=30",
+      {},
+      { maxRetries: 2, baseDelay: 1000 }
+    );
     
     const data = await response.json();
     if (data.code === '0' && data.data) {
@@ -1985,11 +1962,17 @@ async function computeTermLeverage() {
     if (!fundingData || fundingData.length === 0) {
       fundingData = binanceData;
       dataSource = 'Binance';
+      if (binanceData && binanceData.length > 0) {
+        logFallback('term', 'BitMEX', 'Binance');
+      }
     }
     
     if (!fundingData || fundingData.length === 0) {
       fundingData = okxData;
       dataSource = 'OKX';
+      if (okxData && okxData.length > 0) {
+        logFallback('term', 'BitMEX', 'OKX');
+      }
     }
     
     if (!fundingData || fundingData.length === 0) {
@@ -2143,10 +2126,9 @@ const MACRO_OVERLAY_CACHE_FILE = 'macro_overlay_cache.json';
  */
 async function loadMacroOverlayCache() {
   try {
-    const fs = await import('node:fs');
     const path = await import('node:path');
     const cachePath = path.join(MACRO_OVERLAY_CACHE_DIR, MACRO_OVERLAY_CACHE_FILE);
-    const cacheData = await fs.readFile(cachePath, { encoding: 'utf8' });
+    const cacheData = await fs.readFile(cachePath, 'utf8');
     const parsed = JSON.parse(cacheData);
     
     // Check if cache is still valid
@@ -2171,7 +2153,6 @@ async function loadMacroOverlayCache() {
  */
 async function saveMacroOverlayCache(data) {
   try {
-    const fs = await import('node:fs');
     const path = await import('node:path');
     await fs.mkdir(MACRO_OVERLAY_CACHE_DIR, { recursive: true });
     const cachePath = path.join(MACRO_OVERLAY_CACHE_DIR, MACRO_OVERLAY_CACHE_FILE);
@@ -2182,7 +2163,7 @@ async function saveMacroOverlayCache(data) {
       version: '1.0.0'
     };
     
-    await fs.writeFile(cachePath, JSON.stringify(cacheData, null, 2), { encoding: 'utf8' });
+    await fs.writeFile(cachePath, JSON.stringify(cacheData, null, 2), 'utf8');
     console.log(`Macro Overlay: Cached data saved to ${cachePath}`);
   } catch (error) {
     console.warn(`Macro Overlay: Failed to save cache: ${error.message}`);
@@ -2205,35 +2186,25 @@ function hasMacroDataChanged(currentData, cachedData) {
  * Fetch FRED macro data with enhanced error handling and retry logic
  */
 async function fetchMacroFredDataWithRetry(seriesId, apiKey, startISO, endISO, maxRetries = 3) {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=d&aggregation_method=avg`;
-      
-      const response = await fetch(url, {
-        headers: { 'User-Agent': 'btc-risk-dashboard' },
-        cache: 'no-store'
-      });
-      
-      if (!response.ok) {
-        if (attempt < maxRetries) {
-          console.log(`Macro Overlay: FRED ${seriesId} attempt ${attempt} failed (${response.status}), retrying...`);
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
-          continue;
-        }
-        throw new Error(`FRED API error for ${seriesId}: ${response.status}`);
+  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${apiKey}&file_type=json&observation_start=${startISO}&observation_end=${endISO}&frequency=d&aggregation_method=avg`;
+  
+  try {
+    const response = await fetchWithRetry(url, {
+      cache: 'no-store'
+    }, {
+      maxRetries,
+      baseDelay: 1000,
+      onRetry: (attempt, info) => {
+        console.log(`Macro Overlay: FRED ${seriesId} attempt ${attempt} failed (${info.status || 'error'}), retrying...`);
       }
-      
-      const data = await response.json();
-      console.log(`Macro Overlay: FRED ${seriesId} fetched successfully (${data.observations?.length || 0} observations)`);
-      return data;
-    } catch (error) {
-      if (attempt === maxRetries) {
-        console.log(`Macro Overlay: FRED ${seriesId} failed after ${maxRetries} attempts: ${error.message}`);
-        throw error;
-      }
-      console.log(`Macro Overlay: FRED ${seriesId} attempt ${attempt} failed: ${error.message}, retrying...`);
-      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-    }
+    });
+    
+    const data = await response.json();
+    console.log(`Macro Overlay: FRED ${seriesId} fetched successfully (${data.observations?.length || 0} observations)`);
+    return data;
+  } catch (error) {
+    console.log(`Macro Overlay: FRED ${seriesId} failed after ${maxRetries} attempts: ${error.message}`);
+    throw error;
   }
 }
 
@@ -2597,16 +2568,14 @@ async function computeBtcGoldRates() {
       try {
         const startTime = Date.now();
         const url = `https://metals-api.com/api/latest?access_key=${process.env.METALS_API_KEY}&base=USD&symbols=XAU`;
-        const res = await fetch(url, { headers: { "User-Agent": "btc-risk-etl" } });
+        const res = await fetchWithRetry(url, { headers: { "User-Agent": "btc-risk-etl" } }, { maxRetries: 2, baseDelay: 1000 });
         goldLatency = Date.now() - startTime;
         
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success && data.rates && data.rates.XAU) {
-            // Metals API returns XAU as USD per troy ounce
-            goldPrice = data.rates.XAU;
-            goldSource = "Metals API";
-          }
+        const data = await res.json();
+        if (data.success && data.rates && data.rates.XAU) {
+          // Metals API returns XAU as USD per troy ounce
+          goldPrice = data.rates.XAU;
+          goldSource = "Metals API";
         }
       } catch (error) {
         console.warn('Metals API failed:', error.message);
@@ -2618,20 +2587,18 @@ async function computeBtcGoldRates() {
       try {
         const startTime = Date.now();
         const url = `https://www.alphavantage.co/query?function=FX_DAILY&from_symbol=XAU&to_symbol=USD&apikey=${process.env.ALPHAVANTAGE_API_KEY}`;
-        const res = await fetch(url, { headers: { "User-Agent": "btc-risk-etl" } });
+        const res = await fetchWithRetry(url, { headers: { "User-Agent": "btc-risk-etl" } }, { maxRetries: 2, baseDelay: 1000 });
         goldLatency = Date.now() - startTime;
         
-        if (res.ok) {
-          const data = await res.json();
-          if (data["Time Series (FX)"]) {
-            const timeSeries = data["Time Series (FX)"];
-            const dates = Object.keys(timeSeries).sort().reverse();
-            if (dates.length > 0) {
-              const latestDate = dates[0];
-              const latestData = timeSeries[latestDate];
-              goldPrice = parseFloat(latestData["4. close"]);
-              goldSource = "Alpha Vantage";
-            }
+        const data = await res.json();
+        if (data["Time Series (FX)"]) {
+          const timeSeries = data["Time Series (FX)"];
+          const dates = Object.keys(timeSeries).sort().reverse();
+          if (dates.length > 0) {
+            const latestDate = dates[0];
+            const latestData = timeSeries[latestDate];
+            goldPrice = parseFloat(latestData["4. close"]);
+            goldSource = "Alpha Vantage";
           }
         }
       } catch (error) {
@@ -2644,21 +2611,19 @@ async function computeBtcGoldRates() {
       try {
         const startTime = Date.now();
         const url = "https://stooq.com/q/d/l/?s=xauusd&i=d";
-        const res = await fetch(url, { headers: { "User-Agent": "btc-risk-etl" } });
+        const res = await fetchWithRetry(url, { headers: { "User-Agent": "btc-risk-etl" } }, { maxRetries: 2, baseDelay: 1000 });
         goldLatency = Date.now() - startTime;
         
-        if (res.ok) {
-          const csvText = await res.text();
-          const lines = csvText.split('\n').filter(line => line.trim());
-          if (lines.length > 1) {
-            // Parse CSV: Date,Open,High,Low,Close,Volume
-            const lastLine = lines[lines.length - 1];
-            const columns = lastLine.split(',');
-            if (columns.length >= 5) {
-              goldPrice = parseFloat(columns[4]); // Close price
-              goldSource = "Stooq";
-              goldFallback = false; // Stooq is a reliable primary source, not a fallback
-            }
+        const csvText = await res.text();
+        const lines = csvText.split('\n').filter(line => line.trim());
+        if (lines.length > 1) {
+          // Parse CSV: Date,Open,High,Low,Close,Volume
+          const lastLine = lines[lines.length - 1];
+          const columns = lastLine.split(',');
+          if (columns.length >= 5) {
+            goldPrice = parseFloat(columns[4]); // Close price
+            goldSource = "Stooq";
+            goldFallback = false; // Stooq is a reliable primary source, not a fallback
           }
         }
       } catch (error) {
