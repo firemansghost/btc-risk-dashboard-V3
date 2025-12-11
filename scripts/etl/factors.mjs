@@ -3,11 +3,71 @@
 // Simplified versions of the main factor implementations
 
 // ============================================================================
+// IMPORTS
+// ============================================================================
+
+import fs from 'node:fs/promises';
+import { existsSync } from 'node:fs'; // Only for legacy compatibility checks
+import path from 'node:path';
+import { fileURLToPath } from 'url';
+
+// Resolve absolute paths for cache directories
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
 
-
 const ISO = (d) => d.toISOString().split("T")[0];
+
+/**
+ * Helper: Check if file exists (async)
+ */
+async function fileExists(filePath) {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Helper: Read JSON file (async, with error handling)
+ */
+async function readJsonFile(filePath) {
+  try {
+    const content = await fs.readFile(filePath, 'utf8');
+    return JSON.parse(content);
+  } catch (error) {
+    throw new Error(`Failed to read ${filePath}: ${error.message}`);
+  }
+}
+
+/**
+ * Helper: Write JSON file (async, ensures directory exists)
+ */
+async function writeJsonFile(filePath, data) {
+  try {
+    const dir = path.dirname(filePath);
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
+  } catch (error) {
+    throw new Error(`Failed to write ${filePath}: ${error.message}`);
+  }
+}
+
+/**
+ * Helper: Ensure directory exists (async)
+ */
+async function ensureDir(dirPath) {
+  try {
+    await fs.mkdir(dirPath, { recursive: true });
+  } catch (error) {
+    throw new Error(`Failed to create directory ${dirPath}: ${error.message}`);
+  }
+}
 
 // Simple percentile rank calculation
 function percentileRank(arr, value) {
@@ -105,11 +165,12 @@ const SOCIAL_INTEREST_CACHE_FILE = 'social_interest_cache.json';
  */
 async function loadSocialInterestCache() {
   try {
-    const fs = await import('node:fs');
-    const path = await import('node:path');
     const cachePath = path.join(SOCIAL_INTEREST_CACHE_DIR, SOCIAL_INTEREST_CACHE_FILE);
-    const cacheData = await fs.readFile(cachePath, { encoding: 'utf8' });
-    const parsed = JSON.parse(cacheData);
+    if (!(await fileExists(cachePath))) {
+      return null;
+    }
+    
+    const parsed = await readJsonFile(cachePath);
     
     // Check if cache is still valid
     const cacheAge = Date.now() - new Date(parsed.cachedAt).getTime();
@@ -133,9 +194,7 @@ async function loadSocialInterestCache() {
  */
 async function saveSocialInterestCache(data) {
   try {
-    const fs = await import('node:fs');
-    const path = await import('node:path');
-    await fs.mkdir(SOCIAL_INTEREST_CACHE_DIR, { recursive: true });
+    await ensureDir(SOCIAL_INTEREST_CACHE_DIR);
     const cachePath = path.join(SOCIAL_INTEREST_CACHE_DIR, SOCIAL_INTEREST_CACHE_FILE);
     
     const cacheData = {
@@ -144,7 +203,7 @@ async function saveSocialInterestCache(data) {
       version: '1.0.0'
     };
     
-    await fs.writeFile(cachePath, JSON.stringify(cacheData, null, 2), { encoding: 'utf8' });
+    await writeJsonFile(cachePath, cacheData);
     console.log(`Social Interest: Cached data saved to ${cachePath}`);
   } catch (error) {
     console.warn(`Social Interest: Failed to save cache: ${error.message}`);
@@ -824,12 +883,9 @@ async function computeStablecoins() {
     // Load historical baseline for percentile calculation
     let historicalBaseline = null;
     try {
-      const fs = await import('node:fs');
-      if (fs.existsSync(historicalFile)) {
-        const historicalContent = fs.readFileSync(historicalFile, 'utf8');
-        const historicalData = JSON.parse(historicalContent);
-        historicalBaseline = historicalData;
-        console.log(`Stablecoins: Using historical baseline with ${historicalData.changeSeries?.length || 0} data points`);
+      if (await fileExists(historicalFile)) {
+        historicalBaseline = await readJsonFile(historicalFile);
+        console.log(`Stablecoins: Using historical baseline with ${historicalBaseline.changeSeries?.length || 0} data points`);
       }
     } catch (error) {
       console.warn('Stablecoins: Could not load historical baseline:', error.message);
@@ -840,15 +896,14 @@ async function computeStablecoins() {
     let fromCache = false;
     
     try {
-      const fs = await import('node:fs');
-      if (fs.existsSync(cacheFile)) {
-        const cacheContent = fs.readFileSync(cacheFile, 'utf8');
-        cachedData = JSON.parse(cacheContent);
+      if (await fileExists(cacheFile)) {
+        cachedData = await readJsonFile(cacheFile);
         fromCache = true;
         console.log(`Stablecoins: Using cached data from ${today}`);
       }
     } catch (error) {
       // Cache read failed, continue to live fetch
+      console.warn(`Stablecoins: Cache read failed: ${error.message}`);
     }
     
     // Define stablecoins array with expanded coverage and current market weights
@@ -959,13 +1014,11 @@ async function computeStablecoins() {
       // Save to cache if we got live data
       if (responses.length > 0 && !fromCache) {
         try {
-          const fs = await import('node:fs');
-          const path = await import('node:path');
-          fs.mkdirSync(cacheDir, { recursive: true });
-          fs.writeFileSync(cacheFile, JSON.stringify(responses, null, 2), 'utf8');
+          await ensureDir(cacheDir);
+          await writeJsonFile(cacheFile, responses);
           console.log(`Stablecoins: Saved live data to cache ${cacheFile}`);
         } catch (error) {
-          console.warn('Stablecoins: Failed to save to cache:', error.message);
+          console.warn(`Stablecoins: Failed to save to cache: ${error.message}`);
         }
       }
     } else {
@@ -1096,7 +1149,7 @@ async function computeStablecoins() {
           dataPoints: updatedChangeSeries.length
         };
         
-        fs.writeFileSync(historicalFile, JSON.stringify(updatedHistoricalData, null, 2), 'utf8');
+        await writeJsonFile(historicalFile, updatedHistoricalData);
         console.log(`Stablecoins: Updated historical baseline with ${updatedChangeSeries.length} data points`);
       } catch (error) {
         console.warn('Stablecoins: Failed to update historical baseline:', error.message);
@@ -1141,14 +1194,14 @@ async function computeEtfFlows() {
     let fromCache = false;
     
     try {
-      const fs = await import('node:fs');
-      if (fs.existsSync(cacheFile)) {
-        html = fs.readFileSync(cacheFile, 'utf8');
+      if (await fileExists(cacheFile)) {
+        html = await fs.readFile(cacheFile, 'utf8');
         fromCache = true;
         console.log(`ETF Flows: Using cached data from ${today}`);
       }
     } catch (error) {
       // Cache read failed, continue to live fetch
+      console.warn(`ETF Flows: Cache read failed: ${error.message}`);
     }
     
     // If no cache, try live fetch
@@ -1183,13 +1236,11 @@ async function computeEtfFlows() {
       // Save to cache if we got live data
       if (html && !fromCache) {
         try {
-          const fs = await import('node:fs');
-          const path = await import('node:path');
-          fs.mkdirSync(cacheDir, { recursive: true });
-          fs.writeFileSync(cacheFile, html, 'utf8');
+          await ensureDir(cacheDir);
+          await fs.writeFile(cacheFile, html, 'utf8');
           console.log(`ETF Flows: Saved live data to cache ${cacheFile}`);
         } catch (error) {
-          console.warn('ETF Flows: Failed to save to cache:', error.message);
+          console.warn(`ETF Flows: Failed to save to cache: ${error.message}`);
         }
       }
     }
@@ -1236,11 +1287,9 @@ async function computeEtfFlows() {
     // Load historical baseline for percentile calculation (business days only)
     let historicalBaseline = null;
     try {
-      const fs = await import('node:fs');
       const historicalFile = 'public/data/etf-flows-historical.json';
-      if (fs.existsSync(historicalFile)) {
-        const historicalContent = fs.readFileSync(historicalFile, 'utf8');
-        const historicalData = JSON.parse(historicalContent);
+      if (await fileExists(historicalFile)) {
+        const historicalData = await readJsonFile(historicalFile);
         
         // Filter historical baseline to exclude weekends
         const businessDaySums = historicalData.rollingSums
@@ -1605,19 +1654,17 @@ async function checkSchemaTripwire(currentHash) {
     const statusPath = path.join(process.cwd(), 'public', 'data', 'status.json');
     let lastHash = null;
     
-    if (fs.existsSync(statusPath)) {
-      const statusContent = fs.readFileSync(statusPath, 'utf8');
-      const status = JSON.parse(statusContent);
+    if (await fileExists(statusPath)) {
+      const status = await readJsonFile(statusPath);
       lastHash = status.etf_schema_hash;
     }
     
     // Store current hash in status
-    if (fs.existsSync(statusPath)) {
-      const statusContent = fs.readFileSync(statusPath, 'utf8');
-      const status = JSON.parse(statusContent);
+    if (await fileExists(statusPath)) {
+      const status = await readJsonFile(statusPath);
       status.etf_schema_hash = currentHash;
       status.etf_schema_last_check = new Date().toISOString();
-      fs.writeFileSync(statusPath, JSON.stringify(status, null, 2));
+      await writeJsonFile(statusPath, status);
     }
     
     return lastHash && lastHash !== currentHash;
@@ -1634,9 +1681,9 @@ async function cleanOldCacheFiles() {
     const path = await import('node:path');
     
     const cacheDir = 'public/data/cache/etf';
-    if (!fs.existsSync(cacheDir)) return;
+    if (!(await fileExists(cacheDir))) return;
     
-    const files = fs.readdirSync(cacheDir);
+    const files = await fs.readdir(cacheDir);
     const now = new Date();
     const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
     let cleaned = 0;
@@ -2659,9 +2706,9 @@ async function cleanOldStablecoinsCacheFiles() {
     const path = await import('node:path');
     
     const cacheDir = 'public/data/cache/stablecoins';
-    if (!fs.existsSync(cacheDir)) return;
+    if (!(await fileExists(cacheDir))) return;
     
-    const files = fs.readdirSync(cacheDir);
+    const files = await fs.readdir(cacheDir);
     const now = new Date();
     const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
     let cleaned = 0;

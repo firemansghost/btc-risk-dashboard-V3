@@ -1,7 +1,13 @@
 import fs from "node:fs/promises";
 import crypto from "node:crypto";
 import path from "node:path";
+import { fileURLToPath } from "url";
 import { computeAllFactors } from "./factors.mjs";
+import { getDashboardConfig, getModelVersion, getSsotVersion } from "../lib/config-loader.mjs";
+
+// Resolve absolute paths
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Helper function to create HMAC signature for webhook
 function createWebhookSignature(secret, payload, timestamp) {
@@ -299,7 +305,70 @@ function riskBand(score) {
   };
 }
 
+/**
+ * ETL Self-Check: Validate config and cache writeability before heavy work
+ */
+async function runSelfCheck() {
+  // Check for bypass flags
+  const skipSelfCheck = process.env.SELF_CHECK === '0' || 
+                        process.argv.includes('--no-selfcheck') ||
+                        process.argv.includes('--skip-selfcheck');
+  
+  if (skipSelfCheck) {
+    const reason = process.env.SELF_CHECK === '0' ? 'env' : 'flag';
+    console.log(`[ETL self-check] skipped (${reason})`);
+    return;
+  }
+
+  try {
+    // 1. Load normalized config and validate model_version
+    const config = await getDashboardConfig();
+    const modelVersion = config.model_version;
+    const ssotVersion = config.ssot_version || modelVersion;
+    
+    if (!modelVersion || typeof modelVersion !== 'string') {
+      console.error('[ETL self-check] Invalid config: model_version is missing. Check config/dashboard-config.json and config-loader.');
+      process.exit(1);
+    }
+
+    // 2. Resolve absolute cache directory
+    const cacheDir = path.resolve(process.cwd(), 'public/data/cache');
+    
+    // 3. Ensure cache directory exists and is writable
+    await fs.mkdir(cacheDir, { recursive: true });
+    
+    // 4. Test write/read/delete
+    const testFile = path.join(cacheDir, '.etl-self-check-temp.json');
+    const testData = { timestamp: new Date().toISOString(), test: true };
+    
+    try {
+      await fs.writeFile(testFile, JSON.stringify(testData), 'utf8');
+      const readBack = await fs.readFile(testFile, 'utf8');
+      const parsed = JSON.parse(readBack);
+      
+      if (parsed.test !== true) {
+        throw new Error('Read-back validation failed');
+      }
+      
+      await fs.unlink(testFile);
+    } catch (error) {
+      console.error(`[ETL self-check] Cache write/read test failed at ${cacheDir}: ${error.message}`);
+      process.exit(1);
+    }
+
+    // 5. Print success banner
+    console.log(`[ETL self-check] model_version=${modelVersion} • ssot_version=${ssotVersion} • node=${process.version} • cwd=${process.cwd()}`);
+    console.log(`[ETL self-check] OK (cache write/read verified at ${cacheDir})`);
+  } catch (error) {
+    console.error(`[ETL self-check] Failed: ${error.message}`);
+    process.exit(1);
+  }
+}
+
 async function main() {
+  // Run self-check first (fail-fast)
+  await runSelfCheck();
+  
   await ensureDir("public/data");
   
   // Load risk bands from dashboard-config.json

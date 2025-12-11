@@ -31,11 +31,12 @@ jobs:
       - name: Install deps
         run: npm ci --ignore-scripts --no-audit --fund=false
 
-      - name: Run ETL compute
+      - name: Run ETL compute (with self-check)
         run: npm run etl:compute
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
+        working-directory: .
 
       - name: Configure git
         run: |
