@@ -1,0 +1,258 @@
+{
+  "score": 51,
+  "reason": "success",
+  "lastUpdated": "2025-12-11T19:25:57.029Z",
+  "details": [
+    {
+      "label": "Current Funding Rate",
+      "value": "-0.0063%"
+    },
+    {
+      "label": "30-day Average",
+      "value": "0.0003%"
+    },
+    {
+      "label": "Price Volatility (30d)",
+      "value": "2.20%"
+    },
+    {
+      "label": "Leverage Regime",
+      "value": "Low"
+    },
+    {
+      "label": "Term Structure",
+      "value": "Normal"
+    },
+    {
+      "label": "30-day Range",
+      "value": "-0.0182% - 0.0100%"
+    },
+    {
+      "label": "Data Source",
+      "value": "BitMEX"
+    },
+    {
+      "label": "Calculation Method",
+      "value": "Parallel processing (1ms)"
+    },
+    {
+      "label": "Component Scores",
+      "value": "Funding: 31, Vol: 73, Stress: 54"
+    }
+  ],
+  "fundingData": [
+    {
+      "timestamp": "2025-12-11T12:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000063,
+      "fundingRateDaily": -0.00018899999999999999
+    },
+    {
+      "timestamp": "2025-12-11T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000007,
+      "fundingRateDaily": 0.000021
+    },
+    {
+      "timestamp": "2025-12-10T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000066,
+      "fundingRateDaily": 0.00019800000000000002
+    },
+    {
+      "timestamp": "2025-12-10T12:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000036,
+      "fundingRateDaily": -0.000108
+    },
+    {
+      "timestamp": "2025-12-10T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000004,
+      "fundingRateDaily": 0.000012
+    },
+    {
+      "timestamp": "2025-12-09T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000005,
+      "fundingRateDaily": 0.000015
+    },
+    {
+      "timestamp": "2025-12-09T12:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000182,
+      "fundingRateDaily": -0.000546
+    },
+    {
+      "timestamp": "2025-12-09T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000024,
+      "fundingRateDaily": -0.000072
+    },
+    {
+      "timestamp": "2025-12-08T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000057,
+      "fundingRateDaily": 0.000171
+    },
+    {
+      "timestamp": "2025-12-08T12:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000014,
+      "fundingRateDaily": 0.000042
+    },
+    {
+      "timestamp": "2025-12-08T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000022,
+      "fundingRateDaily": 0.000066
+    },
+    {
+      "timestamp": "2025-12-07T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000049,
+      "fundingRateDaily": 0.000147
+    },
+    {
+      "timestamp": "2025-12-07T12:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.00002,
+      "fundingRateDaily": 0.00006000000000000001
+    },
+    {
+      "timestamp": "2025-12-07T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000024,
+      "fundingRateDaily": -0.000072
+    },
+    {
+      "timestamp": "2025-12-06T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000025,
+      "fundingRateDaily": -0.00007500000000000001
+    },
+    {
+      "timestamp": "2025-12-06T12:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000036,
+      "fundingRateDaily": 0.000108
+    },
+    {
+      "timestamp": "2025-12-06T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.00004,
+      "fundingRateDaily": 0.00012000000000000002
+    },
+    {
+      "timestamp": "2025-12-05T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000052,
+      "fundingRateDaily": -0.000156
+    },
+    {
+      "timestamp": "2025-12-05T12:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000067,
+      "fundingRateDaily": 0.000201
+    },
+    {
+      "timestamp": "2025-12-05T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000051,
+      "fundingRateDaily": 0.000153
+    },
+    {
+      "timestamp": "2025-12-04T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000018,
+      "fundingRateDaily": 0.000054
+    },
+    {
+      "timestamp": "2025-12-04T12:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000044,
+      "fundingRateDaily": 0.000132
+    },
+    {
+      "timestamp": "2025-12-04T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000037,
+      "fundingRateDaily": 0.00011099999999999999
+    },
+    {
+      "timestamp": "2025-12-03T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000027,
+      "fundingRateDaily": 0.00008099999999999999
+    },
+    {
+      "timestamp": "2025-12-03T12:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000003,
+      "fundingRateDaily": 0.000009
+    },
+    {
+      "timestamp": "2025-12-03T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000034,
+      "fundingRateDaily": 0.000102
+    },
+    {
+      "timestamp": "2025-12-02T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000118,
+      "fundingRateDaily": -0.000354
+    },
+    {
+      "timestamp": "2025-12-02T12:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000074,
+      "fundingRateDaily": -0.00022199999999999998
+    },
+    {
+      "timestamp": "2025-12-02T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0,
+      "fundingRateDaily": 0
+    },
+    {
+      "timestamp": "2025-12-01T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.0001,
+      "fundingRateDaily": 0.00030000000000000003
+    }
+  ],
+  "parallelTime": 1,
+  "cachedAt": "2025-12-11T19:25:57.030Z",
+  "version": "1.0.0"
+}

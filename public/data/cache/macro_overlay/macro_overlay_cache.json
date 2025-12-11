@@ -1,0 +1,47 @@
+{
+  "score": 36,
+  "reason": "success",
+  "lastUpdated": "2025-12-11T19:25:55.338Z",
+  "details": [
+    {
+      "label": "Macro Regime",
+      "value": "Neutral"
+    },
+    {
+      "label": "Dollar Trend (20d)",
+      "value": "Stable (-0.8%)"
+    },
+    {
+      "label": "Rate Environment",
+      "value": "Neutral (0.8%)"
+    },
+    {
+      "label": "VIX Level",
+      "value": "15.8 (30%ile)"
+    },
+    {
+      "label": "Yield Curve (10Y-2Y)",
+      "value": "0.57%"
+    },
+    {
+      "label": "Real Rate (10Y TIPS)",
+      "value": "1.92%"
+    },
+    {
+      "label": "Fetch Time",
+      "value": "701ms"
+    },
+    {
+      "label": "Component Scores",
+      "value": "Dollar: 8, Rates: 82, VIX: 18, Real: 91"
+    },
+    {
+      "label": "Current Levels",
+      "value": "DXY: 121.1, 2Y: 3.61%, VIX: 15.8"
+    }
+  ],
+  "latestDxyDate": "2025-12-05",
+  "fetchTime": 701,
+  "cachedAt": "2025-12-11T19:25:55.338Z",
+  "version": "1.0.0"
+}
