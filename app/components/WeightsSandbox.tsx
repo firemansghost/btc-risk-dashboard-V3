@@ -103,6 +103,7 @@ export default function WeightsSandbox() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [generatedUtc, setGeneratedUtc] = useState<string>('');
+  const [exportToast, setExportToast] = useState<string | null>(null);
 
   // Load sandbox data
   useEffect(() => {
@@ -263,29 +264,46 @@ export default function WeightsSandbox() {
     if (!computedData.length || !preset) return;
 
     const now = new Date();
-    const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19) + 'Z';
     
+    // Enforce exact column order: date_utc,official_gscore,alt_gscore,official_band,alt_band,official_composite_pre_adj,alt_composite_pre_adj,cycle_adj,spike_adj
+    const columnHeaders = 'date_utc,official_gscore,alt_gscore,official_band,alt_band,official_composite_pre_adj,alt_composite_pre_adj,cycle_adj,spike_adj';
+    
+    // Metadata headers (ensure all required lines are present)
     const headers = [
       '# ghostgauge_alt_export',
+      '# model_version=v1.1',
       `# preset=${preset.key}`,
       `# window_days=${selectedWindow}`,
-      '# model_version=v1.1',
+      '# adjustments_caps=cycle±2.0,spike±1.5',
+      '# note=adjustments may be 0.0 if not active on given dates',
       `# utc_generated=${now.toISOString()}`,
-      'date_utc,official_gscore,alt_gscore,official_band,alt_band,official_composite_pre_adj,alt_composite_pre_adj,cycle_adj,spike_adj',
-      ''
+      '', // Empty line before data
+      columnHeaders
     ];
 
-    const rows = computedData.map(day => [
-      day.date_utc,
-      day.official_composite.toFixed(1),
-      day.alt_composite.toFixed(1),
-      day.official_band,
-      day.alt_band,
-      (day.official_composite - day.cycle_adj - day.spike_adj).toFixed(1),
-      (day.alt_composite - day.cycle_adj - day.spike_adj).toFixed(1),
-      day.cycle_adj.toFixed(1),
-      day.spike_adj.toFixed(1)
-    ]);
+    // Build rows with exact column order - ensure cycle_adj and spike_adj are always present (even if 0.0)
+    const rows = computedData.map(day => {
+      // Calculate pre-adjustment composites
+      const official_pre_adj = day.official_composite - (day.cycle_adj || 0) - (day.spike_adj || 0);
+      const alt_pre_adj = day.alt_composite - (day.cycle_adj || 0) - (day.spike_adj || 0);
+      
+      // Ensure adjustments are within caps and always present
+      const cycle_adj = Math.max(-2.0, Math.min(2.0, day.cycle_adj || 0));
+      const spike_adj = Math.max(-1.5, Math.min(1.5, day.spike_adj || 0));
+      
+      // Return in exact order: date_utc,official_gscore,alt_gscore,official_band,alt_band,official_composite_pre_adj,alt_composite_pre_adj,cycle_adj,spike_adj
+      return [
+        day.date_utc,
+        day.official_composite.toFixed(1),
+        day.alt_composite.toFixed(1),
+        day.official_band,
+        day.alt_band,
+        official_pre_adj.toFixed(1),
+        alt_pre_adj.toFixed(1),
+        cycle_adj.toFixed(1),
+        spike_adj.toFixed(1)
+      ];
+    });
 
     const csvContent = [...headers, ...rows.map(row => row.join(','))].join('\n');
     
@@ -298,6 +316,10 @@ export default function WeightsSandbox() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+
+    // Show toast notification
+    setExportToast(`Exported with columns: date_utc, official_gscore, alt_gscore, official_band, alt_band, official_composite_pre_adj, alt_composite_pre_adj, cycle_adj, spike_adj (caps: ±2.0 / ±1.5).`);
+    setTimeout(() => setExportToast(null), 5000);
 
     analytics.csvExported(preset.key, selectedWindow);
   };
@@ -630,12 +652,22 @@ export default function WeightsSandbox() {
               </svg>
               Export CSV
             </button>
+            <p className="mt-2 text-xs text-gray-600 max-w-md">
+              CSV includes cycle_adj and spike_adj columns; they may be 0.0 if no adjustments applied.
+            </p>
           </div>
           <div className="text-sm text-gray-500">
             <p>As of {formatFriendlyTimestamp(generatedUtc)} · Window: {selectedWindow} days · Adjustments applied after weighting.</p>
             <p className="mt-1">Bands are context, not advice. All times UTC.</p>
           </div>
         </div>
+        
+        {/* Toast Notification */}
+        {exportToast && (
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-800 transition-opacity duration-300" role="status" aria-live="polite">
+            {exportToast}
+          </div>
+        )}
       </div>
 
       {/* Provenance */}
