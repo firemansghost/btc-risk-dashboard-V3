@@ -1,16 +1,16 @@
 {
   "score": 50,
   "reason": "success",
-  "lastUpdated": "2025-12-11T20:55:42.840Z",
-  "timestamp": "2025-12-11T20:55:42.840Z",
+  "lastUpdated": "2025-12-12T11:25:21.590Z",
+  "timestamp": "2025-12-12T11:25:21.590Z",
   "details": [
     {
       "label": "Current Funding Rate",
-      "value": "-0.0076%"
+      "value": "0.0100%"
     },
     {
       "label": "30-day Average",
-      "value": "-0.0002%"
+      "value": "0.0001%"
     },
     {
       "label": "Price Volatility (30d)",
@@ -26,7 +26,7 @@
     },
     {
       "label": "30-day Range",
-      "value": "-0.0182% - 0.0067%"
+      "value": "-0.0182% - 0.0100%"
     },
     {
       "label": "Data Source",
@@ -42,6 +42,13 @@
     }
   ],
   "fundingData": [
+    {
+      "timestamp": "2025-12-12T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.0001,
+      "fundingRateDaily": 0.00030000000000000003
+    },
     {
       "timestamp": "2025-12-11T20:00:00.000Z",
       "symbol": "XBTUSD",
@@ -244,13 +251,6 @@
       "fundingInterval": "2000-01-01T08:00:00.000Z",
       "fundingRate": -0.000074,
       "fundingRateDaily": -0.00022199999999999998
-    },
-    {
-      "timestamp": "2025-12-02T04:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": 0,
-      "fundingRateDaily": 0
     }
   ],
   "parallelTime": 1,
@@ -259,6 +259,6 @@
     "binance": "451",
     "okx": "ok"
   },
-  "cachedAt": "2025-12-11T20:55:42.841Z",
+  "cachedAt": "2025-12-12T11:25:21.591Z",
   "version": "1.0.0"
 }
