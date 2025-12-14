@@ -282,8 +282,9 @@ function riskBand(score) {
   }
   
   // Find the band that contains this score
+  // Use <= for inclusive upper bound (e.g., score 49 should match range [35, 49])
   for (const band of riskBands) {
-    if (score >= band.range[0] && score < band.range[1]) {
+    if (score >= band.range[0] && score <= band.range[1]) {
       return { 
         name: band.label, 
         lo: band.range[0], 

@@ -334,7 +334,8 @@ export function getPillarConfig(key: PillarKey): PillarConfig | undefined {
 
 export function getBandForScore(score: number): RiskBand {
   const bands = getConfig().bands;
-  const band = bands.find(b => score >= b.range[0] && score < b.range[1]);
+  // Use <= for inclusive upper bound (e.g., score 49 should match range [35, 49])
+  const band = bands.find(b => score >= b.range[0] && score <= b.range[1]);
   return band || bands[bands.length - 1]; // Default to highest band
 }
 

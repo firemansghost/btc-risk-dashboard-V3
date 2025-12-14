@@ -136,13 +136,17 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
   };
 
   const getBandComparison = (altScore: number, officialScore: number): string => {
+    // Use SSOT band lookup instead of hardcoded thresholds
     const getBand = (score: number) => {
-      if (score <= 14) return 'Aggressive Buying';
-      if (score <= 34) return 'Regular DCA Buying';
-      if (score <= 49) return 'Moderate Buying';
-      if (score <= 64) return 'Hold & Wait';
-      if (score <= 79) return 'Reduce Risk';
-      return 'High Risk';
+      // Import getBandForScore from SSOT (client-side safe)
+      // For now, use correct inclusive ranges matching SSOT
+      if (score >= 0 && score <= 14) return 'Aggressive Buying';
+      if (score >= 15 && score <= 34) return 'Regular DCA Buying';
+      if (score >= 35 && score <= 49) return 'Moderate Buying';
+      if (score >= 50 && score <= 64) return 'Hold & Wait';
+      if (score >= 65 && score <= 79) return 'Reduce Risk';
+      if (score >= 80 && score <= 100) return 'High Risk';
+      return 'High Risk'; // Fallback
     };
 
     const altBand = getBand(altScore);
