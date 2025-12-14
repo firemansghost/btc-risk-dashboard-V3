@@ -163,6 +163,27 @@ export default function RealDashboard() {
         Promise.all([r1.json(), r2.json()]),
         new Promise<never>((_, rej) => setTimeout(() => rej(new Error('Timeout 8s: parse artifacts')), 8000)),
       ]);
+      
+      // Fix: Recompute band if it doesn't match the score (handles stale ETL data)
+      if (j1.composite_score !== null && j1.composite_score !== undefined) {
+        const score = j1.composite_score;
+        const currentBand = j1.band;
+        
+        // Check if band matches score using SSOT ranges
+        // If band is wrong (e.g., score 49 showing "High Risk"), recompute it
+        if (currentBand && currentBand.range) {
+          const bandMatches = score >= currentBand.range[0] && score <= currentBand.range[1];
+          if (!bandMatches) {
+            // Band doesn't match score - recompute using SSOT
+            // Import getBandForScore dynamically (client-side safe)
+            const { getBandForScore } = await import('@/lib/riskConfig');
+            const correctBand = getBandForScore(score);
+            console.log(`[RealDashboard] Fixed band mismatch: score ${score} had band "${currentBand.label}" (range [${currentBand.range[0]}, ${currentBand.range[1]}]), corrected to "${correctBand.label}" (range [${correctBand.range[0]}, ${correctBand.range[1]}])`);
+            j1.band = correctBand;
+          }
+        }
+      }
+      
       setLatest(j1); setStatus(j2);
     } catch (e: any) {
       setError(e?.message ?? String(e));

@@ -37,6 +37,24 @@ export async function GET() {
     
     const latestData = JSON.parse(content);
     
+    // Fix: Recompute band if it doesn't match the score (handles stale ETL data)
+    if (latestData.composite_score !== null && latestData.composite_score !== undefined) {
+      const score = latestData.composite_score;
+      const currentBand = latestData.band;
+      
+      // Check if band matches score using SSOT ranges
+      if (currentBand && currentBand.range) {
+        const bandMatches = score >= currentBand.range[0] && score <= currentBand.range[1];
+        if (!bandMatches) {
+          // Band doesn't match score - recompute using SSOT
+          const { getBandForScore } = await import('@/lib/riskConfig');
+          const correctBand = getBandForScore(score);
+          console.log(`[API] Fixed band mismatch: score ${score} had band "${currentBand.label}" (range [${currentBand.range[0]}, ${currentBand.range[1]}]), corrected to "${correctBand.label}" (range [${correctBand.range[0]}, ${correctBand.range[1]}])`);
+          latestData.band = correctBand;
+        }
+      }
+    }
+    
     // Return with no-cache headers to prevent edge/browser caching
     return NextResponse.json(latestData, {
       headers: {
