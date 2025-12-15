@@ -27,8 +27,8 @@
     },
     "stablecoins": {
       "dataPoints": 87,
-      "mean": 52.34,
-      "stdDev": 16.85,
+      "mean": 52.3,
+      "stdDev": 16.88,
       "min": 32,
       "max": 95,
       "range": 63,
