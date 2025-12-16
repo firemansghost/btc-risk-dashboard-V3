@@ -1,7 +1,7 @@
 {
-  "score": 17,
+  "score": 15,
   "reason": "success",
-  "lastUpdated": "2025-12-15T11:25:26.828Z",
+  "lastUpdated": "2025-12-16T11:25:14.930Z",
   "details": [
     {
       "label": "Macro Regime",
@@ -9,39 +9,39 @@
     },
     {
       "label": "Dollar Trend (20d)",
-      "value": "Stable (-0.8%)"
+      "value": "Stable (-0.7%)"
     },
     {
       "label": "Rate Environment",
-      "value": "Neutral (-1.7%)"
+      "value": "Neutral (-2.8%)"
     },
     {
       "label": "VIX Level",
-      "value": "14.8 (10%ile)"
+      "value": "15.7 (28%ile)"
     },
     {
       "label": "Yield Curve (10Y-2Y)",
-      "value": "0.62%"
+      "value": "0.67%"
     },
     {
       "label": "Real Rate (10Y TIPS)",
-      "value": "1.89%"
+      "value": "1.93%"
     },
     {
       "label": "Fetch Time",
-      "value": "585ms"
+      "value": "1603ms"
     },
     {
       "label": "Component Scores",
-      "value": "Dollar: 9, Rates: 35, VIX: 3, Real: 84"
+      "value": "Dollar: 8, Rates: 22, VIX: 16, Real: 82"
     },
     {
       "label": "Current Levels",
-      "value": "DXY: 121.1, 2Y: 3.52%, VIX: 14.8"
+      "value": "DXY: 120.5, 2Y: 3.52%, VIX: 15.7"
     }
   ],
-  "latestDxyDate": "2025-12-05",
-  "fetchTime": 585,
-  "cachedAt": "2025-12-15T11:25:26.829Z",
+  "latestDxyDate": "2025-12-12",
+  "fetchTime": 1603,
+  "cachedAt": "2025-12-16T11:25:14.931Z",
   "version": "1.0.0"
 }
