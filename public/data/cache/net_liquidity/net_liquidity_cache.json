@@ -1,11 +1,11 @@
 {
-  "score": 51,
+  "score": 27,
   "reason": "success",
-  "lastUpdated": "2025-12-10T00:00:00.000Z",
+  "lastUpdated": "2025-12-17T00:00:00.000Z",
   "details": [
     {
       "label": "Fed Balance Sheet (WALCL)",
-      "value": "$6.5T"
+      "value": "$6.6T"
     },
     {
       "label": "Reverse Repo (RRP)",
@@ -13,7 +13,7 @@
     },
     {
       "label": "Treasury General Account",
-      "value": "$859B"
+      "value": "$833B"
     },
     {
       "label": "Net Liquidity",
@@ -21,27 +21,27 @@
     },
     {
       "label": "4-week Change",
-      "value": "+1.0%"
+      "value": "+2.0%"
     },
     {
       "label": "Level Percentile (1y)",
-      "value": "13%"
+      "value": "17%"
     },
     {
       "label": "Fetch Time",
-      "value": "5556ms"
+      "value": "388ms"
     },
     {
       "label": "Component Scores",
-      "value": "Level: 90, RoC: 20, Momentum: 65"
+      "value": "Level: 88, RoC: 13, Momentum: 18"
     },
     {
       "label": "Data as of",
-      "value": "2025-12-10"
+      "value": "2025-12-17"
     }
   ],
-  "latestWalclDate": "2025-12-10",
-  "fetchTime": 5556,
-  "cachedAt": "2025-12-17T11:25:51.551Z",
+  "latestWalclDate": "2025-12-17",
+  "fetchTime": 388,
+  "cachedAt": "2025-12-19T11:23:26.698Z",
   "version": "1.0.0"
 }
