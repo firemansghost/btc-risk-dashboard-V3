@@ -1,7 +1,7 @@
 {
   "score": 78,
   "reason": "success",
-  "lastUpdated": "2025-12-19T11:23:26.335Z",
+  "lastUpdated": "2025-12-20T11:20:06.593Z",
   "details": [
     {
       "label": "Search Attention",
@@ -43,6 +43,6 @@
   "bitcoinRank": 5,
   "latestPrice": 110588.79953292229,
   "fetchTime": 7,
-  "cachedAt": "2025-12-19T11:23:26.335Z",
+  "cachedAt": "2025-12-20T11:20:06.593Z",
   "version": "1.0.0"
 }
