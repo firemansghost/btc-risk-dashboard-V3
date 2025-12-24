@@ -422,7 +422,24 @@ node scripts/etl/compute.mjs --force-recompute=trend_valuation
 
 # Purge and recompute all factors
 node scripts/etl/compute.mjs --force-recompute=all
+
+# Purge and recompute social_interest (with soft-fail for first run after fix)
+node scripts/etl/compute.mjs --force-recompute=social_interest --soft-fail
 ```
+
+### Manual Recovery
+
+If a factor remains stale after recompute (e.g., timestamp propagation issue):
+
+```bash
+# Force recompute with soft-fail to allow job to complete
+node scripts/etl/compute.mjs --force-recompute=social_interest --soft-fail
+
+# Check the factor status after run
+jq '.factors.social_interest // .social_interest | {status, last_updated_utc}' public/data/status.json
+```
+
+**Note**: The `--soft-fail` flag allows the ETL to complete even if post-check fails, useful for one-time recovery scenarios. The next run should pass once timestamps are properly propagated.
 
 ### Trend & Valuation Specific Guard
 

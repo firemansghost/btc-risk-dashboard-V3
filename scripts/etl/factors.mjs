@@ -325,14 +325,27 @@ async function computeSocialInterest() {
     
     const dataChanged = hasSocialDataChanged({ bitcoinRank: currentBitcoinRank, latestPrice }, cachedData);
     
+    // Always set fresh timestamp for staleness tracking
+    const nowIso = new Date().toISOString();
+    
     if (cachedData && !dataChanged) {
       console.log('Social Interest: Using cached calculations (no social data changes)');
-      return {
+      // Update lastUpdated to current time when using cached data (for staleness tracking)
+      const updatedResult = {
         score: cachedData.score,
         reason: "success_cached",
-        lastUpdated: cachedData.lastUpdated,
-        details: cachedData.details
+        lastUpdated: nowIso, // Update timestamp even when using cache
+        details: cachedData.details,
+        components: cachedData.components || {},
+        provider: cachedData.provider || "coingecko"
       };
+      // Update cache file with fresh timestamp
+      await saveSocialInterestCache(updatedResult);
+      // Verify cache was written correctly
+      const cachePath = path.join(SOCIAL_INTEREST_CACHE_DIR, SOCIAL_INTEREST_CACHE_FILE);
+      const writtenCache = await readJsonFile(cachePath);
+      console.log(`[social_interest] wrote cache with lastUpdated=${writtenCache.lastUpdated}`);
+      return updatedResult;
     }
 
     console.log('Social Interest: Computing fresh calculations (social data changed or no cache)');
@@ -464,10 +477,20 @@ async function computeSocialInterest() {
       volatilityScore * 0.00  // Parked for now
     );
     
+    // Always set fresh timestamp for staleness tracking
+    const nowIso = new Date().toISOString();
+    
     const result = { 
       score: compositeScore, 
       reason: "success",
-      lastUpdated: new Date().toISOString(),
+      status: "fresh",
+      lastUpdated: nowIso,
+      components: {
+        searchScore,
+        momentumScore,
+        volatilityScore
+      },
+      provider: sourcesUsed[0] || "coingecko",
       details: [
         { label: "Search Attention", value: searchAttention },
         { label: "Bitcoin Trending Rank", value: bitcoinRank },
@@ -486,6 +509,11 @@ async function computeSocialInterest() {
 
     // Save to cache for future use
     await saveSocialInterestCache(result);
+    
+    // Verify cache was written correctly
+    const cachePath = path.join(SOCIAL_INTEREST_CACHE_DIR, SOCIAL_INTEREST_CACHE_FILE);
+    const writtenCache = await readJsonFile(cachePath);
+    console.log(`[social_interest] wrote cache with lastUpdated=${writtenCache.lastUpdated}`);
 
     return result;
   } catch (error) {
@@ -2534,9 +2562,12 @@ export async function computeAllFactors(dailyClose = null) {
             // If lastUpdated is missing or more than 24h old, use current time
             dataLastUpdated = new Date().toISOString();
           }
-        } else {
-          dataLastUpdated = dataLastUpdated || new Date().toISOString();
+        } else if (!dataLastUpdated) {
+          // For other factors, only set if completely missing
+          // Otherwise, preserve the lastUpdated from the factor computation
+          dataLastUpdated = new Date().toISOString();
         }
+        // Preserve lastUpdated from factor computation - don't overwrite it
         
         const stalenessStatus = getStalenessStatus(
           { ...data, lastUpdated: dataLastUpdated, timestamp: undefined }, // Clear timestamp to avoid confusion
@@ -2550,7 +2581,9 @@ export async function computeAllFactors(dailyClose = null) {
         );
         
         status = stalenessStatus.status;
-        lastUpdated = stalenessStatus.lastUpdated;
+        // Preserve the lastUpdated from factor computation, not from staleness check
+        // The staleness check returns the same timestamp, but we want to ensure we use the one from data
+        lastUpdated = dataLastUpdated;
         
         // Only include fresh factors in composite calculation
         if (status === 'fresh') {

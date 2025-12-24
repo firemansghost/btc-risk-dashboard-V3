@@ -38,6 +38,16 @@ jobs:
           ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
         working-directory: .
 
+      - name: Print social_interest status
+        run: |
+          if [ -f public/data/status.json ]; then
+            echo "=== social_interest status ==="
+            jq '.factors.social_interest // .social_interest | {status, last_updated_utc}' public/data/status.json || echo "Could not parse status.json"
+          else
+            echo "status.json not found"
+          fi
+        continue-on-error: true
+
       - name: Configure git
         run: |
           git config user.name "ghostgauge-bot"

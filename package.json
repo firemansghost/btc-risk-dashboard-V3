@@ -20,6 +20,7 @@
     "og:png": "node scripts/gen-og.mjs",
     "webhook:dev": "node tools/webhook-receiver-dev.mjs",
     "test": "vitest run",
+    "test:etl": "node --test scripts/etl/__tests__/*.test.mjs",
     "analyze": "cross-env ANALYZE=true npm run build",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server npm run build",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser npm run build",

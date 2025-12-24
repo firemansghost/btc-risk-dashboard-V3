@@ -35,14 +35,23 @@ export function getMostRecentBusinessDay(date = new Date()) {
 }
 
 /**
+ * Calculate age of data in minutes
+ * @param {string|Date} dataTimestamp 
+ * @returns {number} Age in minutes
+ */
+export function getDataAgeMinutes(dataTimestamp) {
+  const dataDate = new Date(dataTimestamp);
+  const now = new Date();
+  return (now.getTime() - dataDate.getTime()) / (1000 * 60);
+}
+
+/**
  * Calculate age of data in hours
  * @param {string|Date} dataTimestamp 
  * @returns {number} Age in hours
  */
 export function getDataAgeHours(dataTimestamp) {
-  const dataDate = new Date(dataTimestamp);
-  const now = new Date();
-  return (now.getTime() - dataDate.getTime()) / (1000 * 60 * 60);
+  return getDataAgeMinutes(dataTimestamp) / 60;
 }
 
 /**
@@ -52,6 +61,18 @@ export function getDataAgeHours(dataTimestamp) {
  */
 export function getDataAgeDays(dataTimestamp) {
   return getDataAgeHours(dataTimestamp) / 24;
+}
+
+/**
+ * Describe age in human-readable format
+ * @param {number} ageMinutes - Age in minutes
+ * @returns {string} Human-readable age description
+ */
+export function describeAge(ageMinutes) {
+  if (ageMinutes < 1) return `${Math.round(ageMinutes * 60)}s`;
+  if (ageMinutes < 60) return `${Math.round(ageMinutes)}min`;
+  if (ageMinutes < 1440) return `${Math.round(ageMinutes / 60)}h`;
+  return `${Math.round(ageMinutes / 1440)}d`;
 }
 
 /**
@@ -78,32 +99,41 @@ export function checkStaleness(dataTimestamp, ttlHours, options = {}) {
       isStale: true,
       reason: 'no_timestamp',
       ageHours: Infinity,
-      ageDays: Infinity
+      ageDays: Infinity,
+      ageMinutes: Infinity
     };
   }
 
   const dataDate = new Date(dataTimestamp);
   const now = new Date();
-  const ageHours = getDataAgeHours(dataTimestamp);
-  const ageDays = getDataAgeDays(dataTimestamp);
+  const ageMinutes = getDataAgeMinutes(dataTimestamp);
+  const ageHours = ageMinutes / 60;
+  const ageDays = ageHours / 24;
+  
+  // Grace window: 5 minutes to account for clock skew and processing time
+  const graceMinutes = 5;
+  const ttlMinutes = ttlHours * 60;
+  const staleMinutes = staleBeyondHours * 60;
 
-  // Basic TTL check - fresh if within TTL
-  if (ageHours <= ttlHours) {
+  // Basic TTL check - fresh if within TTL + grace window
+  if (ageMinutes <= ttlMinutes + graceMinutes) {
     return {
       isStale: false,
       reason: 'fresh',
       ageHours,
-      ageDays
+      ageDays,
+      ageMinutes
     };
   }
   
-  // Stale beyond threshold check
-  if (ageHours > staleBeyondHours) {
+  // Stale beyond threshold check - excluded if beyond staleBeyondHours + grace
+  if (ageMinutes > staleMinutes + graceMinutes) {
     return {
       isStale: true,
       reason: 'stale_beyond_ttl',
       ageHours,
-      ageDays
+      ageDays,
+      ageMinutes
     };
   }
 
@@ -122,7 +152,8 @@ export function checkStaleness(dataTimestamp, ttlHours, options = {}) {
           isStale: false,
           reason: 'fresh_weekend_data_from_friday',
           ageHours,
-          ageDays
+          ageDays,
+          ageMinutes
         };
       }
     }
@@ -137,7 +168,8 @@ export function checkStaleness(dataTimestamp, ttlHours, options = {}) {
           isStale: false,
           reason: 'fresh_from_recent_business_day',
           ageHours,
-          ageDays
+          ageDays,
+          ageMinutes
         };
       }
     }
@@ -155,7 +187,8 @@ export function checkStaleness(dataTimestamp, ttlHours, options = {}) {
     isStale: true,
     reason,
     ageHours,
-    ageDays
+    ageDays,
+    ageMinutes
   };
 }
 
@@ -184,9 +217,9 @@ export function getStalenessStatus(factorResult, ttlHours, options = {}) {
   
   // Debug: log if timestamp seems old
   if (factorResult.lastUpdated) {
-    const ageHours = getDataAgeHours(factorResult.lastUpdated);
-    if (ageHours > 24) {
-      console.warn(`[staleness] ${options.factorName || 'unknown'}: lastUpdated=${factorResult.lastUpdated}, age=${ageHours.toFixed(1)}h`);
+    const ageMinutes = getDataAgeMinutes(factorResult.lastUpdated);
+    if (ageMinutes > 1440) { // > 24 hours
+      console.warn(`[staleness] ${options.factorName || 'unknown'}: lastUpdated=${factorResult.lastUpdated}, age=${describeAge(ageMinutes)}`);
     }
   } else if (factorResult.timestamp) {
     // Warn if we're falling back to timestamp (shouldn't happen)
@@ -198,14 +231,14 @@ export function getStalenessStatus(factorResult, ttlHours, options = {}) {
   if (stalenessCheck.isStale) {
     return {
       status: 'stale',
-      reason: `${stalenessCheck.reason} (${stalenessCheck.ageDays.toFixed(1)}d old)`,
+      reason: `${stalenessCheck.reason} (${describeAge(stalenessCheck.ageMinutes)})`,
       lastUpdated: dataTimestamp
     };
   }
 
   return {
     status: 'fresh',
-    reason: `${stalenessCheck.reason} (${stalenessCheck.ageHours.toFixed(1)}h old)`,
+    reason: `${stalenessCheck.reason} (${describeAge(stalenessCheck.ageMinutes)})`,
     lastUpdated: dataTimestamp
   };
 }
