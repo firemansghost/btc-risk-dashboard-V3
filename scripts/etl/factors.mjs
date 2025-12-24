@@ -22,6 +22,12 @@ const __dirname = path.dirname(__filename);
 const ISO = (d) => d.toISOString().split("T")[0];
 
 /**
+ * Helper: Get current timestamp as ISO string
+ * Prevents duplicate declaration collisions
+ */
+const isoNow = () => new Date().toISOString();
+
+/**
  * Helper: Check if file exists (async)
  */
 async function fileExists(filePath) {
@@ -325,8 +331,8 @@ async function computeSocialInterest() {
     
     const dataChanged = hasSocialDataChanged({ bitcoinRank: currentBitcoinRank, latestPrice }, cachedData);
     
-    // Always set fresh timestamp for staleness tracking
-    const nowIso = new Date().toISOString();
+    // Always set fresh timestamp for staleness tracking (hoisted once at function start)
+    const nowIso = isoNow();
     
     if (cachedData && !dataChanged) {
       console.log('Social Interest: Using cached calculations (no social data changes)');
@@ -477,8 +483,8 @@ async function computeSocialInterest() {
       volatilityScore * 0.00  // Parked for now
     );
     
-    // Always set fresh timestamp for staleness tracking
-    const nowIso = new Date().toISOString();
+    // Use the timestamp already declared at function start (nowIso)
+    // No need to redeclare - reuse the one from line 329
     
     const result = { 
       score: compositeScore, 
