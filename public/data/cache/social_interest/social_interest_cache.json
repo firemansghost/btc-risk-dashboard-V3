@@ -1,7 +1,14 @@
 {
   "score": 78,
   "reason": "success",
-  "lastUpdated": "2025-12-23T11:24:26.192Z",
+  "status": "fresh",
+  "lastUpdated": "2025-12-24T14:54:44.258Z",
+  "components": {
+    "searchScore": 70,
+    "momentumScore": 95,
+    "volatilityScore": 95
+  },
+  "provider": "CoinGecko • trending",
   "details": [
     {
       "label": "Search Attention",
@@ -43,6 +50,6 @@
   "bitcoinRank": 5,
   "latestPrice": 110588.79953292229,
   "fetchTime": 7,
-  "cachedAt": "2025-12-23T11:24:26.192Z",
+  "cachedAt": "2025-12-24T14:54:44.259Z",
   "version": "1.0.0"
 }
