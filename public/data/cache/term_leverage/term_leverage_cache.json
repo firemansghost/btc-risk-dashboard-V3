@@ -1,16 +1,16 @@
 {
-  "score": 55,
+  "score": 57,
   "reason": "success",
-  "lastUpdated": "2025-12-24T14:54:45.611Z",
-  "timestamp": "2025-12-24T14:54:45.611Z",
+  "lastUpdated": "2025-12-25T11:22:31.082Z",
+  "timestamp": "2025-12-25T11:22:31.082Z",
   "details": [
     {
       "label": "Current Funding Rate",
-      "value": "-0.0049%"
+      "value": "0.0100%"
     },
     {
       "label": "30-day Average",
-      "value": "0.0050%"
+      "value": "0.0060%"
     },
     {
       "label": "Price Volatility (30d)",
@@ -26,7 +26,7 @@
     },
     {
       "label": "30-day Range",
-      "value": "-0.0073% - 0.0100%"
+      "value": "-0.0049% - 0.0100%"
     },
     {
       "label": "Data Source",
@@ -34,14 +34,28 @@
     },
     {
       "label": "Calculation Method",
-      "value": "Parallel processing (1ms)"
+      "value": "Parallel processing (2ms)"
     },
     {
       "label": "Component Scores",
-      "value": "Funding: 40, Vol: 73, Stress: 54"
+      "value": "Funding: 45, Vol: 73, Stress: 54"
     }
   ],
   "fundingData": [
+    {
+      "timestamp": "2025-12-25T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.0001,
+      "fundingRateDaily": 0.00030000000000000003
+    },
+    {
+      "timestamp": "2025-12-24T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.0001,
+      "fundingRateDaily": 0.00030000000000000003
+    },
     {
       "timestamp": "2025-12-24T12:00:00.000Z",
       "symbol": "XBTUSD",
@@ -237,28 +251,14 @@
       "fundingInterval": "2000-01-01T08:00:00.000Z",
       "fundingRate": 0.000025,
       "fundingRateDaily": 0.00007500000000000001
-    },
-    {
-      "timestamp": "2025-12-15T04:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": -0.000015,
-      "fundingRateDaily": -0.000045
-    },
-    {
-      "timestamp": "2025-12-14T20:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": -0.000073,
-      "fundingRateDaily": -0.000219
     }
   ],
-  "parallelTime": 1,
+  "parallelTime": 2,
   "providers": {
     "bitmex": "ok",
     "binance": "451",
     "okx": "ok"
   },
-  "cachedAt": "2025-12-24T14:54:45.612Z",
+  "cachedAt": "2025-12-25T11:22:31.082Z",
   "version": "1.0.0"
 }
