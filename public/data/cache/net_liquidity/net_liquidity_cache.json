@@ -29,7 +29,7 @@
     },
     {
       "label": "Fetch Time",
-      "value": "639ms"
+      "value": "4027ms"
     },
     {
       "label": "Component Scores",
@@ -41,7 +41,7 @@
     }
   ],
   "latestWalclDate": "2025-12-24",
-  "fetchTime": 639,
-  "cachedAt": "2025-12-30T11:24:48.281Z",
+  "fetchTime": 4027,
+  "cachedAt": "2026-01-01T11:23:28.952Z",
   "version": "1.0.0"
 }
