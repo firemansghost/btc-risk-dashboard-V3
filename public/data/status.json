@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-01-04T11:22:22.487Z",
+  "updated_at": "2026-01-05T11:26:35.900Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -29,7 +29,7 @@
       "name": "Stooq",
       "ok": true,
       "url": "https://stooq.com/",
-      "ms": 1054,
+      "ms": 944,
       "fallback": false,
       "cache_used": false,
       "fallback_used": false
@@ -38,43 +38,43 @@
       "name": "History: trend_valuation",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 89
+      "total_rows": 90
     },
     {
       "name": "History: stablecoins",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 109
+      "total_rows": 110
     },
     {
       "name": "History: etf_flows",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 504
+      "total_rows": 505
     },
     {
       "name": "History: net_liquidity",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 160
+      "total_rows": 161
     },
     {
       "name": "History: term_leverage",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 83
+      "total_rows": 84
     },
     {
       "name": "History: macro_overlay",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 89
+      "total_rows": 90
     },
     {
       "name": "History: social_interest",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 89
+      "total_rows": 90
     }
   ],
   "factors_computed": 7,
@@ -83,7 +83,7 @@
     "status": "success",
     "source": "Stooq",
     "fallback_used": false,
-    "latency_ms": 1054
+    "latency_ms": 944
   },
   "satoshis_per_dollar": {
     "status": "success",
@@ -91,22 +91,22 @@
     "derived": true
   },
   "etf_schema_hash": "cd3800",
-  "etf_schema_last_check": "2026-01-04T11:21:07.107Z",
+  "etf_schema_last_check": "2026-01-05T11:25:23.566Z",
   "price_history": {
     "total_rows": 729,
-    "oldest_date": "2024-01-05",
-    "newest_date": "2026-01-04",
+    "oldest_date": "2024-01-06",
+    "newest_date": "2026-01-05",
     "alpha_vantage_backfill": null,
     "coinbase_daily_update": {
       "status": "success",
       "rows_fetched": 14,
-      "ms": 200
+      "ms": 60
     },
     "drift_check": null
   },
   "term_leverage": {
     "status": "fresh",
-    "last_updated_utc": "2026-01-04T11:22:18.342Z",
+    "last_updated_utc": "2026-01-05T11:26:32.898Z",
     "providers": {
       "bitmex": "unknown",
       "binance": "unknown",
