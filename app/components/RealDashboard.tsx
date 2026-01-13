@@ -466,7 +466,7 @@ export default function RealDashboard() {
                 >
                   <div className="glass-card glass-shadow-lg card-md border border-white/20 card-hover h-full flex flex-col">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Historical G-Score</h3>
-                    <div className="flex-1 min-h-0">
+                    <div className="mt-4 h-[260px] min-h-[220px] w-full">
                       <HistoryChart />
                     </div>
                   </div>
