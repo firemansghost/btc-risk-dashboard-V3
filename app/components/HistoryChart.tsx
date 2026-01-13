@@ -123,14 +123,7 @@ export default function HistoryChart() {
   }, [data, range]);
 
   return (
-    <div style={{ 
-      borderRadius: '12px', 
-      border: '1px solid #e5e7eb', 
-      backgroundColor: 'white', 
-      padding: '16px', 
-      boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-      marginBottom: '24px'
-    }}>
+    <div className="h-full flex flex-col">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
         <div style={{ fontWeight: '500', color: '#111827' }}>Risk History</div>
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -184,7 +177,7 @@ export default function HistoryChart() {
         </div>
       )}
       {!err && pretty.length > 0 && (
-        <div style={{ height: '256px' }}>
+        <div className="flex-1 min-h-0">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={pretty}>
             <defs>

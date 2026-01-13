@@ -25,10 +25,12 @@ import SatoshisPerDollarCard from './SatoshisPerDollarCard';
 import ScoreInsightsCard from './ScoreInsightsCard';
 import HistoryChart from './HistoryChart';
 import RadialGauge from './RadialGauge';
+import FactorDetailsDrawer from './FactorDetailsDrawer';
 
 import WeightsLauncher from './WeightsLauncher';
 import AssetSwitcher from './AssetSwitcher';
 import QuickGlanceAltDelta from './QuickGlanceAltDelta';
+import ContextHeader from './ContextHeader';
 
 import AlertBell from './AlertBell';
 import SkeletonLoader, { SkeletonDashboard, SkeletonCard } from './SkeletonLoader';
@@ -133,6 +135,14 @@ export default function RealDashboard() {
   // Onboarding state
   const [showOnboarding, setShowOnboarding] = useState(false);
 
+  // Model perspective state (for preview mode)
+  const [selectedModel, setSelectedModel] = useState<'official' | 'liq-heavy' | 'mom-tilted'>('official');
+  const [previewScore, setPreviewScore] = useState<number | null>(null);
+  const [previewBand, setPreviewBand] = useState<any>(null);
+
+  // Factor deltas state
+  const [factorDeltas, setFactorDeltas] = useState<Record<string, { delta: number; previousScore: number; currentScore: number }>>({});
+
   // Check if user is first-time visitor
   useEffect(() => {
     const hasSeenOnboarding = localStorage.getItem('ghostgauge-onboarding-dismissed');
@@ -145,6 +155,104 @@ export default function RealDashboard() {
     setShowOnboarding(false);
     localStorage.setItem('ghostgauge-onboarding-dismissed', 'true');
   };
+
+  // Calculate preview score based on selected model
+  const calculatePreviewScore = useCallback((latestData: any, model: 'official' | 'liq-heavy' | 'mom-tilted'): { score: number; band: any } | null => {
+    if (!latestData || !latestData.factors || model === 'official') {
+      return null;
+    }
+
+    const presetWeights = {
+      'liq-heavy': { liquidity: 0.35, momentum: 0.25, term: 0.20, macro: 0.10, social: 0.10 },
+      'mom-tilted': { liquidity: 0.25, momentum: 0.35, term: 0.20, macro: 0.10, social: 0.10 },
+      'official': { liquidity: 0.30, momentum: 0.30, term: 0.20, macro: 0.10, social: 0.10 }
+    };
+
+    const weights = presetWeights[model];
+    if (!weights) return null;
+
+    // Map factors to pillars
+    const factorMap: Record<string, { pillar: string; weight: number }> = {
+      stablecoins: { pillar: 'liquidity', weight: 0.18 },
+      etf_flows: { pillar: 'liquidity', weight: 0.077 },
+      net_liquidity: { pillar: 'liquidity', weight: 0.043 },
+      trend_valuation: { pillar: 'momentum', weight: 0.30 },
+      term_leverage: { pillar: 'leverage', weight: 0.20 },
+      macro_overlay: { pillar: 'macro', weight: 0.10 },
+      social_interest: { pillar: 'social', weight: 0.10 }
+    };
+
+    // Calculate pillar scores
+    const pillarScores: Record<string, number> = {
+      liquidity: 0,
+      momentum: 0,
+      leverage: 0,
+      macro: 0,
+      social: 0
+    };
+
+    let totalLiquidityWeight = 0;
+    latestData.factors.forEach((factor: any) => {
+      const mapping = factorMap[factor.key];
+      if (mapping && factor.score !== null && factor.score !== undefined) {
+        if (mapping.pillar === 'liquidity') {
+          pillarScores.liquidity += factor.score * mapping.weight;
+          totalLiquidityWeight += mapping.weight;
+        } else {
+          pillarScores[mapping.pillar] = factor.score;
+        }
+      }
+    });
+
+    // Normalize liquidity pillar
+    if (totalLiquidityWeight > 0) {
+      pillarScores.liquidity = pillarScores.liquidity / totalLiquidityWeight;
+    }
+
+    // Calculate weighted composite
+    const compositeScore = Math.round(
+      pillarScores.liquidity * weights.liquidity +
+      pillarScores.momentum * weights.momentum +
+      pillarScores.leverage * weights.term +
+      pillarScores.macro * weights.macro +
+      pillarScores.social * weights.social
+    );
+
+    // Get band for score (client-side band lookup)
+    const getBandForScore = (score: number) => {
+      if (score >= 0 && score <= 14) return { label: 'Aggressive Buying', key: 'maximum_buying' };
+      if (score >= 15 && score <= 34) return { label: 'Regular DCA Buying', key: 'buying' };
+      if (score >= 35 && score <= 49) return { label: 'Moderate Buying', key: 'accumulate' };
+      if (score >= 50 && score <= 64) return { label: 'Hold & Wait', key: 'hold_neutral' };
+      if (score >= 65 && score <= 79) return { label: 'Reduce Risk', key: 'reduce' };
+      if (score >= 80 && score <= 100) return { label: 'High Risk', key: 'selling' };
+      return { label: 'High Risk', key: 'selling' };
+    };
+
+    const band = getBandForScore(compositeScore);
+    return { score: compositeScore, band };
+  }, []);
+
+  // Update preview score when model or latest data changes
+  useEffect(() => {
+    if (latest && selectedModel !== 'official') {
+      const preview = calculatePreviewScore(latest, selectedModel);
+      if (preview) {
+        setPreviewScore(preview.score);
+        setPreviewBand(preview.band);
+      } else {
+        setPreviewScore(null);
+        setPreviewBand(null);
+      }
+    } else {
+      setPreviewScore(null);
+      setPreviewBand(null);
+    }
+  }, [latest, selectedModel, calculatePreviewScore]);
+
+  const handleModelChange = useCallback((model: 'official' | 'liq-heavy' | 'mom-tilted') => {
+    setSelectedModel(model);
+  }, []);
 
   const load = useCallback(async () => {
     setError(null); setLoading(true); startedAt.current = Date.now();
@@ -185,6 +293,16 @@ export default function RealDashboard() {
       }
       
       setLatest(j1); setStatus(j2);
+      
+      // Fetch factor deltas (non-blocking)
+      fetch(`/api/factor-deltas?ts=${Date.now()}`, { cache: 'no-store' })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data?.ok && data.deltas) {
+            setFactorDeltas(data.deltas);
+          }
+        })
+        .catch(err => console.warn('Failed to fetch factor deltas:', err));
     } catch (e: any) {
       setError(e?.message ?? String(e));
     } finally {
@@ -253,10 +371,13 @@ export default function RealDashboard() {
               {/* Asset Switcher */}
               <AssetSwitcher className="mb-6" />
               
-              {/* Top Row: G-Score Card + Bitcoin Price Card */}
-              <div className="mobile-grid-2 mb-8">
+              {/* Context Header - Model Perspective & System Health */}
+              <ContextHeader status={status} onModelChange={handleModelChange} />
+              
+              {/* Hero Two-Up: G-Score Card + History Card */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch mb-8">
                 {/* Prominent G-Score Card - Unified Vertical Layout */}
-                <div className="glass-card glass-shadow-lg card-md border border-white/20 card-hover">
+                <div className="glass-card glass-shadow-lg card-md border border-white/20 card-hover h-full flex flex-col">
                   <div className="flex items-center justify-between mb-4">
                     <h1 className="mobile-subheading">
                       Bitcoin G-Score
@@ -284,50 +405,59 @@ export default function RealDashboard() {
                     {/* Radial Gauge */}
                     <div className="flex justify-center">
                       <RadialGauge 
-                        score={latest?.composite_score ?? 0}
-                        bandLabel={latest?.band?.label ?? '—'}
+                        score={selectedModel !== 'official' && previewScore !== null ? previewScore : (latest?.composite_score ?? 0)}
+                        bandLabel={(selectedModel !== 'official' && previewBand) ? previewBand.label : (latest?.band?.label ?? '—')}
                         className="w-64 h-32"
                       />
                     </div>
                     
                     {/* Score Display - Centered below gauge */}
                     <div className="text-center space-y-2">
-                      <div className="text-score">
-                        {latest?.composite_score ?? '—'}
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="text-score">
+                          {selectedModel !== 'official' && previewScore !== null ? previewScore : (latest?.composite_score ?? '—')}
+                        </div>
+                        {selectedModel !== 'official' && (
+                          <span className="px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200 rounded">
+                            Preview
+                          </span>
+                        )}
                       </div>
-                      <div className={`inline-flex items-center px-3 py-2 rounded-full text-base font-semibold ${getBandColorClasses(latest?.band?.label ?? '')}`}>
-                        {latest?.band?.label ?? '—'}
+                      <div className={`inline-flex items-center px-3 py-2 rounded-full text-base font-semibold ${getBandColorClasses(
+                        (selectedModel !== 'official' && previewBand) ? previewBand.label : (latest?.band?.label ?? '')
+                      )}`}>
+                        {(selectedModel !== 'official' && previewBand) ? previewBand.label : (latest?.band?.label ?? '—')}
                       </div>
                       <div className="text-body-small">
-                        {getBandRecommendation(latest?.band)}
+                        {getBandRecommendation(
+                          (selectedModel !== 'official' && previewBand) ? previewBand : latest?.band
+                        )}
                       </div>
-                      {/* Weights Sandbox Entry Link */}
-                      <div className="mt-3">
-                        <a
-                          href="/lab/weights"
-                          className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors"
-                        >
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                          </svg>
-                          Compare weights (experimental)
-                        </a>
-                      </div>
+                      {/* BTC Price - Merged into Gauge Card */}
+                      {latest?.btc?.spot_usd && (
+                        <div className="mt-2">
+                          <div className="text-price">{fmtUsd0(latest.btc.spot_usd)}</div>
+                          <div className="text-body-small text-gray-500">
+                            {formatSourceTimestamp('Coinbase', latest?.btc?.as_of_utc)}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                {/* Bitcoin Price Card */}
-                <div className="glass-card glass-shadow card-md card-hover">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-caption">Bitcoin Price</h3>
-                    <AlertBell />
+                {/* History Card - Equal Height with Gauge Card */}
+                <LazyLoader 
+                  delay={500}
+                  fallback={<SkeletonLoader isLoading={true}><SkeletonCard type="chart" size="lg" /></SkeletonLoader>}
+                >
+                  <div className="glass-card glass-shadow-lg card-md border border-white/20 card-hover h-full flex flex-col">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Historical G-Score</h3>
+                    <div className="flex-1 min-h-0">
+                      <HistoryChart />
+                    </div>
                   </div>
-                  <div className="text-price mb-2">{latest?.btc?.spot_usd ? fmtUsd0(latest.btc.spot_usd) : 'N/A'}</div>
-                  <div className="text-body-small text-gray-500">
-                    {formatSourceTimestamp('Coinbase (daily close)', latest?.btc?.as_of_utc || '—')}
-                  </div>
-                </div>
+                </LazyLoader>
               </div>
 
               {/* Refresh Dashboard Button and Descriptive Text - Moved between top cards and Score Insights */}
@@ -720,7 +850,7 @@ export default function RealDashboard() {
           </div>
         </div>
         
-        <div className="mobile-grid-2 mb-6 lg:mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 lg:mb-8">
           {sortFactorsByContribution(latest?.factors || []).map((factor: any, index: number) => {
             const contribution = calculateContribution(factor.score, factor.weight_pct);
             const factorTTL = getFactorTTL(factor.key);
@@ -734,15 +864,32 @@ export default function RealDashboard() {
                 delay={index * 100}
                 fallback={<SkeletonLoader isLoading={true}><SkeletonCard type="factor" /></SkeletonLoader>}
               >
-                <div className="glass-card glass-shadow card-factor card-hover card-click">
+                <div 
+                  className="glass-card glass-shadow card-factor card-hover cursor-pointer h-full flex flex-col"
+                  onClick={() => setSelectedFactor({ key: factor.key, label: factor.label })}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSelectedFactor({ key: factor.key, label: factor.label });
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`View details for ${factor.label}`}
+                >
                   {/* Reserved Badge Lane - Top Right */}
                   <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex flex-col gap-1 items-end">
-                    <span 
-                      className={`px-2 py-1 rounded text-xs font-medium border ${staleness.className}`}
-                      title={staleness.tooltip}
-                    >
-                      {staleness.level}
-                    </span>
+                    {/* Show stale/excluded badges, replace fresh with subtle indicator */}
+                    {staleness.level === 'stale' || staleness.level === 'excluded' ? (
+                      <span 
+                        className={`px-2 py-1 rounded text-xs font-medium border ${staleness.className}`}
+                        title={staleness.tooltip}
+                      >
+                        {staleness.level}
+                      </span>
+                    ) : (
+                      <div className="w-2 h-2 rounded-full bg-emerald-500" title="Live data" aria-label="Live data" />
+                    )}
                     
                     {/* 50W SMA Diagnostic Pill (Trend & Valuation only) */}
                     {factor.key === 'trend_valuation' && factor.sma50wDiagnostic && (
@@ -779,15 +926,31 @@ export default function RealDashboard() {
                 
                 {/* Score Row - Dedicated flex container with controlled wrapping */}
                 <div className="flex items-center gap-1 sm:gap-2 flex-wrap min-h-[32px]">
-                    {/* Risk Score Chip (Primary) */}
-                    <span 
-                      className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
-                        factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
-                      }`}
-                      aria-label={`Risk score: ${factor.score !== null ? factor.score.toFixed(0) : 'N/A'}`}
-                    >
-                      Risk: {factor.score !== null ? factor.score.toFixed(0) : 'N/A'}
-                    </span>
+                    {/* Risk Score Chip (Primary) with 24h Delta */}
+                    <div className="flex items-center gap-1">
+                      <span 
+                        className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
+                          factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
+                        }`}
+                        aria-label={`Risk score: ${factor.score !== null ? factor.score.toFixed(0) : 'N/A'}`}
+                      >
+                        Risk: {factor.score !== null ? factor.score.toFixed(0) : 'N/A'}
+                      </span>
+                      {factorDeltas[factor.key] && (
+                        <span 
+                          className={`text-xs font-medium ${
+                            factorDeltas[factor.key].delta > 0 
+                              ? 'text-red-600' 
+                              : factorDeltas[factor.key].delta < 0 
+                              ? 'text-green-600' 
+                              : 'text-gray-500'
+                          }`}
+                          title={`24h change: ${factorDeltas[factor.key].delta > 0 ? '+' : ''}${factorDeltas[factor.key].delta} points`}
+                        >
+                          {factorDeltas[factor.key].delta > 0 ? '+' : ''}{factorDeltas[factor.key].delta}
+                        </span>
+                      )}
+                    </div>
                     
                     {/* Weight Chip (Muted) */}
                     <span 
@@ -840,38 +1003,40 @@ export default function RealDashboard() {
                   </div>
                 </div>
                 
-                {/* Status Info */}
-                <div className="text-body-small text-gray-600">
-                  Status: <span className={`font-medium ${
-                    factor.status === 'fresh' ? 'text-green-600' : 
-                    factor.status === 'stale' ? 'text-yellow-600' : 
-                    factor.status === 'excluded' ? 'text-gray-600' : 
-                    'text-red-600'
-                  }`}>
-                    {factor.status || staleness.level}
-                  </span>
-                  {factor.status === 'excluded' && factor.reason && (
-                    <span className="ml-2 text-body-small text-gray-500">({factor.reason})</span>
-                  )}
-                </div>
-                
-                {/* What's Inside Bullets */}
-                <div className="mt-3 text-body-small text-gray-600">
-                  <div className="font-medium text-gray-700 mb-1">What's inside:</div>
-                  <ul className="space-y-1">
-                    {subSignals.slice(0, 3).map((signal, idx) => (
-                      <li key={idx} className="flex items-start">
-                        <span className="text-gray-400 mr-2">•</span>
-                        <span>{signal}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  {/* Cadence Information */}
-                  <div className="mt-2 text-xs text-gray-500" title={cadence.description}>
-                    Cadence: {cadence.label} (TTL {cadence.ttlHours < 24 ? `${cadence.ttlHours}h` : `${cadence.ttlHours / 24}d`})
+                {/* Status Info - Keep visible for stale/excluded, compact for fresh */}
+                {(staleness.level === 'stale' || staleness.level === 'excluded' || factor.status === 'excluded') ? (
+                  <div className="text-body-small text-gray-600 mt-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`font-medium ${
+                        staleness.level === 'stale' ? 'text-yellow-600' : 
+                        staleness.level === 'excluded' ? 'text-gray-600' : 
+                        'text-red-600'
+                      }`}>
+                        {staleness.level === 'stale' ? 'Stale' : 'Excluded'}
+                      </span>
+                      {factor.reason && (
+                        <span className="text-body-small text-gray-500">
+                          ({factor.reason.length > 30 ? factor.reason.substring(0, 30) + '...' : factor.reason})
+                        </span>
+                      )}
+                      {factor.last_utc && (
+                        <span className="text-body-small text-gray-500">
+                          Last update: {(() => {
+                            const ageMs = Date.now() - new Date(factor.last_utc).getTime();
+                            const ageHours = Math.floor(ageMs / (1000 * 60 * 60));
+                            const ageDays = Math.floor(ageHours / 24);
+                            if (ageDays > 0) return `${ageDays}d ago`;
+                            if (ageHours > 0) return `${ageHours}h ago`;
+                            return 'Recently';
+                          })()}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
+                ) : null}
+                
+                {/* What's Inside / Cadence - Moved to drawer (Phase 4) */}
+                {/* Metadata removed from main view per Task 3.2 */}
               </div>
               
               {/* Debug Details (only for term_leverage when debug flag is on) */}
@@ -1046,16 +1211,6 @@ export default function RealDashboard() {
           })}
         </div>
 
-        {/* History Chart */}
-        <LazyLoader 
-          delay={500}
-          fallback={<SkeletonLoader isLoading={true}><SkeletonCard type="chart" size="lg" /></SkeletonLoader>}
-        >
-          <div className="glass-card glass-shadow-lg card-lg mb-8 chart-container chart-responsive">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Historical G-Score</h3>
-            <HistoryChart />
-          </div>
-        </LazyLoader>
 
         {/* Weights and Provenance */}
         <div className="flex justify-center space-x-4">
@@ -1089,6 +1244,17 @@ export default function RealDashboard() {
           open={provenanceModalOpen}
           onClose={() => setProvenanceModalOpen(false)}
           items={latest?.provenance || []}
+        />
+      )}
+
+      {/* Factor Details Drawer */}
+      {selectedFactor && (
+        <FactorDetailsDrawer
+          isOpen={!!selectedFactor}
+          onClose={() => setSelectedFactor(null)}
+          factor={latest?.factors?.find((f: any) => f.key === selectedFactor.key)}
+          latest={latest}
+          factorDeltas={factorDeltas}
         />
       )}
 
