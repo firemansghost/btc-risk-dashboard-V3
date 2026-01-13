@@ -9,6 +9,9 @@ import { formatFriendlyTimestamp, calculateFreshness, formatLocalRefreshTime, ca
 import { getBandTextColorFromLabel } from '@/lib/bandTextColors';
 import { formatSourceTimestamp } from '@/lib/sourceUtils';
 import { calculateContribution, getFactorStaleness, getFactorSubSignals, sortFactorsByContribution, getFactorTTL, getFactorCadence } from '@/lib/factorUtils';
+import { computeAltScore } from '@/lib/whatIf/computeAltScore';
+import { getPreset, getPresetShortLabel, PresetKey } from '@/lib/whatIf/presets';
+import { formatScore, formatDelta } from '@/lib/whatIf/formatScore';
 import SystemStatusCard from './SystemStatusCard';
 import RiskBandLegend from './RiskBandLegend';
 import dynamic from 'next/dynamic';
@@ -29,7 +32,6 @@ import FactorDetailsDrawer from './FactorDetailsDrawer';
 
 import WeightsLauncher from './WeightsLauncher';
 import AssetSwitcher from './AssetSwitcher';
-import QuickGlanceAltDelta from './QuickGlanceAltDelta';
 import ContextHeader from './ContextHeader';
 
 import AlertBell from './AlertBell';
@@ -112,6 +114,7 @@ export default function RealDashboard() {
   
   const [latest, setLatest] = useState<any|null>(null);
   const [status, setStatus] = useState<any|null>(null);
+  const [config, setConfig] = useState<any|null>(null);
   const [error, setError] = useState<string|null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -139,6 +142,7 @@ export default function RealDashboard() {
   const [selectedModel, setSelectedModel] = useState<'official' | 'liq-heavy' | 'mom-tilted'>('official');
   const [previewScore, setPreviewScore] = useState<number | null>(null);
   const [previewBand, setPreviewBand] = useState<any>(null);
+  const [previewPresetKey, setPreviewPresetKey] = useState<PresetKey | null>(null);
 
   // Factor deltas state
   const [factorDeltas, setFactorDeltas] = useState<Record<string, { delta: number; previousScore: number; currentScore: number }>>({});
@@ -156,99 +160,87 @@ export default function RealDashboard() {
     localStorage.setItem('ghostgauge-onboarding-dismissed', 'true');
   };
 
-  // Calculate preview score based on selected model
-  const calculatePreviewScore = useCallback((latestData: any, model: 'official' | 'liq-heavy' | 'mom-tilted'): { score: number; band: any } | null => {
-    if (!latestData || !latestData.factors || model === 'official') {
+  // Calculate preview score using shared SSOT logic
+  const calculatePreviewScore = useCallback((latestData: any, configData: any, presetKey: PresetKey | null): { score: number; band: any; presetKey: PresetKey } | null => {
+    if (!latestData || !latestData.factors || !configData || !presetKey || presetKey === 'official_30_30') {
       return null;
     }
 
-    const presetWeights = {
-      'liq-heavy': { liquidity: 0.35, momentum: 0.25, term: 0.20, macro: 0.10, social: 0.10 },
-      'mom-tilted': { liquidity: 0.25, momentum: 0.35, term: 0.20, macro: 0.10, social: 0.10 },
-      'official': { liquidity: 0.30, momentum: 0.30, term: 0.20, macro: 0.10, social: 0.10 }
-    };
+    const preset = getPreset(presetKey);
+    if (!preset) return null;
 
-    const weights = presetWeights[model];
-    if (!weights) return null;
+    // Convert config factors to the format expected by computeAltScore
+    const factorConfigs = (configData.config?.factors || []).map((f: any) => ({
+      key: f.key,
+      pillar: f.pillar,
+      weight: f.weight || 0,
+      enabled: f.enabled !== false
+    }));
 
-    // Map factors to pillars
-    const factorMap: Record<string, { pillar: string; weight: number }> = {
-      stablecoins: { pillar: 'liquidity', weight: 0.18 },
-      etf_flows: { pillar: 'liquidity', weight: 0.077 },
-      net_liquidity: { pillar: 'liquidity', weight: 0.043 },
-      trend_valuation: { pillar: 'momentum', weight: 0.30 },
-      term_leverage: { pillar: 'leverage', weight: 0.20 },
-      macro_overlay: { pillar: 'macro', weight: 0.10 },
-      social_interest: { pillar: 'social', weight: 0.10 }
-    };
+    // Convert latest factors to the format expected by computeAltScore
+    const factors = (latestData.factors || []).map((f: any) => ({
+      key: f.key,
+      score: f.score,
+      status: f.status
+    }));
 
-    // Calculate pillar scores
-    const pillarScores: Record<string, number> = {
-      liquidity: 0,
-      momentum: 0,
-      leverage: 0,
-      macro: 0,
-      social: 0
-    };
+    // Get bands from config
+    const bands = (configData.config?.bands || []).map((b: any) => ({
+      label: b.label,
+      range: b.range
+    }));
 
-    let totalLiquidityWeight = 0;
-    latestData.factors.forEach((factor: any) => {
-      const mapping = factorMap[factor.key];
-      if (mapping && factor.score !== null && factor.score !== undefined) {
-        if (mapping.pillar === 'liquidity') {
-          pillarScores.liquidity += factor.score * mapping.weight;
-          totalLiquidityWeight += mapping.weight;
-        } else {
-          pillarScores[mapping.pillar] = factor.score;
-        }
-      }
+    // Get adjustments
+    const cycleAdj = latestData.cycle_adjustment?.adj_pts || latestData.adjustments?.cycle_nudge || 0;
+    const spikeAdj = latestData.spike_adjustment?.adj_pts || latestData.adjustments?.spike_nudge || 0;
+
+    const result = computeAltScore({
+      factors,
+      factorConfigs,
+      preset: presetKey,
+      cycleAdj,
+      spikeAdj,
+      bands
     });
 
-    // Normalize liquidity pillar
-    if (totalLiquidityWeight > 0) {
-      pillarScores.liquidity = pillarScores.liquidity / totalLiquidityWeight;
-    }
+    if (!result) return null;
 
-    // Calculate weighted composite
-    const compositeScore = Math.round(
-      pillarScores.liquidity * weights.liquidity +
-      pillarScores.momentum * weights.momentum +
-      pillarScores.leverage * weights.term +
-      pillarScores.macro * weights.macro +
-      pillarScores.social * weights.social
-    );
-
-    // Get band for score (client-side band lookup)
-    const getBandForScore = (score: number) => {
-      if (score >= 0 && score <= 14) return { label: 'Aggressive Buying', key: 'maximum_buying' };
-      if (score >= 15 && score <= 34) return { label: 'Regular DCA Buying', key: 'buying' };
-      if (score >= 35 && score <= 49) return { label: 'Moderate Buying', key: 'accumulate' };
-      if (score >= 50 && score <= 64) return { label: 'Hold & Wait', key: 'hold_neutral' };
-      if (score >= 65 && score <= 79) return { label: 'Reduce Risk', key: 'reduce' };
-      if (score >= 80 && score <= 100) return { label: 'High Risk', key: 'selling' };
-      return { label: 'High Risk', key: 'selling' };
+    return {
+      score: result.score,
+      band: result.band || { label: 'Unknown', range: [0, 100] },
+      presetKey
     };
-
-    const band = getBandForScore(compositeScore);
-    return { score: compositeScore, band };
   }, []);
 
   // Update preview score when model or latest data changes
   useEffect(() => {
-    if (latest && selectedModel !== 'official') {
-      const preview = calculatePreviewScore(latest, selectedModel);
-      if (preview) {
-        setPreviewScore(preview.score);
-        setPreviewBand(preview.band);
-      } else {
-        setPreviewScore(null);
-        setPreviewBand(null);
+    if (latest && config && selectedModel !== 'official') {
+      // Map model selection to preset key
+      const presetKeyMap: Record<string, PresetKey> = {
+        'liq-heavy': 'liq_35_25',
+        'mom-tilted': 'mom_25_35',
+        'official': 'official_30_30'
+      };
+      const presetKey = presetKeyMap[selectedModel];
+      
+      if (presetKey) {
+        const preview = calculatePreviewScore(latest, config, presetKey);
+        if (preview) {
+          setPreviewScore(preview.score);
+          setPreviewBand(preview.band);
+          setPreviewPresetKey(preview.presetKey);
+        } else {
+          setPreviewScore(null);
+          setPreviewBand(null);
+          setPreviewPresetKey(null);
+        }
       }
     } else {
       setPreviewScore(null);
       setPreviewBand(null);
+      setPreviewPresetKey(null);
     }
-  }, [latest, selectedModel, calculatePreviewScore]);
+  }, [latest, config, selectedModel, calculatePreviewScore]);
 
   const handleModelChange = useCallback((model: 'official' | 'liq-heavy' | 'mom-tilted') => {
     setSelectedModel(model);
@@ -259,16 +251,17 @@ export default function RealDashboard() {
     try {
       // Use API routes with cache-busting to avoid edge/browser caching
       const cacheBuster = `?v=${Date.now()}`;
-      const [r1, r2] = await Promise.race([
+      const [r1, r2, r3] = await Promise.race([
         Promise.all([
           fetch(`/api/data/latest-file${cacheBuster}`, { cache:'no-store' }),
           fetch(`/api/data/status${cacheBuster}`, { cache:'no-store' }),
+          fetch(`/api/config${cacheBuster}`, { cache:'no-store' }),
         ]),
         new Promise<never>((_, rej) => setTimeout(() => rej(new Error('Timeout 12s: fetch artifacts')), 12000)),
       ]);
-      if (!r1.ok || !r2.ok) throw new Error(`HTTP ${r1.status}/${r2.status}`);
-      const [j1, j2] = await Promise.race([
-        Promise.all([r1.json(), r2.json()]),
+      if (!r1.ok || !r2.ok || !r3.ok) throw new Error(`HTTP ${r1.status}/${r2.status}/${r3.status}`);
+      const [j1, j2, j3] = await Promise.race([
+        Promise.all([r1.json(), r2.json(), r3.json()]),
         new Promise<never>((_, rej) => setTimeout(() => rej(new Error('Timeout 8s: parse artifacts')), 8000)),
       ]);
       
@@ -292,7 +285,7 @@ export default function RealDashboard() {
         }
       }
       
-      setLatest(j1); setStatus(j2);
+      setLatest(j1); setStatus(j2); setConfig(j3);
       
       // Fetch factor deltas (non-blocking)
       fetch(`/api/factor-deltas?ts=${Date.now()}`, { cache: 'no-store' })
@@ -396,8 +389,7 @@ export default function RealDashboard() {
                     })()}
                   </div>
                   
-                  {/* Quick Glance Alt Delta */}
-                  <QuickGlanceAltDelta />
+                  {/* Quick Glance Alt Delta - Removed: Now handled by ContextHeader toggles */}
                   
                   
                   {/* Unified Vertical Layout: Gauge on top, Score below */}
@@ -415,11 +407,13 @@ export default function RealDashboard() {
                     <div className="text-center space-y-2">
                       <div className="flex items-center justify-center gap-2">
                         <div className="text-score">
-                          {selectedModel !== 'official' && previewScore !== null ? previewScore : (latest?.composite_score ?? '—')}
+                          {selectedModel !== 'official' && previewScore !== null 
+                            ? formatScore(previewScore, { decimals: 1 })
+                            : formatScore(latest?.composite_score, { decimals: 1 })}
                         </div>
-                        {selectedModel !== 'official' && (
+                        {selectedModel !== 'official' && previewPresetKey && (
                           <span className="px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200 rounded">
-                            Preview
+                            Preview ({getPresetShortLabel(previewPresetKey)})
                           </span>
                         )}
                       </div>
@@ -453,7 +447,7 @@ export default function RealDashboard() {
                 >
                   <div className="glass-card glass-shadow-lg card-md border border-white/20 card-hover h-full flex flex-col">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Historical G-Score</h3>
-                    <div className="flex-1 min-h-0">
+                    <div className="flex-1 min-h-[220px]">
                       <HistoryChart />
                     </div>
                   </div>
@@ -945,9 +939,9 @@ export default function RealDashboard() {
                               ? 'text-green-600' 
                               : 'text-gray-500'
                           }`}
-                          title={`24h change: ${factorDeltas[factor.key].delta > 0 ? '+' : ''}${factorDeltas[factor.key].delta} points`}
+                          title={`24h change: ${formatDelta(factorDeltas[factor.key].delta)} points`}
                         >
-                          {factorDeltas[factor.key].delta > 0 ? '+' : ''}{factorDeltas[factor.key].delta}
+                          {formatDelta(factorDeltas[factor.key].delta)}
                         </span>
                       )}
                     </div>
