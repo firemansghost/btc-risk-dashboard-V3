@@ -1,16 +1,16 @@
 {
-  "updated_at": "2026-01-12T11:27:33.799Z",
+  "updated_at": "2026-01-13T11:27:48.896Z",
   "date": "2025-10-29",
   "btc_close_usd": 112950.34863259472,
-  "xau_close_usd": 4586.905,
-  "btc_per_oz": 24.624523209570444,
-  "oz_per_btc": 0.04060992334711865,
+  "xau_close_usd": 4588.465,
+  "btc_per_oz": 24.61615129081179,
+  "oz_per_btc": 0.04062373472547105,
   "provenance": [
     {
       "name": "Stooq",
       "ok": true,
       "url": "https://stooq.com/",
-      "ms": 1429,
+      "ms": 853,
       "fallback": false
     }
   ]
