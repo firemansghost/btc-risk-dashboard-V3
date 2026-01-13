@@ -158,31 +158,20 @@ export default function RealDashboard() {
 
   // Calculate preview score based on selected model
   const calculatePreviewScore = useCallback((latestData: any, model: 'official' | 'liq-heavy' | 'mom-tilted'): { score: number; band: any } | null => {
-    if (!latestData || !latestData.factors || model === 'official') {
+    if (!latestData || !latestData.factors || !Array.isArray(latestData.factors) || model === 'official') {
       return null;
     }
 
     const presetWeights = {
-      'liq-heavy': { liquidity: 0.35, momentum: 0.25, term: 0.20, macro: 0.10, social: 0.10 },
-      'mom-tilted': { liquidity: 0.25, momentum: 0.35, term: 0.20, macro: 0.10, social: 0.10 },
-      'official': { liquidity: 0.30, momentum: 0.30, term: 0.20, macro: 0.10, social: 0.10 }
+      'liq-heavy': { liquidity: 0.35, momentum: 0.25, leverage: 0.20, macro: 0.10, social: 0.10 },
+      'mom-tilted': { liquidity: 0.25, momentum: 0.35, leverage: 0.20, macro: 0.10, social: 0.10 },
+      'official': { liquidity: 0.30, momentum: 0.30, leverage: 0.20, macro: 0.10, social: 0.10 }
     };
 
     const weights = presetWeights[model];
     if (!weights) return null;
 
-    // Map factors to pillars
-    const factorMap: Record<string, { pillar: string; weight: number }> = {
-      stablecoins: { pillar: 'liquidity', weight: 0.18 },
-      etf_flows: { pillar: 'liquidity', weight: 0.077 },
-      net_liquidity: { pillar: 'liquidity', weight: 0.043 },
-      trend_valuation: { pillar: 'momentum', weight: 0.30 },
-      term_leverage: { pillar: 'leverage', weight: 0.20 },
-      macro_overlay: { pillar: 'macro', weight: 0.10 },
-      social_interest: { pillar: 'social', weight: 0.10 }
-    };
-
-    // Calculate pillar scores
+    // Map factors to pillars using actual factor weights from latest data
     const pillarScores: Record<string, number> = {
       liquidity: 0,
       momentum: 0,
@@ -191,29 +180,41 @@ export default function RealDashboard() {
       social: 0
     };
 
-    let totalLiquidityWeight = 0;
+    const pillarWeightSums: Record<string, number> = {
+      liquidity: 0,
+      momentum: 0,
+      leverage: 0,
+      macro: 0,
+      social: 0
+    };
+
+    // First pass: sum weights per pillar from actual factors
     latestData.factors.forEach((factor: any) => {
-      const mapping = factorMap[factor.key];
-      if (mapping && factor.score !== null && factor.score !== undefined) {
-        if (mapping.pillar === 'liquidity') {
-          pillarScores.liquidity += factor.score * mapping.weight;
-          totalLiquidityWeight += mapping.weight;
-        } else {
-          pillarScores[mapping.pillar] = factor.score;
+      if (factor.score !== null && factor.score !== undefined && factor.status === 'fresh') {
+        const pillar = factor.pillar;
+        const weight = factor.weight_pct || factor.weight || 0;
+        pillarWeightSums[pillar] = (pillarWeightSums[pillar] || 0) + weight;
+      }
+    });
+
+    // Second pass: compute normalized pillar scores
+    latestData.factors.forEach((factor: any) => {
+      if (factor.score !== null && factor.score !== undefined && factor.status === 'fresh') {
+        const pillar = factor.pillar;
+        const weight = factor.weight_pct || factor.weight || 0;
+        const wSum = pillarWeightSums[pillar] || 0;
+        if (wSum > 0) {
+          const normalizedWeight = weight / wSum;
+          pillarScores[pillar] = (pillarScores[pillar] || 0) + factor.score * normalizedWeight;
         }
       }
     });
 
-    // Normalize liquidity pillar
-    if (totalLiquidityWeight > 0) {
-      pillarScores.liquidity = pillarScores.liquidity / totalLiquidityWeight;
-    }
-
-    // Calculate weighted composite
+    // Apply alternative pillar weights to pillar averages
     const compositeScore = Math.round(
       pillarScores.liquidity * weights.liquidity +
       pillarScores.momentum * weights.momentum +
-      pillarScores.leverage * weights.term +
+      pillarScores.leverage * weights.leverage +
       pillarScores.macro * weights.macro +
       pillarScores.social * weights.social
     );
@@ -372,7 +373,7 @@ export default function RealDashboard() {
               <AssetSwitcher className="mb-6" />
               
               {/* Context Header - Model Perspective & System Health */}
-              <ContextHeader status={status} onModelChange={handleModelChange} />
+              <ContextHeader status={status} latest={latest} onModelChange={handleModelChange} />
               
               {/* Hero Two-Up: G-Score Card + History Card */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch mb-8">
@@ -442,6 +443,18 @@ export default function RealDashboard() {
                           </div>
                         </div>
                       )}
+                      {/* Weights Sandbox Entry Link */}
+                      <div className="mt-3">
+                        <a
+                          href="/lab/weights"
+                          className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
+                          Compare weights (experimental)
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>

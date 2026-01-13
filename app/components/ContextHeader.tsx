@@ -14,10 +14,11 @@ type StatusData = {
 
 type ContextHeaderProps = {
   status: StatusData | null;
+  latest: any | null;
   onModelChange?: (model: 'official' | 'liq-heavy' | 'mom-tilted') => void;
 };
 
-export default function ContextHeader({ status, onModelChange }: ContextHeaderProps) {
+export default function ContextHeader({ status, latest, onModelChange }: ContextHeaderProps) {
   const [selectedModel, setSelectedModel] = useState<'official' | 'liq-heavy' | 'mom-tilted'>('official');
   const [hasPresets, setHasPresets] = useState(false);
 
@@ -39,28 +40,29 @@ export default function ContextHeader({ status, onModelChange }: ContextHeaderPr
     return () => clearInterval(interval);
   }, []);
 
-  // Count factor statuses
+  // Count factor statuses from latest.factors (not status.factors)
   const getSystemHealth = () => {
-    if (!status?.factors) {
-      return { fresh: 0, stale: 0, excluded: 0, total: 0 };
+    if (!latest?.factors || !Array.isArray(latest.factors)) {
+      return { fresh: 0, stale: 0, excluded: 0, total: 0, loading: !latest };
     }
 
     let fresh = 0;
     let stale = 0;
     let excluded = 0;
 
-    Object.values(status.factors).forEach((factor: FactorStatus) => {
-      if (factor.status === 'excluded') {
+    latest.factors.forEach((factor: any) => {
+      const factorStatus = factor.status;
+      if (factorStatus === 'excluded') {
         excluded++;
-      } else if (factor.status === 'stale' || factor.status === 'stale_beyond_ttl') {
+      } else if (factorStatus === 'stale' || factorStatus === 'stale_beyond_ttl') {
         stale++;
-      } else if (factor.status === 'fresh' || factor.status === 'success') {
+      } else if (factorStatus === 'fresh' || factorStatus === 'success') {
         fresh++;
       }
     });
 
     const total = fresh + stale + excluded;
-    return { fresh, stale, excluded, total };
+    return { fresh, stale, excluded, total, loading: false };
   };
 
   const health = getSystemHealth();
