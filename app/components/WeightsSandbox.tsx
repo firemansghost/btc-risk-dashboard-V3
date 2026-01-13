@@ -104,8 +104,39 @@ export default function WeightsSandbox() {
   const [error, setError] = useState<string | null>(null);
   const [generatedUtc, setGeneratedUtc] = useState<string>('');
   const [exportToast, setExportToast] = useState<string | null>(null);
+  
+  // Today's data from SSOT (latest.json)
+  const [todayLatest, setTodayLatest] = useState<any | null>(null);
+  const [todayLatestError, setTodayLatestError] = useState<string | null>(null);
+  const [usingHistoryFallback, setUsingHistoryFallback] = useState(false);
 
-  // Load sandbox data
+  // Load today's data from SSOT (latest.json)
+  useEffect(() => {
+    const loadTodayData = async () => {
+      try {
+        setTodayLatestError(null);
+        const cacheBuster = `?ts=${Date.now()}`;
+        const response = await fetch(`/api/data/latest-file${cacheBuster}`, { cache: 'no-store' });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const latest = await response.json();
+        setTodayLatest(latest);
+        setUsingHistoryFallback(false);
+      } catch (err) {
+        console.warn('Failed to load today\'s data from latest.json, will use history fallback:', err);
+        setTodayLatestError(err instanceof Error ? err.message : 'Failed to load latest data');
+        setTodayLatest(null);
+        setUsingHistoryFallback(true);
+      }
+    };
+
+    loadTodayData();
+  }, []);
+
+  // Load sandbox data (history for charts/backtesting)
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -206,8 +237,94 @@ export default function WeightsSandbox() {
     });
   }, [data, config, selectedPreset]);
 
-  // Get today's data (most recent)
-  const todayData = computedData[computedData.length - 1];
+  // Compute today's data from SSOT (latest.json) if available, otherwise fall back to history
+  const todayDataFromLatest = useMemo(() => {
+    if (!todayLatest || !config) return null;
+
+    const preset = PRESETS.find(p => p.key === selectedPreset);
+    if (!preset) return null;
+
+    // Convert latest.json format to sandbox format
+    const factorScores: Record<string, number> = {};
+    const factorStatuses: Record<string, string> = {};
+    
+    if (todayLatest.factors && Array.isArray(todayLatest.factors)) {
+      todayLatest.factors.forEach((factor: any) => {
+        if (factor.score !== null && factor.score !== undefined) {
+          factorScores[factor.key] = factor.score;
+        }
+        if (factor.status) {
+          factorStatuses[factor.key] = factor.status;
+        }
+      });
+    }
+
+    // Collect active factors (fresh only, same logic as history)
+    const activeFactors = config.factors.filter(f => {
+      if (!f.enabled) return false;
+      const hasScore = factorScores[f.key] !== undefined;
+      const status = factorStatuses[f.key] || 'fresh';
+      const isFresh = status === 'fresh';
+      return hasScore && isFresh;
+    });
+
+    // Group by pillar and compute normalized pillar averages
+    const pillarScores: Record<string, number> = {};
+    const pillarWeightSums: Record<string, number> = {};
+    activeFactors.forEach(f => {
+      const pillar = f.pillar;
+      pillarWeightSums[pillar] = (pillarWeightSums[pillar] || 0) + f.weight;
+    });
+
+    activeFactors.forEach(f => {
+      const pillar = f.pillar;
+      const wSum = pillarWeightSums[pillar] || 0;
+      if (wSum > 0) {
+        const normalizedWeight = f.weight / wSum;
+        pillarScores[pillar] = (pillarScores[pillar] || 0) + factorScores[f.key] * normalizedWeight;
+      }
+    });
+
+    // Apply alternative pillar weights
+    let altComposite = 0;
+    Object.entries(preset.weights).forEach(([pillarKey, pillarWeight]) => {
+      if (pillarScores[pillarKey] !== undefined) {
+        altComposite += pillarScores[pillarKey] * pillarWeight;
+      }
+    });
+
+    // Apply same adjustments as official
+    const cycleAdj = todayLatest.cycle_adjustment?.adj_pts || 0;
+    const spikeAdj = todayLatest.spike_adjustment?.adj_pts || 0;
+    const finalAltComposite = Math.max(0, Math.min(100, 
+      altComposite + cycleAdj + spikeAdj
+    ));
+
+    // Determine band for alt score
+    const altBand = config.bands.find(band => 
+      finalAltComposite >= band.range[0] && finalAltComposite <= band.range[1]
+    ) || config.bands[config.bands.length - 1];
+
+    const officialComposite = todayLatest.composite_score || 0;
+    const officialBand = todayLatest.band?.label || 'Unknown';
+
+    return {
+      date_utc: todayLatest.as_of_utc || new Date().toISOString(),
+      factor_scores: factorScores,
+      factor_statuses: factorStatuses,
+      official_composite: officialComposite,
+      cycle_adj: cycleAdj,
+      spike_adj: spikeAdj,
+      official_band: officialBand,
+      alt_composite: finalAltComposite,
+      alt_band: altBand.label,
+      delta: finalAltComposite - officialComposite,
+      pillar_scores: pillarScores
+    };
+  }, [todayLatest, config, selectedPreset]);
+
+  // Get today's data: prefer SSOT, fall back to history
+  const todayData = todayDataFromLatest || computedData[computedData.length - 1];
   const preset = PRESETS.find(p => p.key === selectedPreset);
 
   // Calculate band distribution
@@ -455,7 +572,27 @@ export default function WeightsSandbox() {
       {/* Today's Comparison */}
       {todayData && (
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Today's Comparison</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">Today's Comparison</h2>
+            {usingHistoryFallback && (
+              <span className="px-3 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200 rounded-full">
+                Using last available historical row
+              </span>
+            )}
+          </div>
+          
+          {/* As of timestamp */}
+          {todayData.date_utc && (
+            <div className="mb-4 text-sm text-gray-500 text-center">
+              As of: {formatFriendlyTimestamp(todayData.date_utc)} UTC
+              {usingHistoryFallback && (
+                <span className="ml-2 text-yellow-600">
+                  (Latest data unavailable, showing historical data)
+                </span>
+              )}
+            </div>
+          )}
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="text-center">
               <div className="text-sm text-gray-500 mb-1">Official G-Score</div>
