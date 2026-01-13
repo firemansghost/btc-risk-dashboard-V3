@@ -123,7 +123,7 @@ export default function HistoryChart() {
   }, [data, range]);
 
   return (
-    <div className="h-full flex flex-col min-h-[220px]">
+    <div className="h-full flex flex-col">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
         <div style={{ fontWeight: '500', color: '#111827' }}>Risk History</div>
         <div style={{ display: 'flex', gap: '8px' }}>

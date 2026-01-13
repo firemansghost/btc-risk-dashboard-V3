@@ -42,7 +42,7 @@ export default function ContextHeader({ status, onModelChange }: ContextHeaderPr
   // Count factor statuses
   const getSystemHealth = () => {
     if (!status?.factors) {
-      return { fresh: 0, stale: 0, excluded: 0, total: 0, loading: true };
+      return { fresh: 0, stale: 0, excluded: 0, total: 0 };
     }
 
     let fresh = 0;
@@ -60,7 +60,7 @@ export default function ContextHeader({ status, onModelChange }: ContextHeaderPr
     });
 
     const total = fresh + stale + excluded;
-    return { fresh, stale, excluded, total, loading: false };
+    return { fresh, stale, excluded, total };
   };
 
   const health = getSystemHealth();
@@ -78,7 +78,7 @@ export default function ContextHeader({ status, onModelChange }: ContextHeaderPr
       onModelChange(model);
     }
     
-    // Update localStorage to match sandbox behavior (use SSOT preset keys)
+    // Update localStorage to match sandbox behavior
     const presetMap: Record<string, string> = {
       'official': 'official_30_30',
       'liq-heavy': 'liq_35_25',
@@ -157,21 +157,11 @@ export default function ContextHeader({ status, onModelChange }: ContextHeaderPr
 
           {/* Right: System Health Indicator */}
           <div className="flex items-center gap-2">
-            {health.loading ? (
-              <>
-                <div className="w-2 h-2 rounded-full bg-gray-400 animate-pulse" aria-hidden="true" />
-                <span className="text-sm font-medium text-gray-700">System Health</span>
-                <span className="text-sm text-gray-500">Loading...</span>
-              </>
-            ) : (
-              <>
-                <div className={`w-2 h-2 rounded-full ${getHealthDotColor()}`} aria-hidden="true" />
-                <span className="text-sm font-medium text-gray-700">System Health</span>
-                <span className="text-sm text-gray-600">
-                  ({health.fresh}/{health.stale}/{health.excluded})
-                </span>
-              </>
-            )}
+            <div className={`w-2 h-2 rounded-full ${getHealthDotColor()}`} aria-hidden="true" />
+            <span className="text-sm font-medium text-gray-700">System Health</span>
+            <span className="text-sm text-gray-600">
+              ({health.fresh}/{health.stale}/{health.excluded})
+            </span>
           </div>
         </div>
       </div>
