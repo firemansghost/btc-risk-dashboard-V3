@@ -16,11 +16,13 @@ type ContextHeaderProps = {
   status: StatusData | null;
   latest: any | null;
   onModelChange?: (model: 'official' | 'liq-heavy' | 'mom-tilted') => void;
+  onOpenHealthPanel?: () => void;
 };
 
-export default function ContextHeader({ status, latest, onModelChange }: ContextHeaderProps) {
+export default function ContextHeader({ status, latest, onModelChange, onOpenHealthPanel }: ContextHeaderProps) {
   const [selectedModel, setSelectedModel] = useState<'official' | 'liq-heavy' | 'mom-tilted'>('official');
   const [hasPresets, setHasPresets] = useState(false);
+  const [healthTimeout, setHealthTimeout] = useState(false);
 
   // Check if presets exist in localStorage (from WeightsSandbox)
   useEffect(() => {
@@ -66,6 +68,36 @@ export default function ContextHeader({ status, latest, onModelChange }: Context
   };
 
   const health = getSystemHealth();
+
+  // Timeout for loading state (10 seconds)
+  useEffect(() => {
+    if (health.loading) {
+      const timer = setTimeout(() => {
+        setHealthTimeout(true);
+      }, 10000);
+      return () => clearTimeout(timer);
+    } else {
+      setHealthTimeout(false);
+    }
+  }, [health.loading]);
+
+  // Get health summary text
+  const getHealthSummary = (): string => {
+    if (health.loading) {
+      if (healthTimeout) {
+        return 'Health unavailable';
+      }
+      return 'Loading...';
+    }
+    
+    if (health.excluded > 0) {
+      return `Degraded: ${health.excluded} excluded factor${health.excluded > 1 ? 's' : ''}`;
+    }
+    if (health.stale > 0) {
+      return `Degraded: ${health.stale} stale factor${health.stale > 1 ? 's' : ''}`;
+    }
+    return 'All systems live';
+  };
   
   // Determine health dot color
   const getHealthDotColor = () => {
@@ -158,13 +190,23 @@ export default function ContextHeader({ status, latest, onModelChange }: Context
           </div>
 
           {/* Right: System Health Indicator */}
-          <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${getHealthDotColor()}`} aria-hidden="true" />
-            <span className="text-sm font-medium text-gray-700">System Health</span>
-            <span className="text-sm text-gray-600">
-              ({health.fresh}/{health.stale}/{health.excluded})
+          <button
+            onClick={() => onOpenHealthPanel?.()}
+            className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors cursor-pointer min-h-[44px]"
+            aria-label="View system health details"
+            title="Click to view detailed system health information"
+          >
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${getHealthDotColor()}`} aria-hidden="true" />
+              <span className="text-sm font-medium text-gray-700">System Health</span>
+              <span className="text-sm text-gray-600">
+                ({health.fresh}/{health.stale}/{health.excluded})
+              </span>
+            </div>
+            <span className="text-xs sm:text-sm text-gray-700">
+              {getHealthSummary()}
             </span>
-          </div>
+          </button>
         </div>
       </div>
     </div>

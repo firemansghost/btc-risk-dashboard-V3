@@ -31,6 +31,7 @@ import WeightsLauncher from './WeightsLauncher';
 import AssetSwitcher from './AssetSwitcher';
 import QuickGlanceAltDelta from './QuickGlanceAltDelta';
 import ContextHeader from './ContextHeader';
+import SystemHealthPanel from './SystemHealthPanel';
 
 import AlertBell from './AlertBell';
 import SkeletonLoader, { SkeletonDashboard, SkeletonCard } from './SkeletonLoader';
@@ -143,6 +144,9 @@ export default function RealDashboard() {
   // Factor deltas state
   const [factorDeltas, setFactorDeltas] = useState<Record<string, { delta: number; previousScore: number; currentScore: number }>>({});
 
+  // System Health Panel state
+  const [healthPanelOpen, setHealthPanelOpen] = useState(false);
+
   // Check if user is first-time visitor
   useEffect(() => {
     const hasSeenOnboarding = localStorage.getItem('ghostgauge-onboarding-dismissed');
@@ -253,6 +257,20 @@ export default function RealDashboard() {
 
   const handleModelChange = useCallback((model: 'official' | 'liq-heavy' | 'mom-tilted') => {
     setSelectedModel(model);
+  }, []);
+
+  // Jump to factor card with highlight
+  const jumpToFactor = useCallback((factorKey: string) => {
+    const element = document.getElementById(`factor-${factorKey}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      // Add highlight ring for 2 seconds
+      element.classList.add('ring-4', 'ring-blue-400', 'ring-opacity-75', 'transition-all');
+      setTimeout(() => {
+        element.classList.remove('ring-4', 'ring-blue-400', 'ring-opacity-75', 'transition-all');
+      }, 2000);
+    }
   }, []);
 
   const load = useCallback(async () => {
@@ -373,7 +391,12 @@ export default function RealDashboard() {
               <AssetSwitcher className="mb-6" />
               
               {/* Context Header - Model Perspective & System Health */}
-              <ContextHeader status={status} latest={latest} onModelChange={handleModelChange} />
+              <ContextHeader 
+                status={status} 
+                latest={latest} 
+                onModelChange={handleModelChange}
+                onOpenHealthPanel={() => setHealthPanelOpen(true)}
+              />
               
               {/* Hero Two-Up: G-Score Card + History Card */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch mb-8">
@@ -878,6 +901,7 @@ export default function RealDashboard() {
                 fallback={<SkeletonLoader isLoading={true}><SkeletonCard type="factor" /></SkeletonLoader>}
               >
                 <div 
+                  id={`factor-${factor.key}`}
                   className="glass-card glass-shadow card-factor card-hover cursor-pointer h-full flex flex-col"
                   onClick={() => setSelectedFactor({ key: factor.key, label: factor.label })}
                   onKeyDown={(e) => {
@@ -1304,6 +1328,14 @@ export default function RealDashboard() {
           onClose={() => setEtfPerformanceOpen(false)}
         />
       )}
+
+      {/* System Health Panel */}
+      <SystemHealthPanel
+        isOpen={healthPanelOpen}
+        onClose={() => setHealthPanelOpen(false)}
+        factors={latest?.factors || []}
+        onJumpToFactor={jumpToFactor}
+      />
     </div>
   );
 }
