@@ -1,5 +1,5 @@
 // app/api/factor-deltas/route.ts
-// Lightweight endpoint to compute 24h deltas for factors
+// Lightweight endpoint to compute deltas with provenance for factors
 import { NextResponse } from 'next/server';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
@@ -8,9 +8,34 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+type DeltaData = {
+  delta: number | null;
+  currentScore: number | null;
+  previousScore: number | null;
+  currentDate: string;
+  previousDate: string | null;
+  basis: 'previous_day' | 'previous_available_row' | 'insufficient_history';
+};
+
+// Helper to check if a date string is exactly 1 day before another
+function isPreviousDay(dateStr1: string, dateStr2: string): boolean {
+  const d1 = new Date(dateStr1);
+  const d2 = new Date(dateStr2);
+  const diffMs = d2.getTime() - d1.getTime();
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+  return Math.abs(diffDays - 1) < 0.5; // Allow small floating point tolerance
+}
+
+// Helper to parse a score value (handles null, empty, NaN)
+function parseScore(value: string): number | null {
+  if (!value || value.trim() === '' || value === 'null') return null;
+  const parsed = parseFloat(value);
+  return isNaN(parsed) ? null : parsed;
+}
+
 export async function GET() {
   try {
-    // Read factor_history.csv efficiently (only last ~3 lines)
+    // Read factor_history.csv efficiently (only last ~30 lines)
     const historyPath = path.join(process.cwd(), 'public', 'data', 'factor_history.csv');
     
     if (!await fs.access(historyPath).then(() => true).catch(() => false)) {
@@ -27,7 +52,7 @@ export async function GET() {
       });
     }
 
-    // Read file and get last few lines efficiently
+    // Read file and get last ~30 lines efficiently
     const content = await fs.readFile(historyPath, 'utf8');
     const lines = content.trim().split('\n').filter(line => line.trim() !== '');
     
@@ -47,6 +72,18 @@ export async function GET() {
     const headers = lines[0].split(',');
     const dateIndex = headers.indexOf('date');
     
+    if (dateIndex === -1) {
+      return NextResponse.json({ 
+        ok: false, 
+        error: 'Date column not found in CSV' 
+      }, { 
+        status: 500,
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+        }
+      });
+    }
+    
     // Factor score column indices
     const factorColumns: Record<string, number> = {
       trend_valuation: headers.indexOf('trend_valuation_score'),
@@ -58,10 +95,11 @@ export async function GET() {
       social_interest: headers.indexOf('social_interest_score'),
     };
 
-    // Get last 2 rows (today and yesterday)
-    const lastTwoRows = lines.slice(-2);
-    if (lastTwoRows.length < 2) {
-      // Only one data point - no delta available
+    // Get last ~30 data rows (skip header)
+    const dataRows = lines.slice(1);
+    const recentRows = dataRows.slice(-30);
+    
+    if (recentRows.length === 0) {
       return NextResponse.json({
         ok: true,
         deltas: {}
@@ -74,36 +112,88 @@ export async function GET() {
       });
     }
 
-    const todayRow = lastTwoRows[1].split(',');
-    const yesterdayRow = lastTwoRows[0].split(',');
+    // Parse rows into structured data
+    const parsedRows = recentRows.map(row => {
+      const parts = row.split(',');
+      return {
+        date: parts[dateIndex] || '',
+        scores: Object.fromEntries(
+          Object.entries(factorColumns).map(([key, colIndex]) => [
+            key,
+            colIndex !== -1 ? parseScore(parts[colIndex] || '') : null
+          ])
+        )
+      };
+    });
 
-    const deltas: Record<string, { delta: number; previousScore: number; currentScore: number }> = {};
+    // Current row is the last row
+    const currentRow = parsedRows[parsedRows.length - 1];
+    const currentDate = currentRow.date;
+
+    const deltas: Record<string, DeltaData> = {};
 
     // Calculate deltas for each factor
     Object.entries(factorColumns).forEach(([factorKey, colIndex]) => {
-      if (colIndex === -1) return; // Column not found
-      
-      const todayScore = parseFloat(todayRow[colIndex]);
-      const yesterdayScore = parseFloat(yesterdayRow[colIndex]);
-
-      if (isNaN(todayScore) || isNaN(yesterdayScore)) {
-        return; // Skip if either value is missing
+      if (colIndex === -1) {
+        // Column not found - skip this factor
+        return;
       }
 
-      const delta = todayScore - yesterdayScore;
+      const currentScore = currentRow.scores[factorKey];
       
-      // Round to nearest integer
-      const roundedDelta = Math.round(delta);
-      
-      // Apply threshold: show — if abs(delta) < 0.5
-      if (Math.abs(roundedDelta) < 0.5) {
-        return; // Skip insignificant deltas
+      // Find the most recent previous row with a valid score for this factor
+      let previousRow = null;
+      for (let i = parsedRows.length - 2; i >= 0; i--) {
+        const score = parsedRows[i].scores[factorKey];
+        if (score !== null && !isNaN(score)) {
+          previousRow = parsedRows[i];
+          break;
+        }
       }
 
+      // Determine basis and compute delta
+      let delta: number | null = null;
+      let previousScore: number | null = null;
+      let previousDate: string | null = null;
+      let basis: 'previous_day' | 'previous_available_row' | 'insufficient_history' = 'insufficient_history';
+
+      if (previousRow) {
+        previousScore = previousRow.scores[factorKey];
+        previousDate = previousRow.date;
+        
+        if (currentScore !== null && !isNaN(currentScore) && previousScore !== null && !isNaN(previousScore)) {
+          // Both scores are valid - compute delta
+          const deltaRaw = currentScore - previousScore;
+          const roundedDelta = Math.round(deltaRaw);
+          
+          // Apply threshold: set to null if abs(delta) < 0.5, but still return provenance
+          if (Math.abs(roundedDelta) >= 0.5) {
+            delta = roundedDelta;
+          }
+          
+          // Determine basis
+          if (isPreviousDay(previousDate, currentDate)) {
+            basis = 'previous_day';
+          } else {
+            basis = 'previous_available_row';
+          }
+        } else {
+          // One or both scores are null
+          basis = 'insufficient_history';
+        }
+      } else {
+        // No previous row found
+        basis = 'insufficient_history';
+      }
+
+      // Always include the factor in deltas (even if delta is null) for provenance
       deltas[factorKey] = {
-        delta: roundedDelta,
-        previousScore: Math.round(yesterdayScore),
-        currentScore: Math.round(todayScore)
+        delta,
+        currentScore: currentScore !== null && !isNaN(currentScore) ? Math.round(currentScore) : null,
+        previousScore: previousScore !== null && !isNaN(previousScore) ? Math.round(previousScore) : null,
+        currentDate,
+        previousDate,
+        basis
       };
     });
 

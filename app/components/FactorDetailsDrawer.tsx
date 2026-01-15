@@ -4,13 +4,21 @@ import { useEffect } from 'react';
 import { getPillarBadgeClasses, getPillarLabel } from '@/lib/pillar-colors';
 import { getFactorStaleness, getFactorSubSignals, getFactorTTL, getFactorCadence } from '@/lib/factorUtils';
 import { formatFriendlyTimestamp } from '@/lib/dateUtils';
+import { formatDeltaDisplay, getDeltaColorClass, formatDeltaProvenance } from '@/lib/deltaUtils';
 
 type FactorDetailsDrawerProps = {
   isOpen: boolean;
   onClose: () => void;
   factor: any;
   latest: any;
-  factorDeltas?: Record<string, { delta: number; previousScore: number; currentScore: number }>;
+  factorDeltas?: Record<string, { 
+    delta: number | null; 
+    previousScore: number | null; 
+    currentScore: number | null;
+    currentDate: string;
+    previousDate: string | null;
+    basis: 'previous_day' | 'previous_available_row' | 'insufficient_history';
+  }>;
 };
 
 export default function FactorDetailsDrawer({ 
@@ -97,10 +105,11 @@ export default function FactorDetailsDrawer({
             {delta && (
               <div>
                 <div className="text-sm text-gray-600 mb-1">24h Change</div>
-                <div className={`text-xl font-semibold ${
-                  delta.delta > 0 ? 'text-red-600' : delta.delta < 0 ? 'text-green-600' : 'text-gray-500'
-                }`}>
-                  {delta.delta > 0 ? '+' : ''}{delta.delta}
+                <div className={`text-xl font-semibold ${getDeltaColorClass(delta.delta)}`}>
+                  {formatDeltaDisplay(delta.delta)}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {formatDeltaProvenance(delta)}
                 </div>
               </div>
             )}

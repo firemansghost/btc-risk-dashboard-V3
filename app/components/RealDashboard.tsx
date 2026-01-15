@@ -9,6 +9,7 @@ import { formatFriendlyTimestamp, calculateFreshness, formatLocalRefreshTime, ca
 import { getBandTextColorFromLabel } from '@/lib/bandTextColors';
 import { formatSourceTimestamp } from '@/lib/sourceUtils';
 import { calculateContribution, getFactorStaleness, getFactorSubSignals, sortFactorsByContribution, getFactorTTL, getFactorCadence } from '@/lib/factorUtils';
+import { formatDeltaDisplay, getDeltaColorClass, formatDeltaProvenance } from '@/lib/deltaUtils';
 import SystemStatusCard from './SystemStatusCard';
 import RiskBandLegend from './RiskBandLegend';
 import dynamic from 'next/dynamic';
@@ -142,7 +143,14 @@ export default function RealDashboard() {
   const [previewBand, setPreviewBand] = useState<any>(null);
 
   // Factor deltas state
-  const [factorDeltas, setFactorDeltas] = useState<Record<string, { delta: number; previousScore: number; currentScore: number }>>({});
+  const [factorDeltas, setFactorDeltas] = useState<Record<string, { 
+    delta: number | null; 
+    previousScore: number | null; 
+    currentScore: number | null;
+    currentDate: string;
+    previousDate: string | null;
+    basis: 'previous_day' | 'previous_available_row' | 'insufficient_history';
+  }>>({});
 
   // System Health Panel state
   const [healthPanelOpen, setHealthPanelOpen] = useState(false);
@@ -975,16 +983,14 @@ export default function RealDashboard() {
                       </span>
                       {factorDeltas[factor.key] && (
                         <span 
-                          className={`text-xs font-medium ${
-                            factorDeltas[factor.key].delta > 0 
-                              ? 'text-red-600' 
-                              : factorDeltas[factor.key].delta < 0 
-                              ? 'text-green-600' 
-                              : 'text-gray-500'
-                          }`}
-                          title={`24h change: ${factorDeltas[factor.key].delta > 0 ? '+' : ''}${factorDeltas[factor.key].delta} points`}
+                          className={`text-xs font-medium ${getDeltaColorClass(factorDeltas[factor.key].delta)}`}
+                          title={
+                            factorDeltas[factor.key].delta !== null
+                              ? `${formatDeltaDisplay(factorDeltas[factor.key].delta)} points. ${formatDeltaProvenance(factorDeltas[factor.key])}`
+                              : formatDeltaProvenance(factorDeltas[factor.key])
+                          }
                         >
-                          {factorDeltas[factor.key].delta > 0 ? '+' : ''}{factorDeltas[factor.key].delta}
+                          {formatDeltaDisplay(factorDeltas[factor.key].delta)}
                         </span>
                       )}
                     </div>
