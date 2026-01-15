@@ -1,4 +1,4 @@
-import { getFreshnessHours, isFresh } from '@/lib/riskConfig';
+import { getFreshnessHours, isFresh } from '@/lib/riskConfig.client';
 import { expect, test } from 'vitest';
 
 test('freshness hours defaults', () => {

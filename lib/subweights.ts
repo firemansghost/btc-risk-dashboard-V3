@@ -1,5 +1,5 @@
 import { getDashboardConfig, getSubWeights as getConfigSubWeights } from './config-loader';
-import type { FactorKey } from './riskConfig';
+import type { FactorKey } from './riskConfig.client';
 
 export interface SubWeightConfig {
   [factorKey: string]: {

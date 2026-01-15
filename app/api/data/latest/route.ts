@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import { getConfig } from '@/lib/riskConfig';
+import { getConfig } from '@/lib/riskConfig.server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

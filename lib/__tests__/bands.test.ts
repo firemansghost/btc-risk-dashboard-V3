@@ -1,4 +1,4 @@
-import { getBandForScore } from '@/lib/riskConfig';
+import { getBandForScore } from '@/lib/riskConfig.client';
 import { expect, test } from 'vitest';
 
 test('band mapping monotonic', () => {

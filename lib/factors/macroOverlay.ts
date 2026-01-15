@@ -1,6 +1,6 @@
 // lib/factors/macroOverlay.ts
 // Macro Overlay: DXY 20d Δ (↑ risk), US2Y 20d Δ (↑ risk), VIX level percentile (↑ risk)
-import { NORM } from '@/lib/riskConfig';
+import { NORM } from '@/lib/riskConfig.client';
 
 type Prov = { url: string; ok: boolean; status: number; ms: number; error?: string };
 const FRED = 'https://api.stlouisfed.org/fred/series/observations';

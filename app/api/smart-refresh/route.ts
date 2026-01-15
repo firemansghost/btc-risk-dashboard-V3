@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getConfig } from '@/lib/riskConfig';
+import { getConfig } from '@/lib/riskConfig.server';
 
 // Smart refresh endpoint that fetches fresh Bitcoin and gold prices
 // and recalculates the composite score while keeping existing factor scores

@@ -5,7 +5,7 @@ import { getPillarBadgeClasses, getPillarLabel } from '@/lib/pillar-colors';
 import { getFactorStaleness, getFactorSubSignals, getFactorTTL, getFactorCadence } from '@/lib/factorUtils';
 import { formatFriendlyTimestamp } from '@/lib/dateUtils';
 import { formatDeltaDisplay, getDeltaColorClass, formatDeltaProvenance } from '@/lib/deltaUtils';
-import { getBandForScore } from '@/lib/riskConfig';
+import { getBandForScore } from '@/lib/riskConfig.client';
 
 type FactorDetailsDrawerProps = {
   isOpen: boolean;

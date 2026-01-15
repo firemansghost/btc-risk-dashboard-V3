@@ -5,7 +5,7 @@
  * Works in both Node.js (ETL) and browser (frontend) environments
  */
 
-import type { FactorKey, PillarKey } from './riskConfig';
+import type { FactorKey, PillarKey } from './riskConfig.client';
 
 // Core configuration interfaces
 export interface DashboardConfig {

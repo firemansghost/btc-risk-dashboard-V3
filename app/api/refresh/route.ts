@@ -6,7 +6,7 @@ import { fetchCoinbaseSpot }     from '@/lib/data/btc';
 import { calculatePowerLawAdjustment, fetchExtendedDailyCandles } from '@/lib/math/powerLaw';
 import { clamp } from '@/lib/math/normalize';
 import { computeFastSpike } from '@/lib/adjust/fastSpike';
-import { getBandForScore, getConfig, getConfigDigest, normalizeFactorWeights, getFreshnessHours, isFresh } from '@/lib/riskConfig';
+import { getBandForScore, getConfig, getConfigDigest, normalizeFactorWeights, getFreshnessHours, isFresh } from '@/lib/riskConfig.server';
 import type { PillarKey } from '@/lib/types';
 
 const TOKEN = process.env.RISK_REFRESH_TOKEN;

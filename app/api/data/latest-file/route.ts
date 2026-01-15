@@ -47,7 +47,7 @@ export async function GET() {
         const bandMatches = score >= currentBand.range[0] && score <= currentBand.range[1];
         if (!bandMatches) {
           // Band doesn't match score - recompute using SSOT
-          const { getBandForScore } = await import('@/lib/riskConfig');
+          const { getBandForScore } = await import('@/lib/riskConfig.server');
           const correctBand = getBandForScore(score);
           console.log(`[API] Fixed band mismatch: score ${score} had band "${currentBand.label}" (range [${currentBand.range[0]}, ${currentBand.range[1]}]), corrected to "${correctBand.label}" (range [${correctBand.range[0]}, ${correctBand.range[1]}])`);
           latestData.band = correctBand;

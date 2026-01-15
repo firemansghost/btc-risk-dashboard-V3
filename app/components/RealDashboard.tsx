@@ -311,7 +311,7 @@ export default function RealDashboard() {
           if (!bandMatches) {
             // Band doesn't match score - recompute using SSOT
             // Import getBandForScore dynamically (client-side safe)
-            const { getBandForScore } = await import('@/lib/riskConfig');
+            const { getBandForScore } = await import('@/lib/riskConfig.client');
             const correctBand = getBandForScore(score);
             console.log(`[RealDashboard] Fixed band mismatch: score ${score} had band "${currentBand.label}" (range [${currentBand.range[0]}, ${currentBand.range[1]}]), corrected to "${correctBand.label}" (range [${correctBand.range[0]}, ${correctBand.range[1]}])`);
             j1.band = correctBand;

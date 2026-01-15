@@ -2,7 +2,7 @@
 // API endpoint to expose the effective risk configuration
 
 import { NextResponse } from 'next/server';
-import { getConfig, getConfigDigest } from '@/lib/riskConfig';
+import { getConfig, getConfigDigest } from '@/lib/riskConfig.server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
