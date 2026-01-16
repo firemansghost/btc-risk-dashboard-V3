@@ -22,19 +22,19 @@ export type {
   RiskConfig
 } from './riskConfig.client';
 
-// Import default config from client module
-import { DEFAULT_CONFIG } from './riskConfig.client';
+// Import default config and types from client module
+import { DEFAULT_CONFIG, type RiskConfig, type FactorConfig, type PillarKey, type FactorKey, type PillarConfig, type RiskBand } from './riskConfig.client';
 
 // ============================================================================
 // CONFIGURATION LOADER & VALIDATOR (SERVER-ONLY)
 // ============================================================================
 
-let cachedConfig: any | null = null;
+let cachedConfig: RiskConfig | null = null;
 let configDigest: string | null = null;
 
-function validateConfig(config: Partial<any>): any {
+function validateConfig(config: Partial<RiskConfig>): RiskConfig {
   // Merge with defaults
-  const merged = { ...DEFAULT_CONFIG, ...config };
+  const merged: RiskConfig = { ...DEFAULT_CONFIG, ...config };
   
   // Validate pillars
   if (!merged.pillars || merged.pillars.length === 0) {
@@ -49,8 +49,8 @@ function validateConfig(config: Partial<any>): any {
   }
   
   // Validate factor weights sum to reasonable total
-  const enabledFactors = merged.factors.filter((f: any) => f.enabled);
-  const totalWeight = enabledFactors.reduce((sum: number, f: any) => sum + f.weight, 0);
+  const enabledFactors = merged.factors.filter((f: FactorConfig) => f.enabled);
+  const totalWeight = enabledFactors.reduce((sum: number, f: FactorConfig) => sum + f.weight, 0);
   if (totalWeight === 0) {
     console.warn('Config validation: No enabled factors with positive weights');
   }
@@ -62,7 +62,7 @@ function validateConfig(config: Partial<any>): any {
   }
   
   // Validate band ranges are sequential and cover 0-100
-  const sortedBands = [...merged.bands].sort((a: any, b: any) => a.range[0] - b.range[0]);
+  const sortedBands = [...merged.bands].sort((a, b) => a.range[0] - b.range[0]);
   for (let i = 0; i < sortedBands.length - 1; i++) {
     if (sortedBands[i].range[1] !== sortedBands[i + 1].range[0]) {
       console.warn(`Config validation: Band gap between ${sortedBands[i].key} and ${sortedBands[i + 1].key}`);
@@ -72,18 +72,18 @@ function validateConfig(config: Partial<any>): any {
   return merged;
 }
 
-function calculateDigest(config: any): string {
+function calculateDigest(config: RiskConfig): string {
   // Create a stable hash of the configuration
   const configString = JSON.stringify(config, Object.keys(config).sort());
   return crypto.createHash('sha256').update(configString).digest('hex').slice(0, 16);
 }
 
-export function getConfig(): any {
+export function getConfig(): RiskConfig {
   // Force reload to get updated risk bands
   cachedConfig = null;
   configDigest = null;
   
-  let config: Partial<any> = {};
+  let config: Partial<RiskConfig> = {};
   
   // Try to load from environment variable
   const envConfig = process.env.RISK_CONFIG_JSON;
@@ -118,13 +118,27 @@ export function getConfig(): any {
     
     // Load pillars from dashboard-config.json
     if (dashboardConfig.pillars && typeof dashboardConfig.pillars === 'object') {
-      config.pillars = Object.values(dashboardConfig.pillars);
+      const pillarsArray = Object.entries(dashboardConfig.pillars).map(([key, pillar]: [string, any]) => ({
+        key: key as PillarKey,
+        label: pillar.label || '',
+        color: pillar.color || '',
+        weight: typeof pillar.weight === 'number' ? pillar.weight * 100 : 0 // Convert from decimal to percentage
+      }));
+      config.pillars = pillarsArray;
       console.log('Config: Loaded pillars from dashboard-config.json');
     }
     
     // Load factors from dashboard-config.json
     if (dashboardConfig.factors && typeof dashboardConfig.factors === 'object') {
-      config.factors = Object.values(dashboardConfig.factors);
+      const factorsArray = Object.entries(dashboardConfig.factors).map(([key, factor]: [string, any]) => ({
+        key: key as FactorKey,
+        label: factor.label || '',
+        pillar: factor.pillar as PillarKey,
+        weight: typeof factor.weight === 'number' ? factor.weight * 100 : 0, // Convert from decimal to percentage
+        enabled: factor.enabled !== false,
+        counts_toward: factor.counts_toward as PillarKey | undefined
+      }));
+      config.factors = factorsArray;
       console.log('Config: Loaded factors from dashboard-config.json');
     }
     
@@ -169,32 +183,32 @@ export function invalidateConfigCache(): void {
 // SERVER-ONLY CONVENIENCE ACCESSORS
 // ============================================================================
 
-export function getFactorConfig(key: string): any | undefined {
-  return getConfig().factors.find((f: any) => f.key === key);
+export function getFactorConfig(key: FactorKey): FactorConfig | undefined {
+  return getConfig().factors.find((f: FactorConfig) => f.key === key);
 }
 
-export function getPillarConfig(key: string): any | undefined {
-  return getConfig().pillars.find((p: any) => p.key === key);
+export function getPillarConfig(key: PillarKey): PillarConfig | undefined {
+  return getConfig().pillars.find((p: PillarConfig) => p.key === key);
 }
 
-export function getBandForScore(score: number): any {
+export function getBandForScore(score: number): RiskBand {
   const bands = getConfig().bands;
   // Use <= for inclusive upper bound (e.g., score 49 should match range [35, 49])
-  const band = bands.find((b: any) => score >= b.range[0] && score <= b.range[1]);
+  const band = bands.find((b: RiskBand) => score >= b.range[0] && score <= b.range[1]);
   return band || bands[bands.length - 1]; // Default to highest band
 }
 
-export function getEnabledFactors(): any[] {
-  return getConfig().factors.filter((f: any) => f.enabled);
+export function getEnabledFactors(): FactorConfig[] {
+  return getConfig().factors.filter((f: FactorConfig) => f.enabled);
 }
 
-export function normalizeFactorWeights(factors: any[]): Map<string, number> {
-  const enabledFactors = factors.filter((f: any) => f.enabled && f.weight > 0);
-  const totalWeight = enabledFactors.reduce((sum: number, f: any) => sum + f.weight, 0);
+export function normalizeFactorWeights(factors: FactorConfig[]): Map<string, number> {
+  const enabledFactors = factors.filter((f: FactorConfig) => f.enabled && f.weight > 0);
+  const totalWeight = enabledFactors.reduce((sum: number, f: FactorConfig) => sum + f.weight, 0);
   
   const normalized = new Map<string, number>();
   if (totalWeight > 0) {
-    enabledFactors.forEach((f: any) => {
+    enabledFactors.forEach((f: FactorConfig) => {
       normalized.set(f.key, f.weight / totalWeight);
     });
   }
@@ -202,7 +216,7 @@ export function normalizeFactorWeights(factors: any[]): Map<string, number> {
   return normalized;
 }
 
-export function getFreshnessHours(f: string): number {
+export function getFreshnessHours(f: FactorKey): number {
   const cfg = getConfig();
   return cfg.freshness.perFactor?.[f] ?? cfg.freshness.defaultHours;
 }

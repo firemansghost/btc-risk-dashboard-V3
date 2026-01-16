@@ -116,7 +116,7 @@ export default function FactorDetailsDrawer({
     : null;
 
   // Determine if factor is stale or excluded
-  const isStale = staleness.level === 'stale' || staleness.level === 'stale_beyond_ttl';
+  const isStale = staleness.level === 'stale';
   const isExcluded = staleness.level === 'excluded' || factor.status === 'excluded';
   const isProblematic = isStale || isExcluded;
 
