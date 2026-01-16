@@ -129,7 +129,7 @@ export default function RealDashboard() {
   const [enhancedDetailsOpen, setEnhancedDetailsOpen] = useState(false);
   const [etfBreakdownOpen, setEtfBreakdownOpen] = useState(false);
   const [etfPerformanceOpen, setEtfPerformanceOpen] = useState(false);
-  const [selectedFactor, setSelectedFactor] = useState<{key: string, label: string} | null>(null);
+  const [selectedFactor, setSelectedFactor] = useState<{key: string, label: string, scrollToSection?: 'moreDetails'} | null>(null);
 
   // Factor expansion state
   // Removed expandedFactors state - drawer is now the single source of truth
@@ -1113,13 +1113,17 @@ export default function RealDashboard() {
                     ))}
                   </div>
                   
-                  {/* Show "+X more..." link that opens drawer */}
+                  {/* Show "+X more..." link that opens drawer and scrolls to More details */}
                   {factor.details.length > 3 && (
                     <div className="mt-2">
                       <button
                         onClick={(e) => {
                           e.stopPropagation(); // Prevent card click
-                          setSelectedFactor({ key: factor.key, label: factor.label });
+                          setSelectedFactor({ 
+                            key: factor.key, 
+                            label: factor.label,
+                            scrollToSection: 'moreDetails' as const
+                          });
                         }}
                         className="text-sm text-emerald-600 hover:text-emerald-700 font-medium underline"
                       >
@@ -1277,6 +1281,7 @@ export default function RealDashboard() {
           factor={latest?.factors?.find((f: any) => f.key === selectedFactor.key)}
           latest={latest}
           factorDeltas={factorDeltas}
+          scrollToSection={selectedFactor.scrollToSection || null}
         />
       )}
 
