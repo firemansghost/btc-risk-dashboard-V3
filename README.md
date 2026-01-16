@@ -1,4 +1,4 @@
-[![Bundle Size](https://img.shields.io/badge/bundle%20size-3.44 MB-blue)](https://github.com/firemansghost/btc-risk-dashboard-V3/actions)
+[![Bundle Size](https://img.shields.io/badge/bundle%20size-3.49 MB-blue)](https://github.com/firemansghost/btc-risk-dashboard-V3/actions)
 
 # Bitcoin Risk Dashboard
 
