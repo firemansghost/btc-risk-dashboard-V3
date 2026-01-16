@@ -132,7 +132,7 @@ export default function RealDashboard() {
   const [selectedFactor, setSelectedFactor] = useState<{key: string, label: string} | null>(null);
 
   // Factor expansion state
-  const [expandedFactors, setExpandedFactors] = useState(new Set<string>());
+  // Removed expandedFactors state - drawer is now the single source of truth
   
   // Onboarding state
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -339,17 +339,7 @@ export default function RealDashboard() {
 
   useEffect(() => { load(); }, [load]);
 
-  const toggleFactorExpansion = (key: string) => {
-    setExpandedFactors(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(key)) {
-        newSet.delete(key);
-      } else {
-        newSet.add(key);
-      }
-      return newSet;
-    });
-  };
+  // Removed toggleFactorExpansion - drawer is now the single source of truth
 
   const openHistoryModal = (factor: {key: string, label: string}) => {
     setSelectedFactor(factor);
@@ -910,7 +900,7 @@ export default function RealDashboard() {
               >
                 <div 
                   id={`factor-${factor.key}`}
-                  className="glass-card glass-shadow card-factor card-hover cursor-pointer h-full flex flex-col"
+                  className="glass-card glass-shadow card-factor card-hover cursor-pointer h-full flex flex-col transition-all hover:shadow-lg hover:scale-[1.01]"
                   onClick={() => setSelectedFactor({ key: factor.key, label: factor.label })}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -1123,29 +1113,18 @@ export default function RealDashboard() {
                     ))}
                   </div>
                   
-                  {/* Show "+X more..." if there are more details */}
+                  {/* Show "+X more..." link that opens drawer */}
                   {factor.details.length > 3 && (
                     <div className="mt-2">
                       <button
-                        onClick={() => toggleFactorExpansion(factor.key)}
-                        className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent card click
+                          setSelectedFactor({ key: factor.key, label: factor.label });
+                        }}
+                        className="text-sm text-emerald-600 hover:text-emerald-700 font-medium underline"
                       >
-                        {expandedFactors.has(factor.key) 
-                          ? '- Show less' 
-                          : `+${factor.details.length - 3} more...`}
+                        +{factor.details.length - 3} more...
                       </button>
-                    </div>
-                  )}
-
-                  {/* Show additional details when expanded */}
-                  {expandedFactors.has(factor.key) && factor.details.length > 3 && (
-                    <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
-                      {factor.details.slice(3).map((detail: any, idx: number) => (
-                        <div key={idx + 3} className="flex justify-between items-center text-sm">
-                          <span className="text-gray-600">{detail.label}:</span>
-                          <span className="font-medium text-gray-900">{detail.value}</span>
-                        </div>
-                      ))}
                     </div>
                   )}
 

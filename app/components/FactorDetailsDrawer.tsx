@@ -6,6 +6,7 @@ import { getFactorStaleness, getFactorSubSignals, getFactorTTL, getFactorCadence
 import { formatFriendlyTimestamp } from '@/lib/dateUtils';
 import { formatDeltaDisplay, getDeltaColorClass, formatDeltaProvenance } from '@/lib/deltaUtils';
 import { getBandForScore } from '@/lib/riskConfig.client';
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 
 type FactorDetailsDrawerProps = {
   isOpen: boolean;
@@ -80,6 +81,11 @@ export default function FactorDetailsDrawer({
     json: 'idle'
   });
   const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Chart data state
+  const [chartData, setChartData] = useState<Array<{ date: string; score: number | null; status: string }>>([]);
+  const [chartLoading, setChartLoading] = useState(false);
+  const [chartError, setChartError] = useState<string | null>(null);
 
   // Close on Escape key
   useEffect(() => {
@@ -99,6 +105,49 @@ export default function FactorDetailsDrawer({
       }
     };
   }, []);
+
+  // Lazy-load chart data when drawer opens
+  useEffect(() => {
+    if (!isOpen || !factor?.key) {
+      setChartData([]);
+      setChartError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setChartLoading(true);
+    setChartError(null);
+
+    // Fetch factor history (lazy, non-blocking)
+    fetch(`/api/factor-history/${factor.key}?range=30d`)
+      .then(res => {
+        if (cancelled) return;
+        if (!res.ok) {
+          throw new Error(`Failed to load history: ${res.statusText}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (cancelled) return;
+        if (data.ok && Array.isArray(data.data)) {
+          // Reverse to show oldest to newest (left to right)
+          setChartData([...data.data].reverse());
+        } else {
+          setChartData([]);
+        }
+        setChartLoading(false);
+      })
+      .catch(err => {
+        if (cancelled) return;
+        console.error('Error loading factor history:', err);
+        setChartError(err.message || 'Failed to load chart data');
+        setChartLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, factor?.key]);
 
   if (!isOpen || !factor) return null;
 
@@ -247,36 +296,54 @@ export default function FactorDetailsDrawer({
             {/* Copy Summary Button */}
             <button
               onClick={handleCopySummary}
-              className="px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors min-h-[32px] min-w-[32px] flex items-center justify-center"
+              className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors min-h-[32px] flex items-center justify-center gap-1.5"
               aria-label="Copy summary"
-              title="Copy summary"
+              title={copyState.summary === 'error' ? 'Copy failed - clipboard may be unavailable' : 'Copy human-readable summary'}
             >
               {copyState.summary === 'success' ? (
-                <span className="text-green-600">✓</span>
+                <>
+                  <span className="text-green-600">✓</span>
+                  <span className="hidden sm:inline">Copied</span>
+                </>
               ) : copyState.summary === 'error' ? (
-                <span className="text-red-600">✗</span>
+                <>
+                  <span className="text-red-600">✗</span>
+                  <span className="hidden sm:inline">Error</span>
+                </>
               ) : (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  <span className="hidden sm:inline">Summary</span>
+                </>
               )}
             </button>
             
             {/* Copy JSON Button */}
             <button
               onClick={handleCopyJSON}
-              className="px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors min-h-[32px] min-w-[32px] flex items-center justify-center"
+              className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors min-h-[32px] flex items-center justify-center gap-1.5"
               aria-label="Copy JSON"
-              title="Copy JSON"
+              title={copyState.json === 'error' ? 'Copy failed - clipboard may be unavailable' : 'Copy structured JSON data'}
             >
               {copyState.json === 'success' ? (
-                <span className="text-green-600">✓</span>
+                <>
+                  <span className="text-green-600">✓</span>
+                  <span className="hidden sm:inline">Copied</span>
+                </>
               ) : copyState.json === 'error' ? (
-                <span className="text-red-600">✗</span>
+                <>
+                  <span className="text-red-600">✗</span>
+                  <span className="hidden sm:inline">Error</span>
+                </>
               ) : (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                </svg>
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                  </svg>
+                  <span className="hidden sm:inline">JSON</span>
+                </>
               )}
             </button>
             
@@ -332,6 +399,67 @@ export default function FactorDetailsDrawer({
                     {formatDeltaProvenance(delta)}
                   </div>
                 </div>
+              )}
+            </div>
+          </div>
+
+          {/* Mini Chart - 30 Day History */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-2">30-Day History</h3>
+            <div className="h-48 w-full border border-gray-200 rounded-lg bg-gray-50 p-2">
+              {chartLoading ? (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-sm text-gray-500">Loading chart...</div>
+                </div>
+              ) : chartError ? (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-sm text-red-600">Error: {chartError}</div>
+                </div>
+              ) : chartData.length === 0 ? (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-sm text-gray-500">No historical data available</div>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fontSize: 10 }}
+                      tickFormatter={(value) => {
+                        const date = new Date(value);
+                        return `${date.getMonth() + 1}/${date.getDate()}`;
+                      }}
+                      interval="preserveStartEnd"
+                    />
+                    <YAxis 
+                      domain={[0, 100]}
+                      tick={{ fontSize: 10 }}
+                      width={35}
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (!active || !payload || !payload[0]) return null;
+                        const data = payload[0].payload;
+                        return (
+                          <div className="bg-white border border-gray-200 rounded shadow-lg p-2 text-xs">
+                            <div className="font-semibold">{data.date}</div>
+                            <div>Score: {data.score !== null ? data.score.toFixed(1) : 'N/A'}</div>
+                            {data.status && <div>Status: {data.status}</div>}
+                          </div>
+                        );
+                      }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="score" 
+                      stroke="#10b981" 
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4 }}
+                      connectNulls={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               )}
             </div>
           </div>
