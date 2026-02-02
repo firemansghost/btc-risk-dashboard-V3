@@ -1,9 +1,9 @@
 {
-  "updated_at": "2026-02-01T11:28:17.658Z",
-  "date": "2026-02-01",
-  "btc_close_usd": 78375.24,
-  "sats_per_usd": 1275.9131582882553,
-  "usd_per_sat": 0.0007837524,
+  "updated_at": "2026-02-02T11:40:31.684Z",
+  "date": "2026-02-02",
+  "btc_close_usd": 77818.86,
+  "sats_per_usd": 1285.0355299473674,
+  "usd_per_sat": 0.0007781886000000001,
   "provenance": [
     {
       "name": "BTC daily close (Coinbase)",
