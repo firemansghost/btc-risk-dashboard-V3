@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "as_of_utc": "2026-02-14T11:29:00.705Z",
+  "as_of_utc": "2026-02-15T11:29:43.881Z",
   "composite_score": 52,
   "composite_raw": 52,
   "band": {
@@ -21,11 +21,11 @@
       "pillar": "momentum",
       "weight": 30,
       "weight_pct": 30,
-      "score": 37,
+      "score": 38,
       "status": "fresh",
       "reason": "fresh (1min)",
-      "last_utc": "2026-02-14T11:27:46.333Z",
-      "lastUpdated": "2026-02-14T11:27:46.333Z",
+      "last_utc": "2026-02-15T11:28:29.777Z",
+      "lastUpdated": "2026-02-15T11:28:29.777Z",
       "details": [
         {
           "label": "Price vs 200-day SMA (Mayer)",
@@ -33,23 +33,23 @@
         },
         {
           "label": "Bull Market Support Band",
-          "value": "below (-24.2%)"
+          "value": "below (-24.0%)"
         },
         {
           "label": "Weekly momentum (RSI)",
-          "value": "29.1"
+          "value": "29.2"
         },
         {
           "label": "BTC Price (daily close)",
-          "value": "$70,180.23"
+          "value": "$70,338.6"
         },
         {
           "label": "200-day SMA",
-          "value": "$100,841.946"
+          "value": "$100,597.291"
         },
         {
           "label": "Weekly Close (for BMSB)",
-          "value": "$70,180.23"
+          "value": "$70,338.6"
         },
         {
           "label": "Price source",
@@ -61,11 +61,11 @@
         },
         {
           "label": "Calculation method",
-          "value": "Parallel processing (12ms)"
+          "value": "Parallel processing (9ms)"
         },
         {
           "label": "BMSB (20W SMA / 21W EMA)",
-          "value": "$94,170.704 / $90,925.531"
+          "value": "$94,178.622 / $90,949.239"
         },
         {
           "label": "50-week SMA diagnostic",
@@ -73,12 +73,12 @@
         },
         {
           "label": "Component Scores",
-          "value": "BMSB: 20, Mayer: 79, RSI: 15"
+          "value": "BMSB: 21, Mayer: 79, RSI: 20"
         }
       ],
       "sma50wDiagnostic": {
-        "sma50": 99749.62000000002,
-        "currentClose": 70180.23,
+        "sma50": 99771.12759999999,
+        "currentClose": 70338.6,
         "isBelow": true,
         "consecutiveWeeksBelow": 10,
         "showWarning": true
@@ -90,19 +90,19 @@
       "pillar": "liquidity",
       "weight": 18,
       "weight_pct": 18,
-      "score": 52,
+      "score": 56,
       "status": "fresh",
       "reason": "fresh (1min)",
-      "last_utc": "2026-02-14T11:27:47.582Z",
-      "lastUpdated": "2026-02-14T11:27:47.582Z",
+      "last_utc": "2026-02-15T11:28:30.480Z",
+      "lastUpdated": "2026-02-15T11:28:30.480Z",
       "details": [
         {
           "label": "Mempool 7d avg (MB)",
-          "value": "53.0"
+          "value": "73.0"
         },
         {
           "label": "Fees 7d avg (USD)",
-          "value": "$188189"
+          "value": "$182747"
         },
         {
           "label": "Data Sources",
@@ -110,7 +110,7 @@
         },
         {
           "label": "Calculation Method",
-          "value": "Parallel processing (1243ms)"
+          "value": "Parallel processing (689ms)"
         },
         {
           "label": "Fallback Attempts",
@@ -127,12 +127,12 @@
       "score": 82,
       "status": "fresh",
       "reason": "fresh (0s)",
-      "last_utc": "2026-02-14T11:28:58.694Z",
-      "lastUpdated": "2026-02-14T11:28:58.694Z",
+      "last_utc": "2026-02-15T11:29:42.183Z",
+      "lastUpdated": "2026-02-15T11:29:42.183Z",
       "details": [
         {
           "label": "Total Market Cap",
-          "value": "$262.2B"
+          "value": "$262.0B"
         },
         {
           "label": "Dominant Stablecoin",
@@ -148,7 +148,7 @@
         },
         {
           "label": "Market Concentration",
-          "value": "HHI: 5700"
+          "value": "HHI: 5708"
         },
         {
           "label": "Supply Growth Percentile",
@@ -156,7 +156,7 @@
         },
         {
           "label": "Historical Baseline",
-          "value": "109 data points (weighted average of 7 stablecoins)"
+          "value": "110 data points (weighted average of 7 stablecoins)"
         },
         {
           "label": "Stablecoin Coverage",
@@ -164,7 +164,7 @@
         },
         {
           "label": "Component Scores",
-          "value": "Supply: 95, Momentum: 70, Concentration: 57.00110886353059"
+          "value": "Supply: 95, Momentum: 70, Concentration: 57.0754422545388"
         }
       ]
     },
@@ -176,7 +176,7 @@
       "weight_pct": 4.3,
       "score": 43,
       "status": "fresh",
-      "reason": "fresh (19h)",
+      "reason": "fresh (2d)",
       "last_utc": "2026-02-13T16:00:00.000Z",
       "lastUpdated": "2026-02-13T16:00:00.000Z",
       "details": [
@@ -226,7 +226,7 @@
         },
         {
           "label": "Last Update",
-          "value": "1.5 days ago"
+          "value": "2.5 days ago"
         }
       ],
       "individualEtfFlows": [
@@ -8641,8 +8641,8 @@
       "score": 74,
       "status": "fresh",
       "reason": "fresh (0s)",
-      "last_utc": "2026-02-14T11:28:58.696Z",
-      "lastUpdated": "2026-02-14T11:28:58.696Z",
+      "last_utc": "2026-02-15T11:29:42.185Z",
+      "lastUpdated": "2026-02-15T11:29:42.185Z",
       "details": [
         {
           "label": "Fed Balance Sheet (WALCL)",
@@ -8670,7 +8670,7 @@
         },
         {
           "label": "Fetch Time",
-          "value": "923ms"
+          "value": "315ms"
         },
         {
           "label": "Component Scores",
@@ -8688,11 +8688,11 @@
       "pillar": "macro",
       "weight": 10,
       "weight_pct": 10,
-      "score": 48,
+      "score": 44,
       "status": "fresh",
       "reason": "fresh (1min)",
-      "last_utc": "2026-02-14T11:27:47.824Z",
-      "lastUpdated": "2026-02-14T11:27:47.824Z",
+      "last_utc": "2026-02-15T11:28:31.640Z",
+      "lastUpdated": "2026-02-15T11:28:31.640Z",
       "providers": {
         "bitmex": "ok",
         "binance": "451",
@@ -8701,11 +8701,11 @@
       "details": [
         {
           "label": "Current Funding Rate",
-          "value": "-0.0139%"
+          "value": "0.0079%"
         },
         {
           "label": "30-day Average",
-          "value": "0.0005%"
+          "value": "-0.0007%"
         },
         {
           "label": "Price Volatility (30d)",
@@ -8733,7 +8733,7 @@
         },
         {
           "label": "Component Scores",
-          "value": "Funding: 27, Vol: 73, Stress: 46"
+          "value": "Funding: 23, Vol: 73, Stress: 37"
         }
       ]
     },
@@ -8743,11 +8743,11 @@
       "pillar": "social",
       "weight": 10,
       "weight_pct": 10,
-      "score": 33,
+      "score": 34,
       "status": "fresh",
       "reason": "fresh (1min)",
-      "last_utc": "2026-02-14T11:27:47.159Z",
-      "lastUpdated": "2026-02-14T11:27:47.159Z",
+      "last_utc": "2026-02-15T11:28:30.042Z",
+      "lastUpdated": "2026-02-15T11:28:30.042Z",
       "details": [
         {
           "label": "Macro Regime",
@@ -8775,11 +8775,11 @@
         },
         {
           "label": "Fetch Time",
-          "value": "841ms"
+          "value": "265ms"
         },
         {
           "label": "Component Scores",
-          "value": "Dollar: 6, Rates: 16, VIX: 100, Real: 5"
+          "value": "Dollar: 7, Rates: 17, VIX: 100, Real: 5"
         },
         {
           "label": "Current Levels",
@@ -8789,8 +8789,8 @@
     }
   ],
   "btc": {
-    "spot_usd": 70180.23,
-    "as_of_utc": "2026-02-14T11:29:00.706Z",
+    "spot_usd": 70338.6,
+    "as_of_utc": "2026-02-15T11:29:43.881Z",
     "source": "Coinbase"
   },
   "provenance": [],
@@ -8803,7 +8803,7 @@
   "cycle_adjustment": {
     "adj_pts": 0,
     "residual_z": null,
-    "last_utc": "2026-02-14T11:29:00.704Z",
+    "last_utc": "2026-02-15T11:29:43.880Z",
     "source": "ETL fallback",
     "reason": "insufficient_historical_data"
   },
@@ -8812,9 +8812,9 @@
     "r_1d": 0,
     "sigma": 0,
     "z": 0,
-    "ref_close": 70180.23,
-    "spot": 70180.23,
-    "last_utc": "2026-02-14T11:29:00.704Z",
+    "ref_close": 70338.6,
+    "spot": 70338.6,
+    "last_utc": "2026-02-15T11:29:43.880Z",
     "source": "ETL fallback",
     "reason": "insufficient_historical_data"
   },

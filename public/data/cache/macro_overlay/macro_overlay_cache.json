@@ -1,7 +1,7 @@
 {
-  "score": 33,
+  "score": 34,
   "reason": "success",
-  "lastUpdated": "2026-02-14T11:27:47.159Z",
+  "lastUpdated": "2026-02-15T11:28:30.042Z",
   "details": [
     {
       "label": "Macro Regime",
@@ -29,11 +29,11 @@
     },
     {
       "label": "Fetch Time",
-      "value": "841ms"
+      "value": "265ms"
     },
     {
       "label": "Component Scores",
-      "value": "Dollar: 6, Rates: 16, VIX: 100, Real: 5"
+      "value": "Dollar: 7, Rates: 17, VIX: 100, Real: 5"
     },
     {
       "label": "Current Levels",
@@ -41,7 +41,7 @@
     }
   ],
   "latestDxyDate": "2026-02-06",
-  "fetchTime": 841,
-  "cachedAt": "2026-02-14T11:27:47.159Z",
+  "fetchTime": 265,
+  "cachedAt": "2026-02-15T11:28:30.043Z",
   "version": "1.0.0"
 }
