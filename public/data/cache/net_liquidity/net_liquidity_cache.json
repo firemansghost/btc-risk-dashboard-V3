@@ -1,7 +1,7 @@
 {
-  "score": 68,
+  "score": 62,
   "reason": "success",
-  "lastUpdated": "2026-02-18T00:00:00.000Z",
+  "lastUpdated": "2026-02-25T00:00:00.000Z",
   "details": [
     {
       "label": "Fed Balance Sheet (WALCL)",
@@ -13,7 +13,7 @@
     },
     {
       "label": "Treasury General Account",
-      "value": "$913B"
+      "value": "$888B"
     },
     {
       "label": "Net Liquidity",
@@ -21,27 +21,27 @@
     },
     {
       "label": "4-week Change",
-      "value": "-0.3%"
+      "value": "+1.1%"
     },
     {
       "label": "Level Percentile (1y)",
-      "value": "21%"
+      "value": "29%"
     },
     {
       "label": "Fetch Time",
-      "value": "1195ms"
+      "value": "1200ms"
     },
     {
       "label": "Component Scores",
-      "value": "Level: 85, RoC: 41, Momentum: 86"
+      "value": "Level: 78, RoC: 18, Momentum: 95"
     },
     {
       "label": "Data as of",
-      "value": "2026-02-18"
+      "value": "2026-02-25"
     }
   ],
-  "latestWalclDate": "2026-02-18",
-  "fetchTime": 1195,
-  "cachedAt": "2026-02-26T11:43:06.572Z",
+  "latestWalclDate": "2026-02-25",
+  "fetchTime": 1200,
+  "cachedAt": "2026-02-27T11:37:16.276Z",
   "version": "1.0.0"
 }
