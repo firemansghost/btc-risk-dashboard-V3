@@ -1,7 +1,7 @@
 {
   "score": 92,
   "reason": "success",
-  "lastUpdated": "2026-03-08T11:26:53.705Z",
+  "lastUpdated": "2026-03-09T11:37:39.730Z",
   "details": [
     {
       "label": "Macro Regime",
@@ -29,7 +29,7 @@
     },
     {
       "label": "Fetch Time",
-      "value": "445ms"
+      "value": "588ms"
     },
     {
       "label": "Component Scores",
@@ -41,7 +41,7 @@
     }
   ],
   "latestDxyDate": "2026-02-27",
-  "fetchTime": 445,
-  "cachedAt": "2026-03-08T11:26:53.705Z",
+  "fetchTime": 588,
+  "cachedAt": "2026-03-09T11:37:39.730Z",
   "version": "1.0.0"
 }
