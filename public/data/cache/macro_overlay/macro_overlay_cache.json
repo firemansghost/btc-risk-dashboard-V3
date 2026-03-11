@@ -1,7 +1,7 @@
 {
-  "score": 89,
+  "score": 91,
   "reason": "success",
-  "lastUpdated": "2026-03-10T11:37:33.511Z",
+  "lastUpdated": "2026-03-11T11:38:03.264Z",
   "details": [
     {
       "label": "Macro Regime",
@@ -13,35 +13,35 @@
     },
     {
       "label": "Rate Environment",
-      "value": "Neutral (1.7%)"
+      "value": "Neutral (2.3%)"
     },
     {
       "label": "VIX Level",
-      "value": "29.5 (100%ile)"
+      "value": "25.5 (98%ile)"
     },
     {
       "label": "Yield Curve (10Y-2Y)",
-      "value": "0.59%"
+      "value": "0.56%"
     },
     {
       "label": "Real Rate (10Y TIPS)",
-      "value": "1.80%"
+      "value": "1.78%"
     },
     {
       "label": "Fetch Time",
-      "value": "527ms"
+      "value": "687ms"
     },
     {
       "label": "Component Scores",
-      "value": "Dollar: 95, Rates: 73, VIX: 100, Real: 5"
+      "value": "Dollar: 95, Rates: 79, VIX: 100, Real: 5"
     },
     {
       "label": "Current Levels",
-      "value": "DXY: 119.5, 2Y: 3.56%, VIX: 29.5"
+      "value": "DXY: 119.5, 2Y: 3.56%, VIX: 25.5"
     }
   ],
   "latestDxyDate": "2026-03-06",
-  "fetchTime": 527,
-  "cachedAt": "2026-03-10T11:37:33.512Z",
+  "fetchTime": 687,
+  "cachedAt": "2026-03-11T11:38:03.265Z",
   "version": "1.0.0"
 }
