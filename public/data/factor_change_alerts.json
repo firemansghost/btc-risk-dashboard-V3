@@ -1,5 +1,108 @@
 [
   {
+    "id": "f0ef996ae3e92fbc",
+    "type": "factor_change",
+    "severity": "critical",
+    "timestamp": "2026-03-12T11:36:52.099Z",
+    "factor": "ETF Flows",
+    "factorKey": "etf_flows",
+    "title": "📊 CRITICAL: ETF Flows Factor Changed",
+    "message": "ETF Flows increased significantly: 35 → 82 (+47.0 points)",
+    "data": {
+      "factor": "ETF Flows",
+      "factorKey": "etf_flows",
+      "previous_score": 35,
+      "current_score": 82,
+      "change_points": 47,
+      "change_percentage": 134.28571428571428,
+      "severity": "critical",
+      "weight": 9
+    },
+    "actions": [
+      "Review factor details and recent changes",
+      "Consider implications for market outlook",
+      "Monitor for continued factor volatility",
+      "Check data source reliability",
+      "Review related market indicators"
+    ],
+    "context": "Factor is in extremely high territory.",
+    "trend": "declining",
+    "consecutiveDays": 1,
+    "recommendations": [
+      "Consider reducing exposure - factor in extreme high territory",
+      "Watch for continued decline - may indicate weakening fundamentals"
+    ],
+    "generated_at": "2026-03-12T11:36:52.107Z"
+  },
+  {
+    "id": "7408c7f620bb4ef0",
+    "type": "factor_change",
+    "severity": "medium",
+    "timestamp": "2026-03-12T11:36:52.099Z",
+    "factor": "Net Liquidity",
+    "factorKey": "net_liquidity",
+    "title": "📊 MEDIUM: Net Liquidity Factor Changed",
+    "message": "Net Liquidity increased significantly: 57 → 72 (+15.0 points)",
+    "data": {
+      "factor": "Net Liquidity",
+      "factorKey": "net_liquidity",
+      "previous_score": 57,
+      "current_score": 72,
+      "change_points": 15,
+      "change_percentage": 26.31578947368421,
+      "severity": "medium",
+      "weight": 5
+    },
+    "actions": [
+      "Review factor details and recent changes",
+      "Consider implications for market outlook",
+      "Monitor for continued factor volatility",
+      "Check data source reliability",
+      "Review related market indicators"
+    ],
+    "context": "Factor showing normal variation",
+    "trend": "declining",
+    "consecutiveDays": 1,
+    "recommendations": [
+      "Watch for continued decline - may indicate weakening fundamentals"
+    ],
+    "generated_at": "2026-03-12T11:36:52.107Z"
+  },
+  {
+    "id": "bea643d67e74974e",
+    "type": "factor_change",
+    "severity": "medium",
+    "timestamp": "2026-03-12T11:36:52.099Z",
+    "factor": "Macro Overlay",
+    "factorKey": "macro_overlay",
+    "title": "📊 MEDIUM: Macro Overlay Factor Changed",
+    "message": "Macro Overlay decreased significantly: 59 → 49 (-10.0 points)",
+    "data": {
+      "factor": "Macro Overlay",
+      "factorKey": "macro_overlay",
+      "previous_score": 59,
+      "current_score": 49,
+      "change_points": -10,
+      "change_percentage": -16.94915254237288,
+      "severity": "medium",
+      "weight": 10
+    },
+    "actions": [
+      "Review factor details and recent changes",
+      "Consider implications for market outlook",
+      "Monitor for continued factor volatility",
+      "Check data source reliability",
+      "Review related market indicators"
+    ],
+    "context": "Factor showing normal variation",
+    "trend": "stable",
+    "consecutiveDays": 1,
+    "recommendations": [
+      "Monitor factor for further changes"
+    ],
+    "generated_at": "2026-03-12T11:36:52.107Z"
+  },
+  {
     "id": "fed9dd710233ce9f",
     "type": "factor_change",
     "severity": "medium",
@@ -31,7 +134,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.105Z"
   },
   {
     "id": "47f35d3f28a20d9d",
@@ -65,7 +168,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.105Z"
   },
   {
     "id": "15424ff25c88f52b",
@@ -99,7 +202,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.105Z"
   },
   {
     "id": "ef856455876d2b15",
@@ -133,7 +236,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.105Z"
   },
   {
     "id": "a48dafcfee0c5fb3",
@@ -167,7 +270,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.105Z"
   },
   {
     "id": "8c11a5b9a1486a6c",
@@ -201,7 +304,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.105Z"
   },
   {
     "id": "0198f706dc14c56a",
@@ -236,7 +339,7 @@
       "Consider reducing exposure - factor in extreme high territory",
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.105Z"
   },
   {
     "id": "b3319f189f69f869",
@@ -270,7 +373,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.105Z"
   },
   {
     "id": "80226d95be39b8aa",
@@ -305,7 +408,7 @@
       "Consider reducing exposure - factor in extreme high territory",
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "4b12ce53b0354745",
@@ -339,7 +442,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "7046688eb3d3a0aa",
@@ -373,7 +476,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "cb8cc2b3b0cfd3b5",
@@ -407,7 +510,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "29c07ab1c2b3e3cb",
@@ -441,7 +544,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "c37182848b7ff4fb",
@@ -475,7 +578,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "f54f723fef7d6428",
@@ -510,7 +613,7 @@
       "Consider reducing exposure - factor in extreme high territory",
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "4d2634927c3f86e4",
@@ -544,7 +647,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "06fab8e571c342d4",
@@ -578,7 +681,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "20e746bba49e0627",
@@ -612,7 +715,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "13be7c18dfbff8b0",
@@ -646,7 +749,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "dbe0516a89ef8c80",
@@ -680,7 +783,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "b29090dc92ce702c",
@@ -714,7 +817,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "a16634dd631556e8",
@@ -748,7 +851,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "7d499fe43aae36af",
@@ -782,7 +885,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.059Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "4c054a869026b9c3",
@@ -816,7 +919,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "c990be96f0006e3f",
@@ -850,7 +953,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "dd31416231b5eb2b",
@@ -884,7 +987,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "fefc0309e7416758",
@@ -918,7 +1021,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "891c3f23d7326c64",
@@ -952,7 +1055,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "f77e50e0d25e1f1e",
@@ -986,7 +1089,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "d3cf329b306fc910",
@@ -1020,7 +1123,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "e990a591490589fa",
@@ -1054,7 +1157,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "ed08f90a337bd365",
@@ -1088,7 +1191,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "2b204b454127515d",
@@ -1123,7 +1226,7 @@
       "Consider reducing exposure - factor in extreme high territory",
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "40c22aad9aa9cdb4",
@@ -1157,7 +1260,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "14b181711b855bcd",
@@ -1191,7 +1294,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "f8a69f1435701495",
@@ -1225,7 +1328,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "d583b3e188b0eb69",
@@ -1259,7 +1362,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "aa09c7e3f0117e67",
@@ -1294,7 +1397,7 @@
       "Consider reducing exposure - factor in extreme high territory",
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "4953257c5f206c08",
@@ -1328,7 +1431,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "649c9c515d52eb1d",
@@ -1362,7 +1465,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "695a56e4875a673c",
@@ -1396,7 +1499,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "1945a4e4bcfb8532",
@@ -1430,7 +1533,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "179de5e3ae1d7e9a",
@@ -1464,7 +1567,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "5920b393c19d06e0",
@@ -1498,7 +1601,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "70b9e460c7df2e0f",
@@ -1532,7 +1635,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "1d8cc5bcd0697d49",
@@ -1566,7 +1669,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "0acdf7be295bb3b2",
@@ -1600,7 +1703,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "e254cf37a7367e65",
@@ -1634,7 +1737,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "5d522859510527d7",
@@ -1668,7 +1771,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "fabe13ba00950b0f",
@@ -1702,7 +1805,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "f2757694ede92688",
@@ -1736,7 +1839,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "fdf167437ce6e224",
@@ -1770,7 +1873,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "93da2026e61f8ff2",
@@ -1805,7 +1908,7 @@
       "Consider reducing exposure - factor in extreme high territory",
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "2b25154a1978beac",
@@ -1839,7 +1942,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.060Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "dcb79a53cad5bea5",
@@ -1873,7 +1976,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "e91689b0f79f3db5",
@@ -1907,7 +2010,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "67a51205771f5c7c",
@@ -1941,7 +2044,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "f08593596621b2bc",
@@ -1975,7 +2078,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "142adaae602773be",
@@ -2009,7 +2112,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.106Z"
   },
   {
     "id": "0729cf6a2b18d274",
@@ -2043,7 +2146,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "91ee7065a7d46050",
@@ -2077,7 +2180,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "2164c41cbe00119b",
@@ -2111,7 +2214,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "1ae065c962ed3911",
@@ -2145,7 +2248,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "96f62602e292bf82",
@@ -2179,7 +2282,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "e6cb0e2c2d478f6a",
@@ -2213,7 +2316,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "e4d4ed609825a0a2",
@@ -2247,7 +2350,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "be76ebdafe413bba",
@@ -2281,7 +2384,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "d8d048f239fd923f",
@@ -2315,7 +2418,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "77e8ea8098d7707d",
@@ -2349,7 +2452,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "f4bc39df0c537b13",
@@ -2383,7 +2486,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "382a22b80bf31d3f",
@@ -2417,7 +2520,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "db62b7f5ea8bb3a7",
@@ -2451,7 +2554,7 @@
     "recommendations": [
       "Positive momentum - consider if trend will continue"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "5d229e05600337e8",
@@ -2485,7 +2588,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "0f89aa6a53ea71cd",
@@ -2519,7 +2622,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "ed8eeb91694976bc",
@@ -2553,7 +2656,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "41ff9fb3dca3c146",
@@ -2587,7 +2690,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "235fcf0619920edd",
@@ -2621,7 +2724,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "1fde7004372ae760",
@@ -2655,7 +2758,7 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   },
   {
     "id": "ec756648bc9fcac3",
@@ -2689,40 +2792,6 @@
     "recommendations": [
       "Watch for continued decline - may indicate weakening fundamentals"
     ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
-  },
-  {
-    "id": "1a53c31cb8a53790",
-    "type": "factor_change",
-    "severity": "low",
-    "timestamp": "2026-02-09T11:52:36.755Z",
-    "factor": "Net Liquidity",
-    "factorKey": "net_liquidity",
-    "title": "📊 LOW: Net Liquidity Factor Changed",
-    "message": "Net Liquidity decreased significantly: 70 → 62 (-8.0 points)",
-    "data": {
-      "factor": "Net Liquidity",
-      "factorKey": "net_liquidity",
-      "previous_score": 70,
-      "current_score": 62,
-      "change_points": -8,
-      "change_percentage": -11.428571428571429,
-      "severity": "low",
-      "weight": 5
-    },
-    "actions": [
-      "Review factor details and recent changes",
-      "Consider implications for market outlook",
-      "Monitor for continued factor volatility",
-      "Check data source reliability",
-      "Review related market indicators"
-    ],
-    "context": "Factor showing normal variation",
-    "trend": "declining",
-    "consecutiveDays": 1,
-    "recommendations": [
-      "Watch for continued decline - may indicate weakening fundamentals"
-    ],
-    "generated_at": "2026-03-11T11:39:17.061Z"
+    "generated_at": "2026-03-12T11:36:52.107Z"
   }
 ]
