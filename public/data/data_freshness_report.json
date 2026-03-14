@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-13T11:37:20.824Z",
+  "timestamp": "2026-03-14T11:30:38.815Z",
   "sources": [
     {
       "source": "blockchain_info",
@@ -12,22 +12,22 @@
           "name": "mempool-size",
           "url": "https://api.blockchain.info/charts/mempool-size?timespan=7days&format=json",
           "status": "success",
-          "lastUpdate": "2026-03-13T10:00:00.000Z",
-          "stalenessHours": 1.6226730555555555,
+          "lastUpdate": "2026-03-14T10:15:00.000Z",
+          "stalenessHours": 1.260818888888889,
           "error": null
         },
         {
           "name": "transaction-fees",
           "url": "https://api.blockchain.info/charts/transaction-fees?timespan=7days&format=json",
           "status": "success",
-          "lastUpdate": "2026-03-12T00:00:00.000Z",
-          "stalenessHours": 35.62280305555556,
+          "lastUpdate": "2026-03-13T00:00:00.000Z",
+          "stalenessHours": 35.51093111111111,
           "error": null
         }
       ],
       "alerts": [
-        "✅ mempool-size: Fresh (1.6h old)",
-        "ℹ️ transaction-fees: Data is 35.6h old (approaching limit)",
+        "✅ mempool-size: Fresh (1.3h old)",
+        "ℹ️ transaction-fees: Data is 35.5h old (approaching limit)",
         "❌ fees-usd: HTTP 404"
       ]
     },
@@ -39,6 +39,14 @@
       "stalenessHours": null,
       "endpoints": [
         {
+          "name": "bitcoin-price",
+          "url": "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",
+          "status": "success",
+          "lastUpdate": null,
+          "stalenessHours": null,
+          "error": null
+        },
+        {
           "name": "trending",
           "url": "https://api.coingecko.com/api/v3/search/trending",
           "status": "success",
@@ -48,7 +56,7 @@
         }
       ],
       "alerts": [
-        "❌ bitcoin-price: HTTP 429",
+        "❓ bitcoin-price: Could not determine last update time",
         "❓ trending: Could not determine last update time"
       ]
     },
