@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-03-23T11:49:52.968Z",
+  "timestamp": "2026-03-24T11:50:13.939Z",
   "sources": [
     {
       "source": "blockchain_info",
       "name": "Blockchain.info",
-      "status": "stale",
+      "status": "fresh",
       "lastUpdate": null,
       "stalenessHours": null,
       "endpoints": [
@@ -12,22 +12,22 @@
           "name": "mempool-size",
           "url": "https://api.blockchain.info/charts/mempool-size?timespan=7days&format=json",
           "status": "success",
-          "lastUpdate": "2026-03-17T05:30:00.000Z",
-          "stalenessHours": 150.33157527777777,
+          "lastUpdate": null,
+          "stalenessHours": null,
           "error": null
         },
         {
           "name": "transaction-fees",
           "url": "https://api.blockchain.info/charts/transaction-fees?timespan=7days&format=json",
           "status": "success",
-          "lastUpdate": "2026-03-16T00:00:00.000Z",
-          "stalenessHours": 179.83171305555555,
+          "lastUpdate": null,
+          "stalenessHours": null,
           "error": null
         }
       ],
       "alerts": [
-        "⚠️ mempool-size: Data is 150.3h old (max: 48h)",
-        "⚠️ transaction-fees: Data is 179.8h old (max: 48h)",
+        "❓ mempool-size: Could not determine last update time",
+        "❓ transaction-fees: Could not determine last update time",
         "❌ fees-usd: HTTP 404"
       ]
     },
@@ -39,14 +39,6 @@
       "stalenessHours": null,
       "endpoints": [
         {
-          "name": "bitcoin-price",
-          "url": "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",
-          "status": "success",
-          "lastUpdate": null,
-          "stalenessHours": null,
-          "error": null
-        },
-        {
           "name": "trending",
           "url": "https://api.coingecko.com/api/v3/search/trending",
           "status": "success",
@@ -56,7 +48,7 @@
         }
       ],
       "alerts": [
-        "❓ bitcoin-price: Could not determine last update time",
+        "❌ bitcoin-price: HTTP 429",
         "❓ trending: Could not determine last update time"
       ]
     },
@@ -74,8 +66,8 @@
   ],
   "summary": {
     "totalSources": 3,
-    "freshSources": 2,
-    "staleSources": 1,
+    "freshSources": 3,
+    "staleSources": 0,
     "errorSources": 0,
     "totalAlerts": 6
   }
