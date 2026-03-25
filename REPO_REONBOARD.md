@@ -78,6 +78,14 @@ Additional mobile UX fixes were completed after the main checkpoint:
 - **Refresh Dashboard CTA** was moved into the **Bitcoin G-Score** card so it no longer overlaps nearby text on mobile and is more logically associated with the current score/snapshot area. (`d372b19`)
 - **Historical G-Score card sizing** was fixed so the full `HistoryChart` component (controls + chart + caption) is properly measured by its parent container, preventing overlap with the intro copy below on mobile. (`0fd3adb`)
 
+#### 2026-03-25 — Score Insights cleanup
+
+Completed a **3-pass cleanup** of the Overview-page **Score Insights** card (`app/components/ScoreInsightsCard.tsx`):
+
+- **Pass 1:** Removed overlapping narrative sections and replaced them with a concise **“What matters right now”** block.
+- **Pass 2:** Improved hierarchy by keeping contributors / mitigators / concentration / confidence prominent and clearly separating **Advanced diagnostics** (volatility, momentum, correlations).
+- **Pass 3:** Tightened wording, lightly reduced vertical heaviness, and clarified / deemphasized the **row-expansion** control (advanced list rows only; hidden when redundant).
+
 #### Files touched in this repair pass
 
 Primary files involved:
@@ -119,7 +127,7 @@ Pick up from *Lower-priority cleanup* or any new issue from production; the mobi
 
 Use this when resuming:
 
-> Resume GhostGauge from the 2026-03-25 checkpoint. The major Overview-page trust issues were fixed: factor-card detail misassignment was corrected in the ETL/artifact path, regenerated artifacts were deployed, and Overview copy drift was fixed so the summary line now reflects official SSOT pillar weights and Macro Overlay context shows Net Liquidity at 4.3%. Follow-up mobile fixes (Refresh Dashboard placement under the Bitcoin G-Score card; Historical G-Score / `HistoryChart` parent sizing) shipped 2026-03-25. Treat the repo and live site as ground truth, prefer small reversible changes, do not break mobile, do not hide stale/excluded factors, and do not let experimental logic affect official outputs.
+> Resume GhostGauge from the 2026-03-25 checkpoint. The major Overview-page trust issues were fixed: factor-card detail misassignment was corrected in the ETL/artifact path, regenerated artifacts were deployed, and Overview copy drift was fixed so the summary line now reflects official SSOT pillar weights and Macro Overlay context shows Net Liquidity at 4.3%. Follow-up mobile fixes (Refresh Dashboard placement under the Bitcoin G-Score card; Historical G-Score / `HistoryChart` parent sizing) shipped 2026-03-25. The Overview **Score Insights** card also received a **3-pass cleanup** (merged narrative → hierarchy / advanced diagnostics → wording + spacing + row-toggle polish). Treat the repo and live site as ground truth, prefer small reversible changes, do not break mobile, do not hide stale/excluded factors, and do not let experimental logic affect official outputs.
 
 ---
 
@@ -396,5 +404,5 @@ Use this when resuming:
 
 ---
 
-**Last Updated:** 2026-03-25 (checkpoint added; sections 1–8 below retain historical detail from 2025-01-13 where not superseded by the checkpoint above)  
-**Status:** Overview trust repair complete per **Checkpoints → 2026-03-25**; UI redesign planning notes in sections below remain useful guards for future work
+**Last Updated:** 2026-03-25 (checkpoint: trust repair + mobile follow-up + Score Insights 3-pass cleanup; sections 1–8 below retain historical detail from 2025-01-13 where not superseded by the checkpoint above)  
+**Status:** Overview trust repair complete per **Checkpoints → 2026-03-25**; Score Insights cleanup documented under the same checkpoint; UI redesign planning notes in sections below remain useful guards for future work
