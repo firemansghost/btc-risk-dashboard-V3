@@ -9,6 +9,7 @@ import { formatFriendlyTimestamp, calculateFreshness, formatLocalRefreshTime, ca
 import { getBandTextColorFromLabel } from '@/lib/bandTextColors';
 import { formatSourceTimestamp } from '@/lib/sourceUtils';
 import { calculateContribution, getFactorStaleness, getFactorSubSignals, sortFactorsByContribution, getFactorTTL, getFactorCadence } from '@/lib/factorUtils';
+import { DEFAULT_CONFIG, getFactorConfig, type PillarKey } from '@/lib/riskConfig.client';
 import { formatDeltaDisplay, getDeltaColorClass, formatDeltaProvenance } from '@/lib/deltaUtils';
 import SystemStatusCard from './SystemStatusCard';
 import RiskBandLegend from './RiskBandLegend';
@@ -38,6 +39,34 @@ import AlertBell from './AlertBell';
 import SkeletonLoader, { SkeletonDashboard, SkeletonCard } from './SkeletonLoader';
 import LazyLoader from './LazyLoader';
 import PerformanceMonitor from './PerformanceMonitor';
+
+/** Short pillar names for Risk Factor Breakdown summary — weights from `DEFAULT_CONFIG` (mirrors SSOT). */
+const PILLAR_OVERVIEW_SHORT_LABELS: Record<PillarKey, string> = {
+  liquidity: 'Liquidity',
+  momentum: 'Momentum',
+  leverage: 'Leverage',
+  macro: 'Macro',
+  social: 'Social',
+};
+
+const OVERVIEW_PILLAR_WEIGHTS_SUMMARY = DEFAULT_CONFIG.pillars
+  .map((p) => `${PILLAR_OVERVIEW_SHORT_LABELS[p.key]} ${p.weight}%`)
+  .join(' · ');
+
+function formatNetLiquidityWeightPctForCopy(): string {
+  const w = getFactorConfig('net_liquidity')?.weight ?? 4.3;
+  return Number.isInteger(w) ? `${w}%` : `${w.toFixed(1)}%`;
+}
+
+function netLiquidityContextPillLabel(): string {
+  const pct = formatNetLiquidityWeightPctForCopy();
+  return `Context only — scored under Liquidity (${pct})`;
+}
+
+function netLiquidityContextTooltip(): string {
+  const pct = formatNetLiquidityWeightPctForCopy();
+  return `Shown for context; Net Liquidity is scored under Liquidity (${pct}) to avoid double-counting macro effects`;
+}
 
 function ErrorView({ msg, onRetry }: { msg: string; onRetry: () => void }) {
   return <div style={{ padding: 16 }}><p>{msg}</p><button onClick={onRetry} style={{ marginTop: 8 }}>Retry</button></div>;
@@ -880,7 +909,7 @@ export default function RealDashboard() {
           </div>
           {/* Factor Summary */}
           <div className="text-sm text-gray-600 mb-4">
-            Sorted by contribution · Liquidity 35% · Momentum 25% · Term 20% · Macro 10% · Social 10%
+            Sorted by contribution · {OVERVIEW_PILLAR_WEIGHTS_SUMMARY}
           </div>
         </div>
         
@@ -1149,7 +1178,7 @@ export default function RealDashboard() {
                               <div className="flex items-center gap-2">
                                 <span className="text-sm font-medium text-gray-900">Net Liquidity (FRED)</span>
                                 <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
-                                  Context only — scored under Liquidity (5%)
+                                  {netLiquidityContextPillLabel()}
                                 </span>
                               </div>
                               <span className="text-sm font-medium text-gray-900">
@@ -1167,7 +1196,7 @@ export default function RealDashboard() {
                               </div>
                             )}
                             <div className="mt-2 text-xs text-gray-600">
-                              <span title="Shown for context; Net Liquidity is scored under Liquidity (5%) to avoid double-counting macro effects">
+                              <span title={netLiquidityContextTooltip()}>
                                 Provides macro context without double-counting in composite score
                               </span>
                             </div>
