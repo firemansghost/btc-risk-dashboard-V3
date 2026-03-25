@@ -2517,17 +2517,25 @@ import { getStalenessStatus, getStalenessConfig, isBusinessDay } from './stalene
 
 export async function computeAllFactors(dailyClose = null) {
   console.log("Computing risk factors...");
-  
-  const results = await Promise.allSettled([
-    computeTrendValuation(dailyClose),    // order: 1 - pass daily close for price consistency
-    computeOnchain(),           // order: 2  
-    computeStablecoins(),       // order: 3
-    computeEtfFlows(),          // order: 4
-    computeNetLiquidity(),      // order: 5
-    computeTermLeverage(),      // order: 6
-    computeMacroOverlay(),      // order: 7
-    computeSocialInterest()     // order: 8
-  ]);
+
+  // Keys and compute order must stay in lockstep. getFactorsArray() returns only *enabled*
+  // factors (e.g. omits disabled onchain) — never zip-index that list against raw results[]
+  // or scores/details attach to the wrong factor keys.
+  const computeJobs = [
+    ['trend_valuation', () => computeTrendValuation(dailyClose)],
+    ['onchain', () => computeOnchain()],
+    ['stablecoins', () => computeStablecoins()],
+    ['etf_flows', () => computeEtfFlows()],
+    ['net_liquidity', () => computeNetLiquidity()],
+    ['term_leverage', () => computeTermLeverage()],
+    ['macro_overlay', () => computeMacroOverlay()],
+    ['social_interest', () => computeSocialInterest()]
+  ];
+
+  const settled = await Promise.allSettled(computeJobs.map(([, fn]) => fn()));
+  const settledByKey = Object.fromEntries(
+    computeJobs.map(([key], i) => [key, settled[i]])
+  );
 
   // Load configuration from single source of truth
   const { loadDashboardConfig, getFactorsArray } = await import('../../lib/config-loader.mjs');
@@ -2538,9 +2546,13 @@ export async function computeAllFactors(dailyClose = null) {
   let totalWeight = 0;
   let weightedSum = 0;
 
-  for (let i = 0; i < factors.length; i++) {
-    const factor = factors[i];
-    const result = results[i];
+  for (const factor of factors) {
+    const result = settledByKey[factor.key];
+    if (!result) {
+      throw new Error(
+        `[computeAllFactors] Missing compute result for enabled factor "${factor.key}". Add it to computeJobs in factors.mjs.`
+      );
+    }
     
     let score = null;
     let status = 'excluded';
