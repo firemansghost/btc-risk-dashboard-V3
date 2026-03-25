@@ -42,27 +42,27 @@ function buildCurrentReadLines(ex: ScoreExplanation): {
   const topDrivers = freshSorted.slice(0, 2);
   const driverLine =
     topDrivers.length > 0
-      ? `Main drivers (by contribution): ${topDrivers.map((d) => `${d.label} (${Math.round(d.score)})`).join(' · ')}`
-      : 'Main drivers: no fresh factors available to rank.';
+      ? `Top contributors: ${topDrivers.map((d) => `${d.label} (${Math.round(d.score)})`).join(' · ')}`
+      : 'No fresh factors to rank by contribution.';
 
   const mitigating = [...freshSorted].sort((a, b) => a.score - b.score);
   const stabilizerLine =
     mitigating.length > 0
-      ? `Stabilizing pull: ${mitigating[0].label} (${Math.round(mitigating[0].score)}) — lowest risk score among fresh factors.`
-      : 'Stabilizing pull: —';
+      ? `Offset: ${mitigating[0].label} (${Math.round(mitigating[0].score)}) — lowest score among fresh factors.`
+      : '—';
 
-  const contextLine = `Market read: ${ex.bandLabel} at composite ${ex.totalScore}/100.`;
+  const contextLine = `${ex.bandLabel} · composite ${ex.totalScore}/100`;
 
   const s = ex.totalScore;
   let stanceLine = '';
   if (s >= 65) {
-    stanceLine = 'Stance: treat risk as elevated; trim new risk until headline drivers ease.';
+    stanceLine = 'Elevated risk — ease new exposure until headline drivers cool.';
   } else if (s >= 50) {
-    stanceLine = 'Stance: hold core, stay selective — avoid chasing strength without a plan.';
+    stanceLine = 'Hold core; stay selective — avoid chasing strength without a plan.';
   } else if (s >= 35) {
-    stanceLine = 'Stance: moderate risk; add only on planned pullbacks aligned with your tolerance.';
+    stanceLine = 'Moderate risk — add size mainly on planned pullbacks.';
   } else {
-    stanceLine = 'Stance: historically lower-risk regime; keep sizing disciplined anyway.';
+    stanceLine = 'Lower-risk band historically — still keep sizing disciplined.';
   }
 
   return { driverLine, stabilizerLine, contextLine, stanceLine };
@@ -896,24 +896,39 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
   const currentRead = buildCurrentReadLines(explanation);
 
+  const volList = getFactorVolatility();
+  const momList = getFactorMomentum();
+  const corrList = getFactorCorrelations();
+  const maxDiagnosticListRows = Math.max(
+    volList?.length ?? 0,
+    momList?.length ?? 0,
+    corrList?.length ?? 0
+  );
+  const showDiagnosticListToggle = maxDiagnosticListRows > 3;
+
   return (
     <div className={`bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg border border-gray-200 p-6 ${className}`}>
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="bg-blue-100 p-2 rounded-lg">
+      <div className="flex items-center justify-between gap-2 mb-6">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="bg-blue-100 p-2 rounded-lg shrink-0">
             <span className="text-2xl">🧠</span>
           </div>
-          <div>
+          <div className="min-w-0">
             <h3 className="text-heading-2">Score Insights</h3>
             <p className="text-body-small text-gray-600">Comprehensive analysis of Bitcoin's risk landscape</p>
           </div>
         </div>
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="btn btn-sm btn-accent"
-        >
-          {expanded ? 'Show Less' : 'Show More'}
-        </button>
+        {showDiagnosticListToggle && (
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            className="shrink-0 text-xs font-medium text-gray-600 hover:text-gray-900 border border-gray-200 bg-white rounded-md px-2.5 py-1.5"
+            aria-expanded={expanded}
+            title="Advanced diagnostics lists: show every row or the first three in each list"
+          >
+            {expanded ? 'Top 3 only' : 'All rows'}
+          </button>
+        )}
       </div>
 
       {/* Score Visualization */}
@@ -1301,9 +1316,9 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       </MobileCollapsible>
 
       {/* Pass 1: single merged narrative (replaces Why / Actionable / Smart Context) */}
-      <div className="mb-5 rounded-lg border border-gray-200 bg-gray-50/90 p-4">
-        <h4 className="text-sm font-semibold text-gray-900 mb-2">What matters right now</h4>
-        <ul className="space-y-1.5 text-sm text-gray-800 list-disc list-inside">
+      <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50/90 p-3.5">
+        <h4 className="text-sm font-semibold text-gray-900 mb-1.5">What matters right now</h4>
+        <ul className="space-y-1 text-sm text-gray-800 list-disc list-inside">
           <li>{currentRead.driverLine}</li>
           <li>{currentRead.stabilizerLine}</li>
           <li>{currentRead.contextLine}</li>
@@ -1313,7 +1328,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
       {/* Risk Concentration */}
       {getRiskConcentration() && (
-        <div className="mb-4">
+        <div className="mb-3">
           <div 
             className="text-xs font-medium text-gray-700 mb-2 flex items-center justify-between cursor-pointer hover:text-gray-900"
             onClick={() => toggleSection('riskConcentration')}
@@ -1327,10 +1342,10 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             </span>
           </div>
           {expandedSections.riskConcentration && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {/* Concentration Level Indicator */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3.5 border border-blue-100 shadow-sm">
+                <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{getRiskConcentration()!.concentrationIcon}</span>
                     <span className="text-sm font-medium text-gray-900">Concentration Level</span>
@@ -1344,7 +1359,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
                 </div>
                 
                 {/* Concentration Bar */}
-                <div className="mb-3">
+                <div className="mb-2.5">
                   <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
                     <span>Top 2 Factors ({getRiskConcentration()!.factorContributions.slice(0, 2).map(f => f.label).join(', ')})</span>
                     <span>{getRiskConcentration()!.top2Percentage.toFixed(0)}% of total risk</span>
@@ -1360,7 +1375,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
                   </div>
                 </div>
                 
-                <div className="text-xs text-gray-600 mb-2">
+                <div className="text-xs text-gray-600 mb-1.5">
                   {getRiskConcentration()!.concentrationInsight}
                 </div>
                 <div className="text-xs text-blue-600 italic">
@@ -1417,7 +1432,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
       {/* Data Confidence */}
       {getDataConfidence() && (
-        <div className="mb-4">
+        <div className="mb-3">
           <div 
             className="text-xs font-medium text-gray-700 mb-2 flex items-center justify-between cursor-pointer hover:text-gray-900"
             onClick={() => toggleSection('dataConfidence')}
@@ -1431,10 +1446,10 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             </span>
           </div>
           {expandedSections.dataConfidence && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {/* Overall Confidence Indicator */}
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-100 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3.5 border border-green-100 shadow-sm">
+                <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{getDataConfidence()!.overallConfidenceIcon}</span>
                     <span className="text-sm font-medium text-gray-900">Overall Confidence</span>
@@ -1448,7 +1463,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
                 </div>
                 
                 {/* Confidence Bar */}
-                <div className="mb-3">
+                <div className="mb-2.5">
                   <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
                     <span>Data Quality Score</span>
                     <span>{getDataConfidence()!.averageConfidenceScore.toFixed(0)}%</span>
@@ -1464,7 +1479,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
                   </div>
                 </div>
                 
-                <div className="text-xs text-gray-600 mb-2">
+                <div className="text-xs text-gray-600 mb-1.5">
                   {getDataConfidence()!.overallInsight}
                 </div>
                 <div className="text-xs text-green-600 italic">
@@ -1474,7 +1489,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
               
               {/* Factor Confidence Breakdown */}
               <div className="space-y-2">
-                <div className="text-xs font-medium text-gray-600 mb-2">Factor Data Quality</div>
+                <div className="text-xs font-medium text-gray-600 mb-1.5">Factor Data Quality</div>
                 {getDataConfidence()!.factorConfidences.map((factor, idx) => (
                   <div key={idx} className="bg-gray-50 rounded-lg p-3">
                     <div className="flex items-center justify-between mb-2">
