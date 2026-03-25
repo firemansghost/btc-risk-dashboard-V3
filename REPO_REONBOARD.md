@@ -71,6 +71,13 @@ Verified live:
 - **Artifact regeneration commit:** `c444abd` on `main` — regenerated `public/data/latest.json` and related ETL outputs after the merge fix
 - **Overview-page copy drift fix:** `5315c96` — `app/components/RealDashboard.tsx` (SSOT-aligned pillar summary + Net Liquidity context %)
 
+#### 2026-03-25 — mobile follow-up
+
+Additional mobile UX fixes were completed after the main checkpoint:
+
+- **Refresh Dashboard CTA** was moved into the **Bitcoin G-Score** card so it no longer overlaps nearby text on mobile and is more logically associated with the current score/snapshot area. (`d372b19`)
+- **Historical G-Score card sizing** was fixed so the full `HistoryChart` component (controls + chart + caption) is properly measured by its parent container, preventing overlap with the intro copy below on mobile. (`0fd3adb`)
+
 #### Files touched in this repair pass
 
 Primary files involved:
@@ -96,33 +103,23 @@ Primary files involved:
 
 ##### High-value UX backlog
 
-1. **Mobile Refresh Dashboard button issue**
-   - On mobile, the Refresh Dashboard button overlaps nearby text and is harder to tap.
-   - Current placement also feels wrong.
-
-2. **Refresh button placement**
-   - Consider moving Refresh Dashboard under the **Bitcoin G-Score** hero card instead of below the **Historical G-Score** card.
+1. **Overview mobile polish (refresh CTA + history card layout)** — **addressed 2026-03-25** (see *2026-03-25 — mobile follow-up* above). Open only minor layout nits if they appear on new devices.
 
 ##### Lower-priority cleanup
 
-3. Audit Overview page for any remaining SSOT/copy drift.
-4. Decide whether to clean up odd internal band key formatting like `hold___wait` if it leaks anywhere user-facing.
-5. Consider a future history/data-serving consistency pass if needed.
+1. Audit Overview page for any remaining SSOT/copy drift.
+2. Decide whether to clean up odd internal band key formatting like `hold___wait` if it leaks anywhere user-facing.
+3. Consider a future history/data-serving consistency pass if needed.
 
 #### Recommended next task when returning
 
-Next sensible small task:
-
-- **Mobile hero/refresh CTA polish**
-  - fix overlap/tap-target issue
-  - move Refresh Dashboard CTA to a more logical position under the Bitcoin G-Score card
-  - preserve mobile layout and do not disturb current working factor-card behavior
+Pick up from *Lower-priority cleanup* or any new issue from production; the mobile refresh/history-card overlap items from the original checkpoint are **done** (see *2026-03-25 — mobile follow-up*).
 
 #### Thread starter for next GhostGauge session
 
 Use this when resuming:
 
-> Resume GhostGauge from the 2026-03-25 checkpoint. The major Overview-page trust issues were fixed: factor-card detail misassignment was corrected in the ETL/artifact path, regenerated artifacts were deployed, and Overview copy drift was fixed so the summary line now reflects official SSOT pillar weights and Macro Overlay context shows Net Liquidity at 4.3%. Current deferred item: mobile UX issue where the Refresh Dashboard button overlaps nearby text and should likely be repositioned under the Bitcoin G-Score card. Treat the repo and live site as ground truth, prefer small reversible changes, do not break mobile, do not hide stale/excluded factors, and do not let experimental logic affect official outputs.
+> Resume GhostGauge from the 2026-03-25 checkpoint. The major Overview-page trust issues were fixed: factor-card detail misassignment was corrected in the ETL/artifact path, regenerated artifacts were deployed, and Overview copy drift was fixed so the summary line now reflects official SSOT pillar weights and Macro Overlay context shows Net Liquidity at 4.3%. Follow-up mobile fixes (Refresh Dashboard placement under the Bitcoin G-Score card; Historical G-Score / `HistoryChart` parent sizing) shipped 2026-03-25. Treat the repo and live site as ground truth, prefer small reversible changes, do not break mobile, do not hide stale/excluded factors, and do not let experimental logic affect official outputs.
 
 ---
 
