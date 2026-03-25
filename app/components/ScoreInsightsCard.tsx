@@ -26,11 +26,46 @@ interface FactorExplanation {
 interface ScoreExplanation {
   totalScore: number;
   bandLabel: string;
-  overallExplanation: string;
   keyDrivers: FactorExplanation[];
-  concerns: FactorExplanation[];
-  insights: string[];
-  recommendations: string[];
+  /** All factors sorted by contribution (desc); used for "Current read" and diagnostics */
+  factorsByContribution: FactorExplanation[];
+}
+
+/** Compact, factor-grounded copy for Pass 1 merged narrative (no scoring math). */
+function buildCurrentReadLines(ex: ScoreExplanation): {
+  driverLine: string;
+  stabilizerLine: string;
+  contextLine: string;
+  stanceLine: string;
+} {
+  const freshSorted = ex.factorsByContribution.filter((f) => f.status === 'fresh');
+  const topDrivers = freshSorted.slice(0, 2);
+  const driverLine =
+    topDrivers.length > 0
+      ? `Main drivers (by contribution): ${topDrivers.map((d) => `${d.label} (${Math.round(d.score)})`).join(' · ')}`
+      : 'Main drivers: no fresh factors available to rank.';
+
+  const mitigating = [...freshSorted].sort((a, b) => a.score - b.score);
+  const stabilizerLine =
+    mitigating.length > 0
+      ? `Stabilizing pull: ${mitigating[0].label} (${Math.round(mitigating[0].score)}) — lowest risk score among fresh factors.`
+      : 'Stabilizing pull: —';
+
+  const contextLine = `Market read: ${ex.bandLabel} at composite ${ex.totalScore}/100.`;
+
+  const s = ex.totalScore;
+  let stanceLine = '';
+  if (s >= 65) {
+    stanceLine = 'Stance: treat risk as elevated; trim new risk until headline drivers ease.';
+  } else if (s >= 50) {
+    stanceLine = 'Stance: hold core, stay selective — avoid chasing strength without a plan.';
+  } else if (s >= 35) {
+    stanceLine = 'Stance: moderate risk; add only on planned pullbacks aligned with your tolerance.';
+  } else {
+    stanceLine = 'Stance: historically lower-risk regime; keep sizing disciplined anyway.';
+  }
+
+  return { driverLine, stabilizerLine, contextLine, stanceLine };
 }
 
 export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsightsCardProps) {
@@ -42,12 +77,8 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     factorVolatility: false,
     factorMomentum: false,
     factorCorrelations: false,
-    riskConcentration: false,
-    dataConfidence: false,
-    recommendations: false,
-    scoreMakesSense: false,
-    actionableInsights: false,
-    smartContextAnalysis: false
+    riskConcentration: true,
+    dataConfidence: true,
   });
 
   // Toggle individual section expansion
@@ -765,56 +796,24 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
     try {
       const factors = latest.factors || [];
-      const activeFactors = factors.filter((f: any) => f.status === 'fresh');
-      const excludedFactors = factors.filter((f: any) => f.status !== 'fresh');
-      
+
       // Generate explanations for all factors
       const factorExplanations = factors.map(generateFactorExplanation);
       
-      // Sort by contribution to find key drivers
-      const sortedByContribution = factorExplanations.sort((a: FactorExplanation, b: FactorExplanation) => b.contribution - a.contribution);
+      // Sort by contribution (desc) — full list for "Current read"; top 3 for legacy sections / diagnostics
+      const sortedByContribution = [...factorExplanations].sort(
+        (a: FactorExplanation, b: FactorExplanation) => b.contribution - a.contribution
+      );
       const keyDrivers = sortedByContribution.slice(0, 3);
-      
-      // Find concerns (high scores or excluded factors)
-      const concerns = factorExplanations.filter((f: FactorExplanation) => f.score > 60 || f.status !== 'fresh');
-      
-      // Generate overall explanation
+
       const bandLabel = latest.band?.label || 'Unknown';
       const totalScore = latest.composite_score;
-      
-      let overallExplanation = '';
-      if (totalScore < 40) {
-        overallExplanation = `Your G-Score of ${totalScore} indicates lower risk conditions. This suggests Bitcoin may be undervalued with favorable fundamentals.`;
-      } else if (totalScore > 60) {
-        overallExplanation = `Your G-Score of ${totalScore} indicates higher risk conditions. This suggests Bitcoin may be overvalued or facing headwinds.`;
-      } else {
-        overallExplanation = `Your G-Score of ${totalScore} indicates moderate risk conditions. This suggests Bitcoin is in a balanced state with mixed signals.`;
-      }
-      
-      // Generate insights
-      const insights = [
-        `${activeFactors.length} of ${factors.length} factors are active`,
-        excludedFactors.length > 0 ? `${excludedFactors.length} factors excluded due to staleness` : 'All factors are fresh',
-        `Currently in "${bandLabel}" risk band`
-      ];
-      
-      // Generate recommendations
-      const recommendations = [
-        totalScore < 40 ? 'Consider accumulating on weakness' : 
-        totalScore > 60 ? 'Consider reducing position size' : 
-        'Monitor for directional signals',
-        concerns.length > 0 ? 'Watch for factor improvements' : 'All factors are healthy',
-        'Review alerts for specific factor changes'
-      ];
-      
+
       const scoreExplanation: ScoreExplanation = {
         totalScore,
         bandLabel,
-        overallExplanation,
         keyDrivers,
-        concerns,
-        insights,
-        recommendations
+        factorsByContribution: sortedByContribution,
       };
 
       setExplanation(scoreExplanation);
@@ -895,6 +894,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     return 'bg-gray-400';
   };
 
+  const currentRead = buildCurrentReadLines(explanation);
 
   return (
     <div className={`bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg border border-gray-200 p-6 ${className}`}>
@@ -1041,19 +1041,12 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         )}
       </div>
 
-      {/* Overall Explanation */}
-      <div className="mb-4">
-        <div className="text-sm text-gray-700 leading-relaxed">
-          {explanation.overallExplanation}
-        </div>
-      </div>
-
       {/* Risk Breakdown Section */}
       <MobileCollapsible 
         title="Risk Breakdown" 
         icon="📊" 
         defaultOpen={true}
-        className="mb-6"
+        className="mb-5"
       >
         <div className="mobile-grid-3 gap-3 text-xs">
           <div className="text-center">
@@ -1096,7 +1089,8 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         title="Risk Contributors" 
         icon="🔴" 
         badge={explanation.keyDrivers.length}
-        className="mb-6"
+        defaultOpen={true}
+        className="mb-5"
       >
         
         <div className="space-y-2">
@@ -1206,7 +1200,8 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         title="Risk Mitigators" 
         icon="🟢" 
         badge={explanation.keyDrivers.filter(f => f.score < 50).length}
-        className="mb-6"
+        defaultOpen={true}
+        className="mb-5"
       >
         
         <div className="space-y-2">
@@ -1305,572 +1300,22 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         </div>
       </MobileCollapsible>
 
-      {/* Context Explanation Section */}
-      <div className="mb-6 p-5 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200 shadow-sm">
-        <div 
-          className="flex items-center justify-between cursor-pointer mb-4"
-          onClick={() => toggleSection('scoreMakesSense')}
-        >
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-200 p-2 rounded-lg">
-              <span className="text-lg">💡</span>
-            </div>
-            <h4 className="text-base font-semibold text-blue-800">Why This Score Makes Sense</h4>
-          </div>
-          <span className="text-lg transition-transform duration-200">
-            {expandedSections.scoreMakesSense ? '🔽' : '▶️'}
-          </span>
-        </div>
-        
-        {expandedSections.scoreMakesSense && (
-        <div className="text-sm text-gray-700 space-y-2">
-          {(() => {
-            // Determine market context and explain why the score makes sense
-            const totalScore = explanation.totalScore;
-            const highRiskCount = explanation.keyDrivers.filter(f => f.score > 60).length;
-            const lowRiskCount = explanation.keyDrivers.filter(f => f.score < 40).length;
-            
-            // Market phase detection
-            const isNearATH = totalScore > 50 && highRiskCount >= 2;
-            const isLowRisk = totalScore < 40 && lowRiskCount >= 2;
-            const isBalanced = totalScore >= 45 && totalScore <= 55;
-            
-            if (isNearATH) {
-              return (
-                <div className="space-y-2">
-                  <p className="font-medium text-blue-800">
-                    🚀 At All-Time Highs, Elevated Risk is Expected
-                  </p>
-                  <p>
-                    When Bitcoin approaches ATHs, we naturally see higher risk metrics. 
-                    On-chain activity shows distribution signals, institutions take profits 
-                    (ETF outflows), and social media hype increases. This is normal market behavior.
-                  </p>
-                  <p>
-                    The G-Score reflects this reality: <strong>high risk doesn't mean imminent crash</strong> - 
-                    it means we're in a high-risk environment where caution is warranted.
-                  </p>
-                </div>
-              );
-            } else if (isLowRisk) {
-              return (
-                <div className="space-y-2">
-                  <p className="font-medium text-green-800">
-                    ✅ {explanation.bandLabel} Environment Detected
-                  </p>
-                  <p>
-                    Multiple factors are showing low risk signals, indicating a more stable 
-                    market environment. This suggests healthy market dynamics with less 
-                    speculative activity and more balanced conditions.
-                  </p>
-                  <p>
-                    This is typically seen during consolidation phases or after significant 
-                    corrections when risk has been reset.
-                  </p>
-                </div>
-              );
-            } else if (isBalanced) {
-              return (
-                <div className="space-y-2">
-                  <p className="font-medium text-yellow-800">
-                    ⚖️ Balanced Risk Environment
-                  </p>
-                  <p>
-                    The G-Score reflects a mixed signal environment where some factors show 
-                    elevated risk while others remain stable. This is common during market 
-                    transitions or when different market forces are competing.
-                  </p>
-                  <p>
-                    This balanced state suggests the market is at an inflection point where 
-                    the next move could go either direction based on which forces prevail.
-                  </p>
-                </div>
-              );
-            } else {
-              return (
-                <div className="space-y-2">
-                  <p className="font-medium text-gray-800">
-                    📊 Mixed Market Signals
-                  </p>
-                  <p>
-                    The current G-Score reflects a complex market environment with both 
-                    risk factors and mitigating factors present. This mixed signal state 
-                    is common in dynamic markets where multiple forces are at play.
-                  </p>
-                  <p>
-                    The score provides a balanced assessment of the current risk landscape, 
-                    helping you understand both the opportunities and challenges present.
-                  </p>
-                </div>
-              );
-            }
-          })()}
-        </div>
-        )}
+      {/* Pass 1: single merged narrative (replaces Why / Actionable / Smart Context) */}
+      <div className="mb-5 rounded-lg border border-gray-200 bg-gray-50/90 p-4">
+        <h4 className="text-sm font-semibold text-gray-900 mb-2">What matters right now</h4>
+        <ul className="space-y-1.5 text-sm text-gray-800 list-disc list-inside">
+          <li>{currentRead.driverLine}</li>
+          <li>{currentRead.stabilizerLine}</li>
+          <li>{currentRead.contextLine}</li>
+          <li className="text-gray-700">{currentRead.stanceLine}</li>
+        </ul>
       </div>
-
-      {/* Actionable Insights Section */}
-      <div className="mb-6 p-5 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200 shadow-sm">
-        <div 
-          className="flex items-center justify-between cursor-pointer mb-4"
-          onClick={() => toggleSection('actionableInsights')}
-        >
-          <div className="flex items-center gap-3">
-            <div className="bg-purple-200 p-2 rounded-lg">
-              <span className="text-lg">🎯</span>
-            </div>
-            <h4 className="text-base font-semibold text-purple-800">Actionable Insights</h4>
-          </div>
-          <span className="text-lg transition-transform duration-200">
-            {expandedSections.actionableInsights ? '🔽' : '▶️'}
-          </span>
-        </div>
-        
-        {expandedSections.actionableInsights && (
-        <div className="space-y-3">
-          {(() => {
-            // Generate actionable insights based on current factors and market conditions
-            const totalScore = explanation.totalScore;
-            const highRiskFactors = explanation.keyDrivers.filter(f => f.score > 60);
-            const lowRiskFactors = explanation.keyDrivers.filter(f => f.score < 40);
-            const moderateRiskFactors = explanation.keyDrivers.filter(f => f.score >= 40 && f.score <= 60);
-            
-            const insights = [];
-            
-            // High-risk factor monitoring
-            if (highRiskFactors.length > 0) {
-              insights.push({
-                type: 'monitor',
-                icon: '👀',
-                title: 'Monitor High-Risk Factors',
-                description: `Watch ${highRiskFactors.map(f => f.label).join(', ')} closely for changes`,
-                details: highRiskFactors.map(factor => {
-                  if (factor.key === 'onchain') {
-                    return '• On-chain: Watch for whale movements and exchange inflows';
-                  } else if (factor.key === 'etf_flows') {
-                    return '• ETF Flows: Monitor daily flows for institutional sentiment shifts';
-                  } else if (factor.key === 'trend_valuation') {
-                    return '• Trend & Valuation: Track Mayer Multiple and price momentum';
-                  } else if (factor.key === 'social_interest') {
-                    return '• Social Interest: Monitor social media sentiment and FOMO levels';
-                  } else if (factor.key === 'term_leverage') {
-                    return '• Term Structure: Watch funding rates and leverage metrics';
-                  } else if (factor.key === 'stablecoins') {
-                    return '• Stablecoins: Monitor supply changes and selling pressure';
-                  } else if (factor.key === 'macro_overlay') {
-                    return '• Macro Overlay: Track economic indicators and policy changes';
-                  } else if (factor.key === 'net_liquidity') {
-                    return '• Net Liquidity: Monitor Fed policy and liquidity conditions';
-                  }
-                  return `• ${factor.label}: Watch for significant changes`;
-                }).join('\n')
-              });
-            }
-            
-            // Low-risk factor opportunities
-            if (lowRiskFactors.length > 0) {
-              insights.push({
-                type: 'opportunity',
-                icon: '💚',
-                title: 'Stable Foundation',
-                description: `${lowRiskFactors.map(f => f.label).join(', ')} are providing market stability`,
-                details: 'These factors suggest a more stable market environment with less speculative activity.'
-              });
-            }
-            
-            // Score-based guidance
-            if (totalScore > 70) {
-              insights.push({
-                type: 'caution',
-                icon: '⚠️',
-                title: `${explanation.bandLabel} Environment`,
-                description: 'Consider reducing position sizes and increasing cash allocation',
-                details: `${explanation.bandLabel} doesn\'t mean imminent crash, but caution is warranted. Monitor for trend changes.`
-              });
-            } else if (totalScore < 30) {
-              insights.push({
-                type: 'opportunity',
-                icon: '📈',
-                title: `${explanation.bandLabel} Environment`,
-                description: 'Consider increasing exposure if fundamentals align',
-                details: 'Low risk environment suggests potential opportunities, but always consider your risk tolerance.'
-              });
-            } else {
-              insights.push({
-                type: 'balanced',
-                icon: '⚖️',
-                title: 'Balanced Approach',
-                description: 'Maintain current strategy while monitoring key factors',
-                details: 'Mixed signals suggest staying flexible and ready to adjust based on factor changes.'
-              });
-            }
-            
-            // Market phase specific guidance
-            const isNearATH = totalScore > 50 && highRiskFactors.length >= 2;
-            if (isNearATH) {
-              insights.push({
-                type: 'context',
-                icon: '🚀',
-                title: 'ATH Context',
-                description: 'At all-time highs, elevated risk is normal',
-                details: 'Focus on risk management rather than timing the market. Consider DCA strategies.'
-              });
-            }
-            
-            return insights.map((insight, idx) => (
-              <div key={idx} className="card-insight">
-                <div className="flex items-start gap-3">
-                  <span className="text-lg mt-0.5">{insight.icon}</span>
-                  <div className="flex-1">
-                    <h5 className="font-medium text-gray-900 mb-1">{insight.title}</h5>
-                    <p className="text-sm text-gray-700 mb-2">{insight.description}</p>
-                    {insight.details && (
-                      <div className="text-xs text-gray-600 whitespace-pre-line">
-                        {insight.details}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ));
-          })()}
-        </div>
-        )}
-      </div>
-
-      {/* Smart Context Section */}
-      <div className="mb-6 p-5 bg-gradient-to-r from-indigo-50 to-purple-100 rounded-xl border border-indigo-200 shadow-sm">
-        <div 
-          className="flex items-center justify-between cursor-pointer mb-4"
-          onClick={() => toggleSection('smartContextAnalysis')}
-        >
-          <div className="flex items-center gap-3">
-            <div className="bg-indigo-200 p-2 rounded-lg">
-              <span className="text-lg">🧠</span>
-            </div>
-            <h4 className="text-base font-semibold text-indigo-800">Smart Context Analysis</h4>
-          </div>
-          <span className="text-lg transition-transform duration-200">
-            {expandedSections.smartContextAnalysis ? '🔽' : '▶️'}
-          </span>
-        </div>
-        
-        {expandedSections.smartContextAnalysis && (
-        <div className="space-y-4">
-          {(() => {
-            // Generate smart context based on current market conditions and historical data
-            const totalScore = explanation.totalScore;
-            const highRiskCount = explanation.keyDrivers.filter(f => f.score > 60).length;
-            const lowRiskCount = explanation.keyDrivers.filter(f => f.score < 40).length;
-            const isNearATH = totalScore > 50 && highRiskCount >= 2;
-            
-            const smartContext = [];
-            
-            // Market Phase Awareness
-            if (isNearATH) {
-              smartContext.push({
-                type: 'market-phase',
-                icon: '🚀',
-                title: 'Market Phase: All-Time High Environment',
-                description: 'Bitcoin is operating in an ATH environment with elevated risk metrics',
-                insights: [
-                  'This is normal behavior at ATHs - elevated risk doesn\'t mean imminent crash',
-                  'Historical data shows similar risk patterns during previous ATH cycles',
-                  'Institutional profit-taking and whale distribution are expected at these levels',
-                  'Social media hype and FOMO sentiment typically peak near ATHs'
-                ]
-              });
-            } else if (totalScore < 40 && lowRiskCount >= 2) {
-              smartContext.push({
-                type: 'market-phase',
-                icon: '🌱',
-                title: 'Market Phase: Consolidation/Recovery',
-                description: 'Bitcoin is in a lower-risk consolidation or recovery phase',
-                insights: [
-                  'Risk has been reset after previous market cycles',
-                  'Stable fundamentals suggest healthy market development',
-                  'Lower volatility indicates reduced speculative activity',
-                  'This phase often precedes the next major move'
-                ]
-              });
-            } else {
-              smartContext.push({
-                type: 'market-phase',
-                icon: '⚖️',
-                title: 'Market Phase: Transitional',
-                description: 'Bitcoin is in a transitional phase with mixed signals',
-                insights: [
-                  'Competing forces are creating mixed risk signals',
-                  'Market is at an inflection point between phases',
-                  'Next major move will depend on which forces prevail',
-                  'Close monitoring of key factors is recommended'
-                ]
-              });
-            }
-            
-            // Historical Context
-            if (historicalData && historicalData.points && historicalData.points.length > 1) {
-              const recentScores = historicalData.points.slice(-7).map((p: any) => p.composite);
-              const avgRecentScore = recentScores.reduce((a: number, b: number) => a + b, 0) / recentScores.length;
-              const scoreTrend = recentScores[recentScores.length - 1] - recentScores[0];
-              
-              smartContext.push({
-                type: 'historical',
-                icon: '📊',
-                title: 'Historical Context',
-                description: `7-day average: ${avgRecentScore.toFixed(1)}, Trend: ${scoreTrend > 0 ? '+' : ''}${scoreTrend.toFixed(1)}`,
-                insights: [
-                  `Current score of ${totalScore} is ${totalScore > avgRecentScore ? 'above' : 'below'} recent average`,
-                  `Score trend over past week: ${scoreTrend > 0 ? 'increasing risk' : 'decreasing risk'}`,
-                  `Historical volatility: ${recentScores.length > 1 ? Math.max(...recentScores) - Math.min(...recentScores) : 0} points`,
-                  `Risk level: ${totalScore > 70 ? 'High' : totalScore > 50 ? 'Moderate' : 'Low'} compared to historical range`
-                ]
-              });
-            }
-            
-            // Forward-Looking Insights
-            const forwardInsights = [];
-            
-            if (isNearATH) {
-              forwardInsights.push('Monitor for potential distribution signals and institutional selling');
-              forwardInsights.push('Watch for social media sentiment shifts and FOMO exhaustion');
-              forwardInsights.push('Prepare for increased volatility as ATH resistance is tested');
-            } else if (totalScore < 40) {
-              forwardInsights.push('Low risk environment may present accumulation opportunities');
-              forwardInsights.push('Monitor for fundamental improvements and institutional adoption');
-              forwardInsights.push('Watch for breakout signals and momentum shifts');
-            } else {
-              forwardInsights.push('Mixed signals suggest staying flexible and ready to adjust');
-              forwardInsights.push('Monitor key factors for directional clarity');
-              forwardInsights.push('Prepare for potential volatility as market chooses direction');
-            }
-            
-            smartContext.push({
-              type: 'forward-looking',
-              icon: '🔮',
-              title: 'Forward-Looking Insights',
-              description: 'Key factors to monitor for future market direction',
-              insights: forwardInsights
-            });
-            
-            return smartContext.map((context, idx) => (
-              <div key={idx} className="card-elevated card-md">
-                <div className="flex items-start gap-3 mb-3">
-                  <span className="text-lg mt-0.5">{context.icon}</span>
-                  <div className="flex-1">
-                    <h5 className="font-semibold text-gray-900 mb-1">{context.title}</h5>
-                    <p className="text-sm text-gray-700 mb-3">{context.description}</p>
-                    <div className="space-y-1">
-                      {context.insights.map((insight, insightIdx) => (
-                        <div key={insightIdx} className="text-xs text-gray-600 flex items-start gap-2">
-                          <span className="text-indigo-500 mt-0.5">•</span>
-                          <span>{insight}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ));
-          })()}
-        </div>
-        )}
-      </div>
-
-      {/* Factor Volatility Analysis */}
-      {getFactorVolatility() && (
-        <div className="mb-4">
-          <div 
-            className="text-xs font-medium text-gray-600 mb-3 flex items-center justify-between cursor-pointer hover:text-gray-800"
-            onClick={() => toggleSection('factorVolatility')}
-          >
-            <div className="flex items-center gap-2">
-              <span>📈</span>
-              <span>Factor Volatility ({getFactorVolatility()!.length})</span>
-            </div>
-            <span className="text-lg transition-transform duration-200">
-              {expandedSections.factorVolatility ? '🔽' : '▶️'}
-            </span>
-          </div>
-          <div className="text-xs text-gray-500 mb-3">
-            As of {new Date().toISOString().split('T')[0]} {new Date().toISOString().split('T')[1].split('.')[0]} UTC · 30-day stdev, 90-day correlations
-          </div>
-          {expandedSections.factorVolatility && (
-          <div className="space-y-3">
-            {getFactorVolatility()!.slice(0, expanded ? undefined : 3).map((factor, idx) => (
-              <div key={idx} className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{getFactorIcon(factor.key)}</span>
-                    <span className="text-sm font-medium text-gray-900">{factor.label}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-sm font-bold ${factor.volatilityLevel === 'high' ? 'text-red-600' : factor.volatilityLevel === 'medium' ? 'text-yellow-600' : 'text-green-600'}`}>
-                      {factor.volatilityLevel === 'high' ? '🔥' : factor.volatilityLevel === 'medium' ? '⚡' : '📊'} {factor.volatilityLevel}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {factor.volatility.toFixed(2)}σ
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Volatility Bar */}
-                <div className="mb-2">
-                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                    <span>Volatility</span>
-                    <span>{factor.volatility.toFixed(2)}σ (std dev)</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full ${factor.volatilityLevel === 'high' ? 'bg-red-500' : factor.volatilityLevel === 'medium' ? 'bg-yellow-500' : 'bg-green-500'}`}
-                      style={{ width: `${Math.min(100, (factor.volatility / 3) * 100)}%` }}
-                    ></div>
-                  </div>
-                </div>
-                
-                <div className="text-xs text-gray-600">
-                  {factor.context}
-                </div>
-              </div>
-            ))}
-          </div>
-          )}
-        </div>
-      )}
-
-      {/* Factor Momentum */}
-      {getFactorMomentum() && (
-        <div className="mb-4">
-          <div 
-            className="text-xs font-medium text-gray-600 mb-3 flex items-center justify-between cursor-pointer hover:text-gray-800"
-            onClick={() => toggleSection('factorMomentum')}
-          >
-            <div className="flex items-center gap-2">
-              <span>📊</span>
-              <span>Factor Momentum ({getFactorMomentum()!.length})</span>
-            </div>
-            <span className="text-lg transition-transform duration-200">
-              {expandedSections.factorMomentum ? '🔽' : '▶️'}
-            </span>
-          </div>
-          {expandedSections.factorMomentum && (
-          <div className="space-y-3">
-            {getFactorMomentum()!.slice(0, expanded ? undefined : 3).map((factor, idx) => (
-              <div key={idx} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{getFactorIcon(factor.key)}</span>
-                    <span className="text-sm font-medium text-gray-900">{factor.label}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-sm font-bold ${factor.momentum === 'improving' ? 'text-green-600' : factor.momentum === 'declining' ? 'text-red-600' : 'text-gray-600'}`}>
-                      {factor.momentum === 'improving' ? '📈' : factor.momentum === 'declining' ? '📉' : '➡️'} {factor.momentum}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {factor.change > 0 ? '+' : ''}{factor.change.toFixed(1)}
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Momentum Bar */}
-                <div className="mb-2">
-                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                    <span>Change</span>
-                    <span>{factor.change > 0 ? '+' : ''}{factor.change.toFixed(1)} points</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full ${factor.momentum === 'improving' ? 'bg-green-500' : factor.momentum === 'declining' ? 'bg-red-500' : 'bg-gray-400'}`}
-                      style={{ width: `${Math.min(100, Math.abs(factor.change) * 10)}%` }}
-                    ></div>
-                  </div>
-                </div>
-                
-                <div className="text-xs text-gray-600">
-                  {factor.context}
-                </div>
-              </div>
-            ))}
-          </div>
-          )}
-        </div>
-      )}
-
-      {/* Factor Correlations */}
-      {getFactorCorrelations() && (
-        <div className="mb-4">
-          <div 
-            className="text-xs font-medium text-gray-600 mb-3 flex items-center justify-between cursor-pointer hover:text-gray-800"
-            onClick={() => toggleSection('factorCorrelations')}
-          >
-            <div className="flex items-center gap-2">
-              <span>🔗</span>
-              <span>Factor Correlations ({getFactorCorrelations()!.length})</span>
-            </div>
-            <span className="text-lg transition-transform duration-200">
-              {expandedSections.factorCorrelations ? '🔽' : '▶️'}
-            </span>
-          </div>
-          {expandedSections.factorCorrelations && (
-            <div className="space-y-3">
-              {getFactorCorrelations()!.slice(0, expanded ? undefined : 3).map((correlation, idx) => (
-                <div key={idx} className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-4 border border-indigo-100 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{getFactorIcon(correlation.factorA)}</span>
-                      <span className="text-sm font-medium text-gray-900">{correlation.factorALabel}</span>
-                      <span className="text-gray-400">↔</span>
-                      <span className="text-lg">{getFactorIcon(correlation.factorB)}</span>
-                      <span className="text-sm font-medium text-gray-900">{correlation.factorBLabel}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`text-sm font-bold ${
-                        correlation.color === 'green' ? 'text-green-600' : 
-                        correlation.color === 'red' ? 'text-red-600' : 'text-gray-600'
-                      }`}>
-                        {correlation.icon} {correlation.strength} {correlation.direction}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {correlation.correlation > 0 ? '+' : ''}{correlation.correlation.toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* Correlation Bar */}
-                  <div className="mb-2">
-                    <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                      <span>Correlation</span>
-                      <span>{correlation.correlation > 0 ? '+' : ''}{correlation.correlation.toFixed(2)}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className={`h-2 rounded-full ${
-                          correlation.color === 'green' ? 'bg-green-500' : 
-                          correlation.color === 'red' ? 'bg-red-500' : 'bg-gray-400'
-                        }`}
-                        style={{ 
-                          width: `${Math.min(100, Math.abs(correlation.correlation) * 100)}%`,
-                          marginLeft: correlation.correlation < 0 ? `${100 - Math.abs(correlation.correlation) * 100}%` : '0'
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                  
-                  <div className="text-xs text-gray-600">
-                    {correlation.context}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Risk Concentration */}
       {getRiskConcentration() && (
         <div className="mb-4">
           <div 
-            className="text-xs font-medium text-gray-600 mb-3 flex items-center justify-between cursor-pointer hover:text-gray-800"
+            className="text-xs font-medium text-gray-700 mb-2 flex items-center justify-between cursor-pointer hover:text-gray-900"
             onClick={() => toggleSection('riskConcentration')}
           >
             <div className="flex items-center gap-2">
@@ -1974,7 +1419,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       {getDataConfidence() && (
         <div className="mb-4">
           <div 
-            className="text-xs font-medium text-gray-600 mb-3 flex items-center justify-between cursor-pointer hover:text-gray-800"
+            className="text-xs font-medium text-gray-700 mb-2 flex items-center justify-between cursor-pointer hover:text-gray-900"
             onClick={() => toggleSection('dataConfidence')}
           >
             <div className="flex items-center gap-2">
@@ -2082,34 +1527,203 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
           )}
         </div>
       )}
+      <div className="mt-1 pt-4 border-t border-gray-200 mb-4">
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Advanced diagnostics</p>
 
-
-
-
-      {/* Recommendations */}
-      <div className="border-t border-gray-100 pt-3">
-        <div 
-          className="text-xs font-medium text-gray-600 mb-2 cursor-pointer hover:text-gray-800 flex items-center justify-between"
-          onClick={() => toggleSection('recommendations')}
-        >
-          <span>Recommendations ({explanation.recommendations.length})</span>
-          <span className="text-lg transition-transform duration-200">
-            {expandedSections.recommendations ? '🔽' : '▶️'}
-          </span>
-        </div>
-        {expandedSections.recommendations && (
-          <div className="space-y-2">
-            {explanation.recommendations.map((rec, idx) => (
-              <div key={idx} className="bg-green-50 border border-green-200 rounded-lg p-2">
-                <div className="text-xs text-green-700 flex items-center gap-2">
-                  <span className="text-green-500">💡</span>
-                  <span>{rec}</span>
+      {/* Factor Volatility Analysis */}
+      {getFactorVolatility() && (
+        <div className="mb-4">
+          <div 
+            className="text-xs font-normal text-gray-500 mb-2 flex items-center justify-between cursor-pointer hover:text-gray-700"
+            onClick={() => toggleSection('factorVolatility')}
+          >
+            <div className="flex items-center gap-2">
+              <span>📈</span>
+              <span>Factor Volatility ({getFactorVolatility()!.length})</span>
+            </div>
+            <span className="text-lg transition-transform duration-200">
+              {expandedSections.factorVolatility ? '🔽' : '▶️'}
+            </span>
+          </div>
+          {expandedSections.factorVolatility && (
+          <div className="space-y-3">
+          <div className="text-xs text-gray-500 mb-3">
+            As of {new Date().toISOString().split('T')[0]} {new Date().toISOString().split('T')[1].split('.')[0]} UTC · 30-day stdev, 90-day correlations
+          </div>
+            {getFactorVolatility()!.slice(0, expanded ? undefined : 3).map((factor, idx) => (
+              <div key={idx} className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{getFactorIcon(factor.key)}</span>
+                    <span className="text-sm font-medium text-gray-900">{factor.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-bold ${factor.volatilityLevel === 'high' ? 'text-red-600' : factor.volatilityLevel === 'medium' ? 'text-yellow-600' : 'text-green-600'}`}>
+                      {factor.volatilityLevel === 'high' ? '🔥' : factor.volatilityLevel === 'medium' ? '⚡' : '📊'} {factor.volatilityLevel}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {factor.volatility.toFixed(2)}σ
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Volatility Bar */}
+                <div className="mb-2">
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                    <span>Volatility</span>
+                    <span>{factor.volatility.toFixed(2)}σ (std dev)</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${factor.volatilityLevel === 'high' ? 'bg-red-500' : factor.volatilityLevel === 'medium' ? 'bg-yellow-500' : 'bg-green-500'}`}
+                      style={{ width: `${Math.min(100, (factor.volatility / 3) * 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+                
+                <div className="text-xs text-gray-600">
+                  {factor.context}
                 </div>
               </div>
             ))}
           </div>
-        )}
+          )}
+        </div>
+      )}
+
+      {/* Factor Momentum */}
+      {getFactorMomentum() && (
+        <div className="mb-4">
+          <div 
+            className="text-xs font-normal text-gray-500 mb-2 flex items-center justify-between cursor-pointer hover:text-gray-700"
+            onClick={() => toggleSection('factorMomentum')}
+          >
+            <div className="flex items-center gap-2">
+              <span>📊</span>
+              <span>Factor Momentum ({getFactorMomentum()!.length})</span>
+            </div>
+            <span className="text-lg transition-transform duration-200">
+              {expandedSections.factorMomentum ? '🔽' : '▶️'}
+            </span>
+          </div>
+          {expandedSections.factorMomentum && (
+          <div className="space-y-3">
+            {getFactorMomentum()!.slice(0, expanded ? undefined : 3).map((factor, idx) => (
+              <div key={idx} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{getFactorIcon(factor.key)}</span>
+                    <span className="text-sm font-medium text-gray-900">{factor.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-bold ${factor.momentum === 'improving' ? 'text-green-600' : factor.momentum === 'declining' ? 'text-red-600' : 'text-gray-600'}`}>
+                      {factor.momentum === 'improving' ? '📈' : factor.momentum === 'declining' ? '📉' : '➡️'} {factor.momentum}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {factor.change > 0 ? '+' : ''}{factor.change.toFixed(1)}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Momentum Bar */}
+                <div className="mb-2">
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                    <span>Change</span>
+                    <span>{factor.change > 0 ? '+' : ''}{factor.change.toFixed(1)} points</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${factor.momentum === 'improving' ? 'bg-green-500' : factor.momentum === 'declining' ? 'bg-red-500' : 'bg-gray-400'}`}
+                      style={{ width: `${Math.min(100, Math.abs(factor.change) * 10)}%` }}
+                    ></div>
+                  </div>
+                </div>
+                
+                <div className="text-xs text-gray-600">
+                  {factor.context}
+                </div>
+              </div>
+            ))}
+          </div>
+          )}
+        </div>
+      )}
+
+      {/* Factor Correlations */}
+      {getFactorCorrelations() && (
+        <div className="mb-4">
+          <div 
+            className="text-xs font-normal text-gray-500 mb-2 flex items-center justify-between cursor-pointer hover:text-gray-700"
+            onClick={() => toggleSection('factorCorrelations')}
+          >
+            <div className="flex items-center gap-2">
+              <span>🔗</span>
+              <span>Factor Correlations ({getFactorCorrelations()!.length})</span>
+            </div>
+            <span className="text-lg transition-transform duration-200">
+              {expandedSections.factorCorrelations ? '🔽' : '▶️'}
+            </span>
+          </div>
+          {expandedSections.factorCorrelations && (
+            <div className="space-y-3">
+              {getFactorCorrelations()!.slice(0, expanded ? undefined : 3).map((correlation, idx) => (
+                <div key={idx} className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-4 border border-indigo-100 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{getFactorIcon(correlation.factorA)}</span>
+                      <span className="text-sm font-medium text-gray-900">{correlation.factorALabel}</span>
+                      <span className="text-gray-400">↔</span>
+                      <span className="text-lg">{getFactorIcon(correlation.factorB)}</span>
+                      <span className="text-sm font-medium text-gray-900">{correlation.factorBLabel}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm font-bold ${
+                        correlation.color === 'green' ? 'text-green-600' : 
+                        correlation.color === 'red' ? 'text-red-600' : 'text-gray-600'
+                      }`}>
+                        {correlation.icon} {correlation.strength} {correlation.direction}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {correlation.correlation > 0 ? '+' : ''}{correlation.correlation.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Correlation Bar */}
+                  <div className="mb-2">
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                      <span>Correlation</span>
+                      <span>{correlation.correlation > 0 ? '+' : ''}{correlation.correlation.toFixed(2)}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full ${
+                          correlation.color === 'green' ? 'bg-green-500' : 
+                          correlation.color === 'red' ? 'bg-red-500' : 'bg-gray-400'
+                        }`}
+                        style={{ 
+                          width: `${Math.min(100, Math.abs(correlation.correlation) * 100)}%`,
+                          marginLeft: correlation.correlation < 0 ? `${100 - Math.abs(correlation.correlation) * 100}%` : '0'
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-gray-600">
+                    {correlation.context}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       </div>
+
+
+
+
+
     </div>
   );
 }
