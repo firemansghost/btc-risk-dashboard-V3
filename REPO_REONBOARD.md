@@ -4,6 +4,128 @@
 
 ---
 
+## Checkpoints
+
+### GhostGauge Checkpoint — 2026-03-25
+
+#### Project
+
+- **Name:** GhostGauge
+- **Repo:** `firemansghost/btc-risk-dashboard-V3`
+- **Live site:** `ghostgauge.com`
+
+#### Current status
+
+Main Overview-page trust issues identified in this repair pass have been fixed and verified on live production.
+
+#### What was broken
+
+1. **Factor-card detail misassignment on the main Overview page**
+   - Multiple factor cards were showing detail rows belonging to other factors.
+   - This was a trust-killer because the UI looked cross-wired even when the app otherwise loaded.
+
+2. **Production artifact mismatch after ETL merge fix**
+   - The ETL keyed-merge bug was fixed in code, but the corrected `latest.json` artifact had not yet been regenerated/committed/deployed.
+   - Result: production could still serve wrong factor details even though the code fix existed.
+
+3. **Visible copy drift on Overview page**
+   - Risk Factor Breakdown summary line showed old pillar weights:
+     - `Liquidity 35% · Momentum 25% · Term 20% · Macro 10% · Social 10%`
+   - Macro Overlay context chip showed:
+     - `scored under Liquidity (5%)`
+   - Both were out of sync with current SSOT.
+
+#### What was fixed
+
+##### 1) Factor-detail mapping bug
+
+- Root cause was in the **ETL/artifact path**, not the React card rendering.
+- Enabled factors had previously been merged against settled compute results by index instead of reliably by factor key.
+- Fix was applied in ETL so factor payloads are merged by **factor key**.
+
+##### 2) Artifact regeneration / production verification
+
+- ETL outputs were regenerated and committed after the keyed-merge fix.
+- Production was then verified against the live `/api/data/latest-file` payload.
+- Live factor payload now matches expected domain-correct factor details.
+
+##### 3) Overview-page copy drift
+
+- Risk Factor Breakdown summary line now reflects official SSOT pillar weights:
+  - `Liquidity 30% · Momentum 30% · Leverage 20% · Macro 10% · Social 10%`
+- Macro Overlay context label now reflects Net Liquidity’s actual SSOT factor weight:
+  - `4.3%`
+
+#### Production verification summary
+
+Verified live:
+
+- factor cards now appear mapped correctly
+- drawer still works correctly
+- summary line now shows official 30/30/20/10/10
+- Macro Overlay context chip now shows 4.3%
+
+#### Important commits / task trail
+
+- **ETL keyed-merge fix:** `2f24764` — `scripts/etl/factors.mjs` (merge compute results by factor key, not array index)
+- **Artifact regeneration commit:** `c444abd` on `main` — regenerated `public/data/latest.json` and related ETL outputs after the merge fix
+- **Overview-page copy drift fix:** `5315c96` — `app/components/RealDashboard.tsx` (SSOT-aligned pillar summary + Net Liquidity context %)
+
+#### Files touched in this repair pass
+
+Primary files involved:
+
+- `scripts/etl/factors.mjs`
+- regenerated ETL artifacts including:
+  - `public/data/latest.json`
+  - related ETL outputs
+- `app/components/RealDashboard.tsx`
+
+#### What was intentionally not changed
+
+- official G-Score math
+- risk band logic
+- preview / lab model logic
+- stale/excluded factor visibility behavior
+- broad dashboard redesign
+- broad Next/Vercel config cleanup
+- history API/data unification work
+- general UX polish outside the identified trust issues
+
+#### Deferred / backlog items
+
+##### High-value UX backlog
+
+1. **Mobile Refresh Dashboard button issue**
+   - On mobile, the Refresh Dashboard button overlaps nearby text and is harder to tap.
+   - Current placement also feels wrong.
+
+2. **Refresh button placement**
+   - Consider moving Refresh Dashboard under the **Bitcoin G-Score** hero card instead of below the **Historical G-Score** card.
+
+##### Lower-priority cleanup
+
+3. Audit Overview page for any remaining SSOT/copy drift.
+4. Decide whether to clean up odd internal band key formatting like `hold___wait` if it leaks anywhere user-facing.
+5. Consider a future history/data-serving consistency pass if needed.
+
+#### Recommended next task when returning
+
+Next sensible small task:
+
+- **Mobile hero/refresh CTA polish**
+  - fix overlap/tap-target issue
+  - move Refresh Dashboard CTA to a more logical position under the Bitcoin G-Score card
+  - preserve mobile layout and do not disturb current working factor-card behavior
+
+#### Thread starter for next GhostGauge session
+
+Use this when resuming:
+
+> Resume GhostGauge from the 2026-03-25 checkpoint. The major Overview-page trust issues were fixed: factor-card detail misassignment was corrected in the ETL/artifact path, regenerated artifacts were deployed, and Overview copy drift was fixed so the summary line now reflects official SSOT pillar weights and Macro Overlay context shows Net Liquidity at 4.3%. Current deferred item: mobile UX issue where the Refresh Dashboard button overlaps nearby text and should likely be repositioned under the Bitcoin G-Score card. Treat the repo and live site as ground truth, prefer small reversible changes, do not break mobile, do not hide stale/excluded factors, and do not let experimental logic affect official outputs.
+
+---
+
 ## 1. Repo Status & Sync
 
 ### Git Status
@@ -277,5 +399,5 @@
 
 ---
 
-**Last Updated:** 2025-01-13  
-**Status:** Ready for UI redesign planning
+**Last Updated:** 2026-03-25 (checkpoint added; sections 1–8 below retain historical detail from 2025-01-13 where not superseded by the checkpoint above)  
+**Status:** Overview trust repair complete per **Checkpoints → 2026-03-25**; UI redesign planning notes in sections below remain useful guards for future work
