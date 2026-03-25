@@ -507,6 +507,124 @@ export default function RealDashboard() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Refresh Dashboard — scoped to current G-Score / BTC snapshot (avoids overlap with copy below Historical card on mobile) */}
+                  <div className="w-full mt-6 pt-4 border-t border-gray-200/90">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+                      {refreshMessage && (
+                        <div className="text-sm text-gray-600 bg-gray-100 px-3 py-2 rounded-md order-first sm:order-none">
+                          {refreshMessage}
+                        </div>
+                      )}
+                      {refreshError && (
+                        <div className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-md max-w-full sm:max-w-md order-first sm:order-none">
+                          {refreshError}
+                        </div>
+                      )}
+                      <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-[12rem]">
+                        {lastRefreshedAt && (
+                          <div className="text-xs text-gray-500">
+                            Last refreshed {formatLocalRefreshTime(lastRefreshedAt)}
+                          </div>
+                        )}
+                        <button
+                          onClick={() => {
+                            setRefreshing(true);
+                            setRefreshMessage('Fetching fresh prices...');
+                            setRefreshError(null);
+
+                            // Use simple refresh API to fetch fresh prices (Vercel-compatible)
+                            fetch('/api/smart-refresh-simple', { method: 'POST' })
+                              .then(async (res) => {
+                                console.log('Refresh response status:', res.status, res.statusText);
+                                if (!res.ok) {
+                                  const errorText = await res.text();
+                                  console.error('Refresh API error response:', errorText);
+                                  throw new Error(`API Error ${res.status}: ${errorText}`);
+                                }
+                                return res.json();
+                              })
+                              .then((data) => {
+                                console.log('Smart refresh success:', data);
+                                const freshBtcPrice = data.data?.btc_price;
+                                setRefreshMessage(`✅ Fresh prices: BTC $${freshBtcPrice?.toLocaleString() || 'N/A'}`);
+                                setLastRefreshedAt(new Date());
+
+                                // Update the Bitcoin price and recalculate G-Score
+                                if (freshBtcPrice && latest) {
+                                  // Recalculate G-Score with fresh Bitcoin price
+                                  recalculateGScoreWithFreshPrice(latest, freshBtcPrice)
+                                    .then((updatedData) => {
+                                      setLatest(updatedData);
+                                      console.log('Updated G-Score with fresh Bitcoin price:', updatedData.composite_score);
+
+                                      // Force refresh of Bitcoin⇄Gold and Satoshis cards
+                                      window.dispatchEvent(new CustomEvent('btc-price-updated', {
+                                        detail: { btc_price: freshBtcPrice, updated_at: data.data.updated_at },
+                                      }));
+                                    })
+                                    .catch((error) => {
+                                      console.error('Error recalculating G-Score:', error);
+                                      // Fallback to simple price update
+                                      const updatedLatest = {
+                                        ...latest,
+                                        btc: {
+                                          ...latest.btc,
+                                          spot_usd: freshBtcPrice,
+                                          as_of_utc: data.data.updated_at,
+                                        },
+                                      };
+                                      setLatest(updatedLatest);
+
+                                      window.dispatchEvent(new CustomEvent('btc-price-updated', {
+                                        detail: { btc_price: freshBtcPrice, updated_at: data.data.updated_at },
+                                      }));
+                                    });
+                                }
+
+                                setRefreshing(false);
+                                setTimeout(() => setRefreshMessage(null), 5000);
+
+                                // Dispatch event to notify AlertBell of dashboard refresh
+                                window.dispatchEvent(new CustomEvent('dashboard-refreshed', {
+                                  detail: { btc_price: freshBtcPrice, updated_at: data.data.updated_at },
+                                }));
+                              })
+                              .catch((error) => {
+                                console.error('Smart refresh failed:', error);
+                                const errorMsg = `Couldn't refresh. Using last good snapshot from ${latest?.as_of_utc ? formatFriendlyTimestamp(latest.as_of_utc) : 'unknown time'}. Try again.`;
+                                setRefreshError(errorMsg);
+                                setRefreshMessage(null);
+                                setRefreshing(false);
+
+                                // Show error toast
+                                setTimeout(() => setRefreshError(null), 8000);
+                              });
+                          }}
+                          disabled={loading || refreshing}
+                          aria-busy={refreshing}
+                          className="btn btn-solid btn-lg w-full min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 sm:w-auto"
+                        >
+                          {refreshing ? (
+                            <>
+                              <div className="spinner spinner-sm mr-1"></div>
+                              <span>Refreshing…</span>
+                            </>
+                          ) : (
+                            <span>Refresh Dashboard</span>
+                          )}
+                        </button>
+                      </div>
+                      <div
+                        aria-live="polite"
+                        aria-atomic="true"
+                        className="sr-only"
+                        role="status"
+                      >
+                        {refreshing && 'Refreshing dashboard data'}
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* History Card - Equal Height with Gauge Card */}
@@ -523,123 +641,6 @@ export default function RealDashboard() {
                 </LazyLoader>
               </div>
 
-              {/* Refresh Dashboard Button and Descriptive Text - Moved between top cards and Score Insights */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mt-6 mb-4">
-                {refreshMessage && (
-                  <div className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-md">
-                    {refreshMessage}
-                  </div>
-                )}
-                {refreshError && (
-                  <div className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-md max-w-md">
-                    {refreshError}
-                  </div>
-                )}
-                <div className="flex flex-col items-start">
-                  {lastRefreshedAt && (
-                    <div className="text-xs text-gray-500 mb-1">
-                      Last refreshed {formatLocalRefreshTime(lastRefreshedAt)}
-                    </div>
-                  )}
-                  <button
-                    onClick={() => {
-                      setRefreshing(true);
-                      setRefreshMessage('Fetching fresh prices...');
-                      setRefreshError(null);
-                      
-                      // Use simple refresh API to fetch fresh prices (Vercel-compatible)
-                      fetch('/api/smart-refresh-simple', { method: 'POST' })
-                        .then(async (res) => {
-                          console.log('Refresh response status:', res.status, res.statusText);
-                          if (!res.ok) {
-                            const errorText = await res.text();
-                            console.error('Refresh API error response:', errorText);
-                            throw new Error(`API Error ${res.status}: ${errorText}`);
-                          }
-                          return res.json();
-                        })
-                        .then((data) => {
-                          console.log('Smart refresh success:', data);
-                          const freshBtcPrice = data.data?.btc_price;
-                          setRefreshMessage(`✅ Fresh prices: BTC $${freshBtcPrice?.toLocaleString() || 'N/A'}`);
-                          setLastRefreshedAt(new Date());
-                          
-                          // Update the Bitcoin price and recalculate G-Score
-                          if (freshBtcPrice && latest) {
-                            // Recalculate G-Score with fresh Bitcoin price
-                            recalculateGScoreWithFreshPrice(latest, freshBtcPrice)
-                              .then(updatedData => {
-                                setLatest(updatedData);
-                                console.log('Updated G-Score with fresh Bitcoin price:', updatedData.composite_score);
-                                
-                                // Force refresh of Bitcoin⇄Gold and Satoshis cards
-                                window.dispatchEvent(new CustomEvent('btc-price-updated', { 
-                                  detail: { btc_price: freshBtcPrice, updated_at: data.data.updated_at } 
-                                }));
-                              })
-                              .catch(error => {
-                                console.error('Error recalculating G-Score:', error);
-                                // Fallback to simple price update
-                                const updatedLatest = {
-                                  ...latest,
-                                  btc: {
-                                    ...latest.btc,
-                                    spot_usd: freshBtcPrice,
-                                    as_of_utc: data.data.updated_at
-                                  }
-                                };
-                                setLatest(updatedLatest);
-                                
-                                window.dispatchEvent(new CustomEvent('btc-price-updated', { 
-                                  detail: { btc_price: freshBtcPrice, updated_at: data.data.updated_at } 
-                                }));
-                              });
-                          }
-                          
-                          setRefreshing(false);
-                          setTimeout(() => setRefreshMessage(null), 5000);
-                          
-                          // Dispatch event to notify AlertBell of dashboard refresh
-                          window.dispatchEvent(new CustomEvent('dashboard-refreshed', {
-                            detail: { btc_price: freshBtcPrice, updated_at: data.data.updated_at }
-                          }));
-                        })
-                        .catch((error) => {
-                          console.error('Smart refresh failed:', error);
-                          const errorMsg = `Couldn't refresh. Using last good snapshot from ${latest?.as_of_utc ? formatFriendlyTimestamp(latest.as_of_utc) : 'unknown time'}. Try again.`;
-                          setRefreshError(errorMsg);
-                          setRefreshMessage(null);
-                          setRefreshing(false);
-                          
-                          // Show error toast
-                          setTimeout(() => setRefreshError(null), 8000);
-                        });
-                    }}
-                    disabled={loading || refreshing}
-                    aria-busy={refreshing}
-                    className="btn btn-solid btn-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-                  >
-                  {refreshing ? (
-                    <>
-                      <div className="spinner spinner-sm mr-1"></div>
-                      <span>Refreshing…</span>
-                    </>
-                  ) : (
-                    <span>Refresh Dashboard</span>
-                  )}
-                </button>
-                </div>
-                {/* Aria-live region for screen readers */}
-                <div 
-                  aria-live="polite" 
-                  aria-atomic="true" 
-                  className="sr-only"
-                  role="status"
-                >
-                  {refreshing && "Refreshing dashboard data"}
-                </div>
-              </div>
-              
               <div className="flex items-center gap-2 mt-3 mb-4">
                 <p className="text-sm text-gray-600">
                   Daily 0–100 risk score for Bitcoin (GRS v3). As of {latest?.as_of_utc ? formatFriendlyTimestamp(latest.as_of_utc) : '—'} · <a href="/methodology" className="text-emerald-600 hover:text-emerald-700">Methodology</a>
