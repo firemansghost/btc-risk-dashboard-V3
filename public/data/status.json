@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-07T11:57:07.066Z",
+  "updated_at": "2026-04-08T11:58:43.099Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -29,43 +29,43 @@
       "name": "History: trend_valuation",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 175
+      "total_rows": 176
     },
     {
       "name": "History: stablecoins",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 195
+      "total_rows": 196
     },
     {
       "name": "History: etf_flows",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 590
+      "total_rows": 591
     },
     {
       "name": "History: net_liquidity",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 246
+      "total_rows": 247
     },
     {
       "name": "History: term_leverage",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 169
+      "total_rows": 170
     },
     {
       "name": "History: macro_overlay",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 175
+      "total_rows": 176
     },
     {
       "name": "History: social_interest",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 175
+      "total_rows": 176
     }
   ],
   "factors_computed": 7,
@@ -79,23 +79,23 @@
     "source": "BTC daily close (derived)",
     "derived": true
   },
-  "etf_schema_hash": "cd3800",
-  "etf_schema_last_check": "2026-04-07T11:55:53.483Z",
+  "etf_schema_hash": "12cf3a62",
+  "etf_schema_last_check": "2026-04-08T11:57:28.699Z",
   "price_history": {
     "total_rows": 729,
-    "oldest_date": "2024-04-07",
-    "newest_date": "2026-04-07",
+    "oldest_date": "2024-04-08",
+    "newest_date": "2026-04-08",
     "alpha_vantage_backfill": null,
     "coinbase_daily_update": {
       "status": "success",
       "rows_fetched": 14,
-      "ms": 46
+      "ms": 215
     },
     "drift_check": null
   },
   "term_leverage": {
     "status": "fresh",
-    "last_updated_utc": "2026-04-07T11:55:55.006Z",
+    "last_updated_utc": "2026-04-08T11:57:29.200Z",
     "providers": {
       "bitmex": "ok",
       "binance": "451",
