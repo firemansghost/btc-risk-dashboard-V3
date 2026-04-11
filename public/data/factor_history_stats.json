@@ -1,16 +1,16 @@
 {
-  "totalRecords": 197,
-  "dateRange": "2025-08-28 to 2026-04-10",
+  "totalRecords": 198,
+  "dateRange": "2025-08-28 to 2026-04-11",
   "factorStats": {
     "trend_valuation": {
-      "dataPoints": 197,
-      "mean": 50.45,
-      "stdDev": 10.39,
+      "dataPoints": 198,
+      "mean": 50.44,
+      "stdDev": 10.37,
       "min": 36,
       "max": 95,
       "range": 59,
       "statusCounts": {
-        "fresh": 197
+        "fresh": 198
       }
     },
     "onchain": {
@@ -22,76 +22,76 @@
       "range": 63,
       "statusCounts": {
         "fresh": 40,
-        "unknown": 157
+        "unknown": 158
       }
     },
     "stablecoins": {
-      "dataPoints": 196,
-      "mean": 51.04,
-      "stdDev": 14.37,
+      "dataPoints": 197,
+      "mean": 51.19,
+      "stdDev": 14.51,
       "min": 31,
       "max": 95,
       "range": 64,
       "statusCounts": {
-        "fresh": 196,
+        "fresh": 197,
         "excluded": 1
       }
     },
     "etf_flows": {
-      "dataPoints": 197,
-      "mean": 75.57,
-      "stdDev": 12.52,
+      "dataPoints": 198,
+      "mean": 75.47,
+      "stdDev": 12.56,
       "min": 33,
       "max": 95,
       "range": 62,
       "statusCounts": {
-        "fresh": 196,
+        "fresh": 197,
         "stale": 1
       }
     },
     "net_liquidity": {
-      "dataPoints": 197,
-      "mean": 59.47,
-      "stdDev": 15.95,
-      "min": 21,
+      "dataPoints": 198,
+      "mean": 59.22,
+      "stdDev": 16.28,
+      "min": 11,
       "max": 95,
-      "range": 74,
+      "range": 84,
       "statusCounts": {
-        "fresh": 197
+        "fresh": 198
       }
     },
     "term_leverage": {
-      "dataPoints": 197,
-      "mean": 49.96,
-      "stdDev": 18.63,
+      "dataPoints": 198,
+      "mean": 50.02,
+      "stdDev": 18.6,
       "min": 18,
       "max": 95,
       "range": 77,
       "statusCounts": {
-        "fresh": 153,
+        "fresh": 154,
         "stale": 44
       }
     },
     "macro_overlay": {
-      "dataPoints": 197,
-      "mean": 57.34,
-      "stdDev": 13.06,
+      "dataPoints": 198,
+      "mean": 57.43,
+      "stdDev": 13.1,
       "min": 42,
       "max": 96,
       "range": 54,
       "statusCounts": {
-        "fresh": 197
+        "fresh": 198
       }
     },
     "social_interest": {
-      "dataPoints": 197,
-      "mean": 58.22,
-      "stdDev": 27.09,
+      "dataPoints": 198,
+      "mean": 58.32,
+      "stdDev": 27.05,
       "min": 9,
       "max": 96,
       "range": 87,
       "statusCounts": {
-        "fresh": 197
+        "fresh": 198
       }
     }
   }
