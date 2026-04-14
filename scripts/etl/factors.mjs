@@ -10,6 +10,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'url';
 import { fetchWithRetry, fetchJsonWithRetry, logFallback } from './fetch-helper.mjs';
+import { getStalenessStatus, getStalenessConfig, isBusinessDay, checkStaleness } from './stalenessUtils.mjs';
 
 // Resolve absolute paths for cache directories
 const __filename = fileURLToPath(import.meta.url);
@@ -529,7 +530,8 @@ async function computeSocialInterest() {
 
 // Cache configuration for Net Liquidity
 const NET_LIQUIDITY_CACHE_DIR = 'public/data/cache/net_liquidity';
-const NET_LIQUIDITY_CACHE_TTL_HOURS = 24; // 24 hours cache for FRED data
+/** Disk cache warm-path TTL — aligned with SSOT `factors.net_liquidity.staleness.ttl_hours` (240h). Post-check freshness still uses lastUpdated + getStalenessConfig. */
+const NET_LIQUIDITY_CACHE_TTL_HOURS = 240;
 const NET_LIQUIDITY_CACHE_FILE = 'net_liquidity_cache.json';
 
 /**
@@ -555,6 +557,20 @@ async function loadNetLiquidityCache() {
     }
   } catch (error) {
     console.log(`Net Liquidity: No valid cache found: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Read Net Liquidity cache file without TTL filter (for FRED outage fallback only).
+ */
+async function readNetLiquidityCacheRaw() {
+  try {
+    const cachePath = path.join(NET_LIQUIDITY_CACHE_DIR, NET_LIQUIDITY_CACHE_FILE);
+    if (!(await fileExists(cachePath))) return null;
+    const raw = await fs.readFile(cachePath, 'utf8');
+    return JSON.parse(raw);
+  } catch {
     return null;
   }
 }
@@ -619,6 +635,50 @@ async function fetchFredDataWithRetry(seriesId, apiKey, startISO, endISO, maxRet
   }
 }
 
+/**
+ * Whether on-disk cache may be used when live FRED fails (staleness from SSOT, not disk TTL).
+ */
+function isFredCacheFallbackAcceptable(parsed, stalenessConfig, logLabel) {
+  if (!parsed || parsed.score === null || !Number.isFinite(parsed.score)) return false;
+  if (!parsed.lastUpdated) {
+    console.log(`${logLabel}: FRED failure fallback skipped — cached entry has no lastUpdated.`);
+    return false;
+  }
+  const check = checkStaleness(parsed.lastUpdated, stalenessConfig.ttlHours, {
+    marketDependent: stalenessConfig.marketDependent,
+    businessDaysOnly: stalenessConfig.businessDaysOnly,
+    staleBeyondHours: stalenessConfig.staleBeyondHours,
+    factorName: logLabel,
+  });
+  if (check.isStale) {
+    console.log(
+      `${logLabel}: FRED failure fallback skipped — cached lastUpdated is outside acceptable staleness (${check.reason}).`
+    );
+    return false;
+  }
+  return true;
+}
+
+async function tryNetLiquidityFredFallback(cachedFromWarmLoad, err) {
+  const stalenessConfig = await getStalenessConfig('net_liquidity');
+  let candidate = cachedFromWarmLoad;
+  if (!candidate || !isFredCacheFallbackAcceptable(candidate, stalenessConfig, 'net_liquidity')) {
+    candidate = await readNetLiquidityCacheRaw();
+  }
+  if (!candidate || !isFredCacheFallbackAcceptable(candidate, stalenessConfig, 'net_liquidity')) {
+    return null;
+  }
+  console.warn(
+    `Net Liquidity: FRED live refresh failed; using cached factor result (reason=success_cached_fred_error, lastUpdated=${candidate.lastUpdated}). Underlying error: ${err.message}`
+  );
+  return {
+    score: candidate.score,
+    reason: 'success_cached_fred_error',
+    lastUpdated: candidate.lastUpdated,
+    details: candidate.details,
+  };
+}
+
 // 3. NET LIQUIDITY (FRED data - requires API key)
 // Enhanced with caching, retry logic, and incremental updates
 async function computeNetLiquidity() {
@@ -627,10 +687,9 @@ async function computeNetLiquidity() {
     return { score: null, reason: "missing_fred_api_key" };
   }
 
-  try {
-    // Check for cached data first
-    const cachedData = await loadNetLiquidityCache();
+  const cachedData = await loadNetLiquidityCache();
 
+  try {
     const end = new Date();
     const start = new Date(end.getTime() - 365 * 24 * 60 * 60 * 1000); // 1 year
     const startISO = start.toISOString().slice(0, 10);
@@ -795,6 +854,8 @@ async function computeNetLiquidity() {
 
     return result;
   } catch (error) {
+    const fallback = await tryNetLiquidityFredFallback(cachedData, error);
+    if (fallback) return fallback;
     return { score: null, reason: `error: ${error.message}` };
   }
 }
@@ -2256,6 +2317,20 @@ async function loadMacroOverlayCache() {
 }
 
 /**
+ * Read Macro Overlay cache file without TTL filter (for FRED outage fallback only).
+ */
+async function readMacroOverlayCacheRaw() {
+  try {
+    const cachePath = path.join(MACRO_OVERLAY_CACHE_DIR, MACRO_OVERLAY_CACHE_FILE);
+    if (!(await fileExists(cachePath))) return null;
+    const raw = await fs.readFile(cachePath, 'utf8');
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Save Macro Overlay data to cache
  */
 async function saveMacroOverlayCache(data) {
@@ -2315,6 +2390,26 @@ async function fetchMacroFredDataWithRetry(seriesId, apiKey, startISO, endISO, m
   }
 }
 
+async function tryMacroOverlayFredFallback(cachedFromWarmLoad, err) {
+  const stalenessConfig = await getStalenessConfig('macro_overlay');
+  let candidate = cachedFromWarmLoad;
+  if (!candidate || !isFredCacheFallbackAcceptable(candidate, stalenessConfig, 'macro_overlay')) {
+    candidate = await readMacroOverlayCacheRaw();
+  }
+  if (!candidate || !isFredCacheFallbackAcceptable(candidate, stalenessConfig, 'macro_overlay')) {
+    return null;
+  }
+  console.warn(
+    `Macro Overlay: FRED live refresh failed; using cached factor result (reason=success_cached_fred_error, lastUpdated=${candidate.lastUpdated}). Underlying error: ${err.message}`
+  );
+  return {
+    score: candidate.score,
+    reason: 'success_cached_fred_error',
+    lastUpdated: candidate.lastUpdated,
+    details: candidate.details,
+  };
+}
+
 // 8. MACRO OVERLAY (Multi-factor macro environment analysis)
 // Enhanced with caching, retry logic, and incremental updates
 async function computeMacroOverlay() {
@@ -2323,10 +2418,9 @@ async function computeMacroOverlay() {
     return { score: null, reason: "missing_fred_api_key" };
   }
 
-  try {
-    // Check for cached data first
-    const cachedData = await loadMacroOverlayCache();
+  const cachedData = await loadMacroOverlayCache();
 
+  try {
     const end = new Date();
     const start = new Date(end.getTime() - 120 * 24 * 60 * 60 * 1000); // 120 days for better trend analysis
     const startISO = start.toISOString().slice(0, 10);
@@ -2505,6 +2599,8 @@ async function computeMacroOverlay() {
 
     return result;
   } catch (error) {
+    const fallback = await tryMacroOverlayFredFallback(cachedData, error);
+    if (fallback) return fallback;
     return { score: null, reason: `error: ${error.message}` };
   }
 }
@@ -2512,8 +2608,6 @@ async function computeMacroOverlay() {
 // ============================================================================
 // MAIN COMPUTE FUNCTION
 // ============================================================================
-
-import { getStalenessStatus, getStalenessConfig, isBusinessDay } from './stalenessUtils.mjs';
 
 export async function computeAllFactors(dailyClose = null) {
   console.log("Computing risk factors...");
