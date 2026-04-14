@@ -129,6 +129,44 @@ Use this when resuming:
 
 > Resume GhostGauge from the 2026-03-25 checkpoint. The major Overview-page trust issues were fixed: factor-card detail misassignment was corrected in the ETL/artifact path, regenerated artifacts were deployed, and Overview copy drift was fixed so the summary line now reflects official SSOT pillar weights and Macro Overlay context shows Net Liquidity at 4.3%. Follow-up mobile fixes (Refresh Dashboard placement under the Bitcoin G-Score card; Historical G-Score / `HistoryChart` parent sizing) shipped 2026-03-25. The Overview **Score Insights** card also received a **3-pass cleanup** (merged narrative → hierarchy / advanced diagnostics → wording + spacing + row-toggle polish). Treat the repo and live site as ground truth, prefer small reversible changes, do not break mobile, do not hide stale/excluded factors, and do not let experimental logic affect official outputs.
 
+### 2026-04-14 Addendum — Score Insights, mobile polish, and ETL resilience
+
+Short follow-up to **GhostGauge Checkpoint — 2026-03-25** (does not replace it). Captures UI/ETL work completed after that checkpoint.
+
+#### Score Insights cleanup
+
+A **3-pass cleanup** of the Overview-page **Score Insights** card (`app/components/ScoreInsightsCard.tsx`) was completed:
+
+- **Pass 1:** Removed overlapping narrative bloat and replaced multiple repetitive narrative sections with a concise **“What matters right now”** block.
+- **Pass 2:** Improved hierarchy by keeping contributors / mitigators / concentration / confidence prominent and clearly separating **Advanced diagnostics** (volatility, momentum, correlations).
+- **Pass 3:** Tightened wording, slightly reduced vertical heaviness, and clarified / deemphasized the **list-expansion** control (advanced diagnostic lists only).
+
+**Outcome:** Score Insights is shorter, less repetitive, easier to scan, and still grounded in factor behavior. (Earlier checkpoint bullets for this work: *2026-03-25 — Score Insights cleanup*.)
+
+#### Mobile fixes
+
+Overview **mobile UX** fixes (same items as *2026-03-25 — mobile follow-up*; commit refs remain there):
+
+- **Refresh Dashboard CTA** was moved into the **Bitcoin G-Score** card so it no longer overlaps nearby text on mobile and is more logically associated with the current score/snapshot area.
+- **Historical G-Score card sizing** was fixed so the full `HistoryChart` component is properly measured by its parent container, preventing overlap with the intro copy below on mobile.
+
+**Outcome:** Mobile hero area is cleaner and tap behavior is improved; Historical G-Score content no longer spills into the next section on mobile.
+
+#### Daily ETL resilience fix
+
+After repeated **Daily ETL** workflow failures from **transient FRED 500** responses:
+
+- **`net_liquidity`** and **`macro_overlay`** now **fall back to valid cached factor results** when live FRED refresh fails, instead of being immediately excluded.
+- Fallback applies **only** when cached data is still acceptable under the factor’s **staleness policy** (SSOT); no-cache or too-stale cases still fail honestly.
+- **`net_liquidity`** disk cache TTL / warm-cache behavior was **aligned with SSOT** staleness expectations (240h TTL for the on-disk warm path).
+- Daily ETL was **re-run successfully** after the fix.
+
+**Outcome:** Transient upstream FRED failures are less likely to fail the full Daily ETL when valid cache exists; true no-cache / too-stale cases still fail honestly.
+
+**Task trail (verified on `main`):** `555d161` — `fix(etl): FRED outage fallback to cached net_liquidity and macro_overlay` (`scripts/etl/factors.mjs` + `scripts/etl/__tests__/fred_cache_fallback.test.mjs`).
+
+These updates improve readability, mobile usability, and ETL resilience **without changing official score logic**.
+
 ---
 
 ## 1. Repo Status & Sync
@@ -404,5 +442,5 @@ Use this when resuming:
 
 ---
 
-**Last Updated:** 2026-03-25 (checkpoint: trust repair + mobile follow-up + Score Insights 3-pass cleanup; sections 1–8 below retain historical detail from 2025-01-13 where not superseded by the checkpoint above)  
-**Status:** Overview trust repair complete per **Checkpoints → 2026-03-25**; Score Insights cleanup documented under the same checkpoint; UI redesign planning notes in sections below remain useful guards for future work
+**Last Updated:** 2026-04-14 (checkpoint **2026-03-25** plus **2026-04-14 addendum**: Score Insights summary, mobile polish cross-ref, FRED/cache ETL resilience; sections 1–8 below retain historical detail from 2025-01-13 where not superseded)  
+**Status:** Trust repair and follow-ups per **Checkpoints**; **2026-04-14 addendum** records Score Insights / mobile / ETL resilience without rewriting the original checkpoint; UI redesign planning notes in sections below remain useful guards for future work
