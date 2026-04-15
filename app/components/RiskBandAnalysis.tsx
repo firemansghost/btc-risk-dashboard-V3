@@ -85,13 +85,14 @@ export default function RiskBandAnalysis() {
   return (
     <div className="space-y-8">
       <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-950">
-        All figures below are from <code className="text-xs bg-white/80 px-1 rounded">/data/weekly_backtesting_report.json</code> (same pipeline as <strong>Backtesting Status</strong>), not from the DCA vs risk comparison snapshot.
+        <strong>Supporting / descriptive context</strong> — weekly monitoring, not the official monthly SSOT strategy comparison. Source:{' '}
+        <code className="text-xs bg-white/80 px-1 rounded">weekly_backtesting_report.json</code> (same pipeline as <strong>Weekly report status</strong>).
       </div>
 
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg p-8 text-white">
-        <h2 className="text-2xl font-bold mb-2">Risk band effectiveness (weekly pipeline)</h2>
+        <h2 className="text-2xl font-bold mb-2">Risk band context (weekly)</h2>
         <p className="text-lg mb-6 opacity-95">
-          Forward-return stats are conditional on signal counts. Bands with few or zero signals should not be read as precise win rates.
+          Research-style forward stats from the weekly artifact. Signal counts drive how much to trust each line — this is not the SSOT Baseline vs Risk-Based scoreboard.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white/20 rounded-lg p-4">

@@ -80,83 +80,83 @@ export default function BacktestingInsights() {
 
   return (
     <div className="space-y-8">
-      <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-950">
-        Figures below are read from <strong>two artifacts</strong>: the weekly pipeline report and the strategy comparison snapshot. They use{' '}
-        <strong>different windows and definitions</strong> — do not merge them into one “official” number without reading each source.
-      </div>
+      <p className="text-sm text-gray-600 max-w-3xl">
+        <strong className="text-gray-900">How to read this tab:</strong> the <strong>official</strong> GhostGauge strategy comparison is the monthly SSOT pair (Baseline vs
+        Risk-Based) in <code className="text-xs bg-gray-100 px-1 rounded">dca_vs_risk_comparison.json</code>. The weekly file adds{' '}
+        <strong>monitoring and descriptive</strong> context — useful, but not the same methodology or &quot;headline official&quot; return.
+      </p>
 
-      <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-lg p-8 text-white">
-        <h2 className="text-2xl font-bold mb-2">Key insights (artifact-backed)</h2>
-        <p className="text-sm opacity-90 mb-4">
-          Weekly report: <code className="text-xs bg-white/20 px-1 rounded">weekly_backtesting_report.json</code> · Snapshot:{' '}
-          <code className="text-xs bg-white/20 px-1 rounded">dca_vs_risk_comparison.json</code>
-        </p>
-        {weekly && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white/20 rounded-lg p-4">
-              <div className="text-2xl font-bold">{weekly.summary.totalDataPoints.toLocaleString()}</div>
-              <div className="text-sm opacity-90">Data points (weekly)</div>
-            </div>
-            <div className="bg-white/20 rounded-lg p-4">
-              <div className="text-2xl font-bold">{weekly.dataRange.totalDays}</div>
-              <div className="text-sm opacity-90">History rows (CSV)</div>
-              <div className="text-xs opacity-75 mt-1" title="Matches row count in history.csv; JSON field is totalDays">
-                Same as data points — not calendar days
-              </div>
-            </div>
-            <div className="bg-white/20 rounded-lg p-4">
-              <div className="text-2xl font-bold">{weekly.summary.riskBasedReturn.toFixed(2)}%</div>
-              <div className="text-sm opacity-90">Risk-based return (weekly summary)</div>
-            </div>
-            <div className="bg-white/20 rounded-lg p-4">
-              <div className="text-2xl font-bold">{weekly.summary.dcaReturn.toFixed(2)}%</div>
-              <div className="text-sm opacity-90">DCA return (weekly summary)</div>
-            </div>
-          </div>
-        )}
-        {weekly && (
-          <p className="text-xs opacity-85 mt-4">
-            Weekly range: {weekly.dataRange.startDate} → {weekly.dataRange.endDate} · Last updated: {weekly.lastUpdated}
-          </p>
-        )}
-      </div>
-
+      {/* 1 — Primary: official monthly SSOT */}
       {dca?.strategies && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Strategy comparison snapshot (monthly SSOT)</h3>
-          <p className="text-sm text-gray-600 mb-4">
-            Official pair from <code className="text-xs bg-gray-100 px-1 rounded">dca_vs_risk_comparison.json</code> — Baseline vs Risk-Based DCA. Exploratory value averaging (if present) uses less capital than full baseline; higher % does not mean more dollars earned.
+        <div className="rounded-lg border-2 border-blue-200 bg-white shadow-sm p-6 ring-1 ring-blue-100">
+          <h3 className="text-lg font-semibold text-gray-900">Official monthly strategy comparison (SSOT)</h3>
+          <p className="text-sm text-gray-600 mt-1 mb-4">
+            Canonical artifact: <code className="text-xs bg-gray-100 px-1 rounded">dca_vs_risk_comparison.json</code> — Baseline DCA vs Risk-Based DCA. This is the
+            primary comparison GhostGauge publishes for strategy analysis.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center border border-gray-100 rounded-lg p-4">
-              <div className="text-3xl font-bold text-gray-700 mb-1">{dcaPct('Baseline DCA')?.toFixed(2) ?? '—'}%</div>
-              <div className="text-sm text-gray-700">Baseline DCA</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="text-center border border-blue-100 rounded-lg p-4 bg-blue-50/50">
+              <div className="text-3xl font-bold text-gray-800 mb-1">{dcaPct('Baseline DCA')?.toFixed(2) ?? '—'}%</div>
+              <div className="text-sm font-medium text-gray-800">Baseline DCA</div>
               <div className="text-xs text-gray-500 mt-1">Flat monthly base</div>
             </div>
-            <div className="text-center border border-blue-100 rounded-lg p-4">
-              <div className="text-3xl font-bold text-blue-600 mb-1">{dcaPct('Risk-Based DCA')?.toFixed(2) ?? '—'}%</div>
-              <div className="text-sm text-gray-700">Risk-Based DCA</div>
+            <div className="text-center border border-blue-200 rounded-lg p-4 bg-blue-50/80">
+              <div className="text-3xl font-bold text-blue-700 mb-1">{dcaPct('Risk-Based DCA')?.toFixed(2) ?? '—'}%</div>
+              <div className="text-sm font-medium text-gray-800">Risk-Based DCA</div>
               <div className="text-xs text-gray-500 mt-1">SSOT bands + multipliers</div>
             </div>
-            <div className="text-center border border-amber-100 rounded-lg p-4">
-              <div className="text-3xl font-bold text-amber-700 mb-1">
-                {dca?.exploratory?.valueAveraging?.metrics?.totalReturn != null
-                  ? dca.exploratory.valueAveraging.metrics.totalReturn.toFixed(2)
-                  : '—'}
-                %
-              </div>
-              <div className="text-sm text-gray-700">Value Averaging (exploratory)</div>
-              <div className="text-xs text-gray-500 mt-1">Not official headline pair</div>
-            </div>
+          </div>
+          <div className="mt-4 rounded-md border border-dashed border-amber-200 bg-amber-50/80 px-3 py-2 text-sm text-amber-950">
+            <span className="font-medium">Exploratory — Value Averaging</span>{' '}
+            <span className="text-amber-900/90">
+              (not part of the official two-way comparison):{' '}
+              {dca?.exploratory?.valueAveraging?.metrics?.totalReturn != null
+                ? `${dca.exploratory.valueAveraging.metrics.totalReturn.toFixed(2)}%`
+                : '—'}{' '}
+              — uses less capital than full baseline; do not read as co-equal headline.
+            </span>
           </div>
         </div>
       )}
 
+      {/* 2 — Secondary: weekly monitoring snapshot */}
+      {weekly && (
+        <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-6">
+          <h3 className="text-base font-semibold text-slate-800">Weekly monitoring snapshot (supporting)</h3>
+          <p className="text-sm text-slate-600 mt-1 mb-4">
+            From <code className="text-xs bg-white px-1 rounded border border-slate-200">weekly_backtesting_report.json</code> — auto-updated on a schedule. Different
+            sampling rules than the monthly SSOT comparison; use for <strong>context and monitoring</strong>, not as a rival &quot;official&quot; return table.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="rounded-lg bg-white border border-slate-200 p-3">
+              <div className="text-xl font-bold text-slate-800">{weekly.summary.totalDataPoints.toLocaleString()}</div>
+              <div className="text-xs text-slate-600">Data points</div>
+            </div>
+            <div className="rounded-lg bg-white border border-slate-200 p-3">
+              <div className="text-xl font-bold text-slate-800">{weekly.dataRange.totalDays}</div>
+              <div className="text-xs text-slate-600">History rows (CSV)</div>
+            </div>
+            <div className="rounded-lg bg-white border border-slate-200 p-3">
+              <div className="text-xl font-bold text-slate-800">{weekly.summary.riskBasedReturn.toFixed(2)}%</div>
+              <div className="text-xs text-slate-600">Risk-based return (weekly sim)</div>
+            </div>
+            <div className="rounded-lg bg-white border border-slate-200 p-3">
+              <div className="text-xl font-bold text-slate-800">{weekly.summary.dcaReturn.toFixed(2)}%</div>
+              <div className="text-xs text-slate-600">DCA return (weekly sim)</div>
+            </div>
+          </div>
+          <p className="text-xs text-slate-500 mt-3">
+            Range: {weekly.dataRange.startDate} → {weekly.dataRange.endDate} · Last updated: {weekly.lastUpdated}
+          </p>
+        </div>
+      )}
+
+      {/* 3 — Descriptive band context (weekly) */}
       {weekly && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Risk bands (from weekly report)</h3>
+          <h3 className="text-base font-semibold text-gray-900">Descriptive band context (weekly)</h3>
           <p className="text-sm text-gray-600 mb-4">
-            Forward returns and win rates below come from <strong>weekly_backtesting_report.json</strong> only. Low or zero signal counts mean estimates are noisy or empty.
+            Forward-return style stats from the weekly report — <strong>research / monitoring</strong>, not validation of the monthly SSOT strategy pair.
           </p>
           <div className="space-y-2">
             {bandRows.map(([name, row]) => {
@@ -183,10 +183,13 @@ export default function BacktestingInsights() {
         </div>
       )}
 
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg p-6 text-white">
-        <h3 className="text-lg font-bold mb-2">Takeaway</h3>
-        <p className="text-sm opacity-95">
-          Use the <strong>weekly</strong> card for pipeline risk-based vs DCA headline returns over the long CSV window; use the <strong>comparison JSON</strong> for the official monthly SSOT Baseline vs Risk-Based pair (plus exploratory value averaging in the same file). Treat them as complementary views, not one fused scoreboard.
+      <div className="rounded-lg bg-indigo-50 border border-indigo-200 p-5 text-indigo-950">
+        <h3 className="text-base font-bold mb-2">Takeaway</h3>
+        <p className="text-sm leading-relaxed">
+          <strong>Official</strong> for strategy comparison: the <strong>monthly SSOT</strong> Baseline vs Risk-Based results in{' '}
+          <code className="text-xs bg-white/80 px-1 rounded">dca_vs_risk_comparison.json</code>.{' '}
+          <strong>Weekly</strong> figures are <strong>supporting monitoring</strong> from a different engine — helpful context, not a second canonical scoreboard.{' '}
+          <strong>Value averaging</strong> stays <strong>exploratory</strong> only.
         </p>
       </div>
     </div>

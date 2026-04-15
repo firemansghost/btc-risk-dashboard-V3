@@ -138,12 +138,15 @@ export default function StrategyComparisonCard() {
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200">
         <p className="text-xs text-gray-500 mb-2">
-          Source: <code className="bg-gray-100 px-1 rounded">/data/dca_vs_risk_comparison.json</code> — official <strong>monthly SSOT</strong> Baseline vs Risk-Based comparison (not the weekly pipeline).{' '}
-          {comparisonData.methodologyVersion && <>Version {comparisonData.methodologyVersion}. </>}
-          Different artifact than <strong>Backtesting Status</strong> (<code className="text-[11px] bg-gray-100 px-1 rounded">weekly_backtesting_report.json</code>).
+          <strong className="text-gray-700">Canonical artifact:</strong>{' '}
+          <code className="bg-gray-100 px-1 rounded">/data/dca_vs_risk_comparison.json</code> — official <strong>monthly SSOT</strong> Baseline vs Risk-Based only (not the
+          weekly monitoring file). {comparisonData.methodologyVersion && <>Methodology v{comparisonData.methodologyVersion}. </>}
         </p>
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">Strategy Comparison</h3>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Official monthly strategy comparison</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Primary scoreboard for Baseline vs Risk-Based DCA</p>
+          </div>
           <div className="flex space-x-2">
             <button
               onClick={() => setActiveTab('overview')}

@@ -165,10 +165,15 @@ export default function BacktestingStatus() {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4">
       <p className="text-xs text-gray-500 mb-3">
-        Weekly pipeline summary from <code className="bg-gray-100 px-1 rounded text-[11px]">/data/weekly_backtesting_report.json</code>. Headline risk-based vs DCA returns here differ from the Strategy Comparison snapshot (different run, window, and metrics).
+        <strong className="text-gray-700">Weekly monitoring</strong> — not the official monthly SSOT comparison. Source:{' '}
+        <code className="bg-gray-100 px-1 rounded text-[11px]">/data/weekly_backtesting_report.json</code> (different methodology than{' '}
+        <code className="text-[11px] bg-gray-100 px-1 rounded">dca_vs_risk_comparison.json</code>).
       </p>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-gray-900">Backtesting Status</h3>
+        <div>
+          <h3 className="text-sm font-medium text-gray-900">Weekly report status</h3>
+          <p className="text-xs text-gray-500 mt-0.5">Descriptive / pipeline snapshot</p>
+        </div>
         <div className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(backtestingData.lastUpdated)}`}>
           {getDataAge(backtestingData.lastUpdated)}
         </div>
@@ -193,21 +198,21 @@ export default function BacktestingStatus() {
         </div>
         
         <div className="flex justify-between">
-          <span>Risk-Based Return:</span>
+          <span>Risk-based return (weekly sim):</span>
           <span className="font-medium text-green-600">
             {backtestingData.summary.riskBasedReturn.toFixed(2)}%
           </span>
         </div>
         
         <div className="flex justify-between">
-          <span>DCA Return:</span>
+          <span>DCA return (weekly sim):</span>
           <span className="font-medium text-blue-600">
             {backtestingData.summary.dcaReturn.toFixed(2)}%
           </span>
         </div>
         
         <div className="flex justify-between">
-          <span>Outperformance:</span>
+          <span>Outperformance (weekly sim):</span>
           <span className={`font-medium ${backtestingData.summary.outperformance > 0 ? 'text-green-600' : 'text-red-600'}`}>
             {backtestingData.summary.outperformance > 0 ? '+' : ''}{backtestingData.summary.outperformance.toFixed(2)}%
           </span>

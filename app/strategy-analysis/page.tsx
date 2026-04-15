@@ -112,7 +112,8 @@ export default function StrategyAnalysisPage() {
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Bitcoin G-Score Strategy Analysis</h1>
                 <p className="mt-2 text-base sm:text-lg text-gray-600">
-                  Strategy snapshots and weekly pipeline summaries — sources differ by section; see labels on each card.
+                  <strong className="font-semibold text-gray-800">Official</strong> monthly Baseline vs Risk-Based comparison first;{' '}
+                  <strong className="font-semibold text-gray-700">weekly</strong> data below is supporting monitoring — not the same methodology.
                 </p>
               </div>
               <div className="flex space-x-4">
@@ -191,11 +192,12 @@ export default function StrategyAnalysisPage() {
         {activeTab === 'overview' && (
           <div className="space-y-8">
             <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-              <strong className="font-semibold">Two different sources on this page:</strong>{' '}
-              the <strong>Strategy Comparison</strong> snapshot (<code className="text-xs bg-amber-100 px-1 rounded">dca_vs_risk_comparison.json</code>) uses one
-              backtest design; the <strong>Backtesting Status</strong> card uses the weekly pipeline (
-              <code className="text-xs bg-amber-100 px-1 rounded">weekly_backtesting_report.json</code>
-              ). Headline percentages are <strong>not</strong> interchangeable — compare methodology before drawing conclusions.
+              <strong className="font-semibold">Read labels — one official comparison, one weekly report:</strong>{' '}
+              <strong>Primary:</strong> monthly SSOT pair in{' '}
+              <code className="text-xs bg-amber-100 px-1 rounded">dca_vs_risk_comparison.json</code> (hero + Strategy Comparison card).{' '}
+              <strong>Secondary / monitoring:</strong> weekly pipeline stats in{' '}
+              <code className="text-xs bg-amber-100 px-1 rounded">weekly_backtesting_report.json</code> — different schedule and rules; use for context, not as a second
+              &quot;official&quot; headline return.
             </div>
 
             {/* Hero Section — metrics from strategy comparison snapshot only */}
@@ -247,7 +249,15 @@ export default function StrategyAnalysisPage() {
               )}
             </div>
 
-            {/* Backtesting Status */}
+            {/* Official comparison detail (canonical artifact) — before weekly monitoring */}
+            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>}>
+              <StrategyComparisonCard />
+            </Suspense>
+
+            {/* How each strategy works in practice (matches comparison artifact generator) */}
+            <HowToFollowStrategies />
+
+            {/* Weekly monitoring — supporting context, not the SSOT headline */}
             <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>}>
               <BacktestingStatus />
             </Suspense>
@@ -256,14 +266,6 @@ export default function StrategyAnalysisPage() {
             <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>}>
               <BacktestingDisclosures />
             </Suspense>
-
-            {/* Strategy Comparison */}
-            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>}>
-              <StrategyComparisonCard />
-            </Suspense>
-
-            {/* How each strategy works in practice (matches comparison artifact generator) */}
-            <HowToFollowStrategies />
           </div>
         )}
 
@@ -287,20 +289,20 @@ export default function StrategyAnalysisPage() {
 
         {activeTab === 'insights' && (
           <div className="space-y-8">
-            <div className="text-center">
+            <div className="text-center max-w-2xl mx-auto">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">💡 <strong>Bitcoin G-Score</strong> Key Insights & Findings</h2>
               <p className="text-lg text-gray-600">
-                Artifact-backed summaries from the weekly report and strategy comparison file — not a single unified model.
+                Leads with the <strong>official monthly SSOT</strong> comparison; weekly monitoring and band context come after as supporting detail.
               </p>
             </div>
-            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>}>
-              <BacktestingStatus />
+            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>}>
+              <BacktestingInsights />
             </Suspense>
             <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>}>
               <BacktestingDisclosures />
             </Suspense>
-            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>}>
-              <BacktestingInsights />
+            <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>}>
+              <BacktestingStatus />
             </Suspense>
           </div>
         )}
@@ -310,7 +312,7 @@ export default function StrategyAnalysisPage() {
             <div className="text-center">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">🎯 <strong>Bitcoin G-Score</strong> Risk Band Effectiveness</h2>
               <p className="text-lg text-gray-600">
-                Per-band stats from the weekly backtesting report (same source as Backtesting Status).
+                Weekly monitoring / descriptive band stats — same artifact as <strong>Weekly report status</strong>, not the official monthly SSOT comparison.
               </p>
             </div>
             <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>}>
