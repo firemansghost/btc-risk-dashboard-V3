@@ -2,6 +2,20 @@
 
 Key technical choices and rationale for the Bitcoin Risk Dashboard.
 
+## 2026-04-15: GhostGauge strategy backtesting — SSOT target state (design only)
+
+**Status:** Target-state **design** decision. **Not** implemented ETL/UI/workflow; see spec for scope.
+
+**Spec:** [`docs/strategy-analysis/BACKTESTING_SSOT_SPEC.md`](strategy-analysis/BACKTESTING_SSOT_SPEC.md)
+
+**Decision (target state):** Official GhostGauge backtesting should converge on **one** canonical methodology: **Baseline DCA vs Risk-Based DCA**, **one** calendar-month-style schedule, **official six-band** naming aligned with `config/dashboard-config.json`, and **band assignment from score + SSOT boundaries (inclusive)** whenever a numeric score exists — **not** from historical CSV `band` strings as primary. Legacy labels remain **fallback** for older/incomplete rows. **Value averaging** stays **exploratory / secondary**, not co-equal official headline without capital context.
+
+**Rationale:** Reduces methodology drift between artifacts, aligns backtests with live boundary behavior, and records inclusive-boundary guardrails before implementation work.
+
+**Implementation:** Deferred; future ETL changes must reference the spec and this entry.
+
+---
+
 ## 2025-01-27: Risk Band Configuration - Single Source of Truth
 
 **Decision**: Centralized risk band configuration in `config/dashboard-config.json`

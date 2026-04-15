@@ -12,6 +12,10 @@ This documentation provides comprehensive information about the Bitcoin Risk Das
 - **[Weight Change Log](weight-change-log.md)** - Version history and change rationale
 - **[Weight Quick Reference](weight-quick-reference.md)** - Quick reference guide
 
+### 📉 Strategy Analysis (GhostGauge)
+- **[Backtesting SSOT design spec](strategy-analysis/BACKTESTING_SSOT_SPEC.md)** — Target single methodology and official vs exploratory boundaries (**design only**; not implemented by that doc alone)
+- **[SSOT product decisions](strategy-analysis/SSOT_PRODUCT_DECISIONS.md)** — Recommended six-band multipliers + monthly execution rule (**decision-ready**; not ETL)
+
 ### 🔧 Technical Documentation
 - **[ETL Process](../scripts/etl/README.md)** - Extract, Transform, Load process
 - **[API Documentation](../app/api/README.md)** - API endpoints and usage

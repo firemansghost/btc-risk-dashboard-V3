@@ -251,6 +251,8 @@ Two different files power `/strategy-analysis`; **do not treat them as one backt
 
 Both read from `public/data/history.csv`, but **methodologies differ** (sampling, band mapping, and metrics are not aligned). UI compares them only with explicit labeling; headline percentages from one file are **not** interchangeable with the other.
 
+**Future SSOT (design only, not implementation):** `docs/strategy-analysis/BACKTESTING_SSOT_SPEC.md` — proposed canonical backtesting scope, migration steps, and official vs exploratory boundaries.
+
 ### SSOT Configuration
 - `config/dashboard-config.json` → **PRIMARY SSOT** (model_version, pillars, factors, bands, weights, normalization, freshness)
 - `config/weights.json` → Legacy weights (may be deprecated)
