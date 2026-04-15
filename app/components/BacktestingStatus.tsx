@@ -18,9 +18,10 @@ interface BacktestingData {
   };
   summary: {
     totalDataPoints: number;
-    riskBasedReturn: number;
-    dcaReturn: number;
-    outperformance: number;
+    /** Present in JSON; not shown as headline KPIs — weekly sim diagnostics only vs monthly SSOT. */
+    riskBasedReturn?: number;
+    dcaReturn?: number;
+    outperformance?: number;
   };
 }
 
@@ -165,7 +166,8 @@ export default function BacktestingStatus() {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4">
       <p className="text-xs text-gray-500 mb-3">
-        <strong className="text-gray-700">Weekly monitoring</strong> — not the official monthly SSOT comparison. Source:{' '}
+        <strong className="text-gray-700">Weekly monitoring</strong> — not the official monthly SSOT comparison. This card shows freshness,
+        coverage, and cadence only (no headline strategy-return KPIs). Source:{' '}
         <code className="bg-gray-100 px-1 rounded text-[11px]">/data/weekly_backtesting_report.json</code> (different methodology than{' '}
         <code className="text-[11px] bg-gray-100 px-1 rounded">dca_vs_risk_comparison.json</code>).
       </p>
@@ -195,27 +197,6 @@ export default function BacktestingStatus() {
         <div className="flex justify-between">
           <span>Data Points:</span>
           <span className="font-medium">{backtestingData.summary.totalDataPoints.toLocaleString()}</span>
-        </div>
-        
-        <div className="flex justify-between">
-          <span>Risk-based return (weekly sim):</span>
-          <span className="font-medium text-green-600">
-            {backtestingData.summary.riskBasedReturn.toFixed(2)}%
-          </span>
-        </div>
-        
-        <div className="flex justify-between">
-          <span>DCA return (weekly sim):</span>
-          <span className="font-medium text-blue-600">
-            {backtestingData.summary.dcaReturn.toFixed(2)}%
-          </span>
-        </div>
-        
-        <div className="flex justify-between">
-          <span>Outperformance (weekly sim):</span>
-          <span className={`font-medium ${backtestingData.summary.outperformance > 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {backtestingData.summary.outperformance > 0 ? '+' : ''}{backtestingData.summary.outperformance.toFixed(2)}%
-          </span>
         </div>
       </div>
       

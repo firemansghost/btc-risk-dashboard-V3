@@ -59,7 +59,9 @@ export default function BacktestingDisclosures() {
                     • <strong>Sharpe-like (strategy comparison JSON):</strong> Mean ÷ standard deviation of portfolio changes between
                     trades — <strong>not</strong> annualized textbook Sharpe. For rankings, treat as a rough risk-adjusted score.
                   </li>
-                  <li>• <strong>Outperformance:</strong> Risk-based strategy return minus DCA return</li>
+                  <li>
+                    • <strong>Outperformance (weekly report field):</strong> Risk-based return minus DCA return inside the weekly pipeline artifact — not the official monthly SSOT headline metric.
+                  </li>
                   <li>• <strong>Total Return:</strong> Cumulative percentage gain over entire period</li>
                 </ul>
               </div>

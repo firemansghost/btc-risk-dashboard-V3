@@ -258,7 +258,7 @@ export default function StrategyTester({}: StrategyTesterProps) {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
             <h4 className="text-lg font-semibold text-blue-900 mb-2">About these rows</h4>
             <p className="text-sm text-blue-900">
-              Rankings and percentages above mirror the <strong>historical comparison artifact</strong> for demo layout only. They do <strong>not</strong> update when you change inputs. For defensible numbers, use <strong>Strategy Comparison</strong> on the Overview tab or the weekly <strong>Backtesting Status</strong> metrics.
+              Rankings and percentages above mirror the <strong>historical comparison artifact</strong> for demo layout only. They do <strong>not</strong> update when you change inputs. For published strategy returns, use <strong>Strategy Comparison</strong> on the Overview tab (monthly SSOT). <strong>Weekly report status</strong> is for freshness, range, and coverage — not a second official scoreboard.
             </p>
           </div>
         </div>

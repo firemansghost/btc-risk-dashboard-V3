@@ -7,9 +7,9 @@ type WeeklyReport = {
   dataRange: { startDate: string; endDate: string; totalDays: number };
   summary: {
     totalDataPoints: number;
-    riskBasedReturn: number;
-    dcaReturn: number;
-    outperformance: number;
+    riskBasedReturn?: number;
+    dcaReturn?: number;
+    outperformance?: number;
   };
   bandPerformance?: Record<
     string,
@@ -126,8 +126,10 @@ export default function BacktestingInsights() {
           <p className="text-sm text-slate-600 mt-1 mb-4">
             From <code className="text-xs bg-white px-1 rounded border border-slate-200">weekly_backtesting_report.json</code> — auto-updated on a schedule. Different
             sampling rules than the monthly SSOT comparison; use for <strong>context and monitoring</strong>, not as a rival &quot;official&quot; return table.
+            Headline strategy returns from the weekly run are omitted here so they are not mistaken for the published monthly comparison — use the{' '}
+            <strong className="font-semibold text-slate-800">Official monthly strategy comparison (SSOT)</strong> block above for those numbers.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="rounded-lg bg-white border border-slate-200 p-3">
               <div className="text-xl font-bold text-slate-800">{weekly.summary.totalDataPoints.toLocaleString()}</div>
               <div className="text-xs text-slate-600">Data points</div>
@@ -135,14 +137,6 @@ export default function BacktestingInsights() {
             <div className="rounded-lg bg-white border border-slate-200 p-3">
               <div className="text-xl font-bold text-slate-800">{weekly.dataRange.totalDays}</div>
               <div className="text-xs text-slate-600">History rows (CSV)</div>
-            </div>
-            <div className="rounded-lg bg-white border border-slate-200 p-3">
-              <div className="text-xl font-bold text-slate-800">{weekly.summary.riskBasedReturn.toFixed(2)}%</div>
-              <div className="text-xs text-slate-600">Risk-based return (weekly sim)</div>
-            </div>
-            <div className="rounded-lg bg-white border border-slate-200 p-3">
-              <div className="text-xl font-bold text-slate-800">{weekly.summary.dcaReturn.toFixed(2)}%</div>
-              <div className="text-xs text-slate-600">DCA return (weekly sim)</div>
             </div>
           </div>
           <p className="text-xs text-slate-500 mt-3">
@@ -188,7 +182,7 @@ export default function BacktestingInsights() {
         <p className="text-sm leading-relaxed">
           <strong>Official</strong> for strategy comparison: the <strong>monthly SSOT</strong> Baseline vs Risk-Based results in{' '}
           <code className="text-xs bg-white/80 px-1 rounded">dca_vs_risk_comparison.json</code>.{' '}
-          <strong>Weekly</strong> figures are <strong>supporting monitoring</strong> from a different engine — helpful context, not a second canonical scoreboard.{' '}
+          <strong>Weekly monitoring</strong> (freshness, coverage, descriptive band stats) is <strong>supporting context</strong> from a different engine — not a second canonical return scoreboard.{' '}
           <strong>Value averaging</strong> stays <strong>exploratory</strong> only.
         </p>
       </div>
