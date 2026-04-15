@@ -1,3 +1,5 @@
+# Weekly: (1) descriptive backtesting report, (2) official monthly SSOT strategy comparison JSON.
+# Both commit to public/data/ — same inputs as local npm scripts; provenance in JSON metadata.
 name: Weekly Backtesting
 
 on:
@@ -36,28 +38,34 @@ jobs:
         env:
           NODE_ENV: production
 
+      - name: Monthly SSOT strategy comparison
+        run: npm run etl:strategy-comparison
+        env:
+          NODE_ENV: production
+
       - name: Configure git
         run: |
           git config user.name "ghostgauge-bot"
           git config user.email "bot@ghostgauge.local"
 
-      - name: Commit backtesting results
+      - name: Commit weekly + monthly SSOT artifacts
         run: |
-          git add public/data/weekly_backtesting_report.json
+          git add public/data/weekly_backtesting_report.json public/data/dca_vs_risk_comparison.json
           if git diff --cached --quiet; then
-            echo "No backtesting changes to commit"
+            echo "No weekly backtesting or monthly SSOT comparison changes to commit"
             exit 0
           fi
-          git commit -m "chore(backtesting): weekly analysis update [skip ci]"
+          git commit -m "chore(etl): weekly backtesting + monthly SSOT strategy comparison [skip ci]"
           git push
 
       - name: Generate Summary
         run: |
-          echo "## 📊 Weekly Backtesting Results" >> $GITHUB_STEP_SUMMARY
+          echo "## Weekly pipelines: backtesting + monthly SSOT comparison" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Weekly backtesting analysis completed successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "Completed: \`npm run etl:backtesting\` and \`npm run etl:strategy-comparison\`." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "📈 **Updated Files:**" >> $GITHUB_STEP_SUMMARY
-          echo "- \`public/data/weekly_backtesting_report.json\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Artifacts (if changed):**" >> $GITHUB_STEP_SUMMARY
+          echo "- \`public/data/weekly_backtesting_report.json\` — supporting / monitoring (weekly sim)" >> $GITHUB_STEP_SUMMARY
+          echo "- \`public/data/dca_vs_risk_comparison.json\` — **official monthly SSOT** Baseline vs Risk-Based DCA" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🔄 **Next Run:** Next Sunday at 11:00 UTC" >> $GITHUB_STEP_SUMMARY
+          echo "**Next run:** Next Sunday 11:30 UTC (after daily ETL)." >> $GITHUB_STEP_SUMMARY

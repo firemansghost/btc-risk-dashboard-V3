@@ -1,7 +1,7 @@
 # GhostGauge Strategy Analysis — Backtesting SSOT Design Spec
 
 **Status:** The **`dca_vs_risk_comparison.json`** monthly strategy comparison path follows **SSOT v2** (see `scripts/etl/dca-vs-risk-strategy-comparison.mjs`). Other items in this doc (e.g. weekly script alignment) may still be **future work**.  
-**Ground truth:** Repo `firemansghost/btc-risk-dashboard-V3`; regenerate comparison via `npm run etl:strategy-comparison`.  
+**Ground truth:** Repo `firemansghost/btc-risk-dashboard-V3`; regenerate comparison via `npm run etl:strategy-comparison`. **CI:** `.github/workflows/weekly-backtesting.yml` runs the same command weekly (after `etl:backtesting`) and commits `public/data/dca_vs_risk_comparison.json` when it changes.  
 **Out of scope:** Official G-Score **composite** math — backtesting remains downstream of `history.csv`.
 
 ---
@@ -12,8 +12,8 @@
 
 | Artifact | Generator | Automation |
 |----------|-------------|------------|
-| `public/data/dca_vs_risk_comparison.json` | `scripts/etl/dca-vs-risk-strategy-comparison.mjs` | **Not** in CI; run locally (`node scripts/etl/dca-vs-risk-strategy-comparison.mjs`) |
-| `public/data/weekly_backtesting_report.json` | `scripts/etl/weekly-backtesting.mjs` (`npm run etl:backtesting`) | **Yes** — `.github/workflows/weekly-backtesting.yml` (weekly commit) |
+| `public/data/dca_vs_risk_comparison.json` | `scripts/etl/dca-vs-risk-strategy-comparison.mjs` | **Yes** — `.github/workflows/weekly-backtesting.yml` (`npm run etl:strategy-comparison`; weekly + manual dispatch) |
+| `public/data/weekly_backtesting_report.json` | `scripts/etl/weekly-backtesting.mjs` (`npm run etl:backtesting`) | **Yes** — same workflow (weekly commit) |
 
 ### Shared input
 

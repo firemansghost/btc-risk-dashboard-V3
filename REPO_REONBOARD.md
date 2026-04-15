@@ -237,7 +237,7 @@ These updates improve readability, mobile usability, and ETL resilience **withou
 
 ### GitHub Actions Workflows
 - `.github/workflows/daily-etl.yml` → Daily ETL at 11:00 UTC (Node 20.18.0)
-- `.github/workflows/weekly-backtesting.yml` → Weekly backtesting analysis
+- `.github/workflows/weekly-backtesting.yml` → Weekly **backtesting report** + **monthly SSOT** `dca_vs_risk_comparison.json` (same workflow; Sunday 11:30 UTC; see below)
 - `.github/workflows/bundle-size-tracking.yml` → Bundle size monitoring
 
 ### Strategy Analysis — backtesting JSON artifacts (provenance)
@@ -246,8 +246,10 @@ Two different files power `/strategy-analysis`; **do not treat them as one backt
 
 | Artifact | Generator | CI? |
 |----------|-----------|-----|
-| `public/data/weekly_backtesting_report.json` | `scripts/etl/weekly-backtesting.mjs` (`npm run etl:backtesting`) | **Yes** — `.github/workflows/weekly-backtesting.yml` runs weekly and commits this file |
-| `public/data/dca_vs_risk_comparison.json` | `scripts/etl/dca-vs-risk-strategy-comparison.mjs` (`npm run etl:strategy-comparison`) | **No** — regenerate locally; not part of the weekly workflow |
+| `public/data/weekly_backtesting_report.json` | `scripts/etl/weekly-backtesting.mjs` (`npm run etl:backtesting`) | **Yes** — `.github/workflows/weekly-backtesting.yml` (Sunday 11:30 UTC + manual dispatch) |
+| `public/data/dca_vs_risk_comparison.json` | `scripts/etl/dca-vs-risk-strategy-comparison.mjs` (`npm run etl:strategy-comparison`) | **Yes** — same workflow commits the **canonical monthly SSOT** file after the weekly backtesting step |
+
+**Local regeneration:** You can still run `npm run etl:strategy-comparison` (or `npm run etl:backtesting`) locally; CI keeps the repo artifact aligned with `history.csv` on a weekly cadence so production does not depend on forgotten manual runs.
 
 **Strategy comparison file (`dca_vs_risk_comparison.json`):** **SSOT v2** monthly methodology — Baseline vs Risk-Based DCA; first row per calendar month; band from **score + `dashboard-config` inclusive ranges** (CSV band fallback); official six-band multipliers; value averaging under `exploratory` only. See `docs/strategy-analysis/BACKTESTING_SSOT_SPEC.md` and `SSOT_PRODUCT_DECISIONS.md`.
 
