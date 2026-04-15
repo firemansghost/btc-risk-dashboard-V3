@@ -41,35 +41,43 @@ const BacktestingDisclosures = createRobustCardImport(
 );
 
 type ComparisonJson = {
+  methodologyVersion?: string;
+  metadata?: { generatedAt?: string };
   strategies?: Record<
     string,
     { trades?: { date: string }[]; metrics?: { totalReturn: number; maxDrawdown: number; sharpeRatio: number; totalTrades: number } }
   >;
+  exploratory?: {
+    valueAveraging?: { metrics?: { totalReturn: number; maxDrawdown: number; sharpeRatio: number; totalTrades: number } };
+  };
 };
 
 function getComparisonSnapshotMeta(data: ComparisonJson | null) {
-  if (!data?.strategies) return null;
+  const base = data?.strategies?.['Baseline DCA'];
+  const risk = data?.strategies?.['Risk-Based DCA'];
+  if (!base?.metrics || !risk?.metrics) return null;
   let min: string | null = null;
   let max: string | null = null;
-  for (const st of Object.values(data.strategies)) {
-    for (const t of st.trades || []) {
-      if (!min || t.date < min) min = t.date;
-      if (!max || t.date > max) max = t.date;
-    }
+  for (const t of base.trades || []) {
+    if (!min || t.date < min) min = t.date;
+    if (!max || t.date > max) max = t.date;
   }
-  const va = data.strategies['Value Averaging'];
-  const m = va?.metrics;
-  if (!min || !max || !m) return null;
+  if (!min || !max) return null;
   const start = new Date(min + 'T12:00:00');
   const end = new Date(max + 'T12:00:00');
   const days = Math.max(1, Math.round((end.getTime() - start.getTime()) / 86400000));
+  const va = data?.exploratory?.valueAveraging?.metrics;
   return {
     periodLabel: `${start.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} – ${end.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`,
     days,
-    vaReturn: m.totalReturn,
-    vaSharpe: m.sharpeRatio,
-    vaMaxDd: m.maxDrawdown,
-    vaTrades: m.totalTrades,
+    baselineReturn: base.metrics.totalReturn,
+    riskReturn: risk.metrics.totalReturn,
+    spread: risk.metrics.totalReturn - base.metrics.totalReturn,
+    methodologyVersion: data?.methodologyVersion ?? '—',
+    vaReturn: va?.totalReturn,
+    vaSharpe: va?.sharpeRatio,
+    vaMaxDd: va?.maxDrawdown,
+    vaTrades: va?.totalTrades,
   };
 }
 
@@ -193,20 +201,22 @@ export default function StrategyAnalysisPage() {
             {/* Hero Section — metrics from strategy comparison snapshot only */}
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-8 text-white">
               <p className="text-xs font-medium uppercase tracking-wide opacity-90 mb-2">
-                Strategy comparison snapshot · <code className="text-[11px]">/data/dca_vs_risk_comparison.json</code>
+                Official monthly SSOT comparison · <code className="text-[11px]">/data/dca_vs_risk_comparison.json</code>
+                {snapMeta && typeof snapMeta.methodologyVersion === 'string' && snapMeta.methodologyVersion !== '—' && (
+                  <> · methodology v{snapMeta.methodologyVersion}</>
+                )}
               </p>
-              <h2 className="text-2xl font-bold mb-4">🚀 Snapshot: DCA vs risk-based vs value averaging</h2>
+              <h2 className="text-2xl font-bold mb-4">🚀 Baseline DCA vs Risk-Based DCA</h2>
               <p className="text-lg mb-4">
-                In this <strong>fixed historical run</strong>, <strong>Value Averaging</strong> had the highest reported return. It also deployed{' '}
-                <strong>far less capital</strong> and <strong>fewer trades</strong> than full-schedule DCA — so ranks are <strong>not</strong> apples-to-apples with
-                equal monthly investment.
+                The published snapshot uses one <strong>monthly</strong> methodology: same execution dates for both strategies, bands from{' '}
+                <strong>score + SSOT boundaries</strong> for risk-sized contributions, and the official six-band multipliers. This hero highlights the{' '}
+                <strong>two official</strong> strategies — not value averaging (exploratory; see card below).
               </p>
               <p className="text-sm opacity-90 mb-6">
                 {snapMeta ? (
                   <>
-                    <strong>Trade window in snapshot:</strong> {snapMeta.periodLabel} ({snapMeta.days} calendar days) ·{' '}
-                    <strong>Value Averaging trades:</strong> {snapMeta.vaTrades} ·{' '}
-                    <span className="opacity-95">This JSON is not produced by the weekly CI job.</span>
+                    <strong>Trade window:</strong> {snapMeta.periodLabel} ({snapMeta.days} calendar days) ·{' '}
+                    <span className="opacity-95">Generated locally — not the weekly CI job.</span>
                   </>
                 ) : (
                   <span>Loading snapshot metadata…</span>
@@ -214,25 +224,27 @@ export default function StrategyAnalysisPage() {
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white/20 rounded-lg p-4">
-                  <div className="text-3xl font-bold">
-                    {snapMeta ? `${snapMeta.vaReturn.toFixed(2)}%` : '—'}
-                  </div>
-                  <div className="text-sm opacity-90">Value Averaging return (snapshot)</div>
-                </div>
-                <div
-                  className="bg-white/20 rounded-lg p-4"
-                  title="Mean ÷ std of portfolio changes between monthly trades; not annualized textbook Sharpe."
-                >
-                  <div className="text-3xl font-bold">{snapMeta ? snapMeta.vaSharpe.toFixed(2) : '—'}</div>
-                  <div className="text-sm opacity-90">Sharpe-like ratio (snapshot)</div>
-                  <div className="text-xs opacity-75 mt-1">Trade-interval, not annualized</div>
+                  <div className="text-3xl font-bold">{snapMeta ? `${snapMeta.baselineReturn.toFixed(2)}%` : '—'}</div>
+                  <div className="text-sm opacity-90">Baseline DCA return</div>
                 </div>
                 <div className="bg-white/20 rounded-lg p-4">
-                  <div className="text-3xl font-bold">{snapMeta ? `${snapMeta.vaMaxDd.toFixed(2)}%` : '—'}</div>
-                  <div className="text-sm opacity-90">Max drawdown (snapshot metric)</div>
-                  <div className="text-xs opacity-75 mt-1">0% reflects this artifact’s VA path; not a guarantee of future risk.</div>
+                  <div className="text-3xl font-bold">{snapMeta ? `${snapMeta.riskReturn.toFixed(2)}%` : '—'}</div>
+                  <div className="text-sm opacity-90">Risk-Based DCA return</div>
+                </div>
+                <div className="bg-white/20 rounded-lg p-4" title="Risk-Based total return minus Baseline (percentage points).">
+                  <div className="text-3xl font-bold">
+                    {snapMeta ? `${snapMeta.spread >= 0 ? '+' : ''}${snapMeta.spread.toFixed(2)}%` : '—'}
+                  </div>
+                  <div className="text-sm opacity-90">Spread (risk vs baseline)</div>
                 </div>
               </div>
+              {snapMeta && snapMeta.vaReturn != null && (
+                <p className="text-xs opacity-85 mt-4 border-t border-white/20 pt-3">
+                  <strong>Exploratory</strong> value averaging (same monthly dates, different capital rules):{' '}
+                  {snapMeta.vaReturn.toFixed(2)}% return · {snapMeta.vaTrades ?? '—'} trades — see Strategy Comparison card for full table; % is not comparable to equal
+                  base DCA without checking dollars deployed.
+                </p>
+              )}
             </div>
 
             {/* Backtesting Status */}

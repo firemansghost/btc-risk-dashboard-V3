@@ -3,8 +3,9 @@
 import React from 'react';
 
 /**
- * Plain-English mechanics for the three strategies in dca_vs_risk_comparison.json.
- * Logic is documented in scripts/etl/dca-vs-risk-strategy-comparison.mjs (not repeated as trading advice).
+ * Plain-English mechanics for strategies referenced from dca_vs_risk_comparison.json.
+ * Official monthly SSOT compares Baseline vs Risk-Based DCA; value averaging is exploratory in the same file.
+ * Logic: scripts/etl/dca-vs-risk-strategy-comparison.mjs (not repeated as trading advice).
  */
 export default function HowToFollowStrategies() {
   return (
@@ -25,7 +26,10 @@ export default function HowToFollowStrategies() {
             The plain benchmark: <strong>not</strong> a G-Score band or a “buying signal” name from the dashboard — just fixed contributions.
           </p>
           <ul className="text-sm text-gray-700 space-y-2 list-disc pl-5">
-            <li>On each scheduled contribution date (the snapshot uses roughly <strong>monthly</strong> buys aligned to the historical series), invest the <strong>same dollar amount</strong> every time.</li>
+            <li>
+              On each scheduled contribution date (the SSOT snapshot uses the <strong>first history row in each calendar month</strong>), invest the <strong>same dollar
+              amount</strong> every time.
+            </li>
             <li>Do that <strong>regardless of G-Score</strong> — no timing rule.</li>
             <li>Simple repeat: same amount, same rhythm; no band-based sizing.</li>
           </ul>
@@ -38,20 +42,22 @@ export default function HowToFollowStrategies() {
               <strong>Start from a base recurring contribution</strong> on the same kind of schedule as the other strategies.
             </li>
             <li>
-              On each date, use that day&apos;s <strong>risk band</strong> to decide whether to buy <strong>more than usual, the usual amount, less than usual, or skip</strong> — so contribution size moves with conditions instead of staying flat.
+              On each date, use the <strong>official six-band framework</strong> (from your <strong>G-Score</strong> via SSOT boundaries in the backtest) to scale the base
+              contribution — more in greener bands, less toward red, <strong>zero new buys</strong> in High Risk in the published multiplier table.
             </li>
             <li>
-              Of the three, this is the one <strong>most connected to GhostGauge&apos;s risk framework</strong> (risk bands and G-Score context).
+              Of the strategies on this page, this is the one <strong>most connected to GhostGauge&apos;s risk framework</strong> (bands and G-Score context).
             </li>
           </ul>
           <p className="text-sm text-gray-600 mt-3 pt-3 border-t border-blue-200">
-            <strong>Snapshot detail:</strong> The exact historical band-to-size rules used for this page&apos;s numbers live in the script that builds{' '}
-            <code className="text-xs bg-white px-1 rounded">dca_vs_risk_comparison.json</code>. Labels you see on the app <strong>today</strong> may not line up 1:1 with labels stored in the old backtest rows — compare cautiously if you try to mirror the test.
+            <strong>Snapshot detail:</strong> Bands in the official run are derived from <strong>score + dashboard-config boundaries</strong> first; CSV band text is only a
+            fallback. Multipliers match the SSOT product table in repo docs. See{' '}
+            <code className="text-xs bg-white px-1 rounded">dca_vs_risk_comparison.json</code> metadata for the exact wording.
           </p>
         </div>
 
         <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-4 sm:p-5">
-          <h3 className="text-base font-semibold text-gray-900 mb-2">Value averaging (snapshot version)</h3>
+          <h3 className="text-base font-semibold text-gray-900 mb-2">Value averaging (exploratory snapshot)</h3>
           <ul className="text-sm text-gray-700 space-y-2 list-disc pl-5">
             <li>Instead of a fixed dollar amount each period, the backtest aims for a <strong>rising target path</strong> for portfolio value.</li>
             <li>On each scheduled date it invests only enough to <strong>close the gap</strong> between where you are and that target — so you may invest <strong>more when behind</strong>, and <strong>little or nothing</strong> when already ahead.</li>

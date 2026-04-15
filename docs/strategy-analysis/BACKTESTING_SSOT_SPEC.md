@@ -1,8 +1,8 @@
 # GhostGauge Strategy Analysis — Backtesting SSOT Design Spec
 
-**Status:** Design / recommendation only — **not implemented** in this document.  
-**Ground truth:** Repo `firemansghost/btc-risk-dashboard-V3` as of authoring; live `ghostgauge.com/strategy-analysis` reflects current behavior.  
-**Out of scope for implementation here:** Official G-Score math, ETL refactors, JSON schema changes, UI redesigns.
+**Status:** The **`dca_vs_risk_comparison.json`** monthly strategy comparison path follows **SSOT v2** (see `scripts/etl/dca-vs-risk-strategy-comparison.mjs`). Other items in this doc (e.g. weekly script alignment) may still be **future work**.  
+**Ground truth:** Repo `firemansghost/btc-risk-dashboard-V3`; regenerate comparison via `npm run etl:strategy-comparison`.  
+**Out of scope:** Official G-Score **composite** math — backtesting remains downstream of `history.csv`.
 
 ---
 

@@ -27,6 +27,7 @@ type WeeklyReport = {
 
 type DcaComparison = {
   strategies?: Record<string, { totalReturn: number; metrics?: { totalReturn: number; totalTrades: number } }>;
+  exploratory?: { valueAveraging?: { metrics?: { totalReturn: number } } };
 };
 
 export default function BacktestingInsights() {
@@ -122,25 +123,30 @@ export default function BacktestingInsights() {
 
       {dca?.strategies && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Strategy comparison snapshot (different methodology)</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Strategy comparison snapshot (monthly SSOT)</h3>
           <p className="text-sm text-gray-600 mb-4">
-            Totals from <code className="text-xs bg-gray-100 px-1 rounded">dca_vs_risk_comparison.json</code>. Value averaging uses less capital and fewer trades than full DCA — higher % return does not mean “more dollars earned” vs equal monthly DCA.
+            Official pair from <code className="text-xs bg-gray-100 px-1 rounded">dca_vs_risk_comparison.json</code> — Baseline vs Risk-Based DCA. Exploratory value averaging (if present) uses less capital than full baseline; higher % does not mean more dollars earned.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center border border-gray-100 rounded-lg p-4">
-              <div className="text-3xl font-bold text-green-600 mb-1">{dcaPct('Value Averaging')?.toFixed(2) ?? '—'}%</div>
-              <div className="text-sm text-gray-700">Value Averaging</div>
-              <div className="text-xs text-gray-500 mt-1">Highest % in this snapshot</div>
+              <div className="text-3xl font-bold text-gray-700 mb-1">{dcaPct('Baseline DCA')?.toFixed(2) ?? '—'}%</div>
+              <div className="text-sm text-gray-700">Baseline DCA</div>
+              <div className="text-xs text-gray-500 mt-1">Flat monthly base</div>
             </div>
-            <div className="text-center border border-gray-100 rounded-lg p-4">
+            <div className="text-center border border-blue-100 rounded-lg p-4">
               <div className="text-3xl font-bold text-blue-600 mb-1">{dcaPct('Risk-Based DCA')?.toFixed(2) ?? '—'}%</div>
               <div className="text-sm text-gray-700">Risk-Based DCA</div>
-              <div className="text-xs text-gray-500 mt-1">vs regular DCA in same file</div>
+              <div className="text-xs text-gray-500 mt-1">SSOT bands + multipliers</div>
             </div>
-            <div className="text-center border border-gray-100 rounded-lg p-4">
-              <div className="text-3xl font-bold text-gray-600 mb-1">{dcaPct('DCA')?.toFixed(2) ?? '—'}%</div>
-              <div className="text-sm text-gray-700">Regular DCA</div>
-              <div className="text-xs text-gray-500 mt-1">Baseline in snapshot</div>
+            <div className="text-center border border-amber-100 rounded-lg p-4">
+              <div className="text-3xl font-bold text-amber-700 mb-1">
+                {dca?.exploratory?.valueAveraging?.metrics?.totalReturn != null
+                  ? dca.exploratory.valueAveraging.metrics.totalReturn.toFixed(2)
+                  : '—'}
+                %
+              </div>
+              <div className="text-sm text-gray-700">Value Averaging (exploratory)</div>
+              <div className="text-xs text-gray-500 mt-1">Not official headline pair</div>
             </div>
           </div>
         </div>
@@ -180,7 +186,7 @@ export default function BacktestingInsights() {
       <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg p-6 text-white">
         <h3 className="text-lg font-bold mb-2">Takeaway</h3>
         <p className="text-sm opacity-95">
-          Use the <strong>weekly</strong> card for pipeline risk-based vs DCA headline returns over the long CSV window; use the <strong>comparison JSON</strong> for the three-way strategy snapshot. Treat them as complementary views, not one fused scoreboard.
+          Use the <strong>weekly</strong> card for pipeline risk-based vs DCA headline returns over the long CSV window; use the <strong>comparison JSON</strong> for the official monthly SSOT Baseline vs Risk-Based pair (plus exploratory value averaging in the same file). Treat them as complementary views, not one fused scoreboard.
         </p>
       </div>
     </div>

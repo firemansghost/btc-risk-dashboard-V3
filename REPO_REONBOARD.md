@@ -247,11 +247,13 @@ Two different files power `/strategy-analysis`; **do not treat them as one backt
 | Artifact | Generator | CI? |
 |----------|-----------|-----|
 | `public/data/weekly_backtesting_report.json` | `scripts/etl/weekly-backtesting.mjs` (`npm run etl:backtesting`) | **Yes** — `.github/workflows/weekly-backtesting.yml` runs weekly and commits this file |
-| `public/data/dca_vs_risk_comparison.json` | `scripts/etl/dca-vs-risk-strategy-comparison.mjs` (`node scripts/etl/dca-vs-risk-strategy-comparison.mjs`) | **No** — regenerate locally when you want an updated snapshot; not part of the weekly workflow |
+| `public/data/dca_vs_risk_comparison.json` | `scripts/etl/dca-vs-risk-strategy-comparison.mjs` (`npm run etl:strategy-comparison`) | **No** — regenerate locally; not part of the weekly workflow |
 
-Both read from `public/data/history.csv`, but **methodologies differ** (sampling, band mapping, and metrics are not aligned). UI compares them only with explicit labeling; headline percentages from one file are **not** interchangeable with the other.
+**Strategy comparison file (`dca_vs_risk_comparison.json`):** **SSOT v2** monthly methodology — Baseline vs Risk-Based DCA; first row per calendar month; band from **score + `dashboard-config` inclusive ranges** (CSV band fallback); official six-band multipliers; value averaging under `exploratory` only. See `docs/strategy-analysis/BACKTESTING_SSOT_SPEC.md` and `SSOT_PRODUCT_DECISIONS.md`.
 
-**Future SSOT (design only, not implementation):** `docs/strategy-analysis/BACKTESTING_SSOT_SPEC.md` — proposed canonical backtesting scope, migration steps, and official vs exploratory boundaries.
+**Weekly file (`weekly_backtesting_report.json`):** Still the older **~every-30-rows** strategy sim + band monitoring — **not** unified with SSOT v2 yet. UI labels them separately.
+
+Both read from `public/data/history.csv`, but **methodologies differ**. Headline percentages from one file are **not** interchangeable with the other.
 
 ### SSOT Configuration
 - `config/dashboard-config.json` → **PRIMARY SSOT** (model_version, pillars, factors, bands, weights, normalization, freshness)
