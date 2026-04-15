@@ -240,6 +240,17 @@ These updates improve readability, mobile usability, and ETL resilience **withou
 - `.github/workflows/weekly-backtesting.yml` → Weekly backtesting analysis
 - `.github/workflows/bundle-size-tracking.yml` → Bundle size monitoring
 
+### Strategy Analysis — backtesting JSON artifacts (provenance)
+
+Two different files power `/strategy-analysis`; **do not treat them as one backtesting engine**.
+
+| Artifact | Generator | CI? |
+|----------|-----------|-----|
+| `public/data/weekly_backtesting_report.json` | `scripts/etl/weekly-backtesting.mjs` (`npm run etl:backtesting`) | **Yes** — `.github/workflows/weekly-backtesting.yml` runs weekly and commits this file |
+| `public/data/dca_vs_risk_comparison.json` | `scripts/etl/dca-vs-risk-strategy-comparison.mjs` (`node scripts/etl/dca-vs-risk-strategy-comparison.mjs`) | **No** — regenerate locally when you want an updated snapshot; not part of the weekly workflow |
+
+Both read from `public/data/history.csv`, but **methodologies differ** (sampling, band mapping, and metrics are not aligned). UI compares them only with explicit labeling; headline percentages from one file are **not** interchangeable with the other.
+
 ### SSOT Configuration
 - `config/dashboard-config.json` → **PRIMARY SSOT** (model_version, pillars, factors, bands, weights, normalization, freshness)
 - `config/weights.json` → Legacy weights (may be deprecated)
@@ -442,5 +453,6 @@ These updates improve readability, mobile usability, and ETL resilience **withou
 
 ---
 
-**Last Updated:** 2026-04-14 (checkpoint **2026-03-25** plus **2026-04-14 addendum**: Score Insights summary, mobile polish cross-ref, FRED/cache ETL resilience; sections 1–8 below retain historical detail from 2025-01-13 where not superseded)  
+**Last Updated:** 2026-04-15 — added **Strategy Analysis — backtesting JSON artifacts (provenance)** under *Repo Map* (weekly vs comparison JSON generators and CI scope).  
+**Previously:** 2026-04-14 (checkpoint **2026-03-25** plus **2026-04-14 addendum**: Score Insights summary, mobile polish cross-ref, FRED/cache ETL resilience; sections 1–8 below retain historical detail from 2025-01-13 where not superseded)  
 **Status:** Trust repair and follow-ups per **Checkpoints**; **2026-04-14 addendum** records Score Insights / mobile / ETL resilience without rewriting the original checkpoint; UI redesign planning notes in sections below remain useful guards for future work

@@ -204,8 +204,9 @@ export default function StrategyAnalysisPage() {
               <p className="text-sm opacity-90 mb-6">
                 {snapMeta ? (
                   <>
-                    <strong>Trade window in snapshot:</strong> {snapMeta.periodLabel} ({snapMeta.days} days) ·{' '}
-                    <strong>Value Averaging trades:</strong> {snapMeta.vaTrades}
+                    <strong>Trade window in snapshot:</strong> {snapMeta.periodLabel} ({snapMeta.days} calendar days) ·{' '}
+                    <strong>Value Averaging trades:</strong> {snapMeta.vaTrades} ·{' '}
+                    <span className="opacity-95">This JSON is not produced by the weekly CI job.</span>
                   </>
                 ) : (
                   <span>Loading snapshot metadata…</span>
@@ -218,9 +219,13 @@ export default function StrategyAnalysisPage() {
                   </div>
                   <div className="text-sm opacity-90">Value Averaging return (snapshot)</div>
                 </div>
-                <div className="bg-white/20 rounded-lg p-4">
+                <div
+                  className="bg-white/20 rounded-lg p-4"
+                  title="Mean ÷ std of portfolio changes between monthly trades; not annualized textbook Sharpe."
+                >
                   <div className="text-3xl font-bold">{snapMeta ? snapMeta.vaSharpe.toFixed(2) : '—'}</div>
-                  <div className="text-sm opacity-90">Sharpe (same snapshot)</div>
+                  <div className="text-sm opacity-90">Sharpe-like ratio (snapshot)</div>
+                  <div className="text-xs opacity-75 mt-1">Trade-interval, not annualized</div>
                 </div>
                 <div className="bg-white/20 rounded-lg p-4">
                   <div className="text-3xl font-bold">{snapMeta ? `${snapMeta.vaMaxDd.toFixed(2)}%` : '—'}</div>

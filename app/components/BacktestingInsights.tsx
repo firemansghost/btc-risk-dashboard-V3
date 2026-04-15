@@ -98,7 +98,10 @@ export default function BacktestingInsights() {
             </div>
             <div className="bg-white/20 rounded-lg p-4">
               <div className="text-2xl font-bold">{weekly.dataRange.totalDays}</div>
-              <div className="text-sm opacity-90">Days in weekly window</div>
+              <div className="text-sm opacity-90">History rows (CSV)</div>
+              <div className="text-xs opacity-75 mt-1" title="Matches row count in history.csv; JSON field is totalDays">
+                Same as data points — not calendar days
+              </div>
             </div>
             <div className="bg-white/20 rounded-lg p-4">
               <div className="text-2xl font-bold">{weekly.summary.riskBasedReturn.toFixed(2)}%</div>

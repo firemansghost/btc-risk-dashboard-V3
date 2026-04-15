@@ -108,7 +108,8 @@ export default function RiskBandAnalysis() {
           </div>
           <div className="bg-white/20 rounded-lg p-4">
             <div className="text-2xl font-bold">{data.dataRange.totalDays}</div>
-            <div className="text-sm opacity-90">Days in range</div>
+            <div className="text-sm opacity-90">History rows (CSV)</div>
+            <div className="text-xs opacity-80 mt-1">Row count, not calendar span</div>
           </div>
         </div>
         <p className="text-xs opacity-85 mt-4">

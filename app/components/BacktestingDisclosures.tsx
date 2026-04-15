@@ -55,7 +55,10 @@ export default function BacktestingDisclosures() {
                 <ul className="space-y-1 ml-4">
                   <li>• <strong>Max Drawdown:</strong> Largest peak-to-trough decline (0% = no decline from peak)</li>
                   <li>• <strong>Win Rate:</strong> Percentage of 30-day periods with positive returns</li>
-                  <li>• <strong>Sharpe Ratio:</strong> Risk-adjusted return (higher = better risk-adjusted performance)</li>
+                  <li>
+                    • <strong>Sharpe-like (strategy comparison JSON):</strong> Mean ÷ standard deviation of portfolio changes between
+                    trades — <strong>not</strong> annualized textbook Sharpe. For rankings, treat as a rough risk-adjusted score.
+                  </li>
                   <li>• <strong>Outperformance:</strong> Risk-based strategy return minus DCA return</li>
                   <li>• <strong>Total Return:</strong> Cumulative percentage gain over entire period</li>
                 </ul>
