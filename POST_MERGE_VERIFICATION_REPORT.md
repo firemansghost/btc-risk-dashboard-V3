@@ -117,19 +117,9 @@ Verify in build logs:
 - [ ] Verify latest run on `main` branch passed (after merge commit `821c5d3`)
 - [ ] Confirm workflow is not blocking merges
 
-#### Experimental.turbo Deprecation
-- **Location**: `next.config.ts:121`
-- **Current**: `experimental.turbo`
-- **Status**: ⚠️ Deprecation warning expected (non-blocking)
-- **TODO**: Create separate PR to migrate to `turbopack` key:
-  ```typescript
-  // Change from:
-  experimental: {
-    turbo: { ... }
-  }
-  // To:
-  turbopack: { ... }
-  ```
+#### Next config / Turbopack (resolved on `main`)
+- **`experimental.turbo`** was migrated to top-level **`turbopack`** (SVG rules).
+- **Custom `webpack`** block and **`experimental.optimizePackageImports`** were **removed** as the production baseline after Vercel instability; see **`docs/DECISIONS.md`**.
 
 ---
 
@@ -149,8 +139,8 @@ Verify in build logs:
 4. **CI Workflow**: Verify bundle-size tracking passed on `main`
 
 ### 📝 Follow-up Items
-- [ ] **TODO**: Migrate `experimental.turbo` → `turbopack` in `next.config.ts` (separate PR)
-- [ ] **Optional**: Performance pass for bundle size optimization (separate PR)
+- [x] ~~Migrate `experimental.turbo` → `turbopack`~~ (done)
+- [ ] **Optional**: Performance pass for bundle size optimization (separate PR; measure before reintroducing experimental webpack/import tweaks)
 
 ---
 
@@ -158,7 +148,7 @@ Verify in build logs:
 
 1. **Immediate**: Check Vercel Production deployment build logs and URL
 2. **Within 24h**: Complete route smoke test on Production
-3. **Future PR**: Migrate `experimental.turbo` deprecation
+3. ~~**Future PR**: Migrate `experimental.turbo` deprecation~~ (done; see `docs/DECISIONS.md` for current baseline)
 
 ---
 

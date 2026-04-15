@@ -352,6 +352,13 @@ Both read from `public/data/history.csv`, but **methodologies differ**. Headline
 
 **⚠️ GUARD:** Do not upgrade major versions without testing. Next.js 15 uses App Router exclusively.
 
+### Next.js config & Vercel deploy (2026 baseline)
+- **Preferred baseline:** **`next.config.ts` uses stock-leaning Next behavior** — no custom `webpack` `splitChunks` / `cacheGroups`, no `experimental.optimizePackageImports`. Those were removed after **Vercel deployment instability** (misleading errors such as missing lambda for `/methodology` while the route built as static; root cause was **config/output packaging**, not the page).
+- **Operational posture:** Prefer **stable, minimal** Next config. Reintroduce custom bundling only with a **measured** reason and preview validation.
+- **Install:** Use **`npm ci`** on Vercel (deterministic install vs `package-lock.json`); `packageManager` is pinned in `package.json`.
+- **`vercel.json`:** **Removed** from the repo to avoid duplicate header/route rules overlapping `next.config.ts`; rely on Next headers + Vercel project settings if needed.
+- **Decision log:** `docs/DECISIONS.md` (entry: simplified Next config baseline).
+
 ---
 
 ## 4. Mobile Responsive Constraints

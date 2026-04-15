@@ -1,9 +1,11 @@
 import type { NextConfig } from "next";
 
 /**
- * Temporary deploy isolation: stock webpack (no custom optimization/splitChunks).
- * Revert or refine if Vercel route/lambda packaging issues are resolved.
- * @see https://nextjs.org/docs/app/api-reference/config/next-config-js/webpack — custom webpack is unsupported for semver.
+ * Production baseline: stock Next/webpack behavior (no custom splitChunks / cacheGroups / optimization overrides).
+ * Aggressive custom webpack + experimental.optimizePackageImports were removed after Vercel deploy instability
+ * (route/lambda packaging errors; `/methodology` was a reported symptom, not a page bug). Reintroduce custom
+ * bundling only with a measured need and isolated validation.
+ * @see https://nextjs.org/docs/app/api-reference/config/next-config-js/webpack
  */
 
 // Bundle analyzer configuration

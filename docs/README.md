@@ -20,6 +20,7 @@ This documentation provides comprehensive information about the Bitcoin Risk Das
 - **[ETL Process](../scripts/etl/README.md)** - Extract, Transform, Load process
 - **[API Documentation](../app/api/README.md)** - API endpoints and usage
 - **[Configuration Guide](../config/README.md)** - Configuration management
+- **Deployment (Vercel / Next.js):** Production uses a **simplified `next.config.ts`** (no aggressive custom webpack bundling). See **[`docs/DECISIONS.md`](DECISIONS.md)** and the **Next.js config & Vercel deploy** subsection in **[`REPO_REONBOARD.md`](../REPO_REONBOARD.md)** for the current baseline and why it was chosen.
 
 ### 📈 Factor Documentation
 - **[Trend & Valuation Factor](../scripts/etl/factors/trendValuation.mjs)** - BMSB, Mayer Multiple, RSI

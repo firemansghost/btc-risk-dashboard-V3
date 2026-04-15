@@ -1,6 +1,8 @@
 # Performance Optimization Guide
 
-This document outlines the comprehensive performance optimization strategy implemented for the Bitcoin Risk Dashboard.
+This document outlines performance optimization approaches and reference patterns for the Bitcoin Risk Dashboard.
+
+**Production note (2026):** The committed **`next.config.ts`** intentionally avoids **custom `webpack`** `splitChunks` / heavy optimization hooks (stable Vercel deploys). Sections that show webpack configuration are **illustrative** unless explicitly marked as active—see **`docs/DECISIONS.md`** for the current baseline.
 
 ## 📊 Overview
 

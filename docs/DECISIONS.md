@@ -2,6 +2,18 @@
 
 Key technical choices and rationale for the Bitcoin Risk Dashboard.
 
+## 2026-04-15 (continuity): Keep simplified Next.js config as production baseline
+
+**Decision:** Treat **`next.config.ts` without custom `webpack` customization** and **without `experimental.optimizePackageImports`** as the **preferred production baseline** for GhostGauge on Vercel.
+
+**Reason:** Deploy instability (including `Unable to find lambda for route: …` while `/methodology` appeared static in build output) was traced to the **build/config layer**—heavy manual `splitChunks` / `cacheGroups`, optimization overrides, and experimental import optimization—not to Methodology page logic. A stock-leaning config restored stable deployments.
+
+**Implication:** Keep Next/Vercel configuration **boring and stable**. Do **not** restore aggressive webpack tuning by default. If bundle metrics justify it later, add **narrow**, **measured** changes and validate on Vercel before merging.
+
+**Related:** `turbopack` SVG rule, `headers`, `images`, `compiler.removeConsole`, and `@next/bundle-analyzer` wrapper remain. **`vercel.json`** was removed earlier to avoid overlapping route/header rules with Next; use project settings or `next.config` for any future edge cases.
+
+---
+
 ## 2026-04-15: GhostGauge strategy backtesting — SSOT target state (design only)
 
 **Status:** Target-state **design** decision. **Not** implemented ETL/UI/workflow; see spec for scope.

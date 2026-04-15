@@ -4,6 +4,8 @@
 **Ground truth:** Repo `firemansghost/btc-risk-dashboard-V3`; regenerate comparison via `npm run etl:strategy-comparison`. **CI:** `.github/workflows/weekly-backtesting.yml` runs the same command weekly (after `etl:backtesting`) and commits `public/data/dca_vs_risk_comparison.json` when it changes.  
 **Out of scope:** Official G-Score **composite** math — backtesting remains downstream of `history.csv`.
 
+**Web deploy note:** Strategy Analysis pages are served by the same Next app as the rest of GhostGauge. Production intentionally uses a **stock-leaning `next.config.ts`** (see `docs/DECISIONS.md`) so deploy output stays stable; this doc does not depend on custom webpack optimization.
+
 ---
 
 ## 1. Current-state summary

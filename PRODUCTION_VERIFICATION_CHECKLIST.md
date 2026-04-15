@@ -112,7 +112,7 @@ Ranked by impact (high → low):
 
 4. **Split Recharts Imports**
    - Import only needed chart components (e.g., `Line`, `Bar`) instead of full `recharts`
-   - Use `experimental.optimizePackageImports` (already configured)
+   - **`experimental.optimizePackageImports` was removed** from `next.config.ts` (2026 deploy baseline); prefer tree-shakable imports and measure before re-adding experimental flags
    - **Impact**: Medium (saves 30-50KB)
 
 5. **Remove Unused Polyfills**
