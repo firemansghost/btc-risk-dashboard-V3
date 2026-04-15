@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { createRobustCardImport, createRobustModalImport } from '@/lib/robustDynamicImport';
+import HowToFollowStrategies from '../components/HowToFollowStrategies';
 
 // Robust dynamic imports with chunk error handling
 const StrategyComparisonCard = createRobustCardImport(
@@ -243,6 +244,9 @@ export default function StrategyAnalysisPage() {
             <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-64"></div>}>
               <StrategyComparisonCard />
             </Suspense>
+
+            {/* How each strategy works in practice (matches comparison artifact generator) */}
+            <HowToFollowStrategies />
           </div>
         )}
 
