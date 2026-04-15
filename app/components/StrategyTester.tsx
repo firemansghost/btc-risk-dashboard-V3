@@ -94,6 +94,9 @@ export default function StrategyTester({}: StrategyTesterProps) {
 
   return (
     <div className="space-y-8">
+      <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+        <strong>Illustrative preview.</strong> “Run Strategy Test” applies a short client-side delay and returns <strong>fixed mock numbers</strong> shaped like the published snapshot — not a new backtest. Sliders do not recompute real P&amp;L.
+      </div>
       {/* Test Parameters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4"><strong>Bitcoin G-Score</strong> Strategy Test Parameters</h3>
@@ -251,41 +254,12 @@ export default function StrategyTester({}: StrategyTesterProps) {
             </div>
           </div>
 
-          {/* Insights */}
+          {/* Notes — mock output */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h4 className="text-lg font-semibold text-blue-900 mb-4">💡 <strong>Bitcoin G-Score</strong> Key Insights</h4>
-            <div className="space-y-3">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-blue-800">
-                    <strong>Value Averaging</strong> consistently outperforms other strategies with the highest returns and lowest risk.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-blue-800">
-                    <strong>Bitcoin G-Score</strong> Risk-Based DCA provides better risk-adjusted returns than regular DCA while maintaining lower volatility.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-blue-800">
-                    <strong>Regular DCA</strong> provides steady, predictable returns but may miss opportunities in volatile markets.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <h4 className="text-lg font-semibold text-blue-900 mb-2">About these rows</h4>
+            <p className="text-sm text-blue-900">
+              Rankings and percentages above mirror the <strong>historical comparison artifact</strong> for demo layout only. They do <strong>not</strong> update when you change inputs. For defensible numbers, use <strong>Strategy Comparison</strong> on the Overview tab or the weekly <strong>Backtesting Status</strong> metrics.
+            </p>
           </div>
         </div>
       )}

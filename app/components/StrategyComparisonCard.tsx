@@ -125,6 +125,9 @@ export default function StrategyComparisonCard() {
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200">
+        <p className="text-xs text-gray-500 mb-2">
+          Source: <code className="bg-gray-100 px-1 rounded">/data/dca_vs_risk_comparison.json</code> — one historical DCA vs risk-based vs value averaging snapshot. Different window and methodology than <strong>Backtesting Status</strong> (weekly report).
+        </p>
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">Strategy Comparison</h3>
           <div className="flex space-x-2">

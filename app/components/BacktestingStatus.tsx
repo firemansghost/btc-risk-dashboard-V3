@@ -164,6 +164,9 @@ export default function BacktestingStatus() {
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4">
+      <p className="text-xs text-gray-500 mb-3">
+        Weekly pipeline summary from <code className="bg-gray-100 px-1 rounded text-[11px]">/data/weekly_backtesting_report.json</code>. Headline risk-based vs DCA returns here differ from the Strategy Comparison snapshot (different run, window, and metrics).
+      </p>
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-medium text-gray-900">Backtesting Status</h3>
         <div className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(backtestingData.lastUpdated)}`}>

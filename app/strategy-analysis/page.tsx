@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { createRobustCardImport, createRobustModalImport } from '@/lib/robustDynamicImport';
 
 // Robust dynamic imports with chunk error handling
@@ -39,8 +39,59 @@ const BacktestingDisclosures = createRobustCardImport(
   'backtesting-disclosures'
 );
 
+type ComparisonJson = {
+  strategies?: Record<
+    string,
+    { trades?: { date: string }[]; metrics?: { totalReturn: number; maxDrawdown: number; sharpeRatio: number; totalTrades: number } }
+  >;
+};
+
+function getComparisonSnapshotMeta(data: ComparisonJson | null) {
+  if (!data?.strategies) return null;
+  let min: string | null = null;
+  let max: string | null = null;
+  for (const st of Object.values(data.strategies)) {
+    for (const t of st.trades || []) {
+      if (!min || t.date < min) min = t.date;
+      if (!max || t.date > max) max = t.date;
+    }
+  }
+  const va = data.strategies['Value Averaging'];
+  const m = va?.metrics;
+  if (!min || !max || !m) return null;
+  const start = new Date(min + 'T12:00:00');
+  const end = new Date(max + 'T12:00:00');
+  const days = Math.max(1, Math.round((end.getTime() - start.getTime()) / 86400000));
+  return {
+    periodLabel: `${start.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} – ${end.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`,
+    days,
+    vaReturn: m.totalReturn,
+    vaSharpe: m.sharpeRatio,
+    vaMaxDd: m.maxDrawdown,
+    vaTrades: m.totalTrades,
+  };
+}
+
 export default function StrategyAnalysisPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'tester' | 'insights' | 'risk-bands' | 'glossary'>('overview');
+  const [comparisonSnap, setComparisonSnap] = useState<ComparisonJson | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/data/dca_vs_risk_comparison.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled && data) setComparisonSnap(data);
+      })
+      .catch(() => {
+        if (!cancelled) setComparisonSnap(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const snapMeta = getComparisonSnapshotMeta(comparisonSnap);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -52,7 +103,7 @@ export default function StrategyAnalysisPage() {
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Bitcoin G-Score Strategy Analysis</h1>
                 <p className="mt-2 text-base sm:text-lg text-gray-600">
-                  Comprehensive backtesting results using the <strong>Bitcoin G-Score</strong> and interactive strategy testing tools
+                  Strategy snapshots and weekly pipeline summaries — sources differ by section; see labels on each card.
                 </p>
               </div>
               <div className="flex space-x-4">
@@ -130,29 +181,50 @@ export default function StrategyAnalysisPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'overview' && (
           <div className="space-y-8">
-            {/* Hero Section */}
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+              <strong className="font-semibold">Two different sources on this page:</strong>{' '}
+              the <strong>Strategy Comparison</strong> snapshot (<code className="text-xs bg-amber-100 px-1 rounded">dca_vs_risk_comparison.json</code>) uses one
+              backtest design; the <strong>Backtesting Status</strong> card uses the weekly pipeline (
+              <code className="text-xs bg-amber-100 px-1 rounded">weekly_backtesting_report.json</code>
+              ). Headline percentages are <strong>not</strong> interchangeable — compare methodology before drawing conclusions.
+            </div>
+
+            {/* Hero Section — metrics from strategy comparison snapshot only */}
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-8 text-white">
-              <h2 className="text-2xl font-bold mb-4">🚀 <strong>Bitcoin G-Score</strong> Strategy Analysis Results</h2>
+              <p className="text-xs font-medium uppercase tracking-wide opacity-90 mb-2">
+                Strategy comparison snapshot · <code className="text-[11px]">/data/dca_vs_risk_comparison.json</code>
+              </p>
+              <h2 className="text-2xl font-bold mb-4">🚀 Snapshot: DCA vs risk-based vs value averaging</h2>
               <p className="text-lg mb-4">
-                Our comprehensive backtesting using the <strong>Bitcoin G-Score</strong> reveals that <strong>Value Averaging</strong> is the clear winner 
-                with <strong>224.89% returns</strong> and <strong>0% maximum drawdown from peak</strong>.
+                In this <strong>fixed historical run</strong>, <strong>Value Averaging</strong> had the highest reported return. It also deployed{' '}
+                <strong>far less capital</strong> and <strong>fewer trades</strong> than full-schedule DCA — so ranks are <strong>not</strong> apples-to-apples with
+                equal monthly investment.
               </p>
               <p className="text-sm opacity-90 mb-6">
-                <strong>Analysis Period:</strong> August 2023 - September 2025 (731 days) • <strong>Market:</strong> Bull market with high volatility
+                {snapMeta ? (
+                  <>
+                    <strong>Trade window in snapshot:</strong> {snapMeta.periodLabel} ({snapMeta.days} days) ·{' '}
+                    <strong>Value Averaging trades:</strong> {snapMeta.vaTrades}
+                  </>
+                ) : (
+                  <span>Loading snapshot metadata…</span>
+                )}
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white/20 rounded-lg p-4">
-                  <div className="text-3xl font-bold">224.89%</div>
-                  <div className="text-sm opacity-90">Value Averaging Return</div>
+                  <div className="text-3xl font-bold">
+                    {snapMeta ? `${snapMeta.vaReturn.toFixed(2)}%` : '—'}
+                  </div>
+                  <div className="text-sm opacity-90">Value Averaging return (snapshot)</div>
                 </div>
                 <div className="bg-white/20 rounded-lg p-4">
-                  <div className="text-3xl font-bold">1.57</div>
-                  <div className="text-sm opacity-90">Sharpe Ratio</div>
+                  <div className="text-3xl font-bold">{snapMeta ? snapMeta.vaSharpe.toFixed(2) : '—'}</div>
+                  <div className="text-sm opacity-90">Sharpe (same snapshot)</div>
                 </div>
                 <div className="bg-white/20 rounded-lg p-4">
-                  <div className="text-3xl font-bold">0%</div>
-                  <div className="text-sm opacity-90">Max Drawdown*</div>
-                  <div className="text-xs opacity-75 mt-1">*From peak value</div>
+                  <div className="text-3xl font-bold">{snapMeta ? `${snapMeta.vaMaxDd.toFixed(2)}%` : '—'}</div>
+                  <div className="text-sm opacity-90">Max drawdown (snapshot metric)</div>
+                  <div className="text-xs opacity-75 mt-1">0% reflects this artifact’s VA path; not a guarantee of future risk.</div>
                 </div>
               </div>
             </div>
@@ -176,10 +248,14 @@ export default function StrategyAnalysisPage() {
 
         {activeTab === 'tester' && (
           <div className="space-y-8">
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 text-left max-w-3xl mx-auto">
+              <strong>Illustrative / preview only.</strong> Numbers below are <strong>not</strong> live backtests — they reuse rough, mocked totals for layout demo.
+              Use the Strategy Comparison tab for artifact-backed snapshot returns.
+            </div>
             <div className="text-center">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">🧪 Interactive <strong>Bitcoin G-Score</strong> Strategy Tester</h2>
               <p className="text-lg text-gray-600">
-                Test different investment strategies powered by the <strong>Bitcoin G-Score</strong> with your own parameters and see projected returns
+                Adjust parameters for a <strong>preview</strong> layout — not a substitute for the published comparison JSON or weekly report.
               </p>
             </div>
             <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>}>
@@ -193,7 +269,7 @@ export default function StrategyAnalysisPage() {
             <div className="text-center">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">💡 <strong>Bitcoin G-Score</strong> Key Insights & Findings</h2>
               <p className="text-lg text-gray-600">
-                Discover the most important findings from our comprehensive <strong>Bitcoin G-Score</strong> backtesting analysis
+                Artifact-backed summaries from the weekly report and strategy comparison file — not a single unified model.
               </p>
             </div>
             <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>}>
@@ -213,7 +289,7 @@ export default function StrategyAnalysisPage() {
             <div className="text-center">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">🎯 <strong>Bitcoin G-Score</strong> Risk Band Effectiveness</h2>
               <p className="text-lg text-gray-600">
-                Analysis of how different <strong>Bitcoin G-Score</strong> risk bands perform in different market conditions
+                Per-band stats from the weekly backtesting report (same source as Backtesting Status).
               </p>
             </div>
             <Suspense fallback={<div className="animate-pulse bg-gray-200 rounded-lg h-32"></div>}>

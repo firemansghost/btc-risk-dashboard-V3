@@ -1,266 +1,184 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+
+type WeeklyReport = {
+  lastUpdated: string;
+  dataRange: { startDate: string; endDate: string; totalDays: number };
+  summary: {
+    totalDataPoints: number;
+    riskBasedReturn: number;
+    dcaReturn: number;
+    outperformance: number;
+  };
+  bandPerformance?: Record<
+    string,
+    {
+      performance: {
+        signalCount: number;
+        winRate: number;
+        avgReturn30d: number;
+        bestReturn: number;
+        worstReturn: number;
+      };
+    }
+  >;
+};
+
+type DcaComparison = {
+  strategies?: Record<string, { totalReturn: number; metrics?: { totalReturn: number; totalTrades: number } }>;
+};
 
 export default function BacktestingInsights() {
-  const insights = [
-    {
-      category: 'Strategy Performance',
-      title: 'Value Averaging is the Clear Winner',
-      description: 'Value Averaging achieved 224.89% returns with 0% maximum drawdown, making it the most efficient strategy.',
-      metrics: {
-        return: '224.89%',
-        sharpe: '1.57',
-        drawdown: '0%',
-        trades: '6'
-      },
-      icon: '🏆',
-      color: 'green'
-    },
-    {
-      category: 'Risk Management',
-      title: 'Bitcoin G-Score Risk-Based Strategies Work',
-      description: 'Bitcoin G-Score risk-based DCA outperformed regular DCA by 5.94% while maintaining better risk-adjusted returns.',
-      metrics: {
-        outperformance: '5.94%',
-        sharpe: '0.77',
-        drawdown: '11.37%',
-        efficiency: '94%'
-      },
-      icon: '🎯',
-      color: 'blue'
-    },
-    {
-      category: 'Risk Bands',
-      title: 'Bitcoin G-Score Buying Signals Show Higher Returns',
-      description: 'Bitcoin G-Score Aggressive Buying signals had 69.6% win rate with 9.18% average 30-day returns, validating our risk bands.',
-      metrics: {
-        winRate: '69.6%',
-        avgReturn: '9.18%',
-        bestReturn: '47.27%',
-        worstReturn: '-13.44%'
-      },
-      icon: '📈',
-      color: 'purple'
-    },
-    {
-      category: 'Market Timing',
-      title: 'Bitcoin G-Score Strategy May Be Too Conservative',
-      description: 'Bitcoin G-Score risk-based strategy underperformed buy-and-hold by 77.93%, suggesting we may be missing bull market opportunities.',
-      metrics: {
-        underperformance: '77.93%',
-        buyAndHold: '314.92%',
-        riskBased: '236.99%',
-        frequency: '10 trades/year'
-      },
-      icon: '⚠️',
-      color: 'yellow'
-    }
-  ];
+  const [weekly, setWeekly] = useState<WeeklyReport | null>(null);
+  const [dca, setDca] = useState<DcaComparison | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const getColorClasses = (color: string) => {
-    switch (color) {
-      case 'green':
-        return 'bg-green-50 border-green-200 text-green-800';
-      case 'blue':
-        return 'bg-blue-50 border-blue-200 text-blue-800';
-      case 'purple':
-        return 'bg-purple-50 border-purple-200 text-purple-800';
-      case 'yellow':
-        return 'bg-yellow-50 border-yellow-200 text-yellow-800';
-      default:
-        return 'bg-gray-50 border-gray-200 text-gray-800';
-    }
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      fetch('/data/weekly_backtesting_report.json').then((r) => (r.ok ? r.json() : null)),
+      fetch('/data/dca_vs_risk_comparison.json').then((r) => (r.ok ? r.json() : null)),
+    ])
+      .then(([w, d]) => {
+        if (!cancelled) {
+          setWeekly(w);
+          setDca(d);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setWeekly(null);
+          setDca(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const dcaPct = (key: string) => {
+    const s = dca?.strategies?.[key];
+    if (!s) return null;
+    const pct = s.metrics?.totalReturn ?? (typeof s.totalReturn === 'number' && s.totalReturn <= 2 ? s.totalReturn * 100 : s.totalReturn);
+    return typeof pct === 'number' ? pct : null;
   };
 
-  const getMetricColor = (color: string) => {
-    switch (color) {
-      case 'green':
-        return 'text-green-600';
-      case 'blue':
-        return 'text-blue-600';
-      case 'purple':
-        return 'text-purple-600';
-      case 'yellow':
-        return 'text-yellow-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
+  const bandRows = weekly?.bandPerformance
+    ? Object.entries(weekly.bandPerformance).sort((a, b) => a[0].localeCompare(b[0]))
+    : [];
+
+  if (loading) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-lg p-8 text-center text-gray-500 text-sm">Loading insights from published artifacts…</div>
+    );
+  }
 
   return (
     <div className="space-y-8">
-      {/* Hero Section */}
+      <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-950">
+        Figures below are read from <strong>two artifacts</strong>: the weekly pipeline report and the strategy comparison snapshot. They use{' '}
+        <strong>different windows and definitions</strong> — do not merge them into one “official” number without reading each source.
+      </div>
+
       <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-lg p-8 text-white">
-        <h2 className="text-2xl font-bold mb-4">🔍 <strong>Bitcoin G-Score</strong> Key Backtesting Insights</h2>
-        <p className="text-lg mb-6">
-          Our comprehensive <strong>Bitcoin G-Score</strong> analysis of 731 data points reveals powerful insights about Bitcoin investment strategies.
+        <h2 className="text-2xl font-bold mb-2">Key insights (artifact-backed)</h2>
+        <p className="text-sm opacity-90 mb-4">
+          Weekly report: <code className="text-xs bg-white/20 px-1 rounded">weekly_backtesting_report.json</code> · Snapshot:{' '}
+          <code className="text-xs bg-white/20 px-1 rounded">dca_vs_risk_comparison.json</code>
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white/20 rounded-lg p-4">
-            <div className="text-2xl font-bold">731</div>
-            <div className="text-sm opacity-90">Data Points</div>
+        {weekly && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-white/20 rounded-lg p-4">
+              <div className="text-2xl font-bold">{weekly.summary.totalDataPoints.toLocaleString()}</div>
+              <div className="text-sm opacity-90">Data points (weekly)</div>
+            </div>
+            <div className="bg-white/20 rounded-lg p-4">
+              <div className="text-2xl font-bold">{weekly.dataRange.totalDays}</div>
+              <div className="text-sm opacity-90">Days in weekly window</div>
+            </div>
+            <div className="bg-white/20 rounded-lg p-4">
+              <div className="text-2xl font-bold">{weekly.summary.riskBasedReturn.toFixed(2)}%</div>
+              <div className="text-sm opacity-90">Risk-based return (weekly summary)</div>
+            </div>
+            <div className="bg-white/20 rounded-lg p-4">
+              <div className="text-2xl font-bold">{weekly.summary.dcaReturn.toFixed(2)}%</div>
+              <div className="text-sm opacity-90">DCA return (weekly summary)</div>
+            </div>
           </div>
-          <div className="bg-white/20 rounded-lg p-4">
-            <div className="text-2xl font-bold">2+ Years</div>
-            <div className="text-sm opacity-90">Analysis Period</div>
-          </div>
-          <div className="bg-white/20 rounded-lg p-4">
-            <div className="text-2xl font-bold">3</div>
-            <div className="text-sm opacity-90">Strategies Tested</div>
-          </div>
-          <div className="bg-white/20 rounded-lg p-4">
-            <div className="text-2xl font-bold">224.89%</div>
-            <div className="text-sm opacity-90">Best Return</div>
-          </div>
-        </div>
+        )}
+        {weekly && (
+          <p className="text-xs opacity-85 mt-4">
+            Weekly range: {weekly.dataRange.startDate} → {weekly.dataRange.endDate} · Last updated: {weekly.lastUpdated}
+          </p>
+        )}
       </div>
 
-      {/* Insights Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {insights.map((insight, index) => (
-          <div key={index} className={`rounded-lg border-2 p-6 ${getColorClasses(insight.color)}`}>
-            <div className="flex items-start space-x-4">
-              <div className="text-3xl">{insight.icon}</div>
-              <div className="flex-1">
-                <div className="flex items-center space-x-2 mb-2">
-                  <span className="text-sm font-medium text-gray-600">{insight.category}</span>
+      {dca?.strategies && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Strategy comparison snapshot (different methodology)</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Totals from <code className="text-xs bg-gray-100 px-1 rounded">dca_vs_risk_comparison.json</code>. Value averaging uses less capital and fewer trades than full DCA — higher % return does not mean “more dollars earned” vs equal monthly DCA.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center border border-gray-100 rounded-lg p-4">
+              <div className="text-3xl font-bold text-green-600 mb-1">{dcaPct('Value Averaging')?.toFixed(2) ?? '—'}%</div>
+              <div className="text-sm text-gray-700">Value Averaging</div>
+              <div className="text-xs text-gray-500 mt-1">Highest % in this snapshot</div>
+            </div>
+            <div className="text-center border border-gray-100 rounded-lg p-4">
+              <div className="text-3xl font-bold text-blue-600 mb-1">{dcaPct('Risk-Based DCA')?.toFixed(2) ?? '—'}%</div>
+              <div className="text-sm text-gray-700">Risk-Based DCA</div>
+              <div className="text-xs text-gray-500 mt-1">vs regular DCA in same file</div>
+            </div>
+            <div className="text-center border border-gray-100 rounded-lg p-4">
+              <div className="text-3xl font-bold text-gray-600 mb-1">{dcaPct('DCA')?.toFixed(2) ?? '—'}%</div>
+              <div className="text-sm text-gray-700">Regular DCA</div>
+              <div className="text-xs text-gray-500 mt-1">Baseline in snapshot</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {weekly && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Risk bands (from weekly report)</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Forward returns and win rates below come from <strong>weekly_backtesting_report.json</strong> only. Low or zero signal counts mean estimates are noisy or empty.
+          </p>
+          <div className="space-y-2">
+            {bandRows.map(([name, row]) => {
+              const p = row.performance;
+              const hasSignals = p.signalCount > 0;
+              return (
+                <div key={name} className="flex flex-wrap items-center justify-between gap-2 p-3 bg-gray-50 rounded-lg text-sm">
+                  <span className="font-medium text-gray-900">{name}</span>
+                  <span className="text-gray-600">
+                    Signals: {p.signalCount}
+                    {hasSignals ? (
+                      <>
+                        {' '}
+                        · Win rate: {p.winRate.toFixed(1)}% · Avg 30d: {p.avgReturn30d.toFixed(2)}%
+                      </>
+                    ) : (
+                      <span className="text-amber-700"> · No signals in window — stats not meaningful</span>
+                    )}
+                  </span>
                 </div>
-                <h3 className="text-lg font-semibold mb-3">{insight.title}</h3>
-                <p className="text-sm mb-4">{insight.description}</p>
-                
-                {/* Metrics */}
-                <div className="grid grid-cols-2 gap-3">
-                  {Object.entries(insight.metrics).map(([key, value]) => (
-                    <div key={key} className="bg-white/50 rounded p-2">
-                      <div className="text-xs text-gray-600 capitalize">
-                        {key.replace(/([A-Z])/g, ' $1').trim()}
-                      </div>
-                      <div className={`text-sm font-semibold ${getMetricColor(insight.color)}`}>
-                        {value}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Strategy Performance Summary */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">📊 Strategy Performance Summary</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-green-600 mb-2">224.89%</div>
-            <div className="text-sm text-gray-600 mb-1">Value Averaging</div>
-            <div className="text-xs text-gray-500">Best overall performance</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600 mb-2">88.18%</div>
-            <div className="text-sm text-gray-600 mb-1">Risk-Based DCA</div>
-            <div className="text-xs text-gray-500">5.94% better than DCA</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-gray-600 mb-2">82.24%</div>
-            <div className="text-sm text-gray-600 mb-1">Regular DCA</div>
-            <div className="text-xs text-gray-500">Baseline performance</div>
+              );
+            })}
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Risk Band Effectiveness */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">🎯 Risk Band Effectiveness</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
-            <div>
-              <div className="font-medium text-green-900">Aggressive Buying</div>
-              <div className="text-sm text-green-700">Best performing band</div>
-            </div>
-            <div className="text-right">
-              <div className="text-lg font-bold text-green-600">69.6%</div>
-              <div className="text-sm text-green-600">Win Rate</div>
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
-            <div>
-              <div className="font-medium text-green-900">Regular DCA Buying</div>
-              <div className="text-sm text-green-700">Steady performance</div>
-            </div>
-            <div className="text-right">
-              <div className="text-lg font-bold text-green-600">62.1%</div>
-              <div className="text-sm text-green-600">Win Rate</div>
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
-            <div>
-              <div className="font-medium text-yellow-900">Moderate Buying</div>
-              <div className="text-sm text-yellow-700">Reducing position size</div>
-            </div>
-            <div className="text-right">
-              <div className="text-lg font-bold text-yellow-600">64.6%</div>
-              <div className="text-sm text-yellow-600">Win Rate</div>
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg">
-            <div>
-              <div className="font-medium text-orange-900">Hold & Wait</div>
-              <div className="text-sm text-orange-700">Hold core; buy dips selectively.</div>
-            </div>
-            <div className="text-right">
-              <div className="text-lg font-bold text-orange-600">65.6%</div>
-              <div className="text-sm text-orange-600">Win Rate</div>
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
-            <div>
-              <div className="font-medium text-red-900">Reduce Risk</div>
-              <div className="text-sm text-red-700">Consider taking profits</div>
-            </div>
-            <div className="text-right">
-              <div className="text-lg font-bold text-red-600">65.6%</div>
-              <div className="text-sm text-red-600">Win Rate</div>
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
-            <div>
-              <div className="font-medium text-red-900">High Risk</div>
-              <div className="text-sm text-red-700">Significant risk of correction</div>
-            </div>
-            <div className="text-right">
-              <div className="text-lg font-bold text-red-600">65.6%</div>
-              <div className="text-sm text-red-600">Win Rate</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recommendations */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg p-8 text-white">
-        <h3 className="text-xl font-bold mb-4">💡 Recommendations</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 className="font-semibold mb-2">For Conservative Investors</h4>
-            <p className="text-sm opacity-90">
-              Use Value Averaging strategy for maximum efficiency with minimal risk. 
-              Only invest when portfolio value is below target.
-            </p>
-          </div>
-          <div>
-            <h4 className="font-semibold mb-2">For Active Investors</h4>
-            <p className="text-sm opacity-90">
-              Implement Risk-Based DCA with G-Score signals. 
-              Increase allocation during low G-Scores, reduce during high G-Scores.
-            </p>
-          </div>
-        </div>
+      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg p-6 text-white">
+        <h3 className="text-lg font-bold mb-2">Takeaway</h3>
+        <p className="text-sm opacity-95">
+          Use the <strong>weekly</strong> card for pipeline risk-based vs DCA headline returns over the long CSV window; use the <strong>comparison JSON</strong> for the three-way strategy snapshot. Treat them as complementary views, not one fused scoreboard.
+        </p>
       </div>
     </div>
   );
