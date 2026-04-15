@@ -102,6 +102,12 @@ export default function RiskBasedDcaStanceCard({
 
       <div className="mt-5">
         <h3 className="text-sm font-semibold text-gray-900 mb-2">Official six-band multipliers (monthly SSOT)</h3>
+        <p className="text-sm text-gray-700 mb-3 leading-relaxed">
+          These multipliers apply to <strong className="font-semibold">new monthly contributions</strong> only.
+          They do not represent automatic sell rules for existing holdings. In this framework,{' '}
+          <strong className="font-semibold">Reduce Risk</strong> means sharply reduce new adds, while{' '}
+          <strong className="font-semibold">High Risk</strong> means pause new adds.
+        </p>
         <div className="overflow-x-auto rounded-lg border border-gray-200">
           <table className="w-full min-w-[280px] text-left text-sm">
             <thead>
@@ -147,8 +153,9 @@ export default function RiskBasedDcaStanceCard({
       </div>
 
       <p className="mt-4 text-xs text-gray-500 leading-relaxed">
-        This is a published framework for scaling contributions relative to a base plan. GhostGauge does not
-        execute trades, tailor advice to your situation, or replace your own judgment.
+        This is a published framework for sizing new contributions relative to a base plan — not for
+        trimming or selling existing positions. GhostGauge does not execute trades, tailor advice to your
+        situation, or replace your own judgment.
       </p>
 
       <p className="mt-3 text-sm">
