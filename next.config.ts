@@ -1,5 +1,11 @@
 import type { NextConfig } from "next";
 
+/**
+ * Temporary deploy isolation: stock webpack (no custom optimization/splitChunks).
+ * Revert or refine if Vercel route/lambda packaging issues are resolved.
+ * @see https://nextjs.org/docs/app/api-reference/config/next-config-js/webpack — custom webpack is unsupported for semver.
+ */
+
 // Bundle analyzer configuration
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
@@ -7,118 +13,6 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  
-  // Advanced webpack optimizations
-  webpack: (config, { dev, isServer }) => {
-    // Tree-shaking optimization
-    config.optimization = {
-      ...config.optimization,
-      sideEffects: false,
-      providedExports: true,
-      // Aggressive minification
-      minimize: true,
-      minimizer: [
-        ...config.optimization.minimizer,
-      ],
-    };
-
-    // Aggressive code splitting optimization
-    config.optimization.splitChunks = {
-      chunks: 'all',
-      minSize: 20000,
-      maxSize: 200000,
-      maxAsyncRequests: 30,
-      maxInitialRequests: 30,
-      cacheGroups: {
-        // React chunks - highest priority
-        react: {
-          test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-          name: 'react',
-          chunks: 'all',
-          priority: 40,
-          enforce: true,
-          maxSize: 100000,
-        },
-        // Next.js chunks
-        nextjs: {
-          test: /[\\/]node_modules[\\/]next[\\/]/,
-          name: 'nextjs',
-          chunks: 'all',
-          priority: 35,
-          enforce: true,
-          maxSize: 150000,
-        },
-        // Chart libraries
-        charts: {
-          test: /[\\/]node_modules[\\/](recharts|d3|chart\.js)[\\/]/,
-          name: 'charts',
-          chunks: 'all',
-          priority: 30,
-          enforce: true,
-          maxSize: 100000,
-        },
-        // UI libraries
-        ui: {
-          test: /[\\/]node_modules[\\/](tailwindcss|@tailwindcss)[\\/]/,
-          name: 'ui',
-          chunks: 'all',
-          priority: 25,
-          enforce: true,
-          maxSize: 50000,
-        },
-        // Other vendor chunks
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          chunks: 'all',
-          priority: 20,
-          enforce: true,
-          maxSize: 200000,
-        },
-        // Common chunks
-        common: {
-          name: 'common',
-          minChunks: 2,
-          chunks: 'all',
-          priority: 10,
-          reuseExistingChunk: true,
-          enforce: true,
-          maxSize: 100000,
-        },
-        // Default chunks
-        default: {
-          minChunks: 2,
-          priority: -20,
-          reuseExistingChunk: true,
-          enforce: true,
-          maxSize: 100000,
-        },
-      },
-    };
-
-    // Performance optimization
-    config.performance = {
-      hints: 'warning',
-      maxEntrypointSize: 300000,
-      maxAssetSize: 300000,
-      assetFilter: (assetFilename: string) => {
-        return !assetFilename.endsWith('.map');
-      },
-    };
-
-    // Module optimization
-    config.module.rules.push({
-      test: /\.js$/,
-      sideEffects: false,
-    });
-
-    return config;
-  },
-
-  // Experimental features for better performance
-  experimental: {
-    optimizePackageImports: ['recharts', 'react-icons'],
-  },
 
   // Turbopack (Next 15+): was experimental.turbo — see deprecation in build output
   turbopack: {
