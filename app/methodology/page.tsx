@@ -258,6 +258,15 @@ export default function MethodologyPage() {
           <p className="text-body mb-6">
             Risk bands provide context for interpreting G-Scores and help categorize market conditions.
           </p>
+          <p className="text-body mb-6">
+            To see how <strong className="font-semibold">today&apos;s</strong> score maps to the official{' '}
+            <strong className="font-semibold">monthly</strong> Risk-Based DCA contribution scaling used in Strategy
+            Analysis (not personalized advice), open{' '}
+            <a href="/#risk-based-dca-stance" className="text-link link-hover link-focus">
+              Today&apos;s official DCA stance
+            </a>{' '}
+            on the dashboard.
+          </p>
           
           {config?.bands ? (
             <div className="space-y-4">

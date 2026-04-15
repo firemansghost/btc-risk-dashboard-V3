@@ -25,6 +25,7 @@ import EtfPerformanceAnalysis from './EtfPerformanceAnalysis';
 import BtcGoldCard from './BtcGoldCard';
 import SatoshisPerDollarCard from './SatoshisPerDollarCard';
 import ScoreInsightsCard from './ScoreInsightsCard';
+import RiskBasedDcaStanceCard from './RiskBasedDcaStanceCard';
 import HistoryChart from './HistoryChart';
 import RadialGauge from './RadialGauge';
 import FactorDetailsDrawer from './FactorDetailsDrawer';
@@ -675,6 +676,23 @@ export default function RealDashboard() {
               <p className="text-sm text-gray-500 mt-2">
                 <a href="/methodology#btc-g-score" className="text-link link-hover link-focus">New here? What the G-Score means →</a> · <a href="/alerts" className="text-link link-hover link-focus">View Alerts →</a>
               </p>
+
+              <div className="mb-6">
+                <RiskBasedDcaStanceCard
+                  score={
+                    selectedModel !== 'official' && previewScore !== null
+                      ? previewScore
+                      : (latest?.composite_score ?? 0)
+                  }
+                  bandLabel={
+                    selectedModel !== 'official' && previewBand
+                      ? previewBand.label
+                      : (latest?.band?.label ?? '')
+                  }
+                  asOfUtc={latest?.as_of_utc}
+                  isPreview={selectedModel !== 'official'}
+                />
+              </div>
 
               {/* Score Insights Card - Right under main cards */}
               <div className="mb-6 lg:mb-8">

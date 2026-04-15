@@ -200,6 +200,14 @@ export default function StrategyAnalysisPage() {
               &quot;official&quot; headline return.
             </div>
 
+            <p className="text-sm text-gray-700">
+              For the same six-band multiplier table with{' '}
+              <a href="/#risk-based-dca-stance" className="text-blue-600 hover:text-blue-800 underline-offset-2 hover:underline">
+                today&apos;s headline G-Score and band
+              </a>
+              , see the dashboard.
+            </p>
+
             {/* Hero Section — metrics from strategy comparison snapshot only */}
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-8 text-white">
               <p className="text-xs font-medium uppercase tracking-wide opacity-90 mb-2">
