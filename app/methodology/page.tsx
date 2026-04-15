@@ -1,6 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import {
+  RISK_BASED_DCA_BAND_ORDER,
+  RISK_BASED_DCA_MULTIPLIERS,
+} from '@/lib/riskBasedDcaMultipliers';
+
+function formatOfficialDcaMultiplier(m: number): string {
+  if (m === 0) return '0×';
+  if (m === 1) return '1.0×';
+  return `${m}×`;
+}
 
 type Band = { key: string; label: string; range: [number, number]; color: string; recommendation: string };
 type Factor = { 
@@ -75,6 +85,7 @@ export default function MethodologyPage() {
           <a href="#overview" className="text-link link-hover link-focus">Overview</a>
           <a href="#g-score" className="text-link link-hover link-focus">BTC G-Score</a>
           <a href="#bands" className="text-link link-hover link-focus">Risk Bands</a>
+          <a href="#risk-based-dca-framework" className="text-link link-hover link-focus">DCA framework</a>
           <a href="#factors" className="text-link link-hover link-focus">Risk Factors</a>
           <a href="#weights" className="text-link link-hover link-focus">Weights</a>
         </nav>
@@ -317,6 +328,66 @@ export default function MethodologyPage() {
               </div>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Official monthly Risk-Based DCA: bands → contribution sizing (SSOT) */}
+      <section id="risk-based-dca-framework" className="section-spacing">
+        <h2 className="text-heading-2 mb-4">How the official monthly DCA framework uses these bands</h2>
+        <div className="card-elevated card-md">
+          <p className="text-body text-gray-600 mb-4">
+            The score bands above also drive GhostGauge&apos;s published <strong className="font-semibold">monthly</strong>{' '}
+            Risk-Based DCA framework — the same rules used in Strategy Analysis&apos;s official Baseline vs Risk-Based
+            comparison. The framework scales a <strong className="font-semibold">base</strong> planned monthly
+            contribution by a band multiplier. It is context for planning, not a buy/sell bot and not personalized
+            financial advice.
+          </p>
+          <p className="text-body text-gray-600 mb-4">
+            <strong className="font-semibold">These multipliers apply to new monthly contributions only.</strong> They
+            do not represent automatic sell or trim rules for Bitcoin you already hold. In this framework,{' '}
+            <strong className="font-semibold">Reduce Risk</strong> means sharply reduce new adds;{' '}
+            <strong className="font-semibold">High Risk</strong> means pause new adds.
+          </p>
+
+          <h3 className="text-heading-3 mb-3">Official six-band multipliers (monthly SSOT)</h3>
+          <div className="overflow-x-auto rounded-lg border border-gray-200 mb-5">
+            <table className="w-full min-w-[280px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <th scope="col" className="px-3 py-2 font-medium text-gray-700">
+                    Band
+                  </th>
+                  <th scope="col" className="px-3 py-2 font-medium text-gray-700 text-right">
+                    Multiplier (vs base monthly contribution)
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {RISK_BASED_DCA_BAND_ORDER.map((label) => (
+                  <tr key={label} className="border-b border-gray-100 last:border-b-0">
+                    <td className="px-3 py-2 text-gray-800">{label}</td>
+                    <td className="px-3 py-2 text-right tabular-nums font-medium text-gray-900">
+                      {formatOfficialDcaMultiplier(RISK_BASED_DCA_MULTIPLIERS[label])}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="text-body text-gray-600 mb-4">
+            <span className="font-medium text-gray-800">Example (hypothetical, not a recommendation):</span> if your base
+            monthly contribution were <strong className="font-semibold tabular-nums">$1,000</strong>, the{' '}
+            <strong className="font-semibold">Hold &amp; Wait</strong> band (0.5×) would size that month&apos;s new
+            contribution at <strong className="font-semibold tabular-nums">$500</strong> under the published rules.
+          </p>
+
+          <p className="text-sm text-gray-500">
+            For <a href="/#risk-based-dca-stance" className="text-link link-hover link-focus">today&apos;s live band and stance</a>{' '}
+            on the dashboard, or{' '}
+            <a href="/strategy-analysis" className="text-link link-hover link-focus">Strategy Analysis</a> for the full
+            monthly comparison detail.
+          </p>
         </div>
       </section>
 
