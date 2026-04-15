@@ -54,7 +54,7 @@ export default function RiskBasedDcaStanceCard({
         id="risk-based-dca-stance-heading"
         className="text-lg sm:text-xl font-semibold text-gray-900 mb-2"
       >
-        {isPreview ? 'Preview: Risk-Based DCA mapping' : 'Today&apos;s official DCA stance'}
+        {isPreview ? 'Preview: Risk-Based DCA mapping' : "Today's official DCA stance"}
       </h2>
       <p className="text-sm text-gray-600 mb-4">
         How the current G-Score band maps to the published monthly Risk-Based DCA framework (contribution
@@ -79,7 +79,7 @@ export default function RiskBasedDcaStanceCard({
             </>
           ) : null}
           .{' '}
-          {isPreview ? 'This preview score maps to the' : 'Today&apos;s reading falls in the'}{' '}
+          {isPreview ? 'This preview score maps to the' : "Today's reading falls in the"}{' '}
           <strong className="font-semibold">{resolvedLabel}</strong> band.
         </p>
         <p>
@@ -92,7 +92,7 @@ export default function RiskBasedDcaStanceCard({
         <p className="text-gray-600">
           <span className="font-medium text-gray-700">Example only</span> (hypothetical, not a recommendation):
           if your base monthly amount were ${EXAMPLE_BASE_USD.toLocaleString('en-US')}, the framework would
-          size this period&apos;s contribution at{' '}
+          size this period's contribution at{' '}
           <strong className="font-semibold tabular-nums">
             ${exampleScaled.toLocaleString('en-US')}
           </strong>{' '}
