@@ -371,12 +371,19 @@ async function runPostComputeHealthCheck(factorResults, statusData) {
         });
         continue;
       }
-      
-      // Verify timestamp is within TTL (with grace window)
-      if (lastUpdated) {
+
+      // Calendar-aware factors (marketDependent and/or businessDaysOnly): getStalenessStatus /
+      // checkStaleness already applied TTL + weekend/last-business-day rules. Do not second-guess
+      // with a raw wall-clock age-vs-TTL gate (would fail e.g. etf_flows Friday data on Sunday).
+      const calendarSensitive =
+        stalenessConfig.marketDependent === true ||
+        stalenessConfig.businessDaysOnly === true;
+
+      // Strict wall-clock TTL re-check only for factors without calendar-aware staleness
+      if (lastUpdated && !calendarSensitive) {
         const graceMinutes = 5;
         const ttlMinutes = stalenessConfig.ttlHours * 60;
-        
+
         if (ageMinutes > ttlMinutes + graceMinutes) {
           failedFactors.push({
             key: factorKey,
