@@ -2,6 +2,18 @@
 
 Key technical choices and rationale for the Bitcoin Risk Dashboard.
 
+## 2026-04-19 (continuity): Daily ETL post-check defers to centralized freshness for calendar-sensitive factors
+
+**Decision / continuity:** `runPostComputeHealthCheck()` in `scripts/etl/compute.mjs` must **not** override centralized staleness for factors that are **calendar-sensitive** in SSOT staleness config (`market_dependent` or `business_days_only`) when the pipeline has already marked them **`fresh`** (e.g. `etf_flows` with **`fresh_weekend_data_from_friday`** on Sunday).
+
+**Context:** Sunday Daily ETL failed with a raw wall-clock **`age_exceeds_ttl`** gate while `etf_flows` was correctly **`fresh`** under weekend/business-day rules in **`stalenessUtils.mjs`**.
+
+**Implication:** Centralized freshness logic is the **source of truth** for those factors; avoid adding parallel stricter TTL checks that contradict `checkStaleness` / `getStalenessStatus` outcomes.
+
+**Scope:** Pipeline / freshness-alignment only—not a scoring or G-Score model change. **Node 20** Actions deprecation cleanup on touched ETL-related workflows landed in the same maintenance window.
+
+---
+
 ## 2026-04-15 (continuity): Keep simplified Next.js config as production baseline
 
 **Decision:** Treat **`next.config.ts` without custom `webpack` customization** and **without `experimental.optimizePackageImports`** as the **preferred production baseline** for GhostGauge on Vercel.

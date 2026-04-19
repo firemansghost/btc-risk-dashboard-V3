@@ -167,6 +167,18 @@ After repeated **Daily ETL** workflow failures from **transient FRED 500** respo
 
 These updates improve readability, mobile usability, and ETL resilience **without changing official score logic**.
 
+#### Daily ETL weekend freshness fix (2026-04-19)
+
+**Symptom:** Sunday **Daily ETL** could fail with `etf_flows` reporting **`age_exceeds_ttl (2d > 24h + 5min grace)`** in `runPostComputeHealthCheck()` even when centralized staleness had already classified the factor as **`fresh`** with **`fresh_weekend_data_from_friday`** (Friday ETF data acceptable on Sunday).
+
+**Root cause:** The post-check applied a **second, raw wall-clock TTL** test for every `fresh` factor, ignoring **weekend / business-day-aware** rules already applied in **`stalenessUtils.mjs`** (and SSOT staleness config).
+
+**Fix:** Post-check **defers** to centralized freshness for **calendar-sensitive** factors (`market_dependent` or `business_days_only` in staleness config): it no longer fails `fresh` on raw age alone. **Daily ETL** should not fail on weekends solely because ETF data last updated on Friday.
+
+**Practical implication:** Treat centralized staleness as the **source of truth** for calendar-sensitive freshness; do not add duplicate stricter gates that conflict with it.
+
+**Operational note:** This was an **ETL freshness-alignment** bug, not G-Score math, model weights, or scoring output semantics. **Node 20** GitHub Actions deprecation noise on **ETL-related workflows** was cleaned up in the same maintenance window (e.g. current `setup-node` usage in those workflows).
+
 ---
 
 ## 1. Repo Status & Sync
@@ -466,6 +478,6 @@ Both read from `public/data/history.csv`, but **methodologies differ**. Headline
 
 ---
 
-**Last Updated:** 2026-04-15 — added **Strategy Analysis — backtesting JSON artifacts (provenance)** under *Repo Map* (weekly vs comparison JSON generators and CI scope).  
-**Previously:** 2026-04-14 (checkpoint **2026-03-25** plus **2026-04-14 addendum**: Score Insights summary, mobile polish cross-ref, FRED/cache ETL resilience; sections 1–8 below retain historical detail from 2025-01-13 where not superseded)  
-**Status:** Trust repair and follow-ups per **Checkpoints**; **2026-04-14 addendum** records Score Insights / mobile / ETL resilience without rewriting the original checkpoint; UI redesign planning notes in sections below remain useful guards for future work
+**Last Updated:** 2026-04-19 — **Daily ETL weekend freshness fix** (`etf_flows` post-check vs centralized staleness); see *2026-04-14 addendum* → **Daily ETL weekend freshness fix (2026-04-19)**.  
+**Previously:** 2026-04-15 — **Strategy Analysis — backtesting JSON artifacts (provenance)** under *Repo Map*; 2026-04-14 addendum (Score Insights, mobile, FRED/cache ETL resilience).  
+**Status:** Trust repair and follow-ups per **Checkpoints**; ETL continuity notes include weekend `etf_flows` post-check alignment and FRED cache resilience; UI redesign planning notes in sections below remain useful guards for future work
