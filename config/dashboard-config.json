@@ -98,7 +98,7 @@
       "description": "Bitcoin ETF flow momentum and diversification - Major institutional flow indicator",
       "staleness": {
         "ttl_hours": 24,
-        "market_dependent": false,
+        "market_dependent": true,
         "business_days_only": true
       }
     },

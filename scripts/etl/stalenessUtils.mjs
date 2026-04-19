@@ -115,6 +115,9 @@ export function checkStaleness(dataTimestamp, ttlHours, options = {}) {
   const ttlMinutes = ttlHours * 60;
   const staleMinutes = staleBeyondHours * 60;
 
+  /** ETF-style factors: SSOT may set business_days_only without market_dependent; both need calendar-aware freshness. */
+  const calendarSensitive = marketDependent || businessDaysOnly;
+
   // Basic TTL check - fresh if within TTL + grace window
   if (ageMinutes <= ttlMinutes + graceMinutes) {
     return {
@@ -125,28 +128,16 @@ export function checkStaleness(dataTimestamp, ttlHours, options = {}) {
       ageMinutes
     };
   }
-  
-  // Stale beyond threshold check - excluded if beyond staleBeyondHours + grace
-  if (ageMinutes > staleMinutes + graceMinutes) {
-    return {
-      isStale: true,
-      reason: 'stale_beyond_ttl',
-      ageHours,
-      ageDays,
-      ageMinutes
-    };
-  }
 
-  // Market-dependent factors need special handling
-  if (marketDependent) {
+  // Calendar-aware freshness BEFORE wall-clock staleBeyond (fixes Sunday ETL: Friday ETF data
+  // must not fail only because calendar age > TTL or because staleBeyond ran before weekend rules).
+  if (calendarSensitive) {
     const mostRecentBusinessDay = getMostRecentBusinessDay(now);
-    const dataBusinessDay = getMostRecentBusinessDay(dataDate);
-    
-    // If we're on weekend and data is from Friday, it might still be fresh
+
     if (isWeekend(now)) {
       const fridayStart = new Date(mostRecentBusinessDay);
       fridayStart.setHours(0, 0, 0, 0);
-      
+
       if (dataDate >= fridayStart) {
         return {
           isStale: false,
@@ -158,11 +149,10 @@ export function checkStaleness(dataTimestamp, ttlHours, options = {}) {
       }
     }
 
-    // For business day only factors, check if data is from most recent business day
     if (businessDaysOnly) {
       const mostRecentBusinessDayStart = new Date(mostRecentBusinessDay);
       mostRecentBusinessDayStart.setHours(0, 0, 0, 0);
-      
+
       if (dataDate >= mostRecentBusinessDayStart) {
         return {
           isStale: false,
@@ -175,9 +165,20 @@ export function checkStaleness(dataTimestamp, ttlHours, options = {}) {
     }
   }
 
-  // Data is stale
+  // Wall-clock stale beyond threshold (hard cap)
+  if (ageMinutes > staleMinutes + graceMinutes) {
+    return {
+      isStale: true,
+      reason: 'stale_beyond_ttl',
+      ageHours,
+      ageDays,
+      ageMinutes
+    };
+  }
+
+  // Past TTL but not past staleBeyond, and calendar rules did not rescue — still stale
   let reason = 'stale_beyond_ttl';
-  if (marketDependent && isWeekend(now)) {
+  if (calendarSensitive && isWeekend(now)) {
     reason = 'stale_weekend_old_data';
   } else if (businessDaysOnly) {
     reason = 'stale_business_days_exceeded';
@@ -260,10 +261,10 @@ export const STALENESS_CONFIG = {
     description: 'CoinGecko 24/7 data, 1-day TTL'
   },
   etf_flows: {
-    ttlHours: 5 * 24, // 5 days
-    marketDependent: true, // ETFs only trade on business days
+    ttlHours: 5 * 24, // 5 days (fallback; SSOT ttl_hours usually overrides)
+    marketDependent: true,
     businessDaysOnly: true,
-    description: 'ETF flows business days only, 5-day TTL with weekend awareness'
+    description: 'ETF flows business days only; weekend uses last business day (align with SSOT)'
   },
   trend_valuation: {
     ttlHours: 24, // 1 day
