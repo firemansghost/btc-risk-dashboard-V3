@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "as_of_utc": "2026-05-07T17:59:51.301Z",
+  "as_of_utc": "2026-05-07T19:14:10.666Z",
   "composite_score": 47,
   "composite_raw": 47,
   "band": {
@@ -24,8 +24,8 @@
       "score": 52,
       "status": "fresh",
       "reason": "fresh (2s)",
-      "last_utc": "2026-05-07T17:59:48.632Z",
-      "lastUpdated": "2026-05-07T17:59:48.632Z",
+      "last_utc": "2026-05-07T19:14:07.555Z",
+      "lastUpdated": "2026-05-07T19:14:07.555Z",
       "details": [
         {
           "label": "Price vs 200-day SMA (Mayer)",
@@ -33,7 +33,7 @@
         },
         {
           "label": "Bull Market Support Band",
-          "value": "above (+3.5%)"
+          "value": "above (+3.6%)"
         },
         {
           "label": "Weekly momentum (RSI)",
@@ -41,15 +41,15 @@
         },
         {
           "label": "BTC Price (daily close)",
-          "value": "$80,076.36"
+          "value": "$80,142.98"
         },
         {
           "label": "200-day SMA",
-          "value": "$83,231.344"
+          "value": "$83,231.677"
         },
         {
           "label": "Weekly Close (for BMSB)",
-          "value": "$80,076.36"
+          "value": "$80,142.98"
         },
         {
           "label": "Price source",
@@ -61,11 +61,11 @@
         },
         {
           "label": "Calculation method",
-          "value": "Parallel processing (12ms)"
+          "value": "Parallel processing (4ms)"
         },
         {
           "label": "BMSB (20W SMA / 21W EMA)",
-          "value": "$76,164.381 / $78,589.687"
+          "value": "$76,167.713 / $78,595.744"
         },
         {
           "label": "50-week SMA diagnostic",
@@ -77,8 +77,8 @@
         }
       ],
       "sma50wDiagnostic": {
-        "sma50": 95143.26159999997,
-        "currentClose": 80076.36,
+        "sma50": 95144.59399999997,
+        "currentClose": 80142.98,
         "isBelow": true,
         "consecutiveWeeksBelow": 10,
         "showWarning": true
@@ -91,8 +91,8 @@
         "rawRegime": "transition",
         "interpretation": "Bitcoin has reclaimed the BMSB, but has not yet confirmed the macro pivot above the 50-week SMA.",
         "durationLine": "3 consecutive weeks in transition",
-        "proximityLine": "15.8% below 50-week macro pivot ($95,143).",
-        "nextConfirmationLine": "Next confirmation: two completed weekly closes above $95,143 (50-week SMA).",
+        "proximityLine": "15.8% below 50-week macro pivot ($95,145).",
+        "nextConfirmationLine": "Next confirmation: two completed weekly closes above $95,145 (50-week SMA).",
         "methodologyNote": "Uses the last two completed weekly closes vs the BMSB and 50-week SMA. Proximity uses the Trend daily close. Display-only; does not affect the G-Score.",
         "approximation": false,
         "lastDailyDateUtc": "2026-05-07",
@@ -100,16 +100,16 @@
           "2026-04-26",
           "2026-05-03"
         ],
-        "priceForProximity": 80076.36,
+        "priceForProximity": 80142.98,
         "streakWeeks": 3,
         "streakLabel": "3 consecutive weeks in transition",
-        "bmsbLower": 76164.38149999999,
-        "fiftyWeekSma": 95143.26159999997,
+        "bmsbLower": 76167.7125,
+        "fiftyWeekSma": 95144.59399999997,
         "lastCompletedWeeklyClose": 78558.89,
         "distanceLabel": "Distance to macro pivot (50W)",
         "distancePct": 15.8,
         "distanceSide": "below",
-        "nextConfirmationText": "2 completed weekly closes above $95,143 (50-week SMA)"
+        "nextConfirmationText": "2 completed weekly closes above $95,145 (50-week SMA)"
       }
     },
     {
@@ -121,8 +121,8 @@
       "score": 23,
       "status": "fresh",
       "reason": "fresh (2s)",
-      "last_utc": "2026-05-07T17:59:48.663Z",
-      "lastUpdated": "2026-05-07T17:59:48.663Z",
+      "last_utc": "2026-05-07T19:14:07.596Z",
+      "lastUpdated": "2026-05-07T19:14:07.596Z",
       "details": [
         {
           "label": "Total Market Cap",
@@ -170,7 +170,7 @@
       "weight_pct": 7.7,
       "score": 41,
       "status": "fresh",
-      "reason": "fresh (2h)",
+      "reason": "fresh (3h)",
       "last_utc": "2026-05-07T16:00:00.000Z",
       "lastUpdated": "2026-05-07T16:00:00.000Z",
       "details": [
@@ -220,7 +220,7 @@
         },
         {
           "label": "Last Update",
-          "value": "0.7 days ago"
+          "value": "0.8 days ago"
         }
       ],
       "individualEtfFlows": [
@@ -9581,8 +9581,8 @@
       "score": 51,
       "status": "fresh",
       "reason": "fresh (0s)",
-      "last_utc": "2026-05-07T17:59:50.394Z",
-      "lastUpdated": "2026-05-07T17:59:50.394Z",
+      "last_utc": "2026-05-07T19:14:09.566Z",
+      "lastUpdated": "2026-05-07T19:14:09.566Z",
       "providers": {
         "bitmex": "ok",
         "binance": "451",
@@ -9635,7 +9635,7 @@
       "weight_pct": 10,
       "score": 27,
       "status": "fresh",
-      "reason": "fresh (5h)",
+      "reason": "fresh (6h)",
       "last_utc": "2026-05-07T12:58:56.217Z",
       "lastUpdated": "2026-05-07T12:58:56.217Z",
       "details": [
@@ -9686,8 +9686,8 @@
       "score": 78,
       "status": "fresh",
       "reason": "fresh (2s)",
-      "last_utc": "2026-05-07T17:59:48.666Z",
-      "lastUpdated": "2026-05-07T17:59:48.666Z",
+      "last_utc": "2026-05-07T19:14:07.597Z",
+      "lastUpdated": "2026-05-07T19:14:07.597Z",
       "details": [
         {
           "label": "Search Attention",
@@ -9729,8 +9729,8 @@
     }
   ],
   "btc": {
-    "spot_usd": 80076.36,
-    "as_of_utc": "2026-05-07T17:59:51.301Z",
+    "spot_usd": 80142.98,
+    "as_of_utc": "2026-05-07T19:14:10.666Z",
     "source": "Coinbase"
   },
   "provenance": [],
@@ -9743,7 +9743,7 @@
   "cycle_adjustment": {
     "adj_pts": 0,
     "residual_z": null,
-    "last_utc": "2026-05-07T17:59:51.298Z",
+    "last_utc": "2026-05-07T19:14:10.622Z",
     "source": "ETL fallback",
     "reason": "insufficient_historical_data"
   },
@@ -9752,9 +9752,9 @@
     "r_1d": 0,
     "sigma": 0,
     "z": 0,
-    "ref_close": 80076.36,
-    "spot": 80076.36,
-    "last_utc": "2026-05-07T17:59:51.298Z",
+    "ref_close": 80142.98,
+    "spot": 80142.98,
+    "last_utc": "2026-05-07T19:14:10.622Z",
     "source": "ETL fallback",
     "reason": "insufficient_historical_data"
   },
