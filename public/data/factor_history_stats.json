@@ -62,7 +62,7 @@
     },
     "term_leverage": {
       "dataPoints": 223,
-      "mean": 50.88,
+      "mean": 50.87,
       "stdDev": 17.78,
       "min": 18,
       "max": 95,
