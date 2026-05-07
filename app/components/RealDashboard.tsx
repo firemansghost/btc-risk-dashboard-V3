@@ -432,11 +432,10 @@ export default function RealDashboard() {
                 onOpenHealthPanel={() => setHealthPanelOpen(true)}
               />
               
-              {/* Hero Two-Up: G-Score column + History Card */}
+              {/* Hero: mobile order = G-Score → Market Regime → Cycle Timing → Historical.
+                  lg: 2×2 grid — row1: G-Score | Historical; row2: Market Regime | Cycle Timing */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch mb-8">
-                <div className="flex flex-col gap-4 min-w-0 h-full">
-                {/* Prominent G-Score Card - Unified Vertical Layout */}
-                <div className="glass-card glass-shadow-lg card-md border border-white/20 card-hover flex flex-col flex-1 min-h-0">
+                <div className="glass-card glass-shadow-lg card-md border border-white/20 card-hover flex flex-col min-h-0 min-w-0 lg:col-start-1 lg:row-start-1 lg:h-full">
                   <div className="flex items-center justify-between mb-4">
                     <h1 className="mobile-subheading">
                       Bitcoin G-Score
@@ -638,19 +637,21 @@ export default function RealDashboard() {
                 <MarketRegimeCard
                   marketRegime={trendValuationFactor?.marketRegime ?? null}
                   factorStatus={trendValuationFactor?.status}
+                  className="lg:col-start-1 lg:row-start-2"
                 />
                 <CycleTimingCard
                   asOfUtc={latest?.as_of_utc ?? null}
                   dashboardLoading={loading}
+                  className="lg:col-start-2 lg:row-start-2"
                 />
-                </div>
 
-                {/* History Card - Equal Height with Gauge column */}
-                <LazyLoader 
+                {/* History Card — lg: top-right beside G-Score */}
+                <LazyLoader
                   delay={500}
+                  className="min-w-0 lg:col-start-2 lg:row-start-1 lg:h-full lg:min-h-0 lg:flex lg:flex-col"
                   fallback={<SkeletonLoader isLoading={true}><SkeletonCard type="chart" size="lg" /></SkeletonLoader>}
                 >
-                  <div className="glass-card glass-shadow-lg card-md border border-white/20 card-hover h-full flex flex-col">
+                  <div className="glass-card glass-shadow-lg card-md border border-white/20 card-hover flex flex-col lg:h-full lg:flex-1 lg:min-h-0">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Historical G-Score</h3>
                     {/* Let HistoryChart size itself: it includes range controls + fixed plot height + caption; a fixed outer h-[260px] clipped/overflowed into the copy below on mobile */}
                     <div className="mt-4 w-full min-w-0 shrink-0">
