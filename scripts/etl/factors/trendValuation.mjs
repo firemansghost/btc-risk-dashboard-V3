@@ -5,6 +5,8 @@
 import { promises as fs } from 'node:fs';
 import { join } from 'node:path';
 
+import { computeMarketRegime, createWeeklyCloses } from './marketRegime.mjs';
+
 // Cache configuration
 const CACHE_DIR = '../../public/data/cache/trend_valuation';
 const CACHE_TTL_HOURS = 24; // Cache for 24 hours
@@ -355,53 +357,11 @@ async function loadPriceHistoryForTrend() {
   }
 }
 
-/**
- * Convert daily candles to weekly closes using ISO week boundaries (UTC)
- * @param {Array} dailyCandles - Array of daily candle objects
- * @returns {Array} Array of weekly close objects {weekEnd, close, timestamp}
- */
-function createWeeklyCloses(dailyCandles) {
-  if (!dailyCandles || dailyCandles.length === 0) return [];
-
-  const weeklyCloses = [];
-  const candlesByWeek = new Map();
-
-  // Group candles by ISO week
-  for (const candle of dailyCandles) {
-    const date = new Date(candle.timestamp);
-    
-    // Calculate ISO week ending date (Sunday 00:00 UTC)
-    const dayOfWeek = date.getUTCDay(); // 0 = Sunday, 6 = Saturday
-    const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
-    const weekEnd = new Date(date);
-    weekEnd.setUTCDate(date.getUTCDate() + daysUntilSunday);
-    weekEnd.setUTCHours(0, 0, 0, 0);
-    
-    const weekKey = weekEnd.toISOString().split('T')[0];
-    
-    if (!candlesByWeek.has(weekKey)) {
-      candlesByWeek.set(weekKey, []);
-    }
-    candlesByWeek.get(weekKey).push(candle);
-  }
-
-  // Create weekly closes (use the latest close in each week)
-  for (const [weekKey, candles] of candlesByWeek) {
-    if (candles.length > 0) {
-      // Sort by timestamp and take the latest close
-      const sortedCandles = candles.sort((a, b) => a.timestamp - b.timestamp);
-      const latestCandle = sortedCandles[sortedCandles.length - 1];
-      
-      weeklyCloses.push({
-        weekEnd: weekKey,
-        close: latestCandle.close,
-        timestamp: latestCandle.timestamp
-      });
-    }
-  }
-
-  // Sort by week end date
-  return weeklyCloses.sort((a, b) => a.weekEnd.localeCompare(b.weekEnd));
+function lastDailyDateUtcFromCandles(candles) {
+  const c = candles?.length ? candles[candles.length - 1] : null;
+  if (!c) return null;
+  if (c.date_utc) return c.date_utc;
+  return new Date(c.timestamp).toISOString().split('T')[0];
 }
 
 /**
@@ -518,6 +478,16 @@ export async function computeTrendValuation(dailyClose = null) {
       console.log('Trend & Valuation: Using cached calculations (no price data changes)');
       // Update lastUpdated to current time when using cached data (for staleness tracking)
       const freshTimestamp = new Date().toISOString();
+      const lastDailyDateUtc = lastDailyDateUtcFromCandles(candles);
+      const priceForRegime =
+        dailyClose != null && Number.isFinite(dailyClose)
+          ? dailyClose
+          : candles[candles.length - 1]?.close;
+      let marketRegime = cachedData.marketRegime;
+      if (!marketRegime && lastDailyDateUtc && Number.isFinite(priceForRegime)) {
+        const wc = createWeeklyCloses(candles);
+        marketRegime = computeMarketRegime(wc, lastDailyDateUtc, priceForRegime);
+      }
       const updatedResult = {
         score: cachedData.score,
         reason: "success_cached",
@@ -528,6 +498,7 @@ export async function computeTrendValuation(dailyClose = null) {
         weeklyClose: cachedData.weeklyClose,
         weekEnd: cachedData.weekEnd,
         sma50wDiagnostic: cachedData.sma50wDiagnostic,
+        marketRegime,
         provenance: cachedData.provenance || [provenance]
       };
       // Update cache file with fresh timestamp
@@ -545,13 +516,19 @@ export async function computeTrendValuation(dailyClose = null) {
     
     // Create weekly closes using ISO week boundaries
     const weeklyCloses = createWeeklyCloses(candles);
-    
+    const lastDailyDateUtc = lastDailyDateUtcFromCandles(candles);
+    const marketRegime =
+      lastDailyDateUtc && Number.isFinite(currentPrice)
+        ? computeMarketRegime(weeklyCloses, lastDailyDateUtc, currentPrice)
+        : null;
+
     if (weeklyCloses.length < 15) {
       return { 
         score: null, 
         reason: "insufficient_weekly_data",
         lastUpdated: new Date().toISOString(),
-        provenance: [provenance]
+        provenance: [provenance],
+        marketRegime
       };
     }
 
@@ -703,6 +680,7 @@ export async function computeTrendValuation(dailyClose = null) {
       weeklyClose: latestWeeklyClose,
       weekEnd: weeklyCloses[weeklyCloses.length - 1].weekEnd,
       sma50wDiagnostic,
+      marketRegime,
       provenance: [provenance],
       candles, // Include candles for cache comparison
       parallelTime // Include timing info

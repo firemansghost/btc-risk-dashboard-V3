@@ -2727,7 +2727,8 @@ export async function computeAllFactors(dailyClose = null) {
       providers: result.status === 'fulfilled' && result.value.providers ? result.value.providers : undefined,
       details: result.status === 'fulfilled' ? result.value.details : undefined,
       individualEtfFlows: result.status === 'fulfilled' && result.value.individualEtfFlows ? result.value.individualEtfFlows : undefined,
-      sma50wDiagnostic: result.status === 'fulfilled' && result.value.sma50wDiagnostic ? result.value.sma50wDiagnostic : undefined
+      sma50wDiagnostic: result.status === 'fulfilled' && result.value.sma50wDiagnostic ? result.value.sma50wDiagnostic : undefined,
+      marketRegime: result.status === 'fulfilled' && result.value.marketRegime ? result.value.marketRegime : undefined
     });
 
     console.log(`${factor.key}: ${score !== null ? score : 'null'} (${status}) - ${reason}`);

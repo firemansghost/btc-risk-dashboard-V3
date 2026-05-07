@@ -25,6 +25,7 @@ import EtfPerformanceAnalysis from './EtfPerformanceAnalysis';
 import BtcGoldCard from './BtcGoldCard';
 import SatoshisPerDollarCard from './SatoshisPerDollarCard';
 import ScoreInsightsCard from './ScoreInsightsCard';
+import MarketRegimeCard from './MarketRegimeCard';
 import RiskBasedDcaStanceCard from './RiskBasedDcaStanceCard';
 import HistoryChart from './HistoryChart';
 import RadialGauge from './RadialGauge';
@@ -403,6 +404,10 @@ export default function RealDashboard() {
   if (error) return <ErrorView msg={`Failed to load: ${error}`} onRetry={load} />;
   if (!latest || !status) return <ErrorView msg="Missing data artifacts." onRetry={load} />;
 
+  const trendValuationFactor = latest.factors?.find(
+    (f: { key?: string }) => f?.key === 'trend_valuation'
+  );
+
   // Main dashboard render
   return (
     <div className="min-h-screen bg-gray-50">
@@ -426,10 +431,11 @@ export default function RealDashboard() {
                 onOpenHealthPanel={() => setHealthPanelOpen(true)}
               />
               
-              {/* Hero Two-Up: G-Score Card + History Card */}
+              {/* Hero Two-Up: G-Score column + History Card */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch mb-8">
+                <div className="flex flex-col gap-4 min-w-0 h-full">
                 {/* Prominent G-Score Card - Unified Vertical Layout */}
-                <div className="glass-card glass-shadow-lg card-md border border-white/20 card-hover h-full flex flex-col">
+                <div className="glass-card glass-shadow-lg card-md border border-white/20 card-hover flex flex-col flex-1 min-h-0">
                   <div className="flex items-center justify-between mb-4">
                     <h1 className="mobile-subheading">
                       Bitcoin G-Score
@@ -628,7 +634,13 @@ export default function RealDashboard() {
                   </div>
                 </div>
 
-                {/* History Card - Equal Height with Gauge Card */}
+                <MarketRegimeCard
+                  marketRegime={trendValuationFactor?.marketRegime ?? null}
+                  factorStatus={trendValuationFactor?.status}
+                />
+                </div>
+
+                {/* History Card - Equal Height with Gauge column */}
                 <LazyLoader 
                   delay={500}
                   fallback={<SkeletonLoader isLoading={true}><SkeletonCard type="chart" size="lg" /></SkeletonLoader>}
