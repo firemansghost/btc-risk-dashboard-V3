@@ -26,6 +26,7 @@ import BtcGoldCard from './BtcGoldCard';
 import SatoshisPerDollarCard from './SatoshisPerDollarCard';
 import ScoreInsightsCard from './ScoreInsightsCard';
 import MarketRegimeCard from './MarketRegimeCard';
+import CycleTimingCard from './CycleTimingCard';
 import RiskBasedDcaStanceCard from './RiskBasedDcaStanceCard';
 import HistoryChart from './HistoryChart';
 import RadialGauge from './RadialGauge';
@@ -637,6 +638,10 @@ export default function RealDashboard() {
                 <MarketRegimeCard
                   marketRegime={trendValuationFactor?.marketRegime ?? null}
                   factorStatus={trendValuationFactor?.status}
+                />
+                <CycleTimingCard
+                  asOfUtc={latest?.as_of_utc ?? null}
+                  dashboardLoading={loading}
                 />
                 </div>
 
