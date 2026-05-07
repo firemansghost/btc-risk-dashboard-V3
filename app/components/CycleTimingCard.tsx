@@ -195,6 +195,16 @@ function formatBearProgress(r: CycleTimingResult): string {
   return `${r.bearProgressPct.toFixed(1)}% of ${AVG_BEAR_DURATION_DAYS} days`;
 }
 
+/** Month/year only; row label already says “Historical bottom window”. */
+function bottomWindowRowValue(bottomWindowCopy: string): string {
+  const t = bottomWindowCopy.trim();
+  const withoutHistorical = t.replace(/^Historical bottom window:\s*/i, '').trim();
+  if (withoutHistorical !== t) return withoutHistorical || '—';
+  const withoutEstimated = t.replace(/^Estimated timing window:\s*/i, '').trim();
+  if (withoutEstimated !== t) return withoutEstimated || '—';
+  return t || '—';
+}
+
 export default function CycleTimingCard({
   asOfUtc,
   dashboardLoading = false,
@@ -281,7 +291,9 @@ export default function CycleTimingCard({
           <div className="mt-4 space-y-2 border-t border-gray-200/90 pt-3">
             <RegimeRow label="Days since peak">{formatDaysSincePeak(r)}</RegimeRow>
             <RegimeRow label="Post-peak progress">{formatBearProgress(r)}</RegimeRow>
-            <RegimeRow label="Historical bottom window">{r.bottomWindowCopy}</RegimeRow>
+            <RegimeRow label="Historical bottom window">
+              {bottomWindowRowValue(r.bottomWindowCopy)}
+            </RegimeRow>
             <RegimeRow label="Cycle peak anchor">{r.anchorPeakFormatted}</RegimeRow>
             <RegimeRow label="Halving">{r.anchorHalvingFormatted}</RegimeRow>
             <RegimeRow label="Cycle bottom">{r.anchorBottomFormatted}</RegimeRow>
