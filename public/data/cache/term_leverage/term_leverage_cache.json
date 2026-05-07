@@ -1,8 +1,8 @@
 {
   "score": 51,
-  "reason": "success",
-  "lastUpdated": "2026-05-07T12:58:57.791Z",
-  "timestamp": "2026-05-07T12:58:57.791Z",
+  "reason": "success_cached",
+  "lastUpdated": "2026-05-07T16:24:48.712Z",
+  "timestamp": "2026-05-07T16:24:48.712Z",
   "details": [
     {
       "label": "Current Funding Rate",
@@ -41,6 +41,11 @@
       "value": "Funding: 45, Vol: 73, Stress: 29"
     }
   ],
+  "providers": {
+    "bitmex": "ok",
+    "binance": "451",
+    "okx": "ok"
+  },
   "fundingData": [
     {
       "timestamp": "2026-05-07T12:00:00.000Z",
@@ -254,11 +259,6 @@
     }
   ],
   "parallelTime": 1,
-  "providers": {
-    "bitmex": "ok",
-    "binance": "451",
-    "okx": "ok"
-  },
-  "cachedAt": "2026-05-07T12:58:57.791Z",
+  "cachedAt": "2026-05-07T16:24:48.712Z",
   "version": "1.0.0"
 }

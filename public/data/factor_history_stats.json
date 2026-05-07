@@ -27,11 +27,11 @@
     },
     "stablecoins": {
       "dataPoints": 222,
-      "mean": 53.4,
-      "stdDev": 16.24,
-      "min": 31,
+      "mean": 53.35,
+      "stdDev": 16.31,
+      "min": 23,
       "max": 95,
-      "range": 64,
+      "range": 72,
       "statusCounts": {
         "fresh": 222,
         "excluded": 1
@@ -39,8 +39,8 @@
     },
     "etf_flows": {
       "dataPoints": 223,
-      "mean": 73.08,
-      "stdDev": 13.96,
+      "mean": 73.05,
+      "stdDev": 14.02,
       "min": 33,
       "max": 95,
       "range": 62,
@@ -62,7 +62,7 @@
     },
     "term_leverage": {
       "dataPoints": 223,
-      "mean": 50.91,
+      "mean": 50.88,
       "stdDev": 17.78,
       "min": 18,
       "max": 95,
@@ -74,8 +74,8 @@
     },
     "macro_overlay": {
       "dataPoints": 223,
-      "mean": 54.7,
-      "stdDev": 15.48,
+      "mean": 54.68,
+      "stdDev": 15.52,
       "min": 18,
       "max": 96,
       "range": 78,
