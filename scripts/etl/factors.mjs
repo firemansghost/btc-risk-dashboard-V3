@@ -186,6 +186,7 @@ import { coinGecko } from './coinGeckoCache.mjs';
 // 1. TREND & VALUATION (Multi-factor: BMSB 60%, Mayer 30%, RSI 10%)
 // Import the new implementation with true BMSB and unified Coinbase price source
 import { computeTrendValuation as computeTrendValuationNew } from './factors/trendValuation.mjs';
+import { guardStablecoinAggregateChange } from './factors/stablecoinGrowthGuard.mjs';
 
 async function computeTrendValuation(dailyClose = null) {
   return await computeTrendValuationNew(dailyClose);
@@ -1177,6 +1178,26 @@ async function computeStablecoins() {
     // Multi-factor analysis
     // 1. Aggregate Supply Growth (50% weight)
     const aggregateChange = totalWeightedChange; // Weighted by market share
+
+    const growthGuard = guardStablecoinAggregateChange(aggregateChange);
+    if (!growthGuard.ok) {
+      console.warn(
+        `Stablecoins: ${growthGuard.reason} (validCoins=${validCoins}, aggregateChange=${aggregateChange})`
+      );
+      return {
+        score: null,
+        reason: growthGuard.reason,
+        lastUpdated: new Date().toISOString(),
+        details: [
+          { label: 'Valid coins (30d caps)', value: String(validCoins) },
+          {
+            label: 'Aggregate 30d growth',
+            value: Number.isFinite(aggregateChange) ? `${(aggregateChange * 100).toFixed(4)}%` : 'non-finite',
+          },
+          { label: 'Data quality', value: growthGuard.reason },
+        ],
+      };
+    }
 
     // 2. Supply Growth Momentum (30% weight) - 7d vs 30d trend
     const recentMomentum = coinData.reduce((sum, coin) => {
