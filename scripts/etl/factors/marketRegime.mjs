@@ -139,20 +139,31 @@ export function createWeeklyCloses(dailyCandles) {
  * @returns {object} marketRegime payload for latest.json (display-only)
  */
 export function computeMarketRegime(weeklyCloses, lastDailyDateUtc, currentPrice) {
+  const methodologyNoteOk =
+    'Uses the last two completed weekly closes vs the BMSB and 50-week SMA. Proximity uses the Trend daily close. Display-only; does not affect the G-Score.';
+
   const insufficient = {
     status: 'insufficient_data',
     badge: 'INSUFFICIENT DATA',
     badgeKey: 'insufficient',
     regime: null,
-    interpretation: 'Regime data unavailable — need more completed weekly history.',
+    interpretation: 'Not enough completed weekly history to classify regime yet.',
     durationLine: null,
     proximityLine: null,
     nextConfirmationLine: null,
-    methodologyNote:
-      'Uses the last two completed weekly closes vs BMSB (20W SMA / 21W EMA) and 50-week SMA. Display-only; does not affect the G-Score.',
+    methodologyNote: methodologyNoteOk,
     approximation: false,
     lastDailyDateUtc,
     completedWeekEnds: null,
+    streakWeeks: null,
+    streakLabel: null,
+    bmsbLower: null,
+    fiftyWeekSma: null,
+    lastCompletedWeeklyClose: null,
+    distanceLabel: null,
+    distancePct: null,
+    distanceSide: null,
+    nextConfirmationText: null,
   };
 
   if (
@@ -169,7 +180,7 @@ export function computeMarketRegime(weeklyCloses, lastDailyDateUtc, currentPrice
     return {
       ...insufficient,
       interpretation:
-        'Need at least two completed weekly closes (week not finished vs daily history through ' +
+        'Need two completed weekly closes before the current week finishes (last daily: ' +
         lastDailyDateUtc +
         ').',
     };
@@ -242,7 +253,15 @@ export function computeMarketRegime(weeklyCloses, lastDailyDateUtc, currentPrice
     streakPairs++;
   }
   const durationWeeks = streakPairs + 1;
-  const durationLine = `${durationWeeks} completed weeks under current two-week regime label`;
+
+  /** Human label for streak; matches displayed regime bucket (two-week rule), not a trading signal. */
+  const streakTail =
+    key === 'confirmed_bullish'
+      ? 'bullish'
+      : key === 'confirmed_bearish'
+        ? 'bearish'
+        : 'in transition';
+  const streakLabel = `${durationWeeks} consecutive weeks ${streakTail}`;
 
   let interpretation = '';
   let proximityLine = '';
@@ -251,25 +270,43 @@ export function computeMarketRegime(weeklyCloses, lastDailyDateUtc, currentPrice
   const pivot50 = currentSma50 != null ? currentSma50 : s1;
   const bandLower = fullBmsb.lower != null ? fullBmsb.lower : l1;
 
+  /** Display-only row helpers (numbers for UI formatting) */
+  let distanceLabel = '';
+  let distancePct = null;
+  let distanceSide = '';
+  let nextConfirmationText = '';
+
   if (key === 'confirmed_bearish') {
     interpretation =
-      'Two consecutive completed weekly closes sit below the BMSB lower band — the band is acting more like resistance.';
+      'Bitcoin has closed below the BMSB for two completed weeks, confirming bearish regime pressure.';
     const pu = fmtUsd(bandLower);
     const sign = currentPrice >= bandLower ? 'above' : 'below';
     proximityLine = `${Math.abs(Number(pctDiff(bandLower, currentPrice)))}% ${sign} BMSB support area (${pu}) — distance uses Trend daily close.`;
     nextConfirmationLine = `Next structural step: two completed weekly closes back above the BMSB lower band (~${pu}).`;
+    distanceLabel = 'Distance to BMSB lower';
+    distancePct = Math.abs(Number(pctDiff(bandLower, currentPrice)));
+    distanceSide = currentPrice >= bandLower ? 'above' : 'below';
+    nextConfirmationText = `2 completed weekly closes above ${pu} (BMSB lower)`;
   } else if (key === 'confirmed_bullish') {
     interpretation =
-      'Two consecutive completed weekly closes sit above the 50-week SMA — macro pivot cleared by this rule.';
+      'Bitcoin has closed above the macro pivot for two completed weeks, confirming a bullish moving-average regime.';
     const p50 = fmtUsd(pivot50);
     proximityLine = `${Math.abs(Number(pctDiff(pivot50, currentPrice)))}% ${currentPrice >= pivot50 ? 'above' : 'below'} 50-week SMA (${p50}) — distance uses Trend daily close.`;
     nextConfirmationLine = `BMSB lower ~${fmtUsd(bandLower)} is the nearer moving-average support zone.`;
+    distanceLabel = 'Distance to 50-week SMA';
+    distancePct = Math.abs(Number(pctDiff(pivot50, currentPrice)));
+    distanceSide = currentPrice >= pivot50 ? 'above' : 'below';
+    nextConfirmationText = `Nearer context: BMSB lower near ${fmtUsd(bandLower)} (moving averages only)`;
   } else {
     interpretation =
-      'Above the BMSB lower band on both weeks, but not yet two completed weeks above the 50-week SMA — transition zone.';
+      'Bitcoin has reclaimed the BMSB, but has not yet confirmed the macro pivot above the 50-week SMA.';
     const p50 = fmtUsd(pivot50);
     proximityLine = `${Math.abs(Number(pctDiff(pivot50, currentPrice)))}% ${currentPrice >= pivot50 ? 'above' : 'below'} 50-week macro pivot (${p50}).`;
     nextConfirmationLine = `Next confirmation: two completed weekly closes above ${p50} (50-week SMA).`;
+    distanceLabel = 'Distance to macro pivot (50W)';
+    distancePct = Math.abs(Number(pctDiff(pivot50, currentPrice)));
+    distanceSide = currentPrice >= pivot50 ? 'above' : 'below';
+    nextConfirmationText = `2 completed weekly closes above ${p50} (50-week SMA)`;
   }
 
   const badge =
@@ -277,7 +314,9 @@ export function computeMarketRegime(weeklyCloses, lastDailyDateUtc, currentPrice
       ? 'CONFIRMED BULLISH'
       : key === 'confirmed_bearish'
         ? 'CONFIRMED BEARISH'
-        : 'TRANSITION / NEUTRAL';
+        : 'TRANSITION';
+
+  const durationLine = streakLabel;
 
   return {
     status: 'ok',
@@ -289,11 +328,19 @@ export function computeMarketRegime(weeklyCloses, lastDailyDateUtc, currentPrice
     durationLine,
     proximityLine,
     nextConfirmationLine,
-    methodologyNote:
-      'Uses the last two completed weekly closes vs BMSB (20W SMA / 21W EMA) and 50-week SMA. Proximity uses the Trend daily close. Display-only; does not affect the G-Score.',
+    methodologyNote: methodologyNoteOk,
     approximation,
     lastDailyDateUtc,
     completedWeekEnds: [w0.weekEnd, w1.weekEnd],
     priceForProximity: currentPrice,
+    streakWeeks: durationWeeks,
+    streakLabel,
+    bmsbLower: bandLower,
+    fiftyWeekSma: pivot50,
+    lastCompletedWeeklyClose: c1,
+    distanceLabel,
+    distancePct,
+    distanceSide,
+    nextConfirmationText,
   };
 }
