@@ -1,8 +1,8 @@
 {
   "score": 49,
   "reason": "success_cached",
-  "lastUpdated": "2026-05-07T21:01:29.908Z",
-  "timestamp": "2026-05-07T21:01:29.908Z",
+  "lastUpdated": "2026-05-07T22:52:33.506Z",
+  "timestamp": "2026-05-07T22:52:33.506Z",
   "details": [
     {
       "label": "Current Funding Rate",
@@ -259,6 +259,6 @@
     }
   ],
   "parallelTime": 1,
-  "cachedAt": "2026-05-07T21:01:29.908Z",
+  "cachedAt": "2026-05-07T22:52:33.507Z",
   "version": "1.0.0"
 }
