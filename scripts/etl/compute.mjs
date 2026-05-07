@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "url";
 import { computeAllFactors } from "./factors.mjs";
+import { upsertGScoreHistoryCsv } from "./lib/gscoreHistoryCsv.mjs";
 import { getDashboardConfig, getModelVersion, getSsotVersion } from "../../lib/config-loader.mjs";
 import { fallbackTracker, resetFallbackTracker } from "./fetch-helper.mjs";
 
@@ -618,19 +619,6 @@ async function main() {
   const factorResults = await computeAllFactors(y.close);
   const composite = factorResults.composite;
 
-  // 2.1) Update factor history tracking
-  console.log("Updating factor history...");
-  try {
-    const factorHistoryModule = await import('./factor-history-tracking.mjs');
-    if (factorHistoryModule.updateFactorHistory) {
-      await factorHistoryModule.updateFactorHistory();
-    } else {
-      console.log("⚠️  Factor history tracking not available");
-    }
-  } catch (error) {
-    console.log(`⚠️  Factor history update failed: ${error.message}`);
-  }
-
   // 2.5) Compute BTC⇄Gold cross-rates
   console.log("Computing BTC⇄Gold cross-rates...");
   const { computeBtcGoldRates } = await import('./factors.mjs');
@@ -988,8 +976,7 @@ async function main() {
     console.log("No new alerts generated");
   }
 
-  // 3) Upsert history.csv (will be updated after adjustments are calculated)
-
+  // 3) finalComposite + risk band, then history.csv, latest.json, factor_history.csv
   // 4) latest.json with real factor data
   // Calculate cycle and spike adjustments
   const nowIso = new Date().toISOString();
@@ -1055,19 +1042,15 @@ async function main() {
   // Calculate risk band using adjusted composite score
   const band = riskBand(finalComposite);
 
-  // 3) Upsert history.csv with adjusted composite score
-  const header = "date,score,band,price_usd";
-  const existing = await readText("public/data/history.csv");
-  let lines = existing ? existing.trim().split("\n") : [header];
-
-  const hasHeader = lines[0].toLowerCase().startsWith("date,score,band,price_usd");
-  if (!hasHeader) lines.unshift(header);
-
-  const already = lines.some(l => l.startsWith(y.date + ","));
-  if (!already) {
-    lines.push(`${y.date},${finalComposite},${band.name},${y.close.toFixed(2)}`);
-  }
-  await fs.writeFile("public/data/history.csv", lines.join("\n"));
+  // 3) Upsert history.csv with adjusted composite score (same-day reruns replace row)
+  const existingHistory = await readText("public/data/history.csv");
+  const historyCsv = upsertGScoreHistoryCsv(existingHistory, {
+    date: y.date,
+    score: finalComposite,
+    band: band.name,
+    priceUsd: y.close.toFixed(2)
+  });
+  await fs.writeFile("public/data/history.csv", historyCsv);
 
   // Load model_version from SSOT
   let modelVersion = 'v1.1'; // Default fallback
@@ -1085,6 +1068,8 @@ async function main() {
   const latest = {
     ok: true,
     as_of_utc: new Date().toISOString(),
+    /** Trading date of the BTC close used for this run (aligned with history.csv row key). */
+    daily_close_date: y.date,
     composite_score: finalComposite,
     composite_raw: composite,
     band: {
@@ -1113,6 +1098,19 @@ async function main() {
     ...(goldResult.success && { cross: { btc_per_oz: goldResult.data.btc_per_oz, oz_per_btc: goldResult.data.oz_per_btc } })
   };
   await fs.writeFile("public/data/latest.json", JSON.stringify(latest, null, 2));
+
+  console.log("Syncing factor_history.csv from current run...");
+  try {
+    const { syncFactorHistoryFromRun } = await import('./factor-history-tracking.mjs');
+    syncFactorHistoryFromRun({
+      date: y.date,
+      factors: factorResults.factors,
+      compositeScore: finalComposite,
+      bandLabel: band.name
+    });
+  } catch (error) {
+    console.log(`⚠️  Factor history sync failed: ${error.message}`);
+  }
 
   // 4.1) Generate indicator alerts (cycle, spike, 50W SMA)
   console.log("Generating indicator alerts...");
