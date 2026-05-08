@@ -187,6 +187,7 @@ import { coinGecko } from './coinGeckoCache.mjs';
 // Import the new implementation with true BMSB and unified Coinbase price source
 import { computeTrendValuation as computeTrendValuationNew } from './factors/trendValuation.mjs';
 import { guardStablecoinAggregateChange } from './factors/stablecoinGrowthGuard.mjs';
+import { buildValidStablecoinGrowthSnapshot } from './factors/stablecoinGrowthAggregation.mjs';
 
 async function computeTrendValuation(dailyClose = null) {
   return await computeTrendValuationNew(dailyClose);
@@ -890,7 +891,7 @@ function calculateWeightedStablecoinChanges(responses, stablecoins) {
     for (let i = 30; i < coin.marketCaps.length; i++) {
       const current = coin.marketCaps[i];
       const past = coin.marketCaps[i - 30];
-      if (Number.isFinite(current) && Number.isFinite(past) && past !== 0) {
+      if (Number.isFinite(current) && Number.isFinite(past) && past > 0 && current > 0) {
         changes.push((current - past) / past);
       }
     }
@@ -1131,79 +1132,85 @@ async function computeStablecoins() {
       responses = cachedData;
     }
     
-    let totalMarketCap = 0;
-    let totalSupplyChange = 0;
-    let totalWeightedChange = 0;
-    let validCoins = 0;
-    const coinData = [];
+    const growthSnapshot = buildValidStablecoinGrowthSnapshot(stablecoins, responses);
+    for (const ex of growthSnapshot.excluded) {
+      console.warn(`Stablecoins: excluded from aggregate: ${ex.symbol} (${ex.reason})`);
+    }
 
-    // Process each stablecoin
-    for (let i = 0; i < stablecoins.length; i++) {
-      const coin = stablecoins[i];
-      const data = responses[i];
-      
-      if (!data?.market_caps || !Array.isArray(data.market_caps) || data.market_caps.length < 30) {
-        console.warn(`Stablecoins: No data for ${coin.symbol}`);
-        continue;
+    const fetchedCount = responses.filter((r) => r != null).length;
+    if (!growthSnapshot.ok) {
+      const wc =
+        growthSnapshot.weightCoverage != null
+          ? `${(growthSnapshot.weightCoverage * 100).toFixed(1)}%`
+          : 'n/a';
+      console.warn(
+        `Stablecoins: ${growthSnapshot.reason} (fetched=${fetchedCount}, valid=${growthSnapshot.valid?.length ?? 0}, weightCoverage=${wc})`
+      );
+
+      if (growthSnapshot.reason === 'insufficient_valid_stablecoin_growth_inputs') {
+        const exSummary = growthSnapshot.excluded
+          .map((e) => `${e.symbol}:${e.reason}`)
+          .slice(0, 12)
+          .join('; ');
+        return {
+          score: null,
+          reason: growthSnapshot.reason,
+          lastUpdated: new Date().toISOString(),
+          details: [
+            { label: 'Coins fetched (non-null)', value: String(fetchedCount) },
+            {
+              label: 'Valid growth inputs',
+              value: String(growthSnapshot.valid?.length ?? 0),
+            },
+            {
+              label: 'Weight coverage (configured)',
+              value: wc,
+            },
+            { label: 'Excluded (sample)', value: exSummary || 'none' },
+            { label: 'Thresholds', value: 'min 3 coins, ≥70% configured weight' },
+          ],
+        };
       }
 
-      const marketCaps = data.market_caps.map(([timestamp, cap]) => cap).filter(Number.isFinite);
-      if (marketCaps.length < 30) continue;
-
-      const latest = marketCaps[marketCaps.length - 1];
-      const thirtyDaysAgo = marketCaps[Math.max(0, marketCaps.length - 30)];
-      const sevenDaysAgo = marketCaps[Math.max(0, marketCaps.length - 7)];
-      
-      const change30d = (latest - thirtyDaysAgo) / thirtyDaysAgo;
-      const change7d = (latest - sevenDaysAgo) / sevenDaysAgo;
-
-      coinData.push({
-        symbol: coin.symbol,
-        marketCap: latest,
-        change30d: change30d,
-        change7d: change7d,
-        weight: coin.weight
-      });
-
-      totalMarketCap += latest;
-      totalSupplyChange += change30d * coin.weight;
-      totalWeightedChange += change30d * coin.weight;
-      validCoins++;
-    }
-
-    if (validCoins === 0) {
-      return { score: null, reason: "no_stablecoin_data" };
-    }
-
-    // Multi-factor analysis
-    // 1. Aggregate Supply Growth (50% weight)
-    const aggregateChange = totalWeightedChange; // Weighted by market share
-
-    const growthGuard = guardStablecoinAggregateChange(aggregateChange);
-    if (!growthGuard.ok) {
+      const growthGuardReason = growthSnapshot.reason;
       console.warn(
-        `Stablecoins: ${growthGuard.reason} (validCoins=${validCoins}, aggregateChange=${aggregateChange})`
+        `Stablecoins: ${growthGuardReason} (validCoins=${growthSnapshot.valid?.length ?? 0}, aggregateChange=${growthSnapshot.aggregateChange})`
       );
       return {
         score: null,
-        reason: growthGuard.reason,
+        reason: growthGuardReason,
         lastUpdated: new Date().toISOString(),
         details: [
-          { label: 'Valid coins (30d caps)', value: String(validCoins) },
+          {
+            label: 'Valid coins (30d caps)',
+            value: String(growthSnapshot.valid?.length ?? 0),
+          },
           {
             label: 'Aggregate 30d growth',
-            value: Number.isFinite(aggregateChange) ? `${(aggregateChange * 100).toFixed(4)}%` : 'non-finite',
+            value: Number.isFinite(growthSnapshot.aggregateChange)
+              ? `${(growthSnapshot.aggregateChange * 100).toFixed(4)}%`
+              : 'non-finite',
           },
-          { label: 'Data quality', value: growthGuard.reason },
+          { label: 'Data quality', value: growthGuardReason },
         ],
       };
     }
 
-    // 2. Supply Growth Momentum (30% weight) - 7d vs 30d trend
-    const recentMomentum = coinData.reduce((sum, coin) => {
-      const momentum = coin.change7d / Math.max(Math.abs(coin.change30d), 0.001); // Recent vs longer term
-      return sum + momentum * coin.weight;
-    }, 0);
+    const coinData = growthSnapshot.valid;
+    const validCoins = coinData.length;
+    const aggregateChange = growthSnapshot.aggregateChange;
+    const recentMomentum = growthSnapshot.recentMomentum;
+    const totalMarketCap = growthSnapshot.totalMarketCap;
+    const weightCoveragePct = (growthSnapshot.weightCoverage * 100).toFixed(1);
+
+    const excludedSummary = growthSnapshot.excluded
+      .map((e) => `${e.symbol} (${e.reason})`)
+      .slice(0, 8)
+      .join('; ');
+
+    console.log(
+      `Stablecoins: growth aggregate ok (fetched=${fetchedCount}, valid=${validCoins}, weightCoverage=${weightCoveragePct}%; excluded=${growthSnapshot.excluded.length})`
+    );
 
     // 3. Market Concentration Risk (20% weight) - diversification
     const hhi = coinData.reduce((sum, coin) => {
@@ -1293,6 +1300,13 @@ async function computeStablecoins() {
         { label: "Total Market Cap", value: `$${(totalMarketCap / 1e9).toFixed(1)}B` },
         { label: "Dominant Stablecoin", value: `${dominantCoin.symbol} (${((dominantCoin.marketCap / totalMarketCap) * 100).toFixed(0)}%)` },
         { label: "Aggregate 30d Growth", value: `${(aggregateChange * 100).toFixed(1)}%` },
+        {
+          label: "Stablecoin Growth Coverage",
+          value: `${validCoins}/${stablecoins.length} coins, ${weightCoveragePct}% weight`,
+        },
+        ...(excludedSummary
+          ? [{ label: "Excluded Growth Inputs", value: excludedSummary }]
+          : []),
         { label: "Growth Momentum", value: recentMomentum > 1 ? "Accelerating" : recentMomentum > 0.5 ? "Steady" : "Decelerating" },
         { label: "Market Concentration", value: `HHI: ${(hhi * 10000).toFixed(0)}` },
         { label: "Supply Growth Percentile", value: `${(supplyPercentile * 100).toFixed(0)}%` },
