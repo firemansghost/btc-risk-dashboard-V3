@@ -2,6 +2,27 @@
 
 Key technical choices and rationale for the Bitcoin Risk Dashboard.
 
+## 2026-05-07 (continuity): Stablecoins data-quality guard and history artifact upserts
+
+**Decision / continuity:**
+
+1. **Stablecoins:** Reject **non-finite** aggregate growth inputs (e.g. **NaN**) in the Stablecoins factor path instead of letting them flow into percentile-based scoring. Invalid input returns **`score: null`** / **`invalid_stablecoin_growth_input`**; **finite** behavior and weights are unchanged.
+2. **`history.csv`:** **Upsert** the row for the current **`daily_close_date` / `y.date`** on each Daily ETL run so same-day reruns **replace** the prior row (no “first write wins” staleness vs **`latest.json`**).
+3. **`factor_history.csv`:** Write factor history from the **current ETL run** (in-memory factors + headline composite + SSOT band label) **after** **`latest.json`** is written—not from a pre-write stale read of **`latest.json`**.
+
+**Reason:** Invalid math must not present as a confident numeric official factor score. Same-day pipeline behavior should keep **`latest.json`**, **`history.csv`**, and **`factor_history.csv`** aligned for the same close date where possible.
+
+**Implication:**
+
+- **Current official score** is **`public/data/latest.json`**.
+- **Chart history** is **`public/data/history.csv`** (as-published series; not automatically “re-modeled history” without an approved backfill).
+- **Factor attribution over time** is **`public/data/factor_history.csv`** (diagnostic).
+- **Do not** fake historical recomputes by replaying **live** ETL over past dates—factors are **time-varying**; trustworthy historical recomputation needs **frozen per-day inputs**, not today’s API state.
+
+**Scope:** Data-quality guard + artifact writer consistency only—not G-Score methodology, weights, or risk bands.
+
+---
+
 ## 2026-04-19 (continuity): Daily ETL post-check defers to centralized freshness for calendar-sensitive factors
 
 **Decision / continuity:** `runPostComputeHealthCheck()` in `scripts/etl/compute.mjs` must **not** override centralized staleness for factors that are **calendar-sensitive** in SSOT staleness config (`market_dependent` or `business_days_only`) when the pipeline has already marked them **`fresh`** (e.g. `etf_flows` with **`fresh_weekend_data_from_friday`** on Sunday).

@@ -179,6 +179,24 @@ These updates improve readability, mobile usability, and ETL resilience **withou
 
 **Operational note:** This was an **ETL freshness-alignment** bug, not G-Score math, model weights, or scoring output semantics. **Node 20** GitHub Actions deprecation noise on **ETL-related workflows** was cleaned up in the same maintenance window (e.g. current `setup-node` usage in those workflows).
 
+#### Daily ETL artifact consistency + Stablecoins NaN guard (2026-05-07)
+
+**Symptom:** The headline G-Score moved (e.g. toward **46**) after repeated **Daily ETL** runs; an audit traced much of the movement to **Stablecoins** and surfaced **historical artifact consistency** issues (not a methodology/weights change).
+
+**Stablecoins fix:** Non-finite aggregate growth (**NaN** / non-finite) used to flow into percentile math and could produce an **extreme** Supply path and an inflated factor score. **Finite** Stablecoins behavior is unchanged. Invalid input now yields **`score: null`** with reason **`invalid_stablecoin_growth_input`** (`scripts/etl/factors/stablecoinGrowthGuard.mjs`, guard in **`computeStablecoins`**, tests in **`scripts/etl/__tests__/stablecoinGrowthGuard.test.mjs`**).
+
+**History fix:** **`public/data/history.csv`** used to behave like **first write wins** for a calendar date—same-day reruns could update **`latest.json`** while the chart row stayed on the first score. It now **upserts** by **`y.date` / `daily_close_date`** (see **`scripts/etl/lib/gscoreHistoryCsv.mjs`**, wired from **`scripts/etl/compute.mjs`**): one row per date; the latest same-day run replaces that row.
+
+**Factor history fix:** **`public/data/factor_history.csv`** previously read **stale** `latest.json` from disk **before** the current run wrote the new file, causing off-by-run rows and **empty `composite_band`**. It now syncs from the **current in-memory ETL run** after **`latest.json`** is written, with **`composite_band`** set from the **current SSOT band label** (`scripts/etl/factor-history-tracking.mjs`). **`daily_close_date`** on **`latest.json`** keys the row alongside **`history.csv`**.
+
+**Operational truth sources:**
+
+- **`public/data/latest.json`** — **current official** G-Score and factors (**Source of truth** for “what is the score right now”).
+- **`public/data/history.csv`** — drives the **visible historical chart**; series is **as-published** per run. Do **not** treat it as a guaranteed “replay under today’s model” series without an intentional backfill/rebuild.
+- **`public/data/factor_history.csv`** — **diagnostic / factor attribution** history (not the chart series).
+
+**Backfill warning:** Do **not** “rebuild the past” by looping **live** Daily ETL—many factors use **time-varying** inputs; that produces **fake** historical recomputes. Real historical recomputation needs **frozen inputs per day**, not a replay of today’s APIs. **No backfill** was done as part of this pass; prior rows may remain **as-published** snapshots from earlier data quality or writer behavior until a future approved exercise.
+
 ---
 
 ## 1. Repo Status & Sync
@@ -478,6 +496,6 @@ Both read from `public/data/history.csv`, but **methodologies differ**. Headline
 
 ---
 
-**Last Updated:** 2026-04-19 — **Daily ETL weekend freshness fix** (`etf_flows` post-check vs centralized staleness); see *2026-04-14 addendum* → **Daily ETL weekend freshness fix (2026-04-19)**.  
-**Previously:** 2026-04-15 — **Strategy Analysis — backtesting JSON artifacts (provenance)** under *Repo Map*; 2026-04-14 addendum (Score Insights, mobile, FRED/cache ETL resilience).  
-**Status:** Trust repair and follow-ups per **Checkpoints**; ETL continuity notes include weekend `etf_flows` post-check alignment and FRED cache resilience; UI redesign planning notes in sections below remain useful guards for future work
+**Last Updated:** 2026-05-07 — **Daily ETL artifact consistency** + **Stablecoins NaN guard**; see *2026-04-14 addendum* → **Daily ETL artifact consistency + Stablecoins NaN guard (2026-05-07)**.  
+**Previously:** 2026-04-19 — **Daily ETL weekend freshness fix**; 2026-04-15 — **Strategy Analysis — backtesting JSON artifacts (provenance)**; 2026-04-14 addendum (Score Insights, mobile, FRED/cache ETL resilience).  
+**Status:** Trust repair and follow-ups per **Checkpoints**; ETL continuity notes include Stablecoins invalid-growth guard, `history.csv`/`factor_history.csv` upsert + in-run sync, weekend `etf_flows` post-check alignment, and FRED cache resilience; UI redesign planning notes in sections below remain useful guards for future work
