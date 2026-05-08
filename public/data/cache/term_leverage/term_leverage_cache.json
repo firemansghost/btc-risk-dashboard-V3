@@ -1,12 +1,12 @@
 {
-  "score": 49,
-  "reason": "success_cached",
-  "lastUpdated": "2026-05-07T23:19:38.898Z",
-  "timestamp": "2026-05-07T23:19:38.898Z",
+  "score": 53,
+  "reason": "success",
+  "lastUpdated": "2026-05-08T15:46:45.345Z",
+  "timestamp": "2026-05-08T15:46:45.345Z",
   "details": [
     {
       "label": "Current Funding Rate",
-      "value": "0.0077%"
+      "value": "-0.0051%"
     },
     {
       "label": "30-day Average",
@@ -38,15 +38,24 @@
     },
     {
       "label": "Component Scores",
-      "value": "Funding: 45, Vol: 73, Stress: 23"
+      "value": "Funding: 45, Vol: 73, Stress: 37"
     }
   ],
-  "providers": {
-    "bitmex": "ok",
-    "binance": "451",
-    "okx": "ok"
-  },
   "fundingData": [
+    {
+      "timestamp": "2026-05-08T12:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000051,
+      "fundingRateDaily": -0.000153
+    },
+    {
+      "timestamp": "2026-05-08T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000054,
+      "fundingRateDaily": 0.00016199999999999998
+    },
     {
       "timestamp": "2026-05-07T20:00:00.000Z",
       "symbol": "XBTUSD",
@@ -242,23 +251,14 @@
       "fundingInterval": "2000-01-01T08:00:00.000Z",
       "fundingRate": -0.000072,
       "fundingRateDaily": -0.000216
-    },
-    {
-      "timestamp": "2026-04-28T12:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": -0.000086,
-      "fundingRateDaily": -0.000258
-    },
-    {
-      "timestamp": "2026-04-28T04:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": 0.000086,
-      "fundingRateDaily": 0.000258
     }
   ],
   "parallelTime": 1,
-  "cachedAt": "2026-05-07T23:19:38.898Z",
+  "providers": {
+    "bitmex": "ok",
+    "binance": "451",
+    "okx": "ok"
+  },
+  "cachedAt": "2026-05-08T15:46:45.345Z",
   "version": "1.0.0"
 }
