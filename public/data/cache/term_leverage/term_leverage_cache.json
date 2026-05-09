@@ -1,16 +1,16 @@
 {
-  "score": 53,
+  "score": 55,
   "reason": "success",
-  "lastUpdated": "2026-05-08T15:46:45.345Z",
-  "timestamp": "2026-05-08T15:46:45.345Z",
+  "lastUpdated": "2026-05-09T11:54:20.940Z",
+  "timestamp": "2026-05-09T11:54:20.940Z",
   "details": [
     {
       "label": "Current Funding Rate",
-      "value": "-0.0051%"
+      "value": "0.0002%"
     },
     {
       "label": "30-day Average",
-      "value": "-0.0036%"
+      "value": "-0.0037%"
     },
     {
       "label": "Price Volatility (30d)",
@@ -26,7 +26,7 @@
     },
     {
       "label": "30-day Range",
-      "value": "-0.0249% - 0.0100%"
+      "value": "-0.0249% - 0.0088%"
     },
     {
       "label": "Data Source",
@@ -38,10 +38,24 @@
     },
     {
       "label": "Component Scores",
-      "value": "Funding: 45, Vol: 73, Stress: 37"
+      "value": "Funding: 40, Vol: 73, Stress: 54"
     }
   ],
   "fundingData": [
+    {
+      "timestamp": "2026-05-09T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000002,
+      "fundingRateDaily": 0.000006
+    },
+    {
+      "timestamp": "2026-05-08T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000009,
+      "fundingRateDaily": -0.000027
+    },
     {
       "timestamp": "2026-05-08T12:00:00.000Z",
       "symbol": "XBTUSD",
@@ -237,20 +251,6 @@
       "fundingInterval": "2000-01-01T08:00:00.000Z",
       "fundingRate": -0.000005,
       "fundingRateDaily": -0.000015
-    },
-    {
-      "timestamp": "2026-04-29T04:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": 0.0001,
-      "fundingRateDaily": 0.00030000000000000003
-    },
-    {
-      "timestamp": "2026-04-28T20:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": -0.000072,
-      "fundingRateDaily": -0.000216
     }
   ],
   "parallelTime": 1,
@@ -259,6 +259,6 @@
     "binance": "451",
     "okx": "ok"
   },
-  "cachedAt": "2026-05-08T15:46:45.345Z",
+  "cachedAt": "2026-05-09T11:54:20.940Z",
   "version": "1.0.0"
 }
