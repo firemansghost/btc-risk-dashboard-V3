@@ -2,7 +2,7 @@
   "score": 78,
   "reason": "success",
   "status": "fresh",
-  "lastUpdated": "2026-05-14T12:56:33.264Z",
+  "lastUpdated": "2026-05-15T12:57:56.595Z",
   "components": {
     "searchScore": 70,
     "momentumScore": 95,
@@ -32,7 +32,7 @@
     },
     {
       "label": "Fetch Time",
-      "value": "5ms"
+      "value": "8ms"
     },
     {
       "label": "Data Sources",
@@ -49,7 +49,7 @@
   ],
   "bitcoinRank": 5,
   "latestPrice": 110588.79953292229,
-  "fetchTime": 5,
-  "cachedAt": "2026-05-14T12:56:33.264Z",
+  "fetchTime": 8,
+  "cachedAt": "2026-05-15T12:57:56.596Z",
   "version": "1.0.0"
 }
