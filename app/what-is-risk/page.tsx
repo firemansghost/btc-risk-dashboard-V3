@@ -144,7 +144,7 @@ export default function WhatIsRiskPage() {
             {/* 4-Part Mental Model */}
             <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">🧠 The 4-Part Mental Model</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="bg-green-50 border border-green-200 rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-green-800 mb-3">🎲 Odds</h3>
                   <p className="text-green-700 text-sm leading-relaxed">
@@ -169,9 +169,8 @@ export default function WhatIsRiskPage() {
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-amber-800 mb-3">⏳ Time Horizon</h3>
                   <p className="text-amber-700 text-sm leading-relaxed">
-                    How long does this decision have to work? Short horizons make volatility more dangerous. Long
-                    horizons make behavior more dangerous. A high G-Score may matter more to someone making a
-                    near-term decision than to someone with a long-term plan, no leverage, and no need to sell.
+                    Short horizons make volatility more dangerous. Long horizons make behavior more dangerous. A high
+                    G-Score may matter more when the decision is near-term, leveraged, oversized, or tied to cash needs.
                   </p>
                 </div>
               </div>

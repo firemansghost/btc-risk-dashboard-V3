@@ -38,13 +38,13 @@ export default function Navigation() {
   }, []);
 
   const navItems = [
-    { href: '/', label: 'Overview', icon: '📊' },
-    { href: '/assets', label: 'Assets', icon: '🏛️' },
-    { href: '/methodology', label: 'Methodology', icon: '📋' },
-    { href: '/strategy-analysis', label: 'Strategy Analysis', icon: '📈' },
-    { href: '/etf-predictions', label: 'ETF Predictions', icon: '💰' },
-    { href: '/alerts', label: 'Alerts', icon: '🔔' },
-    { href: '/what-is-risk', label: 'What Is Risk?', icon: '❓' },
+    { href: '/', label: 'Overview', shortLabel: 'Overview', icon: '📊' },
+    { href: '/assets', label: 'Assets', shortLabel: 'Assets', icon: '🏛️' },
+    { href: '/methodology', label: 'Methodology', shortLabel: 'Method', icon: '📋' },
+    { href: '/strategy-analysis', label: 'Strategy Analysis', shortLabel: 'Strategy', icon: '📈' },
+    { href: '/etf-predictions', label: 'ETF Predictions', shortLabel: 'ETF Pred.', icon: '💰' },
+    { href: '/alerts', label: 'Alerts', shortLabel: 'Alerts', icon: '🔔' },
+    { href: '/what-is-risk', label: 'What Is Risk?', shortLabel: 'Risk', icon: '❓' },
   ];
 
   const getBreadcrumbs = () => {
@@ -109,12 +109,14 @@ export default function Navigation() {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-0.5 lg:space-x-1 min-w-0 flex-1 justify-end max-w-3xl ml-4">
+            <div className="hidden md:flex items-center min-w-0 flex-1 justify-end gap-0.5 xl:gap-1 ml-2 xl:ml-4">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-2 lg:px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 min-w-0 max-w-[9rem] lg:max-w-none truncate ${
+                  aria-label={item.label}
+                  title={item.label}
+                  className={`px-1.5 md:px-2 xl:px-2.5 py-2 text-xs xl:text-sm font-medium rounded-md transition-all duration-200 whitespace-nowrap shrink-0 ${
                     pathname === item.href
                       ? 'glass-blue text-blue-900 border border-blue-300/50'
                       : 'text-gray-600 hover:text-gray-900 hover:glass-hover'
@@ -125,8 +127,9 @@ export default function Navigation() {
                     }
                   }}
                 >
-                  <span className="hidden lg:inline mr-2">{item.icon}</span>
-                  {item.label}
+                  <span className="hidden xl:inline mr-1.5">{item.icon}</span>
+                  <span className="xl:hidden">{item.shortLabel}</span>
+                  <span className="hidden xl:inline">{item.label}</span>
                 </Link>
               ))}
             </div>
