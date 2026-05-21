@@ -109,12 +109,12 @@ export default function Navigation() {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-1">
+            <div className="hidden md:flex items-center space-x-0.5 lg:space-x-1 min-w-0 flex-1 justify-end max-w-3xl ml-4">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 min-w-0 flex-shrink-0 ${
+                  className={`px-2 lg:px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 min-w-0 max-w-[9rem] lg:max-w-none truncate ${
                     pathname === item.href
                       ? 'glass-blue text-blue-900 border border-blue-300/50'
                       : 'text-gray-600 hover:text-gray-900 hover:glass-hover'
@@ -132,7 +132,7 @@ export default function Navigation() {
             </div>
 
             {/* Search & Mobile Menu */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 shrink-0 ml-2">
               {/* Search Button */}
               <button
                 onClick={handleSearchClick}
