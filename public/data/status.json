@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-22T13:34:18.599Z",
+  "updated_at": "2026-05-23T12:03:16.450Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -29,43 +29,43 @@
       "name": "History: trend_valuation",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 219
+      "total_rows": 220
     },
     {
       "name": "History: stablecoins",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 239
+      "total_rows": 240
     },
     {
       "name": "History: etf_flows",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 634
+      "total_rows": 635
     },
     {
       "name": "History: net_liquidity",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 290
+      "total_rows": 291
     },
     {
       "name": "History: term_leverage",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 213
+      "total_rows": 214
     },
     {
       "name": "History: macro_overlay",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 219
+      "total_rows": 220
     },
     {
       "name": "History: social_interest",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 219
+      "total_rows": 220
     }
   ],
   "factors_computed": 7,
@@ -80,22 +80,22 @@
     "derived": true
   },
   "etf_schema_hash": "12cf3a62",
-  "etf_schema_last_check": "2026-05-22T13:33:04.122Z",
+  "etf_schema_last_check": "2026-05-23T12:02:00.728Z",
   "price_history": {
     "total_rows": 729,
-    "oldest_date": "2024-05-22",
-    "newest_date": "2026-05-22",
+    "oldest_date": "2024-05-23",
+    "newest_date": "2026-05-23",
     "alpha_vantage_backfill": null,
     "coinbase_daily_update": {
       "status": "success",
       "rows_fetched": 14,
-      "ms": 130
+      "ms": 131
     },
     "drift_check": null
   },
   "term_leverage": {
     "status": "fresh",
-    "last_updated_utc": "2026-05-22T13:33:04.774Z",
+    "last_updated_utc": "2026-05-23T12:02:01.307Z",
     "providers": {
       "bitmex": "ok",
       "binance": "451",
@@ -103,7 +103,7 @@
     },
     "ttl_hours": 6,
     "stale_beyond_hours": 12,
-    "score": 57,
+    "score": 55,
     "reason": "fresh (1min)"
   }
 }
