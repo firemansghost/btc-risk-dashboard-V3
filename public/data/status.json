@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-24T12:04:42.117Z",
+  "updated_at": "2026-05-26T13:57:26.367Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -29,43 +29,43 @@
       "name": "History: trend_valuation",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 221
+      "total_rows": 222
     },
     {
       "name": "History: stablecoins",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 241
+      "total_rows": 242
     },
     {
       "name": "History: etf_flows",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 636
+      "total_rows": 637
     },
     {
       "name": "History: net_liquidity",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 292
+      "total_rows": 293
     },
     {
       "name": "History: term_leverage",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 215
+      "total_rows": 216
     },
     {
       "name": "History: macro_overlay",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 221
+      "total_rows": 222
     },
     {
       "name": "History: social_interest",
       "ok": true,
       "rows_appended": 1,
-      "total_rows": 221
+      "total_rows": 222
     }
   ],
   "factors_computed": 7,
@@ -80,11 +80,11 @@
     "derived": true
   },
   "etf_schema_hash": "12cf3a62",
-  "etf_schema_last_check": "2026-05-24T12:03:30.651Z",
+  "etf_schema_last_check": "2026-05-26T13:56:14.880Z",
   "price_history": {
     "total_rows": 729,
-    "oldest_date": "2024-05-24",
-    "newest_date": "2026-05-24",
+    "oldest_date": "2024-05-26",
+    "newest_date": "2026-05-26",
     "alpha_vantage_backfill": null,
     "coinbase_daily_update": {
       "status": "success",
@@ -95,7 +95,7 @@
   },
   "term_leverage": {
     "status": "fresh",
-    "last_updated_utc": "2026-05-24T12:03:31.960Z",
+    "last_updated_utc": "2026-05-26T13:56:15.883Z",
     "providers": {
       "bitmex": "ok",
       "binance": "451",
@@ -103,7 +103,7 @@
     },
     "ttl_hours": 6,
     "stale_beyond_hours": 12,
-    "score": 53,
+    "score": 51,
     "reason": "fresh (1min)"
   }
 }

@@ -1,16 +1,16 @@
 {
-  "score": 53,
+  "score": 51,
   "reason": "success",
-  "lastUpdated": "2026-05-24T12:03:31.960Z",
-  "timestamp": "2026-05-24T12:03:31.960Z",
+  "lastUpdated": "2026-05-26T13:56:15.883Z",
+  "timestamp": "2026-05-26T13:56:15.883Z",
   "details": [
     {
       "label": "Current Funding Rate",
-      "value": "-0.0155%"
+      "value": "-0.0131%"
     },
     {
       "label": "30-day Average",
-      "value": "-0.0018%"
+      "value": "-0.0039%"
     },
     {
       "label": "Price Volatility (30d)",
@@ -26,7 +26,7 @@
     },
     {
       "label": "30-day Range",
-      "value": "-0.0232% - 0.0100%"
+      "value": "-0.0263% - 0.0100%"
     },
     {
       "label": "Data Source",
@@ -34,14 +34,56 @@
     },
     {
       "label": "Calculation Method",
-      "value": "Parallel processing (2ms)"
+      "value": "Parallel processing (1ms)"
     },
     {
       "label": "Component Scores",
-      "value": "Funding: 45, Vol: 73, Stress: 37"
+      "value": "Funding: 45, Vol: 73, Stress: 29"
     }
   ],
   "fundingData": [
+    {
+      "timestamp": "2026-05-26T12:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000131,
+      "fundingRateDaily": -0.000393
+    },
+    {
+      "timestamp": "2026-05-26T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000194,
+      "fundingRateDaily": -0.000582
+    },
+    {
+      "timestamp": "2026-05-25T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000112,
+      "fundingRateDaily": -0.000336
+    },
+    {
+      "timestamp": "2026-05-25T12:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000016,
+      "fundingRateDaily": -0.000048
+    },
+    {
+      "timestamp": "2026-05-25T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.0001,
+      "fundingRateDaily": -0.00030000000000000003
+    },
+    {
+      "timestamp": "2026-05-24T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000263,
+      "fundingRateDaily": -0.000789
+    },
     {
       "timestamp": "2026-05-24T12:00:00.000Z",
       "symbol": "XBTUSD",
@@ -209,56 +251,14 @@
       "fundingInterval": "2000-01-01T08:00:00.000Z",
       "fundingRate": -0.000178,
       "fundingRateDaily": -0.000534
-    },
-    {
-      "timestamp": "2026-05-16T12:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": -0.000047,
-      "fundingRateDaily": -0.00014099999999999998
-    },
-    {
-      "timestamp": "2026-05-16T04:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": -0.000026,
-      "fundingRateDaily": -0.000078
-    },
-    {
-      "timestamp": "2026-05-15T20:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": -0.000048,
-      "fundingRateDaily": -0.000144
-    },
-    {
-      "timestamp": "2026-05-15T12:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": -0.000003,
-      "fundingRateDaily": -0.000009
-    },
-    {
-      "timestamp": "2026-05-15T04:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": -0.00013,
-      "fundingRateDaily": -0.00038999999999999994
-    },
-    {
-      "timestamp": "2026-05-14T20:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": 0.000073,
-      "fundingRateDaily": 0.000219
     }
   ],
-  "parallelTime": 2,
+  "parallelTime": 1,
   "providers": {
     "bitmex": "ok",
     "binance": "451",
     "okx": "ok"
   },
-  "cachedAt": "2026-05-24T12:03:31.961Z",
+  "cachedAt": "2026-05-26T13:56:15.883Z",
   "version": "1.0.0"
 }
