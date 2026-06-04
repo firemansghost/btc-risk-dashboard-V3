@@ -1,16 +1,16 @@
 {
-  "score": 53,
+  "score": 51,
   "reason": "success",
-  "lastUpdated": "2026-06-03T15:48:43.545Z",
-  "timestamp": "2026-06-03T15:48:43.545Z",
+  "lastUpdated": "2026-06-04T14:06:09.848Z",
+  "timestamp": "2026-06-04T14:06:09.848Z",
   "details": [
     {
       "label": "Current Funding Rate",
-      "value": "0.0086%"
+      "value": "0.0073%"
     },
     {
       "label": "30-day Average",
-      "value": "-0.0018%"
+      "value": "0.0001%"
     },
     {
       "label": "Price Volatility (30d)",
@@ -26,7 +26,7 @@
     },
     {
       "label": "30-day Range",
-      "value": "-0.0263% - 0.0100%"
+      "value": "-0.0207% - 0.0100%"
     },
     {
       "label": "Data Source",
@@ -38,10 +38,31 @@
     },
     {
       "label": "Component Scores",
-      "value": "Funding: 45, Vol: 73, Stress: 37"
+      "value": "Funding: 50, Vol: 73, Stress: 23"
     }
   ],
   "fundingData": [
+    {
+      "timestamp": "2026-06-04T12:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.000073,
+      "fundingRateDaily": 0.000219
+    },
+    {
+      "timestamp": "2026-06-04T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.0001,
+      "fundingRateDaily": 0.00030000000000000003
+    },
+    {
+      "timestamp": "2026-06-03T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000002,
+      "fundingRateDaily": -0.000006
+    },
     {
       "timestamp": "2026-06-03T12:00:00.000Z",
       "symbol": "XBTUSD",
@@ -230,27 +251,6 @@
       "fundingInterval": "2000-01-01T08:00:00.000Z",
       "fundingRate": -0.000112,
       "fundingRateDaily": -0.000336
-    },
-    {
-      "timestamp": "2026-05-25T12:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": -0.000016,
-      "fundingRateDaily": -0.000048
-    },
-    {
-      "timestamp": "2026-05-25T04:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": -0.0001,
-      "fundingRateDaily": -0.00030000000000000003
-    },
-    {
-      "timestamp": "2026-05-24T20:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": -0.000263,
-      "fundingRateDaily": -0.000789
     }
   ],
   "parallelTime": 1,
@@ -259,6 +259,6 @@
     "binance": "451",
     "okx": "ok"
   },
-  "cachedAt": "2026-06-03T15:48:43.545Z",
+  "cachedAt": "2026-06-04T14:06:09.848Z",
   "version": "1.0.0"
 }
