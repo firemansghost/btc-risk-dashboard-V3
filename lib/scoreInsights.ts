@@ -88,6 +88,27 @@ export function classifyScoreInsights(
   return { scoreContributors, pressureDrivers, offsets };
 }
 
+export type FactorScanRole = 'pressure' | 'offset' | 'neutral' | 'not_fresh';
+
+/**
+ * Single-factor scan role aligned with classifyScoreInsights (Phase 1).
+ * Pressure takes precedence; offset uses the same thresholds as Score Insights.
+ */
+export function getFactorScanRole(
+  factor: { score: number; status: string },
+  compositeScore: number
+): FactorScanRole {
+  if (factor.status !== 'fresh') return 'not_fresh';
+  if (factor.score >= PRESSURE_SCORE_MIN) return 'pressure';
+  if (
+    factor.score <= OFFSET_SCORE_MAX ||
+    factor.score <= compositeScore - OFFSET_COMPOSITE_DELTA
+  ) {
+    return 'offset';
+  }
+  return 'neutral';
+}
+
 function concentrationLevel(top2Pct: number): 'low' | 'medium' | 'high' {
   if (top2Pct >= 70) return 'high';
   if (top2Pct >= 50) return 'medium';

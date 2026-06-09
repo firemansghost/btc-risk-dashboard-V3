@@ -5,7 +5,7 @@ import { getPillarBadgeClasses, getPillarLabel } from '@/lib/pillar-colors';
 import { getFactorStaleness, getFactorSubSignals, getFactorTTL, getFactorCadence } from '@/lib/factorUtils';
 import { formatFriendlyTimestamp } from '@/lib/dateUtils';
 import { formatDeltaDisplay, getDeltaColorClass, formatDeltaProvenance } from '@/lib/deltaUtils';
-import { getBandForScore } from '@/lib/riskConfig.client';
+import { getFactorRiskScoreDisplay } from '@/lib/factorDisplay';
 import { formatFreshnessAge, getFreshnessDisplay } from '@/lib/freshnessDisplay';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 
@@ -165,10 +165,8 @@ export default function FactorDetailsDrawer({
   const age = formatAge(lastUpdated);
   const freshness = getFreshnessDisplay(factor, Date.now(), { verbose: true });
   
-  // Get risk band for the factor score
-  const riskBand = factor.score !== null && !isNaN(factor.score) 
-    ? getBandForScore(factor.score) 
-    : null;
+  // Factor-risk label for display (not composite action band names)
+  const factorRiskDisplay = getFactorRiskScoreDisplay(factor.score);
 
   // Determine if factor is stale or excluded
   const isStale = staleness.level === 'stale';
@@ -181,9 +179,9 @@ export default function FactorDetailsDrawer({
     const provenance = delta ? formatDeltaProvenance(delta) : 'Δ unavailable';
     const statusText = isExcluded ? 'EXCLUDED' : isStale ? 'STALE' : 'LIVE';
     const reasonText = freshness.shortLine ? ` · ${freshness.shortLine}` : '';
-    const bandText = riskBand ? ` (${riskBand.label})` : '';
+    const riskText = factorRiskDisplay.tier !== 'na' ? ` (${factorRiskDisplay.riskLabel})` : '';
     
-    const summary = `${factor.label} — score ${factor.score !== null ? factor.score.toFixed(0) : 'N/A'}${bandText} · Δ ${deltaDisplay} (${provenance}) · status ${statusText}${reasonText}`;
+    const summary = `${factor.label} — score ${factor.score !== null ? factor.score.toFixed(0) : 'N/A'}${riskText} · Δ ${deltaDisplay} (${provenance}) · status ${statusText}${reasonText}`;
     
     const success = await copyToClipboard(summary);
     setCopyState(prev => ({ ...prev, summary: success ? 'success' : 'error' }));
@@ -213,11 +211,13 @@ export default function FactorDetailsDrawer({
         ttlHours: cadence.ttlHours
       },
       subSignals: subSignals.length > 0 ? subSignals : null,
-      riskBand: riskBand ? {
-        key: riskBand.key,
-        label: riskBand.label,
-        range: riskBand.range
-      } : null
+      factorRiskTier:
+        factorRiskDisplay.tier !== 'na'
+          ? {
+              tier: factorRiskDisplay.tier,
+              label: factorRiskDisplay.riskLabel,
+            }
+          : null,
     };
 
     // Add delta metadata if available
@@ -389,10 +389,8 @@ export default function FactorDetailsDrawer({
                 <div className="text-2xl font-bold text-gray-900">
                   {factor.score !== null ? factor.score.toFixed(0) : 'N/A'}
                 </div>
-                {riskBand && (
-                  <div className="text-xs text-gray-500 mt-1">
-                    {riskBand.label}
-                  </div>
+                {factorRiskDisplay.tier !== 'na' && (
+                  <div className="text-xs text-gray-500 mt-1">{factorRiskDisplay.riskLabel}</div>
                 )}
               </div>
               {delta && (

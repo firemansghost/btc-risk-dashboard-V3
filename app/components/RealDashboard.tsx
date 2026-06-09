@@ -3,14 +3,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { fmtUsd0 } from '@/lib/format';
 import { getBandTextColor } from '@/lib/band-colors';
-import { getPillarBadgeClasses, getPillarLabel } from '@/lib/pillar-colors';
 import { recalculateGScoreWithFreshPrice } from '@/lib/dynamicGScore';
 import { formatFriendlyTimestamp, calculateFreshness, formatLocalRefreshTime, calculateYesterdayDelta } from '@/lib/dateUtils';
 import { getBandTextColorFromLabel } from '@/lib/bandTextColors';
 import { formatSourceTimestamp } from '@/lib/sourceUtils';
-import { calculateContribution, getFactorStaleness, getFactorSubSignals, sortFactorsByContribution, getFactorTTL, getFactorCadence } from '@/lib/factorUtils';
-import { formatFreshnessAge, getFreshnessDisplay } from '@/lib/freshnessDisplay';
-import { DEFAULT_CONFIG, getFactorConfig, getBandForScore, type PillarKey } from '@/lib/riskConfig.client';
+import { calculateContribution, getFactorStaleness, sortFactorsByContribution, getFactorTTL } from '@/lib/factorUtils';
+import { getFreshnessDisplay } from '@/lib/freshnessDisplay';
+import { DEFAULT_CONFIG, getBandForScore, type PillarKey } from '@/lib/riskConfig.client';
 import { computeDashboardModelComposite, type FactorInput } from '@/lib/experimentalModel';
 import { formatDeltaDisplay, getDeltaColorClass, formatDeltaProvenance } from '@/lib/deltaUtils';
 import SystemStatusCard from './SystemStatusCard';
@@ -33,6 +32,7 @@ import RiskBasedDcaStanceCard from './RiskBasedDcaStanceCard';
 import HistoryChart from './HistoryChart';
 import RadialGauge from './RadialGauge';
 import FactorDetailsDrawer from './FactorDetailsDrawer';
+import FactorOverviewCard from './FactorOverviewCard';
 
 import WeightsLauncher from './WeightsLauncher';
 import AssetSwitcher from './AssetSwitcher';
@@ -57,21 +57,6 @@ const PILLAR_OVERVIEW_SHORT_LABELS: Record<PillarKey, string> = {
 const OVERVIEW_PILLAR_WEIGHTS_SUMMARY = DEFAULT_CONFIG.pillars
   .map((p) => `${PILLAR_OVERVIEW_SHORT_LABELS[p.key]} ${p.weight}%`)
   .join(' · ');
-
-function formatNetLiquidityWeightPctForCopy(): string {
-  const w = getFactorConfig('net_liquidity')?.weight ?? 4.3;
-  return Number.isInteger(w) ? `${w}%` : `${w.toFixed(1)}%`;
-}
-
-function netLiquidityContextPillLabel(): string {
-  const pct = formatNetLiquidityWeightPctForCopy();
-  return `Context only — scored under Liquidity (${pct})`;
-}
-
-function netLiquidityContextTooltip(): string {
-  const pct = formatNetLiquidityWeightPctForCopy();
-  return `Shown for context; Net Liquidity is scored under Liquidity (${pct}) to avoid double-counting macro effects`;
-}
 
 function ErrorView({ msg, onRetry }: { msg: string; onRetry: () => void }) {
   return <div style={{ padding: 16 }}><p>{msg}</p><button onClick={onRetry} style={{ marginTop: 8 }}>Retry</button></div>;
@@ -881,18 +866,20 @@ export default function RealDashboard() {
             </a>
           </div>
           {/* Factor Summary */}
-          <div className="text-sm text-gray-600 mb-4">
+          <div className="text-sm text-gray-600 mb-1">
             Sorted by contribution · {OVERVIEW_PILLAR_WEIGHTS_SUMMARY}
           </div>
+          <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+            Higher factor scores = more risk · Pressure 65+ · Offset = well below headline score ·
+            Stale/excluded shown on card
+          </p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 lg:mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 lg:mb-8 items-stretch">
           {sortFactorsByContribution(latest?.factors || []).map((factor: any, index: number) => {
             const contribution = calculateContribution(factor.score, factor.weight_pct);
             const factorTTL = getFactorTTL(factor.key);
             const staleness = getFactorStaleness(factor.last_utc || factor.as_of_utc, factorTTL, factor.key);
-            const subSignals = getFactorSubSignals(factor.key);
-            const cadence = getFactorCadence(factor.key);
             const freshnessDisplay = getFreshnessDisplay(factor);
             
             return (
@@ -901,338 +888,24 @@ export default function RealDashboard() {
                 delay={index * 100}
                 fallback={<SkeletonLoader isLoading={true}><SkeletonCard type="factor" /></SkeletonLoader>}
               >
-                <div 
-                  id={`factor-${factor.key}`}
-                  className="glass-card glass-shadow card-factor card-hover cursor-pointer h-full flex flex-col transition-all hover:shadow-lg hover:scale-[1.01]"
-                  onClick={() => setSelectedFactor({ key: factor.key, label: factor.label })}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setSelectedFactor({ key: factor.key, label: factor.label });
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`View details for ${factor.label}`}
-                >
-                  {/* Reserved Badge Lane - Top Right */}
-                  <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex flex-col gap-1 items-end">
-                    {/* Show stale/excluded badges, replace fresh with subtle indicator */}
-                    {staleness.level === 'stale' || staleness.level === 'excluded' ? (
-                      <span 
-                        className={`px-2 py-1 rounded text-xs font-medium border ${staleness.className}`}
-                        title={staleness.tooltip}
-                      >
-                        {staleness.level}
-                      </span>
-                    ) : (
-                      <div className="w-2 h-2 rounded-full bg-emerald-500" title="Live data" aria-label="Live data" />
-                    )}
-                    
-                    {/* 50W SMA Diagnostic Pill (Trend & Valuation only) */}
-                    {factor.key === 'trend_valuation' && factor.sma50wDiagnostic && (
-                      <span 
-                        className={`px-2 py-1 rounded text-xs font-medium border ${
-                          factor.sma50wDiagnostic.showWarning 
-                            ? 'bg-amber-100 text-amber-800 border-amber-200' 
-                            : 'bg-gray-50 text-gray-600 border-gray-200'
-                        }`}
-                        title={
-                          factor.sma50wDiagnostic.showWarning
-                            ? "Historical caution marker; display-only, not part of the score"
-                            : "50-week SMA status; display-only, not part of the score"
-                        }
-                      >
-                        {factor.sma50wDiagnostic.showWarning 
-                          ? `Below 50W SMA (${factor.sma50wDiagnostic.consecutiveWeeksBelow}+ weeks)`
-                          : `Above 50W SMA ($${Math.round(factor.sma50wDiagnostic.sma50 / 1000)}k)`
-                        }
-                      </span>
-                    )}
-                    
-                    {/* Space for additional badges if needed */}
-                  </div>
-                  
-                  <div className="mb-4 pr-16 sm:pr-20"> {/* Add right padding to avoid badge lane */}
-                    {/* Header Row - Title and Pillar */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
-                      <h3 className="text-heading-3">{factor.label}</h3>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium w-fit ${getPillarBadgeClasses(factor.pillar)}`}>
-                        {getPillarLabel(factor.pillar)}
-                      </span>
-                    </div>
-                
-                {/* Score Row - Dedicated flex container with controlled wrapping */}
-                <div className="flex items-center gap-1 sm:gap-2 flex-wrap min-h-[32px]">
-                    {/* Risk Score Chip (Primary) with 24h Delta */}
-                    <div className="flex items-center gap-1">
-                      <span 
-                        className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
-                          factor.score !== null ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
-                        }`}
-                        aria-label={`Risk score: ${factor.score !== null ? factor.score.toFixed(0) : 'N/A'}`}
-                      >
-                        Risk: {factor.score !== null ? factor.score.toFixed(0) : 'N/A'}
-                      </span>
-                      {factorDeltas[factor.key] && (
-                        <span 
-                          className={`text-xs font-medium ${getDeltaColorClass(factorDeltas[factor.key].delta)}`}
-                          title={
-                            factorDeltas[factor.key].delta !== null
-                              ? `${formatDeltaDisplay(factorDeltas[factor.key].delta)} points. ${formatDeltaProvenance(factorDeltas[factor.key])}`
-                              : formatDeltaProvenance(factorDeltas[factor.key])
-                          }
-                        >
-                          {formatDeltaDisplay(factorDeltas[factor.key].delta)}
-                        </span>
-                      )}
-                    </div>
-                    
-                    {/* Weight Chip (Muted) */}
-                    <span 
-                      className="px-1.5 sm:px-2 py-1 rounded text-xs text-gray-600 bg-gray-50 border border-gray-200"
-                      aria-label={`Weight: ${factor.weight_pct ? `${factor.weight_pct}%` : 'unknown'}`}
-                    >
-                      W: {factor.weight_pct ? `${factor.weight_pct}%` : '—'}
-                    </span>
-                    
-                    {/* Contribution Chip (Muted) */}
-                    <span 
-                      className="px-1.5 sm:px-2 py-1 rounded text-xs text-gray-600 bg-gray-50 border border-gray-200"
-                      aria-label={`Contribution: ${contribution !== null ? contribution.toFixed(1) : 'unknown'}`}
-                    >
-                      C: {contribution !== null ? contribution.toFixed(1) : '—'}
-                    </span>
-                  </div>
-                
-                {/* Pillar Row with Links */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-1">
-                  <div className="text-sm text-gray-600">
-                    <span className="font-medium text-gray-700">
-                      {factor.pillar ? factor.pillar.charAt(0).toUpperCase() + factor.pillar.slice(1) : 'Unknown'} Pillar
-                    </span>
-                    {factor.counts_toward && factor.counts_toward !== factor.pillar && (
-                      <span className="ml-2 text-xs text-blue-600">
-                        (counts toward {factor.counts_toward})
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center space-x-2 sm:space-x-3">
-                    <button
-                      onClick={() => openHistoryModal({key: factor.key, label: factor.label})}
-                      className="btn btn-sm btn-ghost"
-                    >
-                      History
-                    </button>
-                    <button
-                      onClick={() => openEnhancedDetails({key: factor.key, label: factor.label})}
-                      className="btn btn-sm btn-accent"
-                    >
-                      Enhanced Details
-                    </button>
-                    <a 
-                      href="/methodology" 
-                      className="btn btn-sm btn-ghost"
-                    >
-                      What's this?
-                    </a>
-                  </div>
-                </div>
-                
-                {/* Status Info - Keep visible for stale/excluded, compact for fresh */}
-                {(staleness.level === 'stale' || staleness.level === 'excluded' || factor.status === 'excluded') ? (
-                  <div className="text-body-small text-gray-600 mt-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`font-medium ${
-                        staleness.level === 'stale' ? 'text-yellow-600' : 
-                        staleness.level === 'excluded' ? 'text-gray-600' : 
-                        'text-red-600'
-                      }`}>
-                        {staleness.level === 'stale' ? 'Stale' : 'Excluded'}
-                      </span>
-                      {freshnessDisplay.shortLine && (
-                        <span className="text-body-small text-gray-500">
-                          ({freshnessDisplay.shortLine})
-                        </span>
-                      )}
-                      {factor.last_utc && (
-                        <span className="text-body-small text-gray-500">
-                          Last update: {(() => {
-                            const age = formatFreshnessAge(factor.last_utc);
-                            return age === 'just now' ? 'just now' : `${age} ago`;
-                          })()}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ) : null}
-                
-                {/* What's Inside / Cadence - Moved to drawer (Phase 4) */}
-                {/* Metadata removed from main view per Task 3.2 */}
-              </div>
-              
-              {/* Debug Details (only for term_leverage when debug flag is on) */}
-              {factor.key === 'term_leverage' && process.env.NEXT_PUBLIC_DEBUG_FACTORS === 'true' && status && (
-                <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200 text-xs font-mono">
-                  <div className="font-semibold text-blue-800 mb-2">Debug Details (Term Leverage):</div>
-                  <div className="space-y-1 text-blue-700">
-                    <div>Last updated (UTC): {status.term_leverage?.last_updated_utc || 'N/A'}</div>
-                    <div>Status: {status.term_leverage?.status || 'N/A'} {status.term_leverage?.reason ? `(${status.term_leverage.reason})` : ''}</div>
-                    <div>Endpoint: /api/data/status</div>
-                    <div>Cache-Control: no-store, no-cache, must-revalidate</div>
-                    <div>Factor status from latest.json: {factor.status}</div>
-                    <div>Factor reason from latest.json: {factor.reason || 'N/A'}</div>
-                    <div>Factor last_utc from latest.json: {factor.last_utc || 'N/A'}</div>
-                  </div>
-                </div>
-              )}
-
-              {/* Excluded Factor State */}
-              {staleness.level === 'excluded' ? (
-                <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="text-sm text-gray-600">
-                    <span className="font-medium text-gray-700">Temporarily excluded from today's G-Score.</span>
-                    <br />
-                    <span className="text-xs">
-                      Reason: {freshnessDisplay.detailLine || freshnessDisplay.shortLine || factor.status || 'stale data'}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {/* Always show first 3 details */}
-                  {factor.details && factor.details.length > 0 && (
-                <div className="mb-4">
-                  <div className="space-y-2">
-                    {factor.details.slice(0, 3).map((detail: any, idx: number) => (
-                      <div key={idx} className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600">{detail.label}:</span>
-                        <span className="font-medium text-gray-900">{detail.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Show "+X more..." link that opens drawer and scrolls to More details */}
-                  {factor.details.length > 3 && (
-                    <div className="mt-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent card click
-                          setSelectedFactor({ 
-                            key: factor.key, 
-                            label: factor.label,
-                            scrollToSection: 'moreDetails' as const
-                          });
-                        }}
-                        className="text-sm text-emerald-600 hover:text-emerald-700 font-medium underline"
-                      >
-                        +{factor.details.length - 3} more...
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Macro-specific: Add Net Liquidity context */}
-                  {factor.key === 'macro_overlay' && (
-                    <div className="mt-3 pt-3 border-t border-gray-100">
-                      <div className="mb-2">
-                        <h4 className="text-xs font-medium text-gray-700 uppercase tracking-wide">Context</h4>
-                      </div>
-                      {(() => {
-                        // Find Net Liquidity factor for context display
-                        const netLiquidityFactor = latest?.factors?.find((f: any) => f.key === 'net_liquidity');
-                        if (!netLiquidityFactor) return null;
-                        
-                        return (
-                          <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-gray-900">Net Liquidity (FRED)</span>
-                                <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
-                                  {netLiquidityContextPillLabel()}
-                                </span>
-                              </div>
-                              <span className="text-sm font-medium text-gray-900">
-                                {netLiquidityFactor.score !== null ? netLiquidityFactor.score.toFixed(0) : 'N/A'}
-                              </span>
-                            </div>
-                            {netLiquidityFactor.details && netLiquidityFactor.details.length > 0 && (
-                              <div className="space-y-1">
-                                {netLiquidityFactor.details.slice(0, 2).map((detail: any, idx: number) => (
-                                  <div key={idx} className="flex justify-between items-center text-xs">
-                                    <span className="text-gray-600">{detail.label}:</span>
-                                    <span className="font-medium text-gray-800">{detail.value}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                            <div className="mt-2 text-xs text-gray-600">
-                              <span title={netLiquidityContextTooltip()}>
-                                Provides macro context without double-counting in composite score
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Factor with no details (excluded factors) */}
-              {(!factor.details || factor.details.length === 0) && factor.status === 'excluded' && (
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                  <div className="text-sm text-gray-600">
-                    This factor is currently excluded due to missing configuration.
-                    {factor.reason === 'missing_fred_api_key' && (
-                      <span className="block mt-1 text-xs text-gray-500">
-                        Requires FRED API key for economic data access.
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-                  {/* ETF-specific action buttons */}
-                  {factor.key === 'etf_flows' && (
-                    <div className="mt-2 flex flex-wrap gap-3">
-                      <button
-                        onClick={openEtfBreakdown}
-                        className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                      >
-                        By ETF
-                      </button>
-                      <button
-                        onClick={openEtfPerformance}
-                        className="text-sm text-purple-600 hover:text-purple-700 font-medium"
-                      >
-                        Performance Analysis
-                      </button>
-                      <button
-                        onClick={() => window.open('/etf-predictions', '_blank')}
-                        className="text-sm text-green-600 hover:text-green-700 font-medium"
-                      >
-                        Predictions
-                      </button>
-                      <a 
-                        href="/etf-predictions" 
-                        className="text-sm text-gray-600 hover:text-gray-700 font-medium"
-                      >
-                        What are ETF flows? →
-                      </a>
-                    </div>
-                  )}
-                  
-                  {/* Last Updated timestamp */}
-                  <div className="mt-4 pt-3 border-t border-gray-100">
-                    <div className="text-xs text-gray-500">
-                      Last updated: {latest?.as_of_utc ? new Date(latest.as_of_utc).toLocaleString() + ' UTC' : 'Unknown'}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-            </LazyLoader>
-          );
+                <FactorOverviewCard
+                  factor={factor}
+                  latest={latest}
+                  compositeScore={latest?.composite_score ?? 0}
+                  contribution={contribution}
+                  staleness={staleness}
+                  freshnessDisplay={freshnessDisplay}
+                  factorDelta={factorDeltas[factor.key]}
+                  onSelectFactor={setSelectedFactor}
+                  onOpenHistory={openHistoryModal}
+                  onOpenEnhancedDetails={openEnhancedDetails}
+                  onJumpToFactor={jumpToFactor}
+                  onOpenEtfBreakdown={openEtfBreakdown}
+                  onOpenEtfPerformance={openEtfPerformance}
+                  status={status}
+                />
+              </LazyLoader>
+            );
           })}
         </div>
 

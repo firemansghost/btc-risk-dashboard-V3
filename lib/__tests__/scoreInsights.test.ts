@@ -3,6 +3,7 @@ import {
   classifyScoreInsights,
   computeScoreConcentration,
   buildWhatMattersLines,
+  getFactorScanRole,
   PRESSURE_SCORE_MIN,
   OFFSET_SCORE_MAX,
   type InsightFactor,
@@ -58,6 +59,25 @@ describe('classifyScoreInsights', () => {
   it('documents threshold constants', () => {
     expect(PRESSURE_SCORE_MIN).toBe(65);
     expect(OFFSET_SCORE_MAX).toBe(49);
+  });
+});
+
+describe('getFactorScanRole', () => {
+  it('matches classifyScoreInsights pressure/offset buckets for fixture factors', () => {
+    const { pressureDrivers, offsets } = classifyScoreInsights(holdWaitFixture, 61);
+
+    for (const f of pressureDrivers) {
+      expect(getFactorScanRole(f, 61)).toBe('pressure');
+    }
+    for (const f of offsets) {
+      expect(getFactorScanRole(f, 61)).toBe('offset');
+    }
+    expect(getFactorScanRole(factor('net_liquidity', 'NL', 63, 6.3), 61)).toBe('neutral');
+  });
+
+  it('returns not_fresh for stale or excluded factors', () => {
+    expect(getFactorScanRole(factor('x', 'X', 80, 10, 'stale'), 61)).toBe('not_fresh');
+    expect(getFactorScanRole(factor('x', 'X', 80, 10, 'excluded'), 61)).toBe('not_fresh');
   });
 });
 
