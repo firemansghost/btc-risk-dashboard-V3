@@ -3,6 +3,13 @@
 import { useState, useEffect } from 'react';
 import { calculateContribution, getFactorStaleness, sortFactorsByContribution, getFactorTTL } from '@/lib/factorUtils';
 import { formatFriendlyTimestamp } from '@/lib/dateUtils';
+import { formatOrdinal } from '@/lib/formatOrdinal';
+import {
+  classifyScoreInsights,
+  computeScoreConcentration,
+  buildWhatMattersLines,
+} from '@/lib/scoreInsights';
+import { getBandChipClasses } from '@/lib/band-colors';
 import MobileCollapsible from './MobileCollapsible';
 import SkeletonLoader, { SkeletonCard } from './SkeletonLoader';
 
@@ -26,46 +33,10 @@ interface FactorExplanation {
 interface ScoreExplanation {
   totalScore: number;
   bandLabel: string;
+  bandColor: string;
   keyDrivers: FactorExplanation[];
   /** All factors sorted by contribution (desc); used for "Current read" and diagnostics */
   factorsByContribution: FactorExplanation[];
-}
-
-/** Compact, factor-grounded copy for Pass 1 merged narrative (no scoring math). */
-function buildCurrentReadLines(ex: ScoreExplanation): {
-  driverLine: string;
-  stabilizerLine: string;
-  contextLine: string;
-  stanceLine: string;
-} {
-  const freshSorted = ex.factorsByContribution.filter((f) => f.status === 'fresh');
-  const topDrivers = freshSorted.slice(0, 2);
-  const driverLine =
-    topDrivers.length > 0
-      ? `Top contributors: ${topDrivers.map((d) => `${d.label} (${Math.round(d.score)})`).join(' · ')}`
-      : 'No fresh factors to rank by contribution.';
-
-  const mitigating = [...freshSorted].sort((a, b) => a.score - b.score);
-  const stabilizerLine =
-    mitigating.length > 0
-      ? `Offset: ${mitigating[0].label} (${Math.round(mitigating[0].score)}) — lowest score among fresh factors.`
-      : '—';
-
-  const contextLine = `${ex.bandLabel} · composite ${ex.totalScore}/100`;
-
-  const s = ex.totalScore;
-  let stanceLine = '';
-  if (s >= 65) {
-    stanceLine = 'Elevated risk — ease new exposure until headline drivers cool.';
-  } else if (s >= 50) {
-    stanceLine = 'Hold core; stay selective — avoid chasing strength without a plan.';
-  } else if (s >= 35) {
-    stanceLine = 'Moderate risk — add size mainly on planned pullbacks.';
-  } else {
-    stanceLine = 'Lower-risk band historically — still keep sizing disciplined.';
-  }
-
-  return { driverLine, stabilizerLine, contextLine, stanceLine };
 }
 
 export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsightsCardProps) {
@@ -360,102 +331,6 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       lowConfidenceFactors,
       overallInsight,
       overallRecommendation
-    };
-  };
-
-  // Get risk concentration analysis
-  const getRiskConcentration = () => {
-    if (!explanation || !explanation.keyDrivers || explanation.keyDrivers.length === 0) {
-      console.log('getRiskConcentration: Insufficient data', {
-        hasExplanation: !!explanation,
-        keyDriversLength: explanation?.keyDrivers?.length || 0
-      });
-      return null;
-    }
-
-    const factors = explanation.keyDrivers;
-    
-    // Calculate total contribution from all factors
-    const totalContribution = factors.reduce((sum, factor) => sum + Math.abs(factor.contribution), 0);
-    
-    if (totalContribution === 0) {
-      console.log('getRiskConcentration: No contributions found');
-      return null;
-    }
-    
-    // Calculate each factor's percentage of total risk
-    const factorContributions = factors.map(factor => ({
-      key: factor.key,
-      label: factor.label,
-      contribution: factor.contribution,
-      absoluteContribution: Math.abs(factor.contribution),
-      percentage: (Math.abs(factor.contribution) / totalContribution) * 100,
-      trend: factor.trend
-    }));
-    
-    // Sort by absolute contribution (highest first)
-    const sortedContributions = factorContributions.sort((a, b) => b.absoluteContribution - a.absoluteContribution);
-    
-    // Calculate concentration metrics
-    const top2Percentage = sortedContributions.slice(0, 2).reduce((sum, factor) => sum + factor.percentage, 0);
-    const top3Percentage = sortedContributions.slice(0, 3).reduce((sum, factor) => sum + factor.percentage, 0);
-    
-    // Determine concentration level
-    let concentrationLevel = 'low';
-    let concentrationColor = 'green';
-    let concentrationIcon = '🟢';
-    let concentrationText = 'Low';
-    
-    if (top2Percentage >= 70) {
-      concentrationLevel = 'high';
-      concentrationColor = 'red';
-      concentrationIcon = '🔴';
-      concentrationText = 'High';
-    } else if (top2Percentage >= 50) {
-      concentrationLevel = 'medium';
-      concentrationColor = 'yellow';
-      concentrationIcon = '🟡';
-      concentrationText = 'Medium';
-    }
-    
-    // Get top 2 factors for context
-    const top2Factors = sortedContributions.slice(0, 2);
-    const top2FactorNames = top2Factors.map(f => f.label).join(' and ');
-    
-    // Generate concentration insights
-    let concentrationInsight = '';
-    let recommendation = '';
-    
-    if (concentrationLevel === 'high') {
-      concentrationInsight = `Risk is highly concentrated - ${top2Percentage.toFixed(0)}% comes from ${top2FactorNames}`;
-      recommendation = `Monitor ${top2FactorNames} closely as they drive most of the risk`;
-    } else if (concentrationLevel === 'medium') {
-      concentrationInsight = `Risk is moderately concentrated - ${top2Percentage.toFixed(0)}% comes from ${top2FactorNames}`;
-      recommendation = `Risk is reasonably distributed but keep an eye on ${top2FactorNames}`;
-    } else {
-      concentrationInsight = `Risk is well distributed - ${top2Percentage.toFixed(0)}% from ${top2FactorNames}`;
-      recommendation = 'Good diversification - risk is spread across multiple factors';
-    }
-    
-    console.log('getRiskConcentration: Analysis complete', {
-      totalContribution,
-      top2Percentage,
-      top3Percentage,
-      concentrationLevel,
-      factorCount: factors.length
-    });
-    
-    return {
-      concentrationLevel,
-      concentrationColor,
-      concentrationIcon,
-      concentrationText,
-      top2Percentage,
-      top3Percentage,
-      totalContribution,
-      factorContributions: sortedContributions,
-      concentrationInsight,
-      recommendation
     };
   };
 
@@ -807,11 +682,13 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       const keyDrivers = sortedByContribution.slice(0, 3);
 
       const bandLabel = latest.band?.label || 'Unknown';
+      const bandColor = latest.band?.color || 'gray';
       const totalScore = latest.composite_score;
 
       const scoreExplanation: ScoreExplanation = {
         totalScore,
         bandLabel,
+        bandColor,
         keyDrivers,
         factorsByContribution: sortedByContribution,
       };
@@ -861,16 +738,37 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     }
   };
 
-  const getScoreColor = (score: number) => {
-    if (score < 40) return 'text-green-600';
-    if (score < 60) return 'text-yellow-600';
-    return 'text-red-600';
+  const getBandBgClasses = (bandColor: string): string => {
+    switch (bandColor) {
+      case 'green': return 'bg-emerald-50 border-emerald-200';
+      case 'blue': return 'bg-sky-50 border-sky-200';
+      case 'yellow': return 'bg-yellow-50 border-yellow-200';
+      case 'orange': return 'bg-orange-50 border-orange-200';
+      case 'red': return 'bg-rose-50 border-rose-200';
+      default: return 'bg-slate-50 border-slate-200';
+    }
   };
 
-  const getScoreBgColor = (score: number) => {
-    if (score < 40) return 'bg-green-50 border-green-200';
-    if (score < 60) return 'bg-yellow-50 border-yellow-200';
-    return 'bg-red-50 border-red-200';
+  const getBandProgressBarClass = (bandColor: string): string => {
+    switch (bandColor) {
+      case 'green': return 'bg-emerald-500';
+      case 'blue': return 'bg-sky-500';
+      case 'yellow': return 'bg-yellow-500';
+      case 'orange': return 'bg-orange-500';
+      case 'red': return 'bg-rose-500';
+      default: return 'bg-slate-500';
+    }
+  };
+
+  const getBandTextClass = (bandColor: string): string => {
+    switch (bandColor) {
+      case 'green': return 'text-emerald-800';
+      case 'blue': return 'text-sky-800';
+      case 'yellow': return 'text-yellow-800';
+      case 'orange': return 'text-orange-800';
+      case 'red': return 'text-rose-800';
+      default: return 'text-slate-800';
+    }
   };
 
   const getFactorIcon = (factorKey: string) => {
@@ -887,14 +785,22 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     }
   };
 
-  const getContributionColor = (contribution: number) => {
-    if (contribution > 5) return 'bg-green-500';
-    if (contribution > 2) return 'bg-blue-500';
-    if (contribution > 0) return 'bg-yellow-500';
-    return 'bg-gray-400';
-  };
+  /** Neutral bar color for score contribution (not directional risk). */
+  const getContributionBarClass = () => 'bg-blue-500';
 
-  const currentRead = buildCurrentReadLines(explanation);
+  const classified = classifyScoreInsights(explanation.factorsByContribution, explanation.totalScore);
+  const scoreConcentration = computeScoreConcentration(
+    explanation.factorsByContribution,
+    explanation.totalScore
+  );
+  const relativePosition = getRelativePosition();
+  const whatMatters = buildWhatMattersLines(
+    classified,
+    explanation.totalScore,
+    explanation.bandLabel,
+    { historicalPosition: relativePosition?.position as 'High' | 'Above Average' | 'Average' | 'Below Average' | 'Low' | null }
+  );
+  const pressureKeySet = new Set(classified.pressureDrivers.map((f) => f.key));
 
   const volList = getFactorVolatility();
   const momList = getFactorMomentum();
@@ -932,14 +838,14 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       </div>
 
       {/* Score Visualization */}
-      <div className={`mb-4 p-3 rounded-lg border ${getScoreBgColor(explanation.totalScore)}`}>
+      <div className={`mb-4 p-3 rounded-lg border ${getBandBgClasses(explanation.bandColor)}`}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <span className="text-lg">🎯</span>
             <span className="text-body-small font-medium text-gray-700">G-Score</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className={`text-metric ${getScoreColor(explanation.totalScore)}`}>
+            <span className={`text-metric ${getBandTextClass(explanation.bandColor)}`}>
               {explanation.totalScore}
             </span>
             <span className="text-body-small text-gray-500">/ 100</span>
@@ -949,33 +855,30 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         {/* Score Progress Bar */}
         <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
           <div 
-            className={`h-2 rounded-full transition-all duration-500 ${
-              explanation.totalScore < 40 ? 'bg-green-500' : 
-              explanation.totalScore < 60 ? 'bg-yellow-500' : 'bg-red-500'
-            }`}
+            className={`h-2 rounded-full transition-all duration-500 ${getBandProgressBarClass(explanation.bandColor)}`}
             style={{ width: `${explanation.totalScore}%` }}
           ></div>
         </div>
         
         {/* Risk Band Indicator */}
         <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-500">Risk Level</span>
-          <span className={`font-medium ${getScoreColor(explanation.totalScore)}`}>
+          <span className="text-gray-500">Official Band</span>
+          <span className={`font-medium px-2 py-0.5 rounded-full text-xs ${getBandChipClasses(explanation.bandColor)}`}>
             {explanation.bandLabel}
           </span>
         </div>
         
         {/* Relative Position Indicator */}
-        {getRelativePosition() ? (
+        {relativePosition ? (
           <div className="mt-2 pt-2 border-t border-gray-200">
             <div className="flex items-center justify-between text-xs">
               <span className="text-gray-500">Historical Position</span>
               <div className="flex items-center gap-2">
-                <span className={`font-medium ${getRelativePosition()!.positionColor}`}>
-                  {getRelativePosition()!.position}
+                <span className={`font-medium ${relativePosition.positionColor}`}>
+                  {relativePosition.position}
                 </span>
                 <span className="text-gray-500">
-                  ({getRelativePosition()!.percentile}th percentile)
+                  ({formatOrdinal(relativePosition.percentile)} percentile)
                 </span>
               </div>
             </div>
@@ -1071,62 +974,45 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
             <div className="text-gray-500">G-Score</div>
           </div>
           <div className="text-center">
-            <div className={`text-lg font-bold ${getScoreColor(explanation.totalScore)}`}>
+            <div className={`text-lg font-bold ${getBandTextClass(explanation.bandColor)}`}>
               {explanation.bandLabel}
             </div>
-            <div className="text-gray-500">Risk Level</div>
+            <div className="text-gray-500">Official Band</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-bold text-blue-600">
-              {(() => {
-                // Determine market context based on score and factors
-                const highRiskFactors = explanation.keyDrivers.filter(f => f.score > 60).length;
-                const lowRiskFactors = explanation.keyDrivers.filter(f => f.score < 40).length;
-                
-                if (explanation.totalScore > 60 && highRiskFactors >= 2) {
-                  return 'Elevated Risk';
-                } else if (explanation.totalScore < 40 && lowRiskFactors >= 2) {
-                  return 'Lower Risk';
-                } else if (explanation.totalScore >= 50 && explanation.totalScore <= 60) {
-                  return 'Balanced Risk';
-                } else {
-                  return 'Mixed Signals';
-                }
-              })()}
+            <div className={`text-lg font-bold ${getBandTextClass(explanation.bandColor)}`}>
+              {classified.pressureDrivers.length > 0
+                ? `${classified.pressureDrivers.length} pressure`
+                : 'No pressure'}
             </div>
-            <div className="text-gray-500">Current Context</div>
+            <div className="text-gray-500">Directional Risk</div>
           </div>
         </div>
       </MobileCollapsible>
 
-      {/* Risk Contributors Section */}
+      {/* Risk Pressure Drivers — directional risk only (score >= 65) */}
       <MobileCollapsible 
-        title="Risk Contributors" 
+        title="Risk Pressure Drivers" 
         icon="🔴" 
-        badge={explanation.keyDrivers.length}
+        badge={classified.pressureDrivers.length}
         defaultOpen={true}
         className="mb-5"
       >
         
         <div className="space-y-2">
           {(() => {
-            // Get top 3 high-risk factors (score > 45 for more inclusive)
-            const highRiskFactors = explanation.keyDrivers
-              .filter(f => f.score > 45)
-              .sort((a, b) => b.score - a.score)
-              .slice(0, 3);
+            const pressureFactors = classified.pressureDrivers.slice(0, 3);
             
-            if (highRiskFactors.length === 0) {
+            if (pressureFactors.length === 0) {
               return (
-                <div className="text-sm text-green-600 text-center py-2">
-                  ✅ No high-risk factors detected (scores: {explanation.keyDrivers.map(f => `${f.label}:${f.score}`).join(', ')})
+                <div className="text-sm text-gray-600 text-center py-2">
+                  No factors above elevated threshold (65+).
                 </div>
               );
             }
             
-            return highRiskFactors.map((factor, idx) => (
+            return pressureFactors.map((factor, idx) => (
               <div key={idx} className="card-danger">
-                {/* Header with Risk Level Indicator */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <div className="bg-red-100 p-2 rounded-lg">
@@ -1137,11 +1023,11 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
                       <div className="flex items-center gap-2 mt-1">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           factor.score > 80 ? 'bg-red-100 text-red-800' : 
-                          factor.score > 60 ? 'bg-orange-100 text-orange-800' : 
+                          factor.score > 70 ? 'bg-orange-100 text-orange-800' : 
                           'bg-yellow-100 text-yellow-800'
                         }`}>
                           {factor.score > 80 ? '🔴 Critical Risk' : 
-                           factor.score > 60 ? '🟠 High Risk' : 
+                           factor.score > 70 ? '🟠 High Risk' : 
                            '🟡 Elevated Risk'}
                         </span>
                       </div>
@@ -1155,17 +1041,16 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
                   </div>
                 </div>
 
-                {/* Risk Score Bar */}
                 <div className="mb-3">
                   <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
                     <span>Risk Level</span>
-                    <span>{factor.score > 80 ? 'Critical' : factor.score > 60 ? 'High' : 'Elevated'}</span>
+                    <span>{factor.score > 80 ? 'Critical' : factor.score > 70 ? 'High' : 'Elevated'}</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
                       className={`h-2 rounded-full ${
                         factor.score > 80 ? 'bg-red-500' : 
-                        factor.score > 60 ? 'bg-orange-500' : 
+                        factor.score > 70 ? 'bg-orange-500' : 
                         'bg-yellow-500'
                       }`}
                       style={{ width: `${Math.min(factor.score, 100)}%` }}
@@ -1173,30 +1058,26 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
                   </div>
                 </div>
 
-                {/* Contextual Explanation */}
                 <div className="bg-red-50 rounded-lg p-3 border border-red-100">
                   <div className="text-xs text-red-800 font-medium mb-1">⚠️ Risk Context</div>
                   <div className="text-xs text-red-700">
                     {(() => {
-                      // Generate contextual explanations based on factor and score
                       const factorKey = factor.key;
                       const score = factor.score;
                       
                       if (factorKey === 'onchain' && score > 80) {
                         return 'At ATHs, on-chain metrics often show distribution signals from whales and institutions taking profits';
-                      } else if (factorKey === 'etf_flows' && score > 60) {
-                        return 'High concentration risk as institutions take profits and reduce exposure';
-                      } else if (factorKey === 'trend_valuation' && score > 50) {
-                        return 'Price above historical norms (Mayer Multiple 1.17) indicating potential overvaluation';
+                      } else if (factorKey === 'etf_flows' && score > 65) {
+                        return 'Strong institutional flow pressure contributing to headline risk';
                       } else if (factorKey === 'social_interest' && score > 70) {
                         return 'Excessive social media hype and FOMO sentiment creating bubble conditions';
-                      } else if (factorKey === 'term_leverage' && score > 60) {
+                      } else if (factorKey === 'term_leverage' && score > 65) {
                         return 'High leverage and funding rate pressure indicating speculative positioning';
-                      } else if (factorKey === 'stablecoins' && score > 60) {
-                        return 'Stablecoin supply contraction indicating selling pressure and reduced liquidity';
-                      } else if (factorKey === 'macro_overlay' && score > 60) {
+                      } else if (factorKey === 'stablecoins' && score > 65) {
+                        return 'Elevated stablecoin readings indicating liquidity or positioning pressure';
+                      } else if (factorKey === 'macro_overlay' && score > 65) {
                         return 'Macro headwinds and liquidity concerns affecting market sentiment';
-                      } else if (factorKey === 'net_liquidity' && score > 60) {
+                      } else if (factorKey === 'net_liquidity' && score > 65) {
                         return 'Liquidity contraction and monetary tightening reducing market support';
                       } else {
                         return 'Elevated risk indicators detected requiring close monitoring';
@@ -1210,103 +1091,71 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         </div>
       </MobileCollapsible>
 
-      {/* Risk Mitigators Section */}
+      {/* Relative Offsets — factors below headline score */}
       <MobileCollapsible 
-        title="Risk Mitigators" 
+        title="Relative Offsets" 
         icon="🟢" 
-        badge={explanation.keyDrivers.filter(f => f.score < 50).length}
+        badge={classified.offsets.length}
         defaultOpen={true}
         className="mb-5"
       >
         
         <div className="space-y-2">
           {(() => {
-            // Get top 3 low-risk factors (score < 50)
-            const lowRiskFactors = explanation.keyDrivers
-              .filter(f => f.score < 50)
-              .sort((a, b) => a.score - b.score)
-              .slice(0, 3);
+            const offsetFactors = classified.offsets.slice(0, 3);
             
-            if (lowRiskFactors.length === 0) {
+            if (offsetFactors.length === 0) {
               return (
-                <div className="text-sm text-red-600 text-center py-2">
-                  ⚠️ No low-risk factors detected (scores: {explanation.keyDrivers.map(f => `${f.label}:${f.score}`).join(', ')})
+                <div className="text-sm text-gray-600 text-center py-2">
+                  No factors meaningfully below the headline score.
                 </div>
               );
             }
             
-            return lowRiskFactors.map((factor, idx) => (
+            return offsetFactors.map((factor, idx) => (
               <div key={idx} className="card-success">
-                {/* Header with Risk Level Indicator */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="bg-green-100 p-2 rounded-lg">
+                    <div className="bg-sky-100 p-2 rounded-lg">
                       <span className="text-lg">{getFactorIcon(factor.key)}</span>
                     </div>
                     <div>
                       <h5 className="text-sm font-semibold text-gray-900">{factor.label}</h5>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          factor.score < 30 ? 'bg-green-100 text-green-800' : 
-                          factor.score < 40 ? 'bg-blue-100 text-blue-800' : 
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {factor.score < 30 ? '🟢 Low Risk' : 
-                           factor.score < 40 ? '🔵 Very Low Risk' : 
-                           '🟡 Moderate Risk'}
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-sky-100 text-sky-800">
+                          🔵 Relative offset
                         </span>
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-lg font-bold text-green-600">
+                    <div className="text-lg font-bold text-sky-700">
                       {factor.score}
                     </div>
                     <div className="text-xs text-gray-500">/ 100</div>
                   </div>
                 </div>
 
-                {/* Risk Score Bar */}
                 <div className="mb-3">
                   <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                    <span>Risk Level</span>
-                    <span>{factor.score < 30 ? 'Low' : factor.score < 40 ? 'Very Low' : 'Moderate'}</span>
+                    <span>vs headline ({explanation.totalScore})</span>
+                    <span>{(explanation.totalScore - factor.score).toFixed(0)} pts below</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
-                      className={`h-2 rounded-full ${
-                        factor.score < 30 ? 'bg-green-500' : 
-                        factor.score < 40 ? 'bg-blue-500' : 
-                        'bg-yellow-500'
-                      }`}
+                      className="h-2 rounded-full bg-sky-500"
                       style={{ width: `${Math.min(factor.score, 100)}%` }}
                     ></div>
                   </div>
                 </div>
 
-                {/* Contextual Explanation */}
-                <div className="bg-green-50 rounded-lg p-3 border border-green-100">
-                  <div className="text-xs text-green-800 font-medium mb-1">✅ Stability Context</div>
-                  <div className="text-xs text-green-700">
-                    {(() => {
-                      // Generate contextual explanations based on factor and score
-                      const factorKey = factor.key;
-                      const score = factor.score;
-                      
-                      if (factorKey === 'stablecoins' && score < 40) {
-                        return 'Healthy stablecoin dynamics with no panic selling detected, indicating stable market conditions';
-                      } else if (factorKey === 'social_interest' && score < 45) {
-                        return 'Low social media hype avoiding FOMO sentiment, reducing bubble risk';
-                      } else if (factorKey === 'term_leverage' && score < 50) {
-                        return 'Reasonable leverage levels with no excessive funding pressure, indicating healthy speculation';
-                      } else if (factorKey === 'macro_overlay' && score < 50) {
-                        return 'Stable macro environment with no major headwinds affecting market sentiment';
-                      } else if (factorKey === 'net_liquidity' && score < 50) {
-                        return 'Adequate liquidity conditions with no major tightening, supporting market stability';
-                      } else {
-                        return 'Low risk indicators contributing to overall market stability and reduced volatility';
-                      }
-                    })()}
+                <div className="bg-sky-50 rounded-lg p-3 border border-sky-100">
+                  <div className="text-xs text-sky-800 font-medium mb-1">↘ Offset Context</div>
+                  <div className="text-xs text-sky-700">
+                    {factor.label} scores {Math.round(factor.score)} — below the headline {explanation.totalScore}.
+                    {classified.scoreContributors.slice(0, 2).some((f) => f.key === factor.key)
+                      ? ' High weight makes it a large score component despite the lower reading.'
+                      : ' Acts as a relative stabilizer to today\'s reading.'}
                   </div>
                 </div>
               </div>
@@ -1315,19 +1164,22 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         </div>
       </MobileCollapsible>
 
-      {/* Pass 1: single merged narrative (replaces Why / Actionable / Smart Context) */}
+      {/* What matters right now */}
       <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50/90 p-3.5">
         <h4 className="text-sm font-semibold text-gray-900 mb-1.5">What matters right now</h4>
+        {whatMatters.summaryLine && (
+          <p className="text-sm text-gray-700 mb-2">{whatMatters.summaryLine}</p>
+        )}
         <ul className="space-y-1 text-sm text-gray-800 list-disc list-inside">
-          <li>{currentRead.driverLine}</li>
-          <li>{currentRead.stabilizerLine}</li>
-          <li>{currentRead.contextLine}</li>
-          <li className="text-gray-700">{currentRead.stanceLine}</li>
+          <li>{whatMatters.componentsLine}</li>
+          <li>{whatMatters.pressureLine}</li>
+          <li>{whatMatters.offsetLine}</li>
+          <li className="text-gray-700">{whatMatters.officialLine}</li>
         </ul>
       </div>
 
-      {/* Risk Concentration */}
-      {getRiskConcentration() && (
+      {/* Score Concentration */}
+      {scoreConcentration && (
         <div className="mb-3">
           <div 
             className="text-xs font-medium text-gray-700 mb-2 flex items-center justify-between cursor-pointer hover:text-gray-900"
@@ -1335,7 +1187,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
           >
             <div className="flex items-center gap-2">
               <span>🔍</span>
-              <span>Risk Concentration</span>
+              <span>Score Concentration</span>
             </div>
             <span className="text-lg transition-transform duration-200">
               {expandedSections.riskConcentration ? '🔽' : '▶️'}
@@ -1343,84 +1195,76 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
           </div>
           {expandedSections.riskConcentration && (
             <div className="space-y-3">
-              {/* Concentration Level Indicator */}
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3.5 border border-blue-100 shadow-sm">
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">{getRiskConcentration()!.concentrationIcon}</span>
+                    <span className="text-lg">
+                      {scoreConcentration.level === 'high' ? '🔴' : scoreConcentration.level === 'medium' ? '🟡' : '🟢'}
+                    </span>
                     <span className="text-sm font-medium text-gray-900">Concentration Level</span>
                   </div>
                   <div className={`text-sm font-bold ${
-                    getRiskConcentration()!.concentrationColor === 'red' ? 'text-red-600' : 
-                    getRiskConcentration()!.concentrationColor === 'yellow' ? 'text-yellow-600' : 'text-green-600'
+                    scoreConcentration.level === 'high' ? 'text-red-600' : 
+                    scoreConcentration.level === 'medium' ? 'text-yellow-600' : 'text-green-600'
                   }`}>
-                    {getRiskConcentration()!.concentrationText}
+                    {scoreConcentration.level === 'high' ? 'High' : scoreConcentration.level === 'medium' ? 'Medium' : 'Low'}
                   </div>
                 </div>
                 
-                {/* Concentration Bar */}
                 <div className="mb-2.5">
                   <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                    <span>Top 2 Factors ({getRiskConcentration()!.factorContributions.slice(0, 2).map(f => f.label).join(', ')})</span>
-                    <span>{getRiskConcentration()!.top2Percentage.toFixed(0)}% of total risk</span>
+                    <span>Top 2 ({scoreConcentration.top2Labels.join(', ')})</span>
+                    <span>{scoreConcentration.top2ShareOfCompositePct.toFixed(0)}% of weighted total</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
-                      className={`h-2 rounded-full ${
-                        getRiskConcentration()!.concentrationColor === 'red' ? 'bg-red-500' : 
-                        getRiskConcentration()!.concentrationColor === 'yellow' ? 'bg-yellow-500' : 'bg-green-500'
-                      }`}
-                      style={{ width: `${Math.min(100, getRiskConcentration()!.top2Percentage)}%` }}
+                      className={`h-2 rounded-full ${getContributionBarClass()}`}
+                      style={{ width: `${Math.min(100, scoreConcentration.top2ShareOfCompositePct)}%` }}
                     ></div>
                   </div>
                 </div>
                 
                 <div className="text-xs text-gray-600 mb-1.5">
-                  {getRiskConcentration()!.concentrationInsight}
+                  {scoreConcentration.concentrationInsight}
                 </div>
                 <div className="text-xs text-blue-600 italic">
-                  💡 {getRiskConcentration()!.recommendation}
+                  💡 {scoreConcentration.recommendation}
                 </div>
               </div>
               
-              {/* Factor Contribution Breakdown */}
               <div className="space-y-2">
-                <div className="text-xs font-medium text-gray-600 mb-2">Factor Risk Distribution</div>
-                {getRiskConcentration()!.factorContributions.map((factor, idx) => (
+                <div className="text-xs font-medium text-gray-600 mb-2">Score contribution by factor</div>
+                {scoreConcentration.factorRows.map((factor, idx) => (
                   <div key={idx} className="bg-gray-50 rounded-lg p-3">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{getFactorIcon(factor.key)}</span>
                         <span className="text-sm font-medium text-gray-900">{factor.label}</span>
+                        {pressureKeySet.has(factor.key) && (
+                          <span className="text-xs text-orange-700 bg-orange-50 px-1.5 py-0.5 rounded">pressure</span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-blue-600">
-                          {factor.contribution > 0 ? '+' : ''}{factor.contribution.toFixed(1)}
+                        <span className="text-sm font-bold text-gray-800">
+                          {factor.contribution.toFixed(1)} pts
                         </span>
                         <span className="text-xs text-gray-500">
-                          {factor.percentage.toFixed(0)}%
+                          {factor.shareOfCompositePct.toFixed(0)}%
                         </span>
                       </div>
                     </div>
                     
-                    {/* Contribution Bar */}
                     <div className="mb-2">
                       <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                        <span>Risk Contribution</span>
-                        <span>{factor.percentage.toFixed(1)}% of total</span>
+                        <span>Weighted contribution</span>
+                        <span>{factor.shareOfCompositePct.toFixed(1)}% of total</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-1.5">
                         <div 
-                          className="h-1.5 rounded-full bg-blue-500"
-                          style={{ width: `${Math.min(100, factor.percentage)}%` }}
+                          className={`h-1.5 rounded-full ${getContributionBarClass()}`}
+                          style={{ width: `${Math.min(100, factor.shareOfCompositePct)}%` }}
                         ></div>
                       </div>
-                    </div>
-                    
-                    <div className="text-xs text-gray-600">
-                      {factor.trend === 'improving' ? '📈 Improving' : 
-                       factor.trend === 'declining' ? '📉 Declining' : '➡️ Stable'} 
-                      - {factor.absoluteContribution.toFixed(1)} points contribution
                     </div>
                   </div>
                 ))}
