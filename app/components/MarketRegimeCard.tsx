@@ -2,6 +2,8 @@
 
 import { useEffect, useId, useState } from 'react';
 import type { ReactNode } from 'react';
+import ContextOnlyBadge from './ContextOnlyBadge';
+import { formatMarketRegimeDistanceLabel } from '@/lib/marketRegimeDisplay';
 
 export type MarketRegimePayload = {
   status: string;
@@ -287,7 +289,8 @@ export default function MarketRegimeCard({
       className={`glass-card glass-shadow-lg card-md border border-white/20 card-hover w-full min-w-0 flex flex-col ${className}`}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
           <h2 className="mobile-subheading text-gray-900">Market Regime</h2>
           <button
             type="button"
@@ -299,6 +302,10 @@ export default function MarketRegimeCard({
           >
             <InfoCircleIcon className="w-5 h-5 sm:w-[1.15rem] sm:h-[1.15rem]" />
           </button>
+          </div>
+          <div className="mt-1.5">
+            <ContextOnlyBadge>Market structure context · not scored</ContextOnlyBadge>
+          </div>
         </div>
         {factorStatus && factorStatus !== 'fresh' && (
           <span className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-0.5 shrink-0">
@@ -341,7 +348,9 @@ export default function MarketRegimeCard({
             </div>
           )}
           {distanceRow && mr.distanceLabel && (
-            <RegimeRow label={mr.distanceLabel}>{distanceRow}</RegimeRow>
+            <RegimeRow label={`${formatMarketRegimeDistanceLabel(mr.distanceLabel)}:`}>
+              {distanceRow}
+            </RegimeRow>
           )}
         </div>
       )}

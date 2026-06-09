@@ -1,7 +1,7 @@
 // app/components/SystemStatusCard.tsx
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FactorSummary } from '@/lib/types';
 import { checkClockSkew } from '@/lib/factorUtils';
 import { getFreshnessDisplay } from '@/lib/freshnessDisplay';
@@ -14,8 +14,37 @@ interface SystemStatusCardProps {
   onOpenProvenance?: () => void;
 }
 
+type ApiConfig = { ok: boolean; digest?: string };
+
 export default function SystemStatusCard({ factors, provenance, asOfUtc, onOpenWeights, onOpenProvenance }: SystemStatusCardProps) {
   const [showProvenance, setShowProvenance] = useState(false);
+  const [configDigest, setConfigDigest] = useState<string | null>(null);
+  const [digestLoading, setDigestLoading] = useState(false);
+
+  useEffect(() => {
+    if (!showProvenance) return;
+
+    let alive = true;
+    setDigestLoading(true);
+    (async () => {
+      try {
+        const res = await fetch('/api/config', { cache: 'no-store' });
+        const json: ApiConfig = await res.json();
+        if (!alive) return;
+        if (json?.ok && json.digest) {
+          setConfigDigest(json.digest);
+        }
+      } catch {
+        if (alive) setConfigDigest(null);
+      } finally {
+        if (alive) setDigestLoading(false);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [showProvenance]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -116,19 +145,38 @@ export default function SystemStatusCard({ factors, provenance, asOfUtc, onOpenW
       </div>
       
       {showProvenance && (
-        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-          <h4 className="text-sm font-medium text-gray-900 mb-2">Data Provenance</h4>
-          <div className="space-y-2 max-h-40 overflow-y-auto">
-            {provenance.map((prov, index) => (
-              <div key={index} className="text-xs text-gray-600">
-                <div className="font-medium">{prov.url || 'Unknown source'}</div>
-                <div className="text-gray-500">
-                  Status: {prov.status || 'Unknown'} | 
-                  Time: {prov.ms ? `${prov.ms}ms` : 'Unknown'} |
-                  {prov.note && ` Note: ${prov.note}`}
+        <div className="mt-4 p-3 bg-gray-50 rounded-lg space-y-4">
+          <div>
+            <h4 className="text-sm font-medium text-gray-900 mb-2">Model config</h4>
+            {digestLoading ? (
+              <p className="text-xs text-gray-500">Loading config digest…</p>
+            ) : configDigest ? (
+              <button
+                type="button"
+                onClick={() => navigator.clipboard.writeText(configDigest)}
+                title="Click to copy config digest"
+                className="text-xs text-gray-600 hover:text-gray-800 font-mono break-all text-left"
+              >
+                Config digest (debug): {configDigest}
+              </button>
+            ) : (
+              <p className="text-xs text-gray-500">Config digest unavailable.</p>
+            )}
+          </div>
+          <div>
+            <h4 className="text-sm font-medium text-gray-900 mb-2">Data Provenance</h4>
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {provenance.map((prov, index) => (
+                <div key={index} className="text-xs text-gray-600">
+                  <div className="font-medium">{prov.url || 'Unknown source'}</div>
+                  <div className="text-gray-500">
+                    Status: {prov.status || 'Unknown'} |
+                    Time: {prov.ms ? `${prov.ms}ms` : 'Unknown'} |
+                    {prov.note && ` Note: ${prov.note}`}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       )}

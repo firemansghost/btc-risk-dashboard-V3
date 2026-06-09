@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { formatFriendlyTimestamp } from '@/lib/dateUtils';
+import { getGoldCrossDisplayStatus } from '@/lib/goldCrossDisplay';
 import { formatSourceTimestamp, getStandardizedSourceName } from '@/lib/sourceUtils';
 
 interface GoldCrossData {
@@ -23,10 +24,13 @@ interface GoldCrossData {
 
 interface BtcGoldCardProps {
   className?: string;
+  /** Dashboard snapshot time — used for display-only stale labeling (not scoring). */
+  dashboardAsOfUtc?: string | null;
 }
 
-export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
+export default function BtcGoldCard({ className = '', dashboardAsOfUtc }: BtcGoldCardProps) {
   const [goldData, setGoldData] = useState<GoldCrossData | null>(null);
+  const [goldSourceUpdatedAt, setGoldSourceUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,6 +74,7 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
                 }]
               };
               setGoldData(freshGoldData);
+              setGoldSourceUpdatedAt(freshGoldData.updated_at);
               setLoading(false);
               return;
             }
@@ -91,6 +96,7 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
         }
         const data = await response.json();
         setGoldData(data);
+        setGoldSourceUpdatedAt(data.updated_at ?? null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load gold data');
       } finally {
@@ -137,6 +143,7 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
                 }]
               };
               setGoldData(updatedGoldData);
+              setGoldSourceUpdatedAt(updated_at);
               console.log('BtcGoldCard: Updated with fresh gold price:', freshGoldPrice);
               return;
             }
@@ -186,54 +193,75 @@ export default function BtcGoldCard({ className = '' }: BtcGoldCardProps) {
   }
 
   const isFallback = goldData.provenance.some(p => p.fallback);
-  const sourceName = goldData.provenance[0]?.name || 'Unknown';
+  const goldReferenceUpdatedAt = goldSourceUpdatedAt ?? goldData.updated_at;
+  const goldDisplayStatus = getGoldCrossDisplayStatus(goldReferenceUpdatedAt, dashboardAsOfUtc ?? null);
+  const isStale = goldDisplayStatus === 'stale';
+  const cardBorderClass = isStale
+    ? 'border-amber-200 bg-amber-50/30'
+    : 'border-gray-200 bg-white';
 
   return (
-    <div className={`bg-white rounded-lg border border-gray-200 p-4 ${className}`}>
-      <div className="flex items-center justify-between mb-3">
+    <div className={`rounded-lg border p-4 ${cardBorderClass} ${className}`}>
+      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
         <h3 className="text-sm font-medium text-gray-900">Bitcoin⇄Gold</h3>
-        {isFallback && (
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-            fallback
-          </span>
-        )}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {isStale && (
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-900 border border-amber-200">
+              Stale gold data
+            </span>
+          )}
+          {isFallback && (
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+              fallback
+            </span>
+          )}
+        </div>
       </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Gold Price</span>
-                  <span className="text-lg font-semibold text-gray-900">
-                    ${goldData.xau_close_usd.toLocaleString()}
-                  </span>
-                </div>
+      {isStale && (
+        <p className="text-xs text-amber-900/90 mb-3 leading-snug">
+          Display-only cross-rate; gold source last updated{' '}
+          {formatFriendlyTimestamp(goldReferenceUpdatedAt)}.
+        </p>
+      )}
 
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">1 Bitcoin =</span>
-                  <span
-                    className="text-lg font-semibold text-gray-900"
-                    title={`Exact: ${goldData.btc_per_oz.toFixed(6)} oz`}
-                  >
-                    {goldData.btc_per_oz.toFixed(2)} oz
-                  </span>
-                </div>
+      <div className={`space-y-2 ${isStale ? 'opacity-90' : ''}`}>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-600">Gold Price</span>
+          <span className={`text-lg font-semibold ${isStale ? 'text-gray-700' : 'text-gray-900'}`}>
+            ${goldData.xau_close_usd.toLocaleString()}
+          </span>
+        </div>
 
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">1 oz =</span>
-                  <span
-                    className="text-lg font-semibold text-gray-900"
-                    title={`Exact: ${goldData.oz_per_btc.toFixed(6)} Bitcoin`}
-                  >
-                    {goldData.oz_per_btc.toFixed(4)} Bitcoin
-                  </span>
-                </div>
-              </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-600">1 Bitcoin =</span>
+          <span
+            className={`text-lg font-semibold ${isStale ? 'text-gray-700' : 'text-gray-900'}`}
+            title={`Exact: ${goldData.btc_per_oz.toFixed(6)} oz`}
+          >
+            {goldData.btc_per_oz.toFixed(2)} oz
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-600">1 oz =</span>
+          <span
+            className={`text-lg font-semibold ${isStale ? 'text-gray-700' : 'text-gray-900'}`}
+            title={`Exact: ${goldData.oz_per_btc.toFixed(6)} Bitcoin`}
+          >
+            {goldData.oz_per_btc.toFixed(4)} Bitcoin
+          </span>
+        </div>
+      </div>
 
       <div className="mt-3 pt-3 border-t border-gray-100">
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>{formatSourceTimestamp(getStandardizedSourceName(goldData.provenance), goldData.updated_at)}</span>
+        <div className="flex items-center justify-between text-xs text-gray-500 gap-2">
+          <span>
+            {formatSourceTimestamp(getStandardizedSourceName(goldData.provenance), goldData.updated_at)}
+          </span>
           <Link 
             href="/xau" 
-            className="text-emerald-600 hover:text-emerald-700 font-medium"
+            className="text-emerald-600 hover:text-emerald-700 font-medium shrink-0"
           >
             View details →
           </Link>

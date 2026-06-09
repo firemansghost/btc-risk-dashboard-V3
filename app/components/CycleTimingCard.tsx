@@ -10,6 +10,7 @@ import {
   type CyclePhase,
   type CycleTimingResult,
 } from '@/lib/cycleTiming';
+import ContextOnlyBadge from './ContextOnlyBadge';
 
 type CycleTimingCardProps = {
   asOfUtc?: string | null;
@@ -251,6 +252,9 @@ export default function CycleTimingCard({
             >
               <InfoCircleIcon className="w-5 h-5 sm:w-[1.15rem] sm:h-[1.15rem]" />
             </button>
+          </div>
+          <div className="mt-1.5">
+            <ContextOnlyBadge>Cycle timing context · not scored</ContextOnlyBadge>
           </div>
           <p className="text-xs text-gray-500 mt-1 leading-snug">
             Historical timing context based on the current cycle anchors.

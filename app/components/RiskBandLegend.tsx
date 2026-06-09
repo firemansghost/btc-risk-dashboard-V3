@@ -19,7 +19,6 @@ function chipColor(color: string) {
 
 export default function RiskBandLegend({ score }: { score: number }) {
   const [bands, setBands] = useState<Band[] | null>(null);
-  const [digest, setDigest] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -30,7 +29,6 @@ export default function RiskBandLegend({ score }: { score: number }) {
         if (!alive) return;
         if (json?.ok && json.config?.bands) {
           setBands(json.config.bands);
-          setDigest(json.digest ?? null);
         }
       } catch (error) {
         console.warn('Failed to load risk bands:', error);
@@ -58,18 +56,6 @@ export default function RiskBandLegend({ score }: { score: number }) {
       <div className="mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <h3 className="text-sm font-semibold text-slate-700">Risk Bands</h3>
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-          {digest && (
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(digest);
-                // Could add a toast notification here
-              }}
-              title="Click to copy config digest"
-              className="text-xs text-slate-500 hover:text-slate-700 cursor-pointer"
-            >
-              cfg {digest}
-            </button>
-          )}
           <a
             href="/methodology#bands"
             className="text-xs text-blue-600 hover:text-blue-800 underline"

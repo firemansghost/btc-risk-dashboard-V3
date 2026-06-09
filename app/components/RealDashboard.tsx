@@ -849,7 +849,7 @@ export default function RealDashboard() {
 
         {/* Second Row: Bitcoin⇄Gold + Satoshis per Dollar */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 lg:mb-8">
-          <BtcGoldCard className="h-full" />
+          <BtcGoldCard className="h-full" dashboardAsOfUtc={latest?.as_of_utc ?? null} />
           <SatoshisPerDollarCard className="h-full" />
         </div>
 
