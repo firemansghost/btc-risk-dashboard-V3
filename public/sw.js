@@ -1,9 +1,9 @@
 // Service Worker for Bitcoin Risk Dashboard
 // Provides offline support and caching for better performance
 
-const CACHE_NAME = 'btc-risk-dashboard-v2';
-const STATIC_CACHE = 'btc-static-v2';
-const DYNAMIC_CACHE = 'btc-dynamic-v2';
+const CACHE_NAME = 'btc-risk-dashboard-v3';
+const STATIC_CACHE = 'btc-static-v3';
+const DYNAMIC_CACHE = 'btc-dynamic-v3';
 
 // Files to cache immediately
 const STATIC_FILES = [
@@ -21,14 +21,29 @@ const STATIC_FILES = [
   '/alerts/types'
 ];
 
-// API routes to cache
+// API routes allowed to use network-first + offline fallback (no score/artifact endpoints)
 const API_ROUTES = [
   '/api/config',
-  '/api/data/latest',
-  '/api/history',
   '/api/health',
-  '/api/etf-predictions'
+  '/api/etf-predictions',
 ];
+
+/** Score and artifact paths must always hit the network — never cache or serve stale. */
+function isNetworkOnlyRoute(request) {
+  const url = new URL(request.url);
+  const path = url.pathname;
+  if (path.startsWith('/data/')) return true;
+  if (path.startsWith('/signals/')) return true;
+  if (path.startsWith('/extras/')) return true;
+  if (path.startsWith('/alerts/')) return true;
+  if (path.startsWith('/api/data/')) return true;
+  if (path.startsWith('/api/history')) return true;
+  if (path.startsWith('/api/factor-deltas')) return true;
+  if (path.startsWith('/api/sandbox/')) return true;
+  if (path.startsWith('/api/refresh')) return true;
+  if (path.startsWith('/api/smart-refresh')) return true;
+  return false;
+}
 
 // Install event - cache static files
 self.addEventListener('install', (event) => {
@@ -93,6 +108,12 @@ self.addEventListener('fetch', (event) => {
   
   // Skip external requests
   if (url.origin !== location.origin) {
+    return;
+  }
+
+  // Always bypass cache for live scores and public artifacts
+  if (isNetworkOnlyRoute(request)) {
+    event.respondWith(fetch(request));
     return;
   }
   

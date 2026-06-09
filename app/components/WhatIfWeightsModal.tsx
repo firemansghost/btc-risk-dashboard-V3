@@ -53,7 +53,7 @@ export default function WhatIfWeightsModal({ isOpen, onClose }: WhatIfWeightsMod
     try {
       const [configRes, latestRes] = await Promise.all([
         fetch('/api/config?ts=' + Date.now(), { cache: 'no-store' }),
-        fetch('/api/data/latest?ts=' + Date.now(), { cache: 'no-store' })
+        fetch('/api/data/latest-file?ts=' + Date.now(), { cache: 'no-store' })
       ]);
 
       const configData = await configRes.json().catch(() => null);

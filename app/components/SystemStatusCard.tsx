@@ -62,7 +62,7 @@ export default function SystemStatusCard({ factors, provenance, asOfUtc, onOpenW
             {showProvenance ? 'Hide' : 'Show'} Details
           </button>
           <button
-            onClick={() => window.open('/api/data/latest?ts=' + Date.now(), '_blank')}
+            onClick={() => window.open('/api/data/latest-file?ts=' + Date.now(), '_blank')}
             className="text-sm text-blue-600 hover:text-blue-800 underline"
           >
             View Raw
