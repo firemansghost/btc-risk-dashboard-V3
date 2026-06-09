@@ -9,6 +9,12 @@ import {
   computeScoreConcentration,
   buildWhatMattersLines,
 } from '@/lib/scoreInsights';
+import {
+  formatDataConfidenceFreshCopy,
+  formatFactorConfidenceContext,
+  getFreshnessDisplay,
+  getSlowCadenceProfile,
+} from '@/lib/freshnessDisplay';
 import { getBandChipClasses } from '@/lib/band-colors';
 import MobileCollapsible from './MobileCollapsible';
 import SkeletonLoader, { SkeletonCard } from './SkeletonLoader';
@@ -24,6 +30,8 @@ interface FactorExplanation {
   score: number;
   contribution: number;
   status: string;
+  reason?: string;
+  last_utc?: string;
   explanation: string;
   trend: string;
   context: string;
@@ -193,40 +201,40 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
 
   // Get data confidence analysis
   const getDataConfidence = () => {
-    if (!explanation || !explanation.keyDrivers || explanation.keyDrivers.length === 0) {
-      console.log('getDataConfidence: Insufficient data', {
-        hasExplanation: !!explanation,
-        keyDriversLength: explanation?.keyDrivers?.length || 0
-      });
+    if (!explanation || !explanation.factorsByContribution || explanation.factorsByContribution.length === 0) {
       return null;
     }
 
-    const factors = explanation.keyDrivers;
+    const factors = explanation.factorsByContribution;
     
-    // Calculate confidence for each factor
     const factorConfidences = factors.map(factor => {
-      // Determine data staleness
+      const freshness = getFreshnessDisplay({
+        key: factor.key,
+        status: factor.status,
+        reason: factor.reason,
+        last_utc: factor.last_utc,
+      });
+
       let stalenessLevel = 'fresh';
       let stalenessHours = 0;
       let stalenessIcon = '🟢';
       let stalenessColor = 'green';
       let stalenessText = 'Fresh';
       
-      if (factor.status === 'stale') {
+      if (factor.status === 'stale' || factor.status === 'stale_beyond_ttl') {
         stalenessLevel = 'stale';
-        stalenessHours = 6; // Assume 6 hours for stale
+        stalenessHours = 6;
         stalenessIcon = '🟡';
         stalenessColor = 'yellow';
         stalenessText = 'Stale';
-      } else if (factor.status === 'very_stale') {
-        stalenessLevel = 'very_stale';
-        stalenessHours = 24; // Assume 24 hours for very stale
+      } else if (factor.status === 'excluded') {
+        stalenessLevel = 'excluded';
+        stalenessHours = 24;
         stalenessIcon = '🔴';
         stalenessColor = 'red';
-        stalenessText = 'Very Stale';
+        stalenessText = 'Excluded';
       }
       
-      // Calculate confidence level based on staleness and other factors
       let confidenceLevel = 'high';
       let confidenceIcon = '🟢';
       let confidenceColor = 'green';
@@ -239,7 +247,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         confidenceColor = 'yellow';
         confidenceText = 'Medium';
         confidenceScore = 70;
-      } else if (stalenessLevel === 'very_stale') {
+      } else if (stalenessLevel === 'excluded') {
         confidenceLevel = 'low';
         confidenceIcon = '🔴';
         confidenceColor = 'red';
@@ -247,15 +255,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         confidenceScore = 40;
       }
       
-      // Generate confidence context
-      let confidenceContext = '';
-      if (confidenceLevel === 'high') {
-        confidenceContext = 'Data is fresh and reliable';
-      } else if (confidenceLevel === 'medium') {
-        confidenceContext = 'Data is somewhat stale but still usable';
-      } else {
-        confidenceContext = 'Data is very stale and may not reflect current conditions';
-      }
+      const confidenceContext = formatFactorConfidenceContext(freshness);
       
       return {
         key: factor.key,
@@ -270,7 +270,8 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         confidenceColor,
         confidenceText,
         confidenceScore,
-        confidenceContext
+        confidenceContext,
+        freshnessDetail: freshness.detailLine,
       };
     });
     
@@ -301,24 +302,25 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     
     let overallInsight = '';
     let overallRecommendation = '';
+    let overallFootnote: string | null = null;
     
     if (staleFactors.length === 0) {
-      overallInsight = 'All data sources are fresh and reliable';
-      overallRecommendation = 'Data quality is excellent - proceed with confidence';
+      const hasSlowCadenceFresh = factors.some(
+        (f) =>
+          (f.status === 'fresh' || f.status === 'success') &&
+          getSlowCadenceProfile(f.key) !== null
+      );
+      const freshCopy = formatDataConfidenceFreshCopy(hasSlowCadenceFresh);
+      overallInsight = freshCopy.insight;
+      overallRecommendation = freshCopy.recommendation;
+      overallFootnote = freshCopy.footnote;
     } else if (staleFactors.length === 1) {
-      overallInsight = `1 factor has stale data: ${staleFactors[0].label}`;
+      overallInsight = `1 factor is stale or excluded: ${staleFactors[0].label}`;
       overallRecommendation = `Monitor ${staleFactors[0].label} for updates`;
     } else {
-      overallInsight = `${staleFactors.length} factors have stale data: ${staleFactors.map(f => f.label).join(', ')}`;
+      overallInsight = `${staleFactors.length} factors are stale or excluded: ${staleFactors.map(f => f.label).join(', ')}`;
       overallRecommendation = `Monitor ${staleFactors.map(f => f.label).join(', ')} for updates`;
     }
-    
-    console.log('getDataConfidence: Analysis complete', {
-      averageConfidenceScore,
-      overallConfidenceLevel,
-      staleFactorsCount: staleFactors.length,
-      lowConfidenceFactorsCount: lowConfidenceFactors.length
-    });
     
     return {
       overallConfidenceLevel,
@@ -330,7 +332,8 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       staleFactors,
       lowConfidenceFactors,
       overallInsight,
-      overallRecommendation
+      overallRecommendation,
+      overallFootnote,
     };
   };
 
@@ -650,6 +653,8 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       score: factor.score,
       contribution,
       status: factor.status,
+      reason: factor.reason,
+      last_utc: factor.last_utc || factor.as_of_utc,
       explanation,
       trend,
       context,
@@ -1326,6 +1331,11 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
                 <div className="text-xs text-gray-600 mb-1.5">
                   {getDataConfidence()!.overallInsight}
                 </div>
+                {getDataConfidence()!.overallFootnote && (
+                  <div className="text-xs text-gray-500 mb-1.5">
+                    {getDataConfidence()!.overallFootnote}
+                  </div>
+                )}
                 <div className="text-xs text-green-600 italic">
                   💡 {getDataConfidence()!.overallRecommendation}
                 </div>

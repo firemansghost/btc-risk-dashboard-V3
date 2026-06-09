@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import type { FactorSummary } from '@/lib/types';
 import { checkClockSkew } from '@/lib/factorUtils';
+import { getFreshnessDisplay } from '@/lib/freshnessDisplay';
 
 interface SystemStatusCardProps {
   factors: FactorSummary[];
@@ -34,12 +35,16 @@ export default function SystemStatusCard({ factors, provenance, asOfUtc, onOpenW
     }
   };
 
-  const sources = factors.map(factor => ({
-    name: factor.label,
-    as_of: factor.last_utc || asOfUtc, // Use individual factor timestamp or global timestamp
-    status: factor.status,
-    note: factor.reason,
-  }));
+  const sources = factors.map((factor) => {
+    const freshness = getFreshnessDisplay(factor);
+    return {
+      name: factor.label,
+      as_of: factor.last_utc || asOfUtc,
+      status: factor.status,
+      note: freshness.shortLine,
+      detail: freshness.showDetailInCompactUi ? freshness.detailLine : null,
+    };
+  });
 
   // Check for clock skew issues
   const clockSkew = checkClockSkew(asOfUtc || null);
@@ -96,6 +101,11 @@ export default function SystemStatusCard({ factors, provenance, asOfUtc, onOpenW
               </div>
               {source.note && (
                 <div className="text-xs text-gray-400 truncate">{source.note}</div>
+              )}
+              {source.detail && (
+                <div className="text-xs text-gray-500 truncate" title={source.detail}>
+                  {source.detail}
+                </div>
               )}
             </div>
             <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(source.status)}`}>

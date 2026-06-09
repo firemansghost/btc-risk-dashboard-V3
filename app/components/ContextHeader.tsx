@@ -1,6 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import {
+  formatSystemHealthCounts,
+  formatSystemHealthSummary,
+} from '@/lib/freshnessDisplay';
 
 type FactorStatus = {
   status: string;
@@ -89,14 +93,7 @@ export default function ContextHeader({ status, latest, onModelChange, onOpenHea
       }
       return 'Loading...';
     }
-    
-    if (health.excluded > 0) {
-      return `Degraded: ${health.excluded} excluded factor${health.excluded > 1 ? 's' : ''}`;
-    }
-    if (health.stale > 0) {
-      return `Degraded: ${health.stale} stale factor${health.stale > 1 ? 's' : ''}`;
-    }
-    return 'All systems live';
+    return formatSystemHealthSummary(health);
   };
   
   // Determine health dot color
@@ -193,14 +190,14 @@ export default function ContextHeader({ status, latest, onModelChange, onOpenHea
           <button
             onClick={() => onOpenHealthPanel?.()}
             className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors cursor-pointer min-h-[44px]"
-            aria-label="View system health details"
+            aria-label={`System health: ${formatSystemHealthCounts(health)}. ${getHealthSummary()}`}
             title="Click to view detailed system health information"
           >
             <div className="flex items-center gap-2">
               <div className={`w-2 h-2 rounded-full ${getHealthDotColor()}`} aria-hidden="true" />
-              <span className="text-sm font-medium text-gray-700">System Health</span>
+              <span className="text-sm font-medium text-gray-700">System Health:</span>
               <span className="text-sm text-gray-600">
-                ({health.fresh}/{health.stale}/{health.excluded})
+                {health.loading ? '…' : formatSystemHealthCounts(health)}
               </span>
             </div>
             <span className="text-xs sm:text-sm text-gray-700">

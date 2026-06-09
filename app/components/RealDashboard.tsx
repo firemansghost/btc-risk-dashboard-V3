@@ -9,6 +9,7 @@ import { formatFriendlyTimestamp, calculateFreshness, formatLocalRefreshTime, ca
 import { getBandTextColorFromLabel } from '@/lib/bandTextColors';
 import { formatSourceTimestamp } from '@/lib/sourceUtils';
 import { calculateContribution, getFactorStaleness, getFactorSubSignals, sortFactorsByContribution, getFactorTTL, getFactorCadence } from '@/lib/factorUtils';
+import { formatFreshnessAge, getFreshnessDisplay } from '@/lib/freshnessDisplay';
 import { DEFAULT_CONFIG, getFactorConfig, getBandForScore, type PillarKey } from '@/lib/riskConfig.client';
 import { computeDashboardModelComposite, type FactorInput } from '@/lib/experimentalModel';
 import { formatDeltaDisplay, getDeltaColorClass, formatDeltaProvenance } from '@/lib/deltaUtils';
@@ -892,6 +893,7 @@ export default function RealDashboard() {
             const staleness = getFactorStaleness(factor.last_utc || factor.as_of_utc, factorTTL, factor.key);
             const subSignals = getFactorSubSignals(factor.key);
             const cadence = getFactorCadence(factor.key);
+            const freshnessDisplay = getFreshnessDisplay(factor);
             
             return (
               <LazyLoader 
@@ -1048,20 +1050,16 @@ export default function RealDashboard() {
                       }`}>
                         {staleness.level === 'stale' ? 'Stale' : 'Excluded'}
                       </span>
-                      {factor.reason && (
+                      {freshnessDisplay.shortLine && (
                         <span className="text-body-small text-gray-500">
-                          ({factor.reason.length > 30 ? factor.reason.substring(0, 30) + '...' : factor.reason})
+                          ({freshnessDisplay.shortLine})
                         </span>
                       )}
                       {factor.last_utc && (
                         <span className="text-body-small text-gray-500">
                           Last update: {(() => {
-                            const ageMs = Date.now() - new Date(factor.last_utc).getTime();
-                            const ageHours = Math.floor(ageMs / (1000 * 60 * 60));
-                            const ageDays = Math.floor(ageHours / 24);
-                            if (ageDays > 0) return `${ageDays}d ago`;
-                            if (ageHours > 0) return `${ageHours}h ago`;
-                            return 'Recently';
+                            const age = formatFreshnessAge(factor.last_utc);
+                            return age === 'just now' ? 'just now' : `${age} ago`;
                           })()}
                         </span>
                       )}
@@ -1096,7 +1094,7 @@ export default function RealDashboard() {
                     <span className="font-medium text-gray-700">Temporarily excluded from today's G-Score.</span>
                     <br />
                     <span className="text-xs">
-                      Reason: {factor.reason || factor.status || 'stale data'}
+                      Reason: {freshnessDisplay.detailLine || freshnessDisplay.shortLine || factor.status || 'stale data'}
                     </span>
                   </div>
                 </div>

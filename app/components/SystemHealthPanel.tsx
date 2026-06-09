@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { formatFriendlyTimestamp } from '@/lib/dateUtils';
 import { getPillarBadgeClasses, getPillarLabel } from '@/lib/pillar-colors';
+import { formatFreshnessAge, getFreshnessDisplay } from '@/lib/freshnessDisplay';
 
 type SystemHealthPanelProps = {
   isOpen: boolean;
@@ -11,21 +12,12 @@ type SystemHealthPanelProps = {
   onJumpToFactor: (factorKey: string) => void;
 };
 
-// Format age in human-readable format
+// Format age in human-readable format (clamped, never negative)
 function formatAge(lastUpdated: string | undefined): string {
   if (!lastUpdated) return 'Unknown';
-  
-  const now = new Date();
-  const updated = new Date(lastUpdated);
-  const ageMs = now.getTime() - updated.getTime();
-  const ageMinutes = Math.floor(ageMs / (1000 * 60));
-  const ageHours = Math.floor(ageMinutes / 60);
-  const ageDays = Math.floor(ageHours / 24);
-  
-  if (ageDays > 0) return `${ageDays}d ago`;
-  if (ageHours > 0) return `${ageHours}h ago`;
-  if (ageMinutes > 0) return `${ageMinutes}m ago`;
-  return 'Just now';
+  const age = formatFreshnessAge(lastUpdated);
+  if (age === 'just now') return 'Just now';
+  return `${age} ago`;
 }
 
 // Get severity level for sorting
@@ -155,6 +147,7 @@ export default function SystemHealthPanel({
 
               const lastUpdated = factor.last_utc || factor.as_of_utc || factor.last_updated_utc;
               const age = formatAge(lastUpdated);
+              const freshness = getFreshnessDisplay(factor, Date.now(), { verbose: true });
 
               return (
                 <div
@@ -180,12 +173,14 @@ export default function SystemHealthPanel({
                         <span className={`px-2 py-0.5 rounded text-xs font-medium border ${statusColor}`}>
                           {isExcluded ? 'Excluded' : isStale ? 'Stale' : 'Fresh'}
                         </span>
-                        {factor.reason && (
-                          <span className="text-xs text-gray-600 truncate" title={factor.reason}>
-                            {factor.reason.length > 40 ? factor.reason.substring(0, 40) + '...' : factor.reason}
-                          </span>
-                        )}
+                        <span className="text-xs text-gray-600 truncate" title={freshness.shortLine}>
+                          {freshness.shortLine}
+                        </span>
                       </div>
+
+                      {freshness.showDetailInCompactUi && freshness.detailLine && (
+                        <div className="text-xs text-gray-500 mb-2">{freshness.detailLine}</div>
+                      )}
 
                       {/* Age + Last Updated */}
                       <div className="text-xs text-gray-500 space-y-1">

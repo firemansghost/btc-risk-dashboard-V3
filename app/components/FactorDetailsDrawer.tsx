@@ -6,6 +6,7 @@ import { getFactorStaleness, getFactorSubSignals, getFactorTTL, getFactorCadence
 import { formatFriendlyTimestamp } from '@/lib/dateUtils';
 import { formatDeltaDisplay, getDeltaColorClass, formatDeltaProvenance } from '@/lib/deltaUtils';
 import { getBandForScore } from '@/lib/riskConfig.client';
+import { formatFreshnessAge, getFreshnessDisplay } from '@/lib/freshnessDisplay';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 
 type FactorDetailsDrawerProps = {
@@ -24,21 +25,11 @@ type FactorDetailsDrawerProps = {
   scrollToSection?: 'moreDetails' | null;
 };
 
-// Format age in human-readable format
 function formatAge(lastUpdated: string | undefined): string {
   if (!lastUpdated) return 'Unknown';
-  
-  const now = new Date();
-  const updated = new Date(lastUpdated);
-  const ageMs = now.getTime() - updated.getTime();
-  const ageMinutes = Math.floor(ageMs / (1000 * 60));
-  const ageHours = Math.floor(ageMinutes / 60);
-  const ageDays = Math.floor(ageHours / 24);
-  
-  if (ageDays > 0) return `${ageDays}d ago`;
-  if (ageHours > 0) return `${ageHours}h ago`;
-  if (ageMinutes > 0) return `${ageMinutes}m ago`;
-  return 'Just now';
+  const age = formatFreshnessAge(lastUpdated);
+  if (age === 'just now') return 'Just now';
+  return `${age} ago`;
 }
 
 // Copy to clipboard with fallback
@@ -172,6 +163,7 @@ export default function FactorDetailsDrawer({
   const delta = factorDeltas[factor.key];
   const lastUpdated = factor.last_utc || factor.as_of_utc;
   const age = formatAge(lastUpdated);
+  const freshness = getFreshnessDisplay(factor, Date.now(), { verbose: true });
   
   // Get risk band for the factor score
   const riskBand = factor.score !== null && !isNaN(factor.score) 
@@ -188,7 +180,7 @@ export default function FactorDetailsDrawer({
     const deltaDisplay = delta ? formatDeltaDisplay(delta.delta) : '—';
     const provenance = delta ? formatDeltaProvenance(delta) : 'Δ unavailable';
     const statusText = isExcluded ? 'EXCLUDED' : isStale ? 'STALE' : 'LIVE';
-    const reasonText = factor.reason ? ` · ${factor.reason}` : '';
+    const reasonText = freshness.shortLine ? ` · ${freshness.shortLine}` : '';
     const bandText = riskBand ? ` (${riskBand.label})` : '';
     
     const summary = `${factor.label} — score ${factor.score !== null ? factor.score.toFixed(0) : 'N/A'}${bandText} · Δ ${deltaDisplay} (${provenance}) · status ${statusText}${reasonText}`;
@@ -286,7 +278,7 @@ export default function FactorDetailsDrawer({
                 <div className={`text-sm font-semibold mb-1 ${
                   isExcluded ? 'text-red-800' : 'text-yellow-800'
                 }`}>
-                  {isExcluded ? 'EXCLUDED' : 'STALE'}: {factor.reason || 'No reason provided'}
+                  {isExcluded ? 'EXCLUDED' : 'STALE'}: {freshness.detailLine || freshness.shortLine || 'No reason provided'}
                 </div>
                 <div className="text-xs text-gray-600">
                   Last update: {age}
