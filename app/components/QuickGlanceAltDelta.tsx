@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { analytics } from '@/lib/analytics';
+import { computeSandboxDayComposite, type ModelPresetKey } from '@/lib/experimentalModel';
+import { getBandForScore } from '@/lib/riskConfig.client';
 
 interface QuickGlanceAltDeltaProps {
   className?: string;
@@ -52,10 +54,20 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
       const result = await response.json();
 
       const rows = Array.isArray(result.data) ? result.data : [];
-      if (rows.length > 0) {
+      const configFactors = Array.isArray(result.config?.factors) ? result.config.factors : [];
+      if (rows.length > 0 && configFactors.length > 0) {
         const latestDay = rows[rows.length - 1];
 
-        const alt = calculateAltScore(latestDay, lastPreset);
+        const alt = computeSandboxDayComposite(
+          {
+            factor_scores: latestDay.factor_scores,
+            factor_statuses: latestDay.factor_statuses,
+            cycle_adj: latestDay.cycle_adj,
+            spike_adj: latestDay.spike_adj,
+          },
+          configFactors,
+          lastPreset as ModelPresetKey
+        );
         const official = typeof latestDay.official_composite === 'number' ? Math.round(latestDay.official_composite) : null;
 
         if (official !== null) {
@@ -70,62 +82,6 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
     }
   };
 
-  const calculateAltScore = (dayData: any, preset: string): number => {
-    // This is a simplified calculation - in a real implementation,
-    // you'd want to use the same logic as the WeightsSandbox component
-    const presetWeights = {
-      'liq_35_25': { liquidity: 0.35, momentum: 0.25, term: 0.20, macro: 0.10, social: 0.10 },
-      'mom_25_35': { liquidity: 0.25, momentum: 0.35, term: 0.20, macro: 0.10, social: 0.10 },
-      'official_30_30': { liquidity: 0.30, momentum: 0.30, term: 0.20, macro: 0.10, social: 0.10 }
-    };
-
-    const weights = presetWeights[preset as keyof typeof presetWeights];
-    if (!weights) return Math.round(dayData.official_composite ?? 0);
-
-    // Calculate weighted average using the preset weights
-    let weightedSum = 0;
-    let totalWeight = 0;
-
-    // Map factor scores to pillars and apply weights
-    const fs = dayData.factor_scores || {};
-    const factorScores = {
-      stablecoins: fs.stablecoins ?? 0,
-      etf_flows: fs.etf_flows ?? 0,
-      net_liquidity: fs.net_liquidity ?? 0,
-      trend_valuation: fs.trend_valuation ?? 0,
-      term_leverage: fs.term_leverage ?? 0,
-      macro_overlay: fs.macro_overlay ?? 0,
-      social_interest: fs.social_interest ?? 0
-    };
-
-    // Liquidity pillar (stablecoins + etf_flows + net_liquidity)
-    const liquidityScore = (
-      (factorScores.stablecoins * 0.18) +
-      (factorScores.etf_flows * 0.077) +
-      (factorScores.net_liquidity * 0.043)
-    ) / 0.30; // Normalize to 0-100
-
-    // Momentum pillar (trend_valuation)
-    const momentumScore = factorScores.trend_valuation;
-
-    // Other pillars
-    const termScore = factorScores.term_leverage;
-    const macroScore = factorScores.macro_overlay;
-    const socialScore = factorScores.social_interest;
-
-    // Calculate weighted average
-    weightedSum = (
-      liquidityScore * weights.liquidity +
-      momentumScore * weights.momentum +
-      termScore * weights.term +
-      macroScore * weights.macro +
-      socialScore * weights.social
-    );
-    totalWeight = weights.liquidity + weights.momentum + weights.term + weights.macro + weights.social;
-
-    return totalWeight > 0 ? Math.round(weightedSum / totalWeight) : Math.round(dayData.official_composite ?? 0);
-  };
-
   const getPresetLabel = (preset: string): string => {
     const labels = {
       'liq_35_25': '35/25',
@@ -136,21 +92,8 @@ export default function QuickGlanceAltDelta({ className = '' }: QuickGlanceAltDe
   };
 
   const getBandComparison = (altScore: number, officialScore: number): string => {
-    // Use SSOT band lookup instead of hardcoded thresholds
-    const getBand = (score: number) => {
-      // Import getBandForScore from SSOT (client-side safe)
-      // For now, use correct inclusive ranges matching SSOT
-      if (score >= 0 && score <= 14) return 'Aggressive Buying';
-      if (score >= 15 && score <= 34) return 'Regular DCA Buying';
-      if (score >= 35 && score <= 49) return 'Moderate Buying';
-      if (score >= 50 && score <= 64) return 'Hold & Wait';
-      if (score >= 65 && score <= 79) return 'Reduce Risk';
-      if (score >= 80 && score <= 100) return 'High Risk';
-      return 'High Risk'; // Fallback
-    };
-
-    const altBand = getBand(altScore);
-    const officialBand = getBand(officialScore);
+    const altBand = getBandForScore(altScore).label;
+    const officialBand = getBandForScore(officialScore).label;
 
     if (altBand === officialBand) return 'same band';
     

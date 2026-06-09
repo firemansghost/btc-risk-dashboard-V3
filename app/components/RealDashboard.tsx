@@ -9,7 +9,8 @@ import { formatFriendlyTimestamp, calculateFreshness, formatLocalRefreshTime, ca
 import { getBandTextColorFromLabel } from '@/lib/bandTextColors';
 import { formatSourceTimestamp } from '@/lib/sourceUtils';
 import { calculateContribution, getFactorStaleness, getFactorSubSignals, sortFactorsByContribution, getFactorTTL, getFactorCadence } from '@/lib/factorUtils';
-import { DEFAULT_CONFIG, getFactorConfig, type PillarKey } from '@/lib/riskConfig.client';
+import { DEFAULT_CONFIG, getFactorConfig, getBandForScore, type PillarKey } from '@/lib/riskConfig.client';
+import { computeDashboardModelComposite, type FactorInput } from '@/lib/experimentalModel';
 import { formatDeltaDisplay, getDeltaColorClass, formatDeltaProvenance } from '@/lib/deltaUtils';
 import SystemStatusCard from './SystemStatusCard';
 import RiskBandLegend from './RiskBandLegend';
@@ -201,81 +202,14 @@ export default function RealDashboard() {
   };
 
   // Calculate preview score based on selected model
-  const calculatePreviewScore = useCallback((latestData: any, model: 'official' | 'liq-heavy' | 'mom-tilted'): { score: number; band: any } | null => {
+  const calculatePreviewScore = useCallback((latestData: any, model: 'official' | 'liq-heavy' | 'mom-tilted'): { score: number; band: ReturnType<typeof getBandForScore> } | null => {
     if (!latestData || !latestData.factors || !Array.isArray(latestData.factors) || model === 'official') {
       return null;
     }
 
-    const presetWeights = {
-      'liq-heavy': { liquidity: 0.35, momentum: 0.25, leverage: 0.20, macro: 0.10, social: 0.10 },
-      'mom-tilted': { liquidity: 0.25, momentum: 0.35, leverage: 0.20, macro: 0.10, social: 0.10 },
-      'official': { liquidity: 0.30, momentum: 0.30, leverage: 0.20, macro: 0.10, social: 0.10 }
-    };
-
-    const weights = presetWeights[model];
-    if (!weights) return null;
-
-    // Map factors to pillars using actual factor weights from latest data
-    const pillarScores: Record<string, number> = {
-      liquidity: 0,
-      momentum: 0,
-      leverage: 0,
-      macro: 0,
-      social: 0
-    };
-
-    const pillarWeightSums: Record<string, number> = {
-      liquidity: 0,
-      momentum: 0,
-      leverage: 0,
-      macro: 0,
-      social: 0
-    };
-
-    // First pass: sum weights per pillar from actual factors
-    latestData.factors.forEach((factor: any) => {
-      if (factor.score !== null && factor.score !== undefined && factor.status === 'fresh') {
-        const pillar = factor.pillar;
-        const weight = factor.weight_pct || factor.weight || 0;
-        pillarWeightSums[pillar] = (pillarWeightSums[pillar] || 0) + weight;
-      }
-    });
-
-    // Second pass: compute normalized pillar scores
-    latestData.factors.forEach((factor: any) => {
-      if (factor.score !== null && factor.score !== undefined && factor.status === 'fresh') {
-        const pillar = factor.pillar;
-        const weight = factor.weight_pct || factor.weight || 0;
-        const wSum = pillarWeightSums[pillar] || 0;
-        if (wSum > 0) {
-          const normalizedWeight = weight / wSum;
-          pillarScores[pillar] = (pillarScores[pillar] || 0) + factor.score * normalizedWeight;
-        }
-      }
-    });
-
-    // Apply alternative pillar weights to pillar averages
-    const compositeScore = Math.round(
-      pillarScores.liquidity * weights.liquidity +
-      pillarScores.momentum * weights.momentum +
-      pillarScores.leverage * weights.leverage +
-      pillarScores.macro * weights.macro +
-      pillarScores.social * weights.social
-    );
-
-    // Get band for score (client-side band lookup)
-    const getBandForScore = (score: number) => {
-      if (score >= 0 && score <= 14) return { label: 'Aggressive Buying', key: 'maximum_buying' };
-      if (score >= 15 && score <= 34) return { label: 'Regular DCA Buying', key: 'buying' };
-      if (score >= 35 && score <= 49) return { label: 'Moderate Buying', key: 'accumulate' };
-      if (score >= 50 && score <= 64) return { label: 'Hold & Wait', key: 'hold_neutral' };
-      if (score >= 65 && score <= 79) return { label: 'Reduce Risk', key: 'reduce' };
-      if (score >= 80 && score <= 100) return { label: 'High Risk', key: 'selling' };
-      return { label: 'High Risk', key: 'selling' };
-    };
-
-    const band = getBandForScore(compositeScore);
-    return { score: compositeScore, band };
+    const score = computeDashboardModelComposite(latestData.factors as FactorInput[], model);
+    const band = getBandForScore(score);
+    return { score, band };
   }, []);
 
   // Update preview score when model or latest data changes

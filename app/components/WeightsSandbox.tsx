@@ -3,6 +3,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import { formatFriendlyTimestamp } from '@/lib/dateUtils';
 import { analytics } from '@/lib/analytics';
+import {
+  MODEL_PRESETS,
+  computePillarScores,
+  computeSandboxDayComposite,
+  type FactorInput,
+  type ModelPresetKey,
+  type PillarKey,
+} from '@/lib/experimentalModel';
 
 type FactorScores = Record<string, number>;
 
@@ -45,44 +53,18 @@ type Preset = {
   weights: Record<string, number>;
 };
 
-const PRESETS: Preset[] = [
-  {
-    key: 'official_30_30',
-    label: 'Official — Balanced 30/30',
-    description: 'Liquidity 30%, Momentum 30%, Leverage 20%, Macro 10%, Social 10%',
-    weights: {
-      liquidity: 0.30,
-      momentum: 0.30,
-      leverage: 0.20,
-      macro: 0.10,
-      social: 0.10
-    }
-  },
-  {
-    key: 'liq_35_25',
-    label: 'Liquidity-heavy — 35/25',
-    description: 'Liquidity 35%, Momentum 25%, Leverage 20%, Macro 10%, Social 10%',
-    weights: {
-      liquidity: 0.35,
-      momentum: 0.25,
-      leverage: 0.20,
-      macro: 0.10,
-      social: 0.10
-    }
-  },
-  {
-    key: 'mom_25_35',
-    label: 'Momentum-tilted — 25/35',
-    description: 'Liquidity 25%, Momentum 35%, Leverage 20%, Macro 10%, Social 10%',
-    weights: {
-      liquidity: 0.25,
-      momentum: 0.35,
-      leverage: 0.20,
-      macro: 0.10,
-      social: 0.10
-    }
-  }
-];
+const PRESET_DESCRIPTIONS: Record<ModelPresetKey, string> = {
+  official_30_30: 'Liquidity 30%, Momentum 30%, Leverage 20%, Macro 10%, Social 10%',
+  liq_35_25: 'Liquidity 35%, Momentum 25%, Leverage 20%, Macro 10%, Social 10%',
+  mom_25_35: 'Liquidity 25%, Momentum 35%, Leverage 20%, Macro 10%, Social 10%',
+};
+
+const PRESETS: Preset[] = (Object.keys(MODEL_PRESETS) as ModelPresetKey[]).map((key) => ({
+  key,
+  label: MODEL_PRESETS[key].label,
+  description: PRESET_DESCRIPTIONS[key],
+  weights: MODEL_PRESETS[key].weights,
+}));
 
 const WINDOW_OPTIONS = [
   { value: 30, label: '30 days' },
@@ -179,60 +161,37 @@ export default function WeightsSandbox() {
   const computedData = useMemo(() => {
     if (!data.length || !config) return [];
 
-    const preset = PRESETS.find(p => p.key === selectedPreset);
-    if (!preset) return [];
-
     return data.map(day => {
-      // Collect active factors and weights (respect daily status: include only 'fresh')
-      const activeFactors = config.factors.filter(f => {
-        if (!f.enabled) return false;
-        const hasScore = day.factor_scores[f.key] !== undefined;
-        const status = day.factor_statuses ? day.factor_statuses[f.key] : 'fresh';
-        const isFresh = status === 'fresh';
-        return hasScore && isFresh;
-      });
+      const presetKey = selectedPreset as ModelPresetKey;
+      const factorInputs: FactorInput[] = config.factors
+        .filter(
+          (f) =>
+            f.enabled &&
+            day.factor_scores[f.key] !== undefined &&
+            (day.factor_statuses?.[f.key] ?? 'fresh') === 'fresh'
+        )
+        .map((f) => ({
+          key: f.key,
+          pillar: f.pillar,
+          weight: f.weight,
+          score: day.factor_scores[f.key],
+          status: 'fresh' as const,
+        }));
 
-      // Group by pillar and compute normalized pillar averages (0-100)
-      const pillarScores: Record<string, number> = {};
-      const pillarWeightSums: Record<string, number> = {};
-      activeFactors.forEach(f => {
-        const pillar = f.pillar;
-        pillarWeightSums[pillar] = (pillarWeightSums[pillar] || 0) + f.weight;
-      });
+      const pillarScores = computePillarScores(factorInputs);
+      const finalAltComposite = computeSandboxDayComposite(day, config.factors, presetKey);
 
-      activeFactors.forEach(f => {
-        const pillar = f.pillar;
-        const wSum = pillarWeightSums[pillar] || 0;
-        if (wSum > 0) {
-          const normalizedWeight = f.weight / wSum;
-          pillarScores[pillar] = (pillarScores[pillar] || 0) + day.factor_scores[f.key] * normalizedWeight;
-        }
-      });
-
-      // Apply alternative pillar weights to pillar averages
-      let altComposite = 0;
-      Object.entries(preset.weights).forEach(([pillarKey, pillarWeight]) => {
-        if (pillarScores[pillarKey] !== undefined) {
-          altComposite += pillarScores[pillarKey] * pillarWeight;
-        }
-      });
-
-      // Apply same adjustments as official
-      const finalAltComposite = Math.max(0, Math.min(100, 
-        altComposite + day.cycle_adj + day.spike_adj
-      ));
-
-      // Determine band for alt score
-      const altBand = config.bands.find(band => 
-        finalAltComposite >= band.range[0] && finalAltComposite <= band.range[1]
-      ) || config.bands[config.bands.length - 1];
+      const altBand =
+        config.bands.find(
+          (band) => finalAltComposite >= band.range[0] && finalAltComposite <= band.range[1]
+        ) || config.bands[config.bands.length - 1];
 
       return {
         ...day,
         alt_composite: finalAltComposite,
         alt_band: altBand.label,
         delta: finalAltComposite - day.official_composite,
-        pillar_scores: pillarScores
+        pillar_scores: pillarScores,
       };
     });
   }, [data, config, selectedPreset]);
@@ -240,9 +199,6 @@ export default function WeightsSandbox() {
   // Compute today's data from SSOT (latest.json) if available, otherwise fall back to history
   const todayDataFromLatest = useMemo(() => {
     if (!todayLatest || !config) return null;
-
-    const preset = PRESETS.find(p => p.key === selectedPreset);
-    if (!preset) return null;
 
     // Convert latest.json format to sandbox format
     const factorScores: Record<string, number> = {};
@@ -259,51 +215,41 @@ export default function WeightsSandbox() {
       });
     }
 
-    // Collect active factors (fresh only, same logic as history)
-    const activeFactors = config.factors.filter(f => {
-      if (!f.enabled) return false;
-      const hasScore = factorScores[f.key] !== undefined;
-      const status = factorStatuses[f.key] || 'fresh';
-      const isFresh = status === 'fresh';
-      return hasScore && isFresh;
-    });
-
-    // Group by pillar and compute normalized pillar averages
-    const pillarScores: Record<string, number> = {};
-    const pillarWeightSums: Record<string, number> = {};
-    activeFactors.forEach(f => {
-      const pillar = f.pillar;
-      pillarWeightSums[pillar] = (pillarWeightSums[pillar] || 0) + f.weight;
-    });
-
-    activeFactors.forEach(f => {
-      const pillar = f.pillar;
-      const wSum = pillarWeightSums[pillar] || 0;
-      if (wSum > 0) {
-        const normalizedWeight = f.weight / wSum;
-        pillarScores[pillar] = (pillarScores[pillar] || 0) + factorScores[f.key] * normalizedWeight;
-      }
-    });
-
-    // Apply alternative pillar weights
-    let altComposite = 0;
-    Object.entries(preset.weights).forEach(([pillarKey, pillarWeight]) => {
-      if (pillarScores[pillarKey] !== undefined) {
-        altComposite += pillarScores[pillarKey] * pillarWeight;
-      }
-    });
-
-    // Apply same adjustments as official
     const cycleAdj = todayLatest.cycle_adjustment?.adj_pts || 0;
     const spikeAdj = todayLatest.spike_adjustment?.adj_pts || 0;
-    const finalAltComposite = Math.max(0, Math.min(100, 
-      altComposite + cycleAdj + spikeAdj
-    ));
+    const sandboxDay = {
+      factor_scores: factorScores,
+      factor_statuses: factorStatuses,
+      cycle_adj: cycleAdj,
+      spike_adj: spikeAdj,
+    };
+    const presetKey = selectedPreset as ModelPresetKey;
+    const factorInputs: FactorInput[] = config.factors
+      .filter(
+        (f) =>
+          f.enabled &&
+          factorScores[f.key] !== undefined &&
+          (factorStatuses[f.key] ?? 'fresh') === 'fresh'
+      )
+      .map((f) => ({
+        key: f.key,
+        pillar: f.pillar,
+        weight: f.weight,
+        score: factorScores[f.key],
+        status: 'fresh' as const,
+      }));
 
-    // Determine band for alt score
-    const altBand = config.bands.find(band => 
-      finalAltComposite >= band.range[0] && finalAltComposite <= band.range[1]
-    ) || config.bands[config.bands.length - 1];
+    const pillarScores = computePillarScores(factorInputs);
+    const finalAltComposite = computeSandboxDayComposite(
+      sandboxDay,
+      config.factors,
+      presetKey
+    );
+
+    const altBand =
+      config.bands.find(
+        (band) => finalAltComposite >= band.range[0] && finalAltComposite <= band.range[1]
+      ) || config.bands[config.bands.length - 1];
 
     const officialComposite = todayLatest.composite_score || 0;
     const officialBand = todayLatest.band?.label || 'Unknown';
@@ -319,7 +265,7 @@ export default function WeightsSandbox() {
       alt_composite: finalAltComposite,
       alt_band: altBand.label,
       delta: finalAltComposite - officialComposite,
-      pillar_scores: pillarScores
+      pillar_scores: pillarScores,
     };
   }, [todayLatest, config, selectedPreset]);
 
@@ -636,7 +582,7 @@ export default function WeightsSandbox() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {Object.entries(preset?.weights || {}).map(([pillarKey, w]) => {
-                    const score = todayData.pillar_scores?.[pillarKey] ?? 0;
+                    const score = todayData.pillar_scores?.[pillarKey as PillarKey] ?? 0;
                     const contrib = score * w;
                     const label = pillarKey
                       .replace('liquidity', 'Liquidity / Flows')
