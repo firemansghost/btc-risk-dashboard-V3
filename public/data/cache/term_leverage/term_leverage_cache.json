@@ -1,16 +1,16 @@
 {
   "score": 57,
   "reason": "success",
-  "lastUpdated": "2026-06-08T14:49:59.934Z",
-  "timestamp": "2026-06-08T14:49:59.934Z",
+  "lastUpdated": "2026-06-09T13:45:33.653Z",
+  "timestamp": "2026-06-09T13:45:33.653Z",
   "details": [
     {
       "label": "Current Funding Rate",
-      "value": "-0.0004%"
+      "value": "-0.0065%"
     },
     {
       "label": "30-day Average",
-      "value": "-0.0006%"
+      "value": "-0.0014%"
     },
     {
       "label": "Price Volatility (30d)",
@@ -42,6 +42,27 @@
     }
   ],
   "fundingData": [
+    {
+      "timestamp": "2026-06-09T12:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000065,
+      "fundingRateDaily": -0.00019499999999999997
+    },
+    {
+      "timestamp": "2026-06-09T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000074,
+      "fundingRateDaily": -0.00022199999999999998
+    },
+    {
+      "timestamp": "2026-06-08T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": -0.000043,
+      "fundingRateDaily": -0.000129
+    },
     {
       "timestamp": "2026-06-08T12:00:00.000Z",
       "symbol": "XBTUSD",
@@ -230,27 +251,6 @@
       "fundingInterval": "2000-01-01T08:00:00.000Z",
       "fundingRate": -0.000075,
       "fundingRateDaily": -0.000225
-    },
-    {
-      "timestamp": "2026-05-30T12:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": -0.000012,
-      "fundingRateDaily": -0.000036
-    },
-    {
-      "timestamp": "2026-05-30T04:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": -0.000012,
-      "fundingRateDaily": -0.000036
-    },
-    {
-      "timestamp": "2026-05-29T20:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": 0.0001,
-      "fundingRateDaily": 0.00030000000000000003
     }
   ],
   "parallelTime": 1,
@@ -259,6 +259,6 @@
     "binance": "451",
     "okx": "ok"
   },
-  "cachedAt": "2026-06-08T14:49:59.934Z",
+  "cachedAt": "2026-06-09T13:45:33.653Z",
   "version": "1.0.0"
 }
