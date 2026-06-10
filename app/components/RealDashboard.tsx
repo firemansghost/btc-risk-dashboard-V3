@@ -148,7 +148,10 @@ export default function RealDashboard() {
   const [enhancedDetailsOpen, setEnhancedDetailsOpen] = useState(false);
   const [etfBreakdownOpen, setEtfBreakdownOpen] = useState(false);
   const [etfPerformanceOpen, setEtfPerformanceOpen] = useState(false);
-  const [selectedFactor, setSelectedFactor] = useState<{key: string, label: string, scrollToSection?: 'moreDetails'} | null>(null);
+  type FactorRef = { key: string; label: string; scrollToSection?: 'moreDetails' };
+  const [drawerFactor, setDrawerFactor] = useState<FactorRef | null>(null);
+  const [historyFactor, setHistoryFactor] = useState<FactorRef | null>(null);
+  const [enhancedFactor, setEnhancedFactor] = useState<FactorRef | null>(null);
 
   // Factor expansion state
   // Removed expandedFactors state - drawer is now the single source of truth
@@ -293,13 +296,13 @@ export default function RealDashboard() {
 
   // Removed toggleFactorExpansion - drawer is now the single source of truth
 
-  const openHistoryModal = (factor: {key: string, label: string}) => {
-    setSelectedFactor(factor);
+  const openHistoryModal = (factor: { key: string; label: string }) => {
+    setHistoryFactor(factor);
     setHistoryModalOpen(true);
   };
 
-  const openEnhancedDetails = (factor: {key: string, label: string}) => {
-    setSelectedFactor(factor);
+  const openEnhancedDetails = (factor: { key: string; label: string }) => {
+    setEnhancedFactor(factor);
     setEnhancedDetailsOpen(true);
   };
 
@@ -331,12 +334,12 @@ export default function RealDashboard() {
 
   // Main dashboard render
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center flex-spacing py-4 sm:py-6">
-            <div className="flex-1">
+      <div className="bg-white border-b border-gray-200 overflow-x-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-w-0">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center flex-spacing py-4 sm:py-6 min-w-0">
+            <div className="flex-1 min-w-0">
               <div className="text-display mb-4">
                 <a href="/" className="text-primary hover:text-primary-hover transition-colors">GhostGauge</a>
               </div>
@@ -581,8 +584,8 @@ export default function RealDashboard() {
                 </LazyLoader>
               </div>
 
-              <div className="flex items-center gap-2 mt-3 mb-4">
-                <p className="text-sm text-gray-600">
+              <div className="flex flex-wrap items-center gap-2 mt-3 mb-4 min-w-0">
+                <p className="text-sm text-gray-600 min-w-0">
                   Daily 0–100 risk score for Bitcoin (GRS v3). As of {latest?.as_of_utc ? formatFriendlyTimestamp(latest.as_of_utc) : '—'} · <a href="/methodology" className="text-emerald-600 hover:text-emerald-700">Methodology</a>
                 </p>
                 {latest?.as_of_utc && (() => {
@@ -603,7 +606,7 @@ export default function RealDashboard() {
                       >
                         {freshness.level}
                       </span>
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 pointer-events-none z-10 max-w-[min(90vw,24rem)] whitespace-normal break-words text-left">
                         Artifacts updated {latest.as_of_utc} ({formatFriendlyTimestamp(latest.as_of_utc)}); most inputs refresh daily.
                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
                       </div>
@@ -774,7 +777,7 @@ export default function RealDashboard() {
                     >
                       Cycle: {formatSignedNumber(cycleValue)}
                     </span>
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 pointer-events-none z-10 max-w-[min(90vw,24rem)] whitespace-normal break-words text-left">
                       {hasValue ? 
                         `Long-term cycle position adjustment. Based on deviation from Bitcoin's power-law trend. Currently ${formatSignedNumber(cycleValue)} points.` :
                         `Long-term cycle position adjustment (inactive - conditions not met). Activates when Bitcoin deviates >30% from its long-term power-law trend.`
@@ -809,7 +812,7 @@ export default function RealDashboard() {
                     >
                       Spike: {formatSignedNumber(spikeValue)}
                     </span>
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 pointer-events-none z-10 max-w-[min(90vw,24rem)] whitespace-normal break-words text-left">
                       {hasValue ? 
                         `Daily volatility adjustment. Based on today's move vs recent volatility. Currently ${formatSignedNumber(spikeValue)} points.` :
                         `Daily volatility adjustment (inactive - conditions not met). Activates when daily move exceeds 2x recent volatility.`
@@ -896,7 +899,7 @@ export default function RealDashboard() {
                   staleness={staleness}
                   freshnessDisplay={freshnessDisplay}
                   factorDelta={factorDeltas[factor.key]}
-                  onSelectFactor={setSelectedFactor}
+                  onSelectFactor={setDrawerFactor}
                   onOpenHistory={openHistoryModal}
                   onOpenEnhancedDetails={openEnhancedDetails}
                   onJumpToFactor={jumpToFactor}
@@ -946,34 +949,40 @@ export default function RealDashboard() {
       )}
 
       {/* Factor Details Drawer */}
-      {selectedFactor && (
+      {drawerFactor && (
         <FactorDetailsDrawer
-          isOpen={!!selectedFactor}
-          onClose={() => setSelectedFactor(null)}
-          factor={latest?.factors?.find((f: any) => f.key === selectedFactor.key)}
+          isOpen={!!drawerFactor}
+          onClose={() => setDrawerFactor(null)}
+          factor={latest?.factors?.find((f: any) => f.key === drawerFactor.key)}
           latest={latest}
           factorDeltas={factorDeltas}
-          scrollToSection={selectedFactor.scrollToSection || null}
+          scrollToSection={drawerFactor.scrollToSection || null}
         />
       )}
 
-      {historyModalOpen && selectedFactor && (
+      {historyModalOpen && historyFactor && (
         <FactorHistoryModal
           isOpen={historyModalOpen}
-          onClose={() => setHistoryModalOpen(false)}
-          factorKey={selectedFactor?.key || ''}
-          factorLabel={selectedFactor?.label || ''}
+          onClose={() => {
+            setHistoryModalOpen(false);
+            setHistoryFactor(null);
+          }}
+          factorKey={historyFactor.key}
+          factorLabel={historyFactor.label}
         />
       )}
 
-      {enhancedDetailsOpen && selectedFactor && (
+      {enhancedDetailsOpen && enhancedFactor && (
         <EnhancedFactorDetails
           isOpen={enhancedDetailsOpen}
-          onClose={() => setEnhancedDetailsOpen(false)}
-          factorKey={selectedFactor?.key || ''}
-          factorLabel={selectedFactor?.label || ''}
-          currentScore={latest?.factors?.find((f: any) => f.key === selectedFactor?.key)?.score || 0}
-          factorWeight={latest?.factors?.find((f: any) => f.key === selectedFactor?.key)?.weight}
+          onClose={() => {
+            setEnhancedDetailsOpen(false);
+            setEnhancedFactor(null);
+          }}
+          factorKey={enhancedFactor.key}
+          factorLabel={enhancedFactor.label}
+          currentScore={latest?.factors?.find((f: any) => f.key === enhancedFactor.key)?.score || 0}
+          factorWeight={latest?.factors?.find((f: any) => f.key === enhancedFactor.key)?.weight}
         />
       )}
 

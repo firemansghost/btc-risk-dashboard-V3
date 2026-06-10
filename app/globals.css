@@ -1715,11 +1715,11 @@ body {
   
   /* Mobile Navigation */
   .mobile-nav {
-    @apply fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden;
+    @apply fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden w-full max-w-[100vw] overflow-hidden;
   }
   
   .mobile-nav-item {
-    @apply flex flex-col items-center justify-center p-2 text-xs font-medium text-gray-600 hover:text-emerald-600 transition-colors;
+    @apply flex flex-col items-center justify-center p-2 text-xs font-medium text-gray-600 hover:text-emerald-600 transition-colors min-w-0 flex-1;
   }
   
   .mobile-nav-item-active {

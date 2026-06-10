@@ -19,18 +19,18 @@ export default function MobileBottomNav({ className = '' }: MobileBottomNavProps
   ];
 
   return (
-    <nav className={`mobile-nav ${className}`}>
-      <div className="flex justify-around">
+    <nav className={`mobile-nav w-full max-w-[100vw] overflow-hidden ${className}`}>
+      <div className="flex w-full min-w-0">
         {navItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            className={`mobile-nav-item ${
+            className={`mobile-nav-item flex-1 min-w-0 ${
               pathname === item.href ? 'mobile-nav-item-active' : ''
             }`}
           >
-            <span className="text-lg mb-1">{item.icon}</span>
-            <span>{item.label}</span>
+            <span className="text-lg mb-1 shrink-0">{item.icon}</span>
+            <span className="truncate max-w-full text-[10px] leading-tight sm:text-xs">{item.label}</span>
           </Link>
         ))}
       </div>

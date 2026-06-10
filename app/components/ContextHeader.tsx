@@ -124,11 +124,11 @@ export default function ContextHeader({ status, latest, onModelChange, onOpenHea
   return (
     <div className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-3 min-w-0">
           {/* Left: Model Perspective Toggles */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700 mr-2">Model Perspective:</span>
-            <div className="flex items-center gap-1" role="radiogroup" aria-label="Model perspective selection">
+          <div className="flex flex-wrap items-center gap-2 min-w-0">
+            <span className="text-sm font-medium text-gray-700 mr-2 shrink-0">Model Perspective:</span>
+            <div className="flex flex-wrap items-center gap-1 min-w-0" role="radiogroup" aria-label="Model perspective selection">
               <button
                 type="button"
                 onClick={() => handleModelChange('official')}
