@@ -1,7 +1,14 @@
 {
   "score": 78,
-  "reason": "success_cached",
-  "lastUpdated": "2026-06-10T14:25:52.858Z",
+  "reason": "success",
+  "status": "fresh",
+  "lastUpdated": "2026-06-11T14:42:42.732Z",
+  "components": {
+    "searchScore": 70,
+    "momentumScore": 95,
+    "volatilityScore": 95
+  },
+  "provider": "CoinGecko • trending",
   "details": [
     {
       "label": "Search Attention",
@@ -40,12 +47,9 @@
       "value": "0"
     }
   ],
-  "components": {
-    "searchScore": 70,
-    "momentumScore": 95,
-    "volatilityScore": 95
-  },
-  "provider": "CoinGecko • trending",
-  "cachedAt": "2026-06-10T14:25:52.858Z",
+  "bitcoinRank": 5,
+  "latestPrice": 110588.79953292229,
+  "fetchTime": 7,
+  "cachedAt": "2026-06-11T14:42:42.733Z",
   "version": "1.0.0"
 }

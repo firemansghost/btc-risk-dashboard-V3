@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-10T14:25:56.573Z",
+  "updated_at": "2026-06-11T14:43:46.971Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -24,6 +24,48 @@
       "ok": true,
       "ms": null,
       "url": "https://fred.stlouisfed.org/"
+    },
+    {
+      "name": "History: trend_valuation",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 237
+    },
+    {
+      "name": "History: stablecoins",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 257
+    },
+    {
+      "name": "History: etf_flows",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 652
+    },
+    {
+      "name": "History: net_liquidity",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 308
+    },
+    {
+      "name": "History: term_leverage",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 231
+    },
+    {
+      "name": "History: macro_overlay",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 237
+    },
+    {
+      "name": "History: social_interest",
+      "ok": true,
+      "rows_appended": 1,
+      "total_rows": 237
     }
   ],
   "factors_computed": 7,
@@ -38,22 +80,22 @@
     "derived": true
   },
   "etf_schema_hash": "12cf3a62",
-  "etf_schema_last_check": "2026-06-10T14:25:52.859Z",
+  "etf_schema_last_check": "2026-06-11T14:42:43.900Z",
   "price_history": {
     "total_rows": 729,
-    "oldest_date": "2024-06-10",
-    "newest_date": "2026-06-10",
+    "oldest_date": "2024-06-11",
+    "newest_date": "2026-06-11",
     "alpha_vantage_backfill": null,
     "coinbase_daily_update": {
       "status": "success",
       "rows_fetched": 14,
-      "ms": 51
+      "ms": 317
     },
     "drift_check": null
   },
   "term_leverage": {
     "status": "fresh",
-    "last_updated_utc": "2026-06-10T14:25:54.107Z",
+    "last_updated_utc": "2026-06-11T14:42:44.509Z",
     "providers": {
       "bitmex": "ok",
       "binance": "451",
@@ -61,7 +103,7 @@
     },
     "ttl_hours": 6,
     "stale_beyond_hours": 12,
-    "score": 59,
-    "reason": "fresh (0s)"
+    "score": 61,
+    "reason": "fresh (59s)"
   }
 }
