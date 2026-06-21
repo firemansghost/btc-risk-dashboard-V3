@@ -1,6 +1,8 @@
 // scripts/etl/stalenessUtils.mjs
 // Comprehensive staleness detection utilities for Bitcoin Risk Dashboard factors
 
+import { isEtfFlowsFreshForSourceCadence } from './marketCalendar.mjs';
+
 /**
  * Check if a date is a business day (Monday-Friday)
  * @param {Date} date 
@@ -84,6 +86,7 @@ export function describeAge(ageMinutes) {
  * @param {boolean} options.businessDaysOnly - Whether to only count business days
  * @param {string} options.factorName - Factor name for logging
  * @param {number} options.staleBeyondHours - Hours beyond which data is considered stale (defaults to ttlHours * 2)
+ * @param {string|Date} [options.asOf] - Reference time for age/cadence checks (tests); defaults to now
  * @returns {Object} {isStale: boolean, reason: string, ageHours: number, ageDays: number}
  */
 export function checkStaleness(dataTimestamp, ttlHours, options = {}) {
@@ -91,7 +94,8 @@ export function checkStaleness(dataTimestamp, ttlHours, options = {}) {
     marketDependent = false,
     businessDaysOnly = false,
     factorName = 'unknown',
-    staleBeyondHours = ttlHours * 2
+    staleBeyondHours = ttlHours * 2,
+    asOf
   } = options;
 
   if (!dataTimestamp) {
@@ -105,8 +109,8 @@ export function checkStaleness(dataTimestamp, ttlHours, options = {}) {
   }
 
   const dataDate = new Date(dataTimestamp);
-  const now = new Date();
-  const ageMinutes = getDataAgeMinutes(dataTimestamp);
+  const now = asOf ? new Date(asOf) : new Date();
+  const ageMinutes = (now.getTime() - dataDate.getTime()) / (1000 * 60);
   const ageHours = ageMinutes / 60;
   const ageDays = ageHours / 24;
   
@@ -123,6 +127,18 @@ export function checkStaleness(dataTimestamp, ttlHours, options = {}) {
     return {
       isStale: false,
       reason: 'fresh',
+      ageHours,
+      ageDays,
+      ageMinutes
+    };
+  }
+
+  // ETF-only: U.S. market trading-day cadence (weekends, NYSE holidays, publication lag)
+  if (factorName === 'etf_flows') {
+    const cadence = isEtfFlowsFreshForSourceCadence(dataTimestamp, now.toISOString());
+    return {
+      isStale: !cadence.fresh,
+      reason: cadence.reason,
       ageHours,
       ageDays,
       ageMinutes
