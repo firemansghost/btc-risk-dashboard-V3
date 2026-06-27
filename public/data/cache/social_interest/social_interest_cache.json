@@ -2,7 +2,7 @@
   "score": 78,
   "reason": "success",
   "status": "fresh",
-  "lastUpdated": "2026-06-26T13:14:24.693Z",
+  "lastUpdated": "2026-06-27T12:10:46.050Z",
   "components": {
     "searchScore": 70,
     "momentumScore": 95,
@@ -50,6 +50,6 @@
   "bitcoinRank": 5,
   "latestPrice": 110588.79953292229,
   "fetchTime": 7,
-  "cachedAt": "2026-06-26T13:14:24.694Z",
+  "cachedAt": "2026-06-27T12:10:46.050Z",
   "version": "1.0.0"
 }
