@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-07-06T14:31:22.716Z",
+  "timestamp": "2026-07-07T13:23:56.075Z",
   "sources": [
     {
       "source": "blockchain_info",
       "name": "Blockchain.info",
-      "status": "fresh",
+      "status": "stale",
       "lastUpdate": null,
       "stalenessHours": null,
       "endpoints": [
@@ -12,8 +12,8 @@
           "name": "mempool-size",
           "url": "https://api.blockchain.info/charts/mempool-size?timespan=7days&format=json",
           "status": "success",
-          "lastUpdate": "2026-07-06T13:15:00.000Z",
-          "stalenessHours": 1.2731355555555555,
+          "lastUpdate": "2026-07-06T20:15:00.000Z",
+          "stalenessHours": 17.149041666666665,
           "error": null
         },
         {
@@ -21,13 +21,13 @@
           "url": "https://api.blockchain.info/charts/transaction-fees?timespan=7days&format=json",
           "status": "success",
           "lastUpdate": "2026-07-05T00:00:00.000Z",
-          "stalenessHours": 38.523248333333335,
+          "stalenessHours": 61.39915166666667,
           "error": null
         }
       ],
       "alerts": [
-        "✅ mempool-size: Fresh (1.3h old)",
-        "ℹ️ transaction-fees: Data is 38.5h old (approaching limit)",
+        "✅ mempool-size: Fresh (17.1h old)",
+        "⚠️ transaction-fees: Data is 61.4h old (max: 48h)",
         "❌ fees-usd: HTTP 404"
       ]
     },
@@ -39,6 +39,14 @@
       "stalenessHours": null,
       "endpoints": [
         {
+          "name": "bitcoin-price",
+          "url": "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",
+          "status": "success",
+          "lastUpdate": null,
+          "stalenessHours": null,
+          "error": null
+        },
+        {
           "name": "trending",
           "url": "https://api.coingecko.com/api/v3/search/trending",
           "status": "success",
@@ -48,7 +56,7 @@
         }
       ],
       "alerts": [
-        "❌ bitcoin-price: HTTP 429",
+        "❓ bitcoin-price: Could not determine last update time",
         "❓ trending: Could not determine last update time"
       ]
     },
@@ -66,8 +74,8 @@
   ],
   "summary": {
     "totalSources": 3,
-    "freshSources": 3,
-    "staleSources": 0,
+    "freshSources": 2,
+    "staleSources": 1,
     "errorSources": 0,
     "totalAlerts": 6
   }
