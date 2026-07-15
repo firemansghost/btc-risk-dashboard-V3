@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-07-14T12:19:15.495Z",
+  "timestamp": "2026-07-15T12:20:27.534Z",
   "sources": [
     {
       "source": "blockchain_info",
@@ -12,16 +12,16 @@
           "name": "mempool-size",
           "url": "https://api.blockchain.info/charts/mempool-size?timespan=7days&format=json",
           "status": "success",
-          "lastUpdate": "2026-07-14T11:00:00.000Z",
-          "stalenessHours": 1.3210255555555555,
+          "lastUpdate": "2026-07-15T11:00:00.000Z",
+          "stalenessHours": 1.3411125,
           "error": null
         },
         {
           "name": "transaction-fees",
           "url": "https://api.blockchain.info/charts/transaction-fees?timespan=7days&format=json",
           "status": "success",
-          "lastUpdate": "2026-07-13T00:00:00.000Z",
-          "stalenessHours": 36.321134444444446,
+          "lastUpdate": "2026-07-14T00:00:00.000Z",
+          "stalenessHours": 36.34121972222222,
           "error": null
         }
       ],
