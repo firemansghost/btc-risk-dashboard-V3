@@ -1,9 +1,9 @@
 {
   "ok": true,
-  "as_of_utc": "2026-08-08T11:34:39.477Z",
-  "daily_close_date": "2026-08-08",
-  "composite_score": 51,
-  "composite_raw": 51,
+  "as_of_utc": "2026-08-09T11:35:37.859Z",
+  "daily_close_date": "2026-08-09",
+  "composite_score": 53,
+  "composite_raw": 53,
   "band": {
     "key": "hold___wait",
     "label": "Hold & Wait",
@@ -25,8 +25,8 @@
       "score": 47,
       "status": "fresh",
       "reason": "fresh (1min)",
-      "last_utc": "2026-08-08T11:33:25.047Z",
-      "lastUpdated": "2026-08-08T11:33:25.047Z",
+      "last_utc": "2026-08-09T11:34:26.995Z",
+      "lastUpdated": "2026-08-09T11:34:26.995Z",
       "details": [
         {
           "label": "Price vs 200-day SMA (Mayer)",
@@ -38,19 +38,19 @@
         },
         {
           "label": "Weekly momentum (RSI)",
-          "value": "41.0"
+          "value": "41.1"
         },
         {
           "label": "BTC Price (daily close)",
-          "value": "$64,939.48"
+          "value": "$64,935.49"
         },
         {
           "label": "200-day SMA",
-          "value": "$70,365.839"
+          "value": "$70,233.494"
         },
         {
           "label": "Weekly Close (for BMSB)",
-          "value": "$64,939.48"
+          "value": "$64,935.49"
         },
         {
           "label": "Price source",
@@ -62,11 +62,11 @@
         },
         {
           "label": "Calculation method",
-          "value": "Parallel processing (8ms)"
+          "value": "Parallel processing (9ms)"
         },
         {
           "label": "BMSB (20W SMA / 21W EMA)",
-          "value": "$69,221.673 / $69,360.573"
+          "value": "$69,221.474 / $69,348.038"
         },
         {
           "label": "50-week SMA diagnostic",
@@ -78,8 +78,8 @@
         }
       ],
       "sma50wDiagnostic": {
-        "sma50": 83397.24539999999,
-        "currentClose": 64939.48,
+        "sma50": 83373.1886,
+        "currentClose": 64935.49,
         "isBelow": true,
         "consecutiveWeeksBelow": 10,
         "showWarning": true
@@ -91,26 +91,26 @@
         "regime": "confirmed_bearish",
         "rawRegime": "bearish",
         "interpretation": "Bitcoin has closed below the BMSB for two completed weeks, confirming bearish regime pressure.",
-        "durationLine": "10 consecutive weeks bearish",
-        "proximityLine": "6.2% below BMSB support area ($69,222) — distance uses Trend daily close.",
-        "nextConfirmationLine": "Next structural step: two completed weekly closes back above the BMSB lower band (~$69,222).",
+        "durationLine": "11 consecutive weeks bearish",
+        "proximityLine": "6.2% below BMSB support area ($69,221) — distance uses Trend daily close.",
+        "nextConfirmationLine": "Next structural step: two completed weekly closes back above the BMSB lower band (~$69,221).",
         "methodologyNote": "Uses the last two completed weekly closes vs the BMSB and 50-week SMA. Proximity uses the Trend daily close. Display-only; does not affect the G-Score.",
         "approximation": false,
-        "lastDailyDateUtc": "2026-08-08",
+        "lastDailyDateUtc": "2026-08-09",
         "completedWeekEnds": [
-          "2026-07-26",
-          "2026-08-02"
+          "2026-08-02",
+          "2026-08-09"
         ],
-        "priceForProximity": 64939.48,
-        "streakWeeks": 10,
-        "streakLabel": "10 consecutive weeks bearish",
-        "bmsbLower": 69221.67300000001,
-        "fiftyWeekSma": 83397.24539999999,
-        "lastCompletedWeeklyClose": 63499.49,
+        "priceForProximity": 64935.49,
+        "streakWeeks": 11,
+        "streakLabel": "11 consecutive weeks bearish",
+        "bmsbLower": 69221.47350000001,
+        "fiftyWeekSma": 83373.1886,
+        "lastCompletedWeeklyClose": 64935.49,
         "distanceLabel": "Distance to BMSB lower",
         "distancePct": 6.2,
         "distanceSide": "below",
-        "nextConfirmationText": "2 completed weekly closes above $69,222 (BMSB lower)"
+        "nextConfirmationText": "2 completed weekly closes above $69,221 (BMSB lower)"
       }
     },
     {
@@ -122,8 +122,8 @@
       "score": 75,
       "status": "fresh",
       "reason": "fresh (0s)",
-      "last_utc": "2026-08-08T11:34:38.761Z",
-      "lastUpdated": "2026-08-08T11:34:38.761Z",
+      "last_utc": "2026-08-09T11:35:37.267Z",
+      "lastUpdated": "2026-08-09T11:35:37.267Z",
       "details": [
         {
           "label": "Total Market Cap",
@@ -139,11 +139,7 @@
         },
         {
           "label": "Stablecoin Growth Coverage",
-          "value": "6/7 coins, 98.9% weight"
-        },
-        {
-          "label": "Excluded Growth Inputs",
-          "value": "LUSD (missing_or_short_30d_history)"
+          "value": "7/7 coins, 100.0% weight"
         },
         {
           "label": "Growth Momentum",
@@ -151,7 +147,7 @@
         },
         {
           "label": "Market Concentration",
-          "value": "HHI: 5708"
+          "value": "HHI: 5706"
         },
         {
           "label": "Supply Growth Percentile",
@@ -167,7 +163,7 @@
         },
         {
           "label": "Component Scores",
-          "value": "Supply: 82, Momentum: 70, Concentration: 57.07775123275047"
+          "value": "Supply: 82, Momentum: 70, Concentration: 57.063796597326835"
         }
       ]
     },
@@ -179,7 +175,7 @@
       "weight_pct": 7.7,
       "score": 45,
       "status": "fresh",
-      "reason": "fresh (20h)",
+      "reason": "fresh_market_holiday_weekend (2d)",
       "last_utc": "2026-08-07T16:00:00.000Z",
       "lastUpdated": "2026-08-07T16:00:00.000Z",
       "details": [
@@ -229,7 +225,7 @@
         },
         {
           "label": "Last Update",
-          "value": "1.5 days ago"
+          "value": "2.5 days ago"
         }
       ],
       "individualEtfFlows": [
@@ -10561,7 +10557,7 @@
       "weight_pct": 4.3,
       "score": 71,
       "status": "fresh",
-      "reason": "fresh (3d)",
+      "reason": "fresh (4d)",
       "last_utc": "2026-08-05T00:00:00.000Z",
       "lastUpdated": "2026-08-05T00:00:00.000Z",
       "details": [
@@ -10609,11 +10605,11 @@
       "pillar": "leverage",
       "weight": 20,
       "weight_pct": 20,
-      "score": 44,
+      "score": 51,
       "status": "fresh",
       "reason": "fresh (1min)",
-      "last_utc": "2026-08-08T11:33:26.379Z",
-      "lastUpdated": "2026-08-08T11:33:26.379Z",
+      "last_utc": "2026-08-09T11:34:29.076Z",
+      "lastUpdated": "2026-08-09T11:34:29.076Z",
       "providers": {
         "bitmex": "ok",
         "binance": "451",
@@ -10622,11 +10618,11 @@
       "details": [
         {
           "label": "Current Funding Rate",
-          "value": "0.0100%"
+          "value": "0.0025%"
         },
         {
           "label": "30-day Average",
-          "value": "-0.0065%"
+          "value": "-0.0074%"
         },
         {
           "label": "Price Volatility (30d)",
@@ -10654,7 +10650,7 @@
         },
         {
           "label": "Component Scores",
-          "value": "Funding: 23, Vol: 73, Stress: 37"
+          "value": "Funding: 23, Vol: 73, Stress: 63"
         }
       ]
     },
@@ -10667,8 +10663,8 @@
       "score": 6,
       "status": "fresh",
       "reason": "fresh (1min)",
-      "last_utc": "2026-08-08T11:33:25.541Z",
-      "lastUpdated": "2026-08-08T11:33:25.541Z",
+      "last_utc": "2026-08-09T11:34:27.532Z",
+      "lastUpdated": "2026-08-09T11:34:27.532Z",
       "details": [
         {
           "label": "Macro Regime",
@@ -10696,11 +10692,11 @@
         },
         {
           "label": "Fetch Time",
-          "value": "493ms"
+          "value": "536ms"
         },
         {
           "label": "Component Scores",
-          "value": "Dollar: 5, Rates: 9, VIX: 5, Real: 19"
+          "value": "Dollar: 5, Rates: 9, VIX: 5, Real: 18"
         },
         {
           "label": "Current Levels",
@@ -10717,8 +10713,8 @@
       "score": 78,
       "status": "fresh",
       "reason": "fresh (1min)",
-      "last_utc": "2026-08-08T11:33:25.060Z",
-      "lastUpdated": "2026-08-08T11:33:25.060Z",
+      "last_utc": "2026-08-09T11:34:27.007Z",
+      "lastUpdated": "2026-08-09T11:34:27.007Z",
       "details": [
         {
           "label": "Search Attention",
@@ -10742,7 +10738,7 @@
         },
         {
           "label": "Fetch Time",
-          "value": "8ms"
+          "value": "7ms"
         },
         {
           "label": "Data Sources",
@@ -10760,8 +10756,8 @@
     }
   ],
   "btc": {
-    "spot_usd": 64939.48,
-    "as_of_utc": "2026-08-08T11:34:39.477Z",
+    "spot_usd": 64935.49,
+    "as_of_utc": "2026-08-09T11:35:37.859Z",
     "source": "Coinbase"
   },
   "provenance": [],
@@ -10774,7 +10770,7 @@
   "cycle_adjustment": {
     "adj_pts": 0,
     "residual_z": null,
-    "last_utc": "2026-08-08T11:34:39.473Z",
+    "last_utc": "2026-08-09T11:35:37.855Z",
     "source": "ETL fallback",
     "reason": "insufficient_historical_data"
   },
@@ -10783,9 +10779,9 @@
     "r_1d": 0,
     "sigma": 0,
     "z": 0,
-    "ref_close": 64939.48,
-    "spot": 64939.48,
-    "last_utc": "2026-08-08T11:34:39.473Z",
+    "ref_close": 64935.49,
+    "spot": 64935.49,
+    "last_utc": "2026-08-09T11:35:37.855Z",
     "source": "ETL fallback",
     "reason": "insufficient_historical_data"
   },
