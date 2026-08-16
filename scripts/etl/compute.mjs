@@ -23,6 +23,7 @@ import {
 } from "./lib/signalV2.mjs";
 import { detectEtfZeroCrossFromRows } from "./lib/etfZeroCross.mjs";
 import { fallbackTracker, resetFallbackTracker } from "./fetch-helper.mjs";
+import { decidePostComputeHealthCheck } from "./lib/postComputeHealth.mjs";
 
 // Resolve absolute paths
 const __filename = fileURLToPath(import.meta.url);
@@ -329,14 +330,6 @@ async function runPostComputeHealthCheck(factorResults, statusData) {
     const { getStalenessConfig, getDataAgeMinutes, describeAge } = await import('./stalenessUtils.mjs');
     
     let failedFactors = [];
-    let socialInterestJustComputed = false;
-    
-    // Check if social_interest was just computed in this run
-    const socialInterestResult = factorResults.factors.find(f => f.key === 'social_interest');
-    if (socialInterestResult && socialInterestResult.reason && 
-        (socialInterestResult.reason.includes('success') || socialInterestResult.reason.includes('fresh'))) {
-      socialInterestJustComputed = true;
-    }
     
     for (const factorKey of enabledFactors) {
       // Find factor in results
@@ -390,28 +383,18 @@ async function runPostComputeHealthCheck(factorResults, statusData) {
       }
     }
     
-    // Special handling: if only social_interest fails but was just computed, soft-fail for this run
-    if (failedFactors.length === 1 && failedFactors[0].key === 'social_interest' && socialInterestJustComputed) {
-      console.warn(`[ETL post-check] WARN: social_interest failed freshness check but was just computed. This may be a timestamp propagation issue. Soft-failing for this run.`);
-      if (!softFail) {
-        console.warn(`[ETL post-check] Continuing despite social_interest failure (first run after fix)`);
-      }
-      return; // Don't fail the job
-    }
-    
-    if (failedFactors.length > 0) {
+    const decision = decidePostComputeHealthCheck({ failedFactors, softFail });
+    if (decision.ok) {
+      console.log(`[ETL post-check] OK: all required factors fresh`);
+    } else {
       console.error(`[ETL post-check] FAIL: ${failedFactors.length} required factor(s) not fresh after recompute:`);
       for (const factor of failedFactors) {
         console.error(`[ETL post-check]   ${factor.key} reason=${factor.reason} last_updated_utc=${factor.last_updated_utc || 'null'}`);
       }
-      
-      if (!softFail) {
+      if (decision.exitProcess) {
         process.exit(1);
-      } else {
-        console.warn(`[ETL post-check] Soft-fail mode: continuing despite failures`);
       }
-    } else {
-      console.log(`[ETL post-check] OK: all required factors fresh`);
+      console.warn(`[ETL post-check] Soft-fail mode: continuing despite failures`);
     }
   } catch (error) {
     console.error(`[ETL post-check] Error during health check: ${error.message}`);
