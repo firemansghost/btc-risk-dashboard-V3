@@ -79,12 +79,12 @@ function loadHistoricalData() {
  * Load ETF flows data
  */
 function loadEtfFlowsData() {
-  const csvPath = 'public/signals/etf_flows_21d.csv';
+  const csvPath = path.join('public', 'signals', 'v2', 'etf_flows_21d.csv');
   
   if (!fs.existsSync(csvPath)) {
     return {
       success: false,
-      error: 'ETF flows CSV not found',
+      error: 'ETF flows v2 CSV not found',
       data: []
     };
   }
@@ -95,22 +95,34 @@ function loadEtfFlowsData() {
   if (lines.length <= 1) {
     return {
       success: false,
-      error: 'No ETF flows data available',
+      error: 'No ETF flows v2 data available',
       data: []
     };
   }
   
+  const headers = lines[0].split(',').map((h) => h.trim());
+  const sumIdx = headers.indexOf('sum21_usd');
+  const dateIdx = headers.indexOf('date');
+  const scoreIdx = headers.indexOf('score');
+  if (sumIdx === -1 || dateIdx === -1) {
+    return {
+      success: false,
+      error: 'ETF flows v2 CSV missing sum21_usd',
+      data: []
+    };
+  }
+
   const flows = [];
   for (let i = 1; i < lines.length; i++) {
     const parts = lines[i].split(',');
-    if (parts.length >= 4) {
-      flows.push({
-        date: parts[0],
-        sum21_usd: parseFloat(parts[1]) || 0,
-        z: parseFloat(parts[2]) || 0,
-        score: parseFloat(parts[3]) || 0
-      });
-    }
+    const sum21 = parseFloat(parts[sumIdx]);
+    if (!Number.isFinite(sum21)) continue;
+    flows.push({
+      date: parts[dateIdx],
+      sum21_usd: sum21,
+      z: NaN,
+      score: scoreIdx >= 0 ? parseFloat(parts[scoreIdx]) || 0 : 0
+    });
   }
   
   return {

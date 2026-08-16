@@ -63,6 +63,30 @@ export function signalV2Header(columns) {
   return ['date', 'schema_version', ...columns].join(',');
 }
 
+export function signalV2FilePath(factorKey, directory = SIGNAL_V2_DIR) {
+  const spec = SIGNAL_V2_SPECS[factorKey];
+  if (!spec) return null;
+  return path.join(directory, spec.file);
+}
+
+export function parseSignalV2Csv(text) {
+  if (!text?.trim()) return [];
+  const lines = text
+    .trim()
+    .split(/\r?\n/)
+    .filter((line) => line.length > 0 && !line.startsWith('#'));
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map((h) => h.trim());
+  return lines.slice(1).map((line) => {
+    const values = line.split(',');
+    const row = {};
+    headers.forEach((header, index) => {
+      row[header] = values[index] ?? '';
+    });
+    return row;
+  });
+}
+
 /**
  * Format a metric for CSV. Missing, empty, or non-finite → ''.
  * A real numeric 0 is preserved as '0'.

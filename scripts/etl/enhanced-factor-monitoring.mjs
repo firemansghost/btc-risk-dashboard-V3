@@ -196,13 +196,13 @@ async function runEnhancedFactorMonitoring() {
   console.log('============================');
   
   const factorCSVs = [
-    { path: 'public/signals/etf_flows_21d.csv', name: 'ETF Flows' },
-    { path: 'public/signals/funding_7d.csv', name: 'Funding Rates' },
-    { path: 'public/signals/stablecoins_30d.csv', name: 'Stablecoins' },
-    { path: 'public/signals/net_liquidity_20d.csv', name: 'Net Liquidity' },
-    { path: 'public/signals/mayer_multiple.csv', name: 'Mayer Multiple' },
-    { path: 'public/signals/dxy_20d.csv', name: 'DXY' },
-    { path: 'public/signals/fear_greed.csv', name: 'Fear & Greed' }
+    { path: 'public/signals/v2/etf_flows_21d.csv', name: 'ETF Flows' },
+    { path: 'public/signals/v2/funding.csv', name: 'Funding Rates' },
+    { path: 'public/signals/v2/stablecoins_30d.csv', name: 'Stablecoins' },
+    { path: 'public/signals/v2/net_liquidity_20d.csv', name: 'Net Liquidity' },
+    { path: 'public/signals/v2/mayer_multiple.csv', name: 'Mayer Multiple' },
+    { path: 'public/signals/v2/dxy_20d.csv', name: 'DXY' },
+    { path: 'public/signals/v2/social_interest.csv', name: 'Social Interest' }
   ];
   
   const results = {

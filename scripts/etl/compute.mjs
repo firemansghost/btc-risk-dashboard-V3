@@ -16,9 +16,12 @@ import {
 import {
   SIGNAL_V2_DIR,
   isFearGreedWriterEnabled,
+  parseSignalV2Csv,
   shouldAppendLegacySignalCsv,
+  signalV2FilePath,
   writeFactorSignalV2,
 } from "./lib/signalV2.mjs";
+import { detectEtfZeroCrossFromRows } from "./lib/etfZeroCross.mjs";
 import { fallbackTracker, resetFallbackTracker } from "./fetch-helper.mjs";
 
 // Resolve absolute paths
@@ -774,49 +777,12 @@ async function main() {
   
   const alerts = [];
   
-  // 1) ETF Zero-Cross Detection
+  // 1) ETF Zero-Cross Detection (structured v2 series, not frozen legacy CSV)
   try {
-    const etfCsvPath = "public/signals/etf_flows_21d.csv";
-    const etfCsvContent = await fs.readFile(etfCsvPath, "utf8");
-    const etfLines = etfCsvContent.trim().split("\n");
-    
-    if (etfLines.length >= 2) {
-      const headers = etfLines[0].split(',');
-      const sum21Index = headers.indexOf('sum21_usd');
-      
-      if (sum21Index !== -1) {
-        // Get last 180 days of sum21_usd for deadband calculation
-        const last180Rows = etfLines.slice(-180).map(line => {
-          const values = line.split(',');
-          return Number(values[sum21Index]) || 0;
-        });
-        
-        // Calculate deadband: max(round(0.02 * std), 1000)
-        const mean = last180Rows.reduce((a, b) => a + b, 0) / last180Rows.length;
-        const variance = last180Rows.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / last180Rows.length;
-        const std = Math.sqrt(variance);
-        const eps = Math.max(Math.round(0.02 * std), 1000);
-        
-        // Get last two rows
-        const prevRow = etfLines[etfLines.length - 2].split(',');
-        const currRow = etfLines[etfLines.length - 1].split(',');
-        const prev = Number(prevRow[sum21Index]) || 0;
-        const curr = Number(currRow[sum21Index]) || 0;
-        
-        // Check for zero-cross with deadband
-        if (Math.abs(prev) > eps && Math.abs(curr) > eps && 
-            Math.sign(prev) !== Math.sign(curr)) {
-          const direction = curr > 0 ? 'up' : 'down';
-          alerts.push({
-            type: 'etf_zero_cross',
-            direction,
-            from: prev,
-            to: curr,
-            deadband: eps
-          });
-        }
-      }
-    }
+    const etfV2Path = signalV2FilePath('etf_flows', SIGNAL_V2_DIR);
+    const etfCsvContent = await fs.readFile(etfV2Path, "utf8");
+    const zeroCross = detectEtfZeroCrossFromRows(parseSignalV2Csv(etfCsvContent));
+    alerts.push(...zeroCross.alerts);
   } catch (error) {
     console.warn("ETF zero-cross detection failed:", error.message);
   }
