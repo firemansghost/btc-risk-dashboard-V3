@@ -19,6 +19,14 @@ export const CSV_HEADER = 'date_utc,close_usd,source,ingested_at_utc';
 export const DEFAULT_MIN_ROWS = 500;
 export const DEFAULT_RECENT_WINDOW_DAYS = 14;
 export const DEFAULT_BACKFILL_DAYS = 730;
+/** Coinbase `/candles` max rows per request. Daily granularity ⇒ max 300 UTC dates. */
+export const COINBASE_MAX_DAILY_CANDLES = 300;
+/**
+ * Inclusive span of one historical chunk: start midnight + 299 days = 300 dates
+ * if Coinbase treats both bounds as inclusive.
+ */
+export const COINBASE_HISTORICAL_CHUNK_SPAN_DAYS = COINBASE_MAX_DAILY_CANDLES - 1;
+export const COINBASE_HISTORICAL_LOOKBACK_PAD_DAYS = 30;
 
 const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
 
@@ -67,6 +75,123 @@ export function addUtcDays(isoDate, days) {
   const d = utcDateFromIso(isoDate);
   d.setUTCDate(d.getUTCDate() + days);
   return formatUtcDate(d);
+}
+
+/** UTC calendar date of asOf at 00:00:00.000Z. */
+export function utcCalendarMidnightIso(asOfUtc) {
+  const asOf = new Date(asOfUtc);
+  if (Number.isNaN(asOf.getTime())) {
+    throw new CanonicalPriceHistoryError(`invalid asOfUtc: ${asOfUtc}`);
+  }
+  return new Date(
+    Date.UTC(asOf.getUTCFullYear(), asOf.getUTCMonth(), asOf.getUTCDate())
+  ).toISOString();
+}
+
+function assertUtcMidnightIso(iso, label) {
+  if (!iso || !iso.endsWith('T00:00:00.000Z')) {
+    throw new CanonicalPriceHistoryError(`${label} is not UTC midnight: ${iso}`);
+  }
+}
+
+/**
+ * UTC-midnight Coinbase historical chunk ranges for one fixed asOfUtc.
+ * Adjacent chunks overlap exactly on the boundary day (chunk[i].end === chunk[i+1].start).
+ */
+export function buildCoinbaseHistoricalChunkRanges({
+  asOfUtc,
+  days = DEFAULT_BACKFILL_DAYS,
+  extraDays = COINBASE_HISTORICAL_LOOKBACK_PAD_DAYS,
+  chunkSpanDays = COINBASE_HISTORICAL_CHUNK_SPAN_DAYS,
+  maxCandles = COINBASE_MAX_DAILY_CANDLES,
+} = {}) {
+  if (!asOfUtc) {
+    throw new CanonicalPriceHistoryError('asOfUtc is required for historical chunk ranges');
+  }
+  if (!Number.isInteger(chunkSpanDays) || chunkSpanDays < 1) {
+    throw new CanonicalPriceHistoryError(`invalid chunkSpanDays: ${chunkSpanDays}`);
+  }
+  const asOfMidnightUtc = utcCalendarMidnightIso(asOfUtc);
+  const lookbackDays = days + extraDays;
+  const rangeStartUtc = new Date(
+    Date.parse(asOfMidnightUtc) - lookbackDays * 86400000
+  ).toISOString();
+  const rangeEndUtc = asOfMidnightUtc;
+  assertUtcMidnightIso(rangeStartUtc, 'historical range start');
+  assertUtcMidnightIso(rangeEndUtc, 'historical range end');
+
+  const chunks = [];
+  let currentStartUtc = rangeStartUtc;
+  const maxChunks = 20;
+  while (chunks.length < maxChunks) {
+    const unboundedEndUtc = new Date(
+      Date.parse(currentStartUtc) + chunkSpanDays * 86400000
+    ).toISOString();
+    const chunkEndUtc =
+      Date.parse(unboundedEndUtc) < Date.parse(rangeEndUtc) ? unboundedEndUtc : rangeEndUtc;
+    assertUtcMidnightIso(currentStartUtc, 'chunk start');
+    assertUtcMidnightIso(chunkEndUtc, 'chunk end');
+    const inclusiveDays =
+      Math.round((Date.parse(chunkEndUtc) - Date.parse(currentStartUtc)) / 86400000) + 1;
+    if (inclusiveDays < 1) {
+      throw new CanonicalPriceHistoryError(
+        `non-advancing historical chunk: ${currentStartUtc} → ${chunkEndUtc}`
+      );
+    }
+    if (inclusiveDays > maxCandles) {
+      throw new CanonicalPriceHistoryError(
+        `chunk exceeds Coinbase ${maxCandles}-candle limit: ${inclusiveDays}`
+      );
+    }
+    chunks.push({
+      startUtc: currentStartUtc,
+      endUtc: chunkEndUtc,
+      inclusiveDays,
+    });
+    if (Date.parse(chunkEndUtc) >= Date.parse(rangeEndUtc)) break;
+    currentStartUtc = chunkEndUtc;
+  }
+  if (Date.parse(chunks.at(-1)?.endUtc) < Date.parse(rangeEndUtc)) {
+    throw new CanonicalPriceHistoryError('historical chunk loop failed to reach range end');
+  }
+  return {
+    asOfUtc: new Date(asOfUtc).toISOString(),
+    asOfMidnightUtc,
+    rangeStartUtc,
+    rangeEndUtc,
+    chunks,
+  };
+}
+
+export function buildCoinbaseRecentRange({
+  asOfUtc,
+  days = DEFAULT_RECENT_WINDOW_DAYS,
+} = {}) {
+  if (!asOfUtc) {
+    throw new CanonicalPriceHistoryError('asOfUtc is required for recent Coinbase range');
+  }
+  const asOf = new Date(asOfUtc);
+  if (Number.isNaN(asOf.getTime())) {
+    throw new CanonicalPriceHistoryError(`invalid asOfUtc: ${asOfUtc}`);
+  }
+  const asOfMidnightUtc = utcCalendarMidnightIso(asOfUtc);
+  const startUtc = new Date(Date.parse(asOfMidnightUtc) - days * 86400000).toISOString();
+  assertUtcMidnightIso(startUtc, 'recent range start');
+  return {
+    startUtc,
+    endUtc: asOf.toISOString(),
+  };
+}
+
+export function dedupePriceRecordsByDate(records = []) {
+  const unique = new Map();
+  for (const record of records) {
+    if (!record?.date_utc) continue;
+    if (!unique.has(record.date_utc) || unique.get(record.date_utc).close_usd === 0) {
+      unique.set(record.date_utc, record);
+    }
+  }
+  return Array.from(unique.values()).sort((a, b) => a.date_utc.localeCompare(b.date_utc));
 }
 
 export function utcDayDiff(fromIsoDate, toIsoDate) {
@@ -386,47 +511,47 @@ export async function savePriceHistory(records, options = {}) {
 }
 
 /**
- * Fetch extended historical data from Coinbase
- * Coinbase has data going back to ~2015, which is sufficient for our needs
- * @param {number} days - Number of days to fetch (minimum 700)
+ * Fetch extended historical data from Coinbase.
+ * Range construction uses the caller-supplied asOfUtc (UTC midnight chunks
+ * with a one-day overlap). Does not invent missing dates.
+ * @param {number} days - Number of days to keep after the padded fetch
+ * @param {string} [asOfUtc]
  * @returns {Object} {success, data, provenance}
  */
-export async function fetchCoinbaseHistoricalBackfill(days = 730) {
+export async function fetchCoinbaseHistoricalBackfill(
+  days = DEFAULT_BACKFILL_DAYS,
+  asOfUtc = new Date().toISOString()
+) {
   const startTime = Date.now();
+  const range = buildCoinbaseHistoricalChunkRanges({ asOfUtc, days });
 
   const provenance = {
     endpoint: 'coinbase_historical_backfill',
     requested_days: days,
+    as_of_utc: range.asOfUtc,
     ok: false,
     status: 0,
     ms: 0,
     rows_fetched: 0,
+    raw_rows: 0,
+    unique_rows: 0,
+    chunks: [],
   };
 
   try {
     console.log(`Coinbase: Fetching ${days}+ days of historical BTC price data...`);
 
-    const endDate = new Date();
-    const startDate = new Date(endDate.getTime() - (days + 30) * 86400000);
-
     const allRecords = [];
-    let currentStart = startDate;
-    let requestCount = 0;
-    const maxRequests = 10;
-
-    while (currentStart < endDate && requestCount < maxRequests) {
-      const chunkEnd = new Date(
-        Math.min(currentStart.getTime() + 299 * 86400000, endDate.getTime())
-      );
-
+    for (let i = 0; i < range.chunks.length; i++) {
+      const chunk = range.chunks[i];
       console.log(
-        `Coinbase: Fetching chunk ${requestCount + 1} (${currentStart.toISOString().split('T')[0]} to ${chunkEnd.toISOString().split('T')[0]})...`
+        `Coinbase: Fetching chunk ${i + 1} (${chunk.startUtc} to ${chunk.endUtc})...`
       );
 
       const url = new URL('https://api.exchange.coinbase.com/products/BTC-USD/candles');
       url.searchParams.set('granularity', '86400');
-      url.searchParams.set('start', currentStart.toISOString());
-      url.searchParams.set('end', chunkEnd.toISOString());
+      url.searchParams.set('start', chunk.startUtc);
+      url.searchParams.set('end', chunk.endUtc);
 
       const response = await fetch(url.toString(), {
         headers: { 'User-Agent': 'btc-risk-dashboard-historical-backfill' },
@@ -438,7 +563,7 @@ export async function fetchCoinbaseHistoricalBackfill(days = 730) {
       }
 
       const candles = await response.json();
-
+      let chunkRows = 0;
       for (const candle of candles) {
         const [timestamp, , , , close] = candle;
         const date = new Date(timestamp * 1000);
@@ -449,38 +574,28 @@ export async function fetchCoinbaseHistoricalBackfill(days = 730) {
             date_utc: dateStr,
             close_usd: close,
             source: 'coinbase_historical',
-            ingested_at_utc: new Date().toISOString(),
+            ingested_at_utc: range.asOfUtc,
           });
+          chunkRows += 1;
         }
       }
 
-      console.log(`Coinbase: Chunk ${requestCount + 1} returned ${candles.length} records`);
+      provenance.chunks.push({
+        startUtc: chunk.startUtc,
+        endUtc: chunk.endUtc,
+        inclusiveDays: chunk.inclusiveDays,
+        rows: candles.length,
+        parsed_rows: chunkRows,
+      });
+      console.log(`Coinbase: Chunk ${i + 1} returned ${candles.length} records`);
 
-      currentStart = new Date(chunkEnd.getTime() + 86400000);
-      requestCount++;
-
-      if (currentStart < endDate) {
+      if (i < range.chunks.length - 1) {
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
     }
 
-    const uniqueRecords = new Map();
-    for (const record of allRecords) {
-      if (
-        !uniqueRecords.has(record.date_utc) ||
-        uniqueRecords.get(record.date_utc).close_usd === 0
-      ) {
-        uniqueRecords.set(record.date_utc, record);
-      }
-    }
-
-    const sortedRecords = Array.from(uniqueRecords.values()).sort((a, b) =>
-      a.date_utc.localeCompare(b.date_utc)
-    );
-
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - days);
-    const cutoffDateStr = cutoffDate.toISOString().split('T')[0];
+    const sortedRecords = dedupePriceRecordsByDate(allRecords);
+    const cutoffDateStr = addUtcDays(range.asOfMidnightUtc.slice(0, 10), -days);
     const filteredRecords = sortedRecords.filter(
       (record) => record.date_utc >= cutoffDateStr
     );
@@ -488,6 +603,8 @@ export async function fetchCoinbaseHistoricalBackfill(days = 730) {
     provenance.ok = true;
     provenance.status = 200;
     provenance.ms = Date.now() - startTime;
+    provenance.raw_rows = allRecords.length;
+    provenance.unique_rows = sortedRecords.length;
     provenance.rows_fetched = filteredRecords.length;
 
     console.log(`Coinbase: Successfully fetched ${filteredRecords.length} historical records`);
@@ -518,16 +635,20 @@ export async function fetchCoinbaseHistoricalBackfill(days = 730) {
 /**
  * Fetch recent Coinbase daily candles and convert to our CSV format
  * @param {number} days - Number of recent days to fetch
+ * @param {string} [asOfUtc]
  * @returns {Object} {success, data, provenance}
  */
-export async function fetchRecentCoinbaseData(days = 14) {
+export async function fetchRecentCoinbaseData(
+  days = DEFAULT_RECENT_WINDOW_DAYS,
+  asOfUtc = new Date().toISOString()
+) {
   const startTime = Date.now();
-  const now = new Date();
-  const startDate = new Date(now.getTime() - days * 86400000);
+  const range = buildCoinbaseRecentRange({ asOfUtc, days });
 
   const provenance = {
     endpoint: 'coinbase_daily_candles',
     requested_days: days,
+    as_of_utc: new Date(asOfUtc).toISOString(),
     ok: false,
     status: 0,
     ms: 0,
@@ -537,8 +658,8 @@ export async function fetchRecentCoinbaseData(days = 14) {
   try {
     const url = new URL('https://api.exchange.coinbase.com/products/BTC-USD/candles');
     url.searchParams.set('granularity', '86400');
-    url.searchParams.set('start', startDate.toISOString());
-    url.searchParams.set('end', now.toISOString());
+    url.searchParams.set('start', range.startUtc);
+    url.searchParams.set('end', range.endUtc);
 
     console.log(`Coinbase: Fetching last ${days} days of daily candles...`);
 
@@ -582,7 +703,7 @@ export async function fetchRecentCoinbaseData(days = 14) {
           date_utc: dateStr,
           close_usd: close,
           source: 'coinbase',
-          ingested_at_utc: new Date().toISOString(),
+          ingested_at_utc: provenance.as_of_utc,
         };
       })
       .filter((record) => record !== null)
@@ -673,7 +794,7 @@ export async function managePriceHistory(options = {}) {
     console.log(
       `Price History: Continuity insufficient (${diagnosis.reason}); performing full Coinbase backfill...`
     );
-    const backfillResult = await fetchBackfill(backfillDays);
+    const backfillResult = await fetchBackfill(backfillDays, asOfUtc);
     results.coinbase_historical_backfill = backfillResult;
     if (!backfillResult.success) {
       throw new CanonicalPriceHistoryError(
@@ -687,7 +808,7 @@ export async function managePriceHistory(options = {}) {
   }
 
   console.log('Price History: Fetching recent Coinbase data...');
-  const coinbaseResult = await fetchRecent(recentWindowDays);
+  const coinbaseResult = await fetchRecent(recentWindowDays, asOfUtc);
   results.coinbase_daily_update = coinbaseResult;
 
   if (coinbaseResult.success) {

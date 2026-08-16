@@ -5,8 +5,15 @@ import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import {
   CanonicalPriceHistoryError,
+  COINBASE_HISTORICAL_CHUNK_SPAN_DAYS,
+  COINBASE_MAX_DAILY_CANDLES,
   addUtcDays,
+  buildCoinbaseHistoricalChunkRanges,
+  buildCoinbaseRecentRange,
+  dedupePriceRecordsByDate,
   diagnoseCanonicalHistory,
+  filterCompletedDailyRecords,
+  findDateGaps,
   getDefaultRepoRoot,
   isCompletedDailyCandle,
   isPathInsideRoot,
@@ -16,6 +23,8 @@ import {
   resolveCanonicalPriceHistoryPath,
   sma200DenominatorCloses,
   upsertPriceRecords,
+  utcCalendarMidnightIso,
+  validateCanonicalPriceHistory,
 } from '../priceHistory.mjs';
 
 const AS_OF = '2026-08-16T11:00:00.000Z';
@@ -274,4 +283,154 @@ test('upsertPriceRecords incoming same-day wins', () => {
   assert.equal(merged.length, 1);
   assert.equal(merged[0].close_usd, 2);
   assert.equal(merged[0].source, 'coinbase');
+});
+
+const AS_OF_NON_MIDNIGHT = '2026-08-16T22:42:27.000Z';
+const AS_OF_BEFORE_MIDNIGHT = '2026-08-16T23:59:59.000Z';
+const AS_OF_AFTER_MIDNIGHT = '2026-08-17T00:00:01.000Z';
+
+function datesInclusive(startIso, endIso) {
+  const dates = [];
+  let d = startIso.slice(0, 10);
+  const end = endIso.slice(0, 10);
+  while (d <= end) {
+    dates.push(d);
+    d = addUtcDays(d, 1);
+  }
+  return dates;
+}
+
+test('Coinbase historical chunks are UTC midnight and overlap the boundary day', () => {
+  const range = buildCoinbaseHistoricalChunkRanges({
+    asOfUtc: AS_OF_NON_MIDNIGHT,
+    days: 730,
+  });
+
+  assert.equal(range.asOfMidnightUtc, '2026-08-16T00:00:00.000Z');
+  assert.match(range.rangeStartUtc, /T00:00:00\.000Z$/);
+  assert.equal(range.rangeEndUtc, '2026-08-16T00:00:00.000Z');
+  assert.ok(range.chunks.length >= 2);
+
+  for (const chunk of range.chunks) {
+    assert.match(chunk.startUtc, /T00:00:00\.000Z$/);
+    assert.match(chunk.endUtc, /T00:00:00\.000Z$/);
+    assert.ok(chunk.inclusiveDays >= 1);
+    assert.ok(chunk.inclusiveDays <= COINBASE_MAX_DAILY_CANDLES);
+    assert.equal(
+      Math.round((Date.parse(chunk.endUtc) - Date.parse(chunk.startUtc)) / 86400000) + 1,
+      chunk.inclusiveDays
+    );
+  }
+
+  for (let i = 1; i < range.chunks.length; i++) {
+    assert.equal(range.chunks[i].startUtc, range.chunks[i - 1].endUtc);
+    assert.ok(Date.parse(range.chunks[i].startUtc) > Date.parse(range.chunks[i - 1].startUtc));
+    assert.ok(Date.parse(range.chunks[i].endUtc) > Date.parse(range.chunks[i - 1].endUtc));
+  }
+
+  assert.equal(range.chunks.at(-1).endUtc, range.rangeEndUtc);
+  const firstNonLast = range.chunks.slice(0, -1);
+  for (const chunk of firstNonLast) {
+    assert.equal(chunk.inclusiveDays, COINBASE_MAX_DAILY_CANDLES);
+  }
+
+  const recent = buildCoinbaseRecentRange({ asOfUtc: AS_OF_NON_MIDNIGHT, days: 14 });
+  assert.match(recent.startUtc, /T00:00:00\.000Z$/);
+  assert.equal(recent.endUtc, AS_OF_NON_MIDNIGHT);
+});
+
+test('overlapped Coinbase chunks dedupe to a contiguous completed series', () => {
+  const range = buildCoinbaseHistoricalChunkRanges({
+    asOfUtc: AS_OF_NON_MIDNIGHT,
+    days: 730,
+  });
+  const raw = [];
+  for (const chunk of range.chunks) {
+    for (const date_utc of datesInclusive(chunk.startUtc, chunk.endUtc)) {
+      raw.push({
+        date_utc,
+        close_usd: 50000,
+        source: 'coinbase_historical',
+        ingested_at_utc: AS_OF_NON_MIDNIGHT,
+      });
+    }
+  }
+  const unique = dedupePriceRecordsByDate(raw);
+  assert.equal(raw.length - unique.length, range.chunks.length - 1);
+
+  const cutoff = addUtcDays(range.asOfMidnightUtc.slice(0, 10), -730);
+  const filtered = unique.filter((r) => r.date_utc >= cutoff);
+  const completed = filterCompletedDailyRecords(filtered, AS_OF_NON_MIDNIGHT);
+  const validation = validateCanonicalPriceHistory(completed, {
+    asOfUtc: AS_OF_NON_MIDNIGHT,
+    minRows: 500,
+  });
+
+  assert.equal(findDateGaps(completed.map((r) => r.date_utc)).length, 0);
+  assert.equal(validation.ok, true);
+  assert.equal(validation.newest, '2026-08-15');
+  assert.equal(validation.expectedLatest, '2026-08-15');
+  assert.equal(completed.some((r) => r.date_utc === '2026-08-16'), false);
+  assert.equal(filtered.some((r) => r.date_utc === '2026-08-16'), true);
+});
+
+test('one propagated asOfUtc controls the completed-date result near midnight', async () => {
+  assert.equal(utcCalendarMidnightIso(AS_OF_BEFORE_MIDNIGHT), '2026-08-16T00:00:00.000Z');
+  assert.equal(utcCalendarMidnightIso(AS_OF_AFTER_MIDNIGHT), '2026-08-17T00:00:00.000Z');
+  assert.equal(latestCompletedUtcDate(AS_OF_BEFORE_MIDNIGHT), '2026-08-15');
+  assert.equal(latestCompletedUtcDate(AS_OF_AFTER_MIDNIGHT), '2026-08-16');
+
+  const seriesThrough16 = makeSeries('2026-07-01', '2026-08-16');
+
+  await withTempRepo(async (repoRoot) => {
+    await managePriceHistory({
+      repoRoot,
+      asOfUtc: AS_OF_BEFORE_MIDNIGHT,
+      minRows: 10,
+      fetchBackfill: async () => ({ success: true, data: seriesThrough16, provenance: {} }),
+      fetchRecent: async () => ({ success: true, data: seriesThrough16.slice(-5), provenance: {} }),
+    });
+    const { records } = await readCanonical(repoRoot);
+    assert.equal(records.at(-1).date_utc, '2026-08-15');
+    assert.equal(records.some((r) => r.date_utc === '2026-08-16'), false);
+  });
+
+  await withTempRepo(async (repoRoot) => {
+    await managePriceHistory({
+      repoRoot,
+      asOfUtc: AS_OF_AFTER_MIDNIGHT,
+      minRows: 10,
+      fetchBackfill: async () => ({ success: true, data: seriesThrough16, provenance: {} }),
+      fetchRecent: async () => ({ success: true, data: seriesThrough16.slice(-5), provenance: {} }),
+    });
+    const { records } = await readCanonical(repoRoot);
+    assert.equal(records.at(-1).date_utc, '2026-08-16');
+    assert.equal(records.some((r) => r.date_utc === '2026-08-17'), false);
+  });
+});
+
+test('managePriceHistory passes the same asOfUtc to live Coinbase fetchers', async () => {
+  const seen = [];
+  const series = makeSeries('2026-07-01', '2026-08-16');
+  await withTempRepo(async (repoRoot) => {
+    await managePriceHistory({
+      repoRoot,
+      asOfUtc: AS_OF_NON_MIDNIGHT,
+      minRows: 10,
+      fetchBackfill: async (days, asOf) => {
+        seen.push(['backfill', days, asOf]);
+        return { success: true, data: series, provenance: {} };
+      },
+      fetchRecent: async (days, asOf) => {
+        seen.push(['recent', days, asOf]);
+        return { success: true, data: series.slice(-14), provenance: {} };
+      },
+    });
+  });
+  assert.deepEqual(
+    seen.map((row) => row[2]),
+    [AS_OF_NON_MIDNIGHT, AS_OF_NON_MIDNIGHT]
+  );
+  assert.equal(seen[0][0], 'backfill');
+  assert.equal(seen[1][0], 'recent');
 });
