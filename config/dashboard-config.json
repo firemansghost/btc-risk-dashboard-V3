@@ -1,8 +1,8 @@
 {
   "model_version": "v1.1.1",
   "implementation_revision": "integrity-2026-08",
-  "ssot_version": "2.1.0",
-  "lastModified": "2025-10-05T00:00:00.000Z",
+  "ssot_version": "2.1.1",
+  "lastModified": "2026-08-16T00:00:00.000Z",
   "description": "SINGLE SOURCE OF TRUTH for all dashboard configuration - pillars, factors, weights, bands, and sub-weights - Rebalanced to prioritize Trend & Valuation",
   
   "meta": {
@@ -127,7 +127,7 @@
       "weight": 0.20,
       "enabled": true,
       "order": 6,
-      "description": "Funding rates, basis, and open interest",
+      "description": "Funding rates, realized volatility, and leverage stress",
       "staleness": {
         "ttl_hours": 6,
         "stale_beyond_hours": 12,
@@ -154,7 +154,7 @@
       "weight": 0.10,
       "enabled": true,
       "order": 8,
-      "description": "Google Trends and Fear & Greed Index",
+      "description": "CoinGecko trending attention/rank and BTC price momentum proxy",
       "staleness": {
         "ttl_hours": 24,
         "market_dependent": false,

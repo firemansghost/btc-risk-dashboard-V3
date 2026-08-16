@@ -73,5 +73,14 @@ test('SSOT stamps v1.1.1 and implementation_revision', async () => {
   const config = await getDashboardConfig();
   assert.equal(config.model_version, 'v1.1.1');
   assert.equal(config.implementation_revision, 'integrity-2026-08');
+  assert.equal(config.ssot_version, '2.1.1');
+  assert.equal(config.lastModified, '2026-08-16T00:00:00.000Z');
   assert.equal(await getImplementationRevision(), 'integrity-2026-08');
+  assert.match(config.factors.term_leverage.description, /funding/i);
+  assert.match(config.factors.term_leverage.description, /realized volatility/i);
+  assert.match(config.factors.term_leverage.description, /stress/i);
+  assert.doesNotMatch(config.factors.term_leverage.description, /basis|open interest/i);
+  assert.match(config.factors.social_interest.description, /CoinGecko trending/i);
+  assert.match(config.factors.social_interest.description, /momentum/i);
+  assert.doesNotMatch(config.factors.social_interest.description, /Google Trends|Fear & Greed/i);
 });

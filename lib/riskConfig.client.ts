@@ -157,7 +157,7 @@ export const DEFAULT_CONFIG: RiskConfig = {
     }
   },
   model_version: 'v1.1.1',
-  ssot_version: '2.1.0',
+  ssot_version: '2.1.1',
   lastModified: new Date().toISOString()
 };
 
