@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
 import { readLatestArtifact } from '@/lib/latestArtifact';
 import {
   computeDashboardModelComposite,
@@ -52,5 +54,20 @@ describe('experimentalModel', () => {
       const sum = Object.values(preset.weights).reduce((a, b) => a + b, 0);
       expect(sum).toBeCloseTo(1, 6);
     }
+  });
+
+  it('experimental presets are UI-only and cannot write official artifacts', () => {
+    const modelSrc = fs.readFileSync(path.join(process.cwd(), 'lib/experimentalModel.ts'), 'utf8');
+    expect(modelSrc).not.toMatch(/latest\.json/);
+    expect(modelSrc).not.toMatch(/history\.csv/);
+    expect(modelSrc).not.toMatch(/writeFile/);
+    expect(modelSrc).not.toMatch(/fs\.promises/);
+
+    const computeSrc = fs.readFileSync(path.join(process.cwd(), 'scripts/etl/compute.mjs'), 'utf8');
+    expect(computeSrc).not.toMatch(/experimentalModel/);
+    expect(computeSrc).not.toMatch(/liq_35_25/);
+    expect(computeSrc).not.toMatch(/mom_25_35/);
+    expect(computeSrc).toMatch(/public\/data\/latest\.json/);
+    expect(computeSrc).toMatch(/public\/data\/history\.csv/);
   });
 });
