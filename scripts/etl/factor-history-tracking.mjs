@@ -283,6 +283,7 @@ async function updateFactorHistory() {
     console.log('✅ Loaded latest data');
 
     const entryDate =
+      latestData.snapshot_date ||
       latestData.daily_close_date ||
       latestData.as_of_utc?.split('T')[0];
 

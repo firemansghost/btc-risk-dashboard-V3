@@ -8,7 +8,7 @@ import { formatFriendlyTimestamp } from './dateUtils';
  * Format consistent "Source: Provider · As of: Timestamp" microcopy
  * @param source - Source name/provider
  * @param timestamp - Date object, ISO string, or timestamp
- * @returns Formatted string like "Source: Coinbase (daily close) · As of: Sep 22, 2025 · 11:20 UTC"
+ * @returns Formatted string like "Source: Coinbase (UTC snapshot) · As of: Sep 22, 2025 · 11:20 UTC"
  */
 export function formatSourceTimestamp(source: string, timestamp: Date | string | number): string {
   const formattedTime = formatFriendlyTimestamp(timestamp);
@@ -31,12 +31,14 @@ export function getStandardizedSourceName(provenance: any): string {
     // Map source names to standardized versions
     const sourceName = activeSource.name || 'Unknown';
     
-    if (sourceName.toLowerCase().includes('coinbase')) return 'Coinbase (daily close)';
+    if (sourceName.toLowerCase().includes('coinbase')) return 'Coinbase (UTC snapshot)';
     if (sourceName.toLowerCase().includes('coingecko')) return 'CoinGecko';
     if (sourceName.toLowerCase().includes('alpha')) return 'Alpha Vantage';
     if (sourceName.toLowerCase().includes('yahoo')) return 'Yahoo Finance';
     if (sourceName.toLowerCase().includes('stooq')) return 'Stooq (fallback)';
-    if (sourceName.toLowerCase().includes('btc daily close')) return 'BTC daily close (Coinbase)';
+    if (sourceName.toLowerCase().includes('btc daily close') || sourceName.toLowerCase().includes('utc snapshot')) {
+      return 'BTC UTC snapshot (Coinbase)';
+    }
     
     return sourceName;
   }
@@ -45,7 +47,7 @@ export function getStandardizedSourceName(provenance: any): string {
   if (typeof provenance === 'object' && provenance.name) {
     const sourceName = provenance.name;
     
-    if (sourceName.toLowerCase().includes('coinbase')) return 'Coinbase (daily close)';
+    if (sourceName.toLowerCase().includes('coinbase')) return 'Coinbase (UTC snapshot)';
     if (sourceName.toLowerCase().includes('coingecko')) return 'CoinGecko';
     if (sourceName.toLowerCase().includes('alpha')) return 'Alpha Vantage';
     if (sourceName.toLowerCase().includes('yahoo')) return 'Yahoo Finance';
@@ -56,7 +58,7 @@ export function getStandardizedSourceName(provenance: any): string {
   
   // Handle string source
   if (typeof provenance === 'string') {
-    if (provenance.toLowerCase().includes('coinbase')) return 'Coinbase (daily close)';
+    if (provenance.toLowerCase().includes('coinbase')) return 'Coinbase (UTC snapshot)';
     if (provenance.toLowerCase().includes('coingecko')) return 'CoinGecko';
     if (provenance.toLowerCase().includes('alpha')) return 'Alpha Vantage';
     if (provenance.toLowerCase().includes('yahoo')) return 'Yahoo Finance';

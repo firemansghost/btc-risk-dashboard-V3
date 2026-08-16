@@ -1,5 +1,6 @@
 {
-  "model_version": "v1.1",
+  "model_version": "v1.1.1",
+  "implementation_revision": "integrity-2026-08",
   "ssot_version": "2.1.0",
   "lastModified": "2025-10-05T00:00:00.000Z",
   "description": "SINGLE SOURCE OF TRUTH for all dashboard configuration - pillars, factors, weights, bands, and sub-weights - Rebalanced to prioritize Trend & Valuation",

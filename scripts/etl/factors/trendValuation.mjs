@@ -636,9 +636,9 @@ export async function computeTrendValuation(dailyClose = null) {
 
     // Prepare detailed results with hybrid source information
     const latestCandle = candles[candles.length - 1];
-    const sourceInfo = latestCandle.source === 'coinbase' ? 'Coinbase (daily close)' : 
-                       latestCandle.source === 'alpha_vantage_backfill' ? 'Coinbase (daily close) — historical backfill via Alpha Vantage' :
-                       'Coinbase (daily close)';
+    const sourceInfo = latestCandle.source === 'coinbase' ? 'Coinbase (UTC snapshot price; completed daily history for SMA200)' :
+                       latestCandle.source === 'alpha_vantage_backfill' ? 'Coinbase (completed daily history)' :
+                       'Coinbase (UTC snapshot price; completed daily history for SMA200)';
     
     const details = [
       { label: "Price vs 200-day SMA (Mayer)", value: mayerData.mayerMultiple.toFixed(2) },
@@ -649,7 +649,7 @@ export async function computeTrendValuation(dailyClose = null) {
                `${bmsb.status} (${bmsb.distance > 0 ? '+' : ''}${bmsb.distance.toFixed(1)}%)`
       },
       { label: "Weekly momentum (RSI)", value: latestWeeklyRSI.toFixed(1) },
-      { label: "BTC Price (daily close)", value: `$${currentPrice.toLocaleString()}` },
+      { label: "BTC Price (UTC snapshot)", value: `$${currentPrice.toLocaleString()}` },
       { label: "200-day SMA", value: `$${mayerData.latestSMA200.toLocaleString()}` },
       { label: "Weekly Close (for BMSB)", value: `$${latestWeeklyClose.toLocaleString()}` },
       { label: "Price source", value: sourceInfo },

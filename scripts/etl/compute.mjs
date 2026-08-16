@@ -7,6 +7,12 @@ import { upsertGScoreHistoryCsv } from "./lib/gscoreHistoryCsv.mjs";
 import { getDashboardConfig, getModelVersion, getSsotVersion } from "../../lib/config-loader.mjs";
 import { gateOfficialAdjustments } from "./lib/officialAdjustments.mjs";
 import { matchBandForScore } from "./lib/riskBand.mjs";
+import {
+  IMPLEMENTATION_REVISION,
+  PRICE_KIND_UTC_INTRADAY_SNAPSHOT,
+  buildSnapshotArtifactFields,
+  selectSnapshotFromDailyCandles,
+} from "./lib/snapshotPrice.mjs";
 import { fallbackTracker, resetFallbackTracker } from "./fetch-helper.mjs";
 
 // Resolve absolute paths
@@ -206,42 +212,35 @@ try {
   // .env.local doesn't exist, that's fine
 }
 
-const ISO = (d) => d.toISOString().split("T")[0];
-
 async function readText(path) {
   try { return await fs.readFile(path, "utf8"); } catch { return null; }
 }
 async function ensureDir(p) { await fs.mkdir(p, { recursive: true }); }
 
-async function getCoinbaseCloseForYesterday() {
-  const now = new Date();
-  const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const start = new Date(todayUTC.getTime() - 2 * 86400_000); // two days window
+async function getCoinbaseSnapshotPrice(asOfUtc = new Date().toISOString()) {
+  const asOf = new Date(asOfUtc);
+  const start = new Date(asOf.getTime() - 3 * 86400_000);
   const url = new URL("https://api.exchange.coinbase.com/products/BTC-USD/candles");
   url.searchParams.set("granularity", "86400");
   url.searchParams.set("start", start.toISOString());
-  url.searchParams.set("end", todayUTC.toISOString());
+  url.searchParams.set("end", asOf.toISOString());
 
   const res = await fetch(url, { headers: { "User-Agent": "gg-risk-etl" } });
   if (!res.ok) throw new Error(`Coinbase ${res.status}`);
-  const rows = await res.json(); // newest-first
-  const sorted = rows.map(r => ({ ts: r[0] * 1000, close: r[4] }))
-                     .sort((a, b) => a.ts - b.ts);
-  // Yesterday = last fully closed bucket (the last element)
-  const last = sorted[sorted.length - 1];
-  return { date: ISO(new Date(last.ts)), close: Number(last.close) };
+  const rows = await res.json();
+  return selectSnapshotFromDailyCandles(rows, asOfUtc);
 }
 
-async function getCoinGeckoCloseForYesterday() {
+async function getCoinGeckoSnapshotPrice(asOfUtc = new Date().toISOString()) {
   const url = new URL("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart");
   url.searchParams.set("vs_currency", "usd");
   url.searchParams.set("days", "2");
   url.searchParams.set("interval", "daily");
   const res = await fetch(url);
   if (!res.ok) throw new Error(`CoinGecko ${res.status}`);
-  const j = await res.json(); // oldest-first
-  const pair = j.prices[j.prices.length - 1]; // [ms, price]
-  return { date: ISO(new Date(pair[0])), close: Number(pair[1]) };
+  const j = await res.json();
+  const candles = (j.prices || []).map(([ts, price]) => ({ ts, close: price }));
+  return selectSnapshotFromDailyCandles(candles, asOfUtc);
 }
 
 // Load risk bands from dashboard-config.json
@@ -591,10 +590,10 @@ async function main() {
   const { managePriceHistory } = await import('./priceHistory.mjs');
   const priceHistoryResults = await managePriceHistory();
 
-  // 1) Get yesterday's close (Coinbase → CG fallback)
+  // 1) Snapshot BTC price (Coinbase open UTC daily bucket → CG fallback)
   let y;
-  try { y = await getCoinbaseCloseForYesterday(); }
-  catch { y = await getCoinGeckoCloseForYesterday(); }
+  try { y = await getCoinbaseSnapshotPrice(); }
+  catch { y = await getCoinGeckoSnapshotPrice(); }
 
   // 2) Compute real risk factors
   console.log("Computing real risk factors...");
@@ -1064,7 +1063,8 @@ async function main() {
   await fs.writeFile("public/data/history.csv", historyCsv);
 
   // Load model_version from SSOT
-  let modelVersion = 'v1.1'; // Default fallback
+  let modelVersion = 'v1.1.1';
+  let implementationRevision = IMPLEMENTATION_REVISION;
   try {
     const dashboardConfigPath = path.join(process.cwd(), 'config', 'dashboard-config.json');
     const dashboardConfigContent = await fs.readFile(dashboardConfigPath, 'utf8');
@@ -1072,15 +1072,24 @@ async function main() {
     if (dashboardConfig.model_version) {
       modelVersion = dashboardConfig.model_version;
     }
+    if (dashboardConfig.implementation_revision) {
+      implementationRevision = dashboardConfig.implementation_revision;
+    }
   } catch (error) {
     console.warn('Could not load model_version from SSOT, using default:', error.message);
   }
 
+  const asOfUtc = new Date().toISOString();
+  const snapshotFields = buildSnapshotArtifactFields({
+    asOfUtc,
+    snapshot: y,
+    modelVersion,
+    implementationRevision,
+  });
+
   const latest = {
     ok: true,
-    as_of_utc: new Date().toISOString(),
-    /** Trading date of the BTC close used for this run (aligned with history.csv row key). */
-    daily_close_date: y.date,
+    ...snapshotFields,
     composite_score: finalComposite,
     composite_raw: composite,
     band: {
@@ -1094,11 +1103,11 @@ async function main() {
     factors: factorResults.factors,
     btc: {
       spot_usd: y.close,
-      as_of_utc: new Date().toISOString(),
-      source: 'Coinbase'
+      as_of_utc: asOfUtc,
+      source: 'Coinbase',
+      price_kind: PRICE_KIND_UTC_INTRADAY_SNAPSHOT,
     },
     provenance: [],
-    model_version: modelVersion,
     transform: {},
     // Legacy nudges preserved for backward-compat clients
     adjustments: { cycle_nudge: 0.0, spike_nudge: 0.0 },
@@ -1217,7 +1226,7 @@ async function main() {
     },
     satoshis_per_dollar: {
       status: "success",
-      source: "BTC daily close (derived)",
+      source: "BTC UTC snapshot (derived)",
       derived: true
     },
     // Add price history management results
@@ -1289,7 +1298,7 @@ async function main() {
     sats_per_usd: satsPerUsd,
     usd_per_sat: usdPerSat,
     provenance: [{
-      name: "BTC daily close (Coinbase)",
+      name: "BTC UTC snapshot (Coinbase)",
       ok: true,
       url: "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400",
       ms: null // We don't track latency for derived data
