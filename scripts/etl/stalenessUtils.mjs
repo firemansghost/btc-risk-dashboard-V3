@@ -245,6 +245,8 @@ export function getStalenessStatus(factorResult, ttlHours, options = {}) {
       spotObservationUtc:
         factorResult.spot_observation_utc || options.spot_observation_utc,
       provider: factorResult.funding_provider || options.funding_provider || 'bitmex',
+      fundingRows: factorResult.fundingData || options.fundingRows,
+      fundingCadence: options.fundingCadence,
       asOfUtc: asOf || new Date().toISOString(),
     });
     return {

@@ -2189,6 +2189,7 @@ async function computeTermLeverage() {
         fundingObservationUtc: preserved.funding_observation_utc || fundingObservationUtc,
         spotObservationUtc: preserved.spot_observation_utc || spotObservationUtc,
         provider: preserved.funding_provider || selected.provider,
+        fundingRows: preserved.fundingData || fundingData,
         asOfUtc,
       });
       if (stillFresh.fresh) {
