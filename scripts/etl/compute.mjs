@@ -13,6 +13,12 @@ import {
   buildSnapshotArtifactFields,
   selectSnapshotFromDailyCandles,
 } from "./lib/snapshotPrice.mjs";
+import {
+  SIGNAL_V2_DIR,
+  isFearGreedWriterEnabled,
+  shouldAppendLegacySignalCsv,
+  writeFactorSignalV2,
+} from "./lib/signalV2.mjs";
 import { fallbackTracker, resetFallbackTracker } from "./fetch-helper.mjs";
 
 // Resolve absolute paths
@@ -613,6 +619,7 @@ async function main() {
   // 2.7) Generate factor history CSVs
   console.log("Generating factor history CSVs...");
   await ensureDir("public/signals");
+  await ensureDir(SIGNAL_V2_DIR);
   
   const historyResults = [];
   
@@ -621,130 +628,134 @@ async function main() {
     if (factor.status !== 'fresh') continue; // Only process fresh factors
     
     let csvResult = { appended: false, rows: 0 };
-    
-    switch (factor.key) {
-      case 'stablecoins':
-        csvResult = await appendCsvRow(
-          "public/signals/stablecoins_30d.csv",
-          "date,pct_change_30d,z,score",
-          {
-            date: y.date,
-            pct_change_30d: factor.details?.find(d => d.label === "30-day Change")?.value?.replace('%', '') || '0',
-            z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
-            score: factor.score
-          }
-        );
-        break;
-        
-      case 'etf_flows':
-        // ETF flows CSV already exists, ensure it has the right columns
-        csvResult = await appendCsvRow(
-          "public/signals/etf_flows_21d.csv",
-          "date,day_flow_usd,sum21_usd,z,pct,score",
-          {
-            date: y.date,
-            day_flow_usd: factor.details?.find(d => d.label === "Latest Daily Flow")?.value?.replace(/[,$]/g, '') || '0',
-            sum21_usd: factor.details?.find(d => d.label === "21-day Sum")?.value?.replace(/[,$]/g, '') || '0',
-            z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
-            pct: factor.details?.find(d => d.label === "Percentile")?.value?.replace('%', '') || '0',
-            score: factor.score
-          }
-        );
-        
-        // Generate per-ETF breakdown CSV
-        if (factor.details?.find(d => d.label === "Individual ETF Flows")?.value === "Available") {
-          const etfBreakdownResult = await generatePerEtfBreakdown(y.date, factor.individualEtfFlows);
-          if (etfBreakdownResult && etfBreakdownResult.rowsAppended > 0) {
-            historyResults.push({
-              name: 'ETF by fund',
-              ok: true,
-              rows_appended: etfBreakdownResult.rowsAppended,
-              funds: etfBreakdownResult.fundsCount,
-              schema_hash_funds: etfBreakdownResult.schemaHash
-            });
-          }
-        }
-        break;
-        
-      case 'net_liquidity':
-        csvResult = await appendCsvRow(
-          "public/signals/net_liquidity_20d.csv",
-          "date,delta20d_usd,z,score",
-          {
-            date: y.date,
-            delta20d_usd: factor.details?.find(d => d.label === "Net Liquidity")?.value?.replace(/[,$T]/g, '') || '0',
-            z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
-            score: factor.score
-          }
-        );
-        break;
-        
-      case 'trend_valuation':
-        csvResult = await appendCsvRow(
-          "public/signals/mayer_multiple.csv",
-          "date,mayer,stretch,z,score",
-          {
-            date: y.date,
-            mayer: factor.details?.find(d => d.label === "Mayer Multiple")?.value || '0',
-            stretch: factor.details?.find(d => d.label === "Stretch")?.value || '0',
-            z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
-            score: factor.score
-          }
-        );
-        break;
-        
-      case 'term_leverage':
-        csvResult = await appendCsvRow(
-          "public/signals/funding_7d.csv",
-          "date,funding_7d_avg,z,score",
-          {
-            date: y.date,
-            funding_7d_avg: factor.details?.find(d => d.label === "7-day Change")?.value?.replace('%', '') || '0',
-            z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
-            score: factor.score
-          }
-        );
-        break;
-        
-      case 'macro_overlay':
-        csvResult = await appendCsvRow(
-          "public/signals/dxy_20d.csv",
-          "date,dxy_delta20d,z,score",
-          {
-            date: y.date,
-            dxy_delta20d: factor.details?.find(d => d.label === "DXY 20d Change")?.value?.replace('%', '') || '0',
-            z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
-            score: factor.score
-          }
-        );
-        break;
-        
-      case 'social_interest':
-        csvResult = await appendCsvRow(
-          "public/signals/fear_greed.csv",
-          "date,fng_value,z,score",
-          {
-            date: y.date,
-            fng_value: factor.details?.find(d => d.label === "Fear & Greed Index")?.value || '0',
-            z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
-            score: factor.score
-          }
-        );
-        break;
-        
-      case 'onchain':
-        csvResult = await appendCsvRow(
-          "public/signals/onchain_activity.csv",
-          "date,fees_7d_avg,mempool_7d_avg,puell_multiple,score",
-          {
-            date: y.date,
-            fees_7d_avg: factor.details?.find(d => d.label === "Fees 7d avg (USD)")?.value?.replace(/[$,]/g, '') || '0',
-            mempool_7d_avg: factor.details?.find(d => d.label === "Mempool 7d avg (MB)")?.value?.replace(' MB', '') || '0',
-            puell_multiple: factor.details?.find(d => d.label === "Puell Multiple")?.value || '0',
-            score: factor.score
-          }
-        );
-        break;
+
+    // Legacy public/signals/*.csv stay historically frozen (untrusted details[].label scrapes).
+    // fear_greed.csv is deprecated and must not be appended or invented.
+    if (factor.key === 'social_interest' && !isFearGreedWriterEnabled()) {
+      csvResult = { appended: false, rows: 0, skipped: 'fear_greed_deprecated' };
+    } else if (shouldAppendLegacySignalCsv(factor.key)) {
+      switch (factor.key) {
+        case 'stablecoins':
+          csvResult = await appendCsvRow(
+            "public/signals/stablecoins_30d.csv",
+            "date,pct_change_30d,z,score",
+            {
+              date: y.date,
+              pct_change_30d: factor.details?.find(d => d.label === "30-day Change")?.value?.replace('%', '') || '0',
+              z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
+              score: factor.score
+            }
+          );
+          break;
+          
+        case 'etf_flows':
+          csvResult = await appendCsvRow(
+            "public/signals/etf_flows_21d.csv",
+            "date,day_flow_usd,sum21_usd,z,pct,score",
+            {
+              date: y.date,
+              day_flow_usd: factor.details?.find(d => d.label === "Latest Daily Flow")?.value?.replace(/[,$]/g, '') || '0',
+              sum21_usd: factor.details?.find(d => d.label === "21-day Sum")?.value?.replace(/[,$]/g, '') || '0',
+              z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
+              pct: factor.details?.find(d => d.label === "Percentile")?.value?.replace('%', '') || '0',
+              score: factor.score
+            }
+          );
+          break;
+          
+        case 'net_liquidity':
+          csvResult = await appendCsvRow(
+            "public/signals/net_liquidity_20d.csv",
+            "date,delta20d_usd,z,score",
+            {
+              date: y.date,
+              delta20d_usd: factor.details?.find(d => d.label === "Net Liquidity")?.value?.replace(/[,$T]/g, '') || '0',
+              z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
+              score: factor.score
+            }
+          );
+          break;
+          
+        case 'trend_valuation':
+          csvResult = await appendCsvRow(
+            "public/signals/mayer_multiple.csv",
+            "date,mayer,stretch,z,score",
+            {
+              date: y.date,
+              mayer: factor.details?.find(d => d.label === "Mayer Multiple")?.value || '0',
+              stretch: factor.details?.find(d => d.label === "Stretch")?.value || '0',
+              z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
+              score: factor.score
+            }
+          );
+          break;
+          
+        case 'term_leverage':
+          csvResult = await appendCsvRow(
+            "public/signals/funding_7d.csv",
+            "date,funding_7d_avg,z,score",
+            {
+              date: y.date,
+              funding_7d_avg: factor.details?.find(d => d.label === "7-day Change")?.value?.replace('%', '') || '0',
+              z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
+              score: factor.score
+            }
+          );
+          break;
+          
+        case 'macro_overlay':
+          csvResult = await appendCsvRow(
+            "public/signals/dxy_20d.csv",
+            "date,dxy_delta20d,z,score",
+            {
+              date: y.date,
+              dxy_delta20d: factor.details?.find(d => d.label === "DXY 20d Change")?.value?.replace('%', '') || '0',
+              z: factor.details?.find(d => d.label === "Z-Score")?.value || '0',
+              score: factor.score
+            }
+          );
+          break;
+          
+        case 'onchain':
+          csvResult = await appendCsvRow(
+            "public/signals/onchain_activity.csv",
+            "date,fees_7d_avg,mempool_7d_avg,puell_multiple,score",
+            {
+              date: y.date,
+              fees_7d_avg: factor.details?.find(d => d.label === "Fees 7d avg (USD)")?.value?.replace(/[$,]/g, '') || '0',
+              mempool_7d_avg: factor.details?.find(d => d.label === "Mempool 7d avg (MB)")?.value?.replace(' MB', '') || '0',
+              puell_multiple: factor.details?.find(d => d.label === "Puell Multiple")?.value || '0',
+              score: factor.score
+            }
+          );
+          break;
+      }
+    }
+
+    if (factor.key === 'etf_flows' && factor.individualEtfFlows?.length) {
+      const etfBreakdownResult = await generatePerEtfBreakdown(y.date, factor.individualEtfFlows);
+      if (etfBreakdownResult && etfBreakdownResult.rowsAppended > 0) {
+        historyResults.push({
+          name: 'ETF by fund',
+          ok: true,
+          rows_appended: etfBreakdownResult.rowsAppended,
+          funds: etfBreakdownResult.fundsCount,
+          schema_hash_funds: etfBreakdownResult.schemaHash
+        });
+      }
+    }
+
+    const v2Result = await writeFactorSignalV2({
+      date: y.date,
+      factor,
+      directory: SIGNAL_V2_DIR,
+    });
+    if (v2Result.written) {
+      historyResults.push({
+        name: `Signal v2: ${factor.key}`,
+        ok: true,
+        path: v2Result.path,
+      });
     }
     
     if (csvResult.appended) {

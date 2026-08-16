@@ -477,7 +477,8 @@ export async function computeOnchainEnhanced() {
       reason: "success_cached",
       lastUpdated: cachedData.lastUpdated,
       details: cachedData.details,
-      provenance: cachedData.provenance
+      provenance: cachedData.provenance,
+      metrics: cachedData.metrics,
     };
   }
 
@@ -485,9 +486,11 @@ export async function computeOnchainEnhanced() {
 
   // Process mempool data
   let s_mempool = null;
+  let mempool7dAvg = null;
   if (mempoolData?.values?.length) {
     const memMA7 = sma(mempoolData.values, 7);
     const memLast = memMA7.at(-1);
+    if (Number.isFinite(memLast)) mempool7dAvg = memLast;
     
     if (Number.isFinite(memLast)) {
       const pr = percentileRank(memMA7.filter(Number.isFinite), memLast);
@@ -558,7 +561,13 @@ export async function computeOnchainEnhanced() {
     fallbackAttempts,
     mempoolData, // Include for cache comparison
     feesData, // Include for cache comparison
-    parallelTime // Include timing info
+    parallelTime, // Include timing info
+    metrics: {
+      fees_7d_avg: Number.isFinite(feesUSDLast) ? feesUSDLast : null,
+      mempool_7d_avg: Number.isFinite(mempool7dAvg) ? mempool7dAvg : null,
+      puell_multiple: null,
+      score: compositeScore,
+    },
   };
 
   // Save to cache for future use

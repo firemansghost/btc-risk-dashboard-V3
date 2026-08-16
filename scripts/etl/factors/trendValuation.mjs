@@ -682,7 +682,12 @@ export async function computeTrendValuation(dailyClose = null) {
       marketRegime,
       provenance: [provenance],
       candles, // Include candles for cache comparison
-      parallelTime // Include timing info
+      parallelTime, // Include timing info
+      metrics: {
+        mayer: Number.isFinite(mayerData?.mayerMultiple) ? mayerData.mayerMultiple : null,
+        sma200: Number.isFinite(mayerData?.latestSMA200) ? mayerData.latestSMA200 : null,
+        score,
+      },
     };
 
     // Save to cache for future use

@@ -402,6 +402,7 @@ async function computeSocialInterest() {
     // 2. Price Momentum Social Signal (35% weight) - price-based sentiment proxy
     let momentumScore = 50; // neutral default
     let priceSignal = "Neutral";
+    let momentum7dPct = null;
     
     if (priceData?.prices && Array.isArray(priceData.prices) && priceData.prices.length >= 14) {
       const prices = priceData.prices.map(([timestamp, price]) => price).filter(Number.isFinite);
@@ -414,6 +415,7 @@ async function computeSocialInterest() {
         const recentAvg = recent7d.reduce((sum, price) => sum + price, 0) / recent7d.length;
         const previousAvg = previous7d.reduce((sum, price) => sum + price, 0) / previous7d.length;
         const priceChange = ((recentAvg - previousAvg) / previousAvg) * 100;
+        momentum7dPct = Number.isFinite(priceChange) ? priceChange : null;
         
         // Build price change series for percentile ranking
         const changeSeries = [];
@@ -528,7 +530,12 @@ async function computeSocialInterest() {
       ],
       bitcoinRank: currentBitcoinRank, // Include for cache comparison
       latestPrice, // Include for cache comparison
-      fetchTime // Include timing info
+      fetchTime, // Include timing info
+      metrics: {
+        trending_rank: Number.isFinite(currentBitcoinRank) ? currentBitcoinRank : null,
+        momentum_7d_pct: momentum7dPct,
+        score: compositeScore,
+      },
     };
 
     // Save to cache for future use
@@ -862,7 +869,12 @@ async function computeNetLiquidity() {
         { label: "Data as of", value: latestWalclDate || "Unknown" }
       ],
       latestWalclDate, // Include for cache comparison
-      fetchTime // Include timing info
+      fetchTime, // Include timing info
+      metrics: {
+        net_liquidity_usd: Number.isFinite(latest) ? latest : null,
+        roc4w_pct: Number.isFinite(roc4w) ? roc4w : null,
+        score: compositeScore,
+      },
     };
 
     // Save to cache for future use
@@ -1330,7 +1342,11 @@ async function computeStablecoins() {
         { label: "Historical Baseline", value: `${changeSeries.length} data points (weighted average of ${stablecoins.length} stablecoins)` },
         { label: "Stablecoin Coverage", value: `${stablecoins.map(c => c.symbol).join(', ')} (${stablecoins.length} coins)` },
         { label: "Component Scores", value: `Supply: ${supplyScore}, Momentum: ${momentumScore}, Concentration: ${concentrationRiskScore}` }
-      ]
+      ],
+      metrics: {
+        pct_change_30d: Number.isFinite(aggregateChange) ? aggregateChange * 100 : null,
+        score: compositeScore,
+      },
     };
   } catch (error) {
     if (error instanceof SsotSubweightError) throw error;
@@ -1560,7 +1576,14 @@ async function computeEtfFlows() {
         },
         { label: "Data Points", value: flows.length.toString() },
         { label: "Last Update", value: `${daysSinceUpdate.toFixed(1)} days ago` }
-      ]
+      ],
+      metrics: {
+        day_flow_usd: Number.isFinite(latestFlow?.flow) ? latestFlow.flow : null,
+        sum21_usd: Number.isFinite(latest21d) ? latest21d : null,
+        z: Number.isFinite(zScore21d) ? zScore21d : null,
+        pct: Number.isFinite(percentile) ? percentile * 100 : null,
+        score: isStale ? null : score,
+      },
     };
   } catch (error) {
     return { score: null, reason: `error: ${error.message}` };
@@ -2280,7 +2303,13 @@ async function computeTermLeverage() {
       ],
       fundingData: fundingData, // Include for cache comparison
       parallelTime, // Include timing info
-      providers // Track provider status
+      providers, // Track provider status
+      metrics: {
+        funding_30d_avg: Number.isFinite(fundingComponentData?.avgFunding)
+          ? fundingComponentData.avgFunding
+          : null,
+        score: compositeScore,
+      },
     };
 
     // Save to cache for future use
@@ -2317,7 +2346,8 @@ async function computeOnchain() {
       reason: result.reason,
       lastUpdated: result.lastUpdated,
       details: result.details,
-      provenance: result.provenance
+      provenance: result.provenance,
+      metrics: result.metrics,
     };
   } catch (error) {
     console.error('On-chain computation failed:', error);
@@ -2642,7 +2672,11 @@ async function computeMacroOverlay() {
         { label: "Current Levels", value: `DXY: ${latestDxy.toFixed(1)}, 2Y: ${latest2Y.toFixed(2)}%, VIX: ${latestVix.toFixed(1)}` }
       ],
       latestDxyDate, // Include for cache comparison
-      fetchTime // Include timing info
+      fetchTime, // Include timing info
+      metrics: {
+        dxy_20d_change_pct: Number.isFinite(dxy20dChange) ? dxy20dChange : null,
+        score: compositeScore,
+      },
     };
 
     // Save to cache for future use
@@ -2762,6 +2796,7 @@ export async function computeAllFactors(dailyClose = null) {
       lastUpdated: lastUpdated, // Also include for status.json
       providers: result.status === 'fulfilled' && result.value.providers ? result.value.providers : undefined,
       details: result.status === 'fulfilled' ? result.value.details : undefined,
+      metrics: result.status === 'fulfilled' ? result.value.metrics : undefined,
       individualEtfFlows: result.status === 'fulfilled' && result.value.individualEtfFlows ? result.value.individualEtfFlows : undefined,
       sma50wDiagnostic: result.status === 'fulfilled' && result.value.sma50wDiagnostic ? result.value.sma50wDiagnostic : undefined,
       marketRegime: result.status === 'fulfilled' && result.value.marketRegime ? result.value.marketRegime : undefined
