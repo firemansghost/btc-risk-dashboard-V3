@@ -846,11 +846,14 @@ async function computeNetLiquidity() {
       }
     }
 
-    // Composite score (weighted blend)
-    const compositeScore = Math.round(
-      levelScore * 0.15 + 
-      rocScore * 0.40 + 
-      momentumScore * 0.45
+    const netLiquidityWeights = requireSubWeights(await getDashboardConfig(), 'net_liquidity');
+    const compositeScore = blendComponentScores(
+      {
+        level: levelScore,
+        rate_of_change: rocScore,
+        momentum: momentumScore,
+      },
+      netLiquidityWeights
     );
     
     const result = { 
@@ -882,6 +885,7 @@ async function computeNetLiquidity() {
 
     return result;
   } catch (error) {
+    if (error instanceof SsotSubweightError) throw error;
     const fallback = await tryNetLiquidityFredFallback(cachedData, error);
     if (fallback) return fallback;
     return { score: null, reason: `error: ${error.message}` };
@@ -1532,11 +1536,14 @@ async function computeEtfFlows() {
       }
     }
 
-    // Composite score (weighted blend) - BMSB-dominant Trend & Valuation
-    const score = Math.round(
-      score21d * 0.30 + 
-      accelScore * 0.30 + 
-      diversificationScore * 0.40
+    const etfWeights = requireSubWeights(await getDashboardConfig(), 'etf_flows');
+    const score = blendComponentScores(
+      {
+        sum_21d: score21d,
+        acceleration: accelScore,
+        diversification: diversificationScore,
+      },
+      etfWeights
     );
     
     // Format details with explicit units and tooltips
@@ -1586,6 +1593,7 @@ async function computeEtfFlows() {
       },
     };
   } catch (error) {
+    if (error instanceof SsotSubweightError) throw error;
     return { score: null, reason: `error: ${error.message}` };
   }
 }
@@ -2622,12 +2630,14 @@ async function computeMacroOverlay() {
       }
     }
 
-    // Composite score (weighted blend) - BMSB-dominant Trend & Valuation
-    const compositeScore = Math.round(
-      dollarScore * 0.40 + 
-      ratesScore * 0.35 + 
-      vixScore * 0.25 + 
-      realRateScore * 0.00  // Parked for now
+    const macroWeights = requireSubWeights(await getDashboardConfig(), 'macro_overlay');
+    const compositeScore = blendComponentScores(
+      {
+        dxy_20d: dollarScore,
+        us2y_20d: ratesScore,
+        vix_pct: vixScore,
+      },
+      macroWeights
     );
 
     // Determine macro regime
@@ -2685,6 +2695,7 @@ async function computeMacroOverlay() {
 
     return result;
   } catch (error) {
+    if (error instanceof SsotSubweightError) throw error;
     const fallback = await tryMacroOverlayFredFallback(cachedData, error);
     if (fallback) return fallback;
     return { score: null, reason: `error: ${error.message}` };

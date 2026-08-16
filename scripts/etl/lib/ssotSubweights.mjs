@@ -8,14 +8,20 @@ export class SsotSubweightError extends Error {
 export const REQUIRED_SUBWEIGHT_KEYS = {
   trend_valuation: ['bmsb_distance', 'mayer_stretch', 'weekly_rsi'],
   stablecoins: ['supply_growth', 'momentum', 'concentration'],
+  etf_flows: ['sum_21d', 'acceleration', 'diversification'],
+  net_liquidity: ['level', 'rate_of_change', 'momentum'],
   term_leverage: ['funding', 'realized_vol', 'stress'],
+  macro_overlay: ['dxy_20d', 'us2y_20d', 'vix_pct'],
   social_interest: ['coingecko_trending_rank', 'btc_price_momentum_7d'],
 };
 
 export const LOCKED_OFFICIAL_BLENDS = {
   trend_valuation: { bmsb_distance: 0.6, mayer_stretch: 0.3, weekly_rsi: 0.1 },
   stablecoins: { supply_growth: 0.55, momentum: 0.3, concentration: 0.15 },
+  etf_flows: { sum_21d: 0.3, acceleration: 0.3, diversification: 0.4 },
+  net_liquidity: { level: 0.15, rate_of_change: 0.4, momentum: 0.45 },
   term_leverage: { funding: 0.4, realized_vol: 0.35, stress: 0.25 },
+  macro_overlay: { dxy_20d: 0.4, us2y_20d: 0.35, vix_pct: 0.25 },
   social_interest: { coingecko_trending_rank: 0.7, btc_price_momentum_7d: 0.3 },
 };
 
