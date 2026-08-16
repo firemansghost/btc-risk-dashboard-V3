@@ -6,6 +6,7 @@ import { computeAllFactors } from "./factors.mjs";
 import { upsertGScoreHistoryCsv } from "./lib/gscoreHistoryCsv.mjs";
 import { getDashboardConfig, getModelVersion, getSsotVersion } from "../../lib/config-loader.mjs";
 import { gateOfficialAdjustments } from "./lib/officialAdjustments.mjs";
+import { matchBandForScore } from "./lib/riskBand.mjs";
 import { fallbackTracker, resetFallbackTracker } from "./fetch-helper.mjs";
 
 // Resolve absolute paths
@@ -282,29 +283,14 @@ function riskBand(score) {
     console.error('ETL: Risk bands not loaded. Call loadRiskBands() first.');
     return { name: "Unknown", lo: 0, hi: 100 };
   }
-  
-  // Find the band that contains this score
-  // Use <= for inclusive upper bound (e.g., score 49 should match range [35, 49])
-  for (const band of riskBands) {
-    if (score >= band.range[0] && score <= band.range[1]) {
-      return { 
-        name: band.label, 
-        lo: band.range[0], 
-        hi: band.range[1],
-        color: band.color,
-        recommendation: band.recommendation
-      };
-    }
-  }
-  
-  // Fallback to last band if score is out of range
-  const lastBand = riskBands[riskBands.length - 1];
-  return { 
-    name: lastBand.label, 
-    lo: lastBand.range[0], 
-    hi: lastBand.range[1],
-    color: lastBand.color,
-    recommendation: lastBand.recommendation
+
+  const band = matchBandForScore(score, riskBands) || riskBands[riskBands.length - 1];
+  return {
+    name: band.label,
+    lo: band.range[0],
+    hi: band.range[1],
+    color: band.color,
+    recommendation: band.recommendation
   };
 }
 

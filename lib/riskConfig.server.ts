@@ -24,6 +24,7 @@ export type {
 
 // Import default config and types from client module
 import { DEFAULT_CONFIG, type RiskConfig, type FactorConfig, type PillarKey, type FactorKey, type PillarConfig, type RiskBand } from './riskConfig.client';
+import { matchBandForScore } from './riskBand';
 
 // ============================================================================
 // CONFIGURATION LOADER & VALIDATOR (SERVER-ONLY)
@@ -193,9 +194,7 @@ export function getPillarConfig(key: PillarKey): PillarConfig | undefined {
 
 export function getBandForScore(score: number): RiskBand {
   const bands = getConfig().bands;
-  // Use <= for inclusive upper bound (e.g., score 49 should match range [35, 49])
-  const band = bands.find((b: RiskBand) => score >= b.range[0] && score <= b.range[1]);
-  return band || bands[bands.length - 1]; // Default to highest band
+  return matchBandForScore(score, bands) ?? bands[bands.length - 1];
 }
 
 export function getEnabledFactors(): FactorConfig[] {

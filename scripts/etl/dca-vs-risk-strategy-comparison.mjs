@@ -16,6 +16,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { matchBandForScore } from './lib/riskBand.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -62,11 +63,11 @@ function loadDashboardBands() {
 }
 
 /**
- * Inclusive boundaries — matches lib/riskConfig.client.ts getBandForScore
+ * Integer-preserving half-open interiors — matches lib/riskBand.ts / getBandForScore
  */
 function getBandLabelFromScore(score, bands) {
   if (typeof score !== 'number' || Number.isNaN(score)) return null;
-  const band = bands.find((b) => score >= b.range[0] && score <= b.range[1]);
+  const band = matchBandForScore(score, bands);
   return band ? band.label : null;
 }
 

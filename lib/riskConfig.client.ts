@@ -2,6 +2,8 @@
 // Client-safe: no fs/path/process
 // Static configuration for use in client components
 
+import { matchBandForScore } from './riskBand';
+
 // ============================================================================
 // TYPE DEFINITIONS
 // ============================================================================
@@ -168,8 +170,7 @@ export const DEFAULT_CONFIG: RiskConfig = {
  */
 export function getBandForScore(score: number): RiskBand {
   const bands = DEFAULT_CONFIG.bands;
-  const band = bands.find(b => score >= b.range[0] && score <= b.range[1]);
-  return band || bands[bands.length - 1];
+  return matchBandForScore(score, bands) ?? bands[bands.length - 1];
 }
 
 /**
