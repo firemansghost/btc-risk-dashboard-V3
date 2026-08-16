@@ -7,6 +7,10 @@ import { join } from 'node:path';
 
 import { computeMarketRegime, createWeeklyCloses } from './marketRegime.mjs';
 import {
+  filterCompletedWeeklyCloses,
+  latestCompletedUtcDate,
+} from '../lib/completedPeriods.mjs';
+import {
   filterCompletedDailyRecords,
   loadPriceHistory,
   resolveCanonicalPriceHistoryPath,
@@ -116,11 +120,10 @@ async function hasPriceHistoryCsvChanged(csvPath, cachedData) {
  * @param {Array} weeklyCloses - Weekly close data
  * @returns {Promise<Object>} BMSB calculation result
  */
-async function calculateBMSBComponent(weeklyCloses) {
+async function calculateBMSBComponent(weeklyCloses, snapshotPrice = null) {
   return new Promise((resolve) => {
-    // Use setImmediate for non-blocking execution
     setImmediate(() => {
-      const bmsb = calculateBMSB(weeklyCloses);
+      const bmsb = calculateBMSB(weeklyCloses, snapshotPrice);
       resolve({
         component: 'bmsb',
         data: bmsb,
@@ -364,11 +367,6 @@ async function loadPriceHistoryForTrend(asOfUtc = new Date().toISOString()) {
   }
 }
 
-function lastDailyDateUtcFromCandles(candles) {
-  const c = candles?.length ? candles[candles.length - 1] : null;
-  if (!c) return null;
-  if (c.date_utc) return c.date_utc;
-  return new Date(c.timestamp).toISOString().split('T')[0];
 }
 
 /**
@@ -376,7 +374,7 @@ function lastDailyDateUtcFromCandles(candles) {
  * @param {Array} weeklyCloses - Array of weekly close objects
  * @returns {Object} BMSB calculation results
  */
-function calculateBMSB(weeklyCloses) {
+function calculateBMSB(weeklyCloses, snapshotPrice = null) {
   if (weeklyCloses.length < 22) {
     return {
       status: 'insufficient_history',
@@ -409,7 +407,11 @@ function calculateBMSB(weeklyCloses) {
 
   const latestSMA20 = sma20Series[sma20Series.length - 1];
   const latestEMA21 = ema21Series[ema21Series.length - 1];
-  const latestClose = closes[closes.length - 1];
+  const latestWeeklyClose = closes[closes.length - 1];
+  const priceForDistance =
+    snapshotPrice != null && Number.isFinite(snapshotPrice)
+      ? snapshotPrice
+      : latestWeeklyClose;
   const latestWeekEnd = weeklyCloses[weeklyCloses.length - 1].weekEnd;
 
   const lower = Math.min(latestSMA20, latestEMA21);
@@ -417,15 +419,15 @@ function calculateBMSB(weeklyCloses) {
   const mid = (latestSMA20 + latestEMA21) / 2;
 
   let status;
-  if (latestClose > upper) {
+  if (priceForDistance > upper) {
     status = 'above';
-  } else if (latestClose < lower) {
+  } else if (priceForDistance < lower) {
     status = 'below';
   } else {
     status = 'inside';
   }
 
-  const distance = ((latestClose - mid) / mid) * 100;
+  const distance = ((priceForDistance - mid) / mid) * 100;
 
   return {
     status,
@@ -486,7 +488,7 @@ export async function computeTrendValuation(dailyClose = null) {
       console.log('Trend & Valuation: Using cached calculations (no price data changes)');
       // Update lastUpdated to current time when using cached data (for staleness tracking)
       const freshTimestamp = new Date().toISOString();
-      const lastDailyDateUtc = lastDailyDateUtcFromCandles(candles);
+      const lastDailyDateUtc = latestCompletedUtcDate(asOfUtc);
       const priceForRegime =
         dailyClose != null && Number.isFinite(dailyClose)
           ? dailyClose
@@ -494,7 +496,7 @@ export async function computeTrendValuation(dailyClose = null) {
       let marketRegime = cachedData.marketRegime;
       if (!marketRegime && lastDailyDateUtc && Number.isFinite(priceForRegime)) {
         const wc = createWeeklyCloses(candles);
-        marketRegime = computeMarketRegime(wc, lastDailyDateUtc, priceForRegime);
+        marketRegime = computeMarketRegime(wc, asOfUtc, priceForRegime);
       }
       const updatedResult = {
         score: cachedData.score,
@@ -526,13 +528,14 @@ export async function computeTrendValuation(dailyClose = null) {
     
     // Create weekly closes using ISO week boundaries
     const weeklyCloses = createWeeklyCloses(candles);
-    const lastDailyDateUtc = lastDailyDateUtcFromCandles(candles);
+    const completedWeeklyCloses = filterCompletedWeeklyCloses(weeklyCloses, asOfUtc);
+    const lastDailyDateUtc = latestCompletedUtcDate(asOfUtc);
     const marketRegime =
       lastDailyDateUtc && Number.isFinite(currentPrice)
-        ? computeMarketRegime(weeklyCloses, lastDailyDateUtc, currentPrice)
+        ? computeMarketRegime(weeklyCloses, asOfUtc, currentPrice)
         : null;
 
-    if (weeklyCloses.length < 15) {
+    if (completedWeeklyCloses.length < 15) {
       return { 
         score: null, 
         reason: "insufficient_weekly_data",
@@ -543,14 +546,14 @@ export async function computeTrendValuation(dailyClose = null) {
     }
 
     // Extract weekly close prices for RSI calculation
-    const weeklyClosePrices = weeklyCloses.map(w => w.close);
+    const weeklyClosePrices = completedWeeklyCloses.map(w => w.close);
 
     // 🚀 PARALLEL PROCESSING: Calculate all components simultaneously
     console.log('Trend & Valuation: Computing components in parallel...');
     const startTime = Date.now();
     
     const [bmsbResult, mayerResult, rsiResult] = await Promise.all([
-      calculateBMSBComponent(weeklyCloses),
+      calculateBMSBComponent(completedWeeklyCloses, currentPrice),
       calculateMayerComponent(dailyCloses, currentPrice),
       calculateRSIComponent(weeklyClosePrices)
     ]);

@@ -2,6 +2,14 @@
 // Display-only moving-average regime context (two completed weekly closes vs BMSB + 50W SMA).
 // Does not affect G-Score. Duplicates minimal MA helpers to avoid import cycles with trendValuation.mjs.
 
+import {
+  filterCompletedWeeklyCloses,
+  getCompletedWeekIndices,
+  latestCompletedUtcDate,
+} from '../lib/completedPeriods.mjs';
+
+export { getCompletedWeekIndices };
+
 function sma(data, period) {
   const result = [];
   for (let i = period - 1; i < data.length; i++) {
@@ -77,23 +85,10 @@ function regimeLabelKey(regime) {
 }
 
 /**
- * Indices into `weeklyCloses` whose ISO week has fully elapsed per daily history.
- * `weekEnd` is the UTC calendar date of the Sunday that closes the ISO week (00:00 UTC).
- * A week counts as completed only when `lastDailyDateUtc` is on or after that Sunday — so
- * `btc_price_history.csv` may include a row for the current calendar day, and the in-progress
- * week's synthetic "weekly close" row still must not confirm until the week-end date is covered.
- * Compare: YYYY-MM-DD lexicographic order matches chronological order.
+ * Indices into `weeklyCloses` whose ISO week has fully elapsed at as_of_utc.
+ * Week-ending Sunday S is complete iff the latest completed UTC daily date is >= S.
+ * Sunday 00:01 / 11:00 / 23:59 must not count the current Sunday week as completed.
  */
-export function getCompletedWeekIndices(weeklyCloses, lastDailyDateUtc) {
-  if (!weeklyCloses?.length || !lastDailyDateUtc) return [];
-  const completedIndices = [];
-  for (let i = 0; i < weeklyCloses.length; i++) {
-    if (lastDailyDateUtc >= weeklyCloses[i].weekEnd) {
-      completedIndices.push(i);
-    }
-  }
-  return completedIndices;
-}
 
 /** ISO week-ending-Sunday UTC — same grouping as trendValuation.createWeeklyCloses */
 export function createWeeklyCloses(dailyCandles) {
@@ -134,13 +129,14 @@ export function createWeeklyCloses(dailyCandles) {
 
 /**
  * @param {Array<{ weekEnd: string, close: number, timestamp: number }>} weeklyCloses - sorted, full series
- * @param {string} lastDailyDateUtc - YYYY-MM-DD of last daily candle (UTC calendar date)
- * @param {number} currentPrice - Daily close used for Trend & Valuation (proximity text)
+ * @param {string} asOfUtc - snapshot time (ISO). Week completion uses completed-daily clock.
+ * @param {number} currentPrice - UTC snapshot price for proximity text
  * @returns {object} marketRegime payload for latest.json (display-only)
  */
-export function computeMarketRegime(weeklyCloses, lastDailyDateUtc, currentPrice) {
+export function computeMarketRegime(weeklyCloses, asOfUtc, currentPrice) {
+  const lastDailyDateUtc = asOfUtc ? latestCompletedUtcDate(asOfUtc) : null;
   const methodologyNoteOk =
-    'Uses the last two completed weekly closes vs the BMSB and 50-week SMA. Proximity uses the Trend daily close. Display-only; does not affect the G-Score.';
+    'Uses the last two completed weekly closes vs the BMSB and 50-week SMA. Proximity uses the UTC snapshot price. Display-only; does not affect the G-Score.';
 
   const insufficient = {
     status: 'insufficient_data',
@@ -168,13 +164,13 @@ export function computeMarketRegime(weeklyCloses, lastDailyDateUtc, currentPrice
 
   if (
     !weeklyCloses?.length ||
-    !lastDailyDateUtc ||
+    !asOfUtc ||
     !Number.isFinite(currentPrice)
   ) {
     return insufficient;
   }
 
-  const completedIndices = getCompletedWeekIndices(weeklyCloses, lastDailyDateUtc);
+  const completedIndices = getCompletedWeekIndices(weeklyCloses, asOfUtc);
 
   if (completedIndices.length < 2) {
     return {
@@ -193,8 +189,9 @@ export function computeMarketRegime(weeklyCloses, lastDailyDateUtc, currentPrice
   const c0 = w0.close;
   const c1 = w1.close;
 
-  const fullBmsb = calculateBMSB(weeklyCloses);
-  const closesAll = weeklyCloses.map((w) => w.close);
+  const completedWeekly = filterCompletedWeeklyCloses(weeklyCloses, asOfUtc);
+  const fullBmsb = calculateBMSB(completedWeekly);
+  const closesAll = completedWeekly.map((w) => w.close);
   const sma50SeriesFull = closesAll.length >= 50 ? sma(closesAll, 50) : [];
   const currentSma50 =
     sma50SeriesFull.length > 0 ? sma50SeriesFull[sma50SeriesFull.length - 1] : null;
@@ -281,7 +278,7 @@ export function computeMarketRegime(weeklyCloses, lastDailyDateUtc, currentPrice
       'Bitcoin has closed below the BMSB for two completed weeks, confirming bearish regime pressure.';
     const pu = fmtUsd(bandLower);
     const sign = currentPrice >= bandLower ? 'above' : 'below';
-    proximityLine = `${Math.abs(Number(pctDiff(bandLower, currentPrice)))}% ${sign} BMSB support area (${pu}) — distance uses Trend daily close.`;
+    proximityLine = `${Math.abs(Number(pctDiff(bandLower, currentPrice)))}% ${sign} BMSB support area (${pu}) — distance uses UTC snapshot price.`;
     nextConfirmationLine = `Next structural step: two completed weekly closes back above the BMSB lower band (~${pu}).`;
     distanceLabel = 'Distance to BMSB lower';
     distancePct = Math.abs(Number(pctDiff(bandLower, currentPrice)));
@@ -291,7 +288,7 @@ export function computeMarketRegime(weeklyCloses, lastDailyDateUtc, currentPrice
     interpretation =
       'Bitcoin has closed above the macro pivot for two completed weeks, confirming a bullish moving-average regime.';
     const p50 = fmtUsd(pivot50);
-    proximityLine = `${Math.abs(Number(pctDiff(pivot50, currentPrice)))}% ${currentPrice >= pivot50 ? 'above' : 'below'} 50-week SMA (${p50}) — distance uses Trend daily close.`;
+    proximityLine = `${Math.abs(Number(pctDiff(pivot50, currentPrice)))}% ${currentPrice >= pivot50 ? 'above' : 'below'} 50-week SMA (${p50}) — distance uses UTC snapshot price.`;
     nextConfirmationLine = `BMSB lower ~${fmtUsd(bandLower)} is the nearer moving-average support zone.`;
     distanceLabel = 'Distance to 50-week SMA';
     distancePct = Math.abs(Number(pctDiff(pivot50, currentPrice)));

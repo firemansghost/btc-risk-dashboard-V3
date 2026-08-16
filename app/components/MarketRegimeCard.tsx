@@ -282,7 +282,7 @@ export default function MarketRegimeCard({
 
   const methodology =
     mr?.methodologyNote ??
-    'Uses the last two completed weekly closes vs the BMSB and 50-week SMA. Proximity uses the Trend daily close. Display-only; does not affect the G-Score.';
+    'Uses the last two completed weekly closes vs the BMSB and 50-week SMA. Proximity uses the UTC snapshot price. Display-only; does not affect the G-Score.';
 
   return (
     <div

@@ -8,6 +8,7 @@ import {
   createWeeklyCloses,
   getCompletedWeekIndices,
 } from '../factors/marketRegime.mjs';
+import { isWeekComplete } from '../lib/completedPeriods.mjs';
 
 /** Consecutive ISO weeks (Sunday weekEnd UTC), starting at base Sunday YYYY-MM-DD */
 function buildWeeklySeries(baseSundayYmd, numWeeks, closeForIndex) {
@@ -23,20 +24,40 @@ function buildWeeklySeries(baseSundayYmd, numWeeks, closeForIndex) {
   return weeks;
 }
 
-function assertSameMembers(actual, expected) {
-  assert.equal(actual.length, expected.length);
-  for (const x of expected) assert.ok(actual.includes(x));
+function asOfWhenWeekComplete(weekEndSunday) {
+  const [y, m, d] = weekEndSunday.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + 1, 0, 1, 0)).toISOString();
 }
 
-test('getCompletedWeekIndices: in-progress week excluded until lastDaily >= weekEnd (Sunday)', () => {
+test('getCompletedWeekIndices: Saturday as_of does not complete the current Sunday week', () => {
   const weeks = buildWeeklySeries('2025-01-05', 4, () => 50000);
   assert.deepEqual(
-    getCompletedWeekIndices(weeks, '2025-01-18'),
+    getCompletedWeekIndices(weeks, '2025-01-18T12:00:00.000Z'),
     [0, 1],
-    'Saturday before 2nd week Sunday — only first week complete'
+    'Saturday before 2nd week Sunday — only first two completed weeks'
   );
-  assertSameMembers(getCompletedWeekIndices(weeks, '2025-01-19'), [0, 1, 2]);
-  assertSameMembers(getCompletedWeekIndices(weeks, '2025-01-26'), [0, 1, 2, 3]);
+});
+
+test('Sunday 00:01 / 11:00 / 23:59 do not complete the current week; Monday 00:01 does', () => {
+  const weekSunday = '2026-08-16';
+  const weeks = [
+    { weekEnd: '2026-08-02', close: 1, timestamp: 0 },
+    { weekEnd: '2026-08-09', close: 1, timestamp: 0 },
+    { weekEnd: weekSunday, close: 1, timestamp: 0 },
+  ];
+
+  for (const asOf of [
+    '2026-08-16T00:01:00.000Z',
+    '2026-08-16T11:00:00.000Z',
+    '2026-08-16T23:59:59.999Z',
+  ]) {
+    assert.equal(isWeekComplete(weekSunday, asOf), false, asOf);
+    assert.deepEqual(getCompletedWeekIndices(weeks, asOf), [0, 1], asOf);
+  }
+
+  const monday = '2026-08-17T00:01:00.000Z';
+  assert.equal(isWeekComplete(weekSunday, monday), true);
+  assert.deepEqual(getCompletedWeekIndices(weeks, monday), [0, 1, 2]);
 });
 
 test('computeMarketRegime: incomplete current week not used — last two completed are prior Sundays', () => {
@@ -46,14 +67,9 @@ test('computeMarketRegime: incomplete current week not used — last two complet
   });
   const partialWeekEnd = weeks[weeks.length - 1].weekEnd;
   const priorCompletedEnd = weeks[weeks.length - 2].weekEnd;
-  const midWeekTs =
-    new Date(partialWeekEnd + 'T00:00:00.000Z').getTime() - 3 * 86400000;
-  const lastDailyMidWeek = new Date(midWeekTs).toISOString().split('T')[0];
-  assert.ok(
-    lastDailyMidWeek < partialWeekEnd && lastDailyMidWeek > priorCompletedEnd,
-    'fixture: last CSV day after prior Sunday but before current week Sunday'
-  );
-  const r = computeMarketRegime(weeks, lastDailyMidWeek, 95000);
+  const [y, m, d] = partialWeekEnd.split('-').map(Number);
+  const wednesdayAsOf = new Date(Date.UTC(y, m - 1, d - 4, 12, 0, 0)).toISOString();
+  const r = computeMarketRegime(weeks, wednesdayAsOf, 95000);
   assert.equal(r.status, 'ok');
   assert.ok(r.completedWeekEnds);
   assert.equal(r.completedWeekEnds[1], priorCompletedEnd);
@@ -66,7 +82,7 @@ test('computeMarketRegime: confirmed bearish (two lows below BMSB)', () => {
     return 100000;
   });
   const lastEnd = weeks[weeks.length - 1].weekEnd;
-  const r = computeMarketRegime(weeks, lastEnd, 30000);
+  const r = computeMarketRegime(weeks, asOfWhenWeekComplete(lastEnd), 30000);
   assert.equal(r.status, 'ok');
   assert.equal(r.badgeKey, 'confirmed_bearish');
   assert.equal(r.rawRegime, 'bearish');
@@ -78,7 +94,7 @@ test('computeMarketRegime: confirmed bullish (two highs above 50W)', () => {
     return 80000;
   });
   const lastEnd = weeks[weeks.length - 1].weekEnd;
-  const r = computeMarketRegime(weeks, lastEnd, 200000);
+  const r = computeMarketRegime(weeks, asOfWhenWeekComplete(lastEnd), 200000);
   assert.equal(r.status, 'ok');
   assert.equal(r.badgeKey, 'confirmed_bullish');
   assert.equal(r.rawRegime, 'bullish');
@@ -87,7 +103,7 @@ test('computeMarketRegime: confirmed bullish (two highs above 50W)', () => {
 test('computeMarketRegime: transition / neutral (at lower band, not two weeks above 50W)', () => {
   const weeks = buildWeeklySeries('2020-01-05', 60, () => 100000);
   const lastEnd = weeks[weeks.length - 1].weekEnd;
-  const r = computeMarketRegime(weeks, lastEnd, 100000);
+  const r = computeMarketRegime(weeks, asOfWhenWeekComplete(lastEnd), 100000);
   assert.equal(r.status, 'ok');
   assert.equal(r.badgeKey, 'transition');
   assert.ok(r.rawRegime === 'transition' || r.rawRegime === 'transition_mixed');
@@ -95,12 +111,12 @@ test('computeMarketRegime: transition / neutral (at lower band, not two weeks ab
 
 test('computeMarketRegime: insufficient_data with fewer than two completed weeks', () => {
   const weeks = buildWeeklySeries('2025-01-05', 5, () => 100000);
-  const r = computeMarketRegime(weeks, '2025-01-12', 100000);
+  const r = computeMarketRegime(weeks, '2025-01-12T11:00:00.000Z', 100000);
   assert.equal(r.status, 'insufficient_data');
   assert.equal(r.badgeKey, 'insufficient');
 });
 
-test('createWeeklyCloses + regime: mid-week last daily does not confirm partial week', () => {
+test('createWeeklyCloses + regime: mid-week as_of does not confirm partial week', () => {
   const wed = Date.UTC(2026, 4, 7);
   const candles = [
     { timestamp: Date.UTC(2026, 3, 26), close: 100000, source: 't' },
@@ -108,8 +124,7 @@ test('createWeeklyCloses + regime: mid-week last daily does not confirm partial 
     { timestamp: wed, close: 50000, source: 't' },
   ];
   const wc = createWeeklyCloses(candles);
-  const lastDaily = new Date(wed).toISOString().split('T')[0];
-  const completed = getCompletedWeekIndices(wc, lastDaily);
+  const completed = getCompletedWeekIndices(wc, '2026-05-07T12:00:00.000Z');
   const partialRow = wc.find((w) => w.close === 50000);
   assert.ok(partialRow);
   assert.ok(
