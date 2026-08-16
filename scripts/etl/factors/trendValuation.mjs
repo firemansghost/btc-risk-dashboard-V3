@@ -6,6 +6,12 @@ import { promises as fs } from 'node:fs';
 import { join } from 'node:path';
 
 import { computeMarketRegime, createWeeklyCloses } from './marketRegime.mjs';
+import {
+  filterCompletedDailyRecords,
+  loadPriceHistory,
+  resolveCanonicalPriceHistoryPath,
+  sma200DenominatorCloses,
+} from '../priceHistory.mjs';
 
 // Cache configuration
 const CACHE_DIR = '../../public/data/cache/trend_valuation';
@@ -304,22 +310,23 @@ function riskFromPercentile(percentile, options = {}) {
  * Load price history from unified CSV
  * @returns {Object} {candles, provenance}
  */
-async function loadPriceHistoryForTrend() {
+async function loadPriceHistoryForTrend(asOfUtc = new Date().toISOString()) {
   const startTime = Date.now();
+  const csvPath = resolveCanonicalPriceHistoryPath();
   
   const provenance = {
     source: 'btc_price_history_csv',
-    file_path: '../../public/data/btc_price_history.csv',
+    file_path: csvPath,
     ok: false,
     ms: 0,
     rows_loaded: 0
   };
   
   try {
-    // Import the price history manager
-    const { loadPriceHistory } = await import('../priceHistory.mjs');
-    
-    const priceRecords = await loadPriceHistory();
+    const priceRecords = filterCompletedDailyRecords(
+      await loadPriceHistory(),
+      asOfUtc
+    );
     provenance.ms = Date.now() - startTime;
     provenance.ok = true;
     provenance.rows_loaded = priceRecords.length;
@@ -343,7 +350,7 @@ async function loadPriceHistoryForTrend() {
       };
     }).sort((a, b) => a.timestamp - b.timestamp);
 
-    console.log(`Loaded ${candles.length} daily prices from unified CSV`);
+    console.log(`Loaded ${candles.length} completed daily prices from unified CSV`);
     console.log(`Date range: ${priceRecords[0]?.date_utc} to ${priceRecords[priceRecords.length - 1]?.date_utc}`);
     console.log(`Sources: ${[...new Set(priceRecords.map(r => r.source))].join(', ')}`);
     
@@ -444,7 +451,8 @@ export async function computeTrendValuation(dailyClose = null) {
     const cachedData = await loadTrendValuationCache();
     
     // Load price history from unified CSV (Alpha Vantage backfill + Coinbase primary)
-    const { candles, provenance } = await loadPriceHistoryForTrend();
+    const asOfUtc = new Date().toISOString();
+    const { candles, provenance } = await loadPriceHistoryForTrend(asOfUtc);
     
     if (candles.length < 200) {
       return { 
@@ -457,7 +465,7 @@ export async function computeTrendValuation(dailyClose = null) {
 
     // Check if we can use cached data (incremental update)
     // Also check if unified price history CSV has been modified
-    const priceHistoryCsvPath = join('../../public/data/btc_price_history.csv');
+    const priceHistoryCsvPath = resolveCanonicalPriceHistoryPath();
     const csvChanged = await hasPriceHistoryCsvChanged(priceHistoryCsvPath, cachedData);
     const dataChanged = hasPriceDataChanged(candles, cachedData) || csvChanged;
     
@@ -508,11 +516,13 @@ export async function computeTrendValuation(dailyClose = null) {
 
     console.log('Trend & Valuation: Computing fresh calculations (price data changed or no cache)');
 
-    // Extract daily closes for calculations
-    const dailyCloses = candles.map(c => c.close);
-    
-    // Use provided daily close for consistency, or fall back to latest from candles
-    const currentPrice = dailyClose || dailyCloses[dailyCloses.length - 1];
+    // SMA200 denominator uses completed UTC daily candles only.
+    // Mayer numerator is the current snapshot price (dailyClose), not an open CSV row.
+    const dailyCloses = sma200DenominatorCloses(candles, asOfUtc);
+    const currentPrice =
+      dailyClose != null && Number.isFinite(dailyClose)
+        ? dailyClose
+        : dailyCloses[dailyCloses.length - 1];
     
     // Create weekly closes using ISO week boundaries
     const weeklyCloses = createWeeklyCloses(candles);

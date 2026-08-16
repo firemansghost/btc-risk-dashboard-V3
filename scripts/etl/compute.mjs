@@ -585,16 +585,11 @@ async function main() {
     console.warn('Could not clean cache files:', error.message);
   }
 
-  // 0) Manage unified price history (Alpha Vantage backfill + Coinbase primary)
+  // 0) Manage canonical completed-daily BTC history. Fail this ETL path on
+  // backfill/validation errors rather than continuing with a gappy series.
   console.log("Managing unified BTC price history...");
-  let priceHistoryResults = null;
-  try {
-    const { managePriceHistory } = await import('./priceHistory.mjs');
-    priceHistoryResults = await managePriceHistory();
-  } catch (error) {
-    console.warn('Price history management failed:', error.message);
-    // Continue with fallback approach
-  }
+  const { managePriceHistory } = await import('./priceHistory.mjs');
+  const priceHistoryResults = await managePriceHistory();
 
   // 1) Get yesterday's close (Coinbase → CG fallback)
   let y;
