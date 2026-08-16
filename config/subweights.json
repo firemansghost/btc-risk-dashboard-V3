@@ -24,9 +24,9 @@
       "diversification": 0.40
     },
     "term_leverage": {
-      "funding": 0.40,
-      "realized_vol": 0.35,
-      "stress": 0.25
+      "funding_7d": 0.40,
+      "basis_front": 0.35,
+      "oi_mcap": 0.25
     },
     "macro_overlay": {
       "dxy_20d": 0.40,
@@ -34,8 +34,8 @@
       "vix_pct": 0.25
     },
     "social_interest": {
-      "coingecko_trending_rank": 0.70,
-      "btc_price_momentum_7d": 0.30
+      "google_trends": 0.70,
+      "fear_greed": 0.30
     },
     "onchain": {
       "fees_usd_7d": 0.60,
