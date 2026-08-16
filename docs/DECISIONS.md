@@ -2,6 +2,34 @@
 
 Key technical choices and rationale for the Bitcoin Risk Dashboard.
 
+## 2026-08-16 — ETF trading-day cadence and post-stabilization production evidence
+
+**Decision:** ETF Flows freshness is evaluated using expected **U.S. trading-day / source cadence** rather than calendar age alone when appropriate.
+
+**Reference:** `b23b331864b3ce194dab3563c691a81ee0518985` — `fix(etl): treat ETF flows freshness by U.S. trading-day cadence` (`scripts/etl/marketCalendar.mjs` + ETF-specific handling in `scripts/etl/stalenessUtils.mjs`).
+
+**Reason:** ETF Flows is a business/market-day-dependent source. Weekends and U.S. market holidays can make valid source data several calendar days old without the source being stale. The parsed source-flow date is what matters, compared against the latest expected U.S. trading day.
+
+**June 21, 2026 context:** Sunday Daily ETL failed because Thursday June 18 ETF data was treated as stale after >48 calendar hours, even though Friday June 19 was Juneteenth (market holiday) and Saturday/Sunday were non-trading. That was a **freshness-classification defect**, not an ETF scoring defect.
+
+**Implication:**
+
+- Strict ETL post-check remains enabled.
+- True stale ETF data still fails.
+- Do **not** “fix” future holiday/weekend cases by globally increasing TTLs.
+- This is **strong production evidence**, not a proof that no future calendar/source edge case can exist.
+
+**Production evidence (reviewed window June 22–August 15, 2026):**
+
+- **55/55** scheduled Daily ETL successes after the fix through August 15.
+- **July 5 Independence Day-weekend** case passed correctly with the latest valid pre-holiday trading data.
+
+**Maintenance:** Market-holiday coverage must be updated for future years. `scripts/etl/marketCalendar.mjs` currently has **2026 coverage only**; **2027 coverage must be added before January 2027** (dates + at least one holiday/weekend test + ETF expected-latest-trading-day verification). Do not add those dates in a docs-only pass.
+
+**Scope:** Pipeline / freshness-classification only—not G-Score methodology, weights, or risk bands. Broader continuity context is in `REPO_REONBOARD.md` (**GhostGauge Checkpoint — 2026-08-16**).
+
+---
+
 ## 2026-05-07 (continuity): Stablecoins data-quality guard and history artifact upserts
 
 **Decision / continuity:**

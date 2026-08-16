@@ -4,8 +4,11 @@
 
 A real-time Bitcoin risk assessment dashboard that provides a 0-100 risk score based on five analytical pillars: Liquidity, Momentum, Leverage, Macro, and Social factors. The system offers complete transparency with detailed factor breakdowns, historical tracking, and configurable weights.
 
-**Live Dashboard**: https://btc-risk-dashboard-v3.vercel.app/  
+**Live Dashboard**: https://www.ghostgauge.com/
+
 **Repository**: https://github.com/firemansghost/btc-risk-dashboard-V3
+
+**Vercel deployment**: https://btc-risk-dashboard-v3.vercel.app/
 
 ## Quick Start
 

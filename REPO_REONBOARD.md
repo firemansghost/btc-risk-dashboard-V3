@@ -4,6 +4,214 @@
 
 ---
 
+## GhostGauge Checkpoint — 2026-08-16
+
+Continuity checkpoint after the June 21–August 15, 2026 operational retrospective. Older checkpoints below are unchanged.
+
+### A. Executive operational status
+
+**Verdict: Healthy with minor maintenance debt**
+
+Evidence from the reviewed window (June 21 through August 15, 2026), based on targeted workflow-log inspection, GitHub Actions Daily ETL history, and committed artifacts. This is **not** a claim that every one of the 56 workflow logs was exhaustively audited.
+
+- **ETF U.S. trading-day cadence fix** landed June 21, 2026:
+  - `b23b331864b3ce194dab3563c691a81ee0518985`
+  - `fix(etl): treat ETF flows freshness by U.S. trading-day cadence`
+- **Scheduled Daily ETL after that fix:** **55/55 successful June 22 through August 15**. Zero scheduled failures after the fix in the reviewed window.
+- **`history.csv`:** all **56/56 calendar dates** present June 21–August 15; no gaps in the reviewed window.
+- All **seven enabled scoring factors** recorded **fresh** in committed factor history during the reviewed window.
+- Weekly backtesting / SSOT strategy comparison continued on the expected Sunday cadence.
+- The **July 5 Independence Day-weekend** run reproduced the important holiday/weekend ETF pattern and passed correctly (valid pre-holiday trading data classified fresh).
+- **No evidence of ETF false-fresh behavior was found in the reviewed evidence.**
+- Latest reviewed **August 15** production snapshot:
+  - G-Score **54**
+  - **Hold & Wait**
+  - health **green**
+  - all seven enabled factors **fresh**
+
+A time-dependent HistoryChart range-filter unit test was later repaired (`4e4910b12d7807ed03f8ba3bb9f9dea8e170e4f2` — `test: make history range test time-independent`) so application tests remain deterministic as calendar time advances. Production `filterHistoryByRange()` was not changed.
+
+### B. UI stabilization — Phases 1–5
+
+June 2026 UI work completed and pushed to `main`. Commit hashes below are verified from git.
+
+#### Phase 1 — Score Insights trust
+
+`cbc6aaff4b612b659758492ef5dfe3cbc1a17c9e` — `fix(ui): clarify Score Insights classification and tone`
+
+- Eliminated contradictory Pressure / Offset classification.
+- Separated **directional risk pressure** from **weighted score contribution**.
+- Corrected concentration presentation/denominator semantics (sum of fresh weighted contributions; not the rounded published composite as the primary denominator).
+- Fixed ordinal formatting.
+- Summary styling follows official G-Score band tone.
+
+Key helpers/components: `lib/scoreInsights.ts`, `lib/formatOrdinal.ts`, `app/components/ScoreInsightsCard.tsx`.
+
+#### Phase 2 — Freshness and system-status clarity
+
+`0d282875a419af75f3c6d4136fc112c444d5c005` — `fix(ui): clarify freshness and system health display`
+
+- Negative freshness ages are clamped / display-safe.
+- Human-readable System Health counts.
+- Slow public-data sources explain source cadence rather than looking arbitrarily stale.
+- Data Confidence wording no longer implies every source updates daily.
+
+Key helper: `lib/freshnessDisplay.ts`.
+
+#### Phase 3 — Homepage context clarity
+
+`13062c18033d47e4e31faeaad055524dd9733730` — `fix(ui): clarify homepage context and stale gold data`
+
+- Market Regime is explicitly **context-only / not scored**.
+- Cycle Timing is explicitly **context-only / not scored**.
+- Compact risk-based DCA stance card; full DCA framework remains behind disclosure.
+- Bitcoin⇄Gold stale-source state made explicit.
+- Config digest moved out of ordinary homepage flow and into System Status details.
+
+Relevant files/helpers: `app/components/ContextOnlyBadge.tsx`, `lib/goldCrossDisplay.ts`, `lib/marketRegimeDisplay.ts`.
+
+#### Phase 4 — Factor-card risk semantics
+
+`07d863b7dcbe6e72fa38538f69b3a1d915ee82fd` — `fix(ui): polish factor cards with risk-aligned score colors`
+
+- High factor-risk scores now use appropriately warm risk colors.
+- Factor cards use **factor-risk language** rather than composite buying-action labels.
+- Pressure / Offset / Neutral scan roles align with Score Insights.
+- Weight and contribution presentation simplified.
+- Macro / Net Liquidity relationship clarified.
+- Factor card UI extracted into a reusable component.
+
+Relevant: `lib/factorDisplay.ts`, `app/components/FactorOverviewCard.tsx`.
+
+#### Phase 5 — Final UI regression patch
+
+`7474a5cf3bffe8f90fc9672fbfcdc3eb863217cd` — `fix(ui): separate factor drawer from modals and fix mobile overflow`
+
+- Factor Details drawer state separated from History and Enhanced Details modal targets.
+- History / Deep Dive no longer open the drawer underneath their modal.
+- Mobile horizontal overflow fixed at tested widths: **390px**, **430px**, **768px**.
+- Bottom navigation / header / tooltip wrapping constrained safely.
+
+### C. June 21 ETF source-cadence fix
+
+ETF Flows is a **U.S. market/business-day source** and must not be evaluated solely by raw calendar-hour age.
+
+**June 21, 2026 failure case:**
+
+- Sunday June 21, 2026 Daily ETL
+- Latest ETF flow date Thursday June 18
+- Friday June 19 was Juneteenth (U.S. market holiday)
+- Saturday/Sunday were non-trading days
+- Old logic treated valid Thursday data as stale after >48 calendar hours
+
+**Fix:** `scripts/etl/marketCalendar.mjs` plus ETF-specific handling in `scripts/etl/stalenessUtils.mjs` (`b23b331864b3ce194dab3563c691a81ee0518985`).
+
+**Behavior:**
+
+- Weekends skipped
+- U.S. market holidays skipped
+- Latest expected trading day is compared with the parsed ETF source date
+- True stale ETF data still fails
+- Strict ETL post-check remains enabled
+
+**Policy:** Do **not** fix future ETF holiday issues by globally increasing TTLs.
+
+### D. Artifact truth hierarchy
+
+#### `public/data/latest.json`
+
+Current official G-Score snapshot.
+
+#### `public/data/history.csv`
+
+As-published headline history used by the historical chart. It is **not** automatically a historical replay under today's current model.
+
+#### `public/data/factor_history.csv`
+
+Diagnostic factor-attribution/status history.
+
+**Do not attempt to reconstruct historical scores by looping today's live ETL APIs over past dates.** Trustworthy historical recomputation requires frozen inputs for each historical date.
+
+### E. Current source/reliability notes
+
+Known operating conditions, not emergencies.
+
+#### Binance
+
+Observed **451** failures in the Term Leverage source path. BitMEX / OKX fallback currently preserves valid Term Leverage operation.
+
+> Degraded-but-safe under current fallback architecture.
+
+Do not claim Binance itself is reliable.
+
+#### Gold
+
+Bitcoin⇄Gold source has recurring `no_gold_price`. The cross-rate is **display-only**. Failure does not affect the official G-Score and does not fail Daily ETL.
+
+#### Stablecoins
+
+Individual constituent data can be unavailable. The aggregate remains valid only when configured minimum constituent count and weight-coverage guards pass. Invalid/non-finite aggregate growth is rejected rather than scored.
+
+### F. Market-calendar maintenance obligation
+
+`scripts/etl/marketCalendar.mjs` currently contains **2026 market-holiday coverage only**.
+
+Before January 2027:
+
+1. Add correct 2027 U.S./NYSE full-day market closure dates.
+2. Add tests covering at least one 2027 holiday/weekend sequence.
+3. Verify ETF expected-latest-trading-day behavior.
+
+Do **not** add those dates as part of a documentation-only pass.
+
+### G. Remaining backlog
+
+#### P0 — Production correctness
+
+None identified from the June 21–August 15 retrospective.
+
+#### P1 — Reliability / operations
+
+- Binance 451 remains degraded; BitMEX / OKX fallback working.
+- Gold cross-rate source remains degraded/display-only.
+
+Do not list hypothetical ETF TTL concerns as confirmed defects without evidence.
+
+#### P2 — Maintainability
+
+- Add 2027 market-calendar coverage before January 2027.
+- Review dependency/security maintenance, including current Next.js status (`next@15.5.7` at this checkpoint).
+- Keep continuity docs current after material architecture changes.
+
+#### P3 — Cosmetic / optional
+
+- `SimpleDashboard` legacy hardcoded config-digest cleanup.
+- Internal `hold___wait` key cleanup only if it leaks user-facing.
+- Alternate/simple-view cleanup as desired later.
+
+### H. Next major task
+
+**GPT-5.6 Sol High Clean-Room GhostGauge Architecture & G-Score Audit**
+
+Operating principle:
+
+> The current model is presumed valid until evidence demonstrates otherwise.
+
+The audit must:
+
+- not begin by redesigning the model
+- preserve V1.1 during analysis
+- reconstruct implementation and math independently
+- distinguish operational defects from methodological preferences
+- treat as-published history honestly
+- avoid pretending historical artifacts are frozen replay data
+
+### I. New thread/session starter
+
+> Resume GhostGauge from the August 16, 2026 checkpoint. June stabilization work is complete, the ETF trading-day cadence fix has run successfully through eight weeks of unattended operation, scheduled Daily ETL has had no post-fix failures in the reviewed period, and the next task is a clean-room GPT-5.6 Sol High architecture/model audit. Treat current code and committed artifacts as ground truth, preserve V1.1 during the audit, and do not infer historical recomputation from as-published history.
+
+---
+
 ## Checkpoints
 
 ### GhostGauge Checkpoint — 2026-03-25
