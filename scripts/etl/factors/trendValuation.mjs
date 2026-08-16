@@ -16,6 +16,12 @@ import {
   resolveCanonicalPriceHistoryPath,
   sma200DenominatorCloses,
 } from '../priceHistory.mjs';
+import { getDashboardConfig } from '../../../lib/config-loader.mjs';
+import {
+  blendComponentScores,
+  requireSubWeights,
+  SsotSubweightError,
+} from '../lib/ssotSubweights.mjs';
 
 // Cache configuration
 const CACHE_DIR = '../../public/data/cache/trend_valuation';
@@ -607,33 +613,15 @@ export async function computeTrendValuation(dailyClose = null) {
       sBmsb = riskFromPercentile(clampedPercentile, { invert: false, k: 3 });
     }
 
-    // Weighted blend: BMSB 60%, Mayer 30%, RSI 10%
-    const components = [];
-    const weights = [];
-    
-    if (sBmsb !== null) {
-      components.push(sBmsb);
-      weights.push(0.6);
-    }
-    if (sMayer !== null) {
-      components.push(sMayer);
-      weights.push(0.3);
-    }
-    if (sRsi !== null) {
-      components.push(sRsi);
-      weights.push(0.1);
-    }
-
-    let score = null;
-    if (components.length > 0) {
-      // Re-normalize weights if some components are missing
-      const weightSum = weights.reduce((sum, w) => sum + w, 0);
-      const normalizedWeights = weights.map(w => w / weightSum);
-      
-      score = Math.round(
-        components.reduce((sum, component, i) => sum + component * normalizedWeights[i], 0)
-      );
-    }
+    const trendWeights = requireSubWeights(await getDashboardConfig(), 'trend_valuation');
+    const score = blendComponentScores(
+      {
+        bmsb_distance: sBmsb,
+        mayer_stretch: sMayer,
+        weekly_rsi: sRsi,
+      },
+      trendWeights
+    );
 
     // Prepare detailed results with hybrid source information
     const latestCandle = candles[candles.length - 1];
@@ -703,6 +691,7 @@ export async function computeTrendValuation(dailyClose = null) {
     return result;
 
   } catch (error) {
+    if (error instanceof SsotSubweightError) throw error;
     return { 
       score: null, 
       reason: `error: ${error.message}`,

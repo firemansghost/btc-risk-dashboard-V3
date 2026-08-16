@@ -11,6 +11,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'url';
 import { fetchWithRetry, fetchJsonWithRetry, logFallback } from './fetch-helper.mjs';
 import { getStalenessStatus, getStalenessConfig, isBusinessDay, checkStaleness } from './stalenessUtils.mjs';
+import { getDashboardConfig } from '../../lib/config-loader.mjs';
+import {
+  assertOfficialSubweights,
+  blendComponentScores,
+  requireSubWeights,
+  SsotSubweightError,
+} from './lib/ssotSubweights.mjs';
 import {
   extractFundingObservationUtc,
   extractSpotObservationUtc,
@@ -480,11 +487,13 @@ async function computeSocialInterest() {
       }
     }
 
-    // Composite score (weighted blend)
-    const compositeScore = Math.round(
-      searchScore * 0.70 + 
-      momentumScore * 0.30 + 
-      volatilityScore * 0.00  // Parked for now
+    const socialWeights = requireSubWeights(await getDashboardConfig(), 'social_interest');
+    const compositeScore = blendComponentScores(
+      {
+        coingecko_trending_rank: searchScore,
+        btc_price_momentum_7d: momentumScore,
+      },
+      socialWeights
     );
     
     const trendingFetchedAt = isoNow();
@@ -532,11 +541,10 @@ async function computeSocialInterest() {
 
     return result;
   } catch (error) {
+    if (error instanceof SsotSubweightError) throw error;
     return { score: null, reason: `error: ${error.message}` };
   }
 }
-
-// Cache configuration for Net Liquidity
 const NET_LIQUIDITY_CACHE_DIR = 'public/data/cache/net_liquidity';
 /** Disk cache warm-path TTL — aligned with SSOT `factors.net_liquidity.staleness.ttl_hours` (240h). Post-check freshness still uses lastUpdated + getStalenessConfig. */
 const NET_LIQUIDITY_CACHE_TTL_HOURS = 240;
@@ -1251,11 +1259,14 @@ async function computeStablecoins() {
     const momentumScore = recentMomentum > 1 ? 30 : recentMomentum > 0.5 ? 50 : 70; // Lower momentum = higher risk
     const concentrationRiskScore = concentrationScore; // Direct mapping
 
-    // Composite score (weighted blend) - BMSB-dominant Trend & Valuation
-    const compositeScore = Math.round(
-      supplyScore * 0.55 + 
-      momentumScore * 0.30 + 
-      concentrationRiskScore * 0.15
+    const stablecoinWeights = requireSubWeights(await getDashboardConfig(), 'stablecoins');
+    const compositeScore = blendComponentScores(
+      {
+        supply_growth: supplyScore,
+        momentum: momentumScore,
+        concentration: concentrationRiskScore,
+      },
+      stablecoinWeights
     );
     
     // Update historical baseline with new data (365-day rolling window)
@@ -1322,6 +1333,7 @@ async function computeStablecoins() {
       ]
     };
   } catch (error) {
+    if (error instanceof SsotSubweightError) throw error;
     return { score: null, reason: `error: ${error.message}` };
   }
 }
@@ -2216,11 +2228,14 @@ async function computeTermLeverage() {
 
     // All calculations completed in parallel - no additional processing needed
 
-    // Composite score (weighted blend)
-    const compositeScore = Math.round(
-      fundingScore * 0.40 + 
-      volScore * 0.35 + 
-      stressScore * 0.25
+    const termWeights = requireSubWeights(await getDashboardConfig(), 'term_leverage');
+    const compositeScore = blendComponentScores(
+      {
+        funding: fundingScore,
+        realized_vol: volScore,
+        stress: stressScore,
+      },
+      termWeights
     );
     
     // Determine leverage regime
@@ -2276,6 +2291,7 @@ async function computeTermLeverage() {
       lastUpdated: sourceObservationUtc,
     };
   } catch (error) {
+    if (error instanceof SsotSubweightError) throw error;
     return { score: null, reason: `error: ${error.message}` };
   }
 }
@@ -2646,6 +2662,7 @@ async function computeMacroOverlay() {
 
 export async function computeAllFactors(dailyClose = null) {
   console.log("Computing risk factors...");
+  assertOfficialSubweights(await getDashboardConfig());
 
   // Keys and compute order must stay in lockstep. getFactorsArray() returns only *enabled*
   // factors (e.g. omits disabled onchain) — never zip-index that list against raw results[]
