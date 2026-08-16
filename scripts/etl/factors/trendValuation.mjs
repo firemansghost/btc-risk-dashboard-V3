@@ -486,8 +486,6 @@ export async function computeTrendValuation(dailyClose = null) {
     
     if (cachedData && !dataChanged && !cacheTooOld) {
       console.log('Trend & Valuation: Using cached calculations (no price data changes)');
-      // Update lastUpdated to current time when using cached data (for staleness tracking)
-      const freshTimestamp = new Date().toISOString();
       const lastDailyDateUtc = latestCompletedUtcDate(asOfUtc);
       const priceForRegime =
         dailyClose != null && Number.isFinite(dailyClose)
@@ -501,8 +499,8 @@ export async function computeTrendValuation(dailyClose = null) {
       const updatedResult = {
         score: cachedData.score,
         reason: "success_cached",
-        lastUpdated: freshTimestamp, // Update timestamp even when using cache
-        timestamp: freshTimestamp,
+        lastUpdated: cachedData.lastUpdated,
+        timestamp: cachedData.lastUpdated,
         details: cachedData.details,
         bmsb: cachedData.bmsb,
         weeklyClose: cachedData.weeklyClose,

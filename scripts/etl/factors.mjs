@@ -19,6 +19,12 @@ import {
   selectFundingProvider,
   isTermLeverageFreshForSourceCadence,
 } from './lib/termFreshness.mjs';
+import {
+  latestFiniteFredDate,
+  macroSourceObservationUtc,
+  preserveSourceObservation,
+  socialSourceObservationUtc,
+} from './lib/sourceObservationTime.mjs';
 
 // Resolve absolute paths for cache directories
 const __filename = fileURLToPath(import.meta.url);
@@ -342,27 +348,14 @@ async function computeSocialInterest() {
     
     const dataChanged = hasSocialDataChanged({ bitcoinRank: currentBitcoinRank, latestPrice }, cachedData);
     
-    // Always set fresh timestamp for staleness tracking (hoisted once at function start)
-    const nowIso = isoNow();
-    
     if (cachedData && !dataChanged) {
       console.log('Social Interest: Using cached calculations (no social data changes)');
-      // Update lastUpdated to current time when using cached data (for staleness tracking)
-      const updatedResult = {
-        score: cachedData.score,
-        reason: "success_cached",
-        lastUpdated: nowIso, // Update timestamp even when using cache
-        details: cachedData.details,
-        components: cachedData.components || {},
-        provider: cachedData.provider || "coingecko"
+      const preserved = preserveSourceObservation(cachedData);
+      return {
+        ...preserved,
+        reason: 'success_cached',
+        lastUpdated: preserved.lastUpdated,
       };
-      // Update cache file with fresh timestamp
-      await saveSocialInterestCache(updatedResult);
-      // Verify cache was written correctly
-      const cachePath = path.join(SOCIAL_INTEREST_CACHE_DIR, SOCIAL_INTEREST_CACHE_FILE);
-      const writtenCache = await readJsonFile(cachePath);
-      console.log(`[social_interest] wrote cache with lastUpdated=${writtenCache.lastUpdated}`);
-      return updatedResult;
     }
 
     console.log('Social Interest: Computing fresh calculations (social data changed or no cache)');
@@ -494,14 +487,19 @@ async function computeSocialInterest() {
       volatilityScore * 0.00  // Parked for now
     );
     
-    // Use the timestamp already declared at function start (nowIso)
-    // No need to redeclare - reuse the one from line 329
+    const trendingFetchedAt = isoNow();
+    const priceObservationUtc = extractSpotObservationUtc(priceData);
+    const lastUpdated =
+      socialSourceObservationUtc({ trendingFetchedAt, priceObservationUtc }) ||
+      trendingFetchedAt;
     
     const result = { 
       score: compositeScore, 
       reason: "success",
       status: "fresh",
-      lastUpdated: nowIso,
+      lastUpdated,
+      trending_fetched_at: trendingFetchedAt,
+      price_observation_utc: priceObservationUtc,
       components: {
         searchScore,
         momentumScore,
@@ -2469,18 +2467,20 @@ async function computeMacroOverlay() {
     console.log(`Macro Overlay: FRED data fetched in ${fetchTime}ms`);
 
     // Check if we can use cached data (incremental update)
-    const latestDxyDate = dxyData.observations?.length > 0 ? 
-      dxyData.observations[dxyData.observations.length - 1].date : null;
+    const latestDxyDate = latestFiniteFredDate(dxyData.observations);
+    const latestDgs2Date = latestFiniteFredDate(dgs2Data.observations);
+    const latestVixDate = latestFiniteFredDate(vixData.observations);
     
     const dataChanged = hasMacroDataChanged({ latestDxyDate }, cachedData);
     
     if (cachedData && !dataChanged) {
       console.log('Macro Overlay: Using cached calculations (no FRED data changes)');
+      const preserved = preserveSourceObservation(cachedData);
       return {
-        score: cachedData.score,
+        score: preserved.score,
         reason: "success_cached",
-        lastUpdated: cachedData.lastUpdated,
-        details: cachedData.details
+        lastUpdated: preserved.lastUpdated,
+        details: preserved.details
       };
     }
 
@@ -2602,10 +2602,18 @@ async function computeMacroOverlay() {
     else if (dgs2_20dChange < -15) rateEnvironment = "Falling Rapidly";
     else if (dgs2_20dChange < -5) rateEnvironment = "Falling";
 
+    const lastUpdated = macroSourceObservationUtc({
+      dxyDate: latestDxyDate,
+      dgs2Date: latestDgs2Date,
+      vixDate: latestVixDate,
+    });
+
     const result = { 
       score: compositeScore, 
       reason: "success",
-      lastUpdated: new Date().toISOString(),
+      lastUpdated,
+      latestDgs2Date,
+      latestVixDate,
       details: [
         { label: "Macro Regime", value: macroRegime },
         { label: "Dollar Trend (20d)", value: `${dollarTrend} (${dxy20dChange.toFixed(1)}%)` },
