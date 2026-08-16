@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import {
@@ -8,6 +8,10 @@ import {
 } from '@/lib/historyChartCsv';
 
 describe('historyChartCsv', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('parses production history.csv schema', () => {
     const csv = readFileSync(
       path.join(process.cwd(), 'public', 'data', 'history.csv'),
@@ -24,6 +28,9 @@ describe('historyChartCsv', () => {
   });
 
   it('filters by range without losing composite alias', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-15T12:00:00.000Z'));
+
     const csv = [
       'date,score,band,price_usd',
       '2026-01-01,50,Hold & Wait,70000',
@@ -31,7 +38,8 @@ describe('historyChartCsv', () => {
     ].join('\n');
     const points = parseGScoreHistoryCsv(csv);
     const filtered = filterHistoryByRange(points, '30d');
-    expect(filtered.length).toBeGreaterThan(0);
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0].date).toBe('2026-06-01');
     expect(filtered[0].composite).toBe(filtered[0].score);
   });
 
