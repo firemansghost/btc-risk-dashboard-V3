@@ -11,6 +11,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'url';
 import { fetchWithRetry, fetchJsonWithRetry, logFallback } from './fetch-helper.mjs';
 import { getStalenessStatus, getStalenessConfig, isBusinessDay, checkStaleness } from './stalenessUtils.mjs';
+import {
+  extractFundingObservationUtc,
+  extractSpotObservationUtc,
+  latestFundingObservationUtc,
+  preserveTermSourceObservation,
+  selectFundingProvider,
+  isTermLeverageFreshForSourceCadence,
+} from './lib/termFreshness.mjs';
 
 // Resolve absolute paths for cache directories
 const __filename = fileURLToPath(import.meta.url);
@@ -1868,14 +1876,7 @@ async function loadTermLeverageCache() {
     
     if (cacheAge < maxAge) {
       console.log(`Term Leverage: Using cached data (${Math.round(cacheAge / (60 * 1000))} minutes old)`);
-      // CRITICAL FIX: Always use cachedAt as lastUpdated if lastUpdated is missing or very old
-      // This ensures we track when the cache was last written, not when data was first computed
-      if (!parsed.lastUpdated || (parsed.lastUpdated && new Date(parsed.lastUpdated).getTime() < new Date(parsed.cachedAt).getTime() - 24 * 60 * 60 * 1000)) {
-        // If lastUpdated is missing or more than 24h older than cachedAt, use cachedAt
-        parsed.lastUpdated = parsed.cachedAt;
-      }
-      // Return a new object to avoid reference issues
-      return { ...parsed, lastUpdated: parsed.lastUpdated };
+      return preserveTermSourceObservation(parsed);
     } else {
       console.log(`Term Leverage: Cache expired (${Math.round(cacheAge / (60 * 60 * 1000))} hours old)`);
       return null;
@@ -2121,26 +2122,21 @@ async function computeTermLeverage() {
       coinGecko.getMarketChart(30, 'daily')
     ]);
 
-    // Use best available funding data (prefer BitMEX, fallback to others)
-    let fundingData = bitmexData;
-    let dataSource = 'BitMEX';
-    
-    if (!fundingData || fundingData.length === 0) {
-      fundingData = binanceData;
-      dataSource = 'Binance';
-      if (binanceData && binanceData.length > 0) {
-        logFallback('term', 'BitMEX', 'Binance');
-      }
+    const selected = selectFundingProvider({
+      bitmex: bitmexData,
+      binance: binanceData,
+      okx: okxData,
+    });
+    const fundingData = selected.rows;
+    const dataSource = selected.provider
+      ? selected.provider.charAt(0).toUpperCase() + selected.provider.slice(1)
+      : null;
+    if (selected.provider === 'binance') {
+      logFallback('term', 'BitMEX', 'Binance');
+    } else if (selected.provider === 'okx') {
+      logFallback('term', 'BitMEX', 'OKX');
     }
-    
-    if (!fundingData || fundingData.length === 0) {
-      fundingData = okxData;
-      dataSource = 'OKX';
-      if (okxData && okxData.length > 0) {
-        logFallback('term', 'BitMEX', 'OKX');
-      }
-    }
-    
+
     if (!fundingData || fundingData.length === 0) {
       return { score: null, reason: "no_funding_data_any_source" };
     }
@@ -2149,47 +2145,43 @@ async function computeTermLeverage() {
       return { score: null, reason: "no_spot_data" };
     }
 
-    // Check if we can use cached data (incremental update)
+    const asOfUtc = new Date().toISOString();
+    const fundingObservationUtc = latestFundingObservationUtc(fundingData, selected.provider);
+    const spotObservationUtc = extractSpotObservationUtc(spotData);
+
     const dataChanged = hasFundingDataChanged(fundingData, cachedData);
-    
     if (cachedData && !dataChanged) {
-      console.log('Term Leverage: Using cached calculations (no funding data changes)');
-      // Update lastUpdated to current time when using cached data (for staleness tracking)
-      // This ensures the cache reflects the last time we checked, not when it was first computed
-      const freshTimestamp = new Date().toISOString();
-      // Track current provider status from this run
-      const currentProviders = {
-        bitmex: bitmexData && bitmexData.length > 0 ? 'ok' : 'failed',
-        binance: binanceData && binanceData.length > 0 ? 'ok' : (binanceData === null ? '451' : 'failed'),
-        okx: okxData && okxData.length > 0 ? 'ok' : 'failed'
-      };
-      const updatedResult = {
-        score: cachedData.score,
-        reason: "success_cached",
-        lastUpdated: freshTimestamp, // Update timestamp even when using cache - this is the key fix
-        timestamp: freshTimestamp, // Also set timestamp field for compatibility
-        details: cachedData.details,
-        providers: currentProviders, // Use current provider status, not cached
-        fundingData: cachedData.fundingData, // Preserve for future comparison
-        parallelTime: cachedData.parallelTime
-      };
-      // Update cache file with fresh timestamp BEFORE returning
-      // This ensures next load has the fresh timestamp
-      await saveTermLeverageCache(updatedResult);
-      // CRITICAL: Return a new object to ensure no reference issues
-      return {
-        ...updatedResult,
-        lastUpdated: freshTimestamp, // Explicitly set again to be absolutely sure
-        timestamp: freshTimestamp
-      };
+      const preserved = preserveTermSourceObservation(cachedData);
+      const stillFresh = isTermLeverageFreshForSourceCadence({
+        fundingObservationUtc: preserved.funding_observation_utc || fundingObservationUtc,
+        spotObservationUtc: preserved.spot_observation_utc || spotObservationUtc,
+        provider: preserved.funding_provider || selected.provider,
+        asOfUtc,
+      });
+      if (stillFresh.fresh) {
+        console.log('Term Leverage: Using cached calculations (source observation still cadence-fresh)');
+        const currentProviders = {
+          bitmex: bitmexData && bitmexData.length > 0 ? 'ok' : 'failed',
+          binance: binanceData && binanceData.length > 0 ? 'ok' : (binanceData === null ? '451' : 'failed'),
+          okx: okxData && okxData.length > 0 ? 'ok' : 'failed'
+        };
+        return {
+          ...preserved,
+          reason: 'success_cached',
+          providers: currentProviders,
+          lastUpdated: preserved.lastUpdated,
+          funding_observation_utc: preserved.funding_observation_utc || fundingObservationUtc,
+          spot_observation_utc: preserved.spot_observation_utc || spotObservationUtc,
+          funding_provider: preserved.funding_provider || selected.provider,
+        };
+      }
     }
 
     console.log(`Term Leverage: Computing fresh calculations (funding data changed or no cache) from ${dataSource}`);
 
-    // Extract and process funding rates
     const fundingRates = fundingData.map(item => ({
-      rate: Number(item.fundingRate) * 100, // Convert to percentage
-      timestamp: new Date(item.timestamp)
+      rate: Number(item.fundingRate) * 100,
+      timestamp: new Date(extractFundingObservationUtc(item, selected.provider) || item.timestamp)
     })).filter(item => Number.isFinite(item.rate));
     
     if (fundingRates.length === 0) {
@@ -2254,12 +2246,14 @@ async function computeTermLeverage() {
       okx: okxData && okxData.length > 0 ? 'ok' : 'failed'
     };
     
-    const freshTimestamp = new Date().toISOString();
+    const sourceObservationUtc = fundingObservationUtc;
     const result = { 
       score: compositeScore, 
       reason: "success",
-      lastUpdated: freshTimestamp, // CRITICAL: Always use fresh timestamp for fresh computations
-      timestamp: freshTimestamp, // Also set timestamp field for compatibility
+      lastUpdated: sourceObservationUtc,
+      funding_observation_utc: fundingObservationUtc,
+      spot_observation_utc: spotObservationUtc,
+      funding_provider: selected.provider,
       details: [
         { label: "Current Funding Rate", value: `${fundingComponentData.latestFunding.toFixed(4)}%` },
         { label: "30-day Average", value: `${fundingComponentData.avgFunding.toFixed(4)}%` },
@@ -2279,11 +2273,9 @@ async function computeTermLeverage() {
     // Save to cache for future use
     await saveTermLeverageCache(result);
 
-    // Return a new object to ensure no reference issues
     return {
       ...result,
-      lastUpdated: freshTimestamp, // Explicitly set again to be absolutely sure
-      timestamp: freshTimestamp
+      lastUpdated: sourceObservationUtc,
     };
   } catch (error) {
     return { score: null, reason: `error: ${error.message}` };
@@ -2697,33 +2689,17 @@ export async function computeAllFactors(dailyClose = null) {
         // Get staleness configuration for this factor (from SSOT)
         const stalenessConfig = await getStalenessConfig(factor.key);
         
-        // Check staleness status
-        // Ensure lastUpdated is always present and fresh
-        // IMPORTANT: Use data.lastUpdated directly (don't fall back to data.timestamp which might be from funding data)
-        // CRITICAL FIX: For term_leverage, if lastUpdated is missing or very old (>24h), use current time
-        // This is a workaround for a bug where the result from computeTermLeverage has an old timestamp
-        // even though we return a fresh one. The root cause is still being investigated.
-        let dataLastUpdated = data.lastUpdated;
-        if (factor.key === 'term_leverage') {
-          if (!dataLastUpdated || (dataLastUpdated && new Date(dataLastUpdated).getTime() < Date.now() - 24 * 60 * 60 * 1000)) {
-            // If lastUpdated is missing or more than 24h old, use current time
-            dataLastUpdated = new Date().toISOString();
-          }
-        } else if (!dataLastUpdated) {
-          // For other factors, only set if completely missing
-          // Otherwise, preserve the lastUpdated from the factor computation
-          dataLastUpdated = new Date().toISOString();
-        }
-        // Preserve lastUpdated from factor computation - don't overwrite it
-        
+        let dataLastUpdated = data.lastUpdated || null;
+
         const stalenessStatus = getStalenessStatus(
-          { ...data, lastUpdated: dataLastUpdated, timestamp: undefined }, // Clear timestamp to avoid confusion
+          { ...data, lastUpdated: dataLastUpdated, timestamp: undefined },
           stalenessConfig.ttlHours,
           {
             factorName: factor.key,
             marketDependent: stalenessConfig.marketDependent,
             businessDaysOnly: stalenessConfig.businessDaysOnly,
-            staleBeyondHours: stalenessConfig.staleBeyondHours
+            staleBeyondHours: stalenessConfig.staleBeyondHours,
+            asOf: new Date().toISOString(),
           }
         );
         

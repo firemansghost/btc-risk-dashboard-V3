@@ -2,6 +2,7 @@
 // Comprehensive staleness detection utilities for Bitcoin Risk Dashboard factors
 
 import { isEtfFlowsFreshForSourceCadence } from './marketCalendar.mjs';
+import { isTermLeverageFreshForSourceCadence } from './lib/termFreshness.mjs';
 
 /**
  * Check if a date is a business day (Monday-Friday)
@@ -217,9 +218,8 @@ export function checkStaleness(dataTimestamp, ttlHours, options = {}) {
  * @returns {Object} {status: string, reason: string, lastUpdated: string}
  */
 export function getStalenessStatus(factorResult, ttlHours, options = {}) {
-  const { factorName = 'unknown' } = options;
+  const { factorName = 'unknown', asOf } = options;
 
-  // If factor computation failed, it's excluded
   if (!factorResult || factorResult.score === null) {
     return {
       status: 'excluded',
@@ -228,23 +228,35 @@ export function getStalenessStatus(factorResult, ttlHours, options = {}) {
     };
   }
 
-  // Check if factor result includes its own timestamp
-  // IMPORTANT: Only use lastUpdated, never fall back to timestamp (which might be from funding data)
-  const dataTimestamp = factorResult.lastUpdated || new Date().toISOString();
-  
-  // Debug: log if timestamp seems old
-  if (factorResult.lastUpdated) {
-    const ageMinutes = getDataAgeMinutes(factorResult.lastUpdated);
-    if (ageMinutes > 1440) { // > 24 hours
-      console.warn(`[staleness] ${options.factorName || 'unknown'}: lastUpdated=${factorResult.lastUpdated}, age=${describeAge(ageMinutes)}`);
-    }
-  } else if (factorResult.timestamp) {
-    // Warn if we're falling back to timestamp (shouldn't happen)
-    console.warn(`[staleness] ${options.factorName || 'unknown'}: WARNING - using timestamp fallback (${factorResult.timestamp}) instead of lastUpdated`);
+  if (!factorResult.lastUpdated) {
+    return {
+      status: 'stale',
+      reason: 'missing_lastUpdated',
+      lastUpdated: null
+    };
   }
-  
+
+  if (factorName === 'term_leverage') {
+    const cadence = isTermLeverageFreshForSourceCadence({
+      fundingObservationUtc:
+        factorResult.funding_observation_utc ||
+        options.funding_observation_utc ||
+        factorResult.lastUpdated,
+      spotObservationUtc:
+        factorResult.spot_observation_utc || options.spot_observation_utc,
+      provider: factorResult.funding_provider || options.funding_provider || 'bitmex',
+      asOfUtc: asOf || new Date().toISOString(),
+    });
+    return {
+      status: cadence.fresh ? 'fresh' : 'stale',
+      reason: cadence.reason,
+      lastUpdated: factorResult.lastUpdated,
+    };
+  }
+
+  const dataTimestamp = factorResult.lastUpdated;
   const stalenessCheck = checkStaleness(dataTimestamp, ttlHours, options);
-  
+
   if (stalenessCheck.isStale) {
     return {
       status: 'stale',
