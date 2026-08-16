@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import { computeAllFactors } from "./factors.mjs";
 import { upsertGScoreHistoryCsv } from "./lib/gscoreHistoryCsv.mjs";
 import { getDashboardConfig, getModelVersion, getSsotVersion } from "../../lib/config-loader.mjs";
+import { gateOfficialAdjustments } from "./lib/officialAdjustments.mjs";
 import { fallbackTracker, resetFallbackTracker } from "./fetch-helper.mjs";
 
 // Resolve absolute paths
@@ -980,47 +981,66 @@ async function main() {
   // 4) latest.json with real factor data
   // Calculate cycle and spike adjustments
   const nowIso = new Date().toISOString();
-  
-  // Import adjustment calculation functions
+  const dashboardConfigForAdj = await getDashboardConfig();
+  const cycleWanted = dashboardConfigForAdj?.adjustments?.cycle?.enabled === true;
+  const spikeWanted = dashboardConfigForAdj?.adjustments?.spike?.enabled === true;
+
   const { 
     calculateCycleAdjustment, 
     calculateSpikeAdjustment, 
     loadHistoricalPrices, 
     calculateDailyReturns 
   } = await import('./adjustments.mjs');
-  
-  // Load historical data for adjustments
-  const historicalPrices = await loadHistoricalPrices();
-  let cycle_adjustment, spike_adjustment;
-  
-  if (historicalPrices && historicalPrices.length > 365) {
-    // Calculate cycle adjustment (power-law trend)
-    const cycleResult = calculateCycleAdjustment(historicalPrices, y.close);
-    cycle_adjustment = {
-      ...cycleResult,
-      last_utc: nowIso,
-      source: 'ETL calculation'
-    };
-    
-    // Calculate spike adjustment (volatility)
-    const dailyReturns = calculateDailyReturns(historicalPrices);
-    const currentReturn = dailyReturns.length > 0 ? dailyReturns[dailyReturns.length - 1] : 0;
-    const spikeResult = calculateSpikeAdjustment(dailyReturns, currentReturn);
-    spike_adjustment = {
-      ...spikeResult,
-      ref_close: historicalPrices[historicalPrices.length - 2] || y.close,
-      spot: y.close,
-      last_utc: nowIso,
-      source: 'ETL calculation'
-    };
+
+  let cycle_adjustment;
+  let spike_adjustment;
+
+  if (cycleWanted || spikeWanted) {
+    const historicalPrices = await loadHistoricalPrices();
+    if (historicalPrices && historicalPrices.length > 365) {
+      const cycleResult = calculateCycleAdjustment(historicalPrices, y.close);
+      cycle_adjustment = {
+        ...cycleResult,
+        last_utc: nowIso,
+        source: 'ETL calculation'
+      };
+      const dailyReturns = calculateDailyReturns(historicalPrices);
+      const currentReturn = dailyReturns.length > 0 ? dailyReturns[dailyReturns.length - 1] : 0;
+      const spikeResult = calculateSpikeAdjustment(dailyReturns, currentReturn);
+      spike_adjustment = {
+        ...spikeResult,
+        ref_close: historicalPrices[historicalPrices.length - 2] || y.close,
+        spot: y.close,
+        last_utc: nowIso,
+        source: 'ETL calculation'
+      };
+    } else {
+      cycle_adjustment = {
+        adj_pts: 0,
+        residual_z: null,
+        last_utc: nowIso,
+        source: 'ETL fallback',
+        reason: 'insufficient_historical_data'
+      };
+      spike_adjustment = {
+        adj_pts: 0,
+        r_1d: 0,
+        sigma: 0,
+        z: 0,
+        ref_close: y.close,
+        spot: y.close,
+        last_utc: nowIso,
+        source: 'ETL fallback',
+        reason: 'insufficient_historical_data'
+      };
+    }
   } else {
-    // Fallback when insufficient historical data
     cycle_adjustment = {
       adj_pts: 0,
       residual_z: null,
       last_utc: nowIso,
-      source: 'ETL fallback',
-      reason: 'insufficient_historical_data'
+      source: 'ETL disabled',
+      reason: 'disabled'
     };
     spike_adjustment = {
       adj_pts: 0,
@@ -1030,12 +1050,22 @@ async function main() {
       ref_close: y.close,
       spot: y.close,
       last_utc: nowIso,
-      source: 'ETL fallback',
-      reason: 'insufficient_historical_data'
+      source: 'ETL disabled',
+      reason: 'disabled'
     };
   }
 
-  // Apply adjustments to composite score
+  const gatedAdj = gateOfficialAdjustments({
+    config: dashboardConfigForAdj,
+    cycle_adjustment,
+    spike_adjustment,
+    nowIso,
+    yClose: y.close,
+  });
+  cycle_adjustment = gatedAdj.cycle_adjustment;
+  spike_adjustment = gatedAdj.spike_adjustment;
+
+  // Apply adjustments to composite score (exactly 0 when flags are disabled)
   const adjustedComposite = composite + (cycle_adjustment.adj_pts || 0) + (spike_adjustment.adj_pts || 0);
   const finalComposite = Math.max(0, Math.min(100, Math.round(adjustedComposite * 10) / 10));
   

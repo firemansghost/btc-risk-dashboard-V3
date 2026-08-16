@@ -257,14 +257,14 @@
 
   "adjustments": {
     "cycle": {
-      "enabled": true,
-      "description": "Long-term cycle positioning adjustment based on halving cycles and macro conditions",
+      "enabled": false,
+      "description": "Long-term cycle positioning adjustment based on halving cycles and macro conditions. Disabled for v1.1.1; reactivation is a separate versioned methodology decision.",
       "range": [-2.0, 2.0],
       "cap": 2.0
     },
     "spike": {
-      "enabled": true,
-      "description": "Short-term volatility spike adjustment for rapid price movements",
+      "enabled": false,
+      "description": "Short-term volatility spike adjustment for rapid price movements. Disabled for v1.1.1; reactivation is a separate versioned methodology decision.",
       "range": [-1.5, 1.5],
       "cap": 1.5
     }
