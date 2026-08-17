@@ -33,6 +33,10 @@ import {
   socialSourceObservationUtc,
 } from './lib/sourceObservationTime.mjs';
 import { selectPublishedEtfFlowRows } from './marketCalendar.mjs';
+import {
+  hasMacroSourceVintagesChanged,
+  preserveMacroOverlayWarmCache,
+} from './lib/macroFreshness.mjs';
 
 // Resolve absolute paths for cache directories
 const __filename = fileURLToPath(import.meta.url);
@@ -1618,7 +1622,7 @@ function parseEtfFlowsFromHtml(html) {
   
   // Find the table with actual ETF flow data
   for (const match of tableMatches) {
-    if (match.includes('2024-') || match.includes('2025-') || match.includes('Date') || match.includes('Total')) {
+    if (match.includes('2024-') || match.includes('2025-') || match.includes('2026-') || match.includes('Date') || match.includes('Total')) {
       dataTable = match;
       break;
     }
@@ -1672,7 +1676,7 @@ function parseEtfFlowsFromHtml(html) {
       if (Number.isFinite(v)) flow = v * scale;
     }
     
-    // Extract individual ETF flows
+    // Extract individual ETF flows (never used to invent a missing Total)
     for (const etf of etfColumns) {
       const etfIdx = header.findIndex(h => h.includes(etf));
       if (etfIdx !== -1 && etfIdx < cells.length) {
@@ -1683,8 +1687,23 @@ function parseEtfFlowsFromHtml(html) {
       }
     }
     
-    // If no total column, sum all numeric columns
-    if (!Number.isFinite(flow)) {
+    // If the schema has a Total column, a non-finite / pending Total is
+    // unpublished. Do not synthesize an aggregate from partial fund cells.
+    if (hasTotalCol && !Number.isFinite(flow)) {
+      continue;
+    }
+
+    // Farside current-day placeholders can show Total=0.0 while every fund
+    // cell is still "-". That is not a finalized zero-flow session.
+    const namedEtfColsPresent = etfColumns.some(
+      (etf) => header.findIndex((h) => h.includes(etf)) !== -1
+    );
+    if (hasTotalCol && namedEtfColsPresent && Object.keys(individualFlows).length === 0) {
+      continue;
+    }
+
+    // Legacy schema with no Total column: sum numeric fund cells.
+    if (!hasTotalCol && !Number.isFinite(flow)) {
       let sum = 0;
       let hasData = false;
       for (let c = 1; c < cells.length; c++) {
@@ -1761,6 +1780,7 @@ function parseDate(s) {
 function parseNumber(s) {
   if (s == null) return NaN;
   const cleaned = String(s).replace(/[\s,$]/g, '').replace(/[–—−]/g, '-').replace(/\(([^)]+)\)/, '-$1');
+  if (cleaned === '' || cleaned === '-' || cleaned === '--' || cleaned === '.') return NaN;
   const n = Number(cleaned);
   return Number.isFinite(n) ? n : NaN;
 }
@@ -2442,15 +2462,11 @@ async function saveMacroOverlayCache(data) {
 }
 
 /**
- * Check if FRED macro data has changed since last cache
+ * Check if scored FRED macro vintages have changed since last cache.
+ * DXY is weekly; DGS2 and VIX must also be compared.
  */
 function hasMacroDataChanged(currentData, cachedData) {
-  if (!cachedData || !cachedData.latestDxyDate) {
-    return true;
-  }
-  
-  // Check if latest observation date has changed
-  return currentData.latestDxyDate !== cachedData.latestDxyDate;
+  return hasMacroSourceVintagesChanged(currentData, cachedData);
 }
 
 /**
@@ -2491,12 +2507,7 @@ async function tryMacroOverlayFredFallback(cachedFromWarmLoad, err) {
   console.warn(
     `Macro Overlay: FRED live refresh failed; using cached factor result (reason=success_cached_fred_error, lastUpdated=${candidate.lastUpdated}). Underlying error: ${err.message}`
   );
-  return {
-    score: candidate.score,
-    reason: 'success_cached_fred_error',
-    lastUpdated: candidate.lastUpdated,
-    details: candidate.details,
-  };
+  return preserveMacroOverlayWarmCache(candidate, 'success_cached_fred_error');
 }
 
 // 8. MACRO OVERLAY (Multi-factor macro environment analysis)
@@ -2535,17 +2546,14 @@ async function computeMacroOverlay() {
     const latestDgs2Date = latestFiniteFredDate(dgs2Data.observations);
     const latestVixDate = latestFiniteFredDate(vixData.observations);
     
-    const dataChanged = hasMacroDataChanged({ latestDxyDate }, cachedData);
+    const dataChanged = hasMacroDataChanged(
+      { latestDxyDate, latestDgs2Date, latestVixDate },
+      cachedData
+    );
     
     if (cachedData && !dataChanged) {
       console.log('Macro Overlay: Using cached calculations (no FRED data changes)');
-      const preserved = preserveSourceObservation(cachedData);
-      return {
-        score: preserved.score,
-        reason: "success_cached",
-        lastUpdated: preserved.lastUpdated,
-        details: preserved.details
-      };
+      return preserveMacroOverlayWarmCache(cachedData);
     }
 
     console.log('Macro Overlay: Computing fresh calculations (FRED data changed or no cache)');
@@ -3029,7 +3037,7 @@ async function cleanOldStablecoinsCacheFiles() {
 }
 
 // Export additional functions for use in other modules
-export { cleanOldCacheFiles, cleanOldStablecoinsCacheFiles, computeBtcGoldRates };
+export { cleanOldCacheFiles, cleanOldStablecoinsCacheFiles, computeBtcGoldRates, parseEtfFlowsFromHtml };
 
 
 // Enhanced G-Score calculation with deterministic scoring

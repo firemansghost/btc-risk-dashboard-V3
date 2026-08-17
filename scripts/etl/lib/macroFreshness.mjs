@@ -1,16 +1,26 @@
 /**
  * Macro Overlay source-cadence freshness.
  *
- * DTWEXBGS (broad dollar) follows the Federal Reserve H.10 release:
- * daily FX/index observations for the previous business week, published
- * Mondays at 4:15 p.m. ET (next U.S. business day if Monday is a holiday).
- * Official: https://www.federalreserve.gov/releases/h10/default.htm
+ * Three calendars are kept separate on purpose:
  *
- * DGS2 and VIXCLS are daily FRED series with different publication clocks
- * (St. Louis FRED, America/Chicago). Observed 2026-08-17:
- *   DGS2 last_updated 2026-08-14 15:17:26-05, observation_end 2026-08-13
- *   VIXCLS last_updated 2026-08-17 08:38:23-05, observation_end 2026-08-14
- * Treasury 2Y therefore trails one session vs VIX on Monday morning.
+ * 1. Federal Reserve Board (H.10 release days)
+ *    Mondays 4:15 p.m. ET; next federal business day if Monday is a federal
+ *    holiday. Good Friday is not a Board holiday and does not shift Monday H.10.
+ *    Official: https://www.federalreserve.gov/releases/h10/default.htm
+ *
+ * 2. H.15 / Treasury CMT (DGS2)
+ *    Bond-market / H.15 business days: federal holidays PLUS Good Friday
+ *    (Treasury/SIFMA closed). Columbus Day and Veterans Day are closed for
+ *    H.15 even when NYSE is open — do not expect a DGS2 print those days.
+ *
+ * 3. VIXCLS observation days follow CBOE/NYSE sessions (closed Good Friday,
+ *    open Columbus Day / Veterans Day). FRED *publication* of VIXCLS is a
+ *    separate operational clock (St. Louis Fed, America/Chicago).
+ *
+ * VIXCLS FRED clock: 08:30 CT + grace is an operational heuristic derived
+ * from observed FRED availability (e.g. 2026-08-17 last_updated 08:38 CT),
+ * not a documented Board release time. Grace is sized to avoid false-stale
+ * failures when FRED posts later than the heuristic.
  *
  * lastUpdated remains the oldest source observation. Freshness is per-leg.
  */
@@ -18,8 +28,8 @@
 import {
   getPreviousUsTradingDay,
   toUtcDateString,
-  US_MARKET_HOLIDAYS_UTC,
 } from '../marketCalendar.mjs';
+import { preserveSourceObservation } from './sourceObservationTime.mjs';
 
 export const H10_TIME_ZONE = 'America/New_York';
 export const H10_PUBLISH_HOUR_ET = 16;
@@ -29,35 +39,65 @@ export const H10_FRED_INGESTION_GRACE_MINUTES = 180;
 
 /** FRED publication clocks are America/Chicago (St. Louis Fed). */
 export const FRED_PUBLISH_TIME_ZONE = 'America/Chicago';
-/** Treasury CMT (DGS2): prior-session yield, typically ~15:17 CT on business days. */
+/** Treasury CMT (DGS2): prior-session yield, typically ~15:17 CT on H.15 days. */
 export const DGS2_PUBLISH_HOUR_CT = 15;
 export const DGS2_PUBLISH_MINUTE_CT = 15;
 export const DGS2_PUBLISH_GRACE_MINUTES = 60;
-/** VIXCLS: prior session close, typically next morning ~08:38 CT. */
+/**
+ * VIXCLS FRED availability heuristic (not a guaranteed Board clock).
+ * Observed 2026-08-17: last_updated 08:38 CT for observation_end 2026-08-14.
+ */
 export const VIX_PUBLISH_HOUR_CT = 8;
 export const VIX_PUBLISH_MINUTE_CT = 30;
-export const VIX_PUBLISH_GRACE_MINUTES = 30;
+export const VIX_PUBLISH_GRACE_MINUTES = 60;
 
 /**
- * Federal holidays that close the Board of Governors and shift H.10 off Monday.
- * NYSE-open federal days (Columbus Day; Veterans Day when it falls on a weekday)
- * are included even though they are absent from US_MARKET_HOLIDAYS_UTC.
- * Good Friday is an NYSE holiday only and does not shift Monday H.10.
- * Official: https://www.federalreserve.gov/releases/h10/default.htm
+ * Federal Reserve Board closed days (H.10 Monday-shift calendar).
+ * Does not include Good Friday. Includes Columbus Day / Indigenous Peoples
+ * Day and Veterans Day, which close the Board even when NYSE is open.
  */
-export const H10_FEDERAL_HOLIDAYS_UTC = new Set([
-  ...US_MARKET_HOLIDAYS_UTC,
-  '2026-10-12', // Columbus Day — federal closed, NYSE open
-  '2026-11-11', // Veterans Day — federal closed, NYSE open
+export const FEDERAL_RESERVE_HOLIDAYS_UTC = new Set([
+  '2026-01-01', // New Year's Day
+  '2026-01-19', // Martin Luther King Jr. Day
+  '2026-02-16', // Presidents' Day
+  '2026-05-25', // Memorial Day
+  '2026-06-19', // Juneteenth
+  '2026-07-03', // Independence Day (observed; Jul 4 is Saturday)
+  '2026-09-07', // Labor Day
+  '2026-10-12', // Columbus Day / Indigenous Peoples' Day
+  '2026-11-11', // Veterans Day
+  '2026-11-26', // Thanksgiving
+  '2026-12-25', // Christmas
 ]);
 
-export function isH10FederalHoliday(dateUtc) {
-  return H10_FEDERAL_HOLIDAYS_UTC.has(dateUtc);
+/**
+ * H.15 / Treasury / SIFMA closures for DGS2 observation and publication days.
+ * Federal holidays plus Good Friday. NYSE-open federal days (Columbus Day,
+ * Veterans Day) do not create a DGS2 observation.
+ */
+export const H15_BOND_MARKET_HOLIDAYS_UTC = new Set([
+  ...FEDERAL_RESERVE_HOLIDAYS_UTC,
+  '2026-04-03', // Good Friday — Treasury/SIFMA closed; not a Board holiday
+]);
+
+export function isFederalReserveHoliday(dateUtc) {
+  return FEDERAL_RESERVE_HOLIDAYS_UTC.has(toUtcDateString(dateUtc));
 }
 
-export function isH10FederalBusinessDay(dateUtc) {
-  const dow = weekdayUtc(dateUtc);
-  return dow >= 1 && dow <= 5 && !isH10FederalHoliday(dateUtc);
+export function isFederalReserveBusinessDay(dateUtc) {
+  const key = toUtcDateString(dateUtc);
+  const dow = weekdayUtc(key);
+  return dow >= 1 && dow <= 5 && !isFederalReserveHoliday(key);
+}
+
+export function isH15BondMarketHoliday(dateUtc) {
+  return H15_BOND_MARKET_HOLIDAYS_UTC.has(toUtcDateString(dateUtc));
+}
+
+export function isH15BusinessDay(dateUtc) {
+  const key = toUtcDateString(dateUtc);
+  const dow = weekdayUtc(key);
+  return dow >= 1 && dow <= 5 && !isH15BondMarketHoliday(key);
 }
 
 export function formatTimeZoneDate(asOfUtc, timeZone = H10_TIME_ZONE) {
@@ -112,22 +152,32 @@ function addUtcDaysStr(dateUtc, days) {
 }
 
 function weekdayUtc(dateUtc) {
-  const [y, m, d] = dateUtc.split('-').map(Number);
+  const [y, m, d] = String(dateUtc).slice(0, 10).split('-').map(Number);
   return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+}
+
+export function getPreviousCalendarBusinessDay(dateUtc, isOpen) {
+  let cursor = addUtcDaysStr(toUtcDateString(dateUtc), -1);
+  for (let i = 0; i < 21; i++) {
+    if (isOpen(cursor)) return cursor;
+    cursor = addUtcDaysStr(cursor, -1);
+  }
+  return cursor;
 }
 
 /**
  * H.10 release calendar day in America/New_York: Monday, or Tuesday when
- * Monday is a federal holiday.
+ * Monday is a Federal Reserve Board holiday (not Good Friday).
  */
 export function isH10ReleaseDay(dateUtc) {
-  const dow = weekdayUtc(dateUtc);
-  if (dow === 1 && isH10FederalBusinessDay(dateUtc)) {
+  const key = toUtcDateString(dateUtc);
+  const dow = weekdayUtc(key);
+  if (dow === 1 && isFederalReserveBusinessDay(key)) {
     return true;
   }
   if (dow === 2) {
-    const monday = addUtcDaysStr(dateUtc, -1);
-    return isH10FederalHoliday(monday) && isH10FederalBusinessDay(dateUtc);
+    const monday = addUtcDaysStr(key, -1);
+    return isFederalReserveHoliday(monday) && isFederalReserveBusinessDay(key);
   }
   return false;
 }
@@ -144,22 +194,20 @@ export function h10ReleaseInstantUtc(releaseDateUtc) {
 }
 
 /**
- * H.10 covers the previous business week through Friday. A Tuesday holiday
- * shift still publishes that same week — not Monday's NYSE session, even when
- * NYSE is open (Columbus Day / Veterans Day).
+ * H.10 covers the previous federal business week through Friday. A Tuesday
+ * holiday shift still publishes that same week — not an NYSE session on
+ * Columbus Day / Veterans Day.
  */
 export function h10CoveredWeekEndDate(releaseDateUtc) {
-  let scheduledMonday = releaseDateUtc;
-  if (weekdayUtc(releaseDateUtc) === 2) {
-    scheduledMonday = addUtcDaysStr(releaseDateUtc, -1);
+  let scheduledMonday = toUtcDateString(releaseDateUtc);
+  if (weekdayUtc(scheduledMonday) === 2) {
+    scheduledMonday = addUtcDaysStr(scheduledMonday, -1);
   }
-  return toUtcDateString(
-    getPreviousUsTradingDay(new Date(`${scheduledMonday}T00:00:00.000Z`))
-  );
+  return getPreviousCalendarBusinessDay(scheduledMonday, isFederalReserveBusinessDay);
 }
 
 /**
- * Latest H.10 vintage (last trading day of the released week) expected by asOf.
+ * Latest H.10 vintage (last federal business day of the released week) expected by asOf.
  */
 export function getExpectedH10WeekEndDate(asOfUtc) {
   let cursor = formatTimeZoneDate(asOfUtc);
@@ -172,8 +220,10 @@ export function getExpectedH10WeekEndDate(asOfUtc) {
     }
     cursor = addUtcDaysStr(cursor, -1);
   }
-  const fallback = new Date(`${formatTimeZoneDate(asOfUtc)}T00:00:00.000Z`);
-  return toUtcDateString(getPreviousUsTradingDay(getPreviousUsTradingDay(fallback)));
+  return getPreviousCalendarBusinessDay(
+    formatTimeZoneDate(asOfUtc),
+    isFederalReserveBusinessDay
+  );
 }
 
 export function fredPublicationInstantUtc(
@@ -188,13 +238,14 @@ export function fredPublicationInstantUtc(
 }
 
 /**
- * Latest federal business day whose FRED publication window has elapsed.
+ * Latest publication calendar day whose FRED/H.15 window has elapsed.
  */
-export function getLastCompletedFredPublicationDate(asOfUtc, clock) {
+export function getLastCompletedFredPublicationDate(asOfUtc, clock, isPublicationDay) {
   const timeZone = clock.timeZone || FRED_PUBLISH_TIME_ZONE;
+  const isOpen = isPublicationDay || isFederalReserveBusinessDay;
   let cursor = formatTimeZoneDate(asOfUtc, timeZone);
   for (let i = 0; i < 14; i++) {
-    if (isH10FederalBusinessDay(cursor)) {
+    if (isOpen(cursor)) {
       const availableAt = fredPublicationInstantUtc(
         cursor,
         clock.hour,
@@ -211,35 +262,42 @@ export function getLastCompletedFredPublicationDate(asOfUtc, clock) {
   return null;
 }
 
-/**
- * FRED daily series vintage: last NYSE session before the latest completed
- * FRED publication day for that series' clock.
- */
-export function getExpectedFredObservationDate(asOfUtc, clock) {
-  const releaseDate = getLastCompletedFredPublicationDate(asOfUtc, clock);
-  if (!releaseDate) {
-    const fallback = new Date(`${formatTimeZoneDate(asOfUtc)}T00:00:00.000Z`);
-    return toUtcDateString(getPreviousUsTradingDay(fallback));
-  }
-  return toUtcDateString(
-    getPreviousUsTradingDay(new Date(`${releaseDate}T00:00:00.000Z`))
+export function getExpectedFredObservationDate(asOfUtc, clock, isPublicationDay, previousObservationDay) {
+  const releaseDate = getLastCompletedFredPublicationDate(asOfUtc, clock, isPublicationDay);
+  const previousDay = previousObservationDay || ((d) =>
+    toUtcDateString(getPreviousUsTradingDay(new Date(`${d}T00:00:00.000Z`)))
   );
+  if (!releaseDate) {
+    return previousDay(formatTimeZoneDate(asOfUtc));
+  }
+  return previousDay(releaseDate);
 }
 
 export function getExpectedDgs2Date(asOfUtc) {
-  return getExpectedFredObservationDate(asOfUtc, {
-    hour: DGS2_PUBLISH_HOUR_CT,
-    minute: DGS2_PUBLISH_MINUTE_CT,
-    graceMinutes: DGS2_PUBLISH_GRACE_MINUTES,
-  });
+  return getExpectedFredObservationDate(
+    asOfUtc,
+    {
+      hour: DGS2_PUBLISH_HOUR_CT,
+      minute: DGS2_PUBLISH_MINUTE_CT,
+      graceMinutes: DGS2_PUBLISH_GRACE_MINUTES,
+    },
+    isH15BusinessDay,
+    (releaseDate) => getPreviousCalendarBusinessDay(releaseDate, isH15BusinessDay)
+  );
 }
 
 export function getExpectedVixDate(asOfUtc) {
-  return getExpectedFredObservationDate(asOfUtc, {
-    hour: VIX_PUBLISH_HOUR_CT,
-    minute: VIX_PUBLISH_MINUTE_CT,
-    graceMinutes: VIX_PUBLISH_GRACE_MINUTES,
-  });
+  return getExpectedFredObservationDate(
+    asOfUtc,
+    {
+      hour: VIX_PUBLISH_HOUR_CT,
+      minute: VIX_PUBLISH_MINUTE_CT,
+      graceMinutes: VIX_PUBLISH_GRACE_MINUTES,
+    },
+    isFederalReserveBusinessDay,
+    (releaseDate) =>
+      toUtcDateString(getPreviousUsTradingDay(new Date(`${releaseDate}T00:00:00.000Z`)))
+  );
 }
 
 function dateAtLeast(actual, expected) {
@@ -303,5 +361,28 @@ export function isMacroOverlayFreshForSourceCadence({
     expectedDgs2,
     expectedVix,
     legs,
+  };
+}
+
+export function hasMacroSourceVintagesChanged(current = {}, cached = {}) {
+  if (!cached?.latestDxyDate || !cached?.latestDgs2Date || !cached?.latestVixDate) {
+    return true;
+  }
+  return (
+    current.latestDxyDate !== cached.latestDxyDate ||
+    current.latestDgs2Date !== cached.latestDgs2Date ||
+    current.latestVixDate !== cached.latestVixDate
+  );
+}
+
+export function preserveMacroOverlayWarmCache(cached, reason = 'success_cached') {
+  const preserved = preserveSourceObservation(cached);
+  return {
+    ...preserved,
+    reason,
+    lastUpdated: preserved.lastUpdated,
+    latestDxyDate: preserved.latestDxyDate,
+    latestDgs2Date: preserved.latestDgs2Date,
+    latestVixDate: preserved.latestVixDate,
   };
 }

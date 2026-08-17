@@ -7,6 +7,7 @@ import {
   selectPublishedEtfFlowRows,
 } from '../marketCalendar.mjs';
 import { checkStaleness, getStalenessStatus } from '../stalenessUtils.mjs';
+import { parseEtfFlowsFromHtml } from '../factors.mjs';
 
 const ETF_OPTS = {
   factorName: 'etf_flows',
@@ -157,4 +158,104 @@ test('previous eligible trading day remains fresh before publication cutoff', ()
   assert.equal(cadence.expectedLatestTradingDate, '2026-08-14');
   const check = checkStaleness(lastUpdated, 24, { ...ETF_OPTS, asOf });
   assert.equal(check.isStale, false);
+});
+
+function etfTable(header, rows) {
+  const head = `<tr>${header.map((h) => `<th>${h}</th>`).join('')}</tr>`;
+  const body = rows
+    .map((row) => `<tr>${row.map((c) => `<td>${c}</td>`).join('')}</tr>`)
+    .join('');
+  return `<table>${head}${body}</table>`;
+}
+
+test('Total=finite => aggregate row accepted', () => {
+  const html = etfTable(
+    ['Date', 'IBIT', 'FBTC', 'Total'],
+    [['14 Aug 2026', '10.0', '5.0', '15.0']]
+  );
+  const parsed = parseEtfFlowsFromHtml(html);
+  assert.deepEqual(parsed.flows.map((r) => r.date), ['2026-08-14']);
+  assert.equal(parsed.flows[0].flow, 15);
+});
+
+test('Total="-" and blank individuals => aggregate row rejected', () => {
+  const html = etfTable(
+    ['Date', 'IBIT', 'FBTC', 'Total'],
+    [['17 Aug 2026', '-', '-', '-']]
+  );
+  const parsed = parseEtfFlowsFromHtml(html);
+  assert.deepEqual(parsed.flows, []);
+});
+
+test('Total="-" with some numeric individuals still rejected', () => {
+  const html = etfTable(
+    ['Date', 'IBIT', 'FBTC', 'Total'],
+    [
+      ['14 Aug 2026', '10.0', '5.0', '15.0'],
+      ['17 Aug 2026', '9.9', '-', '-'],
+    ]
+  );
+  const parsed = parseEtfFlowsFromHtml(html);
+  assert.deepEqual(parsed.flows.map((r) => r.date), ['2026-08-14']);
+  assert.equal(parsed.flows[0].flow, 15);
+});
+
+test('Total=0.0 with all individual cells pending is not a finalized zero-flow day', () => {
+  const html = etfTable(
+    ['Date', 'IBIT', 'FBTC', 'Total'],
+    [
+      ['14 Aug 2026', '10.0', '5.0', '15.0'],
+      ['17 Aug 2026', '-', '-', '0.0'],
+    ]
+  );
+  const parsed = parseEtfFlowsFromHtml(html);
+  assert.deepEqual(parsed.flows.map((r) => r.date), ['2026-08-14']);
+});
+
+test('Total=0.0 with numeric zero fund cells is a genuine zero-flow day', () => {
+  const html = etfTable(
+    ['Date', 'IBIT', 'FBTC', 'Total'],
+    [['14 Aug 2026', '0.0', '0.0', '0.0']]
+  );
+  const parsed = parseEtfFlowsFromHtml(html);
+  assert.equal(parsed.flows.length, 1);
+  assert.equal(parsed.flows[0].date, '2026-08-14');
+  assert.equal(parsed.flows[0].flow, 0);
+});
+
+test('no Total column: individual numeric columns still sum', () => {
+  const html = etfTable(
+    ['Date', 'IBIT', 'FBTC'],
+    [['14 Aug 2026', '10.0', '5.0']]
+  );
+  const parsed = parseEtfFlowsFromHtml(html);
+  assert.equal(parsed.flows.length, 1);
+  assert.equal(parsed.flows[0].date, '2026-08-14');
+  assert.equal(parsed.flows[0].flow, 15);
+});
+
+test('after cutoff, pending current-day Total does not become the scored row', () => {
+  const asOf = '2026-08-17T16:30:00.000Z';
+  assert.equal(getExpectedLatestUsTradingDay(asOf), '2026-08-17');
+  const html = etfTable(
+    ['Date', 'IBIT', 'FBTC', 'Total'],
+    [
+      ['14 Aug 2026', '(55.5)', '(6.8)', '(56.2)'],
+      ['17 Aug 2026', '-', '-', '0.0'],
+    ]
+  );
+  const parsed = parseEtfFlowsFromHtml(html);
+  assert.deepEqual(parsed.flows.map((r) => r.date), ['2026-08-14']);
+  const published = selectPublishedEtfFlowRows(parsed.flows, asOf);
+  assert.equal(published.at(-1).date, '2026-08-14');
+  const lastUpdated = `${published.at(-1).date}T16:00:00.000Z`;
+  const cadence = isEtfFlowsFreshForSourceCadence(lastUpdated, asOf);
+  assert.equal(cadence.fresh, false);
+  assert.equal(cadence.reason, 'stale_beyond_business_day_cadence');
+  assert.equal(cadence.expectedLatestTradingDate, '2026-08-17');
+  const status = getStalenessStatus({ score: 40, lastUpdated }, 24, {
+    ...ETF_OPTS,
+    asOf,
+  });
+  assert.equal(status.status, 'stale');
 });
