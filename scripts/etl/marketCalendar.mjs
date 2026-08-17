@@ -95,6 +95,18 @@ export function getExpectedLatestUsTradingDay(asOfUtc) {
 }
 
 /**
+ * Keep only ETF flow rows whose trading day is eligible at asOf under the
+ * existing 16:00 UTC publication cutoff. Current-day placeholders before
+ * cutoff must not become the official observation.
+ */
+export function selectPublishedEtfFlowRows(rows, asOfUtc) {
+  const expectedLatestTradingDate = getExpectedLatestUsTradingDay(asOfUtc);
+  return (rows || []).filter(
+    (row) => row?.date && row.date <= expectedLatestTradingDate
+  );
+}
+
+/**
  * ETF Flows freshness by source cadence (market days + holidays), not raw calendar TTL alone.
  * @param {string|Date} lastUpdatedUtc - Parsed flow date (typically YYYY-MM-DDT16:00:00.000Z)
  * @param {string|Date} asOfUtc
@@ -103,13 +115,24 @@ export function getExpectedLatestUsTradingDay(asOfUtc) {
 export function isEtfFlowsFreshForSourceCadence(lastUpdatedUtc, asOfUtc) {
   const actualDate = toUtcDateString(lastUpdatedUtc);
   const expectedLatestTradingDate = getExpectedLatestUsTradingDay(asOfUtc);
+  const asOf = new Date(asOfUtc);
+  const obsMs = Date.parse(lastUpdatedUtc);
 
-  if (!actualDate) {
+  if (!actualDate || !Number.isFinite(obsMs)) {
     return {
       fresh: false,
       reason: 'no_timestamp',
       expectedLatestTradingDate,
-      actualDate: '',
+      actualDate: actualDate || '',
+    };
+  }
+
+  if (obsMs - asOf.getTime() > 5 * 60 * 1000) {
+    return {
+      fresh: false,
+      reason: 'future_source_timestamp',
+      expectedLatestTradingDate,
+      actualDate,
     };
   }
 

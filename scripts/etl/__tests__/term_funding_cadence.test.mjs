@@ -259,6 +259,47 @@ test('provider fallback order is BitMEX then Binance then OKX', () => {
   assert.equal(selectFundingProvider({ bitmex: [{ fundingRate: 1 }], binance: [{ fundingRate: 1 }] }).provider, 'bitmex');
 });
 
+test('August 17 recovery: BitMEX 12:00 plus current CoinGecko daily spot is overall fresh', () => {
+  const asOf = '2026-08-17T13:49:00.000Z';
+  const funding = '2026-08-17T12:00:00.000Z';
+  const spot = '2026-08-17T00:00:00.000Z';
+  const rows = [
+    { timestamp: '2026-08-17T12:00:00.000Z', symbol: 'XBTUSD', fundingInterval: '2000-01-01T08:00:00.000Z', fundingRate: 0.0001 },
+    { timestamp: '2026-08-17T04:00:00.000Z', symbol: 'XBTUSD', fundingInterval: '2000-01-01T08:00:00.000Z', fundingRate: 0.0001 },
+    { timestamp: '2026-08-16T20:00:00.000Z', symbol: 'XBTUSD', fundingInterval: '2000-01-01T08:00:00.000Z', fundingRate: 0.0001 },
+  ];
+  const cadence = isTermLeverageFreshForSourceCadence({
+    fundingObservationUtc: funding,
+    spotObservationUtc: spot,
+    provider: 'bitmex',
+    fundingRows: rows,
+    asOfUtc: asOf,
+  });
+  assert.equal(cadence.fresh, true);
+  assert.equal(cadence.reason, 'fresh_source_cadence');
+  assert.equal(cadence.expectedFunding, funding);
+  assert.equal(cadence.expectedSpot, spot);
+});
+
+test('August 17 recovery: BitMEX 12:00 plus Oct 2025 CoinGecko cache spot remains stale', () => {
+  const asOf = '2026-08-17T13:49:00.000Z';
+  const funding = '2026-08-17T12:00:00.000Z';
+  const staleSpot = '2025-10-29T19:36:21.000Z';
+  const cadence = isTermLeverageFreshForSourceCadence({
+    fundingObservationUtc: funding,
+    spotObservationUtc: staleSpot,
+    provider: 'bitmex',
+    fundingRows: [
+      { timestamp: '2026-08-17T12:00:00.000Z', symbol: 'XBTUSD', fundingInterval: '2000-01-01T08:00:00.000Z', fundingRate: 0.0001 },
+      { timestamp: '2026-08-17T04:00:00.000Z', symbol: 'XBTUSD', fundingInterval: '2000-01-01T08:00:00.000Z', fundingRate: 0.0001 },
+    ],
+    asOfUtc: asOf,
+  });
+  assert.equal(cadence.fresh, false);
+  assert.equal(cadence.reason, 'stale_spot_observation');
+  assert.equal(cadence.expectedSpot, '2026-08-17T00:00:00.000Z');
+});
+
 test('missing lastUpdated is not treated as now / fresh', () => {
   const status = getStalenessStatus(
     { score: 51 },

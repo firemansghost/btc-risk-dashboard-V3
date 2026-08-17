@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   getExpectedLatestUsTradingDay,
   isEtfFlowsFreshForSourceCadence,
+  selectPublishedEtfFlowRows,
 } from '../marketCalendar.mjs';
 import { checkStaleness, getStalenessStatus } from '../stalenessUtils.mjs';
 
@@ -94,4 +95,66 @@ test('Non-ETF factor unaffected: same timestamps use wall-clock staleness', () =
   });
   assert.equal(check.isStale, true);
   assert.equal(check.reason, 'stale_beyond_ttl');
+});
+
+test('negative age cannot automatically count as fresh', () => {
+  const lastUpdated = '2026-08-17T16:00:00.000Z';
+  const asOf = '2026-08-17T13:49:00.000Z';
+  const check = checkStaleness(lastUpdated, 24, {
+    factorName: 'stablecoins',
+    asOf,
+  });
+  assert.equal(check.isStale, true);
+  assert.equal(check.reason, 'future_source_timestamp');
+  assert.ok(check.ageMinutes < 0);
+});
+
+test('August 17 13:49Z does not accept an official ETF timestamp of 16:00Z', () => {
+  const lastUpdated = '2026-08-17T16:00:00.000Z';
+  const asOf = '2026-08-17T13:49:00.000Z';
+  assert.equal(getExpectedLatestUsTradingDay(asOf), '2026-08-14');
+
+  const cadence = isEtfFlowsFreshForSourceCadence(lastUpdated, asOf);
+  assert.equal(cadence.fresh, false);
+  assert.equal(cadence.reason, 'future_source_timestamp');
+
+  const check = checkStaleness(lastUpdated, 24, { ...ETF_OPTS, asOf });
+  assert.equal(check.isStale, true);
+  assert.equal(check.reason, 'future_source_timestamp');
+
+  const status = getStalenessStatus({ score: 40, lastUpdated }, 24, {
+    ...ETF_OPTS,
+    asOf,
+  });
+  assert.equal(status.status, 'stale');
+  assert.equal(status.reason, 'future_source_timestamp');
+});
+
+test('pre-publication cutoff selects previous eligible trading day, not current-day placeholder', () => {
+  const asOf = '2026-08-17T13:49:00.000Z';
+  const rows = [
+    { date: '2026-08-13', flow: 1 },
+    { date: '2026-08-14', flow: 2 },
+    { date: '2026-08-17', flow: 99 },
+  ];
+  const published = selectPublishedEtfFlowRows(rows, asOf);
+  assert.deepEqual(
+    published.map((r) => r.date),
+    ['2026-08-13', '2026-08-14']
+  );
+  const lastUpdated = `${published.at(-1).date}T16:00:00.000Z`;
+  const cadence = isEtfFlowsFreshForSourceCadence(lastUpdated, asOf);
+  assert.equal(cadence.fresh, true);
+  assert.equal(cadence.actualDate, '2026-08-14');
+  assert.equal(cadence.expectedLatestTradingDate, '2026-08-14');
+});
+
+test('previous eligible trading day remains fresh before publication cutoff', () => {
+  const lastUpdated = '2026-08-14T16:00:00.000Z';
+  const asOf = '2026-08-17T13:49:00.000Z';
+  const cadence = isEtfFlowsFreshForSourceCadence(lastUpdated, asOf);
+  assert.equal(cadence.fresh, true);
+  assert.equal(cadence.expectedLatestTradingDate, '2026-08-14');
+  const check = checkStaleness(lastUpdated, 24, { ...ETF_OPTS, asOf });
+  assert.equal(check.isStale, false);
 });

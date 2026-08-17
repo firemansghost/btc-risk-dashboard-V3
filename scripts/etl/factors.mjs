@@ -32,6 +32,7 @@ import {
   preserveSourceObservation,
   socialSourceObservationUtc,
 } from './lib/sourceObservationTime.mjs';
+import { selectPublishedEtfFlowRows } from './marketCalendar.mjs';
 
 // Resolve absolute paths for cache directories
 const __filename = fileURLToPath(import.meta.url);
@@ -1434,6 +1435,13 @@ async function computeEtfFlows() {
     if (flows.length === 0) {
       return { score: null, reason: "no_etf_data_parsed" };
     }
+
+    const asOfUtc = new Date().toISOString();
+    const publishedFlows = selectPublishedEtfFlowRows(flows, asOfUtc);
+    const publishedIndividual = selectPublishedEtfFlowRows(individualEtfFlows, asOfUtc);
+    if (publishedFlows.length === 0) {
+      return { score: null, reason: "no_published_etf_row" };
+    }
     
     // Schema tripwire - check if format changed
     const schemaChanged = await checkSchemaTripwire(schemaHash);
@@ -1442,23 +1450,24 @@ async function computeEtfFlows() {
     }
     
     // Calculate 21-day rolling sum
-    const flows21d = calculate21DayRollingSum(flows);
+    const flows21d = calculate21DayRollingSum(publishedFlows);
     
     if (flows21d.length === 0) {
       return { score: null, reason: "insufficient_data_for_21d_calculation" };
     }
     
-    // Check staleness - if latest data is > 5 days old, mark as stale
-    const latestDate = new Date(flows[flows.length - 1].date);
-    const daysSinceUpdate = (Date.now() - latestDate.getTime()) / (1000 * 60 * 60 * 24);
+    // Check staleness - if latest published data is > 5 days old, mark as stale
+    const latestDate = new Date(publishedFlows[publishedFlows.length - 1].date);
+    const daysSinceUpdate = (Date.parse(asOfUtc) - latestDate.getTime()) / (1000 * 60 * 60 * 24);
     const isStale = daysSinceUpdate > 5;
     
     // Get latest 21-day sum and calculate percentile
     const latest21d = flows21d[flows21d.length - 1];
     
     // Calculate latest individual ETF flows
-    const latestIndividualFlows = individualEtfFlows.length > 0 ? 
-      individualEtfFlows[individualEtfFlows.length - 1].flows : {};
+    const latestIndividualFlows = publishedIndividual.length > 0
+      ? publishedIndividual[publishedIndividual.length - 1].flows
+      : {};
     
     // Load historical baseline for percentile calculation (business days only)
     let historicalBaseline = null;
@@ -1504,15 +1513,15 @@ async function computeEtfFlows() {
     const score21d = riskFromPercentile(percentile, { invert: true, k: 3 });
     
     // 2. Recent Acceleration (30% weight) - 7d vs 21d trend
-    const flows7d = flows.slice(-7).reduce((sum, f) => sum + f.flow, 0);
-    const flows14d = flows.slice(-14, -7).reduce((sum, f) => sum + f.flow, 0);
+    const flows7d = publishedFlows.slice(-7).reduce((sum, f) => sum + f.flow, 0);
+    const flows14d = publishedFlows.slice(-14, -7).reduce((sum, f) => sum + f.flow, 0);
     const acceleration = flows7d - flows14d; // Recent vs previous week
     
     // Build acceleration series for percentile ranking
     const accelSeries = [];
-    for (let i = 14; i < flows.length - 7; i++) {
-      const recent = flows.slice(i, i + 7).reduce((sum, f) => sum + f.flow, 0);
-      const previous = flows.slice(i - 7, i).reduce((sum, f) => sum + f.flow, 0);
+    for (let i = 14; i < publishedFlows.length - 7; i++) {
+      const recent = publishedFlows.slice(i, i + 7).reduce((sum, f) => sum + f.flow, 0);
+      const previous = publishedFlows.slice(i - 7, i).reduce((sum, f) => sum + f.flow, 0);
       accelSeries.push(recent - previous);
     }
     
@@ -1547,8 +1556,8 @@ async function computeEtfFlows() {
     );
     
     // Format details with explicit units and tooltips
-    const latestFlow = flows[flows.length - 1];
-    const totalFlows = flows.reduce((sum, f) => sum + f.flow, 0);
+    const latestFlow = publishedFlows[publishedFlows.length - 1];
+    const totalFlows = publishedFlows.reduce((sum, f) => sum + f.flow, 0);
     
     return { 
       score: isStale ? null : score,
@@ -1581,7 +1590,7 @@ async function computeEtfFlows() {
           value: formatCurrencyWithTooltip(totalFlows),
           tooltip: `Exact: $${totalFlows.toLocaleString()} (since ETF inception)`
         },
-        { label: "Data Points", value: flows.length.toString() },
+        { label: "Data Points", value: publishedFlows.length.toString() },
         { label: "Last Update", value: `${daysSinceUpdate.toFixed(1)} days ago` }
       ],
       metrics: {
