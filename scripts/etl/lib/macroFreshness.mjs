@@ -8,10 +8,13 @@
  *    holiday. Good Friday is not a Board holiday and does not shift Monday H.10.
  *    Official: https://www.federalreserve.gov/releases/h10/default.htm
  *
- * 2. H.15 / Treasury CMT (DGS2)
- *    Bond-market / H.15 business days: federal holidays PLUS Good Friday
- *    (Treasury/SIFMA closed). Columbus Day and Veterans Day are closed for
- *    H.15 even when NYSE is open — do not expect a DGS2 print those days.
+ * 2. H.15 publication vs DGS2 observation (must not be the same calendar)
+ *    Publication: Federal Reserve Board business days. H.15 can publish on
+ *    Good Friday (Board open; April 2026 statistical-release calendar lists
+ *    3 Apr). Official: https://www.federalreserve.gov/releases/calendar.htm
+ *    Observation: Treasury / bond-market days. Good Friday has no new DGS2
+ *    print. Columbus Day and Veterans Day are also closed for Treasury even
+ *    when NYSE is open.
  *
  * 3. VIXCLS observation days follow CBOE/NYSE sessions (closed Good Friday,
  *    open Columbus Day / Veterans Day). FRED *publication* of VIXCLS is a
@@ -71,13 +74,13 @@ export const FEDERAL_RESERVE_HOLIDAYS_UTC = new Set([
 ]);
 
 /**
- * H.15 / Treasury / SIFMA closures for DGS2 observation and publication days.
- * Federal holidays plus Good Friday. NYSE-open federal days (Columbus Day,
- * Veterans Day) do not create a DGS2 observation.
+ * Treasury / SIFMA closures for DGS2 *observation* days only.
+ * Federal holidays plus Good Friday. Not used as the H.15 publication calendar:
+ * the Board can publish H.15 on Good Friday without a new Treasury print.
  */
-export const H15_BOND_MARKET_HOLIDAYS_UTC = new Set([
+export const DGS2_OBSERVATION_HOLIDAYS_UTC = new Set([
   ...FEDERAL_RESERVE_HOLIDAYS_UTC,
-  '2026-04-03', // Good Friday — Treasury/SIFMA closed; not a Board holiday
+  '2026-04-03', // Good Friday — Treasury/SIFMA closed; Board remains open
 ]);
 
 export function isFederalReserveHoliday(dateUtc) {
@@ -90,14 +93,20 @@ export function isFederalReserveBusinessDay(dateUtc) {
   return dow >= 1 && dow <= 5 && !isFederalReserveHoliday(key);
 }
 
-export function isH15BondMarketHoliday(dateUtc) {
-  return H15_BOND_MARKET_HOLIDAYS_UTC.has(toUtcDateString(dateUtc));
+/** H.15 / FRED publication days follow the Board calendar, including Good Friday. */
+export function isFederalReservePublicationDay(dateUtc) {
+  return isFederalReserveBusinessDay(dateUtc);
 }
 
-export function isH15BusinessDay(dateUtc) {
+export function isDgs2ObservationHoliday(dateUtc) {
+  return DGS2_OBSERVATION_HOLIDAYS_UTC.has(toUtcDateString(dateUtc));
+}
+
+/** Treasury CMT observation days: no print on federal holidays or Good Friday. */
+export function isDgs2ObservationDay(dateUtc) {
   const key = toUtcDateString(dateUtc);
   const dow = weekdayUtc(key);
-  return dow >= 1 && dow <= 5 && !isH15BondMarketHoliday(key);
+  return dow >= 1 && dow <= 5 && !isDgs2ObservationHoliday(key);
 }
 
 export function formatTimeZoneDate(asOfUtc, timeZone = H10_TIME_ZONE) {
@@ -281,8 +290,8 @@ export function getExpectedDgs2Date(asOfUtc) {
       minute: DGS2_PUBLISH_MINUTE_CT,
       graceMinutes: DGS2_PUBLISH_GRACE_MINUTES,
     },
-    isH15BusinessDay,
-    (releaseDate) => getPreviousCalendarBusinessDay(releaseDate, isH15BusinessDay)
+    isFederalReservePublicationDay,
+    (releaseDate) => getPreviousCalendarBusinessDay(releaseDate, isDgs2ObservationDay)
   );
 }
 

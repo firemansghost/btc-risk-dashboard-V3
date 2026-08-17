@@ -7,8 +7,9 @@ import {
   h10ReleaseInstantUtc,
   hasMacroSourceVintagesChanged,
   isFederalReserveHoliday,
+  isFederalReservePublicationDay,
   isH10ReleaseDay,
-  isH15BusinessDay,
+  isDgs2ObservationDay,
   isMacroOverlayFreshForSourceCadence,
   preserveMacroOverlayWarmCache,
   zonedCivilTimeToUtcIso,
@@ -82,9 +83,10 @@ test('Monday after H.10 publication + FRED grace expects week-end Aug 14', () =>
   assert.equal(getExpectedH10WeekEndDate(AS_OF_MONDAY_AFTER_H10), '2026-08-14');
 });
 
-test('MLK federal holiday: H.10 shifts to Tuesday; NYSE and H.15 are also closed Monday', () => {
+test('MLK federal holiday: Board, H.15 publication, and Treasury observation are closed', () => {
   assert.equal(isFederalReserveHoliday('2026-01-19'), true);
-  assert.equal(isH15BusinessDay('2026-01-19'), false);
+  assert.equal(isFederalReservePublicationDay('2026-01-19'), false);
+  assert.equal(isDgs2ObservationDay('2026-01-19'), false);
   assert.equal(isUsTradingDay('2026-01-19'), false);
   assert.equal(isH10ReleaseDay('2026-01-19'), false);
   assert.equal(isH10ReleaseDay('2026-01-20'), true);
@@ -92,9 +94,10 @@ test('MLK federal holiday: H.10 shifts to Tuesday; NYSE and H.15 are also closed
   assert.equal(getExpectedH10WeekEndDate('2026-01-21T01:00:00.000Z'), '2026-01-16');
 });
 
-test('Columbus Day is federal/H.15 closed and NYSE open: no DGS2 print, VIX can print', () => {
+test('Columbus Day is Board/H.15 publication closed and NYSE open: no DGS2 observation', () => {
   assert.equal(isFederalReserveHoliday('2026-10-12'), true);
-  assert.equal(isH15BusinessDay('2026-10-12'), false);
+  assert.equal(isFederalReservePublicationDay('2026-10-12'), false);
+  assert.equal(isDgs2ObservationDay('2026-10-12'), false);
   assert.equal(isUsTradingDay('2026-10-12'), true);
   assert.equal(isH10ReleaseDay('2026-10-12'), false);
   assert.equal(isH10ReleaseDay('2026-10-13'), true);
@@ -105,19 +108,29 @@ test('Columbus Day is federal/H.15 closed and NYSE open: no DGS2 print, VIX can 
   assert.equal(getExpectedVixDate('2026-10-13T14:45:00.000Z'), '2026-10-12');
 });
 
-test('Veterans Day is federal/H.15 closed and NYSE open', () => {
+test('Veterans Day is Board/H.15 publication closed and NYSE open', () => {
   assert.equal(isFederalReserveHoliday('2026-11-11'), true);
-  assert.equal(isH15BusinessDay('2026-11-11'), false);
+  assert.equal(isFederalReservePublicationDay('2026-11-11'), false);
+  assert.equal(isDgs2ObservationDay('2026-11-11'), false);
   assert.equal(isUsTradingDay('2026-11-11'), true);
   assert.equal(isH10ReleaseDay('2026-11-09'), true);
 });
 
-test('Good Friday is NYSE/H.15 closed and does not shift Monday H.10', () => {
+test('Good Friday 2026: Board/H.15 publication open, no DGS2 or NYSE observation', () => {
   assert.equal(isFederalReserveHoliday('2026-04-03'), false);
-  assert.equal(isH15BusinessDay('2026-04-03'), false);
+  assert.equal(isFederalReservePublicationDay('2026-04-03'), true);
+  assert.equal(isDgs2ObservationDay('2026-04-03'), false);
   assert.equal(isUsTradingDay('2026-04-03'), false);
   assert.equal(isH10ReleaseDay('2026-04-03'), false);
   assert.equal(isH10ReleaseDay('2026-04-06'), true);
+});
+
+test('Good Friday H.15 release makes Thursday DGS2 available; Monday morning still expects Apr 2', () => {
+  const afterFridayRelease = '2026-04-03T21:30:00.000Z';
+  const mondayMorning = '2026-04-06T13:49:00.000Z';
+  assert.equal(getExpectedDgs2Date(afterFridayRelease), '2026-04-02');
+  assert.equal(getExpectedDgs2Date(mondayMorning), '2026-04-02');
+  assert.notEqual(getExpectedDgs2Date(mondayMorning), '2026-04-01');
 });
 
 test('production failure fixture: Aug 7 DXY is fresh on Monday morning when daily legs match FRED clocks', () => {
