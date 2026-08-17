@@ -3,6 +3,9 @@
 
 import { isEtfFlowsFreshForSourceCadence } from './marketCalendar.mjs';
 import { isTermLeverageFreshForSourceCadence } from './lib/termFreshness.mjs';
+import { isMacroOverlayFreshForSourceCadence } from './lib/macroFreshness.mjs';
+
+export const CLOCK_SKEW_GRACE_MINUTES = 5;
 
 /**
  * Check if a date is a business day (Monday-Friday)
@@ -115,10 +118,19 @@ export function checkStaleness(dataTimestamp, ttlHours, options = {}) {
   const ageHours = ageMinutes / 60;
   const ageDays = ageHours / 24;
   
-  // Grace window: 5 minutes to account for clock skew and processing time
-  const graceMinutes = 5;
+  const graceMinutes = CLOCK_SKEW_GRACE_MINUTES;
   const ttlMinutes = ttlHours * 60;
   const staleMinutes = staleBeyondHours * 60;
+
+  if (ageMinutes < -graceMinutes) {
+    return {
+      isStale: true,
+      reason: 'future_source_timestamp',
+      ageHours,
+      ageDays,
+      ageMinutes
+    };
+  }
 
   /** ETF-style factors: SSOT may set business_days_only without market_dependent; both need calendar-aware freshness. */
   const calendarSensitive = marketDependent || businessDaysOnly;
@@ -236,6 +248,21 @@ export function getStalenessStatus(factorResult, ttlHours, options = {}) {
     };
   }
 
+  const asOfIso = asOf || new Date().toISOString();
+  const obsMs = Date.parse(factorResult.lastUpdated);
+  const asOfMs = Date.parse(asOfIso);
+  if (
+    Number.isFinite(obsMs) &&
+    Number.isFinite(asOfMs) &&
+    obsMs - asOfMs > CLOCK_SKEW_GRACE_MINUTES * 60 * 1000
+  ) {
+    return {
+      status: 'stale',
+      reason: 'future_source_timestamp',
+      lastUpdated: factorResult.lastUpdated
+    };
+  }
+
   if (factorName === 'term_leverage') {
     const cadence = isTermLeverageFreshForSourceCadence({
       fundingObservationUtc:
@@ -247,6 +274,20 @@ export function getStalenessStatus(factorResult, ttlHours, options = {}) {
       provider: factorResult.funding_provider || options.funding_provider || 'bitmex',
       fundingRows: factorResult.fundingData || options.fundingRows,
       fundingCadence: options.fundingCadence,
+      asOfUtc: asOf || new Date().toISOString(),
+    });
+    return {
+      status: cadence.fresh ? 'fresh' : 'stale',
+      reason: cadence.reason,
+      lastUpdated: factorResult.lastUpdated,
+    };
+  }
+
+  if (factorName === 'macro_overlay') {
+    const cadence = isMacroOverlayFreshForSourceCadence({
+      dxyDate: factorResult.latestDxyDate || options.latestDxyDate,
+      dgs2Date: factorResult.latestDgs2Date || options.latestDgs2Date,
+      vixDate: factorResult.latestVixDate || options.latestVixDate,
       asOfUtc: asOf || new Date().toISOString(),
     });
     return {

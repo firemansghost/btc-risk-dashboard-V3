@@ -43,7 +43,13 @@ test('macro lastUpdated is the oldest FRED vintage, not now', () => {
   });
   assert.equal(vintage, '2026-08-14T00:00:00.000Z');
   const status = getStalenessStatus(
-    { score: 5, lastUpdated: vintage },
+    {
+      score: 5,
+      lastUpdated: vintage,
+      latestDxyDate: '2026-08-15',
+      latestDgs2Date: '2026-08-14',
+      latestVixDate: '2026-08-15',
+    },
     24,
     {
       factorName: 'macro_overlay',

@@ -20,6 +20,7 @@ const PRODUCTION_ETL_MODULES = [
   'scripts/etl/stalenessUtils.mjs',
   'scripts/etl/fetch-helper.mjs',
   'scripts/etl/coinGeckoCache.mjs',
+  'scripts/etl/marketCalendar.mjs',
   'scripts/etl/adjustments.mjs',
   'scripts/etl/factor-history-tracking.mjs',
   'scripts/etl/lib/completedPeriods.mjs',
@@ -33,6 +34,7 @@ const PRODUCTION_ETL_MODULES = [
   'scripts/etl/lib/sourceObservationTime.mjs',
   'scripts/etl/lib/ssotSubweights.mjs',
   'scripts/etl/lib/termFreshness.mjs',
+  'scripts/etl/lib/macroFreshness.mjs',
 ];
 
 function checkModule(relPath) {
