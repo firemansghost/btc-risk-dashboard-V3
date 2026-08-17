@@ -373,8 +373,6 @@ async function loadPriceHistoryForTrend(asOfUtc = new Date().toISOString()) {
   }
 }
 
-}
-
 /**
  * Calculate Bull Market Support Band (BMSB) using 20-week SMA and 21-week EMA
  * @param {Array} weeklyCloses - Array of weekly close objects
