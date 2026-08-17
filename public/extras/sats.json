@@ -1,12 +1,12 @@
 {
-  "updated_at": "2026-08-16T11:25:58.861Z",
-  "date": "2026-08-16",
-  "btc_close_usd": 62918.32,
-  "sats_per_usd": 1589.3622080182688,
-  "usd_per_sat": 0.0006291832,
+  "updated_at": "2026-08-17T15:44:34.038Z",
+  "date": "2026-08-17",
+  "btc_close_usd": 64048.58,
+  "sats_per_usd": 1561.3148644357143,
+  "usd_per_sat": 0.0006404857999999999,
   "provenance": [
     {
-      "name": "BTC daily close (Coinbase)",
+      "name": "BTC UTC snapshot (Coinbase)",
       "ok": true,
       "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400",
       "ms": null
