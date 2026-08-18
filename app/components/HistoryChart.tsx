@@ -29,6 +29,25 @@ const OBSERVED_STROKE = '#10b981';
 const TREND_STROKE = '#047857';
 const LEGACY_STROKE = '#6b7280';
 
+type BoundaryLabelProps = {
+  viewBox?: { x?: number; y?: number; width?: number; height?: number };
+  labelText: string;
+  anchor: 'start' | 'end';
+  vertical: 'top' | 'bottom';
+};
+
+/** Keep ReferenceLine copy inside the plot by extending away from the nearer edge. */
+function BoundaryLabel({ viewBox, labelText, anchor, vertical }: BoundaryLabelProps) {
+  const x = (viewBox?.x ?? 0) + (anchor === 'end' ? -6 : 6);
+  const y =
+    vertical === 'top' ? (viewBox?.y ?? 0) + 12 : (viewBox?.y ?? 0) + (viewBox?.height ?? 0) - 8;
+  return (
+    <text x={x} y={y} textAnchor={anchor} fill="#6b7280" fontSize={10}>
+      {labelText}
+    </text>
+  );
+}
+
 function HistoryTooltip({
   active,
   payload,
@@ -235,12 +254,7 @@ export default function HistoryChart() {
                   x={presentation.modelEraMarkerTimestamp}
                   stroke="#9ca3af"
                   strokeDasharray="3 3"
-                  label={{
-                    value: 'Implementation change',
-                    position: 'insideTopLeft',
-                    fontSize: 10,
-                    fill: '#6b7280',
-                  }}
+                  label={<BoundaryLabel labelText="Implementation change" anchor="end" vertical="top" />}
                 />
               )}
               {presentation.showsProvenanceMarker && (
@@ -248,12 +262,7 @@ export default function HistoryChart() {
                   x={presentation.provenanceMarkerTimestamp}
                   stroke="#d1d5db"
                   strokeDasharray="2 4"
-                  label={{
-                    value: 'Observed series begins',
-                    position: 'insideBottomLeft',
-                    fontSize: 10,
-                    fill: '#6b7280',
-                  }}
+                  label={<BoundaryLabel labelText="Observed series begins" anchor="start" vertical="bottom" />}
                 />
               )}
               {presentation.showsLegacySeries && (
