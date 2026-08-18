@@ -18,17 +18,25 @@ The frozen v1.1 → v1.1.1 boundary is **not** altered by this audit:
 
 Current `public/data/history.csv` is **not** a globally as-published G-Score series.
 
-**FACT.** On 2025-09-26, commit `68462f345a075d56ad1f697722f16b35abc89262` replaced a 22-row series dated 2025-09-05 through 2025-09-26 with a 731-row series dated 2023-09-25 through 2025-09-26. All 22 pre-existing rows were rewritten (scores and bands changed; prices were preserved except 2025-09-26). The 709 newly inserted dates are 2023-09-25 through 2025-09-04. Those reconstructed rows are still present at HEAD; none of the 731 rewritten/inserted rows later changed.
+**FACT — 2025-09-26 sibling branches, not a single 22→731 operation.**
 
-**FACT.** The backfill *script* (`48c2c67789fbc94ba343a4fc5c05e97c2172f8fe`, 2025-09-25) did **not** modify `history.csv`. It called `computeAllFactors(price)` with only the historical daily close and left a delay “to avoid overwhelming APIs.” At that commit, `computeAllFactors` invoked live factor fetchers (stablecoins, ETF, FRED, funding, social, onchain) with no as-of-date argument.
+Base `48c2c67789fbc94ba343a4fc5c05e97c2172f8fe` had **21** `history.csv` rows (2025-09-05 through 2025-09-25). Two commits then descended independently from that parent:
 
-**INFERENCE.** The 2025-09-26 rewrite used then-current factor machinery (the same commit added “enhanced G-Score” sensitivity multipliers) plus live/non-point-in-time inputs. It is look-ahead / time-travel contaminated for factor inputs other than the historical BTC close used as the price column.
+- Scheduled ETL artifact `e9083962fcac56e305dff66810b9c5a7fceed394` (2025-09-26T11:19:04Z) added the 22nd contemporaneous row `2025-09-26,47,Hold/Neutral,108739.09` and matching `latest.json` `composite_score` 47.
+- Historical/enhanced rewrite `68462f345a075d56ad1f697722f16b35abc89262` (2025-09-26T12:30:41Z) did **not** descend from `e9083962`. It rewrote the **21** shared dates 2025-09-05..2025-09-25 and independently supplied a reconstructed 2025-09-26 row, producing **731** rows through `2025-09-26,85,High Risk,109108.44`.
+
+Merge `a02a1a56ae87f974370851e6ede03f2ab7cf6f5d` (2025-09-26T12:32:45Z; parents `68462f34` + `e9083962`; message “Keep enhanced data files with historical improvements”) resolved the conflict in favor of the reconstructed series, including G85 rather than the scheduled G47. Current `history.csv` therefore displaced the earlier seeded/observational values for all 22 dates **2025-09-05 through 2025-09-26** via **rewrite branch + merge**, not as one 22→731 diff inside `68462f34`. The 731 reconstructed/rewritten rows through 2025-09-26 are still present at HEAD; none later changed.
+
+**FACT.** The backfill *script* (`48c2c677`, 2025-09-25) did **not** modify `history.csv` beyond the 21-row series already in that tree. It called `computeAllFactors(price)` with only the historical daily close and left a delay “to avoid overwhelming APIs.” At that commit, `computeAllFactors` invoked live factor fetchers (stablecoins, ETF, FRED, funding, social, onchain) with no as-of-date argument.
+
+**INFERENCE.** The `68462f34` reconstruction used then-current factor machinery (the same commit added “enhanced G-Score” sensitivity multipliers) plus live/non-point-in-time inputs. It is look-ahead / time-travel contaminated for factor inputs other than the historical BTC close used as the price column.
 
 Therefore:
 
-- Do **not** use current `history.csv` rows dated **2023-09-25 through 2025-09-26** as official published G-Scores.
-- Git *can* recover earlier as-published snapshots from `latest.json` / pre-rewrite `history.csv` commits.
-- From **2025-09-27** onward, daily `chore(etl): update artifacts` commits append genuine production prints onto the reconstructed prefix. The **tail** of `history.csv` is observational; the **prefix** is not.
+- Do **not** use current `history.csv` rows dated **2023-09-25 through 2025-09-26** as official contemporaneous G-Score artifacts. Grade **C** stands.
+- When recovering a contemporaneous Git series, **2025-09-26 is `e9083962` G47**, not `68462f34` / `a02a1a56` G85.
+- Git *can* recover earlier contemporaneous committed artifacts from `latest.json` and from the `e9083962` 22-row file. This forensic Git audit does **not** prove the live Vercel site served those snapshots.
+- From **2025-09-27** onward, successful production ETL artifact dates append genuine observations onto the reconstructed prefix. That **observational tail is not calendar-contiguous** (293 rows over 326 calendar dates).
 - `factor_history.csv` still begins with **sample** rows (2025-08-28 through 2025-09-25). Those rows remain Grade D.
 - `public/signals/etf_by_fund.csv` is still the 2025-09-26 `Math.random` file. It was never replaced by Farside.
 - Signal v2 begins **2026-08-17** (two genuine ETL rows). It is not a historical replay store.
@@ -42,7 +50,7 @@ This inventory does **not** start calibration.
 
 **Path:** `public/data/history.csv`
 **Current schema:** `date,score,band,price_usd`
-**Current range:** 2023-09-25 → 2026-08-18
+**Current range:** 2023-09-25 → 2026-08-18 (not contiguous: 1024 rows over 1059 calendar dates)
 **Current data rows:** 1024
 **First introduction:** `83fdeac248cea52ceeea9a978273abf10442d19b` (2025-09-13) — a different prototype schema (many unlabeled numeric columns, one row dated 2025-09-14).
 
@@ -51,24 +59,28 @@ This inventory does **not** start calibration.
 | When | Commit | What `history.csv` contained |
 |---|---|---|
 | 2025-09-13 | `83fdeac2` | Prototype 1-row file, not the current 4-column schema |
-| 2025-09-15 | `3d11cce2e82bd9d9116cc187a6cf75f12a4fe3f5` | First current-schema file: **11 rows**, 2025-09-05 → 2025-09-15. Same commit seeded `latest.json` (`composite` 47, `version` v3.0.0, `updated_at` 2025-09-15). Dates 2025-09-05..14 in that file were **not** independent daily publications; they arrived in one seed commit. |
-| 2025-09-16 → 2025-09-26 | successive ETL/artifact commits, ending `e9083962fcac56e305dff66810b9c5a7fceed394` | Grew one day at a time to **22 rows**, 2025-09-05 → 2025-09-26. Last row at `e9083962`: `2025-09-26,47,Hold/Neutral,108739.09`. Matching `latest.json` `composite_score` 47. |
-| 2025-09-25 | `48c2c677` | Script-only. `history.csv` unchanged except the ordinary daily append already in tree (21 rows at that SHA). |
-| **2025-09-26** | **`68462f34`** | **Bulk reconstruction.** 22 → **731** rows. First date jumps to **2023-09-25**. **All 22 existing rows rewritten.** Last row becomes `2025-09-26,85,High Risk,109108.44`. Same commit adds enhanced G-Score multipliers in `scripts/etl/factors.mjs` and rebuilds several legacy signal CSVs. |
-| 2025-09-27 | `068b5987179e9dfca767152d1dfe43f01211ea7e` | First post-rewrite daily append: 732 rows, last `2025-09-27,75,Increase Selling,109366.69`, matching `latest.json` score 75. |
+| 2025-09-15 | `3d11cce2e82bd9d9116cc187a6cf75f12a4fe3f5` | First current-schema file: **11 rows**, 2025-09-05 → 2025-09-15. Same commit seeded `latest.json` (`composite` 47, `version` v3.0.0, `updated_at` 2025-09-15). **Earliest proven contemporaneous committed G-Score artifact.** Git proves the artifact existed in the repository; this audit does **not** prove live Vercel served it. Dates 2025-09-05..14 in that file were **not** independent daily artifacts; they arrived in one seed commit. |
+| 2025-09-16 → 2025-09-25 | successive ETL/artifact commits through `48c2c677` | Grew to **21 rows**, 2025-09-05 → 2025-09-25 |
+| 2025-09-25 | `48c2c677` | Backfill **script** added. `history.csv` at this SHA: **21 rows**. Parent of both Sep 26 siblings. |
+| **2025-09-26 11:19Z** | **`e9083962`** parent `48c2c677` | Scheduled-style artifact. **22 rows**; added contemporaneous `2025-09-26,47,Hold/Neutral,108739.09`; `latest.json` score 47. Sibling of `68462f34`, **not** its parent. |
+| **2025-09-26 12:30Z** | **`68462f34`** parent `48c2c677` | Reconstruction branch. **21 → 731** rows from the 21-row base. Rewrote 2025-09-05..25; independently wrote reconstructed `2025-09-26,85,High Risk,109108.44`. Same commit adds enhanced G-Score multipliers and rebuilds several legacy signal CSVs. |
+| **2025-09-26 12:32Z** | **`a02a1a56`** parents `68462f34` + `e9083962` | Merge kept reconstructed/enhanced files, including Sep 26 **G85**, discarding sibling **G47**. |
+| 2025-09-27 | `068b5987179e9dfca767152d1dfe43f01211ea7e` | First post-merge daily append: 732 rows, last `2025-09-27,75,Increase Selling,109366.69`, matching `latest.json` score 75. |
 | 2025-10-29 | `54d054b1` | 742 rows; reconstructed prefix unchanged |
 | 2025-12-11 | `6082a0f7` | 785 rows; prefix unchanged |
 | 2026-08-16 | `0032a729` | 1022 rows; prefix unchanged |
-| 2026-08-18 | `3e0c07ff` / HEAD | 1024 rows; prefix unchanged |
+| 2026-08-18 | `3e0c07ff` / HEAD | 1024 rows; prefix unchanged; calendar gaps remain (Appendix A) |
 
-**FACT.** Comparing `68462f34` vs HEAD for the 731 overlapping dates: **0 later changes**. There was no second bulk rewrite of reconstructed scores. Later Daily ETL appended (and same-day upserted) the current date only.
+**FACT.** Comparing `68462f34` vs HEAD for the 731 overlapping dates: **0 later changes**. There was no second bulk rewrite of reconstructed scores. Later successful ETL dates appended (and same-day upserted) the current date only. Missing calendar dates in the observational tail were never filled.
 
-**FACT.** Example of destruction of a published score inside the current file:
+**FACT.** Sep 26 classification for Git recovery:
 
-| Date | Pre-rewrite (`e9083962`) | Current `history.csv` / `68462f34` |
-|---|---|---|
-| 2025-09-26 | 47 Hold/Neutral, price 108739.09 | 85 High Risk, price 109108.44 |
-| 2025-09-05 | 47 Hold/Neutral | 68 Reduce Risk (price unchanged) |
+| Path | 2025-09-26 row |
+|---|---|
+| Contemporaneous scheduled-style artifact `e9083962` | **47 Hold/Neutral**, price 108739.09 — use this when recovering a contemporaneous committed series |
+| Reconstruction branch `68462f34` | **85 High Risk**, price 109108.44 — retrospective/enhanced; do **not** substitute for `e9083962` |
+| Merge `a02a1a56` and current `history.csv` | Kept **G85**; sibling G47 is absent from the merged file |
+| Shared dates 2025-09-05..25 | Rewritten on the `68462f34` branch (21 rows), then kept by the merge. Example 2025-09-05: 47 Hold/Neutral → 68 Reduce Risk (price unchanged) |
 
 ### Did the historical factor calls have true as-of-date inputs?
 
@@ -84,24 +96,31 @@ if (i < datesNeedingBackfill.length - 1) {
 
 **FACT, `computeAllFactors` at that SHA:** `async function computeAllFactors(dailyClose = null)` then `Promise.allSettled([computeTrendValuation(dailyClose), computeOnchain(), computeStablecoins(), computeEtfFlows(), ...])`. Only trend received the historical price. Other factors had **no historical date argument**.
 
-**INFERENCE:** `68462f34` is the commit that actually wrote the reconstructed rows. It does not invoke the backfill script by name, but it is the only commit that inserts 709 historical dates, and it simultaneously changes the mixer. The reconstructed series is not a frozen as-of replay.
+**INFERENCE:** `68462f34` is the commit that wrote the reconstructed 731-row **branch** (from the 21-row `48c2c677` base). It does not invoke the backfill script by name, but it is the commit that inserts the pre-2025-09-05 dates and rewrites the 21 shared dates. `a02a1a56` then made that branch the merged `history.csv`. The reconstructed series is not a frozen as-of replay.
 
 **Look-ahead / time-travel:** **FACT** that the designed backfill path used live APIs. **INFERENCE** that `68462f34` used that path or an equivalent live compute. Either way, reconstructed rows are **not** point-in-time safe. Additional contamination: 203 of 709 inserted scores equal `52`; 28 equal `100` — clustering consistent with a then-current factor snapshot painted across historical prices, not independent daily regimes.
 
-### After the backfill, when does daily production begin?
+### After the reconstruction merge, when do genuine production artifacts append?
 
-**FACT.** From 2025-09-27, artifact commits append one new calendar date at a time and the new last row matches that commit’s `latest.json` composite. That tail is observational **relative to then-current production code**, sitting on top of a reconstructed prefix.
+**FACT.** From 2025-09-27 onward, successful production ETL artifact dates append genuine observations. The observational tail is **not** calendar-contiguous.
+
+HEAD `history.csv`:
+
+- Reconstructed region 2023-09-25 through 2025-09-26: **731** rows / **733** possible calendar dates / **2** missing dates: **2024-06-21**, **2025-04-17**. Absence is recorded as **NO COMMITTED HISTORY OBSERVATION**; cause is **UNKNOWN** unless separately proven.
+- Observational tail 2025-09-27 through 2026-08-18: **293** rows / **326** possible calendar dates / **33** missing dates (Appendix A). Do not classify those gaps as ETL failures unless Git proves why each date is absent.
 
 **Mixed provenance (FACT):** one file, two origins.
 
-- 2023-09-25 … 2025-09-26: reconstructed / rewritten (Grade C)
-- 2025-09-27 … 2026-08-18: daily production appends (Grade B as published numbers; not frozen-input replay)
+- 2023-09-25 … 2025-09-26: reconstructed / rewritten then kept by `a02a1a56` (Grade C)
+- 2025-09-27 … 2026-08-18: successful production-artifact observation **set** (Grade B as contemporaneous committed numbers; not frozen-input replay; not a complete daily panel)
 
-### Can Git recover a cleaner as-published series?
+### Can Git recover a cleaner contemporaneous artifact series?
 
 **FACT. Yes, independently of the current `history.csv` prefix.**
 
-For each Daily ETL / seed artifact commit, `public/data/latest.json` is the snapshot that was published that day (fields grew over time). Pre-rewrite `history.csv` at `e9083962` recovers the 22-day 2025-09-05..26 **file**, but only 2025-09-15..26 have matching contemporaneous `latest.json` publications; 2025-09-05..14 were seeded in `3d11cce2`.
+For each Daily ETL / seed artifact commit, `public/data/latest.json` is the **committed production artifact** for that SHA (fields grew over time). This is not automatic proof of live-site deployment.
+
+`e9083962` recovers the 22-row 2025-09-05..26 **file**; only 2025-09-15..26 have matching contemporaneous `latest.json` artifacts; 2025-09-05..14 were seeded in `3d11cce2`. For 2025-09-26, recover **G47 from `e9083962`**, not G85 from `68462f34` / `a02a1a56`.
 
 Do **not** call current `history.csv` “as-published” globally.
 
@@ -202,7 +221,7 @@ Seven files, two rows each: `dxy_20d`, `etf_flows_21d`, `funding`, `mayer_multip
 | `d2ec290c` (2025-09-24) | Code: Coinbase-only system |
 | `9ea3ddb5` (2025-09-28) | Major backfill to 729 rows, 2023-09-29 → 2025-09-28 |
 | `5ce98324` / `e238a642` (2026-08-16) | v1.1.1 **code** for completed UTC daily candles (did not rewrite CSV) |
-| `db789cd9` (2026-08-17) | First published repaired CSV: window 2024-08-17 → 2026-08-16, almost all `ingested_at_utc=2026-08-17T15:43:11.045Z` |
+| `db789cd9` (2026-08-17) | First committed repaired CSV after v1.1.1 code: window 2024-08-17 → 2026-08-16, almost all `ingested_at_utc=2026-08-17T15:43:11.045Z` |
 | `3e0c07ff` (2026-08-18) | Append completed 2026-08-17 |
 
 **Two different uses (must not be conflated):**
@@ -210,9 +229,20 @@ Seven files, two rows each: `dxy_20d`, `etf_flows_21d`, `funding`, `mayer_multip
 | Use | Eligibility of current file |
 |---|---|
 | A. Historical **market price / outcome** series (completed UTC Coinbase daily closes, 2024-08-17 → 2026-08-17) | **LIMITED / YES** as a market series after v1.1.1 canonical repair. Re-ingested as a block on 2026-08-17, so it is not a growing as-of archive of what the repo knew on each past day. |
-| B. Proof of the **price known at a historical G-Score publication** | **NO** for dates before the v1.1.1 ingest. Use that day’s `latest.json` price fields instead. |
+| B. Proof of the **price known at a historical G-Score committed artifact** | **NO** for dates before the v1.1.1 ingest. Use that day’s `latest.json` price fields instead. |
 
-Forward-horizon **availability** on this series as of 2026-08-17 (do **not** compute returns here): last start date with a complete 30/90/180/365 calendar-day window inside the file is approximately 2026-07-18 / 2026-05-19 / 2026-02-18 / 2025-08-17. That is coverage, not a performance result.
+Forward-horizon **coverage** on the current Coinbase completed-daily series ending **2026-08-17** (do **not** compute returns):
+
+Convention used here: start date `D` has a complete N-day forward window if the market series contains calendar date `D + N` days, with the last completed daily `2026-08-17`. That implies latest eligible **start** dates:
+
+- 30d: **2026-07-18**
+- 90d: **2026-05-19**
+- 180d: **2026-02-18**
+- 365d: **2025-08-17**
+
+**CRITICAL (FACT):** All proven contemporaneous GhostGauge G-Score artifacts begin **after** 2025-08-17 (earliest is 2025-09-15 at `3d11cce2`). Therefore **no genuine observed/committed GhostGauge G-Score currently has a complete 365-day forward outcome**.
+
+As of 2026-08-18, the longest fully observable forward horizon for genuine GhostGauge committed production artifacts is **180 days**. No genuine publication artifact has yet aged 365 days.
 
 ---
 
@@ -251,9 +281,9 @@ For a typical `chore(etl): update artifacts [skip ci]` commit after fields exist
 | Producing **artifact** SHA | **YES** (the commit) |
 | Producing **code** SHA | **LIMITED** — parent of the bot commit, unless ETL was bundled into a feature commit (`54d054b1`, `3d11cce2`) |
 | Frozen raw vendor payloads for that minute | **NO** / **UNKNOWN** — not retained as a complete point-in-time input archive |
-| Pre-2025-09-27 scores from current `history.csv` | **NO** — those rows are reconstructed. Use pre-rewrite Git instead. |
+| Pre-2025-09-27 scores from current `history.csv` | **NO** — those rows are reconstructed. Recover contemporaneous Git artifacts instead; for 2025-09-26 use `e9083962`. |
 
-Not every artifact commit has every field. Early snapshots lack `ok`, `health`, `model_version`, `snapshot_date`, `price_kind`.
+Not every artifact commit has every field. Early snapshots lack `ok`, `health`, `model_version`, `snapshot_date`, `price_kind`. Git proves a **committed production artifact**; it does not by itself prove live Vercel deployment.
 
 ---
 
@@ -291,10 +321,10 @@ Evidence discovery, not automatic condemnation of every hit.
 
 | Path | Purpose | Grade | Replay? | Look-ahead risk if used as then-known state |
 |---|---|---|---|---|
-| `history.csv` 2023-09-25..2025-09-26 | Chart headline series (reconstructed) | **C** | NO | YES |
-| `history.csv` 2025-09-27..2026-08-16 | Chart headline (daily append of then-current prints) | **B** | NO | LOW for the printed number; HIGH if treated as current-model history |
-| `history.csv` 2026-08-17..2026-08-18 | v1.1.1 prints | **B** (publication **A**-like) | NO | LOW for the printed number |
-| Git `latest.json` per artifact commit | True publication snapshot | **B**, **A** for v1.1.1 fields | NO | LOW for published number |
+| `history.csv` 2023-09-25..2025-09-26 | Chart headline series (reconstructed + merge-kept) | **C** | NO | YES |
+| `history.csv` 2025-09-27..2026-08-16 | Chart headline (successful ETL observation **set**, 33 calendar gaps in the full 2025-09-27..2026-08-18 tail) | **B** | NO | LOW for the printed number; HIGH if treated as current-model history |
+| `history.csv` 2026-08-17..2026-08-18 | v1.1.1 committed artifacts | **B** (strong publication-artifact evidence) | NO | LOW for the printed number |
+| Git `latest.json` per artifact commit | Contemporaneous committed production artifact | **B**, **A** for v1.1.1 fields | NO | LOW for the committed number |
 | `factor_history.csv` 2025-08-28..2025-09-25 | Sample | **D** | NO | YES (fake) |
 | `factor_history.csv` 2025-09-27.. | Diagnostic ETL write | **B/U** | NO | MEDIUM — outputs only |
 | `btc_price_history.csv` | Canonical completed UTC daily closes | **B** as market series | N/A | N/A for outcomes; **NO** as publication-time price before ingest |
@@ -307,19 +337,40 @@ Evidence discovery, not automatic condemnation of every hit.
 
 ---
 
-## 11. Candidate clean observational windows
+## 11. Candidate observational periods / observation sets
 
-No performance statistics. Windows reported only where Git supports them. **Do not tune on the tiny v1.1.1 sample.**
+No performance statistics. These are **observation sets**, not implied continuous daily panels. Calendar gaps exist. Do not fabricate observations for missing dates. **Do not tune on the tiny v1.1.1 sample.**
 
-| Window | Evidence | Grade | Model lineage | Factor history | Price outcomes | Max forward horizon now |
+Horizon coverage vs market series ending 2026-08-17 (no returns): 30d only for observations on/before **2026-07-18**; 90d on/before **2026-05-19**; 180d on/before **2026-02-18**; **365d: none** for genuine GhostGauge artifacts.
+
+| Period | Calendar span | Actual n | Missing | Grade | Model lineage | Notes |
 |---|---|---|---|---|---|---|
-| Git-recovered snapshots **2025-09-17 → 2025-09-26** (pre-rewrite `latest.json` / `history.csv`) | Scheduled-style ETL artifacts; 2025-09-15 seed is one day earlier but includes seeded prior dates | **B** | Pre-SSOT / v3.x, 8 factors, pre-enhanced mixer until `68462f34` **same day as rewrite** | Sample-contaminated `factor_history` | Use contemporaneous `latest.json` price, not current CSV | Long in calendar time, but **n ≈ 10** prints |
-| Daily production **2025-09-27 → 2025-10-28** | Artifact commits; last `history.csv` row matches `latest.json` | **B** | Enhanced mixer, onchain still enabled, weights not yet 30/30 | Genuine rows exist | `latest.json` price | Outcome series exists later; publication-time price ≠ current Coinbase rebuild |
-| **2025-10-29 → 2025-12-10** | `54d054b1` onward | **B** | 30/30, onchain off, artifact still `v3.1.0` | Onchain `null,unknown` | same | same |
-| **2025-12-11 → 2026-08-16** | `6082a0f7` … `0032a729` | **B** | **Labeled** `v1.1`; **not** a proven methodology-era start | Yes | same | 30d–365d possible vs Coinbase market series for older dates in this window |
-| **2026-08-17 → current** | `db789cd9`, `3e0c07ff` | **B** headline / strong publication evidence | Frozen **v1.1.1 / integrity-2026-08** | Yes, 7 factors | Canonical Coinbase history | Too few prints for calibration; 30d forward **not yet observable** for 2026-08-17 |
+| Git-recovered contemporaneous artifacts **2025-09-17 → 2025-09-26** | 10 days | **10** (contiguous in `e9083962`) | 0 in that file | **B** | Pre-SSOT / v3.x, 8 factors, pre-enhanced mixer | Use `e9083962` for Sep 26 **G47**. Seeded 2025-09-05..14 are not independent daily artifacts. `factor_history` still sample-contaminated. |
+| Successful ETL set **2025-09-27 → 2025-10-28** | 32 days | **10** | **22** (2025-10-07..2025-10-28) | **B** | Enhanced mixer, onchain still enabled | Observation set, not a complete panel. |
+| **2025-10-29 → 2025-12-10** | 43 days | **43** | **0** | **B** | 30/30, onchain off, artifact still `v3.1.0` | Contiguous in `history.csv`. |
+| **2025-12-11 → 2026-08-16** | 249 days | **238** | **11** (see Appendix A) | **B** | **Labeled** `v1.1`; start unverified | 365d forward **not** available for these genuine artifacts. 180d only for observations on/before 2026-02-18. |
+| **2026-08-17 → 2026-08-18** | 2 days | **2** | **0** | **B** (strong committed-artifact evidence) | Frozen **v1.1.1 / integrity-2026-08** | Too few to calibrate; 30d forward not yet observable. |
 
 **Not a candidate:** 2023-09-25 → 2025-09-04 in current `history.csv` (reconstructed only).
+
+---
+
+## Appendix A — `history.csv` calendar dates with no committed observation
+
+A missing date is **NO COMMITTED HISTORY OBSERVATION**. Cause is **UNKNOWN** unless Git evidence for that date is proven. Not classified as a failure here.
+
+### A. Reconstructed region (2023-09-25 through 2025-09-26)
+
+733 possible calendar dates, 731 rows, **2** missing:
+
+- 2024-06-21
+- 2025-04-17
+
+### B. Observational tail (2025-09-27 through 2026-08-18)
+
+326 possible calendar dates, 293 rows, **33** missing:
+
+2025-10-07, 2025-10-08, 2025-10-09, 2025-10-10, 2025-10-11, 2025-10-12, 2025-10-13, 2025-10-14, 2025-10-15, 2025-10-16, 2025-10-17, 2025-10-18, 2025-10-19, 2025-10-20, 2025-10-21, 2025-10-22, 2025-10-23, 2025-10-24, 2025-10-25, 2025-10-26, 2025-10-27, 2025-10-28, 2026-01-14, 2026-03-06, 2026-03-29, 2026-03-30, 2026-04-04, 2026-04-05, 2026-04-06, 2026-04-12, 2026-05-25, 2026-06-01, 2026-06-20.
 
 ---
 
@@ -330,8 +381,9 @@ No performance statistics. Windows reported only where Git supports them. **Do n
 3. **UNKNOWN:** complete frozen vendor payloads for any historical Daily ETL minute.
 4. **UNKNOWN:** v1.1 **methodology** start date. First artifact **label** is 2025-12-11; that is not frozen as an era start.
 5. **UNKNOWN:** which legacy `etf_flows_21d.csv` rows before the zero-drift era are true Farside parses vs cache artifacts.
-6. **UNKNOWN:** exact set of missing `factor_history.csv` calendar days (323 rows vs span 2025-08-28 → 2026-08-18).
-7. **UNKNOWN:** whether weekly-backtest / DCA comparison code applied then-current band maps onto reconstructed historical scores (band-label drift). Even if mapped correctly, inputs remain contaminated.
+6. **FACT (listed):** missing `history.csv` calendar dates — reconstructed **2024-06-21**, **2025-04-17**; observational tail 33 dates in Appendix A. **UNKNOWN:** why each is absent.
+7. **UNKNOWN:** exact set of missing `factor_history.csv` calendar days (323 rows vs span 2025-08-28 → 2026-08-18).
+8. **UNKNOWN:** whether weekly-backtest / DCA comparison code applied then-current band maps onto reconstructed historical scores (band-label drift). Even if mapped correctly, inputs remain contaminated.
 
 ---
 
@@ -339,7 +391,7 @@ No performance statistics. Windows reported only where Git supports them. **Do n
 
 These are recommendations for independent review. **This audit did not edit** `docs/MODEL_ERAS.md`, `docs/DECISIONS.md`, or `REPO_REONBOARD.md`.
 
-1. **`docs/MODEL_ERAS.md` overstates `history.csv` as an as-published headline series.** Current file mixes (a) reconstructed 2023-09-25..2025-09-26 rows that **replaced** earlier publications and (b) later daily appends. Say “as-published” only for Git `latest.json` snapshots and for `history.csv` dates **after** 2025-09-26, or recover pre-rewrite Git copies for 2025-09-15..26.
+1. **`docs/MODEL_ERAS.md` overstates `history.csv` as an as-published headline series.** Current file mixes (a) reconstructed 2023-09-25..2025-09-26 rows kept by merge `a02a1a56` after `68462f34` displaced earlier contemporaneous values and (b) a later non-contiguous observational tail. Say “as-published” / “contemporaneous committed artifact” only for Git `latest.json` snapshots (Sep 26 = `e9083962` G47) and for `history.csv` dates **after** 2025-09-26 that actually exist.
 2. **`docs/DECISIONS.md` (2026-08-18 and 2026-05-07)** and **`REPO_REONBOARD.md` (2026-08-18 checkpoint)** repeat “`history.csv` remains as-published.” That is true of **policy going forward** (no v1.1.1 rewrite of the past) but **false as a description of the 2025-09-26 reconstruction already in the file**.
 3. **Do not add a v1.1 start date** of 2025-12-11. That is the first `model_version` **label**, not a completed lineage proof. Keep start **unverified**.
 4. Do not treat Oct 29 2025 (`54d054b1`) as v1.1 start; artifacts that day still say `v3.1.0`.
