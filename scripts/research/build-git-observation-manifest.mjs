@@ -198,8 +198,36 @@ export function utcDateFromInstant(iso) {
 export function dateOnly(value) {
   if (value === null || value === undefined || value === '') return null;
   const s = String(value).trim();
-  const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+  const m = s.match(/^(\d{4}-\d{2}-\d{2})$/);
   return m ? m[1] : null;
+}
+
+export function parseStrictUtcCalendarDate(value, fieldName) {
+  const s = value === null || value === undefined ? '' : String(value).trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    throw new Error(`STOP: malformed ${fieldName}=${JSON.stringify(value)}`);
+  }
+  const [year, month, day] = s.split('-').map(Number);
+  const dt = new Date(Date.UTC(year, month - 1, day));
+  if (dt.getUTCFullYear() !== year || dt.getUTCMonth() + 1 !== month || dt.getUTCDate() !== day) {
+    throw new Error(`STOP: invalid calendar ${fieldName}=${JSON.stringify(value)}`);
+  }
+  return s;
+}
+
+export function parseRequiredInstant(value, fieldName) {
+  const iso = toIsoUtc(value);
+  if (!iso) {
+    throw new Error(`STOP: malformed ${fieldName}=${JSON.stringify(value)}`);
+  }
+  return iso;
+}
+
+function explicitNonEmpty(parsed, key) {
+  if (!parsed || typeof parsed !== 'object') return false;
+  if (!Object.prototype.hasOwnProperty.call(parsed, key)) return false;
+  const value = parsed[key];
+  return value !== null && value !== undefined && value !== '';
 }
 
 export function toIsoUtc(value) {
@@ -237,11 +265,11 @@ function firstLegacyInstant(parsed) {
   const dates = [];
   let instant = null;
   for (const field of fields) {
-    if (!(field in parsed) || parsed[field] === null || parsed[field] === '') continue;
-    const iso = toIsoUtc(parsed[field]);
+    if (!explicitNonEmpty(parsed, field)) continue;
+    const iso = parseRequiredInstant(parsed[field], field);
     const date = utcDateFromInstant(iso);
     if (!date) {
-      throw new Error(`STOP: unparseable legacy timestamp field ${field}=${JSON.stringify(parsed[field])}`);
+      throw new Error(`STOP: malformed ${field}=${JSON.stringify(parsed[field])}`);
     }
     dates.push({ field, date, iso });
     if (!instant) instant = iso;
@@ -264,18 +292,37 @@ export function observationFieldsFromParsed(parsed, commitTimestampUtc, { invali
     };
   }
 
-  const snapshot = dateOnly(parsed.snapshot_date);
-  const asOfIso = parsed.as_of_utc ? toIsoUtc(parsed.as_of_utc) : null;
-  const asOfDate = asOfIso ? utcDateFromInstant(asOfIso) : null;
-  const legacy = firstLegacyInstant(parsed);
-  const dailyClose = dateOnly(parsed.daily_close_date);
-  const commitDate = utcDateFromInstant(commitTimestampUtc);
+  const highPriority = [];
+  let snapshot = null;
+  if (explicitNonEmpty(parsed, 'snapshot_date')) {
+    snapshot = parseStrictUtcCalendarDate(parsed.snapshot_date, 'snapshot_date');
+    highPriority.push({ field: 'snapshot_date', date: snapshot });
+  }
 
-  if (asOfDate && legacy.dates.length && legacy.dates[0].date !== asOfDate) {
+  let asOfIso = null;
+  let asOfDate = null;
+  if (explicitNonEmpty(parsed, 'as_of_utc')) {
+    asOfIso = parseRequiredInstant(parsed.as_of_utc, 'as_of_utc');
+    asOfDate = utcDateFromInstant(asOfIso);
+    if (!asOfDate) {
+      throw new Error(`STOP: malformed as_of_utc=${JSON.stringify(parsed.as_of_utc)}`);
+    }
+    highPriority.push({ field: 'as_of_utc', date: asOfDate });
+  }
+
+  const legacy = firstLegacyInstant(parsed);
+  for (const item of legacy.dates) {
+    highPriority.push({ field: item.field, date: item.date });
+  }
+
+  const uniqueHighPriorityDates = new Set(highPriority.map((item) => item.date));
+  if (uniqueHighPriorityDates.size > 1) {
     throw new Error(
-      `STOP: as_of_utc date ${asOfDate} conflicts with legacy timestamp date ${legacy.dates[0].date}`,
+      `STOP: conflicting high-priority observation UTC dates: ${highPriority.map((item) => `${item.field}=${item.date}`).join(', ')}`,
     );
   }
+
+  const commitDate = utcDateFromInstant(commitTimestampUtc);
 
   let observation_date = null;
   let observation_date_source = null;
@@ -288,8 +335,8 @@ export function observationFieldsFromParsed(parsed, commitTimestampUtc, { invali
   } else if (legacy.dates.length) {
     observation_date = legacy.dates[0].date;
     observation_date_source = 'legacy_timestamp';
-  } else if (dailyClose) {
-    observation_date = dailyClose;
+  } else if (explicitNonEmpty(parsed, 'daily_close_date')) {
+    observation_date = parseStrictUtcCalendarDate(parsed.daily_close_date, 'daily_close_date');
     observation_date_source = 'daily_close_date';
   } else if (commitDate) {
     observation_date = commitDate;
@@ -919,7 +966,14 @@ export function buildManifests({ repoRoot, sourceMainSha, outputDir }) {
         || topologySightings.some((s) => s.latest_blob_sha === blob && KNOWN_INVALID_COMMIT_SHAS.has(s.commit_sha));
       if (!knownCommit) unexpectedInvalid.push({ blob, commit: canonical.commit_sha });
     }
-    const obs = observationFieldsFromParsed(parsed, canonical.commit_timestamp_utc, { invalidJson });
+    let obs;
+    try {
+      obs = observationFieldsFromParsed(parsed, canonical.commit_timestamp_utc, { invalidJson });
+    } catch (err) {
+      throw new Error(
+        `STOP: observation-time integrity failure for artifact ${blob} canonical_commit=${canonical.commit_sha}: ${err.message}`,
+      );
+    }
     const evidenceClass = artifactEvidenceClass({ blobSha: blob, invalidJson });
     const role = operationalRole({
       blobSha: blob,

@@ -22,17 +22,92 @@ import {
   SERIAL_RESTORE_LATER_COMMIT,
 } from '../build-git-observation-manifest.mjs';
 
-test('observation-date hierarchy: snapshot_date wins over as_of_utc date', () => {
+test('observation-date hierarchy: consistent snapshot_date and as_of_utc', () => {
   const out = observationFieldsFromParsed(
     {
       snapshot_date: '2026-08-17',
-      as_of_utc: '2026-08-18T01:00:00.000Z',
+      as_of_utc: '2026-08-17T15:44:32.381Z',
     },
     '2026-08-19T00:00:00.000Z',
   );
   assert.equal(out.observation_date, '2026-08-17');
   assert.equal(out.observation_date_source, 'snapshot_date');
-  assert.equal(out.observation_as_of_utc, '2026-08-18T01:00:00.000Z');
+  assert.equal(out.observation_as_of_utc, '2026-08-17T15:44:32.381Z');
+});
+
+test('observation-date conflict: snapshot_date vs as_of_utc different UTC dates throws', () => {
+  assert.throws(
+    () =>
+      observationFieldsFromParsed(
+        {
+          snapshot_date: '2026-08-17',
+          as_of_utc: '2026-08-18T01:00:00Z',
+        },
+        '2026-08-19T00:00:00.000Z',
+      ),
+    /STOP: conflicting high-priority observation UTC dates:.*snapshot_date=2026-08-17.*as_of_utc=2026-08-18/,
+  );
+});
+
+test('observation-date conflict: snapshot_date vs legacy timestamp different UTC dates throws', () => {
+  assert.throws(
+    () =>
+      observationFieldsFromParsed(
+        {
+          snapshot_date: '2026-08-17',
+          updated_at: '2026-08-16T21:00:00.000Z',
+        },
+        '2026-08-19T00:00:00.000Z',
+      ),
+    /STOP: conflicting high-priority observation UTC dates:.*snapshot_date=2026-08-17.*updated_at=2026-08-16/,
+  );
+});
+
+test('observation-date conflict: as_of_utc vs legacy timestamp different UTC dates throws', () => {
+  assert.throws(
+    () =>
+      observationFieldsFromParsed(
+        {
+          as_of_utc: '2026-08-17T15:44:32.381Z',
+          updated_at: '2026-08-16T21:00:00.000Z',
+        },
+        '2026-08-19T00:00:00.000Z',
+      ),
+    /STOP: conflicting high-priority observation UTC dates:.*as_of_utc=2026-08-17.*updated_at=2026-08-16/,
+  );
+});
+
+test('malformed as_of_utc throws and does not fall back to commit date', () => {
+  assert.throws(
+    () =>
+      observationFieldsFromParsed(
+        { as_of_utc: 'not-a-timestamp' },
+        '2026-08-19T00:00:00.000Z',
+      ),
+    /STOP: malformed as_of_utc=/,
+  );
+});
+
+test('malformed snapshot_date throws and does not fall back', () => {
+  assert.throws(
+    () =>
+      observationFieldsFromParsed(
+        { snapshot_date: '2026/08/17' },
+        '2026-08-19T00:00:00.000Z',
+      ),
+    /STOP: malformed snapshot_date=/,
+  );
+});
+
+test('invalid date-only snapshot_date 2026-02-30 throws', () => {
+  assert.throws(
+    () =>
+      observationFieldsFromParsed(
+        { snapshot_date: '2026-02-30' },
+        '2026-08-19T00:00:00.000Z',
+      ),
+    /STOP: invalid calendar snapshot_date=/,
+  );
 });
 
 test('observation-date hierarchy: as_of_utc wins over legacy timestamp', () => {
@@ -78,6 +153,30 @@ test('observation-date hierarchy: daily_close_date only if 1-3 absent', () => {
   );
   assert.equal(onlyClose.observation_date, '2026-05-06');
   assert.equal(onlyClose.observation_date_source, 'daily_close_date');
+});
+
+test('daily_close_date may differ from as_of_utc without triggering a high-priority conflict', () => {
+  const out = observationFieldsFromParsed(
+    {
+      as_of_utc: '2026-05-07T11:19:00.000Z',
+      daily_close_date: '2026-05-06',
+    },
+    '2026-05-07T12:00:00.000Z',
+  );
+  assert.equal(out.observation_date, '2026-05-07');
+  assert.equal(out.observation_date_source, 'as_of_utc');
+  assert.equal(out.observation_as_of_utc, '2026-05-07T11:19:00.000Z');
+});
+
+test('malformed daily_close_date throws when it is the selected observation-time field', () => {
+  assert.throws(
+    () =>
+      observationFieldsFromParsed(
+        { daily_close_date: 'not-a-date' },
+        '2026-08-19T00:00:00.000Z',
+      ),
+    /STOP: malformed daily_close_date=/,
+  );
 });
 
 test('invalid JSON uses unknown observation date, not commit fallback', () => {
