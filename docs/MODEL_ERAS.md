@@ -10,11 +10,37 @@ GhostGauge historical observations are **as-published observations**. They must 
 
 Do not treat earlier historical rows as though they were computed under current `v1.1.1` / `integrity-2026-08` semantics.
 
+## Current registry scope
+
+This registry currently establishes the **verified v1.1 → v1.1.1 boundary**.
+
+It establishes:
+
+- the final verified v1.1 observation on **2026-08-16**
+- the first verified v1.1.1 observation on **2026-08-17**
+
+It does **not** yet establish:
+
+- the original start date of v1.1
+- the complete model/version lineage of earlier historical observations
+
+Therefore:
+
+Historical rows before a separately verified v1.1 start boundary must **not** be automatically classified as v1.1 merely because they precede 2026-08-17.
+
+For era-specific calibration, earlier observations should remain **legacy/unclassified** unless their producing implementation/version can be established from repository or artifact evidence.
+
+Future historical-lineage work may extend this registry backward as evidence supports it.
+
 ---
 
 ## Era: v1.1 legacy production
 
 **Status:** Closed
+
+**Verified start:** Not established by this closeout.
+
+**Verified end:** 2026-08-16.
 
 **Last official observation:**
 
@@ -84,6 +110,7 @@ The Aug 16 G54 → Aug 17 G47 difference **crosses an implementation / model-era
 10. The first **normal scheduled** v1.1.1 observation is **2026-08-18**. The Aug 17 observation is valid and official, but was a delayed manual recovery print.
 11. Failed Aug 17 runs produced **no official observations** and must not be inserted into history.
 12. Never fabricate or backdate an observation to fill an operational gap.
+13. Do **not** assign pre-boundary historical rows to v1.1 unless repository or artifact evidence establishes that they were produced under v1.1.
 
 ### Signals and frozen inputs
 
