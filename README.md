@@ -2,7 +2,7 @@
 
 # Bitcoin Risk Dashboard
 
-A real-time Bitcoin risk assessment dashboard that provides a 0-100 risk score based on five analytical pillars: Liquidity, Momentum, Leverage, Macro, and Social factors. The system offers complete transparency with detailed factor breakdowns, historical tracking, and configurable weights.
+A Bitcoin risk assessment dashboard that publishes a daily UTC **intraday snapshot** G-Score (0-100) based on five analytical pillars: Liquidity, Momentum, Leverage, Macro, and Social factors. The system offers complete transparency with detailed factor breakdowns, historical tracking, and configurable weights. `public/data/latest.json` is the authoritative current snapshot.
 
 **Live Dashboard**: https://www.ghostgauge.com/
 
@@ -25,7 +25,7 @@ npm run etl:compute
 
 ## Daily ETL is Source of Truth
 
-The dashboard relies on a daily ETL pipeline that computes all risk factors and generates data artifacts. The ETL runs automatically via GitHub Actions at 11:00 UTC and produces `public/data/latest.json` as the authoritative data source. Real-time refresh functionality is available but uses the same ETL-computed factors for consistency.
+The dashboard relies on a daily ETL pipeline that computes all risk factors and generates data artifacts. GitHub Actions is scheduled at 11:00 UTC; actual execution can begin later because of GitHub Actions scheduling and queueing. The pipeline produces `public/data/latest.json` as the authoritative current snapshot. In-app refresh uses the same ETL-computed snapshot for consistency.
 
 ## Read More
 
@@ -36,12 +36,14 @@ The dashboard relies on a daily ETL pipeline that computes all risk factors and 
 - [Runbook](docs/RUNBOOK.md) - Local development, deployment, and troubleshooting guide
 - [Roadmap](docs/ROADMAP.md) - Planned features and development timeline
 - [Architecture Decisions](docs/DECISIONS.md) - Key technical choices and rationale
+- [Model Eras](docs/MODEL_ERAS.md) - As-published historical era boundaries for calibration
+- [v1.1.1 Transition Closeout](docs/V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md) - Integrity-transition record
 - [Cursor Prompts](docs/PROMPTS/CURSOR_BASE.md) - AI agent guidelines and development rules
 
 ## Key Features
 
 ### Risk Assessment
-- **Real-time G-Score**: 0-100 risk assessment based on five analytical pillars
+- **Daily UTC snapshot G-Score**: 0-100 risk assessment based on five analytical pillars (intraday snapshot, not an end-of-day close)
 - **Interactive Radial Gauge**: Professional SVG gauge with smooth animations and accessibility
 - **Factor Transparency**: Detailed breakdown of all risk factors with weights and contributions
 - **Historical Tracking**: Complete factor history with percentile rankings

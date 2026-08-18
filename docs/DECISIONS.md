@@ -2,6 +2,40 @@
 
 Key technical choices and rationale for the Bitcoin Risk Dashboard.
 
+## 2026-08-18 — v1.1.1 integrity semantics and model-era boundary
+
+**Decision:** GhostGauge adopts **v1.1.1 / integrity-2026-08** as the active production implementation era beginning with the official **2026-08-17** observation.
+
+The change corrects:
+
+- snapshot / completed-period semantics
+- source-vintage provenance
+- source-aware freshness
+- canonical BTC history
+- SSOT subweight consumption
+- future timestamp handling
+- signal-v2 output contract
+- disabled adjustment enforcement
+- non-overlapping band assignment
+
+Official factor and pillar weights are preserved. v1.1.1 is an implementation-integrity revision, not a wholesale new scoring methodology.
+
+**Historical implication:**
+
+- `public/data/history.csv` remains **as-published**.
+- No legacy backfill or rewrite was authorized.
+- Calibration crossing the Aug 16/17 boundary must mark or separate eras.
+- The Aug 16 G54 print is the last official v1.1 observation.
+- The Aug 17 G47 print is the first official v1.1.1 observation (delayed manual recovery).
+- The Aug 18 G47 print is the first **normal scheduled** v1.1.1 observation and closes the operational transition.
+
+**References:**
+
+- [`docs/MODEL_ERAS.md`](MODEL_ERAS.md)
+- [`docs/V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md`](V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md)
+
+---
+
 ## 2026-08-16 — ETF trading-day cadence and post-stabilization production evidence
 
 **Decision:** ETF Flows freshness is evaluated using expected **U.S. trading-day / source cadence** rather than calendar age alone when appropriate.

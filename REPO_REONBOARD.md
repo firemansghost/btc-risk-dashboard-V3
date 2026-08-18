@@ -4,6 +4,34 @@
 
 ---
 
+## GhostGauge Checkpoint — 2026-08-18
+
+v1.1.1 operational transition is **COMPLETE**.
+
+Active production: `model_version` **v1.1.1**, `implementation_revision` **integrity-2026-08**, `ssot_version` **2.1.1**.
+
+Era boundary:
+
+- **2026-08-16** — final official **v1.1** observation: G54 Hold & Wait (`0032a72942f70cf26a5dc7ca66a8161bfc0db909`).
+- **2026-08-17** — first valid **v1.1.1** observation: G47 Moderate Buying. Delayed `workflow_dispatch` recovery print (`32043136063` / `db789cd9c59b474044d428bfdccbe07312798236`).
+- **2026-08-18** — first successful **normal scheduled** v1.1.1 observation: G47 Moderate Buying (`32131944952` / `3e0c07ff08a236e59ad60e12373ff02eb138c7fb`).
+
+All seven required scoring factors are operational. Canonical BTC history is working (completed UTC daily candles; newest completed date **2026-08-17** on the Aug 18 print). The strict post-compute freshness gate remains enabled and refused the contaminated first recovery attempt.
+
+`history.csv` remains **as-published**. Do not relabel legacy rows as v1.1.1 or treat the Aug 16 G54 → Aug 17 G47 difference as an automatic seven-point market-risk move.
+
+**Next task:** historical / calibration architecture and analysis, using [`docs/MODEL_ERAS.md`](docs/MODEL_ERAS.md) as the era registry.
+
+See:
+
+- [`docs/MODEL_ERAS.md`](docs/MODEL_ERAS.md)
+- [`docs/V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md`](docs/V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md)
+- [`docs/DECISIONS.md`](docs/DECISIONS.md)
+
+The August 16 checkpoint below is unchanged historical continuity evidence.
+
+---
+
 ## GhostGauge Checkpoint — 2026-08-16
 
 Continuity checkpoint after the June 21–August 15, 2026 operational retrospective. Older checkpoints below are unchanged.
