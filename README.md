@@ -36,7 +36,9 @@ The dashboard relies on a daily ETL pipeline that computes all risk factors and 
 - [Runbook](docs/RUNBOOK.md) - Local development, deployment, and troubleshooting guide
 - [Roadmap](docs/ROADMAP.md) - Planned features and development timeline
 - [Architecture Decisions](docs/DECISIONS.md) - Key technical choices and rationale
-- [Model Eras](docs/MODEL_ERAS.md) - As-published historical era boundaries for calibration
+- [Model Eras](docs/MODEL_ERAS.md) - Verified model-era boundaries and historical provenance rules
+- [Historical Evidence Inventory](docs/HISTORICAL_EVIDENCE_INVENTORY_2026-08-18.md) - Provenance forensic record for historical artifacts
+- [Historical Data Eligibility](docs/HISTORICAL_DATA_ELIGIBILITY_2026-08-18.md) - Rules for permissible analytical use of historical data
 - [v1.1.1 Transition Closeout](docs/V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md) - Integrity-transition record
 - [Cursor Prompts](docs/PROMPTS/CURSOR_BASE.md) - AI agent guidelines and development rules
 
@@ -46,7 +48,7 @@ The dashboard relies on a daily ETL pipeline that computes all risk factors and 
 - **Daily UTC snapshot G-Score**: 0-100 risk assessment based on five analytical pillars (intraday snapshot, not an end-of-day close)
 - **Interactive Radial Gauge**: Professional SVG gauge with smooth animations and accessibility
 - **Factor Transparency**: Detailed breakdown of all risk factors with weights and contributions
-- **Historical Tracking**: Complete factor history with percentile rankings
+- **Historical Tracking**: Headline and diagnostic history with documented provenance boundaries
 - **Configurable Weights**: Dynamic weight adjustment with real-time impact analysis
 
 ### Interactive Visual Components
@@ -68,3 +70,5 @@ The dashboard relies on a daily ETL pipeline that computes all risk factors and 
 - **Risk-Based Strategies**: DCA vs. risk-based allocation comparison
 - **Performance Metrics**: Sharpe ratio, max drawdown, and return analysis
 - **Interactive Testing**: User-defined scenario testing tools
+
+Existing legacy backtest artifacts are retained for historical/reference purposes but are not validated calibration evidence because H1 established mixed/reconstructed historical inputs.
