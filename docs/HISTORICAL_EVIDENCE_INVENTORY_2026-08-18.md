@@ -12,6 +12,20 @@ The frozen v1.1 → v1.1.1 boundary is **not** altered by this audit:
 - last verified v1.1 observation: **2026-08-16** (`0032a72942f70cf26a5dc7ca66a8161bfc0db909`)
 - first verified v1.1.1 observation: **2026-08-17** (`db789cd9c59b474044d428bfdccbe07312798236`)
 
+### POST-H1 H3 CLARIFICATION — 2026-08-18
+
+**This is a later documentation correction. It is not a re-run of H1.** Original H1 audited HEAD `695044d1…` is unchanged as the H1 snapshot identifier.
+
+A later `--full-history` Git audit in **H3** ([`docs/H3_GIT_OBSERVATION_MANIFEST_REVIEW_2026-08-18.md`](H3_GIT_OBSERVATION_MANIFEST_REVIEW_2026-08-18.md)) established that the **current** `history.csv` gaps **2025-10-07 through 2025-10-28** are **not** absence-of-publication evidence.
+
+**FACT (H3).** Scheduled Daily ETL commits exist for all **22** of those dates. Those commits contained both contemporaneous `latest.json` artifacts **and** the corresponding `history.csv` row. The rows later disappeared from the surviving current file when 2025-10-29 merge `1e27313f` retained the sparse `54d054b1` data-file version.
+
+This supersedes **ONLY** the earlier H1 characterization of those 22 current-file gaps as dates that were never filled / had no committed observation.
+
+It does **not** change: reconstructed prefix grading (Grade C); Sep 26 topology; Sep 26 contemporaneous `e9083962` **G47 Hold/Neutral**; reconstruction-path `latest.json` **G67** vs reconstructed `history.csv` **G85**; v1.1 start uncertainty; Aug 16 / Aug 17 boundary; **current** `history.csv` contents; Git ≠ Vercel deployment proof; calibration status (**CLOSED**).
+
+H3 Daily Rule v1 governs future daily-primary selection. **H3.1 is not built.** Do **not** write recovered October rows into production `history.csv`.
+
 ---
 
 ## Executive verdict
@@ -34,9 +48,9 @@ Merge `a02a1a56ae87f974370851e6ede03f2ab7cf6f5d` (2025-09-26T12:32:45Z; parents 
 Therefore:
 
 - Do **not** use current `history.csv` rows dated **2023-09-25 through 2025-09-26** as official contemporaneous G-Score artifacts. Grade **C** stands.
-- When recovering a contemporaneous Git series, **2025-09-26 is `e9083962` G47**, not `68462f34` / `a02a1a56` G85.
+- When recovering a contemporaneous Git series, **2025-09-26 is `e9083962` G47 Hold/Neutral**, not reconstructed **`history.csv` G85** and not reconstruction-path **`latest.json` G67**.
 - Git *can* recover earlier contemporaneous committed artifacts from `latest.json` and from the `e9083962` 22-row file. This forensic Git audit does **not** prove the live Vercel site served those snapshots.
-- From **2025-09-27** onward, successful production ETL artifact dates append genuine observations onto the reconstructed prefix. That **observational tail is not calendar-contiguous** (293 rows over 326 calendar dates).
+- From **2025-09-27** onward, successful production ETL artifact dates append genuine observations onto the reconstructed prefix. **Current HEAD `history.csv`** observational tail is **not** calendar-contiguous (293 rows over 326 calendar dates). Of the **33** dates absent from the current file, H3 recovered scheduled committed artifacts for **22** (2025-10-07..2025-10-28) that were later merge-dropped; **11** remain unrecovered (Appendix A).
 - `factor_history.csv` still begins with **sample** rows (2025-08-28 through 2025-09-25). Those rows remain Grade D.
 - `public/signals/etf_by_fund.csv` is still the 2025-09-26 `Math.random` file. It was never replaced by Farside.
 - Signal v2 begins **2026-08-17** (two genuine ETL rows). It is not a historical replay store.
@@ -66,20 +80,27 @@ This inventory does **not** start calibration.
 | **2025-09-26 12:30Z** | **`68462f34`** parent `48c2c677` | Reconstruction branch. **21 → 731** rows from the 21-row base. Rewrote 2025-09-05..25; independently wrote reconstructed `2025-09-26,85,High Risk,109108.44`. Same commit adds enhanced G-Score multipliers and rebuilds several legacy signal CSVs. |
 | **2025-09-26 12:32Z** | **`a02a1a56`** parents `68462f34` + `e9083962` | Merge kept reconstructed/enhanced files, including Sep 26 **G85**, discarding sibling **G47**. |
 | 2025-09-27 | `068b5987179e9dfca767152d1dfe43f01211ea7e` | First post-merge daily append: 732 rows, last `2025-09-27,75,Increase Selling,109366.69`, matching `latest.json` score 75. |
-| 2025-10-29 | `54d054b1` | 742 rows; reconstructed prefix unchanged |
+| 2025-10-29 ~11:21Z | `5c4535b2` | **Scheduled ETL** (H3 `--full-history`; this data-file version is **not** at HEAD). `latest.json` **G55**. `history.csv` contained the 2025-10-07..28 sequence and 2025-10-29 G55. Git existence is **not** proof Vercel served those rows. |
+| 2025-10-29 ~15:42Z | `54d054b1` | Human feature commit: **30/30**, **onchain off**; `latest.json` **G57**; `history.csv` jumped **2025-10-06 → 2025-10-29**. 742 rows; reconstructed prefix unchanged. |
+| 2025-10-29 | `1e27313f` | Merge “Merge remote changes and resolve conflicts.” Kept the `54d054b1` / “our version” data-file path over scheduled `5c4535b2`. **Result:** 2025-10-07..28 disappeared from surviving `history.csv`. |
 | 2025-12-11 | `6082a0f7` | 785 rows; prefix unchanged |
 | 2026-08-16 | `0032a729` | 1022 rows; prefix unchanged |
 | 2026-08-18 | `3e0c07ff` / HEAD | 1024 rows; prefix unchanged; calendar gaps remain (Appendix A) |
 
-**FACT.** Comparing `68462f34` vs HEAD for the 731 overlapping dates: **0 later changes**. There was no second bulk rewrite of reconstructed scores. Later successful ETL dates appended (and same-day upserted) the current date only. Missing calendar dates in the observational tail were never filled.
+**FACT.** Comparing `68462f34` vs HEAD for the 731 overlapping dates: **0 later changes**. There was no second bulk rewrite of reconstructed scores. Later successful ETL dates appended (and same-day upserted) the current date only.
+
+**FACT (current HEAD file).** Calendar gaps remain in current HEAD `history.csv`.
+
+**FACT (H3, superseding the earlier “never filled” wording for Oct 7–28 only).** The 22 dates **2025-10-07 through 2025-10-28** had scheduled committed observations and contemporaneous `history.csv` rows that were subsequently dropped by merge `1e27313f`. The remaining unrecovered observational-tail gaps have no recovered `latest.json` candidate in the H3 audit; cause remains **UNKNOWN**. Do **not** infer ETL failure merely from absence in current HEAD.
 
 **FACT.** Sep 26 classification for Git recovery:
 
 | Path | 2025-09-26 row |
 |---|---|
 | Contemporaneous scheduled-style artifact `e9083962` | **47 Hold/Neutral**, price 108739.09 — use this when recovering a contemporaneous committed series |
-| Reconstruction branch `68462f34` | **85 High Risk**, price 109108.44 — retrospective/enhanced; do **not** substitute for `e9083962` |
-| Merge `a02a1a56` and current `history.csv` | Kept **G85**; sibling G47 is absent from the merged file |
+| Reconstruction branch `68462f34` **`history.csv`** | **85 High Risk**, price 109108.44 — retrospective/enhanced; do **not** substitute for `e9083962` |
+| Reconstruction branch `68462f34` **`latest.json`** (H3) | **G67 Begin Scaling Out** — **not** G85. G85 is the reconstructed **`history.csv`** row on the same path |
+| Merge `a02a1a56` and current `history.csv` | Kept reconstructed **`history.csv` G85** and reconstruction-path `latest.json` **G67**; sibling scheduled G47 is absent from the merged files |
 | Shared dates 2025-09-05..25 | Rewritten on the `68462f34` branch (21 rows), then kept by the merge. Example 2025-09-05: 47 Hold/Neutral → 68 Reduce Risk (price unchanged) |
 
 ### Did the historical factor calls have true as-of-date inputs?
@@ -102,12 +123,12 @@ if (i < datesNeedingBackfill.length - 1) {
 
 ### After the reconstruction merge, when do genuine production artifacts append?
 
-**FACT.** From 2025-09-27 onward, successful production ETL artifact dates append genuine observations. The observational tail is **not** calendar-contiguous.
+**FACT.** From 2025-09-27 onward, successful production ETL artifact dates append genuine observations. **Current HEAD `history.csv`** observational tail is **not** calendar-contiguous.
 
-HEAD `history.csv`:
+HEAD `history.csv` (current-file arithmetic **unchanged**):
 
-- Reconstructed region 2023-09-25 through 2025-09-26: **731** rows / **733** possible calendar dates / **2** missing dates: **2024-06-21**, **2025-04-17**. Absence is recorded as **NO COMMITTED HISTORY OBSERVATION**; cause is **UNKNOWN** unless separately proven.
-- Observational tail 2025-09-27 through 2026-08-18: **293** rows / **326** possible calendar dates / **33** missing dates (Appendix A). Do not classify those gaps as ETL failures unless Git proves why each date is absent.
+- Reconstructed region 2023-09-25 through 2025-09-26: **731** rows / **733** possible calendar dates / **2** dates **absent from current `history.csv`**: **2024-06-21**, **2025-04-17**. Absence is recorded as **NO COMMITTED HISTORY OBSERVATION**; cause is **UNKNOWN** unless separately proven.
+- Observational tail 2025-09-27 through 2026-08-18: **293** rows / **326** possible calendar dates / **33** dates **absent from current `history.csv`** (Appendix A). Split those 33 as: **22** Git-recovered then merge-dropped (2025-10-07..28); **11** still unrecovered (H3 found no `latest.json` candidate; cause **UNKNOWN**). Do not classify the 11 as ETL failures.
 
 **Mixed provenance (FACT):** one file, two origins.
 
@@ -120,7 +141,7 @@ HEAD `history.csv`:
 
 For each Daily ETL / seed artifact commit, `public/data/latest.json` is the **committed production artifact** for that SHA (fields grew over time). This is not automatic proof of live-site deployment.
 
-`e9083962` recovers the 22-row 2025-09-05..26 **file**; only 2025-09-15..26 have matching contemporaneous `latest.json` artifacts; 2025-09-05..14 were seeded in `3d11cce2`. For 2025-09-26, recover **G47 from `e9083962`**, not G85 from `68462f34` / `a02a1a56`.
+`e9083962` recovers the 22-row 2025-09-05..26 **file**; only 2025-09-15..26 have matching contemporaneous `latest.json` artifacts; 2025-09-05..14 were seeded in `3d11cce2`. For 2025-09-26, recover **G47 from `e9083962`**, not reconstructed `history.csv` G85 from `68462f34` / `a02a1a56`, and not reconstruction-path `latest.json` **G67**.
 
 Do **not** call current `history.csv` “as-published” globally.
 
@@ -322,7 +343,7 @@ Evidence discovery, not automatic condemnation of every hit.
 | Path | Purpose | Grade | Replay? | Look-ahead risk if used as then-known state |
 |---|---|---|---|---|
 | `history.csv` 2023-09-25..2025-09-26 | Chart headline series (reconstructed + merge-kept) | **C** | NO | YES |
-| `history.csv` 2025-09-27..2026-08-16 | Chart headline (successful ETL observation **set**, 33 calendar gaps in the full 2025-09-27..2026-08-18 tail) | **B** | NO | LOW for the printed number; HIGH if treated as current-model history |
+| `history.csv` 2025-09-27..2026-08-16 | Chart headline (successful ETL observation **set**; **33** dates **absent from current** `history.csv` in the full 2025-09-27..2026-08-18 tail; **22** of those are H3 Git-recovered / merge-dropped Oct 7–28) | **B** | NO | LOW for the printed number; HIGH if treated as current-model history |
 | `history.csv` 2026-08-17..2026-08-18 | v1.1.1 committed artifacts | **B** (strong publication-artifact evidence) | NO | LOW for the printed number |
 | Git `latest.json` per artifact commit | Contemporaneous committed production artifact | **B**, **A** for v1.1.1 fields | NO | LOW for the committed number |
 | `factor_history.csv` 2025-08-28..2025-09-25 | Sample | **D** | NO | YES (fake) |
@@ -339,14 +360,14 @@ Evidence discovery, not automatic condemnation of every hit.
 
 ## 11. Candidate observational periods / observation sets
 
-No performance statistics. These are **observation sets**, not implied continuous daily panels. Calendar gaps exist. Do not fabricate observations for missing dates. **Do not tune on the tiny v1.1.1 sample.**
+No performance statistics. These are **observation sets**, not implied continuous daily panels. Calendar gaps remain in **current** `history.csv`. Do not fabricate observations into that file. H3 Git-recovered October artifacts belong in the future research manifest, not production `history.csv`. **Do not tune on the tiny v1.1.1 sample.**
 
-Horizon coverage vs market series ending 2026-08-17 (no returns): 30d only for observations on/before **2026-07-18**; 90d on/before **2026-05-19**; 180d on/before **2026-02-18**; **365d: none** for genuine GhostGauge artifacts.
+Horizon coverage vs market series ending 2026-08-17 (no returns): 30d only for observations on/before **2026-07-18**; 90d on/before **2026-05-19**; 180d on/before **2026-02-18**; **365d: none** for genuine GhostGauge artifacts. H3 candidate-date horizon counts are upper-bound coverage only; H3.1 has not built the final analytical daily view.
 
 | Period | Calendar span | Actual n | Missing | Grade | Model lineage | Notes |
 |---|---|---|---|---|---|---|
-| Git-recovered contemporaneous artifacts **2025-09-17 → 2025-09-26** | 10 days | **10** (contiguous in `e9083962`) | 0 in that file | **B** | Pre-SSOT / v3.x, 8 factors, pre-enhanced mixer | Use `e9083962` for Sep 26 **G47**. Seeded 2025-09-05..14 are not independent daily artifacts. `factor_history` still sample-contaminated. |
-| Successful ETL set **2025-09-27 → 2025-10-28** | 32 days | **10** | **22** (2025-10-07..2025-10-28) | **B** | Enhanced mixer, onchain still enabled | Observation set, not a complete panel. |
+| Git-recovered contemporaneous artifacts **2025-09-17 → 2025-09-26** | 10 days | **10** (contiguous in `e9083962`) | 0 in that file | **B** | Pre-SSOT / v3.x, 8 factors, pre-enhanced mixer | Use `e9083962` for Sep 26 **G47**. Reconstruction `latest.json` is **G67**, reconstructed `history.csv` is **G85**. Seeded 2025-09-05..14 are not independent daily artifacts. `factor_history` still sample-contaminated. |
+| Successful ETL set **2025-09-27 → 2025-10-28** | 32 days | **Current `history.csv`: 10.** **H3 Git candidate dates: 32.** | **22 absent from current file** (2025-10-07..2025-10-28); H3 recovered scheduled artifacts for all 22 | **B** | Enhanced mixer, onchain still enabled | Current-file gaps are merge-dropped, not “never filled.” H3 Daily Rule v1 applies; H3.1 not built. Do not write rows back to production `history.csv`. Live History UI still shows these as current-file gaps. |
 | **2025-10-29 → 2025-12-10** | 43 days | **43** | **0** | **B** | 30/30, onchain off, artifact still `v3.1.0` | Contiguous in `history.csv`. |
 | **2025-12-11 → 2026-08-16** | 249 days | **238** | **11** (see Appendix A) | **B** | **Labeled** `v1.1`; start unverified | 365d forward **not** available for these genuine artifacts. 180d only for observations on/before 2026-02-18. |
 | **2026-08-17 → 2026-08-18** | 2 days | **2** | **0** | **B** (strong committed-artifact evidence) | Frozen **v1.1.1 / integrity-2026-08** | Too few to calibrate; 30d forward not yet observable. |
@@ -355,22 +376,38 @@ Horizon coverage vs market series ending 2026-08-17 (no returns): 30d only for o
 
 ---
 
-## Appendix A — `history.csv` calendar dates with no committed observation
+## Appendix A — dates absent from current `history.csv`
 
-A missing date is **NO COMMITTED HISTORY OBSERVATION**. Cause is **UNKNOWN** unless Git evidence for that date is proven. Not classified as a failure here.
+A date **absent from current HEAD `history.csv`** is **not** automatically “no committed observation.” Cause is **UNKNOWN** unless Git evidence for that date is proven. Not classified as an ETL failure here. Git still does **not** prove Vercel served recovered artifacts.
 
 ### A. Reconstructed region (2023-09-25 through 2025-09-26)
 
-733 possible calendar dates, 731 rows, **2** missing:
+733 possible calendar dates, 731 rows, **2** absent from current `history.csv` — **NO COMMITTED HISTORY OBSERVATION**; cause **UNKNOWN**:
 
 - 2024-06-21
 - 2025-04-17
 
 ### B. Observational tail (2025-09-27 through 2026-08-18)
 
-326 possible calendar dates, 293 rows, **33** missing:
+326 possible calendar dates, 293 rows, **33** absent from current `history.csv`.
 
-2025-10-07, 2025-10-08, 2025-10-09, 2025-10-10, 2025-10-11, 2025-10-12, 2025-10-13, 2025-10-14, 2025-10-15, 2025-10-16, 2025-10-17, 2025-10-18, 2025-10-19, 2025-10-20, 2025-10-21, 2025-10-22, 2025-10-23, 2025-10-24, 2025-10-25, 2025-10-26, 2025-10-27, 2025-10-28, 2026-01-14, 2026-03-06, 2026-03-29, 2026-03-30, 2026-04-04, 2026-04-05, 2026-04-06, 2026-04-12, 2026-05-25, 2026-06-01, 2026-06-20.
+#### A.1 Current-file gaps later recovered from Git — 22
+
+**ABSENT FROM CURRENT `history.csv` — COMMITTED SCHEDULED ARTIFACT RECOVERED BY H3.**
+
+Cause of disappearance from the surviving file: 2025-10-29 merge `1e27313f` kept sparse `54d054b1` over scheduled `5c4535b2`.
+
+2025-10-07, 2025-10-08, 2025-10-09, 2025-10-10, 2025-10-11, 2025-10-12, 2025-10-13, 2025-10-14, 2025-10-15, 2025-10-16, 2025-10-17, 2025-10-18, 2025-10-19, 2025-10-20, 2025-10-21, 2025-10-22, 2025-10-23, 2025-10-24, 2025-10-25, 2025-10-26, 2025-10-27, 2025-10-28.
+
+Do **not** write these rows back into production `history.csv`.
+
+#### A.2 Current-file gaps still unrecovered — 11
+
+**ABSENT FROM CURRENT `history.csv` — NO `latest.json` CANDIDATE RECOVERED BY H3 — CAUSE UNKNOWN.**
+
+2026-01-14, 2026-03-06, 2026-03-29, 2026-03-30, 2026-04-04, 2026-04-05, 2026-04-06, 2026-04-12, 2026-05-25, 2026-06-01, 2026-06-20.
+
+Do not classify these 11 as ETL failures.
 
 ---
 
@@ -381,7 +418,7 @@ A missing date is **NO COMMITTED HISTORY OBSERVATION**. Cause is **UNKNOWN** unl
 3. **UNKNOWN:** complete frozen vendor payloads for any historical Daily ETL minute.
 4. **UNKNOWN:** v1.1 **methodology** start date. First artifact **label** is 2025-12-11; that is not frozen as an era start.
 5. **UNKNOWN:** which legacy `etf_flows_21d.csv` rows before the zero-drift era are true Farside parses vs cache artifacts.
-6. **FACT (listed):** missing `history.csv` calendar dates — reconstructed **2024-06-21**, **2025-04-17**; observational tail 33 dates in Appendix A. **UNKNOWN:** why each is absent.
+6. **FACT (listed):** dates **absent from current `history.csv`**. Reconstructed region **2024-06-21**, **2025-04-17** remain **NO COMMITTED HISTORY OBSERVATION** (cause **UNKNOWN**). Observational tail: **22** dates 2025-10-07..28 are absent from current HEAD because merge `1e27313f` dropped scheduled committed rows (**H3**). **11** dates remain unrecovered (no `latest.json` candidate in H3); cause **UNKNOWN**.
 7. **UNKNOWN:** exact set of missing `factor_history.csv` calendar days (323 rows vs span 2025-08-28 → 2026-08-18).
 8. **UNKNOWN:** whether weekly-backtest / DCA comparison code applied then-current band maps onto reconstructed historical scores (band-label drift). Even if mapped correctly, inputs remain contaminated.
 
@@ -401,4 +438,5 @@ These are recommendations for independent review. **This audit did not edit** `d
 ## Related
 
 - Eligibility matrix: [`docs/HISTORICAL_DATA_ELIGIBILITY_2026-08-18.md`](HISTORICAL_DATA_ELIGIBILITY_2026-08-18.md)
+- Later `--full-history` forensic audit (supersedes **only** the narrow October absence characterization): [`docs/H3_GIT_OBSERVATION_MANIFEST_REVIEW_2026-08-18.md`](H3_GIT_OBSERVATION_MANIFEST_REVIEW_2026-08-18.md)
 - Frozen era registry (unchanged): [`docs/MODEL_ERAS.md`](MODEL_ERAS.md)
