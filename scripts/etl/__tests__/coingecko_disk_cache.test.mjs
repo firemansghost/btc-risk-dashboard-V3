@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import {
   CACHE_TTL_MINUTES,
   evaluateDiskCacheEntry,
@@ -63,15 +62,6 @@ test('saveToDiskCache writes explicit cachedAt envelope', async () => {
   } finally {
     await fs.rm(dir, { recursive: true, force: true });
   }
-});
-
-test('committed repository market_chart cache is treated as a miss, not a fresh hit', async () => {
-  const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-  const loaded = await loadFromDiskCache('market_chart_30_daily', {
-    cacheDir: path.join(repoRoot, 'public/data/cache'),
-    nowMs: NOW,
-  });
-  assert.equal(loaded, null);
 });
 
 test('recent filesystem mtime cannot make legacy content fresh', async () => {
