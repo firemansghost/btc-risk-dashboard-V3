@@ -1,8 +1,8 @@
 # GhostGauge History UI Provenance & Presentation Review
 
-**Date:** 2026-08-18  
-**Phase:** H2 — review / design only  
-**Audited `origin/main`:** `3b392e1568ec101eba43939a56f872275dbe2ca5`  
+**Date:** 2026-08-18
+**Phase:** H2 — review / design only
+**Audited `origin/main`:** `3b392e1568ec101eba43939a56f872275dbe2ca5`
 **Branch:** `review/h2-history-ui-provenance`  
 **Status:** Design record. Not an implementation. Calibration gate remains **CLOSED**.
 
@@ -666,7 +666,7 @@ Calibration gate: **CLOSED**.
 
 **RECOMMENDATION: C** — raw G-Score primary, EWMA secondary.
 
-Not A (today’s EWMA-as-the-chart fails tooltip truth and both boundaries).  
+Not A (today’s EWMA-as-the-chart fails tooltip truth and both boundaries).
 Not D (readability on 180D/1Y still benefits from a trend, if reset and labeled).  
 B (optional overlay) is acceptable if C is too busy on mobile; then default raw-only on small viewports.
 
