@@ -3,7 +3,7 @@
 **Date:** 2026-08-18
 **Phase:** H2 — review / design only
 **Audited `origin/main`:** `3b392e1568ec101eba43939a56f872275dbe2ca5`
-**Branch:** `review/h2-history-ui-provenance`  
+**Branch:** `review/h2-history-ui-provenance`
 **Status:** Design record. Not an implementation. Calibration gate remains **CLOSED**.
 
 Companion records (authoritative for provenance; not reopened here):
@@ -30,7 +30,7 @@ Labels used below:
 
 **FACT.** The tooltip never shows the raw G-Score. On the 30D view, the official 2026-08-17 print is **G47**; the chart tooltip shows **53**. That is a display-truth defect even without reconstructed data.
 
-**RECOMMENDATION.** Adopt **Option B**: observational history as the default trust surface; legacy reconstruction available only behind an explicit control; never a single unmarked mixed series. Show **raw G-Score as the primary series**, with EWMA only as a secondary trend that **resets** at the provenance boundary and at the verified Aug 16 / Aug 17 model-era boundary. Leave `public/data/history.csv` unmodified. Do not start calibration. Do not build a Git-recovered dataset in H2.1.
+**RECOMMENDATION.** Adopt **Option B**: observational history as the default trust surface; legacy reconstruction available only behind an explicit control; never a single unmarked mixed series. Show **raw G-Score as the primary series**, with EWMA only as a secondary trend that **resets** at the provenance boundary and at the verified Aug 16 / Aug 17 model-era boundary. **H2.1 must visually preserve missing-observation gaps** (continuous calendar spacing plus a broken raw path). Leave `public/data/history.csv` unmodified. Do not start calibration. Do not build a Git-recovered dataset in H2.1. User-facing copy must say this **chart** uses observed prints from Sep 27, 2025 onward — not that Sep 27 is the earliest recoverable GhostGauge evidence (H1 recovers contemporaneous Git artifacts from 2025-09-15).
 
 ---
 
@@ -331,9 +331,33 @@ EWMA remaining weight of the pre-boundary state after *k observational steps* is
 | **A. Continuous time axis** | High | Medium | Ticks must be sparse | True elapsed-time gaps. Best geometry. Requires numeric timestamps, not category strings. |
 | **B. Null points + `connectNulls={false}`** | High for line breaks | Medium | Fine | Must **not** invent scores. Insert `{ date, score: null }` for missing calendar days in the **displayed** interval only. Dense 22-day null runs can flatten the axis if still categorical; better with A. |
 | **C. Segmented series** | High | Medium | Fine | Split into contiguous runs; multiple `Area`s. Provenance split is a special case. |
-| **D. Caption warning only** | Low–medium | Low | Best | Does not stop the line from looking continuous. Insufficient as the only 1Y treatment. |
+| **D. Caption warning only** | Low–medium | Low | Best | Does not stop the line from looking continuous. **Not sufficient** as the H2.1 gap treatment. Caption may accompany geometry; it may not replace it. |
 
-**RECOMMENDATION.** H2.1: **C for provenance** (observed vs reconstructed as separate series) plus **D always** (plain-language gap sentence). Prefer **A** (time scale) in the same phase if cheap; if not, keep category axis for H2.1 but **do not** fill gaps with interpolated “daily” implication in copy. Do not silently insert scores. A later pass can add time-scale + visual breaks for long holes (especially Oct 2025) without changing artifacts.
+### 6.6 H2.1 missing-date visual contract (mandatory)
+
+Copy that says days without a print are “left blank” is **false** unless the plot actually breaks. H2.1 therefore **must** implement honest gap geometry. Caption-only is not an allowed fallback.
+
+**Contract:**
+
+- no score may be fabricated for a missing date
+- missing dates must create a **visible break** in the plotted **raw** series
+- elapsed calendar spacing must be represented honestly (a 22-day hole must occupy ~22 days of axis, not one category step)
+- a multi-day missing interval must not appear as if observations were consecutive
+- display-only structural/null points, if used, are **not** observations
+- structural nulls must **not**:
+  - enter EWMA calculations
+  - enter observation counts
+  - appear as tooltip observations
+  - become persisted artifacts (`history.csv` stays untouched)
+
+**Preferred architecture:** **A** (continuous date/time X-axis) **plus** a broken path across missing dates.
+
+**Allowed implementations** (either is acceptable if tests prove the contract):
+
+- generate **display-only** null date slots and use `connectNulls={false}`
+- split the data into contiguous observation runs (multiple line segments)
+
+A future polish phase may improve tick density or styling. The first trust-fix implementation **must not** bridge unobserved calendar intervals as if they were consecutive prints. Do **not** write null rows to `history.csv`.
 
 ---
 
@@ -364,7 +388,7 @@ Default trust surface = observational tail only. Explicit “Legacy reconstructe
 | Mobile | Default stays simple; toggle + note can wrap |
 | Implementation | Medium (toggle + classification helper) |
 | Historical context | Available, not forced |
-| Misunderstanding risk | Lowest if 1Y default is observed-only and caption explains the start date |
+| Misunderstanding risk | Lowest if 1Y default is observed-only and copy says this **chart** uses observed prints from Sep 27, 2025 onward |
 | Future Git-recovered series | Clean: observed source can widen without changing the toggle model |
 
 ### Option C — Observational only, no toggle
@@ -416,11 +440,11 @@ H1 Grade letters, merge SHAs, and `e9083962` stay in docs — not in the toggle 
 
 1. **Default series:** observational points from current `history.csv` with `date >= 2025-09-27`, then range-filtered.
 2. **Default range:** keep **90D**.
-3. **1Y without legacy toggle:** show only observational points in the 1Y window. Caption must say observed history begins Sep 27, 2025, so a full observed year does not yet exist.
+3. **1Y without legacy toggle:** show only observational points in the 1Y window. Caption must say **this chart** uses observed prints from Sep 27, 2025 onward, so a full year of observed history is not yet available **here**. Do not claim Sep 27 is the earliest recoverable GhostGauge evidence.
 4. **Legacy toggle:** `Show legacy reconstruction` (off by default). When on **and** the selected range includes dates `<= 2025-09-26`, draw that prefix as a separate, visually weaker series (e.g. gray/dashed, lower opacity). When on but the range is 30/90/180 at this snapshot, do **not** auto-switch range; show a one-line note: “Legacy reconstruction is earlier than this range. Choose 1Y to view it.”
 5. **Do not add All** in H2.1. If added later, it must still default to observed-only.
 6. **Primary line:** raw G-Score. **Secondary:** EWMA trend, reset at provenance and at the verified model-era boundary (§9, §11).
-7. **Do not** backfill missing dates. Do not connect reconstructed to observed as one `Area`.
+7. **Missing dates:** do not backfill scores. The raw series must **break** across unobserved calendar dates, with honest elapsed-time spacing (§6.6). Do not connect reconstructed to observed as one continuous path.
 8. **Sep 26 in current file:** if shown via toggle, it is legacy reconstruction (G85 in this file). Do not silently plot Git G47 in H2.1.
 9. Unify titles: keep parent **Historical G-Score**; drop or demote inner **Risk History** so the card does not claim two different things.
 
@@ -499,23 +523,31 @@ Do **not** stamp “v1.1” on every pre-Aug-17 row. v1.1 start is unverified.
 
 Band labels are historical strings from `history.csv`. **INFERENCE:** some older labels may not match current band maps. Tooltip should not say “official band under today’s rules.” If space is tight, omit band before omitting provenance.
 
+**Missing / structural-null dates** must not open a fake observation tooltip (no invented G-Score, band, or “Observed” chip). Hover on a gap may show the date plus “No print this day” or show nothing; it must not look like a published score.
+
 ### 10.2 Caption / labels
 
-**RECOMMENDATION.**
+**RECOMMENDATION.** Wording is **chart/source-specific**. H1 established that contemporaneous committed G-Score artifacts can be recovered beginning **2025-09-15**. H2.1 will **not** add that Git-recovered series. Therefore UI must not say “observed history begins Sep 27” as if no earlier observed evidence exists.
+
+Do **not** imply:
+
+- Sep 27 is the earliest recoverable contemporaneous GhostGauge artifact
+- Sep 27 is a newly frozen model-era boundary
+- Git-recovered Sep 15..26 data has already been added to the chart
 
 | Slot | Copy |
 |---|---|
 | **A. Chart title** | Historical G-Score |
-| **B. Primary caption** | Observed G-Score prints. Days without a print are left blank — they are not filled in. The trend line is a display aid, not the published score. |
+| **B. Primary caption** | This chart uses observed G-Score prints from Sep 27, 2025 onward. Days without a print are left blank — they are not filled in. The trend line is a display aid, not the published score. |
 | **C. Reconstructed-history label** | Legacy reconstruction (not published at the time) |
 | **D. Observed-history label** | Observed history |
-| **E. Provenance boundary marker** | Observed history begins Sep 27, 2025 |
-| **F. Optional help** | Earlier values in this file are a later reconstruction. They are shown only if you turn on legacy reconstruction, and only for context. |
-| **1Y observed-only note** | Observed history starts Sep 27, 2025, so this 1Y view cannot yet show a full year of observed prints. |
+| **E. Provenance boundary marker** | Observed series in this chart begins Sep 27, 2025 |
+| **F. Optional help** | Earlier values in this file are a later reconstruction. They are shown only when legacy reconstruction is enabled and only for context. |
+| **1Y observed-only note** | This chart uses observed prints from Sep 27, 2025 onward, so a full year of observed history is not yet available here. |
 | **Legacy toggle (off, short range)** | Legacy reconstruction is earlier than this range. Choose 1Y to view it. |
 | **Model-era marker label** | Scoring implementation changed Aug 17, 2026. The Aug 16→17 move is not a pure market reading. |
 
-Do not use: “as-published history.csv,” “Grade C,” “a02a1a56,” “e9083962,” “official daily series.”
+Do not use: “as-published history.csv,” “Grade C,” “a02a1a56,” “e9083962,” “official daily series,” or “Observed history begins Sep 27, 2025” as a global claim.
 
 ---
 
@@ -532,7 +564,7 @@ Two different boundaries:
 
 **RECOMMENDATION: C — mark both, with different visual weight.**
 
-- **Provenance** (stronger, only when reconstructed series is actually drawn): region contrast + the Sep 27 caption/marker. If the toggle is off, **do not** clutter 90D with a Sep 2025 line that is off-screen.
+- **Provenance** (stronger, only when reconstructed series is actually drawn): region contrast + the chart-specific Sep 27 caption/marker. If the toggle is off, **do not** clutter 90D with a Sep 2025 line that is off-screen.
 - **Model-era** (light, whenever the window includes Aug 16 and Aug 17 — currently every range): one vertical reference at 2026-08-17 (or a point marker), short label “Implementation change,” tooltip note as in §10. This is the least cluttered way to stop Aug 16 G54 → Aug 17 G47 being read as a seven-point market crash on the **default 90D** chart.
 
 **Not recommended:** D (disclosure only) — the default chart already contains the era jump. **Not recommended:** labeling a long “v1.1 era” band before Aug 16.
@@ -543,11 +575,48 @@ Two different boundaries:
 
 Narrow UI honesty pass. No ETL. No artifact mutation. No calibration. No Git-recovered dataset.
 
+### 12.0 Minimum implementation contract
+
+**RAW OBSERVATION SERIES**
+
+- primary
+- preserves actual stored scores
+- broken path across missing dates
+- honest calendar spacing
+
+**TREND SERIES**
+
+- secondary
+- resets at provenance boundary (2025-09-26 / 2025-09-27)
+- resets at Aug 16 / Aug 17 verified model-era boundary
+- does not consume structural nulls
+
+**PROVENANCE**
+
+- observed **current-file** series used by this chart begins Sep 27, 2025
+- that is a presentation-source fact, not a claim that no contemporaneous Git evidence exists earlier (H1: recoveries from 2025-09-15)
+- legacy reconstructed series optional (toggle off by default)
+- reconstructed and observed must **never** be one continuous path
+
+**MISSING DATES**
+
+- visible gap / broken path (**mandatory**, not a stretch goal)
+- true calendar spacing
+- no fabricated scores
+- no null rows written to `history.csv`
+
+**TOOLTIP**
+
+- raw G-Score first
+- optional trend separately labeled
+- provenance shown
+- null/missing dates do not generate fake tooltip observations
+
 ### 12.1 Likely files
 
 | File | Change |
 |---|---|
-| **NEW** `lib/historyProvenance.ts` | Classification contract, series split, smoother reset, date-only range cutoff helper if not kept in `historyChartCsv.ts` |
+| **NEW** `lib/historyProvenance.ts` | Classification contract, series split, gap/null presentation helper, smoother reset, date-only range cutoff helper if not kept in `historyChartCsv.ts` |
 | **NEW** `lib/__tests__/historyProvenance.test.ts` | §13 cases |
 | `lib/historyChartCsv.ts` | Date-only range filter; smoothing must retain raw `score` / `band` / `price_usd`; optional segmented smooth |
 | `lib/__tests__/historyChartCsv.test.ts` | Boundary-date semantics; raw preserved through smooth |
@@ -588,8 +657,9 @@ classifyVerifiedModelEra(date: string): VerifiedModelEra
 
 - Two data keys or two Recharts series: `observedScore`, `reconstructedScore` (null where not applicable).
 - Do not use a single monotone path across 2025-09-26 → 2025-09-27.
-- Do not fabricate points for Appendix A gaps.
-- Optional H2.1 stretch: `scale="time"` so Oct 2025 is visually wide. If deferred, caption must still deny “daily complete.”
+- Do not fabricate scores for Appendix A gaps.
+- **Mandatory gap geometry:** continuous date/time X-axis **and** a break in the raw series across missing dates. Allowed: display-only null slots + `connectNulls={false}`, or contiguous-run segmentation. Tests must prove Jun 19→21 is not a continuous observed segment and that 2025-10-07..28 remains a calendar-width gap.
+- Tick density and styling may be polished later; compressing unobserved intervals into consecutive-observation geometry is **not** allowed in H2.1.
 
 ### 12.5 Accessibility
 
@@ -619,12 +689,15 @@ No production tests are changed in H2. Required for the **future** H2.1 PR:
 4. **No smoothing carry across provenance:** first observed EWMA after reset equals raw Sep 27 score (before rounding identity).
 5. **No smoothing carry across model-era** unless a documented opt-in exists (H2.1 default: reset). First v1.1.1 EWMA point equals raw Aug 17 score.
 6. **Tooltip / presentation point** retains raw `score`; smoothed value is a separate field.
-7. **Missing dates not fabricated:** filter+present never invents 2026-06-20 or 2025-10-15.
-8. **Range-filter boundary-date:** with frozen `2026-08-18`, 30D **includes** `2026-07-19` if that row exists (date-only), unlike current wall-clock code.
-9. **30/90/180 at H2 snapshot** (frozen 2026-08-18 noon or date-only): observed-only; zero reconstructed points.
-10. **Aug 16 / Aug 17** era classifier: last v1.1 vs v1.1.1+; no v1.1 start invented for 2025-12-11.
-11. **Legacy toggle:** off → no reconstructed series in chart data; on + 1Y → reconstructed points present and not merged into observed key.
-12. **Copy/a11y smoke:** reconstructed vs observed labels exist in accessible text when reconstructed is shown; caption readable without color.
+7. **Missing dates not fabricated:** filter+present never invents a score for 2026-06-20 or 2025-10-15.
+8. **Visual gap (short):** given 2026-06-19 = observation, 2026-06-20 = no observation, 2026-06-21 = observation, presentation output must **not** produce a continuous observed-score segment across Jun 19 → Jun 21.
+9. **Visual gap (long):** 2025-10-07..2025-10-28 must remain a genuine calendar gap and must **not** be compressed into consecutive-observation geometry.
+10. **Structural nulls** (if display-only null points are used): `score = null`; excluded from smoothing; excluded from observation counts; excluded from tooltip observation payload; never written to source artifacts.
+11. **Range-filter boundary-date:** with frozen `2026-08-18`, 30D **includes** `2026-07-19` if that row exists (date-only), unlike current wall-clock code.
+12. **30/90/180 at H2 snapshot** (frozen 2026-08-18 noon or date-only): observed-only; zero reconstructed points.
+13. **Aug 16 / Aug 17** era classifier: last v1.1 vs v1.1.1+; no v1.1 start invented for 2025-12-11.
+14. **Legacy toggle:** off → no reconstructed series in chart data; on + 1Y → reconstructed points present and not merged into observed key.
+15. **Copy/a11y:** accessible text must say this **chart** uses observed prints from Sep 27, 2025 onward — not that Sep 27 is the first observed GhostGauge evidence. Reconstructed vs observed labels exist in accessible text when reconstructed is shown; caption readable without color.
 
 Keep the existing production-schema parse test. Add fake-timer tests; do not call live APIs.
 
@@ -654,7 +727,7 @@ Calibration gate: **CLOSED**.
 ## 15. Open questions
 
 1. **Range “today” source.** Date-only UTC from wall clock vs last `history.csv` date vs `latest.json` `snapshot_date`. **RECOMMENDATION leaning:** last committed history date when loaded, so SSR/client and timezones do not reshuffle the window.
-2. **Time-scale axis in H2.1 vs follow-up.** Honesty vs Recharts churn. Leaning: try time scale in H2.1; fall back to caption + series split if layout regresses.
+2. **Tick density / gap styling polish.** Gap geometry is **mandatory** in H2.1 (continuous time axis + broken path). Remaining question is only how dense ticks and gap styling should be on mobile — not whether unobserved intervals may be bridged.
 3. **EWMA on by default** as a thin secondary line vs hidden until “Show trend.” Leaning: secondary visible, tooltip leads with raw (Option C smoothing).
 4. **Band strings** for reconstructed / old observational rows — show as “label at the time” vs omit. Leaning: show when present, no “official today” wording.
 5. **Factor History modal** honesty pass — out of H2.1, but it can still mislead. Track as H2.2 candidate.
@@ -667,7 +740,7 @@ Calibration gate: **CLOSED**.
 **RECOMMENDATION: C** — raw G-Score primary, EWMA secondary.
 
 Not A (today’s EWMA-as-the-chart fails tooltip truth and both boundaries).
-Not D (readability on 180D/1Y still benefits from a trend, if reset and labeled).  
+Not D (readability on 180D/1Y still benefits from a trend, if reset and labeled).
 B (optional overlay) is acceptable if C is too busy on mobile; then default raw-only on small viewports.
 
 If smoothing remains anywhere:
