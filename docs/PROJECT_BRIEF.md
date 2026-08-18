@@ -2,6 +2,8 @@
 
 *See also: [Brand Card](/brand) (voice, naming, bands).*
 
+> **2026-08-18 continuity note.** Active production is **v1.1.1 / integrity-2026-08**. That revision changed timing, provenance, and freshness implementation semantics. Some implementation prose in this document predates that transition and is **not** silently rewritten here. Current production authority for exact active weights, bands, subweights, and version is `config/dashboard-config.json`. Implementation truth is current production code. Model-era and historical interpretation is governed by [`docs/MODEL_ERAS.md`](MODEL_ERAS.md). Detailed transition semantics are recorded in [`docs/V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md`](V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md).
+
 ## Purpose
 
 The Bitcoin Risk Dashboard provides institutional-grade risk assessment for Bitcoin investments through a transparent, quantitative framework. It generates a 0-100 risk score where lower scores indicate better buying opportunities and higher scores suggest caution or selling pressure.
