@@ -1,13 +1,13 @@
 # GhostGauge Historical Data Eligibility
 
-**Date:** 2026-08-18  
-**Phase:** H1 — forensics only  
-**Audited `origin/main`:** `695044d1ad7ad3e399a952d82979eab0c1d1586d`  
+**Date:** 2026-08-18
+**Phase:** H1 — forensics only
+**Audited `origin/main`:** `695044d1ad7ad3e399a952d82979eab0c1d1586d`
 **Companion:** [`docs/HISTORICAL_EVIDENCE_INVENTORY_2026-08-18.md`](HISTORICAL_EVIDENCE_INVENTORY_2026-08-18.md)
 
 This matrix states what each dataset/date range may be used for. It is **not** a backtest and **not** permission to retune weights.
 
-Legend: **YES** / **LIMITED** / **NO** / **UNKNOWN**  
+Legend: **YES** / **LIMITED** / **NO** / **UNKNOWN**
 Every **YES** has a reason.
 
 Frozen boundary (unchanged): last verified v1.1 print **2026-08-16**; first verified v1.1.1 print **2026-08-17**. v1.1 start remains unverified.

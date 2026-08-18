@@ -1,8 +1,8 @@
 # GhostGauge Historical Evidence Inventory
 
-**Date:** 2026-08-18  
-**Phase:** H1 — forensics only  
-**Repository HEAD audited:** `695044d1ad7ad3e399a952d82979eab0c1d1586d` (`origin/main`)  
+**Date:** 2026-08-18
+**Phase:** H1 — forensics only
+**Repository HEAD audited:** `695044d1ad7ad3e399a952d82979eab0c1d1586d` (`origin/main`)
 **Scope:** Git history, committed artifacts, committed source/config, committed documentation. No ETL, no live APIs, no backfill, no score regeneration.
 
 Claims are labeled **FACT**, **INFERENCE**, or **UNKNOWN**.
@@ -40,10 +40,10 @@ This inventory does **not** start calibration.
 
 ## 1. `history.csv` provenance timeline
 
-**Path:** `public/data/history.csv`  
-**Current schema:** `date,score,band,price_usd`  
-**Current range:** 2023-09-25 → 2026-08-18  
-**Current data rows:** 1024  
+**Path:** `public/data/history.csv`
+**Current schema:** `date,score,band,price_usd`
+**Current range:** 2023-09-25 → 2026-08-18
+**Current data rows:** 1024
 **First introduction:** `83fdeac248cea52ceeea9a978273abf10442d19b` (2025-09-13) — a different prototype schema (many unlabeled numeric columns, one row dated 2025-09-14).
 
 ### Lifecycle (FACT)
@@ -109,12 +109,12 @@ Do **not** call current `history.csv` “as-published” globally.
 
 ## 2. Factor-history provenance timeline
 
-**Path:** `public/data/factor_history.csv`  
-**Current schema:** per-factor `*_score`/`*_status` for trend, onchain, stablecoins, etf_flows, net_liquidity, term_leverage, macro_overlay, social_interest, plus `composite_score`, `composite_band`  
-**Current range:** 2025-08-28 → 2026-08-18  
-**Current data rows:** 323  
-**First introduction:** `d0abe770b6189ee7fb3ef90ff88103e81f5f7401` (2025-09-26)  
-**Commit message (FACT):** “Generated 30 days of sample factor history data.”  
+**Path:** `public/data/factor_history.csv`
+**Current schema:** per-factor `*_score`/`*_status` for trend, onchain, stablecoins, etf_flows, net_liquidity, term_leverage, macro_overlay, social_interest, plus `composite_score`, `composite_band`
+**Current range:** 2025-08-28 → 2026-08-18
+**Current data rows:** 323
+**First introduction:** `d0abe770b6189ee7fb3ef90ff88103e81f5f7401` (2025-09-26)
+**Commit message (FACT):** “Generated 30 days of sample factor history data.”
 **Generator (FACT):** `scripts/etl/backfill-factor-history.mjs` — header comment “creates sample historical factor data”; uses `Math.random` plus sine/cosine walks.
 
 ### Sample rows (FACT)
@@ -138,8 +138,8 @@ Do **not** call current `history.csv` “as-published” globally.
 
 ## 3. Synthetic ETF findings
 
-**Commit:** `e3c8306f7301e7c2d732118f2853cd4323992b48` (2025-09-26)  
-**Message (FACT):** “Generate realistic flow patterns with market share distribution.”  
+**Commit:** `e3c8306f7301e7c2d732118f2853cd4323992b48` (2025-09-26)
+**Message (FACT):** “Generate realistic flow patterns with market share distribution.”
 **Script (FACT):** `scripts/etl/etf-simple-backfill.mjs` — assumed market shares, `Math.random()` base flows, synthetic volatility, writes `public/signals/etf_by_fund.csv`. No Farside fetch.
 
 **FACT.** Only two commits ever touched `etf_by_fund.csv`:
@@ -177,9 +177,9 @@ Related **FACT:** `68462f34` also added `rebuild-stablecoins-historical.mjs` and
 
 ### Signal v2 (`public/signals/v2/`)
 
-**FACT.** Writer code: `7389da6322b4c3791d2037f922a8548ee9565c81` (2026-08-16).  
-**FACT.** First committed observations: `db789cd9` (2026-08-17) — header + one row each.  
-**FACT.** Second observations: `3e0c07ff` (2026-08-18).  
+**FACT.** Writer code: `7389da6322b4c3791d2037f922a8548ee9565c81` (2026-08-16).
+**FACT.** First committed observations: `db789cd9` (2026-08-17) — header + one row each.
+**FACT.** Second observations: `3e0c07ff` (2026-08-18).
 **First trustworthy signal-v2 date:** **2026-08-17**.
 
 Seven files, two rows each: `dxy_20d`, `etf_flows_21d`, `funding`, `mayer_multiple`, `net_liquidity_20d`, `social_interest`, `stablecoins_30d`. Missing metrics are empty cells, not `0` (**FACT**, matches writer). `net_liquidity` metric cells empty both days.
@@ -190,10 +190,10 @@ Seven files, two rows each: `dxy_20d`, `etf_flows_21d`, `funding`, `mayer_multip
 
 ## 5. BTC price-history provenance
 
-**Path:** `public/data/btc_price_history.csv`  
-**Current schema:** `date_utc,close_usd,source,ingested_at_utc`  
-**Current range:** 2024-08-17 → 2026-08-17  
-**Current data rows:** 731  
+**Path:** `public/data/btc_price_history.csv`
+**Current schema:** `date_utc,close_usd,source,ingested_at_utc`
+**Current range:** 2024-08-17 → 2026-08-17
+**Current data rows:** 731
 **Sources at HEAD (FACT):** `coinbase_historical` 716, `coinbase` 15, Alpha Vantage **0**.
 
 | Commit | Role |
