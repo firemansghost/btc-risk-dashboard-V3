@@ -6,11 +6,11 @@
 
 ## GhostGauge Checkpoint — 2026-08-18
 
-v1.1.1 operational transition is **COMPLETE**.
+v1.1.1 operational transition is **COMPLETE**. Phase H1 historical-evidence audit is **COMPLETE**. H1.1 documentation truth correction is **COMPLETE**.
 
 Active production: `model_version` **v1.1.1**, `implementation_revision` **integrity-2026-08**, `ssot_version` **2.1.1**.
 
-Era boundary:
+Era boundary (frozen):
 
 - **2026-08-16** — final official **v1.1** observation: G54 Hold & Wait (`0032a72942f70cf26a5dc7ca66a8161bfc0db909`).
 - **2026-08-17** — first valid **v1.1.1** observation: G47 Moderate Buying. Delayed `workflow_dispatch` recovery print (`32043136063` / `db789cd9c59b474044d428bfdccbe07312798236`).
@@ -18,17 +18,30 @@ Era boundary:
 
 All seven required scoring factors are operational. Canonical BTC history is working (completed UTC daily candles; newest completed date **2026-08-17** on the Aug 18 print). The strict post-compute freshness gate remains enabled and refused the contaminated first recovery attempt.
 
-`history.csv` remains **as-published**. Do not relabel legacy rows as v1.1.1 or treat the Aug 16 G54 → Aug 17 G47 difference as an automatic seven-point market-risk move.
+Current `history.csv` is **mixed provenance**, not globally as-published:
 
-**Next task:** historical / calibration architecture and analysis, using [`docs/MODEL_ERAS.md`](docs/MODEL_ERAS.md) as the era registry.
+- reconstructed **Grade C** through **2025-09-26**
+- observational successful-ETL set beginning **2025-09-27**
+- not calendar-contiguous
+- not current-model replay
+
+Sep 26 contemporaneous recovery: `e9083962` **G47**. Do not use merged **G85** as the contemporaneous Sep 26 print.
+
+Do not relabel legacy rows as v1.1.1 or treat the Aug 16 G54 → Aug 17 G47 difference as an automatic seven-point market-risk move.
+
+**Calibration gate: CLOSED.** v1.1 start remains unverified.
+
+**Next task:** History UI provenance / truth-label review (how the mixed-provenance series is presented). Later: construct a Git-recovered observational dataset for legitimate descriptive / forward-return analysis.
 
 See:
 
 - [`docs/MODEL_ERAS.md`](docs/MODEL_ERAS.md)
+- [`docs/HISTORICAL_EVIDENCE_INVENTORY_2026-08-18.md`](docs/HISTORICAL_EVIDENCE_INVENTORY_2026-08-18.md)
+- [`docs/HISTORICAL_DATA_ELIGIBILITY_2026-08-18.md`](docs/HISTORICAL_DATA_ELIGIBILITY_2026-08-18.md)
 - [`docs/V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md`](docs/V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md)
 - [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-The August 16 checkpoint below is unchanged historical continuity evidence.
+The August 16 checkpoint below remains historical continuity evidence. Read its older "as-published" wording together with the 2026-08-18 H1 provenance note in section D.
 
 ---
 
@@ -152,13 +165,21 @@ Current official G-Score snapshot.
 
 #### `public/data/history.csv`
 
-As-published headline history used by the historical chart. It is **not** automatically a historical replay under today's current model.
+Headline history used by the historical chart. It is **not** automatically a historical replay under today's current model. See the 2026-08-18 H1 provenance note below before treating every row as contemporaneous publication.
 
 #### `public/data/factor_history.csv`
 
 Diagnostic factor-attribution/status history.
 
 **Do not attempt to reconstruct historical scores by looping today's live ETL APIs over past dates.** Trustworthy historical recomputation requires frozen inputs for each historical date.
+
+### 2026-08-18 H1 provenance correction
+
+The Aug 16 checkpoint predates the H1 forensic audit.
+
+H1 later established that current `history.csv` contains a reconstructed prefix through **2025-09-26**. Therefore any "as-published" characterization in this older checkpoint should be read as the intended **forward artifact policy**, not as proof that every existing historical row was contemporaneously published.
+
+The reviewed June 21–August 15 dates remain genuine successful observations and are **not** invalidated by the older reconstruction issue.
 
 ### E. Current source/reliability notes
 
@@ -231,12 +252,12 @@ The audit must:
 - preserve V1.1 during analysis
 - reconstruct implementation and math independently
 - distinguish operational defects from methodological preferences
-- treat as-published history honestly
+- treat headline history honestly (see the 2026-08-18 H1 provenance note in section D)
 - avoid pretending historical artifacts are frozen replay data
 
 ### I. New thread/session starter
 
-> Resume GhostGauge from the August 16, 2026 checkpoint. June stabilization work is complete, the ETF trading-day cadence fix has run successfully through eight weeks of unattended operation, scheduled Daily ETL has had no post-fix failures in the reviewed period, and the next task is a clean-room GPT-5.6 Sol High architecture/model audit. Treat current code and committed artifacts as ground truth, preserve V1.1 during the audit, and do not infer historical recomputation from as-published history.
+> Resume GhostGauge from the August 16, 2026 checkpoint. June stabilization work is complete, the ETF trading-day cadence fix has run successfully through eight weeks of unattended operation, scheduled Daily ETL has had no post-fix failures in the reviewed period, and the next task is a clean-room GPT-5.6 Sol High architecture/model audit. Treat current code and committed artifacts as ground truth, preserve V1.1 during the audit, and do not infer historical recomputation from headline history. Read the 2026-08-18 H1 provenance note in section D: current history.csv is mixed provenance; "as-published" here was the intended forward policy, not proof that every historical row was contemporaneously published.
 
 ---
 

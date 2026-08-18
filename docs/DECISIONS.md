@@ -2,6 +2,35 @@
 
 Key technical choices and rationale for the Bitcoin Risk Dashboard.
 
+## 2026-08-18 — Historical evidence provenance correction
+
+**Status:** Authoritative clarification following Phase H1.
+
+**Decision:** GhostGauge no longer describes current `public/data/history.csv` globally as an "as-published" historical series.
+
+Phase H1 established that the current file is **mixed provenance**:
+
+- Current G-Scores **2023-09-25 through 2025-09-26** are **Grade C** reconstruction.
+- Reconstruction branch `68462f34` was retained by merge `a02a1a56`.
+- The Sep 26 contemporaneous committed artifact is `e9083962` **G47**.
+- The merged/current Sep 26 **G85** is retrospective reconstruction.
+- Post-Sep-26 history is a successful-production observation set with gaps, not a complete calendar panel.
+- Sample/synthetic histories are not calibration evidence.
+- Existing backtests are not validated performance evidence.
+- The v1.1 start remains **unverified**.
+- The Aug 16 / Aug 17 boundary remains **frozen**.
+- The calibration gate remains **CLOSED**.
+
+`MODEL_ERAS` remains the model/implementation boundary registry. Provenance forensics live in the H1 inventory; permissible analytical use lives in the H1 eligibility record.
+
+**References:**
+
+- [`docs/HISTORICAL_EVIDENCE_INVENTORY_2026-08-18.md`](HISTORICAL_EVIDENCE_INVENTORY_2026-08-18.md)
+- [`docs/HISTORICAL_DATA_ELIGIBILITY_2026-08-18.md`](HISTORICAL_DATA_ELIGIBILITY_2026-08-18.md)
+- [`docs/MODEL_ERAS.md`](MODEL_ERAS.md)
+
+---
+
 ## 2026-08-18 — v1.1.1 integrity semantics and model-era boundary
 
 **Decision:** GhostGauge adopts **v1.1.1 / integrity-2026-08** as the active production implementation era beginning with the official **2026-08-17** observation.
@@ -22,8 +51,7 @@ Official factor and pillar weights are preserved. v1.1.1 is an implementation-in
 
 **Historical implication:**
 
-- `public/data/history.csv` remains **as-published**.
-- No legacy backfill or rewrite was authorized.
+- No v1.1.1 transition backfill/rewrite was authorized. Phase H1 later established that `history.csv` already contained a pre-existing **2025-09-26** reconstructed prefix; therefore the current file is mixed provenance. v1.1.1 itself did **not** rewrite legacy history.
 - Calibration crossing the Aug 16/17 boundary must mark or separate eras.
 - The Aug 16 G54 print is the last official v1.1 observation.
 - The Aug 17 G47 print is the first official v1.1.1 observation (delayed manual recovery).
@@ -77,7 +105,7 @@ Official factor and pillar weights are preserved. v1.1.1 is an implementation-in
 **Implication:**
 
 - **Current official score** is **`public/data/latest.json`**.
-- **Chart history** is **`public/data/history.csv`** (as-published series; not automatically “re-modeled history” without an approved backfill).
+- **Chart history** is **`public/data/history.csv`**. 2026-08-18 H1 clarification: current `history.csv` is mixed provenance. The May 2026 upsert policy governs then-current/same-day writes; it does not retroactively make the pre-existing reconstructed prefix contemporaneous.
 - **Factor attribution over time** is **`public/data/factor_history.csv`** (diagnostic).
 - **Do not** fake historical recomputes by replaying **live** ETL over past dates—factors are **time-varying**; trustworthy historical recomputation needs **frozen per-day inputs**, not today’s API state.
 
