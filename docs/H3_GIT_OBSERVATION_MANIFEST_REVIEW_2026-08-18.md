@@ -1,9 +1,10 @@
 # GhostGauge H3 Git Observation Manifest Review
 
-**Date:** 2026-08-18  
-**Phase:** H3 — forensic review / design only  
-**Audited `origin/main`:** `ed8293a32b4d496e3eaaf294194b953680197da4`  
-**Branch:** `review/h3-git-observation-manifest`  
+**Date:** 2026-08-18
+**Phase:** H3 — forensic review / design only
+**Audited `origin/main`:** `ed8293a32b4d496e3eaaf294194b953680197da4`
+**Branch:** `review/h3-git-observation-manifest`
+
 **Status:** Design record. **No manifest CSV was built.** Calibration gate remains **CLOSED**.
 
 Labels used below:
@@ -118,7 +119,8 @@ Narrative eras (micro-changes collapsed). These are **schema eras**, not proven 
 
 - **Content identity:** `latest_blob_sha` (Git blob SHA of `public/data/latest.json`)
 - **Provenance identity:** `introducing_commit_sha` = earliest commit (by `commit_timestamp_utc`, then SHA) whose tree contains that blob
-- **Row key:** `artifact_id = latest_blob_sha`  
+- **Row key:** `artifact_id = latest_blob_sha`
+
   Optional readable alias: `introducing_commit_sha` (unique for introducing rows)
 
 Do **not** use “commit SHA of every touch” as the observation id. That would double-count `a02a1a56` as a second reconstruction observation.
@@ -361,7 +363,8 @@ Record `daily_rule_version` on the derived file so the rule can change without r
 
 **RECOMMENDATION.** Yes — H3.1 should emit **two** research tables:
 
-- A. artifact observations  
+- A. artifact observations
+
 - B. factor observations (`artifact_id × factor_key`)
 
 Omit fields the source blob lacks (empty, not `0`). Factor extraction is **impossible** for S0 seed and `UNCERTAIN` blobs; **inconsistent** for onchain across S3 vs S4.
