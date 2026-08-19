@@ -14,31 +14,33 @@
 
 This document is an evidence map. It does not calculate historical G-Scores, historical factor scores, composites, H4 forward returns, or H5 risk outcomes.
 
+A Git-provenance completion pass corrected the first H6 inventory. Classifications below supersede the first-pass Social `D_NOT_REPLAYABLE` / `NONE` wording.
+
 ---
 
 ## 1. Executive conclusion
 
-**DECISION:** Exact historical production replay of current `v1.1.1` is **NO**.
+**DECISION:** Exact historical production replay of the **full** current seven-factor `v1.1.1` composite is **NOT ESTABLISHED**.
 
-**DECISION:** Validation-grade current-methodology replay of the full seven-factor composite is **NOT ESTABLISHED** and, on present evidence, is **NO**.
+**DECISION:** Validation-grade current-methodology replay of the **full** seven-factor composite is **NOT ESTABLISHED**.
 
 **DECISION:** Earliest defensible contiguous full-model date = **NONE / NOT ESTABLISHED**. No date is manufactured.
 
-**FACT:** The current enabled scored universe is seven factors whose weights sum to 1.0. Full exact production replay on date T requires all seven to be `A_EXACT_POINT_IN_TIME` on T. Validation-grade methodology replay requires all seven to be `A` or `B` with no `C`/`D`/`U` scored component.
+**DECISION:** `social_interest` is **not** `D_NOT_REPLAYABLE` on the Git-captured date set. Contemporaneous Git blobs of `public/data/cache/trending.json` and `public/data/cache/social_interest/social_interest_cache.json` are point-in-time CoinGecko trending captures. Factor class for that defined interval is `A_EXACT_POINT_IN_TIME` with **INTERMITTENT** coverage from 2025-12-11 through 2026-08-19.
 
-**EVIDENCE:** `social_interest.coingecko_trending_rank` carries official subweight 0.70. CoinGecko `GET /search/trending` is a live last-24h snapshot. Official CoinGecko documentation reviewed on 2026-08-19 does not expose a historical trending-rank endpoint.
+**FACT:** Full exact production replay on date T still requires **all seven** enabled scored factors to be `A` on T. Full validation-grade methodology replay requires all seven `A` or `B` with no `C`/`D`/`U` component.
 
-**DECISION:** That component is `D_NOT_REPLAYABLE`. Historical BTC price momentum (subweight 0.30) cannot recreate the factor. Google Trends, Fear & Greed, neutral-fill, and backsolving from historical Social scores are forbidden and were not used.
+**FACT:** After the Git inventory, `trend_valuation`, `term_leverage`, `macro_overlay`, and `net_liquidity` remain `U_UNRESOLVED` at factor level. `stablecoins` exact class is `A` on dated Git captures while current 365-day methodology remains `U`. `etf_flows` is `A` on contemporaneous Git HTML from 2025-10-07.
 
-**LIMITATION:** Independently of social interest, several other enabled factors remain `U_UNRESOLVED` or `C_EXPLORATORY_ONLY` (UTC intraday snapshot price, FRED-without-vintage, Farside table mutability, hardcoded stablecoin basket including BUSD, funding fallback identity). Any one `C`/`D`/`U` factor would already block full validation-grade composite replay.
+**DECISION:** No surviving `D` blocker was demonstrated for a usable Social Git interval. Full-model `NO` is therefore not used. Remaining blockers are unfinished proof (`U`) and interval mismatch, not a demonstrated impossibility of every factor.
 
-**DECISION:** Recommended next step is **NO HISTORICAL REPLAY** of the current seven-factor model. Do not begin a replay implementation. Do not calculate historical scores.
+**DECISION:** Recommended next step is **H6.1 TARGETED SOURCE PROOF AUDIT**. Do not begin a replay implementation. Do not calculate historical scores.
 
 ---
 
 ## 2. Scope and hard firewall
 
-H6 determines whether the **current** `v1.1.1` methodology can be reconstructed historically without lookahead contamination, and if so which factors, from what earliest date, using what source evidence, at what fidelity, with what unresolved limitations.
+H6 determines whether the **current** `v1.1.1` methodology can be reconstructed historically without lookahead contamination.
 
 H6 does **not**:
 
@@ -54,7 +56,7 @@ H6 does **not**:
 
 **FACT:** No backtest began in H6. Calibration remains CLOSED.
 
-Companion files (exactly four outputs in this work):
+Companion files (exactly four outputs):
 
 1. `docs/H6_POINT_IN_TIME_REPLAY_FEASIBILITY_2026-08-19.md` (this file)
 2. `research/point-in-time-replay/README.md`
@@ -65,7 +67,7 @@ Companion files (exactly four outputs in this work):
 
 ## 3. Current v1.1.1 implementation identity
 
-**FACT:** `origin/main` at audit start equals `6b2fa9cf56ce738c74c8da6de0f5a972858f8a52`. H6 branched from that SHA exactly. `H6_SOURCE_SHA` is frozen to that commit.
+**FACT:** `origin/main` equals `6b2fa9cf56ce738c74c8da6de0f5a972858f8a52`. H6 branched from that SHA exactly.
 
 **FACT:** `docs/H5_1_RISK_OUTCOME_INTERPRETATION_2026-08-19.md` exists on that commit with blob `d6978aa9de6c53dd24ff9a1ca3cfd32eece2cf19`.
 
@@ -91,15 +93,19 @@ Companion files (exactly four outputs in this work):
 | `scripts/etl/compute.mjs` | `6f16c1f24bc097d6079fffc0ea7b5889c91ea0d4` | Orchestration and snapshot selection |
 | `scripts/etl/lib/macroFreshness.mjs` | `7781aedb1941d4052aa1f90c20f52615abb7d979` | 11:xx UTC vs US release timing |
 | `scripts/etl/lib/termFreshness.mjs` | `bc889e6b50f50c52b5d673c1d7f709ffe05c32e0` | Funding cadence, grace, provider selection |
+| `scripts/etl/lib/sourceObservationTime.mjs` | `8a9790666e8d8ea508a865de1b2f4b0da75a3db8` | Social/macro source-observation clocks |
+| `scripts/etl/coinGeckoCache.mjs` | `fbfc5e35b3bd4af60eb00e780892b62f94e8bbff` | Disk cache; `getTrending()` → key `trending` → `public/data/cache/trending.json` |
+| `scripts/etl/marketCalendar.mjs` | `77c5669f77bef11cbc43fb85f82bb4a42bfc2136` | ETF publication hour, US trading-day, `selectPublishedEtfFlowRows` |
+| `scripts/etl/fetch-helper.mjs` | `da8ca2b441088f2e13364249e7ecbbed40dc22a4` | Retry/backoff fetch wrapper |
 | `scripts/etl/factors/stablecoinGrowthAggregation.mjs` | `338ed9046643ab5ccc3fa7f892d4628fe8b55fb4` | Stablecoin growth aggregation |
 | `scripts/etl/factors/stablecoinGrowthGuard.mjs` | `3728eb0f7bc2ecdf5faa35edde564a735c9c6bb2` | Min coins / weight guard |
 | `lib/config-loader.mjs` | `8f439254ca813050703a7c17bcd658474c19e2b2` | Runtime config load |
 
+**FACT:** `CoinGeckoClient.getTrending()` in `coinGeckoCache.mjs` calls `https://api.coingecko.com/api/v3/search/trending` and stores the response under disk-cache key `trending`, which maps to `public/data/cache/trending.json`.
+
 **FACT — code-vs-docs discrepancy:** `config/subweights.json` blob `e6cbb244e9ff6871e784a023e9e8e9f09e9a923d` still lists `social_interest.google_trends` / `fear_greed` and `term_leverage.funding_7d` / `basis_front` / `oi_mcap`. That file is **not** implementation authority.
 
 **DECISION:** CODE WINS. Production subweights are `dashboard-config.json` `subweights` plus `LOCKED_OFFICIAL_BLENDS` in `ssotSubweights.mjs`.
-
-Additional comment-level discrepancies inside `factors.mjs` (stale 40/35/25 social comments; stale net-liquidity 30/40/30 comments; stale ETF 40/30/30 comments) are not SSOT. Locked blends win.
 
 ---
 
@@ -111,17 +117,15 @@ Three concepts are never treated as equivalent.
 
 Reconstruct the observation the production pipeline would have produced at historical time T, including exact source/provider selected, exact source value as available then, exact publication/release timing, exact fallback behavior, exact cache state if material, exact current/snapshot price semantics, exact formula, exact completed-period logic, and exact availability before `as_of_utc`.
 
+A contemporaneously committed Git cache/HTML blob that is the payload production stored that day **is** exact-production source evidence for that capture.
+
 ### B. Point-in-time methodology replay
 
-Reconstruct current `v1.1.1` mathematics using genuine point-in-time inputs knowable at T, without claiming the exact historical operational provider/fallback/cache state. Any source substitution must be the same underlying measurement and itself point-in-time safe.
-
-This can potentially be validation-grade methodology evidence. It is **not** exact production replay.
+Reconstruct current `v1.1.1` mathematics using genuine point-in-time inputs knowable at T, without claiming the exact historical operational provider/fallback/cache state.
 
 ### C. Exploratory reconstruction
 
 Uses inputs that are revised later, backfilled later, reconstructed later, proxy substituted, unavailable with exact release timing, or not provably knowable at T.
-
-This can be research context only. It is **not** validation-grade.
 
 ---
 
@@ -139,7 +143,11 @@ Strongest available evidence, in order:
 
 **DECISION:** Category 7 is never promoted to fact.
 
-**DECISION:** Existing synthetic/reconstructed factor histories committed in Git are not strong point-in-time source evidence merely because they are committed. H3 contamination classifications remain in force. H4/H5 reconstructed score rows are not raw-source evidence and must not be backsolved.
+**FACT:** Overwriting a working-tree cache file does not erase historical Git blobs.
+
+**FACT:** A mutable provider endpoint fetched today is not PIT. A same-day Git commit of that payload **is** PIT for the commit/capture date.
+
+**DECISION:** Existing synthetic/reconstructed factor histories committed in Git are not strong point-in-time **raw-source** evidence merely because they are committed. Cached **raw** payloads (trending JSON, Farside HTML, stablecoin market_chart arrays, fundingData) are category-2 evidence. Cached **computed scores** are not used and are not backsolved.
 
 ---
 
@@ -147,18 +155,13 @@ Strongest available evidence, in order:
 
 A historical value is eligible only if it could reasonably have been known by the hypothetical GhostGauge run's `as_of_utc`.
 
-Do not confuse:
-
-- observation date
-- publication/release time
-- fetch time
-- later revision time
+Do not confuse observation date, publication/release time, fetch time, and later revision time.
 
 **FACT:** Typical production cadence encoded in freshness modules is an ~11:xx UTC run. Same-day US macro prints and Thursday H.4.1 WALCL are often **not** yet knowable at that clock time.
 
 **FACT:** A provider returning a value for historical date D **today** does not prove that the same value was available on D.
 
-**DECISION:** If release time is unknown and material, classification cannot silently be `A`. This audit uses `U` or lower as warranted. No historical endpoint was treated as automatically point-in-time safe.
+**LIMITATION:** A Git artifact committed at 15:43 UTC is PIT for that fetch, not automatically identical to an 11:xx UTC fetch of a live endpoint (Social trending).
 
 ---
 
@@ -204,11 +207,7 @@ Weight sum of the seven enabled factors = 1.0.
 | social_interest | coingecko_trending_rank | 0.70 |
 | social_interest | btc_price_momentum_7d | 0.30 |
 
-**FACT:** On-chain is disabled / weight 0 and does **not** block full current composite replay.
-
-**FACT:** Market Regime, Cycle Timing, Gold, and Sats are display-only and do **not** block replay.
-
-**DECISION:** Factor methodology replay can only be `A` or `B` if **all** scored components can be reconstructed from point-in-time-safe inputs. Feasibility is not averaged across components.
+**FACT:** On-chain is disabled / weight 0 and does **not** block full current composite replay. Market Regime, Cycle Timing, Gold, and Sats are display-only.
 
 ---
 
@@ -216,217 +215,216 @@ Weight sum of the seven enabled factors = 1.0.
 
 **FACT:** Current scored components are BMSB distance 0.60, Mayer stretch 0.30, weekly RSI 0.10.
 
-**FACT:** `calculateBMSB` requires at least 22 completed UTC weekly closes (20-week SMA and 21-week EMA). Snapshot price is passed into BMSB as the distance numerator.
+**FACT:** `calculateBMSB` requires at least 22 completed UTC weekly closes. Snapshot price is the distance numerator. Mayer stretch = snapshot / SMA200 of completed UTC daily closes. Weekly RSI uses completed weekly closes.
 
-**FACT:** Mayer stretch = snapshot / SMA200 of **completed** UTC daily closes (`sma200DenominatorCloses`), then percentile over the Mayer series.
+**FACT:** `utc_intraday_snapshot` is a different measurement from the completed daily close.
 
-**FACT:** Weekly RSI(14) uses completed weekly closes, then percentile over the RSI series. Weekly RSI does **not** use the intraday snapshot as its RSI input.
+**EVIDENCE — latest.json inventory (`git log --all --follow`):**
 
-**FACT:** `selectSnapshotFromDailyCandles` / `utc_intraday_snapshot` selects the still-open UTC daily Coinbase candle at the typical ~11:00 UTC run. That is a different measurement from the completed daily close.
+- first appearance: 2025-09-15 (`3d11cce2`)
+- last appearance: 2026-08-19 (`ad6be423`)
+- 452 commits, 451 distinct blobs, 328 distinct commit dates
+- path-log without `--follow`: 425 commits; 423 with numeric `btc.spot_usd` (or equivalent); 303 distinct `as_of` dates with spot
+- `price_kind=utc_intraday_snapshot` is present on **3** inspected recent commits only; 420 path-log blobs have no `price_kind`
+- example: commit `e9083962` `btc.spot_usd=108739.09`, `as_of_utc=2025-09-26T11:19:04.150Z`, `source=Coinbase`
+- `.data/json/latest.json`: 12 commits, 6 dates, 2025-09-04 through 2025-09-16 only
 
-**EVIDENCE:** `scripts/etl/lib/snapshotPrice.mjs` blob `d49c9486e0d75bdeecd8b4aa287cb07f6350e34e`.
+**EVIDENCE:** `public/data/btc_price_history.csv` has **5** Git commits (2025-09-24, 2025-09-28, 2026-08-17, 2026-08-18, 2026-08-19). It is not a daily completed-close archive.
 
-**LIMITATION:** Recreating the factor from completed daily closes alone is **not** current methodology for BMSB or Mayer.
+**LIMITATION:** Hundreds of contemporaneous published spots exist. That does **not** prove they were produced by current `selectSnapshotFromDailyCandles`. Unlabeled spots are provenance context.
 
-**LIMITATION:** Ranking historical T against a later-complete Mayer or RSI file that includes T+1…today is a lookahead hazard. A replay implementation must truncate rank universes at T.
-
-**LIMITATION:** Coinbase vs CoinGecko price-history fallback identity at historical T is not reconstructable from Git as an outage log.
-
-**EVIDENCE:** H3 / `latest.json` observation artifacts capture some contemporaneous `price_usd` values in the operational window beginning 2025-09. Those are isolated published snapshots, not a contiguous 200-day + 22-week PIT archive from an arbitrary start date. Reconstructed `btc_price_history.csv` is a completed-close series, not a snapshot archive.
-
-**INFERENCE:** Coinbase hourly or minute candles *might* reconstruct the still-open UTC daily candle at 11:xx. This audit did not fetch those candles and did not compute any prices. Reconstruction remains unproven.
-
-**DECISION:**
-
-- `exact_production_replay_class`: `U_UNRESOLVED`
-- `methodology_replay_class`: `U_UNRESOLVED`
-- contiguous exact coverage: `UNKNOWN`
-- contiguous method coverage: `UNKNOWN`
-- primary blocker: `utc_intraday_snapshot` vs completed close
-- confidence: `MEDIUM`
-
-Weekly RSI in isolation could be method-equivalent from truncated completed weekly closes (`B` at component level in `source_requirements.csv`). The factor cannot be `B` while BMSB and Mayer remain `U`.
+**DECISION:** Coverage is **INTERMITTENT contemporaneous prices**, not “isolated.” Factor classes remain `U_UNRESOLVED` / `U_UNRESOLVED` because current snapshot semantics plus SMA200 CSV-at-T are not proven. Confidence: `MEDIUM`.
 
 ---
 
 ## 9. Stablecoins audit
 
-**FACT:** Official components are supply_growth 0.55, momentum 0.30, concentration 0.15.
+**FACT:** Official components are supply_growth 0.55, momentum 0.30, concentration 0.15. Current code hardcodes a 7-coin basket including BUSD 0.03.
 
-**FACT:** Current code hardcodes a 7-coin basket and weights: USDT 0.55, USDC 0.25, DAI 0.05, BUSD 0.03, TUSD 0.02, FRAX 0.02, LUSD 0.01.
+**EVIDENCE — dated Git JSON (`public/data/cache/stablecoins/*.json`):**
 
-**FACT:** Guard requires at least 3 coins and ≥70% of configured weight.
+- 309 files, filenames 2025-10-04 through 2026-08-19
+- **every** file first appeared on the **same calendar day** as its filename (`lag=0`)
+- later-modified count = 0
+- no bulk-backfill commit (each first-appearance commit adds 1 file)
+- 8 calendar gaps >1 day
+- 2025-10-04 payload is a **3-coin** array of `{prices, market_caps, total_volumes}` (~91 points)
+- 308 files from **2025-10-05** are **7-coin**; HEAD 2026-08-19 has ~31-point windows
+- objects have **no coin id keys** (positional)
 
-**FACT:** Source hierarchy is CoinGecko `market_chart` (~30d daily) primary, then CoinMarketCap historical, then CryptoCompare histoday.
+**EVIDENCE:** `public/data/stablecoins-historical.json` has 287 commits from 2025-10-05 through 2026-08-19 and stores derived `changeSeries` (length 283 on HEAD), not raw caps.
 
-**FACT:** Percentile scoring uses `public/data/stablecoins-historical.json` 365-day rolling `changeSeries`. Using today's complete file as the rank universe for historical T is lookahead.
+**LIMITATION:** Today’s CoinGecko market-chart API is mutable. That does **not** erase these contemporaneous captures.
 
-**LIMITATION:** Reconstructing date T with **today's** basket membership, including discontinued BUSD, is not point-in-time market structure. Delisted, depegged, or rebranded stablecoins are not recovered from current metadata.
-
-**LIMITATION:** CoinGecko/CMC/CryptoCompare historical market-cap series returned today can be revised or backfilled. A current historical endpoint is not a vintage archive.
-
-**EVIDENCE:** Git tracks dated `public/data/cache/stablecoins/YYYY-MM-DD.json` from 2025-10-04 through 2026-08-19. That window is contemporaneous cache evidence for those dates only. It does not cover a 365-day burn-in before October 2025.
+**LIMITATION:** The hardcoded BUSD-inclusive basket is a survivorship / methodology-selection issue distinct from capture vintage. Each dated file holds 31–91 days of caps, not a proven 365-day PIT raw universe.
 
 **DECISION:**
 
-- exact: `C_EXPLORATORY_ONLY`
-- methodology: `C_EXPLORATORY_ONLY`
-- contiguous exact: `INTERMITTENT` (Git caches)
-- contiguous method: `UNKNOWN`
-- primary blocker: anachronistic hardcoded basket / BUSD
-- confidence: `HIGH`
+- exact: `A_EXACT_POINT_IN_TIME` for the dated Git capture set beginning 2025-10-05 (7-coin)
+- methodology (current 365-day official formula): `U_UNRESOLVED`
+- contiguous exact: `INTERMITTENT`
+- confidence: `MEDIUM`
 
 ---
 
 ## 10. ETF Flows audit
 
-**FACT:** Official components are sum_21d 0.30, acceleration 0.30, diversification 0.40.
+**FACT:** Official components are sum_21d 0.30, acceleration 0.30, diversification 0.40. `marketCalendar.mjs` defines `ETF_FLOW_PUBLISH_HOUR_UTC=16`, US trading days, and `selectPublishedEtfFlowRows`.
 
-**FACT:** Current implementation scrapes Farside HTML (`farside.co.uk/bitcoin-etf-flow-all-data/` and fallbacks), caches `public/data/cache/etf/YYYY-MM-DD.html`, selects published rows versus `as_of`, computes a 21-**business-day** rolling sum, 7d vs prior 7d acceleration, and HHI on individual ETF columns.
+**EVIDENCE — dated Git HTML:**
 
-**FACT:** Percentile scoring versus `public/data/etf-flows-historical.json` must not use a later-complete universe to rank historical T.
+- 305 files `public/data/cache/etf/YYYY-MM-DD.html`
+- first filename 2025-10-07, last 2026-08-19
+- **every** file first appeared the same calendar day as its filename (`lag=0`)
+- later-modified = 0
+- no bulk backfill
+- `2025-10-07.html` ≈ 520KB / 460 `<tr>`; `2026-08-19.html` ≈ 785KB / 673 `<tr>`
+- missing weekdays inside the filename span: 2025-10-13, 2026-01-14, 2026-03-06, 2026-03-30, 2026-04-06, 2026-05-25, 2026-06-01
 
-**EVIDENCE:** US spot Bitcoin ETFs first traded on 2024-01-11 (issuer/Reuters contemporaneous reporting). Pre-inception zeros or weight renormalization are **not** full current-model replay.
+**INFERENCE:** 2025-10-13 and 2026-05-25 align with US market holidays. Other missing weekdays are capture gaps until proven holidays against `US_MARKET_HOLIDAYS_UTC`.
 
-**INFERENCE:** 21 business-day burn-in after 2024-01-11 yields an earliest *exploratory* candidate around 2024-02-12. That date is feasibility arithmetic only. It is **not** a validation-grade start date because Farside is a mutable published table.
+**FACT:** US spot Bitcoin ETP approval is documented at [SEC press release 2024-7](https://www.sec.gov/newsroom/press-releases/2024-7). First trading 2024-01-11 remains structural inception. Git HTML does **not** start then.
 
-**LIMITATION:** A Farside value retrieved today for date D is not proof of the table as knowable at T. Corrections and later-added funds can rewrite the all-data table.
-
-**EVIDENCE:** Git-tracked ETF HTML exists from 2025-10-07 through 2026-08-19 (~305 files). That is intermittent contemporaneous capture, not a PIT archive from market inception.
+**DECISION:** Live Farside [bitcoin-etf-flow-all-data](https://farside.co.uk/bitcoin-etf-flow-all-data/) fetched today is not PIT. Genuinely contemporaneous Git HTML **is** PIT for that capture date. Parser execution was not performed; row counts support (do not prove) a 21-business-day window inside each snapshot.
 
 **DECISION:**
 
-- exact: `C_EXPLORATORY_ONLY`
-- methodology: `C_EXPLORATORY_ONLY`
-- earliest exact candidate: `2025-10-07` (first Git HTML date; still not vintage-controlled publication state)
-- earliest method candidate: not established for validation
-- contiguous exact: `INTERMITTENT`
-- contiguous method: `UNKNOWN`
-- primary blocker: Farside mutability / lack of vintage
+- exact: `A_EXACT_POINT_IN_TIME` from 2025-10-07 on the captured set
+- methodology: `A_EXACT_POINT_IN_TIME` for the same Git interval
+- contiguous: `INTERMITTENT` (weekday gaps)
 - confidence: `HIGH`
 
 ---
 
 ## 11. Net Liquidity audit
 
-**FACT:** Official components are level 0.15, rate_of_change 0.40, momentum 0.45. Comments elsewhere that still say 30/40/30 are stale. CODE WINS.
+**FACT:** Official components are level 0.15, rate_of_change 0.40, momentum 0.45. Production fetches FRED `WALCL`, `RRPONTSYD`, `WTREGEN`. Current FRED observations are latest-revised.
 
-**FACT:** Production fetches FRED series `WALCL`, `RRPONTSYD`, `WTREGEN` over a 365-day window. Net liquidity = WALCL − RRP − TGA. Minimum 8 weeks; 12 weeks for momentum; 4-week rate of change.
+**EVIDENCE:** [FRED ALFRED](https://fred.stlouisfed.org/docs/api/fred/alfred.html) documents vintage `realtime_start` / `realtime_end` / `vintage_dates`. [H.4.1](https://www.federalreserve.gov/releases/h41/) publishes Thursday ~4:30 p.m. ET.
 
-**FACT:** Current FRED `observations` responses are **latest revised** values, not the vintage known at T.
+**EVIDENCE — Git cache:** `public/data/cache/net_liquidity/net_liquidity_cache.json`
 
-**EVIDENCE:** FRED ALFRED documents `realtime_start` / `realtime_end` / `vintage_dates` as the official vintage mechanism ([FRED ALFRED API](https://fred.stlouisfed.org/docs/api/fred/alfred.html)). This audit did **not** retrieve vintage catalogs and did **not** compute net-liquidity values.
+- 97 distinct blobs / commits / dates
+- first 2025-12-11 (`d511199b`)
+- last 2026-08-14 (`56ec0993`) blob `74bad5a46f7faeb64c59ea1dbdb8261ef3395384`
+- fields include `latestWalclDate`, `lastUpdated`, `details`, `cachedAt`
+- inspected blobs do **not** contain raw WALCL/RRP/TGA arrays
 
-**EVIDENCE:** WALCL is an H.4.1 series. The Board publishes H.4.1 on Thursday at about 4:30 p.m. ET for the prior Wednesday ([H.4.1](https://www.federalreserve.gov/releases/h41/)). A typical 11:xx UTC Thursday run cannot yet have that release.
+**DECISION:** Git cache is operational provenance (which WALCL date production bound). It is not a raw vintage archive. Do not backsolve FRED from cached scores.
 
-**LIMITATION:** Production cache fallback `success_cached_fred_error` means exact production replay requires knowing whether live FRED failed and whether an older cache was used. Git does not store a dated FRED vintage/outage log.
-
-**DECISION:** ALFRED *may* later support method-equivalent vintage control. Completeness of vintages for all three series at 11:xx UTC alignment is **not proven**. Classification is therefore not `B`.
-
-**DECISION:**
-
-- exact: `U_UNRESOLVED`
-- methodology: `U_UNRESOLVED`
-- contiguous coverage: `UNKNOWN`
-- primary blocker: latest FRED ≠ vintage known at T
-- confidence: `MEDIUM`
+**DECISION:** exact `U_UNRESOLVED`; methodology `U_UNRESOLVED`; coverage `INTERMITTENT`; confidence `MEDIUM`.
 
 ---
 
 ## 12. Term Structure & Leverage audit
 
-**FACT:** Official components are funding 0.40, realized_vol 0.35, stress 0.25. Stale `config/subweights.json` keys `funding_7d` / `basis_front` / `oi_mcap` are not current.
+**FACT:** Official components are funding 0.40, realized_vol 0.35, stress 0.25. Fallback BitMEX → Binance → OKX.
 
-**FACT:** Production funding fallback is BitMEX → Binance → OKX via `selectFundingProvider`. BitMEX slots 04/12/20 UTC; Binance/OKX typically 00/08/16 UTC, with publication grace in `termFreshness.mjs`.
+**EVIDENCE — `term_leverage_cache.json`:**
 
-**FACT:** Realized vol and stress use a 30-day CoinGecko daily spot `market_chart` plus the selected funding series.
+- 253 distinct blobs, 241 distinct commit dates, 2025-12-11 through 2026-08-19
+- same 8 calendar gaps as social cache (11 missing days)
+- `fundingData` length **30 in all 253 blobs**
+- explicit `funding_provider` field in **3** blobs only, first `db789cd9` 2026-08-17, all `bitmex`
+- tree `876fefba` blob `ea0db3913c29e06a8da3b2693f7bd413828b5db9`: `funding_provider=bitmex`, `funding_observation_utc=2026-08-18T04:00:00.000Z`, `spot_observation_utc=2026-08-18T11:27:40.000Z`
+- 2025-12-11 sample: no `funding_provider` field; `fundingData[0].symbol=XBTUSD`; details label `Data Source: BitMEX`
 
-**LIMITATION:** Exact production replay requires knowing which venue won at T, whether primary was unavailable, and whether cache preserved an older observation. Git has no dated provider-selection log.
+**DECISION:** The first-pass phrase “no dated provider-selection archive” is **too strong**. Git contains a dense dated **funding-window** archive and a **short** explicit provider-field archive (3 days). No sufficiently long contiguous explicit `funding_provider` field series has been established.
 
-**LIMITATION:** Historical funding retention, instrument continuity, and unit/formula differences by venue were not proven in this audit. This audit did not hit exchange APIs to pull funding histories.
+**EVIDENCE — spot/vol chart cache:**
 
-**LIMITATION:** CoinGecko 30-day daily spot returned today is a current historical response, not a vintage snapshot of what CoinGecko returned at T.
+- `market_chart_30_daily.json`: 13 commits, 10 dates (2025-09-20 … 2025-10-29, then 2026-08-17/18/19)
+- `market_chart_365_daily.json`: 4 commits, last 2025-09-23
 
-**DECISION:** A later canonical-venue method-equivalent path is conceivable if one venue's 30-day history is complete and point-in-time safe. It is **not established**.
+**DECISION:** Factor-level exact and methodology remain `U_UNRESOLVED` because scored `realized_vol` / `stress` lack a contiguous PIT 30-day chart archive even though funding windows are densely cached. Confidence: `MEDIUM`.
 
-**DECISION:**
-
-- exact: `U_UNRESOLVED`
-- methodology: `U_UNRESOLVED`
-- contiguous coverage: `UNKNOWN`
-- primary blocker: fallback identity + unproven historical retention
-- confidence: `MEDIUM`
+External docs: [BitMEX API](https://www.bitmex.com/app/apiOverview), [Binance funding-rate history](https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api/Get-Funding-Rate-History), [OKX funding-rate history](https://www.okx.com/docs-v5/en/#public-data-rest-api-get-funding-rate-history).
 
 ---
 
 ## 13. Macro Overlay audit
 
-**FACT:** Official scored blend is `dxy_20d` 0.40 (`DTWEXBGS`), `us2y_20d` 0.35 (`DGS2`, plus inversion bonus using `DGS10`), `vix_pct` 0.25 (`VIXCLS`).
+**FACT:** Official scored blend is `dxy_20d` 0.40 (`DTWEXBGS`), `us2y_20d` 0.35 (`DGS2` plus `DGS10` inversion bonus), `vix_pct` 0.25 (`VIXCLS`). `DFII10` is fetched and not blended.
 
-**FACT:** Code also fetches `DFII10`. `realRateScore` is computed and **not** in `LOCKED_OFFICIAL_BLENDS`. `DGS10` **does** affect the scored `us2y_20d` path via a +15 inversion bonus when 10Y−2Y < 0.
+**EVIDENCE:** `macro_overlay_cache.json`: 175 blobs/dates, 2025-12-11 through 2026-08-19; weekend-like 1-day gap pattern (72 calendar gaps). Inspected blobs have `latestDxyDate` / `latestDgs2Date` / `latestVixDate` and **no** raw FRED arrays.
 
-**FACT:** Fetch window is 120 days; ≥30 observations each for DXY/DGS2/VIX; 20-session changes; VIX percentile over the fetched window.
+**EVIDENCE:** [FRED observations](https://fred.stlouisfed.org/docs/api/fred/series_observations.html), [ALFRED](https://fred.stlouisfed.org/docs/api/fred/alfred.html), [H.15](https://www.federalreserve.gov/releases/h15/). `macroFreshness.mjs` encodes 11:xx UTC vs same-day US prints.
 
-**EVIDENCE:** `macroFreshness.mjs` encodes that same-day US H.15 / DGS2 / VIX prints are often not knowable at 11:00 UTC.
-
-**LIMITATION:** Current FRED is revised. Ranking historical T against today's complete 120-day VIX window is lookahead.
-
-**LIMITATION:** Aligning rows by calendar date, ignoring 11:xx UTC knowability, would not reproduce production semantics.
-
-**DECISION:**
-
-- exact: `U_UNRESOLVED`
-- methodology: `U_UNRESOLVED`
-- contiguous coverage: `UNKNOWN`
-- primary blocker: 11:xx UTC knowability + lack of vintage control
-- confidence: `MEDIUM`
+**DECISION:** Cache dates are operational provenance. They do not reconstruct vintages. Do not backsolve raw FRED from cached scores. Classes remain `U_UNRESOLVED`. Confidence: `MEDIUM`.
 
 ---
 
 ## 14. Social Interest audit
 
-**FACT:** Official scored components are CoinGecko trending rank 0.70 and BTC 7-day price momentum 0.30.
+**FACT:** Official scored components are CoinGecko trending rank 0.70 and BTC 7-day price momentum 0.30. Stale comments and `config/subweights.json` (`google_trends` / `fear_greed`) are not SSOT.
 
-**FACT:** Comments in `factors.mjs` that still describe a 40/35/25 blend including volatility are stale. Volatility may be computed internally; it is **not** in the official blend. CODE WINS.
+**FACT:** Official CoinGecko docs describe a live endpoint, not a historical archive: [trending-search](https://docs.coingecko.com/reference/trending-search) and `https://api.coingecko.com/api/v3/search/trending` (accessed 2026-08-19).
 
-**EVIDENCE:** CoinGecko trending-search documentation ([trending-search](https://docs.coingecko.com/reference/trending-search), accessed 2026-08-19) describes a current last-24h trending snapshot. No official historical trending-rank endpoint was found.
+**EVIDENCE — that live-only documentation does not outrank Git captures.**
 
-**EVIDENCE:** Git tracks a single overwritten file `public/data/cache/social_interest/social_interest_cache.json`, updated by ETL artifact commits. That is not a dated official trending archive and does not establish contiguous daily coverage.
+### `public/data/cache/trending.json`
 
-**DECISION:** Isolated git blobs of that overwritten cache might later prove contemporaneous ranks on some ETL-commit days. Isolated snapshots do not establish a daily replay window. They were not reverse-engineered into ranks in this audit.
+| Item | Value |
+|---|---|
+| First Git appearance | 2025-09-20 `c897c44c` blob `c05a3b4872f36b1e543bce928191994e60448be0` |
+| Last Git appearance | 2026-08-19 `ad6be423` blob `7cfafba0eb3a54611f05ce5aeef8b6fd0438e388` |
+| Distinct blobs / commits | 12 / 12 |
+| Distinct commit dates | 9 |
+| Dates | 2025-09-20, 2025-09-23, 2025-09-24, 2025-09-26, 2025-10-01, 2025-10-29, 2026-08-17, 2026-08-18, 2026-08-19 |
 
-**DECISION:** Historical price momentum alone is not enough, because trending rank is 70% of current subweight.
+Confirmed reviewer blobs:
 
-**DECISION:** Do not invent trending rank. Do not replace it with Google Trends. Do not use Fear & Greed. Do not neutral-fill. Do not backsolve from historical Social scores.
+- 2025-09-26 `e9083962` → `e4770953a873ba475c690372d5e46ddae60b7f99` (raw `coins` envelope, no `cachedAt`; BTC `item.score=14`)
+- 2026-08-17 `db789cd9` → `cd34029732767e0dab0635dc7f063dd25beb124a` (`cachedAt=2026-08-17T15:43:13.595Z`)
+- 2026-08-18 tree `876fefba` → `d19ca5cc546e7685bfb54e243aabc9233dea2086`
+- H6_SOURCE_SHA → `7cfafba0eb3a54611f05ce5aeef8b6fd0438e388` (`cachedAt=2026-08-19T11:29:41.976Z`)
+
+Older payloads rely on commit provenance rather than `cachedAt`. Coverage of **raw** trending.json is **INTERMITTENT** with a large gap after 2025-10-29.
+
+### `public/data/cache/social_interest/social_interest_cache.json`
+
+| Item | Value |
+|---|---|
+| First Git appearance | 2025-12-11 `6082a0f7` blob `d993f24949db11f58fcbebd3557b52e7118a273e` |
+| Last Git appearance | 2026-08-19 `ad6be423` blob `40b73f37414b616019b671ea1b795bba1c584463` |
+| Distinct blobs / commits | 252 / 252 |
+| Distinct commit dates | 241 |
+| Finite `bitcoinRank` | 246 / 252 |
+| `provider=CoinGecko • trending` | 238 / 252 |
+| Calendar gaps | 8 gaps, 11 missing days |
+
+Gaps: 2026-01-14; 2026-03-06; 2026-03-29–30; 2026-04-04–06; 2026-04-12; 2026-05-25; 2026-06-01; 2026-06-20.
+
+Confirmed reviewer blobs:
+
+- 2026-08-17 `db789cd9` blob `0adf5759c39d9a21c6345f1358118d3dbe26207a`: `provider=CoinGecko • trending`, `trending_fetched_at=2026-08-17T15:43:13.599Z`, `bitcoinRank=9`
+- 2026-08-18 `3e0c07ff` blob `f63d2bb1ede13418a71f48fc0f093e244eaf3258`: trending fetch 11:29:26Z; details `Bitcoin Trending Rank = N/A` (production observation when BTC is not listed)
+- 2026-08-19 blob `40b73f37`: `bitcoinRank=4`, `trending_fetched_at=2026-08-19T11:29:42.010Z`
+
+2025-12-11 first blob already stores `bitcoinRank=5` and details `Data Sources: CoinGecko • trending`.
+
+**DECISION:** The working-tree file being overwritten does **not** imply no historical PIT evidence.
+
+**DECISION:** Do not backsolve rank from cached `score`. `bitcoinRank` / raw `trending.json` coins are the source fields.
+
+**DECISION:** Do not substitute Google Trends or Fear & Greed.
 
 **DECISION:**
 
-- exact: `D_NOT_REPLAYABLE`
-- methodology: `D_NOT_REPLAYABLE`
-- earliest exact candidate: none
-- earliest method candidate: none
-- contiguous exact: `NONE`
-- contiguous method: `NONE`
-- primary blocker: no defensible historical CoinGecko trending-rank source
+- exact: `A_EXACT_POINT_IN_TIME` for the social-cache captured date set from 2025-12-11
+- methodology: `A_EXACT_POINT_IN_TIME` for that same set (Git captures **are** the production trending observation)
+- contiguous exact/method: `INTERMITTENT` (not `NONE`, not calendar-contiguous)
+- `D_NOT_REPLAYABLE` is **removed** for this interval
+- `D` would still describe dates **outside** any Git capture and without another PIT archive
 - confidence: `HIGH`
 
-This is a full-composite replay blocker.
+No **contiguous** daily PIT interval without gaps was established. The defined captured set is dense (241/252 calendar days).
 
 ---
 
 ## 15. Disabled/display-only features
 
-Documented and **not** treated as replay blockers:
-
-| Feature | Status |
-|---|---|
-| onchain | `enabled: false`, weight 0.00 |
-| Market Regime | display-only |
-| Cycle Timing | display-only |
-| Gold | display-only |
-| Sats | display-only |
-
-Only enabled scored factors determine current-composite replay feasibility.
+Documented and **not** treated as replay blockers: onchain (`enabled: false`, weight 0), Market Regime, Cycle Timing, Gold, Sats.
 
 ---
 
@@ -434,39 +432,35 @@ Only enabled scored factors determine current-composite replay feasibility.
 
 Feasibility-date rule (date arithmetic only; **not** a score calculation):
 
-earliest usable date for a factor = latest of source inception, required lookback burn-in, point-in-time/vintage availability start, and required historical-state availability.
+| Factor | Exact class | Method class | Earliest exact | Earliest method |
+|---|---|---|---|---|
+| trend_valuation | U | U | not established | not established |
+| stablecoins | A (Git dated 7-coin set) | U | 2025-10-05 | not established |
+| etf_flows | A | A | 2025-10-07 | 2025-10-07 |
+| net_liquidity | U | U | not established (cache from 2025-12-11 is provenance only) | not established |
+| term_leverage | U | U | not established (fundingData from 2025-12-11; vol chart sparse) | not established |
+| macro_overlay | U | U | not established (cache from 2025-12-11 is provenance only) | not established |
+| social_interest | A | A | 2025-12-11 | 2025-12-11 |
 
-| Factor | Minimum lookback (implementation) | Structural inception | Validation-grade earliest date |
-|---|---|---|---|
-| trend_valuation | 200 completed UTC days + 22 completed weeks | BTC spot long predates the model | **NOT ESTABLISHED** (`U` snapshot) |
-| stablecoins | 365-day changeSeries | Stablecoin markets exist historically | **NOT ESTABLISHED** (`C` basket/revision) |
-| etf_flows | 21 business days | US spot BTC ETFs 2024-01-11 | **NOT ESTABLISHED** (`C` Farside mutability) |
-| net_liquidity | 8–12 weeks; 365-day fetch | FRED series exist historically | **NOT ESTABLISHED** (`U` vintage) |
-| term_leverage | 30-day funding + 30-day spot | Perpetual swaps exist historically | **NOT ESTABLISHED** (`U` fallback/retention) |
-| macro_overlay | 120-day fetch; 20 sessions | FRED series exist historically | **NOT ESTABLISHED** (`U` vintage/timing) |
-| social_interest | 7-day price for 30% leg; trending has no history | Trending API is live-only | **NONE** (`D`) |
+**DECISION:** Full current-methodology candidate earliest date = max of all seven method candidate dates **only if** every factor is `A` or `B`. Any `U` factor ⇒ full validation-grade candidate date = **NONE / NOT ESTABLISHED**.
 
-**DECISION:** Full current-methodology candidate earliest date = max of all seven enabled-factor method candidate dates **only if** every factor is `A` or `B`. Any `C`/`D`/`U` factor ⇒ full validation-grade candidate date = **NONE / NOT ESTABLISHED**.
-
-**DECISION:** Do not assume factor exclusion plus weight renormalization equals a full current-model replay. A six-factor study omitting social would be a **partial composite** and must be named as such if ever authorized separately.
+**DECISION:** Do not assume factor exclusion plus weight renormalization equals a full current-model replay.
 
 ---
 
 ## 17. Contiguous-overlap analysis
 
-An earliest date alone is insufficient. Point-in-time-safe evidence must be assessed as `CONTIGUOUS`, `INTERMITTENT`, `UNKNOWN`, or `NONE`.
-
 | Factor | Exact coverage | Method coverage |
 |---|---|---|
-| trend_valuation | UNKNOWN (isolated H3 snapshot prices) | UNKNOWN |
-| stablecoins | INTERMITTENT Git JSON from 2025-10-04 | UNKNOWN |
-| etf_flows | INTERMITTENT Git HTML from 2025-10-07 | UNKNOWN |
-| net_liquidity | UNKNOWN | UNKNOWN |
-| term_leverage | UNKNOWN | UNKNOWN |
-| macro_overlay | UNKNOWN | UNKNOWN |
-| social_interest | NONE | NONE |
+| trend_valuation | INTERMITTENT unlabeled spots; snapshot semantics UNKNOWN | UNKNOWN |
+| stablecoins | INTERMITTENT Git JSON 2025-10-05–2026-08-19 | UNKNOWN (365d) |
+| etf_flows | INTERMITTENT Git HTML 2025-10-07–2026-08-19 | INTERMITTENT same |
+| net_liquidity | INTERMITTENT provenance cache | UNKNOWN |
+| term_leverage | INTERMITTENT fundingData; sparse charts | UNKNOWN |
+| macro_overlay | INTERMITTENT provenance cache | UNKNOWN |
+| social_interest | INTERMITTENT social-cache 2025-12-11–2026-08-19 | INTERMITTENT same |
 
-**DECISION:** There is no overlapping contiguous interval on which all seven enabled factors are point-in-time safe. Isolated Git caches for ETF/stablecoins do not create a full-model daily replay window.
+**DECISION:** There is **no** overlapping contiguous interval on which all seven enabled factors are `A` or `B`. Social + ETF Git windows overlap 2025-12-11–2026-08-19 but other factors remain `U`.
 
 ---
 
@@ -474,11 +468,9 @@ An earliest date alone is insufficient. Point-in-time-safe evidence must be asse
 
 **Question:** Is exact historical production replay currently established?
 
-**DECISION:** **NO**
+**DECISION:** **NOT ESTABLISHED**
 
-Exact current production replay on date T requires all seven enabled scored factors to be `A_EXACT_POINT_IN_TIME` on T.
-
-No enabled factor is classified `A` at factor level. Social interest is `D`. Several others are `U` or `C` because fallback/cache state, 11:xx UTC snapshot, FRED vintage, and Farside publication state cannot be reconstructed as production would have selected them.
+Not `NO`: Social `D` does not survive the Git inventory, and ETF/stablecoin Git captures are exact-production source evidence on defined intervals. Not `YES`: four enabled factors remain `U` at factor level, so all-seven-`A` is not shown for any date T.
 
 ---
 
@@ -486,17 +478,9 @@ No enabled factor is classified `A` at factor level. Social interest is `D`. Sev
 
 **Question:** Is validation-grade current-methodology replay currently established?
 
-**DECISION:** **NO** / **NOT ESTABLISHED** as a date, and **NO** as a present finding.
+**DECISION:** **NOT ESTABLISHED**
 
-Validation-grade current-methodology replay on T requires all seven enabled factors to be `A` or `B` with no `C`/`D`/`U` component.
-
-**FACT:** `social_interest` methodology class is `D_NOT_REPLAYABLE`.
-
-**FACT:** `stablecoins` and `etf_flows` are `C_EXPLORATORY_ONLY`.
-
-**FACT:** `trend_valuation`, `net_liquidity`, `term_leverage`, and `macro_overlay` are `U_UNRESOLVED`.
-
-Any one of those findings blocks a full validation-grade current-composite replay.
+`social_interest` and `etf_flows` can be `A` on Git-captured dates. `stablecoins` current 365-day methodology remains `U`. `trend_valuation`, `term_leverage`, `macro_overlay`, and `net_liquidity` remain `U`. Full seven-factor `A`/`B` is not shown.
 
 Earliest defensible contiguous full-model date: **NONE / NOT ESTABLISHED**.
 
@@ -506,46 +490,41 @@ Earliest defensible contiguous full-model date: **NONE / NOT ESTABLISHED**.
 
 **Question:** Could an exploratory reconstruction be built?
 
-**DECISION:** **YES**, in a limited, explicitly non-validation sense, for *some* inputs (truncated completed BTC closes; current FRED revised series; current Farside all-data table; current CoinGecko market caps).
+**DECISION:** **YES**, explicitly non-validation, using Git captures plus later-revised APIs. It was **not** built here. No scores were calculated.
 
-**Question:** Would that exploratory reconstruction be useful for hypothesis generation only, rather than validation?
-
-**DECISION:** **YES**. It would not be current-model validation. It would mix revised series, anachronistic baskets, live-only attention gaps, and later-complete percentile universes unless those hazards were separately frozen and labeled.
-
-**DECISION:** An exploratory study that omitted `coingecko_trending_rank` or replaced it would **not** be a replay of current `v1.1.1`. H6 forbids those substitutions.
-
-Exploratory reconstruction was **not** built in this audit. No scores were calculated.
+It would be hypothesis generation only.
 
 ---
 
 ## 21. Blocking unknowns
 
-Full-composite blockers (any one is sufficient):
+Full-composite blockers (any one `U`/`C`/`D` is sufficient):
 
-1. **Social — CoinGecko trending rank (0.70)** — `D_NOT_REPLAYABLE`. No official historical endpoint. No allowed substitute.
-2. **Stablecoins — hardcoded current basket including BUSD** — `C`. Today's membership is not T's market structure.
-3. **ETF — Farside mutable all-data table** — `C`. Today's historical rows are not vintage publications.
-4. **Trend — `utc_intraday_snapshot`** — `U`. Completed close is a different measurement.
-5. **Net liquidity / macro — FRED latest vs ALFRED vintage + 11:xx UTC** — `U`.
-6. **Term leverage — BitMEX/Binance/OKX fallback identity + 30-day retention** — `U`.
-7. **Percentile lookahead** — any use of a later-complete historical JSON/CSV as the rank universe for date T.
+1. **Trend — `utc_intraday_snapshot` identity** of unlabeled `latest.json` spots (`U`)
+2. **Trend / Mayer — SMA200 CSV** not daily-versioned (`U`)
+3. **Stablecoins — 365-day PIT universe** from 31–91 day windows (`U` methodology)
+4. **Term — sparse `market_chart_30_daily.json`** for scored vol/stress (`U`/`C` component)
+5. **Term — explicit `funding_provider` only 3 days** (`U` for fallback identity)
+6. **Macro / NL — no raw FRED in Git cache; ALFRED unproven** (`U`)
+7. **Social / ETF / stablecoin weekday-or-calendar gaps** prevent claiming CONTIGUOUS
+8. **Percentile lookahead** if today’s complete files are used as rank universes
 
-Operational fallback/cache state is an additional exact-production blocker even where methodology might later be proven.
+Social trending is **not** a demonstrated `D` blocker on the Git-captured interval.
 
 ---
 
 ## 22. Recommended proof-of-retrieval follow-ups
 
-These are **proofs**, not scoring jobs. Do not begin replay implementation.
+These are **proofs**, not scoring jobs.
 
-1. CoinGecko: reconfirm absence of any official trending-rank vintage/historical product (already HIGH-confidence negative on 2026-08-19).
-2. Optional only: inventory git blobs of `social_interest_cache.json` to see whether isolated contemporaneous ranks exist. Isolated hits would remain non-contiguous and would not unlock full-model validation.
-3. If a *partial-factor* study is ever separately authorized: prove ALFRED vintage catalogs for WALCL, RRPONTSYD, WTREGEN, DTWEXBGS, DGS2, DGS10, VIXCLS without computing scores.
-4. If trend methodology is ever separately authorized: prove Coinbase hourly/minute reconstruction of `utc_intraday_snapshot` at 11:xx UTC without substituting completed closes.
-5. If funding methodology is ever separately authorized: prove one venue's 30-day retention and instrument continuity; do not assume fallback identity.
-6. Treat Git ETF HTML / stablecoin JSON as contemporaneous only for their dated filenames; do not backfill from current APIs into those dates.
+1. Social: document the 8 gap days; optional 11:xx vs later `trending_fetched_at` identity. Do not invent ranks.
+2. Term: whether `details`/`symbol` plus `fundingData` identify venue across 241 dates; denser PIT 30d spot chart.
+3. Trend: which `latest.json` spots are `utc_intraday_snapshot`.
+4. Stablecoins: whether git blobs of dated JSON + `stablecoins-historical.json` can form a T-truncated 365-day universe without today’s file.
+5. Macro/NL: ALFRED vintage catalogs without computing scores.
+6. ETF: remaining weekday gaps vs `US_MARKET_HOLIDAYS_UTC`.
 
-None of these follow-ups is an authorization to calculate historical scores.
+None of these is authorization to calculate historical scores.
 
 ---
 
@@ -553,15 +532,9 @@ None of these follow-ups is an authorization to calculate historical scores.
 
 **DECISION:** H6 does not reopen H3, H4/H4.1, or H5/H5.1.
 
-**FACT:** H3 historical artifact lineage and contamination classifications remain valid.
-
-**FACT:** H4/H4.1 terminal-return study remains frozen.
-
-**FACT:** H5/H5.1 direct risk study remains frozen, including interpretation blob `d6978aa9de6c53dd24ff9a1ca3cfd32eece2cf19`.
+**FACT:** H4/H4.1 and H5/H5.1 remain frozen, including interpretation blob `d6978aa9de6c53dd24ff9a1ca3cfd32eece2cf19`.
 
 **DECISION:** Do not reinterpret reconstructed historical score rows as point-in-time source evidence. Do not backsolve missing raw inputs from published G-Scores or factor scores.
-
-H6 answers a different question: whether a longer point-in-time-safe replay of **current** methodology can be created. On present evidence, a full current-composite replay is not established.
 
 ---
 
@@ -569,15 +542,7 @@ H6 answers a different question: whether a longer point-in-time-safe replay of *
 
 **DECISION:** Calibration gate remains **CLOSED**.
 
-H6 cannot authorize:
-
-- weights
-- subweights
-- formula changes
-- band changes
-- source substitutions
-- threshold changes
-- recommendation changes
+H6 cannot authorize weights, subweights, formula changes, band changes, source substitutions, threshold changes, or recommendation changes.
 
 Any future replay protocol must be separately frozen before scores are calculated.
 
@@ -587,21 +552,19 @@ Any future replay protocol must be separately frozen before scores are calculate
 
 | Question | Verdict |
 |---|---|
-| Exact historical production replay established? | **NO** |
-| Validation-grade current-methodology replay established? | **NO** |
+| Exact historical production replay established? | **NOT ESTABLISHED** |
+| Validation-grade current-methodology replay established? | **NOT ESTABLISHED** |
 | Earliest defensible contiguous full-model date? | **NONE / NOT ESTABLISHED** |
-| Primary full-model blocker? | `social_interest.coingecko_trending_rank` (`D_NOT_REPLAYABLE`) |
-| Additional independent blockers? | stablecoin basket (`C`); ETF Farside (`C`); snapshot/FRED/funding (`U`) |
+| Social `D_NOT_REPLAYABLE`? | **Removed** for the Git-captured social-cache interval |
+| Primary remaining full-model blockers? | Trend snapshot/`U`; term vol-chart/`U`; FRED vintage/`U`; stablecoin 365d/`U` |
 | Contiguous overlapping seven-factor interval? | **NONE** |
-| Exploratory reconstruction conceivable? | **YES**, hypothesis generation only, not built here |
-| Recommended next step? | **NO HISTORICAL REPLAY** |
+| Exploratory reconstruction conceivable? | **YES**, not built |
+| Recommended next step? | **H6.1 TARGETED SOURCE PROOF AUDIT** |
 
-**DECISION:** The recommended H6.1 path is **NO HISTORICAL REPLAY** because a critical current component (`coingecko_trending_rank`, 70% of Social Interest, 10% of the composite) is `D_NOT_REPLAYABLE` and no defensible method-equivalent path exists under H6 rules (no Google Trends, no Fear & Greed, no neutral-fill, no backsolve).
+**DECISION:** `NO HISTORICAL REPLAY` is withdrawn. Critical sources remain genuinely `U_UNRESOLVED` after this Git completion (trend snapshot semantics, FRED vintages, term vol chart). Social is no longer a demonstrated `D` on the captured interval.
 
-Residual `U_UNRESOLVED` items on other factors are independent additional blockers. Resolving them would still leave Social Interest `D` and would still leave Stablecoins and ETF Flows `C` unless those classifications later change on new evidence.
+**SAFETY:** No historical G-Scores were calculated. No historical factor scores were calculated. No replay built. No H4/H5 regeneration. No model changes. No ETL. No source-data backfill. Calibration remains CLOSED.
 
-**SAFETY:** No historical G-Scores were calculated. No historical factor scores were calculated. No H4/H5 regeneration. No model changes. No ETL. No source-data backfill. Calibration remains CLOSED.
+STOP FOR FINAL INDEPENDENT H6 REVIEW.
 
-STOP FOR INDEPENDENT H6 FEASIBILITY REVIEW.
-
-Do not merge. Do not begin any replay implementation. Do not calculate historical scores.
+Do not merge. Do not begin H6.1. Do not calculate historical scores.

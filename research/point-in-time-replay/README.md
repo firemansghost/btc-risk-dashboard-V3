@@ -12,6 +12,8 @@ The calibration gate remains **CLOSED**.
 
 H6 inspected the **current** `v1.1.1` / `integrity-2026-08` production implementation at `H6_SOURCE_SHA` and asked whether that methodology can be reconstructed historically **without lookahead**.
 
+A follow-on correction completed the **full Git-history provenance inventory** of cache and artifact paths that the first H6 pass under-counted. That correction did **not** calculate scores.
+
 H6 did **not**:
 
 - calculate historical G-Scores
@@ -44,6 +46,8 @@ These three concepts are never treated as equivalent:
 2. point-in-time methodological replay
 3. exploratory reconstruction
 
+A class of `A` or `B` may apply to a **defined captured date set**. Isolated or gapped Git snapshots are recorded as `INTERMITTENT`, not as a contiguous daily window.
+
 ## Evidence hierarchy
 
 Strongest to weakest:
@@ -57,6 +61,12 @@ Strongest to weakest:
 7. Inference
 
 Category 7 is never promoted to fact. Committed reconstructed/synthetic factor histories are **not** automatically point-in-time source evidence.
+
+**FACT:** An overwritten working-tree cache path does not erase historical Git blobs. `git log` / `git show <commit>:<path>` recovers prior committed versions.
+
+**FACT:** A mutable provider page fetched today is not PIT evidence. A genuinely contemporaneous Git capture of that page **is** PIT evidence for the capture date.
+
+Absence of an official historical API does **not** by itself imply `D_NOT_REPLAYABLE` if contemporaneous Git captures exist.
 
 ## Files
 
