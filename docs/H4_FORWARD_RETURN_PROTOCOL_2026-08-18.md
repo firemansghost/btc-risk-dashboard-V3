@@ -42,6 +42,7 @@ H4 therefore pre-registers:
 - G-Score validity
 - arithmetic summaries, Type-7 quantiles, and Spearman ranks
 - which summaries are primary vs secondary
+- how pre-registered groups with `n = 0` are retained and serialized
 - which questions are out of scope
 
 **LIMITATION.** Independent review of this protocol must complete before H4.1 implementation. Seeing results first would defeat the purpose of H4.
@@ -443,6 +444,42 @@ Do **not** emit `0`, `NaN`, or `Infinity`. Do not invent a correlation. This rul
 
 The future H4.1 README must disclose whatever deterministic serialization precision it uses. Do not choose internal precision based on output appearance.
 
+### 15.7 Reporting universe, empty groups, and small-n status
+
+**PROTOCOL DECISION.** Pre-registered summary groups are a **reporting universe**, not a post-hoc list of groups that happened to have completed outcomes.
+
+**Primary row universe.** `summary_by_horizon.csv` and `score_association.csv` contain **exactly three rows**: horizons `30`, `90`, and `180`. One row per horizon regardless of any later statistical edge case. Horizon `365` is coverage-only and must **not** appear as a calculated performance row.
+
+**Empty-group statistics.** If `n = 0` for a pre-registered group:
+
+```text
+n      = 0
+mean   = empty/null
+median = empty/null
+p25    = empty/null
+p75    = empty/null
+minimum = empty/null   (when that statistic applies)
+maximum = empty/null   (when that statistic applies)
+Spearman = empty/null  (when that statistic applies)
+status = NO_COMPLETED_OUTCOMES
+```
+
+No quantile algorithm is invoked on an empty vector. No divide-by-zero arithmetic is attempted. Do **not** serialize `0`, `NaN`, or `Infinity` as a substitute for an undefined statistic.
+
+This empty-group rule is distinct from §15.5: `UNDEFINED_ZERO_VARIANCE` applies when `n >= 1` but a rank vector has zero variance. `NO_COMPLETED_OUTCOMES` applies when `n = 0`.
+
+**Small-n status.**
+
+| Condition | Status |
+|---|---|
+| `n = 0` | `NO_COMPLETED_OUTCOMES` |
+| `1 <= n < 20` | `SMALL N — DESCRIPTIVE ONLY` |
+| `n >= 20` | normal descriptive row (no small-n flag) |
+
+Do not call an empty group merely “small n.”
+
+**Primary horizon zero-n safety.** Expected primary horizon n at this snapshot remains 30d = 292, 90d = 235, 180d = 152. No primary horizon is currently empty. If a future implementation discrepancy somehow produces `n = 0` for a pre-registered primary horizon: keep the horizon row; all undefined statistics are null; `status = NO_COMPLETED_OUTCOMES`; do not substitute another horizon; do not change the protocol. If that discrepancy contradicts frozen eligibility counts, H4.1 must also **STOP** and report the inconsistency.
+
 ---
 
 ## 16. Overlapping-return limitation
@@ -474,9 +511,9 @@ These predicates are equivalent to the current v1.1.1 integer score boundaries i
 
 **PROTOCOL DECISION.** H4.1 must **not** round a non-integer score into a band, clamp an out-of-range score, or infer a band from native text. The §15.1 validity gate makes this mapping exhaustive for every admitted G-Score.
 
-For each horizon × fixed band report only: n, arithmetic mean, Type-7 median, Type-7 p25, Type-7 p75.
+For each horizon × frozen band report only: n, arithmetic mean, Type-7 median, Type-7 p25, Type-7 p75.
 
-**PROTOCOL DECISION.** Do not merge adjacent bands after seeing sample sizes. If a band has very small n, report the small n. Do not optimize the cutoffs.
+**PROTOCOL DECISION.** `summary_by_numeric_band.csv` emits **exactly 18 rows**: the three calculated horizons (`30`, `90`, `180`) × the six frozen bands above, in that band order. Do **not** omit a band because `n = 0`. Do **not** combine it with another band. An empty band/horizon row uses the §15.7 `n = 0` / `NO_COMPLETED_OUTCOMES` serialization. Do not optimize the cutoffs after seeing sample sizes. If `1 <= n < 20`, mark `SMALL N — DESCRIPTIVE ONLY` and still report the row.
 
 ---
 
@@ -492,13 +529,17 @@ Do **not** use native band text as the primary cross-era analytical grouping. Do
 
 **PROTOCOL DECISION.** One secondary lineage check: for each horizon × **exact artifact `model_version`**, report n, arithmetic mean, and Type-7 median only.
 
-Do not infer methodology eras. Do not combine or rename versions merely to improve results. Do not create a synthetic “v1.1 era” before its explicit artifact label. Do not calculate model-version significance tests.
+The grouping universe is established from the **full 323 `DAILY_PRIMARY` population before horizon outcome filtering**. Do not infer methodology eras. Do not combine or rename versions merely to improve results. Do not create a synthetic “v1.1 era” before its explicit artifact label. Do not calculate model-version significance tests. Do not infer or add another version.
 
-If a version/horizon group has `n < 20`, mark **`SMALL N — DESCRIPTIVE ONLY`**. Do not suppress it.
+**FACT.** Among 323 `DAILY_PRIMARY` rows, `model_version` is present on **323** and missing on **0**. Exact observed labels at this pinned snapshot: `v3.1.0` 83, `v1.1` 238, `v1.1.1` 2. These are label counts only, not performance.
 
-**FACT.** Among 323 `DAILY_PRIMARY` rows, `model_version` is present on **323** and missing on **0**. Present labels at this snapshot: `v3.1.0` 83, `v1.1` 238, `v1.1.1` 2. These are label counts only, not performance.
+**PROTOCOL DECISION.** Because this pinned snapshot has zero missing `model_version` values, `MISSING` does **not** receive a summary row unless a missing value actually exists in the frozen analytical population. The missing-value rule itself is retained: if a missing label appears, it forms an explicit `MISSING` group and must not silently disappear; missing `model_version` still must **not** drop the observation from the primary horizon analysis. Do not infer a version from date, commit, config, or methodology assumptions.
 
-**PROTOCOL DECISION.** Missing `model_version` must **not** drop the observation from the primary horizon analysis. For the **secondary** model-version summary only, missing values form an explicit group labeled `MISSING`. They must not silently disappear. Do not infer a version from date, commit, config, or methodology assumptions. This `MISSING` rule remains in force even though this snapshot has zero missing labels.
+**PROTOCOL DECISION.** At this H4 snapshot, `summary_by_model_version.csv` emits **exactly 9 rows**: horizons `30`, `90`, `180` × groups `v3.1.0`, `v1.1`, `v1.1.1`. Emit every combination even when `n = 0`.
+
+**FACT (date eligibility only, no return arithmetic).** The two `v1.1.1` `DAILY_PRIMARY` dates are 2026-08-17 and 2026-08-18. Neither satisfies `observation_date + 30/90/180 <= 2026-08-17`. Therefore each of those three horizon × `v1.1.1` rows must appear with `n = 0` and `status = NO_COMPLETED_OUTCOMES`. Do **not** omit `v1.1.1` because it lacks completed outcomes.
+
+If `1 <= n < 20` for a version/horizon group, mark **`SMALL N — DESCRIPTIVE ONLY`**. Do not suppress it. Do not call an `n = 0` group merely “small n.”
 
 ---
 
@@ -549,10 +590,10 @@ Recommended later location: `research/forward-returns/`
 |---|---|
 | `README.md` | human contract / how to rebuild |
 | `forward_returns.csv` | one row per `DAILY_PRIMARY` × eligible horizon |
-| `summary_by_horizon.csv` | primary continuous-score summaries |
-| `summary_by_numeric_band.csv` | secondary crosswalk |
-| `summary_by_model_version.csv` | secondary lineage |
-| `score_association.csv` | Spearman and distribution stats |
+| `summary_by_horizon.csv` | primary continuous-score summaries; **exactly 3 rows** (`30`, `90`, `180`) |
+| `summary_by_numeric_band.csv` | secondary crosswalk; **exactly 18 rows** (3 horizons × 6 bands) |
+| `summary_by_model_version.csv` | secondary lineage; **exactly 9 rows** at this snapshot (3 horizons × `v3.1.0` / `v1.1` / `v1.1.1`) |
+| `score_association.csv` | Spearman and distribution stats; **exactly 3 rows** (`30`, `90`, `180`) |
 | `ANALYSIS_SOURCE_SHA.txt` | pin |
 | `PROTOCOL_VERSION.txt` | `h4-forward-return-v1` |
 
@@ -584,7 +625,7 @@ protocol_version
 
 `start_price_source` must record `artifact_spot_price_usd`. `end_price_source` must record `btc_price_history.close_usd`. No field should contain an inferred model era.
 
-Recommended `score_association.csv` must include Spearman rho as an empty field when undefined, plus an explicit status/reason (`OK` or `UNDEFINED_ZERO_VARIANCE`). Do not serialize `NaN` or `Infinity`.
+Recommended `score_association.csv` must include Spearman rho as an empty field when undefined, plus an explicit status/reason (`OK`, `UNDEFINED_ZERO_VARIANCE`, or `NO_COMPLETED_OUTCOMES`). Do not serialize `NaN` or `Infinity`. Horizon `365` must not appear in these calculated summary files.
 
 ---
 
@@ -597,7 +638,8 @@ Recommended `score_association.csv` must include Spearman rho as an empty field 
 - read pinned Git objects at `ANALYSIS_SOURCE_SHA`, not the working tree
 - verify blob SHA and SHA-256 before computing returns
 - fail loudly on missing start price, missing endpoint, invalid G-Score, or hash mismatch
-- apply Type-7 quantiles, average-rank Spearman, and the zero-variance null rule from §15
+- apply Type-7 quantiles, average-rank Spearman, zero-variance null, and empty-group `NO_COMPLETED_OUTCOMES` rules from §15
+- emit the frozen summary-row universes (3 / 18 / 9 rows) even when `n = 0`
 - never round returns or ranks before aggregation
 - stable CSV sort: `observation_date`, then `horizon_days`
 - empty CSV field = null; never coerce null to `0`
@@ -617,7 +659,14 @@ Future H4.1 unit tests must cover:
 - Spearman with return ties
 - zero-variance Spearman ⇒ null + `UNDEFINED_ZERO_VARIANCE`
 - no rounding before aggregation
-- missing `model_version` secondary grouping as `MISSING`
+- missing `model_version` secondary grouping as `MISSING` when a missing label exists
+- empty numeric-band group retained with `n = 0`
+- empty-group statistics serialize as null, not zero / `NaN` / `Infinity`
+- fixed 18-row numeric-band summary universe
+- fixed 9-row model-version summary universe at this H4 snapshot
+- `v1.1.1` rows retained even with `n = 0`
+- `n = 0` ⇒ `NO_COMPLETED_OUTCOMES`
+- `1 <= n < 20` ⇒ `SMALL N — DESCRIPTIVE ONLY`
 
 These are future H4.1 requirements. H4 does not add that script or those tests.
 
@@ -644,6 +693,7 @@ A future change to any of the following requires a **new** protocol version:
 - arithmetic summary definition
 - Type-7 quantile / median algorithm
 - Spearman rank, tie, or zero-variance rule
+- empty-group reporting / summary-row universe
 - rounding-before-aggregation rule
 - correlation statistic
 - inclusion/exclusion rule
@@ -697,10 +747,10 @@ After independent H4 review — and only then — H4.1 should:
 3. Require valid `artifact_spot_start_price` and a valid integer G-Score in `[0, 100]`.
 4. Join pinned `btc_price_history.close_usd` on exact `target_date`.
 5. Compute simple N-calendar-day forward-close returns for 30/90/180 only, from unrounded source prices.
-6. Emit row-level and summary CSVs from §23 using §15 arithmetic, Type-7 quantiles, and Spearman rules.
+6. Emit row-level and summary CSVs from §23 using §15 arithmetic, Type-7 quantiles, Spearman rules, and frozen 3 / 18 / 9-row summary universes (retain `n = 0` groups).
 7. Publish eligibility reconciliation from §12.
-8. Run average-rank Spearman as the only primary association statistic, without p-values; emit null + `UNDEFINED_ZERO_VARIANCE` if either rank vector has zero variance.
-9. Keep native band, numeric crosswalk predicates, and exact `model_version` (plus secondary `MISSING`) separate.
+8. Run average-rank Spearman as the only primary association statistic, without p-values; emit null + `UNDEFINED_ZERO_VARIANCE` if either rank vector has zero variance; emit null + `NO_COMPLETED_OUTCOMES` if `n = 0`.
+9. Keep native band, numeric crosswalk predicates, and exact `model_version` separate; retain `v1.1.1` rows at `n = 0`; emit secondary `MISSING` only if a missing label exists.
 10. Leave calibration **CLOSED**.
 
 Do **not** implement H4.1 on this branch.
@@ -728,5 +778,8 @@ Performed against Git objects at `2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b`. No 
 | 90d date-eligible | 235, 0 missing endpoints |
 | 180d date-eligible | 152, 0 missing endpoints |
 | 365d date-eligible | 0 |
+| Primary summary rows (future) | 3 (`30`, `90`, `180`); 365 not a performance row |
+| Numeric-band summary rows (future) | 18 |
+| Model-version summary rows (future, this snapshot) | 9 (`v3.1.0`, `v1.1`, `v1.1.1` × 3 horizons) |
 
 Calibration gate: **CLOSED**.
