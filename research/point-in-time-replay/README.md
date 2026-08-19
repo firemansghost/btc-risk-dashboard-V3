@@ -46,7 +46,23 @@ These three concepts are never treated as equivalent:
 2. point-in-time methodological replay
 3. exploratory reconstruction
 
-A class of `A` or `B` may apply to a **defined captured date set**. Isolated or gapped Git snapshots are recorded as `INTERMITTENT`, not as a contiguous daily window.
+**Replay class describes whether the CURRENT scored component/factor can be reconstructed, not merely whether a historical raw source payload exists.**
+
+**Raw PIT source evidence can be strong while factor replay remains `U_UNRESOLVED`.**
+
+A contemporaneous Git capture is category-2 **source evidence**. It does not automatically make `exact_production_replay_class` or `methodology_replay_class` equal to `A`.
+
+### Classification invariants
+
+1. **Raw capture ≠ factor replay.** Use `repo_historical_evidence` (and the H6 narrative) for exact captured-source quality. Replay class `A` requires the **current** scored formula, lookbacks, rank universes, constituent identity, publication-state rules, and fallback identity to be reconstructable from PIT-safe inputs.
+
+2. **Exact is stricter than methodology.** If `exact_production_replay_class = A_EXACT_POINT_IN_TIME`, then `methodology_replay_class` must be `A_EXACT_POINT_IN_TIME` or `B_POINT_IN_TIME_METHOD_EQUIVALENT`. Exact `A` with method `U`/`C`/`D` is forbidden. If current methodology cannot yet be reconstructed, exact replay cannot be `A`.
+
+3. **Factor aggregation.** A factor is exact `A` only if **all** required scored components (and required lookbacks/state) are exact `A`. A factor is validation-grade methodology `A` or `B` only if **all** required scored components are `A` or `B` and required historical lookbacks/rank universes are PIT-safe. If any required component is `U`, `C`, or `D`, the factor methodology class must not be `A` or `B`.
+
+A class of `A` or `B` may apply to a **defined captured date set** only when those invariants hold on that set.
+
+`INTERMITTENT` means the **full stated span** contains one or more gaps. It does **not** mean no contiguous subruns exist. Longest qualifying replay interval is not established in H6 unless stated.
 
 ## Evidence hierarchy
 
