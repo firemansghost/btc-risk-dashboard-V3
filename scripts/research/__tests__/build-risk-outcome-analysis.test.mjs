@@ -158,6 +158,24 @@ test('malformed quote rejection', () => {
   assert.throws(() => parseCsv('a,b\nfoo"bar,1\n'), /malformed CSV quoting/);
 });
 
+test('malformed text after closing quote is rejected', () => {
+  assert.throws(() => parseCsv('a,b\n"x"junk,z\n'), /malformed CSV quoting/);
+  assert.throws(() => parseCsv('a,b\n"x" z\n'), /malformed CSV quoting/);
+  assert.throws(() => parseCsv('a,b\n"x"\tjunk\n'), /malformed CSV quoting/);
+});
+
+test('valid quoted field may close at comma, newline, or EOF', () => {
+  const byComma = parseCsv('a,b\n"x",y\n');
+  assert.equal(byComma.rows[0].a, 'x');
+  assert.equal(byComma.rows[0].b, 'y');
+  const byNewline = parseCsv('a,b\n"x"\n');
+  assert.equal(byNewline.rows[0].a, 'x');
+  assert.equal(byNewline.rows[0].b, null);
+  const byEof = parseCsv('a,b\n"x"');
+  assert.equal(byEof.rows[0].a, 'x');
+  assert.equal(byEof.rows[0].b, null);
+});
+
 test('numeric zero preserved', () => {
   const { rows } = parseCsv('n\n0\n');
   assert.equal(rows[0].n, '0');

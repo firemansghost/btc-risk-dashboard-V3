@@ -248,6 +248,7 @@ export function parseCsv(text) {
   let cur = '';
   let inQ = false;
   let fieldStart = true;
+  let justClosedQuote = false;
   const s = String(text).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   for (let i = 0; i < s.length; i += 1) {
     const c = s[i];
@@ -255,23 +256,29 @@ export function parseCsv(text) {
       if (c === '"' && s[i + 1] === '"') {
         cur += '"';
         i += 1;
-      } else if (c === '"') inQ = false;
-      else cur += c;
+      } else if (c === '"') {
+        inQ = false;
+        justClosedQuote = true;
+      } else cur += c;
     } else if (c === '"') {
       if (!fieldStart) throw new Error('STOP: malformed CSV quoting');
       inQ = true;
       fieldStart = false;
+      justClosedQuote = false;
     } else if (c === ',') {
       row.push(cur);
       cur = '';
       fieldStart = true;
+      justClosedQuote = false;
     } else if (c === '\n') {
       row.push(cur);
       rows.push(row);
       row = [];
       cur = '';
       fieldStart = true;
+      justClosedQuote = false;
     } else {
+      if (justClosedQuote) throw new Error('STOP: malformed CSV quoting');
       cur += c;
       fieldStart = false;
     }
