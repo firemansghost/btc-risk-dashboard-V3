@@ -20,7 +20,7 @@ This document does **not** implement H5.1. It does **not** modify `docs/H4_FORWA
 
 ## 1. Executive purpose
 
-**PROTOCOL DECISION.** H5 exists so that risk-outcome definitions, sample eligibility, score groupings, model-version treatment, horizons, and exclusions are frozen **before** anyone sees downside-path, drawdown, volatility, or tail-event numbers.
+**PROTOCOL DECISION.** H5 exists so that risk-outcome definitions, sample eligibility, score groupings, model-version treatment, horizons, and exclusions are frozen **before** anyone sees downside-path, drawdown, volatility-family, or tail-event numbers.
 
 The future first study (H5.1) is a **descriptive close-based risk-outcome analysis** of Daily Rule v1 `DAILY_PRIMARY` observations against the same pinned Bitcoin completed-UTC-close series used by H4/H4.1.
 
@@ -41,7 +41,7 @@ ANALYSIS_SOURCE_SHA = 2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b
 
 **PROTOCOL DECISION.** H5 asks a different question, closer to the intended purpose of a risk gauge:
 
-> When GhostGauge published a higher G-Score, was the subsequent Bitcoin path associated with greater downside risk and/or greater realized price instability?
+> When GhostGauge published a higher G-Score, was the subsequent Bitcoin path associated with greater downside risk and/or greater close-to-close price instability?
 
 **PROTOCOL DECISION.** H5 uses the **same** frozen analytical population and **same** frozen Bitcoin market series as H4/H4.1 so that it tests a different outcome concept rather than quietly changing the historical sample after H4.1 results were seen.
 
@@ -73,7 +73,7 @@ git show 2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b:public/data/btc_price_history.
 
 ---
 
-## 4. Analytical population
+## 4. Analytical population and G-Score validity
 
 **PROTOCOL DECISION.** Use only `selection_status = DAILY_PRIMARY`.
 
@@ -101,9 +101,31 @@ start_price_source = artifact_spot_price_usd
 
 Require finite and `> 0`. Do **not** use same-day completed close as signal start, previous-day close, or current price.
 
+**PROTOCOL DECISION.** H5 uses G-Score for primary Spearman ranking, secondary Spearman rankings, and numeric-band assignment. Carry forward H4’s exact validity contract. **Before ANY H5.1 risk arithmetic**, every `DAILY_PRIMARY` score must be:
+
+- present
+- numeric
+- finite
+- integer
+- `>= 0`
+- `<= 100`
+
+Any invalid `DAILY_PRIMARY` G-Score is a **HARD STOP**. Do **not** round, clamp, substitute, infer from native band, or silently drop the row.
+
+**FACT.** Inherited H4 input-integrity facts (not new risk-outcome calculations):
+
+```text
+323 DAILY_PRIMARY
+valid_score_count = 323
+missing_score_count = 0
+non_numeric_score_count = 0
+non_integer_score_count = 0
+out_of_range_score_count = 0
+```
+
 ---
 
-## 5. Market-data resolution limitation
+## 5. Market-data resolution limitation and BTC path validity
 
 **FACT.** The pinned BTC market series columns are:
 
@@ -125,9 +147,34 @@ These are completed-UTC-close-based path measures.
 
 **LIMITATION.** A future OHLC/intraday study would require a separately pre-registered data source and protocol.
 
+**PROTOCOL DECISION.** H5.1 must fail loudly if a required BTC path close is invalid. For every required `D` through `D+N` path close require:
+
+- exact date exists
+- exactly one row for the date
+- `close_usd` present
+- numeric
+- finite
+- `> 0`
+
+No interpolation, nearest date, duplicate-date selection, zero close, negative close, `NaN` / `Infinity`, or silent row dropping.
+
+**FACT.** Inherited frozen BTC input audit at the analysis source SHA (not a new risk-outcome calculation):
+
+```text
+731 rows
+731 unique dates
+first date = 2024-08-17
+last date = 2026-08-17
+duplicate dates = 0
+missing UTC dates in range = 0
+null / nonfinite / nonpositive closes = 0
+```
+
+**PROTOCOL DECISION.** Future H5.1 must reassert those pinned-input invariants **before** any outcome arithmetic. If they differ: **STOP**.
+
 ---
 
-## 6. Horizons and eligibility
+## 6. Horizons, eligibility, and reconciliation
 
 **PROTOCOL DECISION.** Calculated horizons exactly: **30**, **90**, **180** UTC calendar days. **365** is coverage only. No H5.1 365 risk rows. No additional horizons.
 
@@ -148,6 +195,29 @@ Total row-level H5.1 observations: `292 + 235 + 152 = 679`.
 
 **PROTOCOL DECISION.** If H5.1 later finds a missing path date: **STOP**. Do not interpolate or substitute.
 
+**PROTOCOL DECISION.** Explicit H5.1 horizon reconciliation. For each horizon:
+
+```text
+323 DAILY_PRIMARY
+then date/path eligible
+minus invalid start price
+minus missing/invalid path close
+minus invalid G-Score — HARD STOP, not drop
+equals final H5.1 n
+```
+
+Frozen expected final n:
+
+```text
+30 = 292
+90 = 235
+180 = 152
+total = 679
+365 = 0
+```
+
+Any discrepancy: **STOP** and list exact dates / causes. Do not silently continue with a smaller population.
+
 ---
 
 ## 7. Primary research question
@@ -162,7 +232,27 @@ higher G-Score → larger adverse-close-excursion magnitude
 
 Therefore expected primary Spearman direction: **POSITIVE**.
 
-**PROTOCOL DECISION.** Do not change this sign interpretation after results. Do not define an arbitrary success cutoff such as `0.2`, `0.3`, or `0.5`. Interpretation will use the frozen descriptive result, coverage, and limitations.
+**PROTOCOL DECISION.** Do not change this sign interpretation after results. No numerical “useful” cutoff is pre-registered. Do not invent strength categories such as weak / moderate / strong unless a separate pre-results convention is frozen.
+
+**PROTOCOL DECISION.** Frozen sign-vs-usefulness distinction:
+
+| Observed Spearman | Allowed description |
+|---|---|
+| `rho > 0` | directionally concordant with the pre-registered risk ordering |
+| `rho = 0` | no monotonic ordering in the frozen sample |
+| `rho < 0` | directionally opposite the pre-registered risk ordering |
+
+A positive sign **alone** does **not** establish useful discrimination, strong association, validation, calibration, or economic significance.
+
+Future H5.1 interpretation must:
+
+- report the exact rho
+- describe its magnitude cautiously
+- state whether the sign is concordant or discordant
+- consider sample coverage / overlap limitations
+- **not** convert merely `rho > 0` into “GhostGauge worked”
+
+A small negative or zero result must be reported exactly. No post-hoc promotion of MCDD or the volatility family if MACE is weak.
 
 ---
 
@@ -211,13 +301,13 @@ Rank conventions **must match H4**:
 If either rank vector has zero variance:
 
 ```text
-rho = null
+rho = empty field
 status = UNDEFINED_ZERO_VARIANCE
 ```
 
 Never emit `0`, `NaN`, or `Infinity` as an undefined correlation.
 
-Expected useful risk ordering: `rho > 0`. That is directional expectation, not a numeric pass/fail cutoff.
+**PROTOCOL DECISION.** Expected Spearman direction remains **POSITIVE**. That is directional concordance, not a claim that `rho > 0` is automatically useful risk ordering. See §7.
 
 ---
 
@@ -253,13 +343,15 @@ Properties:
 - based only on completed closes
 - **not** true intraday maximum drawdown
 
-**PROTOCOL DECISION.** Secondary expected association: higher G-Score → larger MCDD. Expected Spearman direction: **POSITIVE**.
+**PROTOCOL DECISION.** Secondary expected association: higher G-Score → larger MCDD. Expected Spearman direction: **POSITIVE**. The same sign-vs-usefulness guard in §7 applies. Do not promote MCDD to primary after results.
 
 ---
 
-## 11. Realized volatility definition
+## 11. Close-to-close volatility definition
 
-**PROTOCOL DECISION.** Name: `realized_volatility_annualized`. Secondary outcome.
+**PROTOCOL DECISION.** Name: `close_to_close_volatility_annualized`. Secondary outcome.
+
+This is a **close-to-close annualized population standard deviation of daily log returns**. It is **not** an intraday or high-frequency realized-volatility estimator.
 
 Use completed UTC daily closes **only**. Do **not** use artifact spot in volatility-return intervals, because the interval from intraday artifact spot to same-day UTC close is a partial day.
 
@@ -272,43 +364,46 @@ C_1 = close on D+1
 C_N = close on D+N
 ```
 
-Exactly `N` daily log returns:
+Exactly `N` daily log returns. Formula **unchanged**:
 
 ```text
 r_i = ln(C_i / C_{i-1})    for i = 1 ... N
 r_bar = (1/N) * sum(r_i)
 variance = (1/N) * sum((r_i - r_bar)^2)
-realized_volatility_annualized = sqrt(variance) * sqrt(365)
+close_to_close_volatility_annualized = sqrt(variance) * sqrt(365)
 ```
 
 **PROTOCOL DECISION.** Use 365 because Bitcoin trades every calendar day. Do not use sample denominator `N-1`, simple-return volatility, the partial start-to-D-close interval, rolling external volatility, or API volatility.
 
-**PROTOCOL DECISION.** Expected association: higher G-Score → higher realized volatility. Expected Spearman direction: **POSITIVE**.
+**PROTOCOL DECISION.** Expected association: higher G-Score → higher close-to-close volatility. Expected Spearman direction: **POSITIVE**. The §7 sign-vs-usefulness guard applies. Do not promote this outcome to primary after results.
 
 ---
 
-## 12. Downside volatility definition
+## 12. Zero-target downside deviation definition
 
-**PROTOCOL DECISION.** Name: `downside_volatility_annualized`. Secondary outcome.
+**PROTOCOL DECISION.** Name: `zero_target_downside_deviation_annualized`. Secondary outcome.
 
-Use the **same** `N` daily log returns from the realized-volatility definition. Target daily log return: **0**.
+This is a **zero-target downside-deviation** measure. It is **not** a standard deviation calculated only on negative days.
+
+Use the **same** `N` daily log returns from the close-to-close volatility definition. Target daily log return: **0**. Formula **unchanged**:
 
 ```text
 downside_component_i = min(r_i, 0)
 downside_variance = (1/N) * sum(downside_component_i^2)
-downside_volatility_annualized = sqrt(downside_variance) * sqrt(365)
+zero_target_downside_deviation_annualized = sqrt(downside_variance) * sqrt(365)
 ```
 
 **PROTOCOL DECISION.**
 
+- target = 0
 - denominator is **all** `N` daily intervals
+- positive returns contribute zero
 - do **not** divide only by number of negative days
 - do **not** subtract the mean of negative returns
-- target is zero
 - use log returns
 - annualize with `sqrt(365)`
 
-**PROTOCOL DECISION.** Expected association: higher G-Score → higher downside volatility. Expected Spearman direction: **POSITIVE**.
+**PROTOCOL DECISION.** Expected association: higher G-Score → higher zero-target downside deviation. Expected Spearman direction: **POSITIVE**. The §7 sign-vs-usefulness guard applies. Do not promote this outcome to primary after results.
 
 ---
 
@@ -324,11 +419,11 @@ mace_ge_20pct = 1 if MACE >= 0.20 else 0
 mace_ge_30pct = 1 if MACE >= 0.30 else 0
 ```
 
-Boundary is inclusive (`>=`).
+Boundary is inclusive (`>=`). Threshold comparisons use **unrounded** MACE.
 
 **PROTOCOL DECISION.** Do not introduce 5%, 15%, 25%, 40%, or 50% after results are visible without a new protocol.
 
-These thresholds are descriptive severity markers. No significance testing. No logistic regression. No optimized threshold search.
+These thresholds are descriptive severity markers. No significance testing. No logistic regression. No optimized threshold search. No score association for the three binary tail indicators in H5.1.
 
 **PROTOCOL DECISION.** For each threshold:
 
@@ -337,7 +432,7 @@ event_count = sum(binary indicator)
 event_rate = event_count / n
 ```
 
-For `n = 0`: `event_count = 0`, `event_rate = null`, status `NO_COMPLETED_OUTCOMES`. Do not serialize an undefined rate as zero. No confidence intervals. No hypothesis tests.
+For `n = 0`: `event_count = 0`, `event_rate` empty field, status `NO_COMPLETED_OUTCOMES`. Do not serialize an undefined rate as zero. No confidence intervals. No hypothesis tests.
 
 ---
 
@@ -352,8 +447,8 @@ For `n = 0`: `event_count = 0`, `event_rate = null`, status `NO_COMPLETED_OUTCOM
 **SECONDARY** continuous outcomes:
 
 - Maximum Close Drawdown magnitude
-- Realized Volatility annualized
-- Downside Volatility annualized
+- Close-to-close volatility annualized
+- Zero-target downside deviation annualized
 
 **SECONDARY** tail outcomes:
 
@@ -394,23 +489,36 @@ Do not infer methodology eras. Do not treat version groups as controlled compari
 
 **FACT.** At this frozen snapshot, `v1.1.1` has no completed 30/90/180 H4 outcomes. The same eligibility therefore yields `n = 0` H5 outcomes at all three calculated horizons.
 
-**PROTOCOL DECISION.** `v1.1.1` must remain represented as `n = 0` in the future model-version summary. A `MISSING` group is emitted only if a missing `model_version` exists in the frozen analytical population. Do not infer missing labels.
+**PROTOCOL DECISION.** `v1.1.1` must remain represented as `n = 0` / `NO_COMPLETED_OUTCOMES` in the future model-version summary at all three horizons. A `MISSING` group is emitted only if a missing `model_version` exists in the frozen analytical population. Do not infer missing labels.
 
 ---
 
-## 17. Statistical computation rules
+## 17. Statistical computation, summary scope, and serialization
 
-**PROTOCOL DECISION.** Future H5.1 computations use unrounded JavaScript `Number` values. No `toFixed()` / `toPrecision()` before aggregation. Ranking uses unrounded values. Tail threshold comparisons use unrounded MACE. CSV serialization rounding must never feed back into calculations. Future deterministic serialization should match H4.1 unless a new convention is explicitly frozen before H5.1.
+**PROTOCOL DECISION.** Internal H5.1 calculations use unrounded JavaScript `Number` values. No `toFixed()` / `toPrecision()` before aggregation or ranking. Ranking uses unrounded values. Tail threshold comparisons use unrounded MACE. Serialized strings must never feed back into arithmetic.
 
-**PROTOCOL DECISION.** For continuous risk metrics report:
+**PROTOCOL DECISION.** H5.1 numeric serialization is frozen **now** to the H4.1 convention. There is no later escape hatch.
 
-- `n`
-- ordinary arithmetic mean
-- Type-7 median
-- Type-7 p25
-- Type-7 p75
-- minimum
-- maximum
+| Context | Rule |
+|---|---|
+| Internal | JavaScript `Number`; unrounded calculations |
+| Computed numeric CSV fields | deterministic shortest round-trip decimal; `Number.prototype.toString()` or equivalent |
+| Source price fields | preserve validated source field strings where practical |
+| Null / undefined | empty CSV field |
+| Forbidden literal strings | `null`, `undefined`, `NaN`, `Infinity` |
+| CSV | RFC4180-compatible escaping; LF line endings; stable column order; stable row order |
+
+**PROTOCOL DECISION.** Statistical-summary **scope** is the frozen output schemas, not a generic “all continuous metrics get n/mean/p25/p75/min/max” requirement.
+
+| Context | Required statistics |
+|---|---|
+| Primary horizon MACE | `n`, ordinary arithmetic mean, Type-7 median, p25, p75, min, max |
+| Numeric-band MACE | `n`, mean, Type-7 median, p25, p75 (no min/max by design) |
+| Secondary continuous metrics in horizon/band summaries | mean and Type-7 median only, as named in those schemas |
+| Model-version MACE | `n`, mean, Type-7 median |
+| Score association | `n` and Spearman only |
+
+Do not add statistics beyond each pre-registered schema during H5.1. Type-7 remains the median/quantile method wherever those statistics are requested.
 
 No trimming, winsorization, geometric mean, outlier deletion, or rounding before aggregation.
 
@@ -431,11 +539,11 @@ p75 = Q(.75)
 
 No quantile on `n = 0`.
 
-**PROTOCOL DECISION.** Spearman rank conventions match H4 (§9).
+**PROTOCOL DECISION.** Spearman rank conventions match H4 (§9 of this protocol / H4 Spearman contract).
 
 ---
 
-## 18. Empty/small groups
+## 18. Empty/small groups and n=0 serialization
 
 **PROTOCOL DECISION.** Ordinary descriptive group summaries:
 
@@ -447,13 +555,22 @@ No quantile on `n = 0`.
 
 For Spearman:
 
-| condition | status |
-|---|---|
-| n = 0 | `NO_COMPLETED_OUTCOMES` |
-| else if either rank vector has zero variance | `UNDEFINED_ZERO_VARIANCE` |
-| else | `OK` |
+| condition | status | rho |
+|---|---|---|
+| n = 0 | `NO_COMPLETED_OUTCOMES` | empty field |
+| else if either rank vector has zero variance | `UNDEFINED_ZERO_VARIANCE` | empty field |
+| else | `OK` | serialized Number |
 
-**PROTOCOL DECISION.** `n = 0` groups retain empty/null statistics and rates. Never emit undefined statistics as `0`, `NaN`, or `Infinity`. Do not treat `n = 0` as merely small n.
+**PROTOCOL DECISION.** For `n = 0`:
+
+- `n = 0`
+- all undefined continuous statistics: empty field
+- all Spearman: empty field
+- tail `event_count`: `0`
+- tail `event_rate`: empty field
+- status: `NO_COMPLETED_OUTCOMES`
+
+Do not emit `NaN`, `Infinity`, `null`, or `undefined` as strings. Do not treat `n = 0` as merely small n. Do not serialize an undefined rate or undefined Spearman as zero.
 
 ---
 
@@ -473,11 +590,11 @@ Any future inferential study accounting for temporal dependence requires a separ
 
 ---
 
-## 20. Future H5.1 output universes
+## 20. Required H5.1 output universes
 
-**PROTOCOL DECISION.** H5 does **not** create these files. They are pre-registered for a separately reviewed H5.1 implementation.
+**PROTOCOL DECISION.** H5 itself creates **none** of these files. For protocol `h5-risk-outcome-v1`, they are the **required** H5.1 generated outputs. Implementation code/tests will be separately scoped during H5.1 review.
 
-Recommended future generated outputs:
+Required H5.1 generated outputs:
 
 - `research/risk-outcomes/README.md`
 - `research/risk-outcomes/risk_outcomes.csv`
@@ -488,13 +605,19 @@ Recommended future generated outputs:
 - `research/risk-outcomes/ANALYSIS_SOURCE_SHA.txt`
 - `research/risk-outcomes/PROTOCOL_VERSION.txt`
 
+**PROTOCOL DECISION.** `ANALYSIS_SOURCE_SHA.txt` exact content: `2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b` plus one LF newline.
+
+**PROTOCOL DECISION.** `PROTOCOL_VERSION.txt` exact content: `h5-risk-outcome-v1` plus one LF newline.
+
 ### 20.1 Row-level file
 
 `research/risk-outcomes/risk_outcomes.csv`
 
-One row per eligible `DAILY_PRIMARY` × horizon. Expected **679** rows. No 365 rows.
+One row per eligible `DAILY_PRIMARY` × horizon. Exactly **679** data rows. No 365 rows.
 
-Recommended exact columns:
+Sort: `observation_date` ascending, then `horizon_days` ascending.
+
+Required exact columns in this order:
 
 ```text
 observation_date
@@ -515,8 +638,8 @@ window_first_close_date
 window_last_close_date
 maximum_adverse_close_excursion_magnitude
 maximum_close_drawdown_magnitude
-realized_volatility_annualized
-downside_volatility_annualized
+close_to_close_volatility_annualized
+zero_target_downside_deviation_annualized
 mace_ge_10pct
 mace_ge_20pct
 mace_ge_30pct
@@ -530,55 +653,148 @@ protocol_version
 
 `research/risk-outcomes/summary_by_horizon.csv`
 
-Exactly **3** rows: 30, 90, 180. No 365 performance row.
+Exactly **3** rows in order: 30, 90, 180. No 365 performance row.
 
-For each horizon report primary MACE: `n`, mean, median, p25, p75, min, max, status.
+The full Type-7 p25/p75/min/max set is required for **PRIMARY MACE** here. Secondary continuous outcomes in this file intentionally receive **mean and median only**.
 
-Also report descriptive horizon-level:
+Required columns in this exact order:
 
-- mean / median `maximum_close_drawdown_magnitude`
-- mean / median `realized_volatility_annualized`
-- mean / median `downside_volatility_annualized`
-- MACE 10%: `event_count`, `event_rate`
-- MACE 20%: `event_count`, `event_rate`
-- MACE 30%: `event_count`, `event_rate`
+```text
+horizon_days
+n
+mean_mace
+median_mace
+p25_mace
+p75_mace
+min_mace
+max_mace
+mean_maximum_close_drawdown
+median_maximum_close_drawdown
+mean_close_to_close_volatility_annualized
+median_close_to_close_volatility_annualized
+mean_zero_target_downside_deviation_annualized
+median_zero_target_downside_deviation_annualized
+mace_ge_10pct_event_count
+mace_ge_10pct_event_rate
+mace_ge_20pct_event_count
+mace_ge_20pct_event_rate
+mace_ge_30pct_event_count
+mace_ge_30pct_event_rate
+status
+analysis_source_sha
+protocol_version
+```
 
 ### 20.3 Score association
 
 `research/risk-outcomes/score_association.csv`
 
-Exactly **12** rows: 3 horizons × 4 continuous outcomes.
+Exactly **12** rows. No binary-tail Spearman.
 
-Outcome order:
+Required columns in this exact order:
 
-1. `maximum_adverse_close_excursion_magnitude`
-2. `maximum_close_drawdown_magnitude`
-3. `realized_volatility_annualized`
-4. `downside_volatility_annualized`
+```text
+horizon_days
+outcome_name
+n
+spearman_rho
+expected_direction
+status
+analysis_source_sha
+protocol_version
+```
 
-Columns: `horizon_days`, `outcome_name`, `n`, `spearman_rho`, `expected_direction`, `status`, `analysis_source_sha`, `protocol_version`.
+Row order:
 
-`expected_direction = POSITIVE`.
+```text
+30:
+  1 maximum_adverse_close_excursion_magnitude
+  2 maximum_close_drawdown_magnitude
+  3 close_to_close_volatility_annualized
+  4 zero_target_downside_deviation_annualized
+90: same order
+180: same order
+```
 
-**PROTOCOL DECISION.** Do **not** calculate score association for the three binary tail indicators in H5.1. Tail indicators are summarized as event rates.
+`expected_direction = POSITIVE` for all 12.
 
 ### 20.4 Numeric-band summary
 
 `research/risk-outcomes/summary_by_numeric_band.csv`
 
-Exactly **18** rows. Retain every band even `n = 0`. Do not combine bands.
+Exactly **18** rows. Retain every band even `n = 0`. Do not combine bands. No min/max for band MACE by design. Do not infer that §17 requires additional band columns.
 
-For each row: horizon, band, score min/max, `n`; MACE mean/median/p25/p75; maximum close drawdown mean/median; realized volatility mean/median; downside volatility mean/median; MACE >=10/20/30 `event_count` and `event_rate`; status; analysis source SHA; protocol version.
+Row order:
+
+```text
+30:
+  Aggressive Buying
+  Regular DCA Buying
+  Moderate Buying
+  Hold & Wait
+  Reduce Risk
+  High Risk
+90: same order
+180: same order
+```
+
+Required columns in this exact order:
+
+```text
+horizon_days
+numeric_band_crosswalk
+score_min
+score_max
+n
+mean_mace
+median_mace
+p25_mace
+p75_mace
+mean_maximum_close_drawdown
+median_maximum_close_drawdown
+mean_close_to_close_volatility_annualized
+median_close_to_close_volatility_annualized
+mean_zero_target_downside_deviation_annualized
+median_zero_target_downside_deviation_annualized
+mace_ge_10pct_event_count
+mace_ge_10pct_event_rate
+mace_ge_20pct_event_count
+mace_ge_20pct_event_rate
+mace_ge_30pct_event_count
+mace_ge_30pct_event_rate
+status
+analysis_source_sha
+protocol_version
+```
 
 ### 20.5 Model-version summary
 
 `research/risk-outcomes/summary_by_model_version.csv`
 
-Exactly **9** rows: 30/90/180 × `v3.1.0` / `v1.1` / `v1.1.1`.
+Exactly **9** rows. Provenance-descriptive only. No inferred eras.
 
-For each row: `horizon_days`, `model_version`, `n`, `mean_mace`, `median_mace`, `status`, `analysis_source_sha`, `protocol_version`.
+Row order:
 
-This is provenance-descriptive only. `v1.1.1` remains visible with `n = 0` at all three horizons.
+```text
+30: v3.1.0, v1.1, v1.1.1
+90: v3.1.0, v1.1, v1.1.1
+180: v3.1.0, v1.1, v1.1.1
+```
+
+Required columns in this exact order:
+
+```text
+horizon_days
+model_version
+n
+mean_mace
+median_mace
+status
+analysis_source_sha
+protocol_version
+```
+
+`v1.1.1`: all three horizons remain `n = 0`, `NO_COMPLETED_OUTCOMES`.
 
 ---
 
@@ -598,7 +814,7 @@ This is provenance-descriptive only. `v1.1.1` remains visible with `n = 0` at al
 
 **PROTOCOL DECISION.** H5 does not reopen, rewrite, or regenerate H4/H4.1. It does not include H4 terminal forward return in H5.1 outputs. It tests a different outcome family on the same frozen sample.
 
-**LIMITATION.** A risk gauge may potentially be useful even if it does not rank terminal returns well, if higher scores are associated with larger subsequent close-based adverse excursions, close drawdowns, realized volatility, downside volatility, or MACE tail incidence. H5.1 will report whatever the frozen definitions produce. It still will not constitute complete intraday risk validation.
+**LIMITATION.** A risk gauge may still be studied on close-based path outcomes even if it does not rank terminal returns. H5.1 will report whatever the frozen definitions produce. Concordant MACE Spearman would still not constitute complete intraday risk validation, calibration, or a claim that GhostGauge “worked.”
 
 ---
 
@@ -637,7 +853,7 @@ H5 does not authorize changing:
 
 **PROTOCOL DECISION.** H5.1 results alone will not automatically authorize calibration.
 
-**PROTOCOL DECISION.** Factor analysis remains out of scope. Do not use `factor_manifest.csv`. Do not test factor vs MACE, drawdown, or volatility. Composite G-Score only. Factor analysis requires a separately pre-registered future phase.
+**PROTOCOL DECISION.** Factor analysis remains out of scope. Do not use `factor_manifest.csv`. Do not test factor vs MACE, drawdown, or volatility-family outcomes. Composite G-Score only. Factor analysis requires a separately pre-registered future phase.
 
 ---
 
@@ -656,6 +872,32 @@ H5.1 must test at minimum:
 - 292 / 235 / 152
 - 679 total rows
 - no 365 rows
+- zero silent drops
+
+**G-Score**
+
+- all 323 valid pinned scores
+- numeric, finite, integer, 0–100
+- missing / nonnumeric / nonfinite / noninteger / below-zero / above-100 => hard STOP
+- no rounding / clamping / substitution
+
+**BTC path**
+
+- 731 rows
+- 731 unique dates
+- first `2024-08-17`
+- last `2026-08-17`
+- 0 duplicates
+- 0 missing dates
+- all closes numeric / finite / `> 0`
+- any invalid required close => STOP
+
+**Reconciliation**
+
+- 323 then date/path eligible minus invalid start price minus missing/invalid path close
+- invalid G-Score is HARD STOP, not drop
+- frozen final n 292 / 235 / 152 / 679
+- discrepancy lists exact dates / causes
 
 **Date path**
 
@@ -687,15 +929,15 @@ H5.1 must test at minimum:
 - correct running peak
 - can exceed MACE
 
-**Volatility**
+**Close-to-close volatility** (formula unchanged)
 
 - exactly N close-to-close log returns
 - artifact spot excluded from volatility intervals
 - population denominator N
 - `sqrt(365)` annualization
-- constant prices => zero realized vol
+- constant prices => zero close-to-close volatility
 
-**Downside volatility**
+**Zero-target downside deviation** (formula unchanged)
 
 - denominator all N
 - positive returns contribute zero
@@ -709,23 +951,30 @@ H5.1 must test at minimum:
 - negative ordering
 - score ties
 - outcome ties
-- zero variance => null / `UNDEFINED_ZERO_VARIANCE`
+- zero variance => empty rho / `UNDEFINED_ZERO_VARIANCE`
 
-**Grouping**
+**Output universes**
 
 - all six bands
+- fixed 679 row-level rows
+- fixed 3 horizon rows
+- fixed 12 association rows
 - fixed 18 band rows
 - fixed 9 model-version rows
 - `v1.1.1` n=0 retained
-- fixed 12 association rows
-- n=0 null stats/rates
+- exact column order for all CSVs
+- exact row order
+- n=0 null stats; tail `event_count = 0` and empty `event_rate`
 - small-n status
 
-**Precision**
+**Precision / serialization**
 
 - no rounding before aggregation
 - unrounded threshold comparison
-- deterministic output
+- deterministic `Number.prototype.toString()` serialization
+- empty fields for null stats
+- no `NaN` / `Infinity` / `null` / `undefined` strings
+- exact `ANALYSIS_SOURCE_SHA.txt` and `PROTOCOL_VERSION.txt` bytes
 
 ---
 
@@ -733,7 +982,15 @@ H5.1 must test at minimum:
 
 **PROTOCOL DECISION.** Independent review of this protocol must complete before H5.1 implementation. Seeing risk-outcome numbers first would defeat the purpose of H5.
 
-**PROTOCOL DECISION.** If the primary result eventually shows positive ordering, H5.1 may support only the narrow statement that higher historical G-Scores were associated with larger subsequent completed-close adverse excursions in this frozen sample. That would **not** automatically prove causality, current `v1.1.1` validity, proper calibration, correct weights, correct bands, trading profitability, or intraday risk prediction.
+**PROTOCOL DECISION.** Positive MACE Spearman may be described as **directionally concordant** with expected risk ordering. It may **not**, by sign alone, be called useful, strong, validated, calibrated, or predictive.
+
+Negative Spearman: directionally opposite expected ordering.
+
+Zero: no monotonic ordering in the frozen sample.
+
+No arbitrary magnitude cutoff is introduced. Future interpretation must report exact values and limitations. No post-hoc promotion of MCDD or the volatility family if MACE is weak.
+
+**PROTOCOL DECISION.** Concordant MACE Spearman would **not** automatically prove causality, current `v1.1.1` validity, proper calibration, correct weights, correct bands, trading profitability, or intraday risk prediction.
 
 **PROTOCOL DECISION.** If the primary result does **not** show positive ordering: report it exactly. Do not change the MACE definition or promote another outcome after seeing results.
 
@@ -744,6 +1001,8 @@ CLOSE-BASED PATH RISK, NOT INTRADAY MAE —
 SAME FROZEN H4/H4.1 SAMPLE AND BTC SERIES —
 
 PRIMARY OUTCOME = MAXIMUM ADVERSE CLOSE EXCURSION —
+
+SIGN CONCORDANCE IS NOT AUTOMATIC USEFULNESS —
 
 NO RISK OUTCOMES CALCULATED —
 
