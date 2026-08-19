@@ -1,0 +1,13 @@
+horizon_days,outcome_name,n,spearman_rho,expected_direction,status,analysis_source_sha,protocol_version
+30,maximum_adverse_close_excursion_magnitude,292,0.008510803537346878,POSITIVE,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h5-risk-outcome-v1
+30,maximum_close_drawdown_magnitude,292,-0.048606866017602245,POSITIVE,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h5-risk-outcome-v1
+30,close_to_close_volatility_annualized,292,-0.1611344027512241,POSITIVE,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h5-risk-outcome-v1
+30,zero_target_downside_deviation_annualized,292,-0.08457637996261376,POSITIVE,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h5-risk-outcome-v1
+90,maximum_adverse_close_excursion_magnitude,235,-0.20991000131435208,POSITIVE,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h5-risk-outcome-v1
+90,maximum_close_drawdown_magnitude,235,-0.2771980914428936,POSITIVE,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h5-risk-outcome-v1
+90,close_to_close_volatility_annualized,235,-0.5351118771028875,POSITIVE,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h5-risk-outcome-v1
+90,zero_target_downside_deviation_annualized,235,-0.340912152936228,POSITIVE,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h5-risk-outcome-v1
+180,maximum_adverse_close_excursion_magnitude,152,0.334004150838944,POSITIVE,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h5-risk-outcome-v1
+180,maximum_close_drawdown_magnitude,152,0.21757090044389843,POSITIVE,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h5-risk-outcome-v1
+180,close_to_close_volatility_annualized,152,0.2947629033539691,POSITIVE,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h5-risk-outcome-v1
+180,zero_target_downside_deviation_annualized,152,0.13451749129724722,POSITIVE,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h5-risk-outcome-v1
