@@ -39,6 +39,8 @@ H4 therefore pre-registers:
 - which price is the end
 - which formula is the return
 - which horizons are calculated
+- G-Score validity
+- arithmetic summaries, Type-7 quantiles, and Spearman ranks
 - which summaries are primary vs secondary
 - which questions are out of scope
 
@@ -279,12 +281,15 @@ then:
 DAILY_PRIMARY horizon-eligible by date
 minus invalid/missing start price
 minus missing endpoint close
+minus invalid G-Score (must STOP, not silently drop)
 equals final return n
 ```
 
 No silent row dropping. List exact dates and causes if missingness appears.
 
-**FACT.** At this snapshot, expected start/end missingness for the three primary horizons is **zero**. Final return n is therefore expected to equal the date-eligible counts above **after** H4.1 computes returns. H4 itself stops at the counts.
+**PROTOCOL DECISION.** An invalid G-Score on a `DAILY_PRIMARY` row is a **hard stop**, not a repair. H4.1 must not round, clamp, substitute, or drop that row in order to continue.
+
+**FACT.** At this snapshot, expected start/end/score missingness for the three primary horizons is **zero**. Final return n is therefore expected to equal the date-eligible counts above **after** H4.1 computes returns. H4 itself stops at the counts.
 
 ---
 
@@ -325,17 +330,118 @@ Higher G-Score means higher assessed risk. The expected directional relationship
 **PROTOCOL DECISION.** H4.1 primary score analysis, for each of 30/90/180 days separately:
 
 - n
-- mean forward return
-- median forward return
-- 25th percentile
-- 75th percentile
+- arithmetic mean forward return
+- median forward return = Type-7 Q(0.50)
+- p25 = Type-7 Q(0.25)
+- p75 = Type-7 Q(0.75)
 - minimum
 - maximum
-- Spearman rank correlation of G-Score vs forward return
+- Spearman rho of G-Score vs forward return (average-rank ties; null if zero variance)
 
 Spearman is used because the score is bounded, the relationship need not be linear, and a 10-point score difference need not have a constant economic effect.
 
-**PROTOCOL DECISION.** Do **not** compute Pearson correlation as an alternate primary test. Do **not** run regression in H4.1 primary analysis. Do **not** calculate a p-value in the initial descriptive phase.
+**PROTOCOL DECISION.** Do **not** compute Pearson correlation of the raw (unranked) series as an alternate primary test. Do **not** run regression in H4.1 primary analysis. Do **not** calculate a p-value, confidence interval, or significance label.
+
+### 15.1 G-Score validity gate (counts only in H4)
+
+**PROTOCOL DECISION.** H4.1 uses the published integer G-Score from `daily_analytical_view.score`. Before any return is calculated, each `DAILY_PRIMARY` score must be present, numeric, finite, an integer, and in `[0, 100]` inclusive.
+
+Do **not** round a non-integer score, clamp an out-of-range score, or substitute native band text.
+
+**FACT.** Audit of the 323 `DAILY_PRIMARY` rows at `ANALYSIS_SOURCE_SHA` (score field only; no return arithmetic):
+
+| Check | Count |
+|---|---|
+| `valid_score_count` | **323** |
+| `missing_score_count` | **0** |
+| `non_numeric_score_count` | **0** |
+| `non_integer_score_count` | **0** |
+| `out_of_range_score_count` | **0** |
+
+All 323 scores are integers in 0–100 inclusive. No STOP.
+
+### 15.2 Arithmetic summaries
+
+**PROTOCOL DECISION.** For each eligible horizon:
+
+- `n` = number of valid forward-return observations in that horizon
+- `mean` = ordinary arithmetic mean of those unrounded simple returns
+- `minimum` = smallest observed simple return
+- `maximum` = largest observed simple return
+
+Do not trim, winsorize, or exclude outliers. Do not use a geometric mean. Do not annualize.
+
+The same arithmetic-mean definition applies to the secondary numeric-band and model-version views wherever `mean` is reported.
+
+### 15.3 Type-7 quantiles (median, p25, p75)
+
+**PROTOCOL DECISION.** Median, p25, and p75 use the same deterministic linear-interpolation / Hyndman–Fan Type 7 convention.
+
+Sort the unrounded simple returns ascending as `x[0] … x[n-1]`. For probability `p` in `[0, 1]`:
+
+```text
+h = (n - 1) * p
+j = floor(h)
+g = h - j
+If j + 1 < n:
+  Q(p) = x[j] + g * (x[j+1] - x[j])
+Otherwise:
+  Q(p) = x[j]
+```
+
+```text
+median = Q(0.50)
+p25    = Q(0.25)
+p75    = Q(0.75)
+```
+
+When `n` is odd, Q(0.50) lands on the middle observation (`g = 0`). When `n` is even, Q(0.50) interpolates between the two central observations.
+
+Use this same method for `summary_by_horizon` and `summary_by_numeric_band`. Do not choose a percentile method based on results.
+
+### 15.4 Spearman implementation
+
+**PROTOCOL DECISION.** Spearman rho is the **sample Pearson correlation of the ranks** of G-Score and forward return. Rank each variable independently.
+
+For ties, assign every tied value the arithmetic mean of the 1-based rank positions it occupies.
+
+Example: values `10, 20, 20, 40` receive ranks `1, 2.5, 2.5, 4`.
+
+Do **not** use first/minimum/maximum/dense rank or random tie-breaking.
+
+Sample Pearson of ranks `rx`, `ry`:
+
+```text
+rho = Σ(rx_i - mean(rx)) (ry_i - mean(ry))
+      / sqrt( Σ(rx_i - mean(rx))²  ·  Σ(ry_i - mean(ry))² )
+```
+
+No p-value. No confidence interval. No significance label. Do not emit a Pearson correlation of the unranked series.
+
+### 15.5 Zero-variance Spearman
+
+**PROTOCOL DECISION.** If either rank vector has zero variance within a horizon (the Pearson denominator is zero), Spearman rho is **UNDEFINED**.
+
+Represent rho as an empty/null CSV field. Emit an explicit status/reason such as:
+
+```text
+UNDEFINED_ZERO_VARIANCE
+```
+
+Do **not** emit `0`, `NaN`, or `Infinity`. Do not invent a correlation. This rule is frozen before seeing results.
+
+### 15.6 Numeric precision / rounding
+
+**PROTOCOL DECISION.**
+
+- Calculate returns from source prices at their stored precision.
+- Calculate all summaries and correlations from **unrounded** return values.
+- Never round individual returns before aggregation.
+- Never round ranks before correlation.
+- Rounding is presentation/serialization only.
+- A displayed rounded value must never be fed back into another calculation.
+
+The future H4.1 README must disclose whatever deterministic serialization precision it uses. Do not choose internal precision based on output appearance.
 
 ---
 
@@ -353,20 +459,22 @@ The first analysis is descriptive. If statistical inference is wanted later, cre
 
 **PROTOCOL DECISION.** Historical native band labels changed across the project. Do **not** treat historical band text as a stable cross-era grouping.
 
-For a **secondary** descriptive view only, freeze `v1.1.1_numeric_band_crosswalk` using current `config/dashboard-config.json` v1.1.1 score boundaries already defined before this analysis:
+For a **secondary** descriptive view only, freeze `v1.1.1_numeric_band_crosswalk` with exact deterministic predicates on the **published integer G-Score**:
 
-| Score | Crosswalk label |
+| Predicate | Crosswalk label |
 |---|---|
-| 0–14 | Aggressive Buying |
-| 15–34 | Regular DCA Buying |
-| 35–49 | Moderate Buying |
-| 50–64 | Hold & Wait |
-| 65–79 | Reduce Risk |
-| 80–100 | High Risk |
+| `0 <= score <= 14` | Aggressive Buying |
+| `15 <= score <= 34` | Regular DCA Buying |
+| `35 <= score <= 49` | Moderate Buying |
+| `50 <= score <= 64` | Hold & Wait |
+| `65 <= score <= 79` | Reduce Risk |
+| `80 <= score <= 100` | High Risk |
 
-This is **not** a claim that old artifacts originally used those exact labels or recommendations.
+These predicates are equivalent to the current v1.1.1 integer score boundaries in `config/dashboard-config.json`. That equivalence does **not** claim that historical artifacts originally used these labels.
 
-For each horizon × fixed band report only: n, mean return, median return, 25th percentile, 75th percentile.
+**PROTOCOL DECISION.** H4.1 must **not** round a non-integer score into a band, clamp an out-of-range score, or infer a band from native text. The §15.1 validity gate makes this mapping exhaustive for every admitted G-Score.
+
+For each horizon × fixed band report only: n, arithmetic mean, Type-7 median, Type-7 p25, Type-7 p75.
 
 **PROTOCOL DECISION.** Do not merge adjacent bands after seeing sample sizes. If a band has very small n, report the small n. Do not optimize the cutoffs.
 
@@ -382,11 +490,15 @@ Do **not** use native band text as the primary cross-era analytical grouping. Do
 
 ## 19. Model-version secondary analysis
 
-**PROTOCOL DECISION.** One secondary lineage check: for each horizon × **exact artifact `model_version`**, report n, mean return, and median return only.
+**PROTOCOL DECISION.** One secondary lineage check: for each horizon × **exact artifact `model_version`**, report n, arithmetic mean, and Type-7 median only.
 
 Do not infer methodology eras. Do not combine or rename versions merely to improve results. Do not create a synthetic “v1.1 era” before its explicit artifact label. Do not calculate model-version significance tests.
 
 If a version/horizon group has `n < 20`, mark **`SMALL N — DESCRIPTIVE ONLY`**. Do not suppress it.
+
+**FACT.** Among 323 `DAILY_PRIMARY` rows, `model_version` is present on **323** and missing on **0**. Present labels at this snapshot: `v3.1.0` 83, `v1.1` 238, `v1.1.1` 2. These are label counts only, not performance.
+
+**PROTOCOL DECISION.** Missing `model_version` must **not** drop the observation from the primary horizon analysis. For the **secondary** model-version summary only, missing values form an explicit group labeled `MISSING`. They must not silently disappear. Do not infer a version from date, commit, config, or methodology assumptions. This `MISSING` rule remains in force even though this snapshot has zero missing labels.
 
 ---
 
@@ -418,6 +530,9 @@ Do **not** analyze Trend & Valuation, Stablecoins, ETF Flows, Net Liquidity, Ter
 
 - valid `DAILY_PRIMARY` start-price count: **323 / 323**
 - missing/invalid start-price dates: **none**
+- valid integer G-Score 0–100: **323 / 323**
+- missing / non-numeric / non-integer / out-of-range G-Score dates: **none**
+- `model_version` present: **323 / 323**; missing dates: **none**
 - missing endpoint dates among date-eligible 30/90/180/365 observations: **none**
 
 If H4.1 later finds a parse/implementation discrepancy, it must stop and list dates rather than impute.
@@ -469,6 +584,8 @@ protocol_version
 
 `start_price_source` must record `artifact_spot_price_usd`. `end_price_source` must record `btc_price_history.close_usd`. No field should contain an inferred model era.
 
+Recommended `score_association.csv` must include Spearman rho as an empty field when undefined, plus an explicit status/reason (`OK` or `UNDEFINED_ZERO_VARIANCE`). Do not serialize `NaN` or `Infinity`.
+
 ---
 
 ## 24. Reproducibility / deterministic implementation
@@ -479,12 +596,30 @@ protocol_version
 - Node built-ins only
 - read pinned Git objects at `ANALYSIS_SOURCE_SHA`, not the working tree
 - verify blob SHA and SHA-256 before computing returns
-- fail loudly on missing start price, missing endpoint, or hash mismatch
+- fail loudly on missing start price, missing endpoint, invalid G-Score, or hash mismatch
+- apply Type-7 quantiles, average-rank Spearman, and the zero-variance null rule from §15
+- never round returns or ranks before aggregation
 - stable CSV sort: `observation_date`, then `horizon_days`
 - empty CSV field = null; never coerce null to `0`
 - no network, no ETL, no live APIs, no Refresh Dashboard
 
-H4 does not add that script.
+Future H4.1 unit tests must cover:
+
+- simple-return formula
+- exact UTC D+N date arithmetic
+- no same-day-close substitution
+- G-Score validity gate
+- all six numeric-band boundary predicates
+- Type-7 quantiles
+- even/odd median behavior
+- Spearman without ties
+- Spearman with score ties
+- Spearman with return ties
+- zero-variance Spearman ⇒ null + `UNDEFINED_ZERO_VARIANCE`
+- no rounding before aggregation
+- missing `model_version` secondary grouping as `MISSING`
+
+These are future H4.1 requirements. H4 does not add that script or those tests.
 
 ---
 
@@ -504,7 +639,12 @@ A future change to any of the following requires a **new** protocol version:
 - daily population
 - band cutoffs
 - score grouping
+- G-Score validity / integer mapping rule
 - model-version grouping
+- arithmetic summary definition
+- Type-7 quantile / median algorithm
+- Spearman rank, tie, or zero-variance rule
+- rounding-before-aggregation rule
 - correlation statistic
 - inclusion/exclusion rule
 
@@ -535,7 +675,7 @@ The protocol may remain semantically v1 while the **data snapshot** receives an 
 H4 and H4.1 must **not**:
 
 - calculate returns in H4 (this phase)
-- calculate log returns, drawdowns, hit rates, or future-return correlations before H4.1
+- calculate log returns, drawdowns, hit rates, Spearman, or percentiles of returns in H4
 - calculate regressions, p-values, or bootstrap tests
 - optimize score thresholds, bands, weights, or factors
 - select favorable horizons after seeing results
@@ -554,13 +694,13 @@ After independent H4 review — and only then — H4.1 should:
 
 1. Pin `ANALYSIS_SOURCE_SHA` and refuse any other input snapshot.
 2. Load Daily Rule v1 `DAILY_PRIMARY` rows from the pinned daily view.
-3. Require valid `artifact_spot_start_price`.
+3. Require valid `artifact_spot_start_price` and a valid integer G-Score in `[0, 100]`.
 4. Join pinned `btc_price_history.close_usd` on exact `target_date`.
-5. Compute simple N-calendar-day forward-close returns for 30/90/180 only.
-6. Emit row-level and summary CSVs from §23.
+5. Compute simple N-calendar-day forward-close returns for 30/90/180 only, from unrounded source prices.
+6. Emit row-level and summary CSVs from §23 using §15 arithmetic, Type-7 quantiles, and Spearman rules.
 7. Publish eligibility reconciliation from §12.
-8. Run Spearman as the only primary association statistic, without p-values.
-9. Keep native band, numeric crosswalk, and exact `model_version` separate.
+8. Run average-rank Spearman as the only primary association statistic, without p-values; emit null + `UNDEFINED_ZERO_VARIANCE` if either rank vector has zero variance.
+9. Keep native band, numeric crosswalk predicates, and exact `model_version` (plus secondary `MISSING`) separate.
 10. Leave calibration **CLOSED**.
 
 Do **not** implement H4.1 on this branch.
@@ -578,6 +718,10 @@ Performed against Git objects at `2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b`. No 
 | `REVIEW_REQUIRED` | 4 (2025-09-15..18) |
 | `NO_DAILY_PRIMARY` | 11 (listed in §5) |
 | Valid start prices | 323 / 323 |
+| Valid integer G-Score 0–100 | 323 / 323 |
+| Invalid/missing G-Score | 0 |
+| `model_version` present | 323 / 323 |
+| `model_version` missing | 0 |
 | BTC rows | 731, contiguous 2024-08-17..2026-08-17 |
 | BTC sources | 716 `coinbase_historical`, 15 `coinbase` |
 | 30d date-eligible | 292, 0 missing endpoints |
