@@ -50,6 +50,8 @@ These three concepts are never treated as equivalent:
 
 **Raw PIT source evidence can be strong while factor replay remains `U_UNRESOLVED`.**
 
+Documented source start dates and replay-candidate dates are distinct; a source can have historical PIT/provenance evidence while the replay candidate date remains unestablished. `earliest_documented_source_date` is provenance. `earliest_candidate_usable_date` / `earliest_exact_candidate_date` / `earliest_method_candidate_date` are established replay dates only and stay empty while replay class is `U_UNRESOLVED`.
+
 A contemporaneous Git capture is category-2 **source evidence**. It does not automatically make `exact_production_replay_class` or `methodology_replay_class` equal to `A`.
 
 ### Classification invariants

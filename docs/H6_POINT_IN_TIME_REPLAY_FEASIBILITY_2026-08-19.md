@@ -459,7 +459,7 @@ Documented and **not** treated as replay blockers: onchain (`enabled: false`, we
 
 ## 16. Cross-factor lookback and earliest-date map
 
-Feasibility-date rule (date arithmetic only; **not** a score calculation):
+Feasibility-date rule (date arithmetic only; **not** a score calculation). Parenthetical dates in this table are **provenance / first cache appearance**, not established factor replay-candidate dates. Because all seven factors remain `U` / `U`, `earliest_exact_candidate_date` and `earliest_method_candidate_date` are unestablished:
 
 | Factor | Exact class | Method class | Earliest exact | Earliest method |
 |---|---|---|---|---|
