@@ -1,0 +1,10 @@
+horizon_days,model_version,n,mean_return_decimal,median_return_decimal,status,analysis_source_sha,protocol_version
+30,v3.1.0,83,-0.08642777035957956,-0.08503251774695264,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h4-forward-return-v1
+30,v1.1,209,-0.0387466625446121,0.007540783274440521,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h4-forward-return-v1
+30,v1.1.1,0,,,NO_COMPLETED_OUTCOMES,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h4-forward-return-v1
+90,v3.1.0,83,-0.23708222187229194,-0.23994720427790994,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h4-forward-return-v1
+90,v1.1,152,-0.10292440662214482,-0.1381476134167613,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h4-forward-return-v1
+90,v1.1.1,0,,,NO_COMPLETED_OUTCOMES,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h4-forward-return-v1
+180,v3.1.0,83,-0.28869288999484405,-0.29984307694696166,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h4-forward-return-v1
+180,v1.1,69,-0.24032026914880875,-0.2794174455474743,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h4-forward-return-v1
+180,v1.1.1,0,,,NO_COMPLETED_OUTCOMES,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h4-forward-return-v1

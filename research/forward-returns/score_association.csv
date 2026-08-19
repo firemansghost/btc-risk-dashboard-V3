@@ -1,0 +1,4 @@
+horizon_days,n,spearman_rho,status,analysis_source_sha,protocol_version
+30,292,0.03218388496690566,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h4-forward-return-v1
+90,235,0.05148484671137791,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h4-forward-return-v1
+180,152,0.06316457953944889,OK,2d09d2d77fbe6b7f6c5765b48188ed1d2a88db2b,h4-forward-return-v1
