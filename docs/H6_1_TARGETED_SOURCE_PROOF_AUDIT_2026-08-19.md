@@ -5,7 +5,8 @@
 **Branch:** `research/h6-1-targeted-source-proof-audit`  
 **H6.1_BASE_SHA:** `b0dc6d1d77e17f3ff36ee13008a26207c4fe558d`  
 **MODEL_SOURCE_SHA:** `6b2fa9cf56ce738c74c8da6de0f5a972858f8a52`  
-**H6.1_VERSION:** `h6.1-targeted-source-proof-v1`  
+**H6.1_VERSION:** `h6.1-targeted-source-proof-v1`
+**Correction pass:** stablecoin state-lineage / P8 exact-method invariant (still the same H6.1 version; frozen H6 untouched)
 **Frozen H6 document blob:** `cf060ff1f5c4aec4ba52e9dfd0982899af1dcabc`  
 **Calibration gate:** CLOSED
 
@@ -27,17 +28,20 @@ This document records targeted source proof. It does not calculate historical G-
 
 **DECISION:** `etf_flows` methodology class is upgraded to `B_POINT_IN_TIME_METHOD_EQUIVALENT` from **2025-10-07** on the Git HTML capture-date set. Exact class remains `U_UNRESOLVED`.
 
-**DECISION:** The other six enabled factors remain `U_UNRESOLVED` / `U_UNRESOLVED` at factor level.
+**DECISION:** `stablecoins` methodology class is upgraded to `B_POINT_IN_TIME_METHOD_EQUIVALENT` from **2025-10-05** on the 7-series dated-cache set with Git-recoverable pre-run `changeSeries` state. Exact class remains `U_UNRESOLVED`.
 
-**FACT:** Component-level promotions that do **not** move the factor:
+**DECISION:** The other five enabled factors remain `U_UNRESOLVED` / `U_UNRESOLVED` at factor level (`trend_valuation`, `net_liquidity`, `term_leverage`, `macro_overlay`, `social_interest`).
+
+**FACT:** Component-level promotions that do **not** move their factor:
 
 - Trend labeled `utc_intraday_snapshot` artifacts from **2026-08-17**
-- Stablecoin 7-coin positional identity from **2025-10-05**
+- Stablecoin 7-coin positional identity from **2025-10-05** (now also used at factor method B)
 - Term BitMEX funding-provider identity from **2025-12-11**
+- Term/Social `market_chart_30_daily` vectors `A`/`A` on the sparse captured-date set from **2025-09-20**
 - Social trending `A`/`A` retained from H6
 - ALFRED vintage **retrieval** for NL and Macro series on three proof dates
 
-**DECISION:** Recommended next phase is **EXPLORATORY RECONSTRUCTION PROTOCOL**. Validation-grade seven-factor A/B was not established. Remaining U items are heterogeneous (snapshot semantic break, dateless 365d series, sparse 30d charts, 11:00 UTC vintage timing). Do not begin replay implementation in this operation.
+**DECISION:** Recommended next phase is **EXPLORATORY RECONSTRUCTION PROTOCOL**. Validation-grade seven-factor A/B was not established. Remaining U items are heterogeneous (snapshot semantic break, 11:00 UTC vintage timing, sparse 30d charts at factor-aggregation density). Do not begin replay implementation in this operation.
 
 ---
 
@@ -113,7 +117,9 @@ H6 definitions are unchanged.
 
 **LIMITATION:** Reconstructing today's candle does not prove 2025 unlabeled spots used current snapshot logic.
 
-**INFERENCE:** Pre-2026-08-16 published spots are yesterday completed closes unless a later proof shows otherwise.
+**EVIDENCE:** Full `scripts/etl/compute.mjs` history contains 46 commits. `getCoinbaseCloseForYesterday()` is present from the first ETL commit `3d11cce2e82bd9d9116cc187a6cf75f12a4fe3f5` (2025-09-15, blob `62f61618178f8e959c8a848f30c182a6174408cf`) through the immediate pre-snapshot parent `5ce98324`. `git log -S` shows the symbol was added once and replaced once (`daae316b`, 2026-08-16). All 42 pre-snapshot `compute.mjs` commits contain the call. The four commits without it are `daae316b` and three later 2026-08-16 signal/ETL commits.
+
+**INFERENCE:** Inspected pre-snapshot implementations, including 2025-09-26 (`d0abe770` blob `ba1e44117dd80717a34eae859f08fec5afba0e94`) and the immediate pre-change parent, use `getCoinbaseCloseForYesterday()`. No inspected pre-change implementation proves current `utc_intraday_snapshot` semantics. This is not a reconstruction of runtime Coinbase-failure fallbacks.
 
 **DECISION:** `PARTIALLY_PROVEN`. Labeled snapshot input is `A`/`A` from **2026-08-17**. Unlabeled historical spots are **not** current snapshot. Proof result is not `D` for the whole Trend history because labeled dates exist.
 
@@ -153,7 +159,7 @@ H6 definitions are unchanged.
 
 **LIMITATION:** Files never store coin ids. Mapping is fetch-order plus contemporaneous code.
 
-**DECISION:** `PROVEN` for 7-length files from **2025-10-05**. `2025-10-04` is excluded. Component identity `A`/`A` does **not** make the factor `A`/`B` (P4).
+**DECISION:** `PROVEN` for 7-length files from **2025-10-05**. `2025-10-04` is excluded. Component identity `A`/`A` is now used together with corrected P4 state lineage for factor methodology `B` (section 8).
 
 **DECISION:** No HHI was calculated.
 
@@ -163,17 +169,49 @@ H6 definitions are unchanged.
 
 **Question:** Can current supply-growth and momentum rank universes be reconstructed using only material through `T`?
 
-**FACT:** Current live fetch is CoinGecko `days=30`, not 365. Dated Git JSON files are ~31-point windows. That satisfies the current 30d cap window, not a 365-day raw universe.
+**FACT:** Current live fetch is CoinGecko `days=30`, not 365. Dated Git JSON files are ~31-point windows. That satisfies the current 30d cap window.
+
+**FACT:** `calculateWeightedStablecoinChanges()` at MODEL_SOURCE_SHA (`factors.mjs` blob `e9fd06df79967f0041a901e2dd971b771e669b03`) loops `for (let i = 30; i < coin.marketCaps.length; i++)`. For N market-cap observations the number of 30-day change observations is `max(N - 30, 0)`. For a normal 31-point CoinGecko daily window, N = 31, therefore **one** 30-day change observation per coin. After weighted aggregation, `newChangeSeries` normally contains **one** weighted aggregate observation. This audit did not calculate that numerical value.
+
+**FACT:** Production then performs `updatedChangeSeries = [...historicalBaseline.changeSeries, ...newChangeSeries]` and `slice(-365)` if length exceeds 365. HEAD length is 283, so the 365-cap has not been reached. Production does **not** normally append a 30-point baseline window when the fetched market-cap vectors contain 31 daily observations.
+
+**FACT:** `computeStablecoins()` reads `historicalBaseline` before scoring. The supply percentile uses that **pre-run** `changeSeries`. After the current calculation it may write `updatedHistoricalData`. Observation T therefore uses the pre-run baseline. The Git commit produced by run T may contain the post-run baseline. Exact replay of the baseline for observation T requires the prior committed blob, not the same-commit post-run blob. On first creation (empty file) current code uses the fallback 1-point `newChangeSeries` as the percentile universe, then writes it.
 
 **FACT:** `supply_growth` percentiles `historicalBaseline.changeSeries`. `momentum` in current code is a 7-day **threshold** on the 30d window (`recentMomentum > 1 / 0.5`), not a 365-day percentile. Concentration uses current caps.
 
-**EVIDENCE:** `public/data/stablecoins-historical.json` is numbers-only `changeSeries` with `lastUpdated` and no observation dates. First blob 2025-10-05 length 1; HEAD 2026-08-19 length 283; 286 commits.
+**EVIDENCE:** Git history of `public/data/stablecoins-historical.json`: **286** commits and **286** unique blobs. First commit `b3a4924bd593bb9f2564725eb2a773d3950328b7` (2025-10-05) blob `31d5b361e84f8b478b0d3750285eb736b67794c0`, `lastUpdated=2025-10-05T00:05:38.264Z`, length 1. HEAD `ad6be423` blob `5bce43351e41c47dfebd440264bc8ef307520d8a`, length 283. The series is numbers-only with no observation dates.
 
-**FACT:** Current merge appends `newChangeSeries` from the 30d window then `slice(-365)`. Git length growth is about one point per day, not 30 points per day.
+**EVIDENCE:** Consecutive `changeSeries` structural classification (no value recomputation):
 
-**LIMITATION:** HEAD `changeSeries` at an earlier `T` is lookahead. A dateless series cannot be independently T-truncated except by assuming append-only order.
+| Class | Count |
+|---|---|
+| UNCHANGED | 3 |
+| APPEND_1 | 282 |
+| APPEND_N | 0 |
+| ROLLING_APPEND | 0 |
+| RESET | 1 (first blob) |
+| REWRITE | 0 |
+| OTHER | 0 |
 
-**DECISION:** `NOT_PROVEN` for the current 365-day supply-growth universe. Dated files remain strong 30d PIT raw source. Factor stays `U`/`U` because `supply_growth` remains `U`.
+**FACT:** Where APPEND_1 is expected, the previous array is preserved as an exact prefix. No REWRITE of already-present values occurred. The ~1-point-per-commit Git growth is consistent with current production, not evidence against it. The three UNCHANGED commits (2026-07-27, 2026-08-03, 2026-08-08) rewrote `lastUpdated` with an identical series.
+
+**EVIDENCE:** Representative pre-run vs post-run:
+
+| Observation date | Pre-run blob / length | Post-run blob / length | Transition |
+|---|---|---|---|
+| 2025-10-05 | none (empty-baseline branch) | `31d5b361` / 1 | RESET |
+| 2025-10-06 | `31d5b361` / 1 | `5a97ae52` / 2 | APPEND_1 |
+| 2025-12-11 | `b10768d5` / 45 (`ec1b931b`) | `ef1094ad` / 46 (`6082a0f7`) | APPEND_1 |
+| 2026-08-17 | `59da15c9` / 280 (`0032a729`) | `e7dcb199` / 281 (`db789cd9`) | APPEND_1 |
+| 2026-08-19 | `c3c5f8b0` / 282 (`3e0c07ff`) | `5bce4335` / 283 (`ad6be423`) | APPEND_1 |
+
+**FACT:** For every candidate date T, the Git-recoverable pre-run state is the last committed historical blob with commit date strictly before T (empty on 2025-10-05). Same-commit post-run blobs are not the observation-T universe.
+
+**EVIDENCE:** Date / raw-cache join (presence only; no `aggregateChange` / growth / HHI): 309 dated files; 308 are 7-series from 2025-10-05 through 2026-08-19 (`2025-10-04` remains 3-series exclude). All 308 have structurally satisfiable growth-guard inputs (`>=3` coins with `>=30` finite caps and SSOT weight coverage `>=0.7` from those slots). 260 files have all seven series at `>=31` caps; 48 have at least one empty/short slot but still pass the structural guard. Contemporaneous 7-coin fetch-order code exists from `6b959cb8` (2025-10-04). Current 30d raw-window structure is present. Gap count vs filenames = **8**. Longest contiguous run = **101** calendar days from **2025-10-05** through **2026-01-13**. First reconstructable pre-run baseline date = **2025-10-06**. Longest preferred-path interval = **100** days from **2025-10-06** through **2026-01-13**.
+
+**LIMITATION:** Dated JSON still does not label CoinGecko vs CMC/CryptoCompare fallback identity. Missing internal dates on `changeSeries` are not a blocker once append-only prefix preservation is proven, but exact upstream provider identity remains unproven.
+
+**DECISION:** `PROVEN` for recoverable PIT baseline **state lineage**. `supply_growth` exact remains `U_UNRESOLVED`. `supply_growth` methodology is `B_POINT_IN_TIME_METHOD_EQUIVALENT` from **2025-10-05** on the 7-series set. Momentum and concentration are supplied by the same dated 30d files (P3 identity `A`/`A`). Stablecoins factor methodology is therefore `B` on that set. Factor exact remains `U`.
 
 **DECISION:** No growth or percentile scores were calculated.
 
@@ -247,17 +285,30 @@ H6 definitions are unchanged.
 
 **Question:** Can the current 30-day spot-price input for realized_vol/stress be recreated point-in-time?
 
-**FACT:** Current `computeTermLeverage` calls `coinGecko.getMarketChart(30, 'daily')` and uses `spotData.prices`. Term cache stores `spot_observation_utc` but **not** the price vector.
+**FACT:** Current `computeTermLeverage` calls `coinGecko.getMarketChart(30, 'daily')` and uses `spotData.prices`. That call writes `public/data/cache/market_chart_30_daily.json`. Term cache stores `spot_observation_utc` but **not** the price vector.
 
-**EVIDENCE:** `market_chart_30_daily.json` has 12 commits / ~10 dates (2025-09-20 … 2025-10-29, then 2026-08-17/18/19). Captured vectors have 31 points.
+**EVIDENCE:** `getMarketChart(30, 'daily')` exists in `factors.mjs` from commit `929f8befe23f8b9f5e98e8456f122e1aef3bebe8` (2025-09-19, blob `3ec2df2aa0e7eb8b2d343c2bf6ea8acbe0604790`), **before** the first Git chart capture. Current MODEL_SOURCE_SHA uses the same call (`coinGeckoCache.mjs` blob `fbfc5e35b3bd4af60eb00e780892b62f94e8bbff`).
 
-**FACT:** Overlap with the dense term funding archive (from 2025-12-11) is **2026-08-17/18/19** only.
+**EVIDENCE:** `market_chart_30_daily.json` has **12** commits / **9** distinct capture dates, all 31-point vectors: 2025-09-20 (`c897c44c` blob `b990b54cff761d65057d54f74f667406a4cdb744`), 2025-09-23, 2025-09-24, 2025-09-26, 2025-10-01, 2025-10-29, 2026-08-17, 2026-08-18, 2026-08-19. Pre-envelope captures are raw CoinGecko payloads; 2026-08-17 onward include `cachedAt`. Both are the operational `market_chart_30_daily` measurement.
 
-**EVIDENCE:** Live CoinGecko 30d daily series matched 29 completed days of the 2026-08-19 Git capture with **0** differences (SHA-256 `c24434163653d9b785ac3fa5ba51cebc5bc4a3a012995636b54bd70e67fa80cd`).
+**FACT:** The earliest **component** candidate is **2025-09-20**, the first proven current `market_chart_30_daily` capture under those code semantics. Term funding-cache overlap (2026-08-17..19) is factor-intersection metadata only and is not the component start.
 
-**LIMITATION:** Same-day equality does not prove 2025 captures are unrevised. Current CoinGecko history is not historical PIT truth.
+**FACT:** Exact `A` on a captured date requires method `A` or `B` on that same date. The prior `A`/`U` pair is forbidden and is corrected.
 
-**DECISION:** `PARTIALLY_PROVEN`. Chart vectors are exact PIT on their capture dates. Factor `realized_vol` / `stress` remain `U` over the funding-cache interval because the chart archive is not contiguous there.
+**EVIDENCE:** Historical CoinGecko stability checks (correction pass; raw prices only):
+
+| Capture | Endpoint | HTTP | Match / differ | Response SHA-256 |
+|---|---|---|---|---|
+| 2025-09-26 `1647c787` blob `3d4d8a11` | `market_chart/range` from/to covering 2025-08-28..2025-09-26 plus 100d | 401 | not comparable | `7a7fb9329968a1f03f7a1e14c00a093a5beef7dff1bb54e86a86ea150b60f088` |
+| 2025-10-29 `983e04df` blob `a92edbbd` | `market_chart/range` covering 2025-09-30..2025-10-29 plus 100d | 401 | not comparable | `aaebf3dc45b0eeb88c48168b209e552fe24036e44f3309d0208482f4646726e9` |
+| 2026-08-17 `db789cd9` blob `3eaaca33` | `market_chart/range` covering 2026-07-19..2026-08-17 plus 100d | 200 | 29 matching; 2 differing | `c71354edfdcb4d402382db819d868f431ecd3f9c8ae16176d7fbfe082ee680a1` |
+| public max daily | `market_chart?days=max&interval=daily` | 401 | not comparable | `3356a1df6705487728d6483830acbbf58d18e7255522a572ac62d3f8babdfbf1` |
+
+**FACT:** Public CoinGecko API error_code 10012: historical queries are limited to the past 365 days. That is why the 2025 captures cannot be compared from 2026-08-19 without a paid plan. The 2026-08-17 range body had 131 daily points (2026-04-10 through 2026-08-18). The two price differences are both UTC date `2026-08-17` (Git has two same-calendar-day points vs one live daily point; max abs diff 1145.53). Completed days in that capture matched the later official daily series. No realized volatility was calculated.
+
+**LIMITATION:** Equality on one recent capture does **not** turn uncaptured dates into PIT evidence. It is provider historical-stability evidence for completed days inside that sampled window only. 2025 revision/backfill remains untested because the official public endpoint cannot retrieve those dates from this environment.
+
+**DECISION:** `PROVEN` on the captured-date set. P8 exact/method = `A_EXACT_POINT_IN_TIME` / `A_EXACT_POINT_IN_TIME` from **2025-09-20** on those Git captures. Coverage is INTERMITTENT (9 dates; long gap after 2025-10-29). Term factor `realized_vol` / `stress` remain unable to establish a meaningful full-factor interval across the dense funding-cache span.
 
 **DECISION:** No realized volatility, stress, or Term scores were calculated.
 
@@ -293,9 +344,9 @@ H6 definitions are unchanged.
 
 **FACT:** Coinbase `latest.json` spots and completed closes are different measurements from CoinGecko daily chart prices.
 
-**EVIDENCE:** Social cache stores `latestPrice` / ranks, not the 30d price vector. The 30d chart archive is the same sparse set as P8.
+**EVIDENCE:** Social cache stores `latestPrice` / ranks, not the 30d price vector. The 30d chart archive is the same captured set as P8 (`A`/`A` from **2025-09-20** on those dates). Current momentum can structurally use those exact raw vectors on those dates. No momentum value was calculated.
 
-**DECISION:** `PARTIALLY_PROVEN`. The universe **can** be truncated mechanically by requesting a 30d window ending at `T`. That requires a PIT 30d CoinGecko vector, which is sparsely captured. Component remains `U`/`U`. H6 trending `A`/`A` is retained. Factor stays `U`/`U`.
+**DECISION:** Momentum component is `A`/`A` on the P8 captured-date set. H6 trending `A`/`A` is retained. Social **factor** stays `U`/`U` because trending and momentum are not validation-grade on the same defined interval of meaningful length: trending capture density begins 2025-12-11 while 30d charts in that span exist only on 2026-08-17..19. A three-day island is not a full-factor replay interval.
 
 **DECISION:** No momentum percentile or Social factor score was calculated.
 
@@ -308,16 +359,16 @@ H6 definitions are unchanged.
 | Trend `utc_intraday_snapshot` | A/A from 2026-08-17 labeled artifacts; unlabeled history not current snapshot | P1 |
 | Trend completed-close / Mayer-RSI universe | U / B (mechanical T-truncation) | P2 |
 | Stablecoin constituent identity | A/A from 2025-10-05 7-length files | P3 |
-| Stablecoin 365d supply-growth universe | U/U | P4 |
-| Stablecoin 7d momentum threshold / caps | structurally supplied by dated 30d files; not separately promoted | P4 |
+| Stablecoin 365d supply-growth universe | U / B from 2025-10-05 via recoverable pre-run changeSeries | P4 corrected |
+| Stablecoin 7d momentum threshold / caps | structurally supplied by dated 30d files; method-safe with P3 identity | P4 |
 | ETF HTML raw inputs | A/A from 2025-10-07 | P5 |
 | ETF exact operational parser/baseline | U | P5 |
 | NL ALFRED retrieval | capability proven; factor components U | P6 |
 | Term funding provider / 30-row window | A/A from 2025-12-11 | P7 |
-| Term 30d spot chart | A on sparse capture dates; U elsewhere | P8 |
+| Term 30d spot chart | A/A on captured dates from 2025-09-20; INTERMITTENT | P8 corrected |
 | Macro ALFRED retrieval | capability proven; 11:00 U | P9 |
 | Social trending | A/A retained from H6 | not reopened |
-| Social 7d momentum | U/U | P10 |
+| Social 7d momentum | A/A on the same P8 captured-date set; sparse | P10 |
 
 ---
 
@@ -326,7 +377,7 @@ H6 definitions are unchanged.
 | Factor | Baseline | After H6.1 | Earliest exact | Earliest method |
 |---|---|---|---|---|
 | trend_valuation | U/U | U/U | empty | empty |
-| stablecoins | U/U | U/U | empty | empty |
+| stablecoins | U/U | U / **B** | empty | **2025-10-05** |
 | etf_flows | U/U | U / **B** | empty | **2025-10-07** |
 | net_liquidity | U/U | U/U | empty | empty |
 | term_leverage | U/U | U/U | empty | empty |
@@ -345,9 +396,9 @@ H6 definitions are unchanged.
 
 **FACT:** Term funding cache span is 2025-12-11 through 2026-08-19, 241 dates, INTERMITTENT.
 
-**FACT:** Intersection of factor-level A/B date sets is **ETF method-B dates only**. Six factors remain U, so no seven-factor overlap exists.
+**FACT:** Intersection of factor-level A/B date sets is ETF method-B dates (from 2025-10-07) and Stablecoins method-B dates (from 2025-10-05). Five factors remain U, so no seven-factor overlap exists.
 
-**DECISION:** A three-day 2026-08-17..19 island where labeled snapshots, CSV vintages, ETF HTML, term funding+chart, and social chart coexist is **not** promoted to a full-model interval because NL, Macro, Stablecoins supply-growth, and Social momentum still fail H6 aggregation.
+**DECISION:** A three-day 2026-08-17..19 island where labeled snapshots, CSV vintages, ETF HTML, term funding+chart, and social chart coexist is **not** promoted to a full-model interval because NL, Macro, Trend unlabeled history, Term factor density, and Social factor density still fail H6 aggregation.
 
 ---
 
@@ -357,7 +408,7 @@ H6 definitions are unchanged.
 
 Not `YES` (seven-factor exact A not established). Not `NO` (no new demonstrated D blocker of the whole model).
 
-**Remaining exact blockers:** Trend snapshot identity before 2026-08-17; Stablecoins 365d universe; ETF parser timezone / preferred baseline; NL/Macro non-vintage production plus 11:00 vintage; Term vol/stress chart; Social momentum 30d chart.
+**Remaining exact blockers:** Trend snapshot identity before 2026-08-17; Stablecoins unlabeled CoinGecko vs fallback identity; ETF parser timezone / preferred baseline; NL/Macro non-vintage production plus 11:00 vintage; Term vol/stress chart density; Social factor density (momentum A only on sparse chart dates).
 
 ---
 
@@ -365,7 +416,7 @@ Not `YES` (seven-factor exact A not established). Not `NO` (no new demonstrated 
 
 **B. Validation-grade current-methodology replay:** **NOT ESTABLISHED**
 
-ETF is now `B`. Six factors remain `U`. All-seven A/B is not established.
+ETF is now `B`. Stablecoins is now `B`. Five factors remain `U`. All-seven A/B is not established.
 
 **C. Earliest defensible full-model date:** **NONE / NOT ESTABLISHED**
 
@@ -379,20 +430,19 @@ Exploratory reconstruction remains conceivable for hypothesis generation only. I
 
 **E. Remaining exact blockers**
 
-1. Trend: unlabeled spots are yesterday close, not current snapshot.
-2. Stablecoins: dateless `changeSeries` / current 365d merge not proven PIT-safe.
+1. Trend: unlabeled spots used `getCoinbaseCloseForYesterday()`, not current snapshot.
+2. Stablecoins: dated JSON does not label CoinGecko vs CMC/CryptoCompare fallback; exact A withheld.
 3. ETF: local-TZ `isBusinessDay`; frozen 2025-09-17 percentile file vs HTML-derived universe.
 4. NL/Macro: production ordinary FRED; operational caches lack raw arrays.
-5. Term: 30d chart not contiguous on the funding-cache interval.
-6. Social: 30d CoinGecko momentum vector sparsely captured.
+5. Term: 30d chart `A`/`A` on 9 captured dates; not contiguous on the funding-cache interval.
+6. Social: momentum `A`/`A` only on those same sparse chart dates; not a full-factor interval with trending.
 
 **F. Remaining methodology blockers**
 
 1. Trend snapshot semantic break still blocks method A/B for unlabeled dates.
-2. Stablecoins supply_growth 365d universe.
-3. NL/Macro 11:00 UTC vintage rule not specified as current methodology (date-level ALFRED failed that test).
-4. Term/Social 30d chart density.
-5. ETF method B is established; it is not a remaining methodology blocker for that factor.
+2. NL/Macro 11:00 UTC vintage rule not specified as current methodology (date-level ALFRED failed that test).
+3. Term/Social 30d chart density at factor-aggregation level.
+4. ETF method B is established; Stablecoins method B is established; they are not remaining methodology blockers for those factors.
 
 ---
 
@@ -400,7 +450,7 @@ Exploratory reconstruction remains conceivable for hypothesis generation only. I
 
 **DECISION:** **EXPLORATORY RECONSTRUCTION PROTOCOL**
 
-Rationale: validation-grade seven-factor A/B is not established. Remaining U items are more than one or two closed-form proofs. Sparse 30d charts cannot be invented from Git. Pre-2026-08-16 Trend spots are the wrong measurement. An explicitly non-validation study could still use proven ETF HTML, 7-coin JSON, BitMEX funding windows, and ALFRED vintages **with** the 11:00 caveats. Forward collection of labeled snapshots and `market_chart_30` should continue operationally, but that is not a full-model authorization.
+Rationale: After corrected P4 and P8, validation-grade seven-factor A/B is still not established. Remaining factor-level U items are more than one or two closed-form proofs (Trend snapshot break; NL 11:00 vintage; Macro 11:00 vintage; Term chart density; Social factor density). Sparse 30d charts cannot be invented from Git. Pre-2026-08-16 Trend spots are the wrong measurement. An explicitly non-validation study could still use proven ETF HTML, 7-coin JSON plus recoverable pre-run baselines, BitMEX funding windows, captured 30d charts, and ALFRED vintages **with** the 11:00 caveats. Forward collection of labeled snapshots and `market_chart_30` should continue operationally, but that is not a full-model authorization.
 
 Not selected:
 
@@ -418,7 +468,7 @@ Do not begin that protocol in this operation.
 
 **FACT:** H6 files were not modified. H6 remains the frozen baseline.
 
-**FACT:** H6.1 does not replace H6 classifications except where `h6_1_factor_updates.csv` records an explicit update (`etf_flows` methodology `B`).
+**FACT:** H6.1 does not replace H6 classifications except where `h6_1_factor_updates.csv` records an explicit update (`etf_flows` methodology `B`; `stablecoins` methodology `B`).
 
 **FACT:** H6 conclusions that remain true: no historical G-Scores; no historical factor scores; no replay built; raw PIT source evidence can be strong while factor replay is `U`; Social `D` remains withdrawn; Social trending `A`/`A` retained.
 
@@ -434,7 +484,7 @@ No H6.1-based changes to weights, subweights, factor formulas, score formula, ba
 
 ## 24. Final H6.1 verdict
 
-**DECISION:** H6.1 completed the ten assigned proof tracks. External HTTP requests used as evidence: **31** (limit 50). Response SHA-256 recorded for retrievals.
+**DECISION:** H6.1 completed the ten assigned proof tracks and a correction pass for P4/P8. External HTTP requests used as evidence: **36** (limit 50). Response SHA-256 recorded for retrievals.
 
 | Item | Result |
 |---|---|
@@ -443,10 +493,12 @@ No H6.1-based changes to weights, subweights, factor formulas, score formula, ba
 | Earliest full-model date | **NONE / NOT ESTABLISHED** |
 | Seven-factor overlapping interval | **NONE / NOT ESTABLISHED** |
 | ETF methodology | **B from 2025-10-07** |
-| Other six factors | **U / U** |
+| Stablecoins methodology | **B from 2025-10-05** |
+| Other five factors | **U / U** |
+| P8 chart component | **A / A from 2025-09-20 on captured dates** |
 | Next phase | **EXPLORATORY RECONSTRUCTION PROTOCOL** |
 | Calibration | **CLOSED** |
 
 **SAFETY:** No historical G-Scores. No historical factor scores. No composites. No H4/H5. No ETL. No source backfill. No model tuning. No production code or `public/data` commits.
 
-STOP FOR INDEPENDENT H6.1 PROOF REVIEW. Do not merge. Do not begin replay implementation.
+STOP FOR FINAL INDEPENDENT H6.1 REVIEW. Do not merge. Do not begin replay implementation.
