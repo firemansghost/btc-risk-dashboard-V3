@@ -6,7 +6,7 @@
 **H6.1_BASE_SHA:** `b0dc6d1d77e17f3ff36ee13008a26207c4fe558d`  
 **MODEL_SOURCE_SHA:** `6b2fa9cf56ce738c74c8da6de0f5a972858f8a52`  
 **H6.1_VERSION:** `h6.1-targeted-source-proof-v1`
-**Correction pass:** stablecoin state-lineage / P8 exact-method invariant (still the same H6.1 version; frozen H6 untouched)
+**Correction pass:** date-set factor aggregation (Trend/Term/Social method B on isolated 2026-08-17..19; frozen H6 untouched)
 **Frozen H6 document blob:** `cf060ff1f5c4aec4ba52e9dfd0982899af1dcabc`  
 **Calibration gate:** CLOSED
 
@@ -30,18 +30,17 @@ This document records targeted source proof. It does not calculate historical G-
 
 **DECISION:** `stablecoins` methodology class is upgraded to `B_POINT_IN_TIME_METHOD_EQUIVALENT` from **2025-10-05** on the 7-series dated-cache set with Git-recoverable pre-run `changeSeries` state. Exact class remains `U_UNRESOLVED`.
 
-**DECISION:** The other five enabled factors remain `U_UNRESOLVED` / `U_UNRESOLVED` at factor level (`trend_valuation`, `net_liquidity`, `term_leverage`, `macro_overlay`, `social_interest`).
+**DECISION:** `trend_valuation` methodology is `B_POINT_IN_TIME_METHOD_EQUIVALENT` on the isolated labeled-snapshot island **2026-08-17..19**. Exact remains `U_UNRESOLVED`.
 
-**FACT:** Component-level promotions that do **not** move their factor:
+**DECISION:** `term_leverage` methodology is `B_POINT_IN_TIME_METHOD_EQUIVALENT` on the isolated funding+chart overlap **2026-08-17..19**. Exact remains `U_UNRESOLVED`.
 
-- Trend labeled `utc_intraday_snapshot` artifacts from **2026-08-17**
-- Stablecoin 7-coin positional identity from **2025-10-05** (now also used at factor method B)
-- Term BitMEX funding-provider identity from **2025-12-11**
-- Term/Social `market_chart_30_daily` vectors `A`/`A` on the sparse captured-date set from **2025-09-20**
-- Social trending `A`/`A` retained from H6
-- ALFRED vintage **retrieval** for NL and Macro series on three proof dates
+**DECISION:** `social_interest` methodology is `B_POINT_IN_TIME_METHOD_EQUIVALENT` on the isolated trending+momentum overlap **2026-08-17..19**. Exact remains `U_UNRESOLVED`.
 
-**DECISION:** Recommended next phase is **EXPLORATORY RECONSTRUCTION PROTOCOL**. Validation-grade seven-factor A/B was not established. Remaining U items are heterogeneous (snapshot semantic break, 11:00 UTC vintage timing, sparse 30d charts at factor-aggregation density). Do not begin replay implementation in this operation.
+**DECISION:** `net_liquidity` and `macro_overlay` remain `U_UNRESOLVED` / `U_UNRESOLVED`.
+
+**FACT:** Coverage length does not determine replay class. An isolated three-day A/B island remains A/B on those dates. Isolation is recorded as `ISOLATED` coverage, not as factor `U`.
+
+**DECISION:** Recommended next phase is **EXPLORATORY RECONSTRUCTION PROTOCOL**. On the strongest shared island only NL and Macro remain methodology-U. Resolving them would at best create a three-day full-model island, which is not a useful historical backtest. Do not begin replay implementation in this operation.
 
 ---
 
@@ -95,6 +94,8 @@ H6 definitions are unchanged.
 
 **DECISION:** Exact `A` requires methodology `A` or `B`. Factor exact `A` requires all required scored components/state to be exact `A`. Factor methodology `A`/`B` requires every required component to be `A`/`B` and required lookbacks/rank universes to be PIT-safe.
 
+**DECISION:** Factor replay class answers: can the **current** factor be reconstructed on this **defined historical date set**? Coverage answers how broad / contiguous / useful that date set is. All required components `A`/`B` on dates `T1..Tn` means factor methodology `A`/`B` on `T1..Tn`, even when `n` is small and coverage is `ISOLATED` or `INTERMITTENT`. A three-day A/B island is still an A/B island. Isolation may make the set useless for validation; it does not turn those dates into `U`.
+
 **DECISION:** Absence of proof remains `U`, not automatic `D`. No averaging across components.
 
 ---
@@ -115,13 +116,13 @@ H6 definitions are unchanged.
 
 **EVIDENCE:** Bounded Coinbase request at 2026-08-19 11:00 UTC returned the still-open `2026-08-19` daily bucket (response SHA-256 `14611ac9c532f027143b8a45851bb6adcd44bc035629d99e4e0b504801462904`).
 
-**LIMITATION:** Reconstructing today's candle does not prove 2025 unlabeled spots used current snapshot logic.
-
 **EVIDENCE:** Full `scripts/etl/compute.mjs` history contains 46 commits. `getCoinbaseCloseForYesterday()` is present from the first ETL commit `3d11cce2e82bd9d9116cc187a6cf75f12a4fe3f5` (2025-09-15, blob `62f61618178f8e959c8a848f30c182a6174408cf`) through the immediate pre-snapshot parent `5ce98324`. `git log -S` shows the symbol was added once and replaced once (`daae316b`, 2026-08-16). All 42 pre-snapshot `compute.mjs` commits contain the call. The four commits without it are `daae316b` and three later 2026-08-16 signal/ETL commits.
 
 **INFERENCE:** Inspected pre-snapshot implementations, including 2025-09-26 (`d0abe770` blob `ba1e44117dd80717a34eae859f08fec5afba0e94`) and the immediate pre-change parent, use `getCoinbaseCloseForYesterday()`. No inspected pre-change implementation proves current `utc_intraday_snapshot` semantics. This is not a reconstruction of runtime Coinbase-failure fallbacks.
 
-**DECISION:** `PARTIALLY_PROVEN`. Labeled snapshot input is `A`/`A` from **2026-08-17**. Unlabeled historical spots are **not** current snapshot. Proof result is not `D` for the whole Trend history because labeled dates exist.
+**LIMITATION:** Reconstructing today's candle does not prove 2025 unlabeled spots used current snapshot logic. Pre-2026-08-16 incompatibility limits **coverage**; it does not erase a later valid replay island.
+
+**DECISION:** `PARTIALLY_PROVEN`. Labeled snapshot input is `A`/`A` from **2026-08-17**. Unlabeled historical spots are **not** current snapshot. On **2026-08-17..19** the labeled snapshot plus contemporaneous `btc_price_history.csv` vintages and current Trend implementation are structurally sufficient for factor methodology `B` (section 16). Proof result is not `D` for the whole Trend history because labeled dates exist.
 
 ---
 
@@ -133,13 +134,21 @@ H6 definitions are unchanged.
 
 **FACT:** Mayer numerator is the snapshot price (P1), not the last CSV row. Mayer/RSI percentiles rank the truncated series. BMSB needs 22 completed UTC weeks; SMA200 needs 200 completed UTC daily closes.
 
-**EVIDENCE:** `public/data/btc_price_history.csv` has **5** Git commits. HEAD has 732 rows, `2024-08-17` through `2026-08-18`, mostly `coinbase_historical`.
+**EVIDENCE:** Contemporaneous CSV vintages exist for the current-model snapshot island:
 
-**FACT:** Using today's full CSV at an earlier `T` would include later completed days unless truncated.
+| Date | Commit | CSV blob | Rows | Last completed `date_utc` | Labeled snapshot |
+|---|---|---|---|---|---|
+| 2026-08-17 | `db789cd9` | `ccfa44f025c28a05b86e26c61dfad7320a92594c` | 730 | 2026-08-16 | `price_kind=utc_intraday_snapshot` spot=64048.58 |
+| 2026-08-18 | `3e0c07ff` | `e472247d7099e3e999daa99917864e92477213b5` | 731 | 2026-08-17 | snapshot_date=2026-08-18 spot=64317.37 |
+| 2026-08-19 | `ad6be423` | `419cd6a2430ad1939b6182f78cac95b117b74cb3` | 732 | 2026-08-18 | snapshot_date=2026-08-19 spot=64451.53 |
 
-**LIMITATION:** Those five CSV blobs are not a daily vintage archive. Live Coinbase historical candles can supply completed closes; they are not proven equal to operational CSV state at historical `T`.
+Each vintage starts `2024-08-17` and has far more than 200 completed daily rows. That is structurally enough for SMA200 and for 22 completed UTC weeks. No BMSB/Mayer/RSI values were calculated.
 
-**DECISION:** `PARTIALLY_PROVEN`. Methodology `B` is available for T-truncated completed-close mathematics. Exact remains `U`. Factor Trend stays `U` because P1 snapshot identity is missing for unlabeled history and because all three scored components plus snapshot state are required.
+**EVIDENCE:** On 2026-08-17 (and Aug 18/19) `trendValuation.mjs` blob `75046b4d47d73144f56c339c0461bdd4b6bf21b1`, `priceHistory.mjs` blob `515b02acdd0cf4a72e62889dafb83cec6e8acd95`, and `snapshotPrice.mjs` blob `d49c9486e0d75bdeecd8b4aa287cb07f6350e34e` equal MODEL_SOURCE_SHA.
+
+**LIMITATION:** The five CSV blobs are not a daily vintage archive across unlabeled history. Live Coinbase historical candles can supply completed closes; they are not proven equal to operational CSV state at earlier `T`.
+
+**DECISION:** `PARTIALLY_PROVEN`. Methodology `B` is available for T-truncated completed-close mathematics. Exact remains `U`. On **2026-08-17..19** the contemporaneous CSV vintages plus labeled snapshots contain every current Trend input structurally required. Factor methodology is `B` on that isolated set. Pre-Aug-17 yesterday-close spots limit coverage; they do not erase this island.
 
 **DECISION:** No Mayer, RSI, BMSB, or Trend scores were calculated.
 
@@ -308,7 +317,7 @@ H6 definitions are unchanged.
 
 **LIMITATION:** Equality on one recent capture does **not** turn uncaptured dates into PIT evidence. It is provider historical-stability evidence for completed days inside that sampled window only. 2025 revision/backfill remains untested because the official public endpoint cannot retrieve those dates from this environment.
 
-**DECISION:** `PROVEN` on the captured-date set. P8 exact/method = `A_EXACT_POINT_IN_TIME` / `A_EXACT_POINT_IN_TIME` from **2025-09-20** on those Git captures. Coverage is INTERMITTENT (9 dates; long gap after 2025-10-29). Term factor `realized_vol` / `stress` remain unable to establish a meaningful full-factor interval across the dense funding-cache span.
+**DECISION:** `PROVEN` on the captured-date set. P8 exact/method = `A_EXACT_POINT_IN_TIME` / `A_EXACT_POINT_IN_TIME` from **2025-09-20** on those Git captures. Coverage is INTERMITTENT (9 dates; long gap after 2025-10-29). Term methodology is replayable on the isolated overlap where both exact funding and exact chart inputs exist (**2026-08-17..19**); sparse coverage prevents extending that classification across the dense funding-history span.
 
 **DECISION:** No realized volatility, stress, or Term scores were calculated.
 
@@ -346,7 +355,9 @@ H6 definitions are unchanged.
 
 **EVIDENCE:** Social cache stores `latestPrice` / ranks, not the 30d price vector. The 30d chart archive is the same captured set as P8 (`A`/`A` from **2025-09-20** on those dates). Current momentum can structurally use those exact raw vectors on those dates. No momentum value was calculated.
 
-**DECISION:** Momentum component is `A`/`A` on the P8 captured-date set. H6 trending `A`/`A` is retained. Social **factor** stays `U`/`U` because trending and momentum are not validation-grade on the same defined interval of meaningful length: trending capture density begins 2025-12-11 while 30d charts in that span exist only on 2026-08-17..19. A three-day island is not a full-factor replay interval.
+**EVIDENCE:** Current Social implementation/config on 2026-08-17 equals MODEL_SOURCE_SHA: `factors.mjs` blob `e9fd06df79967f0041a901e2dd971b771e669b03`, `config/dashboard-config.json` blob `b5c606b8f14f9e2a2c29061f2ae1c4d4337c8a49`, `scripts/etl/lib/ssotSubweights.mjs` blob `c33e13a92cbc75697e51ea3face379f503a40924`. The same blobs are present on 2026-08-18 and 2026-08-19.
+
+**DECISION:** Momentum component is `A`/`A` on the P8 captured-date set. H6 trending `A`/`A` is retained. The current Social methodology is replayable on the isolated Aug 17–19 date set if both proven components and current formula identity overlap. That isolated set is not sufficient for validation or a useful historical backtest. Classification and usefulness are separate. Factor exact remains `U` (operational cache/fallback execution not separately proven). Factor methodology is `B` on **2026-08-17..19**.
 
 **DECISION:** No momentum percentile or Social factor score was calculated.
 
@@ -357,7 +368,7 @@ H6 definitions are unchanged.
 | Component | After H6.1 exact / method | Notes |
 |---|---|---|
 | Trend `utc_intraday_snapshot` | A/A from 2026-08-17 labeled artifacts; unlabeled history not current snapshot | P1 |
-| Trend completed-close / Mayer-RSI universe | U / B (mechanical T-truncation) | P2 |
+| Trend completed-close / Mayer-RSI universe | U / B; contemporaneous CSV vintages on 2026-08-17..19 | P2 |
 | Stablecoin constituent identity | A/A from 2025-10-05 7-length files | P3 |
 | Stablecoin 365d supply-growth universe | U / B from 2025-10-05 via recoverable pre-run changeSeries | P4 corrected |
 | Stablecoin 7d momentum threshold / caps | structurally supplied by dated 30d files; method-safe with P3 identity | P4 |
@@ -376,15 +387,15 @@ H6 definitions are unchanged.
 
 | Factor | Baseline | After H6.1 | Earliest exact | Earliest method |
 |---|---|---|---|---|
-| trend_valuation | U/U | U/U | empty | empty |
+| trend_valuation | U/U | U / **B** | empty | **2026-08-17** |
 | stablecoins | U/U | U / **B** | empty | **2025-10-05** |
 | etf_flows | U/U | U / **B** | empty | **2025-10-07** |
 | net_liquidity | U/U | U/U | empty | empty |
-| term_leverage | U/U | U/U | empty | empty |
+| term_leverage | U/U | U / **B** | empty | **2026-08-17** |
 | macro_overlay | U/U | U/U | empty | empty |
-| social_interest | U/U | U/U | empty | empty |
+| social_interest | U/U | U / **B** | empty | **2026-08-17** |
 
-**DECISION:** Replay candidate dates are populated only where a factor-level class is actually established. Component A dates are not copied into empty factor date fields.
+**DECISION:** Replay candidate dates are populated only where a factor-level class is actually established. These classes do **not** extend outside their proven date sets. Coverage: Stablecoins/ETF `INTERMITTENT`; Trend/Term/Social method `ISOLATED` on 2026-08-17..19.
 
 ---
 
@@ -396,9 +407,11 @@ H6 definitions are unchanged.
 
 **FACT:** Term funding cache span is 2025-12-11 through 2026-08-19, 241 dates, INTERMITTENT.
 
-**FACT:** Intersection of factor-level A/B date sets is ETF method-B dates (from 2025-10-07) and Stablecoins method-B dates (from 2025-10-05). Five factors remain U, so no seven-factor overlap exists.
+**FACT:** Intersection of long INTERMITTENT factor-level A/B date sets is ETF method-B (from 2025-10-07) and Stablecoins method-B (from 2025-10-05). Trend/Term/Social method-B exists only on the isolated 2026-08-17..19 island.
 
-**DECISION:** A three-day 2026-08-17..19 island where labeled snapshots, CSV vintages, ETF HTML, term funding+chart, and social chart coexist is **not** promoted to a full-model interval because NL, Macro, Trend unlabeled history, Term factor density, and Social factor density still fail H6 aggregation.
+**FACT:** On 2026-08-17..19 five factors are methodology-B (Trend, Stablecoins, ETF, Term, Social). NL and Macro remain U, so no seven-factor overlap exists.
+
+**DECISION:** That three-day island is a real A/B date set for those five factors. It is **not** a full-model interval and is not a useful historical backtest. Isolation is coverage, not a reason to classify those dates as U.
 
 ---
 
@@ -408,7 +421,7 @@ H6 definitions are unchanged.
 
 Not `YES` (seven-factor exact A not established). Not `NO` (no new demonstrated D blocker of the whole model).
 
-**Remaining exact blockers:** Trend snapshot identity before 2026-08-17; Stablecoins unlabeled CoinGecko vs fallback identity; ETF parser timezone / preferred baseline; NL/Macro non-vintage production plus 11:00 vintage; Term vol/stress chart density; Social factor density (momentum A only on sparse chart dates).
+**Remaining exact blockers:** Trend snapshot identity before 2026-08-17; Stablecoins unlabeled CoinGecko vs fallback identity; ETF parser timezone / preferred baseline; NL/Macro non-vintage production plus 11:00 vintage; Term/Social exact operational cache/fallback on the isolated island.
 
 ---
 
@@ -416,7 +429,7 @@ Not `YES` (seven-factor exact A not established). Not `NO` (no new demonstrated 
 
 **B. Validation-grade current-methodology replay:** **NOT ESTABLISHED**
 
-ETF is now `B`. Stablecoins is now `B`. Five factors remain `U`. All-seven A/B is not established.
+ETF is now `B` (INTERMITTENT from 2025-10-07). Stablecoins is now `B` (INTERMITTENT from 2025-10-05). Trend, Term, and Social are `B` on the isolated 2026-08-17..19 island. NL and Macro remain `U`. All-seven A/B is not established.
 
 **C. Earliest defensible full-model date:** **NONE / NOT ESTABLISHED**
 
@@ -430,19 +443,19 @@ Exploratory reconstruction remains conceivable for hypothesis generation only. I
 
 **E. Remaining exact blockers**
 
-1. Trend: unlabeled spots used `getCoinbaseCloseForYesterday()`, not current snapshot.
+1. Trend: unlabeled spots used `getCoinbaseCloseForYesterday()`, not current snapshot. The 2026-08-17..19 island is method-B.
 2. Stablecoins: dated JSON does not label CoinGecko vs CMC/CryptoCompare fallback; exact A withheld.
 3. ETF: local-TZ `isBusinessDay`; frozen 2025-09-17 percentile file vs HTML-derived universe.
 4. NL/Macro: production ordinary FRED; operational caches lack raw arrays.
-5. Term: 30d chart `A`/`A` on 9 captured dates; not contiguous on the funding-cache interval.
-6. Social: momentum `A`/`A` only on those same sparse chart dates; not a full-factor interval with trending.
+5. Term: exact operational cache/fallback not fully proven; sparse charts prevent extending method B across the dense funding span.
+6. Social: exact operational cache/fallback not fully proven; sparse charts prevent extending method B across the trending-cache span.
 
 **F. Remaining methodology blockers**
 
-1. Trend snapshot semantic break still blocks method A/B for unlabeled dates.
-2. NL/Macro 11:00 UTC vintage rule not specified as current methodology (date-level ALFRED failed that test).
-3. Term/Social 30d chart density at factor-aggregation level.
-4. ETF method B is established; Stablecoins method B is established; they are not remaining methodology blockers for those factors.
+1. Trend snapshot semantic break still blocks method A/B for unlabeled dates. It does not block 2026-08-17..19.
+2. NL/Macro 11:00 UTC vintage rule not specified as current methodology (date-level ALFRED failed that test). These are the only methodology-U factors on the 2026-08-17..19 island.
+3. Term/Social 30d chart density limits **coverage** outside the isolated overlap; it does not classify those overlap dates as U.
+4. ETF method B and Stablecoins method B remain established on their INTERMITTENT sets.
 
 ---
 
@@ -450,13 +463,13 @@ Exploratory reconstruction remains conceivable for hypothesis generation only. I
 
 **DECISION:** **EXPLORATORY RECONSTRUCTION PROTOCOL**
 
-Rationale: After corrected P4 and P8, validation-grade seven-factor A/B is still not established. Remaining factor-level U items are more than one or two closed-form proofs (Trend snapshot break; NL 11:00 vintage; Macro 11:00 vintage; Term chart density; Social factor density). Sparse 30d charts cannot be invented from Git. Pre-2026-08-16 Trend spots are the wrong measurement. An explicitly non-validation study could still use proven ETF HTML, 7-coin JSON plus recoverable pre-run baselines, BitMEX funding windows, captured 30d charts, and ALFRED vintages **with** the 11:00 caveats. Forward collection of labeled snapshots and `market_chart_30` should continue operationally, but that is not a full-model authorization.
+Rationale: Distinguish replay **classification** from historical-sample **usefulness**. On 2026-08-17..19, Trend/Term/Social are methodology-B; only NL and Macro remain methodology-U. That is two U factors on the strongest shared island. H6.2 NARROW TARGETED PROOF AUDIT is **not** selected merely because two U remain: resolving NL/Macro would at best establish a three-day full-model island, which is not a meaningful historical backtest. Longer validation-grade history remains unavailable because sparse chart/snapshot coverage still prevents a useful sample. Exploratory reconstruction may use the proven INTERMITTENT ETF/Stablecoin sets plus the isolated Aug island **with** the 11:00 caveats. Forward collection of labeled snapshots and `market_chart_30` should continue operationally.
 
 Not selected:
 
 - H6.2 EXACT-REPLAY PROTOCOL (full exact replay not established)
 - H6.2 METHOD-REPLAY PROTOCOL (all seven A/B not established)
-- H6.2 NARROW TARGETED PROOF AUDIT (more than one or two important U items remain)
+- H6.2 NARROW TARGETED PROOF AUDIT (resolving the two remaining U factors would not create a research-useful interval)
 - NO HISTORICAL CURRENT-MODEL REPLAY (no genuine D of the whole model)
 - CONTINUE FORWARD COLLECTION ONLY (historical proof in this audit was productive; remaining gaps are mixed)
 
@@ -468,7 +481,7 @@ Do not begin that protocol in this operation.
 
 **FACT:** H6 files were not modified. H6 remains the frozen baseline.
 
-**FACT:** H6.1 does not replace H6 classifications except where `h6_1_factor_updates.csv` records an explicit update (`etf_flows` methodology `B`; `stablecoins` methodology `B`).
+**FACT:** H6.1 does not replace H6 classifications except where `h6_1_factor_updates.csv` records an explicit update (`etf_flows` and `stablecoins` methodology `B` INTERMITTENT; `trend_valuation`, `term_leverage`, and `social_interest` methodology `B` ISOLATED from 2026-08-17).
 
 **FACT:** H6 conclusions that remain true: no historical G-Scores; no historical factor scores; no replay built; raw PIT source evidence can be strong while factor replay is `U`; Social `D` remains withdrawn; Social trending `A`/`A` retained.
 
@@ -484,7 +497,7 @@ No H6.1-based changes to weights, subweights, factor formulas, score formula, ba
 
 ## 24. Final H6.1 verdict
 
-**DECISION:** H6.1 completed the ten assigned proof tracks and a correction pass for P4/P8. External HTTP requests used as evidence: **36** (limit 50). Response SHA-256 recorded for retrievals.
+**DECISION:** H6.1 completed the ten assigned proof tracks plus P4/P8 and date-set aggregation correction passes. External HTTP requests used as evidence: **36** (limit 50). Response SHA-256 recorded for retrievals.
 
 | Item | Result |
 |---|---|
@@ -492,13 +505,14 @@ No H6.1-based changes to weights, subweights, factor formulas, score formula, ba
 | Validation-grade current-methodology replay | **NOT ESTABLISHED** |
 | Earliest full-model date | **NONE / NOT ESTABLISHED** |
 | Seven-factor overlapping interval | **NONE / NOT ESTABLISHED** |
-| ETF methodology | **B from 2025-10-07** |
-| Stablecoins methodology | **B from 2025-10-05** |
-| Other five factors | **U / U** |
+| ETF methodology | **B INTERMITTENT from 2025-10-07** |
+| Stablecoins methodology | **B INTERMITTENT from 2025-10-05** |
+| Trend / Term / Social methodology | **B ISOLATED from 2026-08-17** |
+| NL / Macro | **U / U** |
 | P8 chart component | **A / A from 2025-09-20 on captured dates** |
 | Next phase | **EXPLORATORY RECONSTRUCTION PROTOCOL** |
 | Calibration | **CLOSED** |
 
 **SAFETY:** No historical G-Scores. No historical factor scores. No composites. No H4/H5. No ETL. No source backfill. No model tuning. No production code or `public/data` commits.
 
-STOP FOR FINAL INDEPENDENT H6.1 REVIEW. Do not merge. Do not begin replay implementation.
+STOP FOR FINAL H6.1 MERGE REVIEW. Do not merge. Do not begin replay implementation.
