@@ -23,6 +23,20 @@ function productionPoints() {
   );
 }
 
+/** Fixed 1Y presentation geometry. Does not read moving public/data/history.csv. */
+function fixedPresentationPoints() {
+  return parseGScoreHistoryCsv(
+    csv([
+      '2025-08-19,40,Moderate Buying,1',
+      '2025-09-26,85,High Risk,1',
+      '2025-09-27,75,Reduce Risk,1',
+      '2026-08-16,54,Hold & Wait,1',
+      '2026-08-17,47,Moderate Buying,1',
+      '2026-08-19,52,Hold & Wait,1',
+    ])
+  );
+}
+
 describe('historyProvenance classification', () => {
   it('classifies Sep 26 as reconstructed and Sep 27 as observed', () => {
     expect(classifyCurrentHistoryCsvDate('2025-09-26')).toBe('reconstructed');
@@ -58,7 +72,7 @@ describe('historyProvenance presentation', () => {
   });
 
   it('hides reconstructed scores when legacy is off and exposes them separately when on', () => {
-    const points = productionPoints();
+    const points = fixedPresentationPoints();
     const off = buildHistoryPresentation({ points, range: '1y', showLegacy: false });
     const on = buildHistoryPresentation({ points, range: '1y', showLegacy: true });
     expect(off).not.toBeNull();
@@ -88,7 +102,7 @@ describe('historyProvenance presentation', () => {
   });
 
   it('resets observed trend at Sep 27 to raw 75 and v1.1.1 trend at Aug 17 to raw 47', () => {
-    const points = productionPoints();
+    const points = fixedPresentationPoints();
     const on = buildHistoryPresentation({ points, range: '1y', showLegacy: true })!;
     const sep27 = on.rows.find((r) => r.date === '2025-09-27')!;
     const aug17 = on.rows.find((r) => r.date === '2026-08-17')!;
@@ -180,12 +194,12 @@ describe('historyProvenance presentation', () => {
   });
 
   it('uses the full 1Y domain even when legacy reconstruction is hidden', () => {
-    const points = productionPoints();
+    const points = fixedPresentationPoints();
     const off = buildHistoryPresentation({ points, range: '1y', showLegacy: false })!;
-    expect(off.cutoffDate).toBe('2025-08-18');
-    expect(off.anchorDate).toBe('2026-08-18');
-    expect(off.domain).toEqual([utcDateMs('2025-08-18'), utcDateMs('2026-08-18')]);
-    expect(off.rows[0].date).toBe('2025-08-18');
+    expect(off.cutoffDate).toBe('2025-08-19');
+    expect(off.anchorDate).toBe('2026-08-19');
+    expect(off.domain).toEqual([utcDateMs('2025-08-19'), utcDateMs('2026-08-19')]);
+    expect(off.rows[0].date).toBe('2025-08-19');
     expect(off.rows[0].isHiddenLegacy).toBe(true);
     expect(off.rows[0].isGap).toBe(false);
   });
