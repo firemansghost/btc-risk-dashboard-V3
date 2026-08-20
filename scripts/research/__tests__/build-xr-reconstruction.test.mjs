@@ -79,6 +79,8 @@ import {
   FACTOR_SCORE_FIELDS,
   FACTOR_ROLE_FIELDS,
   finalizeFactorRecords,
+  validateH71CrossFileInvariants,
+  H7_BASE_SHA,
 } from '../lib/xr-reconstruction-core.mjs';
 import {
   buildAlfredRequest,
@@ -1249,4 +1251,666 @@ test('runStageBGeneration has no identity or date-universe bypass', async () => 
   assert.equal(src.includes('skipIdentityGuards'), false);
   assert.equal(src.includes('observationDates'), false);
   assert.equal(src.includes('requireFrozenUniverse'), false);
+});
+
+function jsonResponse(obj) {
+  const body = Buffer.from(JSON.stringify(obj));
+  return {
+    ok: true,
+    status: 200,
+    arrayBuffer: async () => body,
+  };
+}
+
+function caseAChartPayload() {
+  return JSON.stringify({
+    prices: Array.from({ length: 15 }, (_, i) => [1_700_000_000_000 + i * 86_400_000, 10 + i]),
+  });
+}
+
+function islandCsv(date) {
+  const lines = ['date_utc,close_usd'];
+  for (let i = 250; i >= 1; i--) lines.push(`${addUtcDays(date, -i)},100`);
+  return `${lines.join('\n')}\n`;
+}
+
+function islandLatest(date) {
+  return JSON.stringify({
+    price_kind: 'utc_intraday_snapshot',
+    snapshot_date: date,
+    btc: { spot_usd: 110 },
+  });
+}
+
+function gitMock({ extraBlobs = {}, includeIsland = false, includeCaseA = false, date = null } = {}) {
+  return (args) => {
+    if (args[0] === 'cat-file' && args[1] === '-t') return Buffer.from('commit\n');
+    if (args[0] === 'log') return Buffer.from('');
+    const spec = String(args[1] || '');
+    const chart = includeCaseA && date ? CASE_A_CHART_CAPTURES[date] : null;
+    const island = includeIsland && date ? TREND_B_ISLAND_CAPTURES[date] : null;
+    if (args[0] === 'rev-parse') {
+      if (chart && spec === `${chart.commitSha}:${chart.path}`) return Buffer.from(`${chart.blobSha}\n`);
+      if (island && spec === `${island.latestJsonCommitSha}:${GIT_PATHS.latestJson}`) {
+        return Buffer.from(`${island.latestJsonBlobSha}\n`);
+      }
+      if (island && spec === `${island.btcPriceHistoryCommitSha}:${GIT_PATHS.priceHistoryCsv}`) {
+        return Buffer.from(`${island.btcPriceHistoryBlobSha}\n`);
+      }
+      if (extraBlobs[spec]) return Buffer.from(`${extraBlobs[spec].blobSha}\n`);
+      throw new XrRuntimeSourceError(`path '${spec}' exists on disk, but not in '${spec.split(':')[0] || 'C'}'`);
+    }
+    if (args[0] === 'show') {
+      if (chart && spec === `${chart.commitSha}:${chart.path}`) return Buffer.from(caseAChartPayload());
+      if (island && spec === `${island.latestJsonCommitSha}:${GIT_PATHS.latestJson}`) {
+        return Buffer.from(islandLatest(date));
+      }
+      if (island && spec === `${island.btcPriceHistoryCommitSha}:${GIT_PATHS.priceHistoryCsv}`) {
+        return Buffer.from(islandCsv(date));
+      }
+      if (extraBlobs[spec]) return Buffer.from(extraBlobs[spec].body);
+      throw new XrRuntimeSourceError(`path '${spec}' exists on disk, but not in '${spec.split(':')[0] || 'C'}'`);
+    }
+    throw new XrRuntimeSourceError(`path '${args[1] || ''}' exists on disk, but not in 'C'`);
+  };
+}
+
+function dailyCandles(asOfUtc, n = 250) {
+  const asOfDate = asOfUtc.slice(0, 10);
+  const candles = [];
+  for (let i = n; i >= 1; i--) {
+    const d = addUtcDays(asOfDate, -i);
+    const startSec = Date.parse(`${d}T00:00:00.000Z`) / 1000;
+    candles.push([startSec, 1, 2, 3, 100, 1]);
+  }
+  return candles;
+}
+
+function geckoRangePrices(observationDate) {
+  const prices = [];
+  for (let i = 30; i >= 1; i--) {
+    const d = addUtcDays(observationDate, -i);
+    prices.push([Date.parse(`${d}T12:00:00.000Z`), 100 + i]);
+  }
+  return { prices };
+}
+
+function complete5m(asOfUtc) {
+  const asOfSec = Date.parse(asOfUtc) / 1000;
+  return [[asOfSec - 600, 1, 2, 3, 111, 0]];
+}
+
+function incomplete5m(asOfUtc) {
+  const asOfSec = Date.parse(asOfUtc) / 1000;
+  return [[asOfSec - 100, 1, 2, 3, 222, 0]];
+}
+
+function makeFetchImpl({ asOfUtc, observationDate, fiveMinute, history = true, gecko = false, fiveMinuteUrls }) {
+  return async (url) => {
+    const href = String(url);
+    if (href.includes('stlouisfed')) return jsonResponse({ observations: [] });
+    if (href.includes('granularity=300')) {
+      if (fiveMinuteUrls) fiveMinuteUrls.push(href);
+      return jsonResponse(fiveMinute === 'complete' ? complete5m(asOfUtc) : incomplete5m(asOfUtc));
+    }
+    if (href.includes('granularity=86400')) {
+      return jsonResponse(history ? dailyCandles(asOfUtc) : []);
+    }
+    if (href.includes('coingecko')) {
+      return jsonResponse(gecko ? geckoRangePrices(observationDate) : { prices: [] });
+    }
+    throw new Error(`unexpected injected url: ${href}`);
+  };
+}
+
+function baseCtx({ date, gitExec, fetchImpl, termIndex, trendingIndex, socialIndex, etfBaseline }) {
+  return {
+    gitExec,
+    runtime: { fetchImpl, sleepImpl: async () => {} },
+    dailyByDate: new Map(),
+    etfBaseline: etfBaseline ?? { ok: false },
+    fredKey: 'test-key',
+    termIndex: termIndex || new Map(),
+    trendingIndex: trendingIndex || new Map(),
+    socialIndex: socialIndex || new Map(),
+  };
+}
+
+function fundingPayload(date) {
+  const asOfMs = Date.parse(`${date}T11:30:00.000Z`);
+  return {
+    funding_provider: 'bitmex',
+    lastUpdated: `${date}T10:00:00.000Z`,
+    fundingData: Array.from({ length: 30 }, (_, i) => ({
+      fundingRate: '0.0001',
+      timestamp: new Date(asOfMs - (i + 1) * 8 * 3_600_000).toISOString(),
+    })),
+  };
+}
+
+function termIndexFor(date, commitSha = 'TERMCOMMIT', blobSha = 'termblobsha') {
+  return new Map([
+    [
+      date,
+      [{ commitSha, blobSha, commitUtc: `${date}T10:00:00.000Z`, path: GIT_PATHS.termCache }],
+    ],
+  ]);
+}
+
+function socialIndexFor(date, commitSha = 'SOCCOMMIT', blobSha = 'socblobsha') {
+  return new Map([
+    [
+      date,
+      [{ commitSha, blobSha, commitUtc: `${date}T10:00:00.000Z`, path: GIT_PATHS.socialCache }],
+    ],
+  ]);
+}
+
+function makeEligibleBundle() {
+  const date = '2099-03-03';
+  const scores = {
+    trend_valuation: 36,
+    stablecoins: 63,
+    etf_flows: 43,
+    net_liquidity: 59,
+    term_leverage: 57,
+    macro_overlay: 28,
+    social_interest: 61,
+  };
+  const roles = {
+    trend_valuation: 'C_SURROGATE',
+    stablecoins: 'B_METHOD_PIT',
+    etf_flows: 'B_METHOD_PIT',
+    net_liquidity: 'C_PIT_CONSERVATIVE',
+    term_leverage: 'C_SURROGATE',
+    macro_overlay: 'C_PIT_CONSERVATIVE',
+    social_interest: 'B_METHOD_PIT',
+  };
+  const availability = Object.fromEntries(
+    OFFICIAL_FACTOR_ORDER.map((k) => [
+      k,
+      roles[k] === 'B_METHOD_PIT' ? 'AVAILABLE_B' : 'AVAILABLE_C',
+    ])
+  );
+  const lineage = [];
+  for (const factorKey of OFFICIAL_FACTOR_ORDER) {
+    for (const componentKey of FACTOR_COMPONENT_ORDER[factorKey]) {
+      lineage.push(
+        presentComp(date, factorKey, componentKey, roles[factorKey], { source_name: 'synthetic' })
+      );
+    }
+  }
+  const one = assembleDateRecords({
+    observationDate: date,
+    clock: {
+      valid: true,
+      reconstruction_as_of_utc: '2099-03-03T11:30:00.000Z',
+      reconstruction_clock_source: 'FIXED_1130_UTC',
+    },
+    factorScores: scores,
+    factorRoles: roles,
+    factorAvailability: availability,
+    lineage,
+  });
+  const production = {
+    factorScores: {
+      trend_valuation: 40,
+      stablecoins: 60,
+      etf_flows: 40,
+      net_liquidity: 50,
+      term_leverage: 50,
+      macro_overlay: 30,
+      social_interest: 60,
+    },
+    gScore: 47,
+  };
+  const assembled = assembleStageBOutputSet({
+    dates: [date],
+    reconstructions: [one],
+    analysisSourceSha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    productionByDate: { [date]: production },
+    frozenUniverse: false,
+  });
+  return { date, one, assembled };
+}
+
+function validateBundle(assembled, overrides = {}) {
+  return validateH71CrossFileInvariants({
+    observationDates: assembled.observations.map((r) => r.observation_date),
+    observations: assembled.observations,
+    missingness: assembled.missingness,
+    lineage: assembled.lineage,
+    bridge: assembled.bridge,
+    analysisSourceSha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    protocolVersion: H7_PROTOCOL_VERSION,
+    requireFrozenBridgeDates: false,
+    ...overrides,
+  });
+}
+
+test('CASE-A Term lineage includes market-chart commit/blob for Aug17/18/19', async () => {
+  for (const date of ['2026-08-17', '2026-08-18', '2026-08-19']) {
+    const expected = CASE_A_CHART_CAPTURES[date];
+    const asOfUtc = `${date}T11:30:00.000Z`;
+    const out = await reconstructOneDate(
+      date,
+      baseCtx({
+        date,
+        gitExec: gitMock({ includeCaseA: true, date }),
+        fetchImpl: makeFetchImpl({ asOfUtc, observationDate: date, fiveMinute: 'incomplete' }),
+      })
+    );
+    const realized = out.lineage.find(
+      (r) => r.factor_key === 'term_leverage' && r.component_key === 'realized_vol'
+    );
+    assert.equal(realized.reconstruction_role, 'B_METHOD_PIT');
+    assert.equal(realized.git_commit_sha, expected.commitSha);
+    assert.equal(realized.git_blob_sha, expected.blobSha);
+    assert.equal(realized.source_name, 'market_chart_30_daily');
+    assert.equal(realized.source_type, 'git');
+  }
+});
+
+test('CASE-A Social lineage includes same market-chart commit/blob for Aug17/18/19', async () => {
+  for (const date of ['2026-08-17', '2026-08-18', '2026-08-19']) {
+    const expected = CASE_A_CHART_CAPTURES[date];
+    const asOfUtc = `${date}T11:30:00.000Z`;
+    const out = await reconstructOneDate(
+      date,
+      baseCtx({
+        date,
+        gitExec: gitMock({ includeCaseA: true, date }),
+        fetchImpl: makeFetchImpl({ asOfUtc, observationDate: date, fiveMinute: 'incomplete' }),
+      })
+    );
+    const momentum = out.lineage.find(
+      (r) => r.factor_key === 'social_interest' && r.component_key === 'btc_price_momentum_7d'
+    );
+    assert.equal(momentum.reconstruction_role, 'B_METHOD_PIT');
+    assert.equal(momentum.git_commit_sha, expected.commitSha);
+    assert.equal(momentum.git_blob_sha, expected.blobSha);
+    assert.equal(momentum.source_name, 'market_chart_30_daily');
+    assert.equal(momentum.source_type, 'git');
+  }
+});
+
+test('Trend B-island CSV lineage includes CSV commit/blob', async () => {
+  const date = '2026-08-17';
+  const expected = TREND_B_ISLAND_CAPTURES[date];
+  const asOfUtc = `${date}T11:30:00.000Z`;
+  const out = await reconstructOneDate(
+    date,
+    baseCtx({
+      date,
+      gitExec: gitMock({ includeCaseA: true, includeIsland: true, date }),
+      fetchImpl: makeFetchImpl({ asOfUtc, observationDate: date, fiveMinute: 'incomplete' }),
+    })
+  );
+  for (const componentKey of ['bmsb_distance', 'mayer_stretch', 'weekly_rsi']) {
+    const row = out.lineage.find(
+      (r) => r.factor_key === 'trend_valuation' && r.component_key === componentKey
+    );
+    assert.equal(row.git_commit_sha, expected.btcPriceHistoryCommitSha);
+    assert.equal(row.git_blob_sha, expected.btcPriceHistoryBlobSha);
+    assert.equal(row.source_name, 'btc_price_history.csv');
+    assert.equal(row.source_type, 'git');
+  }
+  const snapshot = out.lineage.find(
+    (r) => r.factor_key === 'trend_valuation' && r.component_key === 'utc_intraday_snapshot'
+  );
+  assert.equal(snapshot.git_commit_sha, expected.latestJsonCommitSha);
+  assert.equal(snapshot.git_blob_sha, expected.latestJsonBlobSha);
+});
+
+test('ETF sum_21d lineage includes frozen historical baseline blob', async () => {
+  const date = '2026-08-17';
+  const asOfUtc = `${date}T11:30:00.000Z`;
+  const out = await reconstructOneDate(
+    date,
+    baseCtx({
+      date,
+      gitExec: gitMock({ includeCaseA: true, date }),
+      fetchImpl: makeFetchImpl({ asOfUtc, observationDate: date, fiveMinute: 'incomplete' }),
+      etfBaseline: { ok: true, values: [1, 2, 3], blobSha: ETF_HISTORICAL_BASELINE_BLOB },
+    })
+  );
+  const baseline = out.lineage.find(
+    (r) =>
+      r.factor_key === 'etf_flows' &&
+      r.component_key === 'sum_21d' &&
+      r.source_name === 'etf_historical_baseline'
+  );
+  assert.ok(baseline);
+  assert.equal(baseline.reconstruction_role, 'B_METHOD_PIT');
+  assert.equal(baseline.source_type, 'git');
+  assert.equal(baseline.git_blob_sha, ETF_HISTORICAL_BASELINE_BLOB);
+  assert.equal(baseline.git_commit_sha, '');
+  assert.match(baseline.notes, /frozen_baseline_path=public\/data\/etf-flows-historical.json/);
+  assert.equal(out.observation.etf_role, 'MISSING');
+});
+
+test('Term missing funding preserves valid realized-vol price provenance', async () => {
+  const date = '2026-08-17';
+  const expected = CASE_A_CHART_CAPTURES[date];
+  const asOfUtc = `${date}T11:30:00.000Z`;
+  const out = await reconstructOneDate(
+    date,
+    baseCtx({
+      date,
+      gitExec: gitMock({ includeCaseA: true, date }),
+      fetchImpl: makeFetchImpl({ asOfUtc, observationDate: date, fiveMinute: 'incomplete' }),
+    })
+  );
+  const funding = out.lineage.find(
+    (r) => r.factor_key === 'term_leverage' && r.component_key === 'funding'
+  );
+  const realized = out.lineage.find(
+    (r) => r.factor_key === 'term_leverage' && r.component_key === 'realized_vol'
+  );
+  const stress = out.lineage.find(
+    (r) => r.factor_key === 'term_leverage' && r.component_key === 'stress'
+  );
+  assert.equal(funding.reconstruction_role, 'MISSING');
+  assert.equal(realized.reconstruction_role, 'B_METHOD_PIT');
+  assert.equal(realized.git_commit_sha, expected.commitSha);
+  assert.equal(realized.git_blob_sha, expected.blobSha);
+  assert.equal(stress.reconstruction_role, 'MISSING');
+  assert.equal(out.observation.term_leverage_role, 'MISSING');
+});
+
+test('Term missing price preserves valid funding provenance', async () => {
+  const date = '2099-03-03';
+  const asOfUtc = `${date}T11:30:00.000Z`;
+  const extraBlobs = {
+    [`TERMCOMMIT:${GIT_PATHS.termCache}`]: {
+      blobSha: 'termblobsha',
+      body: JSON.stringify(fundingPayload(date)),
+    },
+  };
+  const out = await reconstructOneDate(
+    date,
+    baseCtx({
+      date,
+      gitExec: gitMock({ extraBlobs }),
+      fetchImpl: makeFetchImpl({ asOfUtc, observationDate: date, fiveMinute: 'incomplete' }),
+      termIndex: termIndexFor(date),
+    })
+  );
+  const funding = out.lineage.find(
+    (r) => r.factor_key === 'term_leverage' && r.component_key === 'funding'
+  );
+  const realized = out.lineage.find(
+    (r) => r.factor_key === 'term_leverage' && r.component_key === 'realized_vol'
+  );
+  const stress = out.lineage.find(
+    (r) => r.factor_key === 'term_leverage' && r.component_key === 'stress'
+  );
+  assert.equal(funding.reconstruction_role, 'B_METHOD_PIT');
+  assert.equal(funding.git_commit_sha, 'TERMCOMMIT');
+  assert.equal(funding.git_blob_sha, 'termblobsha');
+  assert.equal(realized.reconstruction_role, 'MISSING');
+  assert.equal(stress.reconstruction_role, 'MISSING');
+  assert.equal(out.observation.term_leverage_role, 'MISSING');
+});
+
+test('Social missing rank preserves valid momentum provenance', async () => {
+  const date = '2026-08-17';
+  const expected = CASE_A_CHART_CAPTURES[date];
+  const asOfUtc = `${date}T11:30:00.000Z`;
+  const out = await reconstructOneDate(
+    date,
+    baseCtx({
+      date,
+      gitExec: gitMock({ includeCaseA: true, date }),
+      fetchImpl: makeFetchImpl({ asOfUtc, observationDate: date, fiveMinute: 'incomplete' }),
+    })
+  );
+  const rank = out.lineage.find(
+    (r) => r.factor_key === 'social_interest' && r.component_key === 'coingecko_trending_rank'
+  );
+  const momentum = out.lineage.find(
+    (r) => r.factor_key === 'social_interest' && r.component_key === 'btc_price_momentum_7d'
+  );
+  assert.equal(rank.reconstruction_role, 'MISSING');
+  assert.equal(momentum.reconstruction_role, 'B_METHOD_PIT');
+  assert.equal(momentum.git_commit_sha, expected.commitSha);
+  assert.equal(momentum.git_blob_sha, expected.blobSha);
+  assert.equal(out.observation.social_role, 'MISSING');
+});
+
+test('Social missing price preserves valid rank provenance', async () => {
+  const date = '2099-03-03';
+  const asOfUtc = `${date}T11:30:00.000Z`;
+  const extraBlobs = {
+    [`SOCCOMMIT:${GIT_PATHS.socialCache}`]: {
+      blobSha: 'socblobsha',
+      body: JSON.stringify({ bitcoinRank: 2 }),
+    },
+  };
+  const out = await reconstructOneDate(
+    date,
+    baseCtx({
+      date,
+      gitExec: gitMock({ extraBlobs }),
+      fetchImpl: makeFetchImpl({ asOfUtc, observationDate: date, fiveMinute: 'incomplete' }),
+      socialIndex: socialIndexFor(date),
+    })
+  );
+  const rank = out.lineage.find(
+    (r) => r.factor_key === 'social_interest' && r.component_key === 'coingecko_trending_rank'
+  );
+  const momentum = out.lineage.find(
+    (r) => r.factor_key === 'social_interest' && r.component_key === 'btc_price_momentum_7d'
+  );
+  assert.equal(rank.reconstruction_role, 'B_METHOD_PIT');
+  assert.equal(rank.git_commit_sha, 'SOCCOMMIT');
+  assert.equal(rank.git_blob_sha, 'socblobsha');
+  assert.equal(momentum.reconstruction_role, 'MISSING');
+  assert.equal(out.observation.social_role, 'MISSING');
+});
+
+test('Trend missing snapshot preserves usable weekly-history provenance', async () => {
+  const date = '2099-03-03';
+  const asOfUtc = `${date}T11:30:00.000Z`;
+  const out = await reconstructOneDate(
+    date,
+    baseCtx({
+      date,
+      gitExec: gitMock(),
+      fetchImpl: makeFetchImpl({
+        asOfUtc,
+        observationDate: date,
+        fiveMinute: 'incomplete',
+        history: true,
+      }),
+    })
+  );
+  const snapshot = out.lineage.find(
+    (r) => r.factor_key === 'trend_valuation' && r.component_key === 'utc_intraday_snapshot'
+  );
+  const bmsb = out.lineage.find(
+    (r) => r.factor_key === 'trend_valuation' && r.component_key === 'bmsb_distance'
+  );
+  const mayer = out.lineage.find(
+    (r) => r.factor_key === 'trend_valuation' && r.component_key === 'mayer_stretch'
+  );
+  const weekly = out.lineage.find(
+    (r) => r.factor_key === 'trend_valuation' && r.component_key === 'weekly_rsi'
+  );
+  assert.equal(snapshot.reconstruction_role, 'MISSING');
+  assert.equal(bmsb.reconstruction_role, 'MISSING');
+  assert.equal(mayer.reconstruction_role, 'MISSING');
+  assert.equal(weekly.reconstruction_role, 'C_CURRENT_HISTORY');
+  assert.equal(out.observation.trend_role, 'MISSING');
+});
+
+test('ordinary CASE-B date fetches Coinbase 5m once for Trend and Term/Social', async () => {
+  const date = '2099-03-03';
+  const asOfUtc = `${date}T11:30:00.000Z`;
+  const fiveMinuteUrls = [];
+  const out = await reconstructOneDate(
+    date,
+    baseCtx({
+      date,
+      gitExec: gitMock(),
+      fetchImpl: makeFetchImpl({
+        asOfUtc,
+        observationDate: date,
+        fiveMinute: 'complete',
+        history: true,
+        gecko: true,
+        fiveMinuteUrls,
+      }),
+    })
+  );
+  assert.equal(fiveMinuteUrls.length, 1);
+  const snapshot = out.lineage.find(
+    (r) => r.factor_key === 'trend_valuation' && r.component_key === 'utc_intraday_snapshot'
+  );
+  const realized = out.lineage.find(
+    (r) =>
+      r.factor_key === 'term_leverage' &&
+      r.component_key === 'realized_vol' &&
+      r.source_name === 'coinbase_5m'
+  );
+  assert.equal(snapshot.reconstruction_role, 'C_SURROGATE');
+  assert.equal(realized.reconstruction_role, 'C_SURROGATE');
+  assert.equal(snapshot.external_snapshot_sha256, realized.external_snapshot_sha256);
+  assert.equal(out.observation.term_leverage_role, 'MISSING');
+});
+
+test('validator catches lineage-vs-factor-role contradiction', () => {
+  const { assembled } = makeEligibleBundle();
+  assembled.observations[0].trend_role = 'B_METHOD_PIT';
+  const result = validateBundle(assembled);
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'lineage_factor_role:2099-03-03:trend_valuation');
+});
+
+test('validator catches lineage-vs-availability contradiction', () => {
+  const { assembled } = makeEligibleBundle();
+  assembled.missingness[0][FACTOR_AVAIL_FIELDS.trend_valuation] = 'AVAILABLE_B';
+  const result = validateBundle(assembled);
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'lineage_factor_availability:2099-03-03:trend_valuation');
+});
+
+test('validator rejects empty factor score on available factor', () => {
+  const { assembled } = makeEligibleBundle();
+  assembled.observations[0].trend_score = '';
+  const result = validateBundle(assembled);
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'available_nonfinite:2099-03-03:trend_valuation');
+});
+
+test('validator rejects empty xr_score on ELIGIBLE row', () => {
+  const { assembled } = makeEligibleBundle();
+  assembled.observations[0].xr_score = '';
+  const result = validateBundle(assembled);
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'eligible_missing_score:2099-03-03');
+});
+
+test('validator catches row identity drift', () => {
+  const { assembled } = makeEligibleBundle();
+  assembled.observations[0].h7_base_sha = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
+  const base = validateBundle(assembled);
+  assert.equal(base.ok, false);
+  assert.equal(base.error, 'observation_h7_base_sha:2099-03-03');
+  assembled.observations[0].h7_base_sha = H7_BASE_SHA;
+  assembled.observations[0].model_source_sha = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
+  const model = validateBundle(assembled);
+  assert.equal(model.ok, false);
+  assert.equal(model.error, 'observation_model_source_sha:2099-03-03');
+  assembled.observations[0].model_source_sha = MODEL_SOURCE_SHA;
+  assembled.observations[0].protocol_version = 'drifted-protocol';
+  const proto = validateBundle(assembled);
+  assert.equal(proto.ok, false);
+  assert.equal(proto.error, 'observation_protocol_version:2099-03-03');
+});
+
+test('validator catches primary_missing_reason mismatch', () => {
+  const date = '2099-03-04';
+  const scores = {
+    trend_valuation: 36,
+    stablecoins: 63,
+    etf_flows: 43,
+    net_liquidity: 59,
+    term_leverage: 57,
+    macro_overlay: 28,
+    social_interest: null,
+  };
+  const roles = {
+    trend_valuation: 'C_SURROGATE',
+    stablecoins: 'B_METHOD_PIT',
+    etf_flows: 'B_METHOD_PIT',
+    net_liquidity: 'C_PIT_CONSERVATIVE',
+    term_leverage: 'C_SURROGATE',
+    macro_overlay: 'C_PIT_CONSERVATIVE',
+    social_interest: 'MISSING',
+  };
+  const availability = Object.fromEntries(
+    OFFICIAL_FACTOR_ORDER.map((k) => [k, k === 'social_interest' ? 'MISSING' : 'AVAILABLE_C'])
+  );
+  availability.stablecoins = 'AVAILABLE_B';
+  availability.etf_flows = 'AVAILABLE_B';
+  const lineage = [];
+  for (const factorKey of OFFICIAL_FACTOR_ORDER) {
+    for (const componentKey of FACTOR_COMPONENT_ORDER[factorKey]) {
+      if (factorKey === 'social_interest') {
+        lineage.push(missingComp(date, factorKey, componentKey, 'NO_BITCOIN_RANK'));
+      } else {
+        lineage.push(presentComp(date, factorKey, componentKey, roles[factorKey], { source_name: 'synthetic' }));
+      }
+    }
+  }
+  const one = assembleDateRecords({
+    observationDate: date,
+    clock: {
+      valid: true,
+      reconstruction_as_of_utc: '2099-03-04T11:30:00.000Z',
+      reconstruction_clock_source: 'FIXED_1130_UTC',
+    },
+    factorScores: scores,
+    factorRoles: roles,
+    factorAvailability: availability,
+    lineage,
+  });
+  one.missingness.primary_missing_reason = 'nope';
+  const result = validateH71CrossFileInvariants({
+    observationDates: [date],
+    observations: [one.observation],
+    missingness: [one.missingness],
+    lineage: one.lineage,
+    bridge: [],
+    analysisSourceSha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    protocolVersion: H7_PROTOCOL_VERSION,
+    requireFrozenBridgeDates: false,
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.error, `primary_missing_reason:${date}`);
+});
+
+test('validator checks bridge difference/status arithmetic', () => {
+  const { assembled } = makeEligibleBundle();
+  const ok = validateBundle(assembled);
+  assert.equal(ok.ok, true);
+  const trend = assembled.bridge.find((r) => r.factor_key === 'trend_valuation');
+  trend.difference = 99;
+  const badDiff = validateBundle(assembled);
+  assert.equal(badDiff.ok, false);
+  assert.equal(badDiff.error, 'bridge_difference:2099-03-03:trend_valuation');
+  trend.difference = trend.xr_factor_score - trend.production_factor_score;
+  trend.comparison_status = 'XR_MISSING';
+  const badStatus = validateBundle(assembled);
+  assert.equal(badStatus.ok, false);
+  assert.equal(badStatus.error, 'bridge_status:2099-03-03:trend_valuation');
+  trend.comparison_status = 'COMPARABLE';
+  const xrMissing = assembled.bridge.find((r) => r.factor_key === 'stablecoins');
+  xrMissing.xr_factor_score = '';
+  xrMissing.difference = '';
+  xrMissing.comparison_status = 'COMPARABLE';
+  const missingStatus = validateBundle(assembled);
+  assert.equal(missingStatus.ok, false);
+  assert.equal(missingStatus.error, 'bridge_status:2099-03-03:stablecoins');
 });

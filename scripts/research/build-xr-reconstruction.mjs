@@ -61,6 +61,8 @@ import {
   extractProductionFactorScores,
   finalizeFactorRecords,
   appendLineageNote,
+  deriveRequiredComponentRole,
+  isWeeklyRsiHistorySufficient,
   H7_BASE_SHA,
   FACTOR_SCORE_FIELDS,
   FACTOR_ROLE_FIELDS,
@@ -385,6 +387,36 @@ function httpNote(requestIdentity, sha256) {
   return `request=${requestIdentity};sha256=${sha256}`;
 }
 
+function commitPartialFactor(lineage, factorScores, factorRoles, factorAvailability, factorKey, recs) {
+  const requiredRoles = FACTOR_COMPONENT_ORDER[factorKey].map((componentKey) =>
+    deriveRequiredComponentRole(recs.filter((row) => row.component_key === componentKey))
+  );
+  lineage.push(...recs);
+  factorScores[factorKey] = null;
+  factorRoles[factorKey] = aggregateFactorRole(requiredRoles);
+  factorAvailability[factorKey] = aggregateFactorAvailability(requiredRoles);
+}
+
+function priceVectorProvenance(shared, priceRole, extra, caseBLineage = []) {
+  if (priceRole === 'B_METHOD_PIT') {
+    return {
+      ...extra,
+      git_commit_sha: shared.commitSha,
+      git_blob_sha: shared.blobSha,
+      source_name: 'market_chart_30_daily',
+      source_type: 'git',
+    };
+  }
+  return {
+    ...extra,
+    source_name: 'case_b_surrogate',
+    source_type: 'http',
+    notes: caseBLineage
+      .map((item) => `${item.source_name};${httpNote(item.request, item.sha256)}`)
+      .join('|'),
+  };
+}
+
 export async function reconstructOneDate(observationDate, ctx) {
   const dailyRow = ctx.dailyByDate.get(observationDate) || {
     selection_status: 'NO_DAILY_PRIMARY',
@@ -413,6 +445,13 @@ export async function reconstructOneDate(observationDate, ctx) {
     for (const factorKey of OFFICIAL_FACTOR_ORDER) markAll(factorKey, clock.reasonCode || 'INVALID_CLOCK');
   } else {
     const extra = { source_as_of_cutoff: asOfUtc };
+    let coinbase5mPromise = null;
+    const getCoinbase5m = () => {
+      if (!coinbase5mPromise) {
+        coinbase5mPromise = fetchCoinbase5mProxy(asOfUtc, ctx.runtime);
+      }
+      return coinbase5mPromise;
+    };
 
     const island = resolveTrendBIsland(observationDate, ctx.gitExec);
     let snapshotPrice = null;
@@ -437,18 +476,24 @@ export async function reconstructOneDate(observationDate, ctx) {
         }),
         presentComp(observationDate, 'trend_valuation', 'bmsb_distance', historyRole, {
           ...extra,
+          git_commit_sha: island.btcPriceHistoryCommitSha,
           git_blob_sha: island.btcPriceHistoryBlobSha,
           source_name: 'btc_price_history.csv',
+          source_type: 'git',
         }),
         presentComp(observationDate, 'trend_valuation', 'mayer_stretch', historyRole, {
           ...extra,
+          git_commit_sha: island.btcPriceHistoryCommitSha,
           git_blob_sha: island.btcPriceHistoryBlobSha,
           source_name: 'btc_price_history.csv',
+          source_type: 'git',
         }),
         presentComp(observationDate, 'trend_valuation', 'weekly_rsi', historyRole, {
           ...extra,
+          git_commit_sha: island.btcPriceHistoryCommitSha,
           git_blob_sha: island.btcPriceHistoryBlobSha,
           source_name: 'btc_price_history.csv',
+          source_type: 'git',
         }),
       ];
       const fin = finalizeFactor(observationDate, 'trend_valuation', recs, trendScore);
@@ -457,19 +502,60 @@ export async function reconstructOneDate(observationDate, ctx) {
       factorRoles.trend_valuation = fin.role;
       factorAvailability.trend_valuation = fin.availability;
     } else {
-      const proxy = await fetchCoinbase5mProxy(asOfUtc, ctx.runtime);
+      const proxy = await getCoinbase5m();
       const selected5m = selectCompletedCoinbase5mCandle(proxy.candles, asOfUtc);
       const history = await fetchCoinbaseCompletedHistory(asOfUtc, ctx.runtime);
+      dailyCloses = history.rows.map((r) => r.close);
+      weeklyCloses = filterCompletedWeeklyCloses(
+        createWeeklyCloses(history.rows.map((r) => ({ timestamp: r.timestamp, close: r.close }))),
+        asOfUtc
+      );
+      const weeklyOk = isWeeklyRsiHistorySufficient(weeklyCloses);
+      const historyExtras = (history.lineage || []).map((chunk, i) =>
+        presentComp(observationDate, 'trend_valuation', 'weekly_rsi', 'C_CURRENT_HISTORY', {
+          ...extra,
+          source_name: `coinbase_daily_chunk_${i}`,
+          source_type: 'http',
+          external_snapshot_sha256: chunk.sha256,
+          notes: httpNote(chunk.url, chunk.sha256),
+        })
+      );
       if (!selected5m.ok) {
-        markAll('trend_valuation', selected5m.reasonCode || 'INCOMPLETE_CANDLE');
+        const recs = [
+          missingComp(observationDate, 'trend_valuation', 'utc_intraday_snapshot', selected5m.reasonCode || 'INCOMPLETE_CANDLE', {
+            ...extra,
+            source_name: 'coinbase_5m',
+            source_type: 'http',
+            external_snapshot_sha256: proxy.sha256,
+            notes: httpNote(proxy.url, proxy.sha256),
+          }),
+          missingComp(observationDate, 'trend_valuation', 'bmsb_distance', selected5m.reasonCode || 'INCOMPLETE_CANDLE', {
+            ...extra,
+            source_name: 'coinbase_daily',
+            source_type: 'http',
+          }),
+          missingComp(observationDate, 'trend_valuation', 'mayer_stretch', selected5m.reasonCode || 'INCOMPLETE_CANDLE', {
+            ...extra,
+            source_name: 'coinbase_daily',
+            source_type: 'http',
+          }),
+          weeklyOk
+            ? presentComp(observationDate, 'trend_valuation', 'weekly_rsi', 'C_CURRENT_HISTORY', {
+                ...extra,
+                source_name: 'coinbase_daily',
+                source_type: 'http',
+              })
+            : missingComp(observationDate, 'trend_valuation', 'weekly_rsi', 'INSUFFICIENT_LOOKBACK', {
+                ...extra,
+                source_name: 'coinbase_daily',
+                source_type: 'http',
+              }),
+          ...historyExtras,
+        ];
+        commitPartialFactor(lineage, factorScores, factorRoles, factorAvailability, 'trend_valuation', recs);
       } else {
         snapshotPrice = selected5m.close;
         snapshotRole = 'C_SURROGATE';
-        dailyCloses = history.rows.map((r) => r.close);
-        weeklyCloses = filterCompletedWeeklyCloses(
-          createWeeklyCloses(history.rows.map((r) => ({ timestamp: r.timestamp, close: r.close }))),
-          asOfUtc
-        );
         historyRole = 'C_CURRENT_HISTORY';
         const trendScore = scoreTrendComponents({ snapshotPrice, dailyCloses, weeklyCloses });
         const recs = [
@@ -498,15 +584,7 @@ export async function reconstructOneDate(observationDate, ctx) {
             source_name: 'coinbase_daily',
             source_type: 'http',
           }),
-          ...(history.lineage || []).map((chunk, i) =>
-            presentComp(observationDate, 'trend_valuation', 'bmsb_distance', historyRole, {
-              ...extra,
-              source_name: `coinbase_daily_chunk_${i}`,
-              source_type: 'http',
-              external_snapshot_sha256: chunk.sha256,
-              notes: httpNote(chunk.url, chunk.sha256),
-            })
-          ),
+          ...historyExtras,
         ];
         const fin = finalizeFactor(observationDate, 'trend_valuation', recs, trendScore);
         lineage.push(...fin.records);
@@ -541,22 +619,37 @@ export async function reconstructOneDate(observationDate, ctx) {
 
     const etfHtml = resolveSameDateEtfHtml(observationDate, ctx.gitExec);
     const etfBase = ctx.etfBaseline;
+    const etfBaselineRow =
+      etfBase?.ok
+        ? presentComp(observationDate, 'etf_flows', 'sum_21d', 'B_METHOD_PIT', {
+            ...extra,
+            source_name: 'etf_historical_baseline',
+            source_type: 'git',
+            git_blob_sha: ETF_HISTORICAL_BASELINE_BLOB,
+            notes: `frozen_baseline_path=${ETF_HISTORICAL_BASELINE_PATH}`,
+          })
+        : null;
     if (!etfHtml.ok || !etfBase?.ok) {
       markAll('etf_flows', !etfBase?.ok ? 'MISSING_BASELINE' : etfHtml.reasonCode || 'NO_SAME_DATE_ETF');
+      if (etfBaselineRow) lineage.push(etfBaselineRow);
     } else {
       const scored = scoreEtfComponents({
         html: etfHtml.html,
         asOfUtc,
         historicalBaseline: etfBase.values,
       });
-      const recs = FACTOR_COMPONENT_ORDER.etf_flows.map((componentKey) =>
-        presentComp(observationDate, 'etf_flows', componentKey, 'B_METHOD_PIT', {
-          ...extra,
-          git_commit_sha: etfHtml.commitSha,
-          git_blob_sha: etfHtml.blobSha,
-          source_name: 'farside_html',
-        })
-      );
+      const recs = [
+        ...FACTOR_COMPONENT_ORDER.etf_flows.map((componentKey) =>
+          presentComp(observationDate, 'etf_flows', componentKey, 'B_METHOD_PIT', {
+            ...extra,
+            git_commit_sha: etfHtml.commitSha,
+            git_blob_sha: etfHtml.blobSha,
+            source_name: 'farside_html',
+            source_type: 'git',
+          })
+        ),
+        etfBaselineRow,
+      ];
       const fin = finalizeFactor(observationDate, 'etf_flows', recs, scored);
       lineage.push(...fin.records);
       factorScores.etf_flows = fin.score;
@@ -628,7 +721,7 @@ export async function reconstructOneDate(observationDate, ctx) {
       const unwrapped = unwrapCoinGeckoCachePayload(cg.json);
       const prices = unwrapped.ok ? unwrapped.data?.prices : cg.json?.prices;
       const normalized = normalizeCoinGeckoDailyByUtcDate(prices);
-      const proxy = await fetchCoinbase5mProxy(asOfUtc, ctx.runtime);
+      const proxy = await getCoinbase5m();
       const selected5m = selectCompletedCoinbase5mCandle(proxy.candles, asOfUtc);
       if (normalized.ok && selected5m.ok) {
         const built = buildCaseBSurrogateVector({
@@ -660,9 +753,18 @@ export async function reconstructOneDate(observationDate, ctx) {
     }
 
     const termFund = resolveTermFunding(observationDate, asOfUtc, ctx.termIndex, ctx.gitExec);
-    if (!termFund.ok || priceRole === 'MISSING') {
-      markAll('term_leverage', !termFund.ok ? termFund.reasonCode || 'NO_BITMEX_EVIDENCE' : priceReason);
-    } else {
+    const priceFields = priceVectorProvenance(shared, priceRole, extra, caseBLineage);
+    const caseBPriceExtras = (componentKey) =>
+      caseBLineage.map((item) =>
+        presentComp(observationDate, 'term_leverage', componentKey, priceRole, {
+          ...extra,
+          source_name: item.source_name,
+          source_type: 'http',
+          external_snapshot_sha256: item.sha256,
+          notes: httpNote(item.request, item.sha256),
+        })
+      );
+    if (termFund.ok && priceRole !== 'MISSING') {
       const scored = scoreTermComponents({
         fundingRates: termFund.rates,
         spotPrices: vectorPrices(priceVector),
@@ -673,33 +775,53 @@ export async function reconstructOneDate(observationDate, ctx) {
           git_commit_sha: termFund.commitSha,
           git_blob_sha: termFund.blobSha,
           source_name: 'term_leverage_cache',
+          source_type: 'git',
         }),
-        presentComp(observationDate, 'term_leverage', 'realized_vol', priceRole, {
-          ...extra,
-          source_name: priceRole === 'B_METHOD_PIT' ? 'market_chart_30_daily' : 'case_b_surrogate',
-          source_type: priceRole === 'B_METHOD_PIT' ? 'git' : 'http',
-          notes: caseBLineage.map((item) => `${item.source_name};${httpNote(item.request, item.sha256)}`).join('|'),
-        }),
-        presentComp(observationDate, 'term_leverage', 'stress', priceRole, {
-          ...extra,
-          source_name: priceRole === 'B_METHOD_PIT' ? 'market_chart_30_daily' : 'case_b_surrogate',
-          source_type: priceRole === 'B_METHOD_PIT' ? 'git' : 'http',
-        }),
-        ...caseBLineage.map((item) =>
-          presentComp(observationDate, 'term_leverage', 'realized_vol', priceRole, {
-            ...extra,
-            source_name: item.source_name,
-            source_type: 'http',
-            external_snapshot_sha256: item.sha256,
-            notes: httpNote(item.request, item.sha256),
-          })
-        ),
+        presentComp(observationDate, 'term_leverage', 'realized_vol', priceRole, priceFields),
+        presentComp(observationDate, 'term_leverage', 'stress', priceRole, priceFields),
+        ...caseBPriceExtras('realized_vol'),
       ];
       const fin = finalizeFactor(observationDate, 'term_leverage', recs, scored);
       lineage.push(...fin.records);
       factorScores.term_leverage = fin.score;
       factorRoles.term_leverage = fin.role;
       factorAvailability.term_leverage = fin.availability;
+    } else {
+      const recs = [];
+      if (termFund.ok) {
+        recs.push(
+          presentComp(observationDate, 'term_leverage', 'funding', 'B_METHOD_PIT', {
+            ...extra,
+            git_commit_sha: termFund.commitSha,
+            git_blob_sha: termFund.blobSha,
+            source_name: 'term_leverage_cache',
+            source_type: 'git',
+          })
+        );
+      } else {
+        recs.push(
+          missingComp(observationDate, 'term_leverage', 'funding', termFund.reasonCode || 'NO_BITMEX_EVIDENCE', extra)
+        );
+      }
+      if (priceRole !== 'MISSING') {
+        recs.push(presentComp(observationDate, 'term_leverage', 'realized_vol', priceRole, priceFields));
+        recs.push(
+          missingComp(
+            observationDate,
+            'term_leverage',
+            'stress',
+            termFund.ok ? priceReason : termFund.reasonCode || 'NO_BITMEX_EVIDENCE',
+            extra
+          )
+        );
+        recs.push(...caseBPriceExtras('realized_vol'));
+      } else {
+        recs.push(
+          missingComp(observationDate, 'term_leverage', 'realized_vol', priceReason, extra)
+        );
+        recs.push(missingComp(observationDate, 'term_leverage', 'stress', priceReason, extra));
+      }
+      commitPartialFactor(lineage, factorScores, factorRoles, factorAvailability, 'term_leverage', recs);
     }
 
     const macroReqs = buildMacroRequests(observationDate, ctx.fredKey);
@@ -755,9 +877,17 @@ export async function reconstructOneDate(observationDate, ctx) {
     factorAvailability.macro_overlay = macroFin.availability;
 
     const social = resolveSocialRank(observationDate, ctx.trendingIndex, ctx.socialIndex, ctx.gitExec);
-    if (!social.ok || priceRole === 'MISSING') {
-      markAll('social_interest', !social.ok ? social.reasonCode || 'NO_BITCOIN_RANK' : priceReason);
-    } else {
+    const socialPriceFields = priceVectorProvenance(shared, priceRole, extra, caseBLineage);
+    const socialCaseBExtras = caseBLineage.map((item) =>
+      presentComp(observationDate, 'social_interest', 'btc_price_momentum_7d', priceRole, {
+        ...extra,
+        source_name: item.source_name,
+        source_type: 'http',
+        external_snapshot_sha256: item.sha256,
+        notes: httpNote(item.request, item.sha256),
+      })
+    );
+    if (social.ok && priceRole !== 'MISSING') {
       const scored = scoreSocialComponents({
         bitcoinRank: social.rank,
         prices: vectorPrices(priceVector),
@@ -768,28 +898,44 @@ export async function reconstructOneDate(observationDate, ctx) {
           git_commit_sha: social.commitSha,
           git_blob_sha: social.blobSha,
           source_name: social.source,
+          source_type: 'git',
         }),
-        presentComp(observationDate, 'social_interest', 'btc_price_momentum_7d', priceRole, {
-          ...extra,
-          source_name: priceRole === 'B_METHOD_PIT' ? 'market_chart_30_daily' : 'case_b_surrogate',
-          source_type: priceRole === 'B_METHOD_PIT' ? 'git' : 'http',
-          notes: caseBLineage.map((item) => `${item.source_name};${httpNote(item.request, item.sha256)}`).join('|'),
-        }),
-        ...caseBLineage.map((item) =>
-          presentComp(observationDate, 'social_interest', 'btc_price_momentum_7d', priceRole, {
-            ...extra,
-            source_name: item.source_name,
-            source_type: 'http',
-            external_snapshot_sha256: item.sha256,
-            notes: httpNote(item.request, item.sha256),
-          })
-        ),
+        presentComp(observationDate, 'social_interest', 'btc_price_momentum_7d', priceRole, socialPriceFields),
+        ...socialCaseBExtras,
       ];
       const fin = finalizeFactor(observationDate, 'social_interest', recs, scored);
       lineage.push(...fin.records);
       factorScores.social_interest = fin.score;
       factorRoles.social_interest = fin.role;
       factorAvailability.social_interest = fin.availability;
+    } else {
+      const recs = [];
+      if (social.ok) {
+        recs.push(
+          presentComp(observationDate, 'social_interest', 'coingecko_trending_rank', 'B_METHOD_PIT', {
+            ...extra,
+            git_commit_sha: social.commitSha,
+            git_blob_sha: social.blobSha,
+            source_name: social.source,
+            source_type: 'git',
+          })
+        );
+      } else {
+        recs.push(
+          missingComp(observationDate, 'social_interest', 'coingecko_trending_rank', social.reasonCode || 'NO_BITCOIN_RANK', extra)
+        );
+      }
+      if (priceRole !== 'MISSING') {
+        recs.push(
+          presentComp(observationDate, 'social_interest', 'btc_price_momentum_7d', priceRole, socialPriceFields)
+        );
+        recs.push(...socialCaseBExtras);
+      } else {
+        recs.push(
+          missingComp(observationDate, 'social_interest', 'btc_price_momentum_7d', priceReason, extra)
+        );
+      }
+      commitPartialFactor(lineage, factorScores, factorRoles, factorAvailability, 'social_interest', recs);
     }
   }
 

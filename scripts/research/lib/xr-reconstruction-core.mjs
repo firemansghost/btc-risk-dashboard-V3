@@ -775,6 +775,27 @@ export function aggregateFactorAvailability(componentRoles) {
   return 'AVAILABLE_C';
 }
 
+export function isStrictFiniteNumber(value) {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+export function deriveRequiredComponentRole(records) {
+  const recs = records || [];
+  if (recs.length === 0) return 'MISSING';
+  if (recs.some((r) => r.reconstruction_role === 'MISSING' || r.reconstruction_role == null)) {
+    return 'MISSING';
+  }
+  return aggregateFactorRole(recs.map((r) => r.reconstruction_role));
+}
+
+export function isWeeklyRsiHistorySufficient(weeklyCloses) {
+  return (
+    Array.isArray(weeklyCloses) &&
+    weeklyCloses.length >= 22 &&
+    weeklyCloses.every((row) => Number.isFinite(Number(row?.close)))
+  );
+}
+
 export function availabilityStatusForRole(role) {
   if (role === 'MISSING' || !role) return 'MISSING';
   if (role === 'B_METHOD_PIT') return 'AVAILABLE_B';
@@ -2063,16 +2084,16 @@ export function firstMissingReason(componentRecords) {
   for (const factorKey of OFFICIAL_FACTOR_ORDER) {
     const order = FACTOR_COMPONENT_ORDER[factorKey];
     for (const componentKey of order) {
-      const rec = componentRecords.find(
+      const recs = (componentRecords || []).filter(
         (r) => r.factor_key === factorKey && r.component_key === componentKey
       );
-      if (!rec || rec.reconstruction_role === 'MISSING') {
-        return formatPrimaryMissingReason({
-          factorKey,
-          componentKey,
-          reasonCode: rec?.missing_reason || 'MISSING_COMPONENT',
-        });
-      }
+      if (deriveRequiredComponentRole(recs) !== 'MISSING') continue;
+      const missingRec = recs.find((r) => r.reconstruction_role === 'MISSING');
+      return formatPrimaryMissingReason({
+        factorKey,
+        componentKey,
+        reasonCode: missingRec?.missing_reason || 'MISSING_COMPONENT',
+      });
     }
   }
   return '';
@@ -2397,6 +2418,21 @@ export function validateH71CrossFileInvariants({
     if (miss.observation_date !== date) return { ok: false, error: `missingness_order:${i}` };
     const rowCheck = validateObservationRow(obs);
     if (!rowCheck.ok) return rowCheck;
+    if (obs.h7_base_sha !== H7_BASE_SHA) {
+      return { ok: false, error: `observation_h7_base_sha:${date}` };
+    }
+    if (obs.model_source_sha !== MODEL_SOURCE_SHA) {
+      return { ok: false, error: `observation_model_source_sha:${date}` };
+    }
+    if (obs.protocol_version !== H7_PROTOCOL_VERSION) {
+      return { ok: false, error: `observation_protocol_version:${date}` };
+    }
+    if (miss.protocol_version !== H7_PROTOCOL_VERSION) {
+      return { ok: false, error: `missingness_protocol_version:${date}` };
+    }
+    if (miss.eligible_full_composite !== obs.eligible_full_composite) {
+      return { ok: false, error: `missingness_eligible_mismatch:${date}` };
+    }
     for (const factorKey of OFFICIAL_FACTOR_ORDER) {
       const availField = FACTOR_AVAIL_FIELDS[factorKey];
       const avail = miss[availField];
@@ -2406,6 +2442,11 @@ export function validateH71CrossFileInvariants({
       const roleField = FACTOR_ROLE_FIELDS[factorKey];
       if (!RECONSTRUCTION_ROLE_ENUM.includes(obs[roleField])) {
         return { ok: false, error: `bad_role:${date}:${factorKey}:${obs[roleField]}` };
+      }
+      if (avail === 'AVAILABLE_B' || avail === 'AVAILABLE_C') {
+        if (!isStrictFiniteNumber(obs[FACTOR_SCORE_FIELDS[factorKey]])) {
+          return { ok: false, error: `available_nonfinite:${date}:${factorKey}` };
+        }
       }
     }
     const actualMissing = OFFICIAL_FACTOR_ORDER.filter(
@@ -2421,18 +2462,28 @@ export function validateH71CrossFileInvariants({
     if (String(miss.missing_factors ?? '') !== expectedList) {
       return { ok: false, error: `missingness_missing_factors:${date}` };
     }
+    const dateLineage = lineage.filter((r) => r.observation_date === date);
+    const expectedPrimary = firstMissingReason(dateLineage);
+    if (String(miss.primary_missing_reason ?? '') !== expectedPrimary) {
+      return { ok: false, error: `primary_missing_reason:${date}` };
+    }
     const allAvailable = actualMissing.length === 0;
-    const allScoresFinite = OFFICIAL_FACTOR_ORDER.every((k) =>
-      Number.isFinite(Number(obs[FACTOR_SCORE_FIELDS[k]]))
-    );
     if (allAvailable) {
+      const allScoresFinite = OFFICIAL_FACTOR_ORDER.every((k) =>
+        isStrictFiniteNumber(obs[FACTOR_SCORE_FIELDS[k]])
+      );
       if (!allScoresFinite) return { ok: false, error: `available_nonfinite:${date}` };
       if (obs.xr_status !== 'ELIGIBLE' || obs.eligible_full_composite !== true) {
         return { ok: false, error: `eligible_expected:${date}` };
       }
-      if (!Number.isFinite(Number(obs.xr_score))) return { ok: false, error: `eligible_missing_score:${date}` };
+      if (!isStrictFiniteNumber(obs.xr_score)) {
+        return { ok: false, error: `eligible_missing_score:${date}` };
+      }
       if (obs.reconstruction_grade !== 'EXPLORATORY_ONLY') {
         return { ok: false, error: `eligible_grade:${date}` };
+      }
+      if (expectedPrimary !== '') {
+        return { ok: false, error: `eligible_primary_missing_reason:${date}` };
       }
     } else {
       if (obs.xr_status !== 'NOT_ELIGIBLE' || obs.eligible_full_composite !== false) {
@@ -2442,10 +2493,14 @@ export function validateH71CrossFileInvariants({
         return { ok: false, error: `not_eligible_score_present:${date}` };
       }
       if (obs.reconstruction_grade) return { ok: false, error: `not_eligible_grade_present:${date}` };
+      if (!expectedPrimary) {
+        return { ok: false, error: `not_eligible_primary_missing_reason:${date}` };
+      }
     }
   }
   for (const date of observationDates) {
     for (const factorKey of OFFICIAL_FACTOR_ORDER) {
+      const requiredRoles = [];
       for (const componentKey of FACTOR_COMPONENT_ORDER[factorKey]) {
         const recs = lineage.filter(
           (r) =>
@@ -2456,10 +2511,27 @@ export function validateH71CrossFileInvariants({
         if (recs.length === 0) {
           return { ok: false, error: `lineage_missing:${date}:${factorKey}:${componentKey}` };
         }
+        requiredRoles.push(deriveRequiredComponentRole(recs));
+      }
+      const expectedRole = aggregateFactorRole(requiredRoles);
+      const expectedAvailability = aggregateFactorAvailability(requiredRoles);
+      const obs = observations.find((r) => r.observation_date === date);
+      const miss = missingness.find((r) => r.observation_date === date);
+      if (obs[FACTOR_ROLE_FIELDS[factorKey]] !== expectedRole) {
+        return { ok: false, error: `lineage_factor_role:${date}:${factorKey}` };
+      }
+      if (miss[FACTOR_AVAIL_FIELDS[factorKey]] !== expectedAvailability) {
+        return { ok: false, error: `lineage_factor_availability:${date}:${factorKey}` };
       }
     }
   }
   for (const rec of lineage) {
+    if (rec.h7_base_sha !== H7_BASE_SHA) {
+      return { ok: false, error: `lineage_h7_base_sha:${rec.observation_date}:${rec.component_key}` };
+    }
+    if (rec.protocol_version !== H7_PROTOCOL_VERSION) {
+      return { ok: false, error: `lineage_protocol_version:${rec.observation_date}:${rec.component_key}` };
+    }
     if (!RECONSTRUCTION_ROLE_ENUM.includes(rec.reconstruction_role)) {
       return { ok: false, error: `lineage_role:${rec.observation_date}:${rec.component_key}` };
     }
@@ -2509,6 +2581,50 @@ export function validateH71CrossFileInvariants({
       }
       if (!BRIDGE_COMPARISON_STATUS_ENUM.includes(row.comparison_status)) {
         return { ok: false, error: `bridge_comparison_status:${date}:${row.factor_key}` };
+      }
+      if (row.factor_key === '__XR_COMPOSITE__') {
+        if (row.xr_input_role !== 'EXPLORATORY_ONLY') {
+          return { ok: false, error: `bridge_composite_role:${date}` };
+        }
+        const xrOk = isStrictFiniteNumber(row.xr_factor_score);
+        const prodOk = isStrictFiniteNumber(row.production_factor_score);
+        if (xrOk && prodOk) {
+          if (row.comparison_status !== 'COMPARABLE') {
+            return { ok: false, error: `bridge_composite_status:${date}` };
+          }
+          if (row.difference !== row.xr_factor_score - row.production_factor_score) {
+            return { ok: false, error: `bridge_composite_difference:${date}` };
+          }
+        }
+        continue;
+      }
+      const xrOk = isStrictFiniteNumber(row.xr_factor_score);
+      const prodOk = isStrictFiniteNumber(row.production_factor_score);
+      if (xrOk && prodOk) {
+        if (row.comparison_status !== 'COMPARABLE') {
+          return { ok: false, error: `bridge_status:${date}:${row.factor_key}` };
+        }
+        if (row.difference !== row.xr_factor_score - row.production_factor_score) {
+          return { ok: false, error: `bridge_difference:${date}:${row.factor_key}` };
+        }
+      } else if (!xrOk && prodOk) {
+        if (row.comparison_status !== 'XR_MISSING') {
+          return { ok: false, error: `bridge_status:${date}:${row.factor_key}` };
+        }
+        if (row.difference !== '' && row.difference != null) {
+          return { ok: false, error: `bridge_difference:${date}:${row.factor_key}` };
+        }
+      } else if (xrOk && !prodOk) {
+        if (row.comparison_status !== 'PRODUCTION_MISSING') {
+          return { ok: false, error: `bridge_status:${date}:${row.factor_key}` };
+        }
+        if (row.difference !== '' && row.difference != null) {
+          return { ok: false, error: `bridge_difference:${date}:${row.factor_key}` };
+        }
+      } else if (row.comparison_status !== 'NOT_COMPARABLE') {
+        return { ok: false, error: `bridge_status:${date}:${row.factor_key}` };
+      } else if (row.difference !== '' && row.difference != null) {
+        return { ok: false, error: `bridge_difference:${date}:${row.factor_key}` };
       }
     }
   }
