@@ -611,11 +611,31 @@ Must contain exactly the future frozen `H7_2_ANALYSIS_SOURCE_SHA` plus a final L
 
 ---
 
-## 16. Output cross-file validation
+## 16. Output validation (source-anchored)
 
 The future implementation must validate the complete output bundle **before promotion**.
 
-The validator must require:
+Internal cross-file arithmetic is **necessary and not sufficient**. A generator bug that emits a wrong source minimum, a MACE calculated consistently from that wrong minimum, and a rho calculated consistently from those wrong MACE values must **FAIL**.
+
+The validator must read the **same** authoritative frozen Git object bytes required for generation. Do not validate against a later working-tree copy. No network lookup. No alternative source.
+
+```text
+XR:
+  commit = b596619621aa4805d337c3047d98f1686529e6e7
+  path   = research/exploratory-reconstruction/xr_observations.csv
+  blob   = 148999d51a02b87bdb93b9d32f9978ee3bef9401
+
+BTC:
+  commit = b596619621aa4805d337c3047d98f1686529e6e7
+  path   = public/data/btc_price_history.csv
+  blob   = e93a74edba11d04969ba81c141361acbab6ec3c3
+```
+
+Synthetic-fixture validators used in tests must apply the same source-anchored rules against the synthetic source objects, not against the generated files alone.
+
+### 16.1 Bundle structure
+
+The validator must still require:
 
 - exact four-filename set
 - 756 horizon data rows
@@ -626,20 +646,132 @@ The validator must require:
 - exact 18 `XR_NOT_ELIGIBLE` per horizon
 - exact 29 / 85 / 166 `OUTCOME_INCOMPLETE` counts
 - role matches horizon
-- `xr_status` copied correctly
-- `xr_score` semantics obey the strict rules
-- calculated outcome fields present **only** for `OUTCOME_COMPLETE`
-- calculated outcome fields absent otherwise
-- MACE finite and `>= 0` when present
-- start / minimum closes finite and `> 0` when present
-- `minimum_path_close_usd <= start_close_usd`
-- each emitted MACE equals `1 - minimum_path_close_usd / start_close_usd` using unrounded arithmetic
-- summary coverage equals horizon-row coverage
-- summary rho is recomputed from exactly that horizon’s `OUTCOME_COMPLETE` rows
-- `direction_label` matches rho sign
 - protocol identity is exact in every row
 - analysis-source identity is exact in every row
 - sidecars match row identities
+
+Any mismatch: **STOP.** Do not promote output.
+
+### 16.2 A. XR source match
+
+For every row in `h7_2_horizon_rows.csv`, locate the authoritative frozen XR observation for `observation_date` and independently require:
+
+```text
+generated observation_date = frozen XR observation_date
+generated xr_status        = frozen XR xr_status exactly
+generated xr_score         = frozen XR xr_score exactly
+                             under the frozen serialization semantics
+```
+
+For `ELIGIBLE`:
+
+- source `xr_score` must be a strictly valid integer `0–100`
+- generated `xr_score` must represent that **exact** source score
+
+For `NOT_ELIGIBLE`:
+
+- frozen `xr_score` must be the actual empty field
+- generated `xr_score` must also be empty
+
+A different but otherwise valid numeric score must **FAIL** validation. Do not merely check that generated `xr_score` is syntactically valid. It must equal the frozen source score.
+
+### 16.3 B. Analysis status must be source-derived
+
+For every date/horizon row, independently derive expected `analysis_status` from:
+
+1. frozen `xr_status`
+2. exact required BTC date path `D..D+N`
+3. strict validity of every required close
+
+Then require emitted `analysis_status` to equal that independently derived status.
+
+```text
+if frozen xr_status = NOT_ELIGIBLE:
+    expected analysis_status = XR_NOT_ELIGIBLE
+else if frozen xr_status = ELIGIBLE
+     and every exact required source close D..D+N exists and is strictly valid:
+    expected analysis_status = OUTCOME_COMPLETE
+else:
+    expected analysis_status = OUTCOME_INCOMPLETE
+```
+
+Do not trust the generated `analysis_status` merely because aggregate counts equal 205 / 149 / 68. Row-level source-derived status must match.
+
+### 16.4 C. Start close must match frozen BTC source
+
+For every `OUTCOME_COMPLETE` row, independently read the exact frozen BTC source close for observation date `D`.
+
+Require:
+
+```text
+generated start_close_usd = strictly parsed frozen source C_D
+```
+
+under the frozen numeric serialization/equality rules.
+
+A positive finite generated start value that is not the actual frozen `C_D` must **FAIL**. Do not validate only `start_close_usd > 0`.
+
+### 16.5 D. Minimum path close must match frozen BTC path
+
+For every `OUTCOME_COMPLETE` row, independently construct the authorized exact source path `C_D, C_D+1, …, C_D+N` from the frozen BTC input object. Strictly validate every required close. Then independently derive:
+
+```text
+expected_minimum_path_close_usd =
+  minimum numeric close across the exact D..D+N source path
+```
+
+Require generated `minimum_path_close_usd` to equal `expected_minimum_path_close_usd` under frozen `Number` semantics.
+
+Do **not** merely require `minimum_path_close_usd <= start_close_usd`. A wrong but plausible positive minimum must **FAIL**.
+
+If the same numeric minimum occurs on multiple source dates, matching the minimum numeric value is sufficient. H7.2 does not require a minimum-date field.
+
+### 16.6 E. MACE must be source-derived
+
+For every `OUTCOME_COMPLETE` row, independently calculate expected MACE from the **source-derived** values:
+
+```text
+expected_start   = frozen C_D
+expected_minimum = minimum of frozen C_D..C_D+N
+expected_mace    = 1 - expected_minimum / expected_start
+```
+
+Require emitted `mace` to equal `expected_mace` using the frozen unrounded JavaScript `Number` convention.
+
+**WRONG:** validate emitted MACE from emitted minimum/start only.
+
+**REQUIRED:** derive start/minimum independently from the frozen BTC source, then validate all three emitted fields against those source-derived values.
+
+Internal equality `emitted_mace = 1 - emitted_minimum / emitted_start` may still be checked, but it cannot be the authoritative MACE check.
+
+### 16.7 F. Empty outcome fields
+
+For `XR_NOT_ELIGIBLE` or `OUTCOME_INCOMPLETE`, require exactly empty:
+
+```text
+start_close_usd
+minimum_path_close_usd
+mace
+```
+
+Do not derive or emit partial outcome values for those rows.
+
+### 16.8 Summary must rest on source-verified rows
+
+Retain summary validation. Sequence is mandatory:
+
+1. validate every horizon row against frozen XR/BTC inputs
+2. only after all relevant horizon rows pass source-backed validation, independently rank the verified `OUTCOME_COMPLETE` `xr_score` / `mace` pairs
+3. recompute Spearman
+4. compare recomputed rho to `h7_2_summary.csv`
+5. validate `direction_label` from the recomputed rho
+
+Summary rho must never be considered valid merely because it agrees with unverified horizon-row MACE values.
+
+Also require:
+
+- summary coverage equals source-verified horizon-row coverage
+- expected analysis `N` remains exactly 30 = 205, 90 = 149, 180 = 68
 
 Any mismatch: **STOP.** Do not promote output.
 
@@ -708,6 +840,16 @@ Before real execution is ever authorized, synthetic-fixture tests must cover at 
 - no `NaN` / `Infinity` / `null` / `undefined` tokens
 - cross-file tamper detection
 - sidecar mismatch detection
+
+**SOURCE-BACKED VALIDATOR** (synthetic fixtures only)
+
+- **SOURCE XR TAMPER:** start with a valid synthetic generated bundle; change an emitted `xr_score` to another valid integer `0–100` while leaving the authoritative synthetic source unchanged; validator must reject it
+- **SOURCE STATUS TAMPER:** change a generated `analysis_status` while keeping fields/counts otherwise plausible; validator must reject row-level mismatch to source-derived status
+- **SOURCE START TAMPER:** change emitted `start_close_usd` to another finite positive value and recalculate emitted MACE so the row remains internally mathematically consistent; validator must **still** reject because start does not equal source `C_D`
+- **SOURCE MINIMUM TAMPER:** change emitted `minimum_path_close_usd` to another finite positive value that is `<= start`, then recalculate emitted MACE so `mace = 1 - emitted_minimum / emitted_start` still holds; validator must **still** reject because emitted minimum is not the actual minimum of the frozen synthetic source path
+- **SELF-CONSISTENT WRONG OUTCOME TAMPER:** modify `minimum_path_close_usd`, `mace`, and, if necessary, summary rho so the generated output files remain internally cross-file consistent; validator must **still** reject because row-level outcomes do not match the authoritative synthetic input path
+
+The last test specifically proves that the validator is not merely checking a self-consistent closed system.
 
 **CONTRACT CHECK**
 
