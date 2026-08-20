@@ -2,31 +2,33 @@
 
 **Date:** 2026-08-20
 **Phase:** H8 — prospective three-model forward holdout
-**Status:** `PROTOCOL CANDIDATE — METHODOLOGY PROPOSED — NOT YET FROZEN`
-**Proposed protocol version:** `h8-prospective-three-model-v1`
+**Status:** `PROTOCOL FROZEN — CAPTURE NOT YET IMPLEMENTED`
+**Protocol version:** `h8-prospective-three-model-v1`
+**H8_PROTOCOL_VERSION:** `h8-prospective-three-model-v1`
 **Branch:** `research/h8-prospective-three-model-preregistration`
 **Parent main HEAD at candidate creation:** `9478099ff775f1d6630b83bd402727870f15ca10`
 
-This document is a **protocol candidate**. Methodology is **proposed**, not frozen. Independent review of `b0c1c2f0b42bfd08d5167814044a8e40770ecdc4` approved the core H8 design and confirmed the four prior review findings were resolved. This amendment records one final pre-freeze resolution: deterministic automatic BTC-close catch-up inside a fixed recovery window, plus separation of the scientific model-contract fingerprint from the later H8 capture-implementation identity. Changing any later **frozen** PROTOCOL DECISION will require a new protocol version. H8 capture has **not** been implemented. H8 performance has **not** been calculated. `H8_PROTOCOL_SHA` is **not** assigned. `H8_CAPTURE_SOURCE_SHA` is **not** assigned. Calibration remains **CLOSED**.
+This document is the **frozen H8 protocol**. Scientific methodology is now frozen. Later methodology changes require a new protocol version. Capture implementation does not yet exist. H8 has **zero** study observations at protocol freeze. H8 has **zero** matured outcomes at protocol freeze. No H8 performance statistic has been calculated. Calibration remains **CLOSED**. `H8_CAPTURE_SOURCE_SHA` is **not** assigned.
 
-Do **not** write the eventual freeze-commit SHA into this document. The Git commit that later freezes accepted bytes becomes `H8_PROTOCOL_SHA` only after independent review and an explicit freeze.
+The last accepted protocol candidate immediately before this freeze-only pass was `353cd6a3d9bb1c8e4212c4d960f955a382e723da`. That SHA is **not** `H8_PROTOCOL_SHA`.
+
+Do **not** write the freeze-commit SHA into this document. The Git commit that freezes these bytes becomes `H8_PROTOCOL_SHA` only after independent verification.
 
 Labels used below:
 
 - **FACT** — inherited from closed H7.2 identities, current production config/code at the parent main SHA, or calendar arithmetic of the proposed window
-- **PROPOSED PROTOCOL DECISION** — candidate methodology; not frozen until independent review accepts a freeze
+- **FROZEN PROTOCOL DECISION** — accepted frozen methodology; changing it requires a new protocol version
 - **FIREWALL** — a prohibition that is not open to casual weakening
 - **LIMITATION** — a bound on what later H8 execution may claim even after results exist
 - **IMPLEMENTATION DETAIL** — later code/schema design, not an open scientific choice once the protocol is frozen
-- **OPEN FOR REVIEW** — an audit finding or design choice that independent review should explicitly accept or amend before freeze
 
 ---
 
 ## 0. Zero-state banner
 
-**FACT. H8 has ZERO observations at protocol-candidate creation.**
+**FACT. H8 has ZERO observations at protocol freeze.**
 
-**FACT. H8 has ZERO matured outcomes.**
+**FACT. H8 has ZERO matured outcomes at protocol freeze.**
 
 **FACT. No H8 performance statistic has been calculated.**
 
@@ -46,7 +48,7 @@ The proposed capture dates are **future** relative to this protocol-design date 
 
 ## 1. Purpose
 
-**PROPOSED PROTOCOL DECISION.** H8 asks whether the **actual forward-captured** GhostGauge model family shows prospective 30-day risk-discrimination behavior.
+**FROZEN PROTOCOL DECISION.** H8 asks whether the **actual forward-captured** GhostGauge model family shows prospective 30-day risk-discrimination behavior.
 
 Class:
 
@@ -91,7 +93,7 @@ H8 is **not**:
 
 ## 3. Exactly three frozen models
 
-**PROPOSED PROTOCOL DECISION.** Freeze **exactly three** models for H8 v1.
+**FROZEN PROTOCOL DECISION.** Freeze **exactly three** models for H8 v1.
 
 | Role | Name / version | Status |
 |---|---|---|
@@ -111,7 +113,7 @@ Any future new candidate must have an explicit hypothesis, frozen formula, versi
 
 ## 4. Same factors — only top-level weights differ
 
-**PROPOSED PROTOCOL DECISION.** All three H8 models use the **exact same** captured daily factor scores.
+**FROZEN PROTOCOL DECISION.** All three H8 models use the **exact same** captured daily factor scores.
 
 The challengers do **not** have:
 
@@ -165,7 +167,7 @@ That file still describes a **35% liquidity / 25% momentum** pillar mix, with on
 
 ### 5.3 Official factor weights
 
-**FACT / PROPOSED PROTOCOL DECISION.** Official v1.1.1 factor weights, copied from `config/dashboard-config.json`:
+**FACT / FROZEN PROTOCOL DECISION.** Official v1.1.1 factor weights, copied from `config/dashboard-config.json`:
 
 | Factor | Enabled | Weight |
 |---|---|---|
@@ -197,13 +199,13 @@ adjustments.cycle.enabled = false
 adjustments.spike.enabled = false
 ```
 
-**PROPOSED PROTOCOL DECISION.** H8 Official scoring uses those disabled flags. Reactivating cycle or spike is a methodology change and is not authorized under H8 v1.
+**FROZEN PROTOCOL DECISION.** H8 Official scoring uses those disabled flags. Reactivating cycle or spike is a methodology change and is not authorized under H8 v1.
 
 ---
 
 ## 6. Liq-Heavy — SECONDARY CHALLENGER
 
-**PROPOSED PROTOCOL DECISION.**
+**FROZEN PROTOCOL DECISION.**
 
 ```text
 name/version = liq-heavy-v1
@@ -265,7 +267,7 @@ Algebraic sum:
 
 ## 7. Mom-Tilted — SECONDARY CHALLENGER
 
-**PROPOSED PROTOCOL DECISION.**
+**FROZEN PROTOCOL DECISION.**
 
 ```text
 name/version = mom-tilted-v1
@@ -325,7 +327,7 @@ Algebraic sum:
 
 ## 8. H8 scientific score arithmetic
 
-**PROPOSED PROTOCOL DECISION.** For an H8-eligible observation, each model score is:
+**FROZEN PROTOCOL DECISION.** For an H8-eligible observation, each model score is:
 
 ```text
 weighted_sum =
@@ -348,7 +350,7 @@ Use JavaScript `Number` semantics. No intermediate rounding. All three models pr
 **FIREWALL.** Do not substitute a prior factor score.
 **FIREWALL.** Do not backfill an observation later.
 
-**PROPOSED PROTOCOL DECISION — production Official arithmetic on H8-eligible days.** The following production behavior is verified at parent main `9478099ff775f1d6630b83bd402727870f15ca10` and is accepted as the candidate protocol's Official-integrity basis.
+**FROZEN PROTOCOL DECISION — production Official arithmetic on H8-eligible days.** The following production behavior is verified at parent main `9478099ff775f1d6630b83bd402727870f15ca10` and is accepted as the frozen protocol's Official-integrity basis.
 
 `scripts/etl/factors.mjs` `calculateEnhancedGScore()` calculates:
 
@@ -389,7 +391,7 @@ At frozen Official v1.1.1, cycle adjustment is disabled and spike adjustment is 
 - tenth-point rounding is an identity
 - the Official H8 scientific formula in this section should exactly equal production `composite_score`
 
-**PROPOSED PROTOCOL DECISION.** `official_published_score` is the `composite_score` field from `public/data/latest.json` produced by the **same** authorized first-attempt scheduled ETL run whose factor snapshot is captured.
+**FROZEN PROTOCOL DECISION.** `official_published_score` is the `composite_score` field from `public/data/latest.json` produced by the **same** authorized first-attempt scheduled ETL run whose factor snapshot is captured.
 
 **FIREWALL.** Do **not** use `public/data/history.csv` as `official_published_score` scientific authority. That file remains operational / display history only because it has same-date upsert behavior.
 
@@ -399,7 +401,7 @@ At frozen Official v1.1.1, cycle adjustment is disabled and spike adjustment is 
 
 ## 9. Common eligibility
 
-**PROPOSED PROTOCOL DECISION.** The three models must use the **same** eligible observation set.
+**FROZEN PROTOCOL DECISION.** The three models must use the **same** eligible observation set.
 
 Required factors:
 
@@ -435,7 +437,7 @@ all three models are NOT_ELIGIBLE for scientific analysis on that date
 
 ## 10. Official score integrity check
 
-**PROPOSED PROTOCOL DECISION.** For each eligible observation capture both:
+**FROZEN PROTOCOL DECISION.** For each eligible observation capture both:
 
 ```text
 official_published_score
@@ -488,7 +490,7 @@ mom_25_35
 
 Those presets normalize **within pillars** and can omit non-fresh factors. The dashboard shows non-Official models as Preview.
 
-**PROPOSED PROTOCOL DECISION.** H8 does **not** use browser `localStorage` or UI state as scientific evidence.
+**FROZEN PROTOCOL DECISION.** H8 does **not** use browser `localStorage` or UI state as scientific evidence.
 
 H8 will freeze **standalone factor-level challenger formulas** (§6–§7) and capture the three scores as immutable research observations.
 
@@ -500,7 +502,7 @@ The UI may continue displaying previews. **No UI redesign is required by the H8 
 
 ## 12. Prospective capture window
 
-**PROPOSED PROTOCOL DECISION.**
+**FROZEN PROTOCOL DECISION.**
 
 ```text
 START = 2026-08-24
@@ -540,7 +542,7 @@ The exact BTC close dates needed for H8 v1 `MACE_30` are:
 
 No earlier close is required for H8 primary analysis. No later close enters H8 v1 MACE.
 
-**PROPOSED PROTOCOL DECISION.** Distinguish **close completion** from **prospective tape capture**. The `2027-03-21` UTC close becomes complete at the end of that UTC day, but H8 must **not** analyze merely because the market close now exists.
+**FROZEN PROTOCOL DECISION.** Distinguish **close completion** from **prospective tape capture**. The `2027-03-21` UTC close becomes complete at the end of that UTC day, but H8 must **not** analyze merely because the market close now exists.
 
 H8 performance must **not** be calculated:
 
@@ -597,7 +599,7 @@ The workflow currently:
 2. runs `npm run etl:compute`
 3. commits `public/data`, `public/signals`, `public/extras`, `public/alerts` to `main`
 
-**PROPOSED PROTOCOL DECISION.** H8 study **score observations** and H8 prospective **BTC-close artifacts** may be written **only** during a **first-attempt** scheduled Daily ETL event.
+**FROZEN PROTOCOL DECISION.** H8 study **score observations** and H8 prospective **BTC-close artifacts** may be written **only** during a **first-attempt** scheduled Daily ETL event.
 
 Future capture gate for both classes:
 
@@ -624,7 +626,7 @@ This first-attempt-only rule applies to **both**:
 
 ### 13.1 Score capture versus outcome capture
 
-**PROPOSED PROTOCOL DECISION.** Distinguish two artifact classes:
+**FROZEN PROTOCOL DECISION.** Distinguish two artifact classes:
 
 ```text
 SCORE OBSERVATION
@@ -659,9 +661,9 @@ The catch-up rule is automatic, mechanical, and fixed **before outcomes exist**.
 
 If the authorized score observation for an expected UTC date is missed, that observation remains `CAPTURE_MISSING` forever under H8 v1.
 
-**PROPOSED PROTOCOL DECISION.** `observation_as_of_utc` is the actual production artifact as-of timestamp from the scheduled ETL snapshot being captured.
+**FROZEN PROTOCOL DECISION.** `observation_as_of_utc` is the actual production artifact as-of timestamp from the scheduled ETL snapshot being captured.
 
-**PROPOSED PROTOCOL DECISION.** `observation_date` is the UTC calendar-date portion of `observation_as_of_utc`.
+**FROZEN PROTOCOL DECISION.** `observation_date` is the UTC calendar-date portion of `observation_as_of_utc`.
 
 Do **not** assign `observation_date` merely from:
 
@@ -688,7 +690,7 @@ If a heavily delayed scheduled run crosses into another UTC calendar date, do **
 
 **FACT.** `public/data/history.csv` uses date-level upsert semantics (`scripts/etl/lib/gscoreHistoryCsv.mjs`, blob `d1c8ed95a5ac2dbaf3946f9573f2817474851774`). Same-day reruns replace the row.
 
-**PROPOSED PROTOCOL DECISION.** H8 must **not** rely on `public/data/history.csv` as its authoritative research record.
+**FROZEN PROTOCOL DECISION.** H8 must **not** rely on `public/data/history.csv` as its authoritative research record.
 
 Proposed authoritative prospective score artifact:
 
@@ -755,7 +757,7 @@ Production snapshot BTC price may be captured for provenance. It is **not** the 
 
 ## 15. Prospective BTC close tape
 
-**PROPOSED PROTOCOL DECISION.** H8 should prospectively capture completed UTC BTC daily closes as they become known.
+**FROZEN PROTOCOL DECISION.** H8 should prospectively capture completed UTC BTC daily closes as they become known.
 
 **FIREWALL.** Do **not** wait until March 2027 and reconstruct the complete outcome tape from a later moving file.
 
@@ -775,7 +777,7 @@ The exact close dates required for H8 v1 `MACE_30` are:
 
 No earlier close is required for H8 primary analysis. No later close enters H8 v1 MACE.
 
-**PROPOSED PROTOCOL DECISION.** BTC close capture remains authorized **only** during:
+**FROZEN PROTOCOL DECISION.** BTC close capture remains authorized **only** during:
 
 ```text
 github.event_name == 'schedule' && github.run_attempt == 1
@@ -785,7 +787,7 @@ No `workflow_dispatch`, GitHub rerun, Refresh/API, local run, manual force, or m
 
 ### 15.1 Deterministic automatic close catch-up
 
-**PROPOSED PROTOCOL DECISION.** Replace any rule that an authorized run may capture only `T-1`.
+**FROZEN PROTOCOL DECISION.** Replace any rule that an authorized run may capture only `T-1`.
 
 For every authorized first-attempt scheduled ETL on UTC date `T`:
 
@@ -825,7 +827,7 @@ This is **AUTOMATIC CATCH-UP**. It is **not** discretionary backfill.
 
 **FACT.** The production canonical BTC history performs recent-date upserts from Coinbase.
 
-**PROPOSED PROTOCOL DECISION.** For a required close date `d` that does not yet have an H8 close artifact: the first valid close value for `d` encountered by the deterministic H8 close-capture process at an authorized first-attempt scheduled event becomes the **permanent** H8 value.
+**FROZEN PROTOCOL DECISION.** For a required close date `d` that does not yet have an H8 close artifact: the first valid close value for `d` encountered by the deterministic H8 close-capture process at an authorized first-attempt scheduled event becomes the **permanent** H8 value.
 
 Once `research/h8-prospective/btc-closes/d.json` exists, **NEVER**:
 
@@ -855,7 +857,7 @@ Under normal operations, automatic catch-up usually finds only `T-1` missing. If
 
 ### 15.4 Fixed close-capture recovery window
 
-**PROPOSED PROTOCOL DECISION.** Do not allow outcome catch-up indefinitely.
+**FROZEN PROTOCOL DECISION.** Do not allow outcome catch-up indefinitely.
 
 Automatic H8 BTC-close capture is authorized on first-attempt scheduled runs through:
 
@@ -928,7 +930,7 @@ Once an H8 close artifact is created and committed:
 
 ## 16. Primary scientific question
 
-**PROPOSED PROTOCOL DECISION.**
+**FROZEN PROTOCOL DECISION.**
 
 PRIMARY QUESTION:
 
@@ -955,7 +957,7 @@ This mirrors the H7.2 PRIMARY question prospectively.
 
 ## 17. Primary outcome definition
 
-**PROPOSED PROTOCOL DECISION.** For observation date `D`:
+**FROZEN PROTOCOL DECISION.** For observation date `D`:
 
 ```text
 S = completed prospectively captured UTC close C_D
@@ -979,7 +981,7 @@ The observation-time BTC snapshot may be stored only for provenance / future sep
 
 ## 18. Primary analysis sample
 
-**PROPOSED PROTOCOL DECISION.** A date enters the H8 PRIMARY analysis only if:
+**FROZEN PROTOCOL DECISION.** A date enters the H8 PRIMARY analysis only if:
 
 1. the H8 observation was prospectively captured by the authorized **first-attempt** scheduled Daily ETL
 2. `common_eligibility_status = ELIGIBLE`
@@ -1005,7 +1007,7 @@ OUTCOME_INCOMPLETE
 
 ## 19. Challenger analyses
 
-**PROPOSED PROTOCOL DECISION.** Secondary challenger analyses use the **exact same eligible dates** and the **exact same `MACE_30` outcome values** as Official.
+**FROZEN PROTOCOL DECISION.** Secondary challenger analyses use the **exact same eligible dates** and the **exact same `MACE_30` outcome values** as Official.
 
 ```text
 SECONDARY: Spearman(Liq-Heavy, MACE_30)
@@ -1037,7 +1039,7 @@ A positive delta does **not** automatically:
 
 ## 20. Spearman convention
 
-**PROPOSED PROTOCOL DECISION.** Use the same frozen convention as H7.2:
+**FROZEN PROTOCOL DECISION.** Use the same frozen convention as H7.2:
 
 - continuous / integer score values as captured
 - independently rank model score and MACE
@@ -1058,7 +1060,7 @@ rho undefined
 
 ## 21. No longer-horizon tests in H8 v1
 
-**PROPOSED PROTOCOL DECISION.** H8 v1 is specifically a prospective replication / follow-up of the H7.2 **30-day** primary finding.
+**FROZEN PROTOCOL DECISION.** H8 v1 is specifically a prospective replication / follow-up of the H7.2 **30-day** primary finding.
 
 **FIREWALL.** Do **not** add as H8 v1 outcome tests:
 
@@ -1080,7 +1082,7 @@ Those require separately preregistered studies.
 
 ## 22. No interim performance peeking
 
-**PROPOSED PROTOCOL DECISION.** During the 180-date capture window and outcome-maturation period, do **not** calculate or display:
+**FROZEN PROTOCOL DECISION.** During the 180-date capture window and outcome-maturation period, do **not** calculate or display:
 
 - running MACE correlation
 - running Spearman
@@ -1109,7 +1111,7 @@ The first H8 v1 performance calculation occurs only after the conditions in §12
 
 ## 23. Fixed study end / no optional stopping
 
-**PROPOSED PROTOCOL DECISION.** Do not stop because results appear good. Do not extend because results appear bad. Do not stop because a challenger appears better.
+**FROZEN PROTOCOL DECISION.** Do not stop because results appear good. Do not extend because results appear bad. Do not stop because a challenger appears better.
 
 The planned observation window is the fixed 180-date window:
 
@@ -1127,7 +1129,7 @@ The performance result waits for the frozen analysis-readiness rule in §12. It 
 
 ## 24. Result language
 
-**PROPOSED PROTOCOL DECISION.** For Official PRIMARY:
+**FROZEN PROTOCOL DECISION.** For Official PRIMARY:
 
 | rho | label |
 |---|---|
@@ -1157,7 +1159,7 @@ A challenger result may motivate a later separately preregistered model-promotio
 
 ## 25. Champion / challenger governance
 
-**PROPOSED PROTOCOL DECISION.** Official v1.1.1 remains production Champion throughout H8 unless an external operational necessity requires otherwise.
+**FROZEN PROTOCOL DECISION.** Official v1.1.1 remains production Champion throughout H8 unless an external operational necessity requires otherwise.
 
 Liq-Heavy and Mom-Tilted remain research Challengers.
 
@@ -1177,7 +1179,7 @@ If a future model change is scientifically justified: create a new versioned can
 
 ## 26. Model-change firewall during H8
 
-**PROPOSED PROTOCOL DECISION.** Distinguish:
+**FROZEN PROTOCOL DECISION.** Distinguish:
 
 ```text
 METHODOLOGY CHANGE
@@ -1210,7 +1212,7 @@ For ordinary implementation or operational fixes that claim **not** to change mo
 
 **FACT.** Identities below are recorded at parent main `9478099ff775f1d6630b83bd402727870f15ca10`. This pass did **not** modify these files. The fingerprint is conservative: a change to a transitive scientific helper must not pass unnoticed merely because a top-level importer stayed unchanged.
 
-**PROPOSED PROTOCOL DECISION.** Distinguish:
+**FROZEN PROTOCOL DECISION.** Distinguish:
 
 ```text
 H8 SCIENTIFIC MODEL-CONTRACT FINGERPRINT CHANGE
@@ -1307,7 +1309,7 @@ This is provenance design only. This pass did not modify any of these files.
 
 ### 27.4 H8 capture-implementation fingerprint — not assigned yet
 
-**PROPOSED PROTOCOL DECISION.** The H8 capture-implementation fingerprint does **not** exist yet. It will be established only AFTER:
+**FROZEN PROTOCOL DECISION.** The H8 capture-implementation fingerprint does **not** exist yet. It will be established only AFTER:
 
 - protocol freeze / merge
 - capture code is written
@@ -1414,7 +1416,7 @@ The expected one-time workflow change that installs the accepted H8 capture step
 
 ## 29. Capture implementation requirements — design only
 
-**PROPOSED PROTOCOL DECISION.** Later capture implementation must be:
+**FROZEN PROTOCOL DECISION.** Later capture implementation must be:
 
 - append-only by UTC date
 - create-only
@@ -1469,13 +1471,15 @@ before performance is observed.
 
 ---
 
-## 31. What this candidate pass does and does not do
+## 31. What this freeze pass does and does not do
 
-This candidate amendment modifies **only**:
+This freeze-only pass modifies **only**:
 
 ```text
 docs/H8_PROSPECTIVE_30D_RISK_DISCRIMINATION_PREREGISTRATION.md
 ```
+
+It converts the accepted protocol candidate into a visibly frozen protocol. It does **not** change scientific methodology.
 
 It does **not**:
 
@@ -1498,10 +1502,30 @@ It does **not**:
 
 ## 32. Stop
 
-**STOP FOR FINAL INDEPENDENT H8 PROTOCOL-CANDIDATE REVIEW.**
+```text
+H8 PROTOCOL STATUS:
+FROZEN
 
-Do not freeze this document until that review accepts or amends it.
-Do not assign `H8_PROTOCOL_SHA` yet.
-Do not assign `H8_CAPTURE_SOURCE_SHA` yet.
-Do not implement capture until a freeze exists.
-Do not start the 180-date window if capture infrastructure is not operational before `2026-08-24`.
+H8_PROTOCOL_VERSION:
+h8-prospective-three-model-v1
+
+CAPTURE IMPLEMENTATION:
+NOT YET IMPLEMENTED
+
+H8_CAPTURE_SOURCE_SHA:
+NOT YET ASSIGNED
+
+OBSERVATIONS:
+ZERO AT PROTOCOL FREEZE
+
+PERFORMANCE RESULTS:
+NONE
+
+CALIBRATION:
+CLOSED
+```
+
+**STOP FOR INDEPENDENT H8 PROTOCOL-FREEZE VERIFICATION.**
+
+Do not implement capture until the freeze commit has been independently verified and merged.
+Do not start H8 if accepted capture implementation is not operational before the scheduled `2026-08-24` observation.
