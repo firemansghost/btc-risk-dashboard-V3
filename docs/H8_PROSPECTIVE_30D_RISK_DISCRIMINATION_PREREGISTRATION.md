@@ -7,7 +7,7 @@
 **Branch:** `research/h8-prospective-three-model-preregistration`
 **Parent main HEAD at candidate creation:** `9478099ff775f1d6630b83bd402727870f15ca10`
 
-This document is a **protocol candidate**. Methodology is **proposed**, not frozen. Independent review may amend it. Changing any later **frozen** PROTOCOL DECISION will require a new protocol version. H8 capture has **not** been implemented. H8 performance has **not** been calculated. Calibration remains **CLOSED**.
+This document is a **protocol candidate**. Methodology is **proposed**, not frozen. Independent review of the prior candidate (`80de0bb4b8e290399bdca02363d1b898c5fea700`) approved the core H8 design and required four pre-freeze resolutions, which this amendment records. Changing any later **frozen** PROTOCOL DECISION will require a new protocol version. H8 capture has **not** been implemented. H8 performance has **not** been calculated. `H8_PROTOCOL_SHA` is **not** assigned. Calibration remains **CLOSED**.
 
 Do **not** write the eventual freeze-commit SHA into this document. The Git commit that later freezes accepted bytes becomes `H8_PROTOCOL_SHA` only after independent review and an explicit freeze.
 
@@ -252,9 +252,10 @@ Algebraic sum:
 + 0.20
 + 0.10
 + 0.10
-= 0.86 + (0.18 + 0.077 + 0.043) * (0.35 / 0.30)
-= 0.86 + 0.30 * (0.35 / 0.30)
-= 0.86 + 0.35
+= (0.25 + 0.20 + 0.10 + 0.10)
+  + (0.18 + 0.077 + 0.043) * (0.35 / 0.30)
+= 0.65 + 0.30 * (0.35 / 0.30)
+= 0.65 + 0.35
 = 1.00
 ```
 
@@ -313,8 +314,10 @@ Algebraic sum:
 + 0.20
 + 0.10
 + 0.10
-= 0.90 + 0.30 * (0.25 / 0.30)
-= 0.90 + 0.25
+= (0.35 + 0.20 + 0.10 + 0.10)
+  + (0.18 + 0.077 + 0.043) * (0.25 / 0.30)
+= 0.75 + 0.30 * (0.25 / 0.30)
+= 0.75 + 0.25
 = 1.00
 ```
 
@@ -345,17 +348,52 @@ Use JavaScript `Number` semantics. No intermediate rounding. All three models pr
 **FIREWALL.** Do not substitute a prior factor score.
 **FIREWALL.** Do not backfill an observation later.
 
-**OPEN FOR REVIEW — production composite vs H8 scientific rule.** At parent main, production `scripts/etl/factors.mjs` `calculateEnhancedGScore` divides `weightedSum / totalWeight` of **fresh** factors, then `Math.round`. Production `scripts/etl/compute.mjs` then applies:
+**PROPOSED PROTOCOL DECISION — production Official arithmetic on H8-eligible days.** The following production behavior is verified at parent main `9478099ff775f1d6630b83bd402727870f15ca10` and is accepted as the candidate protocol's Official-integrity basis.
+
+`scripts/etl/factors.mjs` `calculateEnhancedGScore()` calculates:
 
 ```text
-finalComposite = Math.max(0, Math.min(100, Math.round(adjustedComposite * 10) / 10))
+normalizedScore = weightedSum / totalWeight
+composite       = Math.round(normalizedScore)
 ```
 
-with cycle/spike `adj_pts` forced to `0` when those flags are disabled.
+with `totalWeight` equal to the sum of Official weights of **fresh** factors. H8 v1 **does not adopt** missing-factor renormalization as a scientific rule. Instead it **requires common eligibility of all seven required factors**. For an H8 `ELIGIBLE` observation:
 
-H8 v1 **does not adopt** missing-factor renormalization as a scientific rule. Instead it **requires common eligibility of all seven factors**, so Official `totalWeight = 1.00` and the production renormalization is a no-op on H8-eligible days. With adjustments disabled, the tenth-point rounding is also an identity on an already-integer Official composite.
+- all seven required factors are `fresh`
+- all seven Official weights participate
+- Official `totalWeight = 1.00`
+- therefore production normalization does not change the weighted sum
 
-If independent review later finds that production published scores are not exact integers, or that production arithmetic diverges from the H8 formula on eligible days, those days are `INTEGRITY_MISMATCH` — they are not silently repaired.
+`scripts/etl/compute.mjs` subsequently calculates:
+
+```text
+adjustedComposite =
+  composite
+  + cycle_adjustment.adj_pts
+  + spike_adjustment.adj_pts
+
+finalComposite =
+  Math.max(
+    0,
+    Math.min(
+      100,
+      Math.round(adjustedComposite * 10) / 10
+    )
+  )
+```
+
+At frozen Official v1.1.1, cycle adjustment is disabled and spike adjustment is disabled, so `adj_pts = 0`. Therefore on an H8-eligible day:
+
+- production composite enters `compute.mjs` as an integer
+- adjustment points equal zero
+- tenth-point rounding is an identity
+- the Official H8 scientific formula in this section should exactly equal production `composite_score`
+
+**PROPOSED PROTOCOL DECISION.** `official_published_score` is the `composite_score` field from `public/data/latest.json` produced by the **same** authorized first-attempt scheduled ETL run whose factor snapshot is captured.
+
+**FIREWALL.** Do **not** use `public/data/history.csv` as `official_published_score` scientific authority. That file remains operational / display history only because it has same-date upsert behavior.
+
+`official_formula_score` remains an independent recomputation from the captured seven factor scores using frozen Official v1.1.1 weights and the H8 scientific arithmetic above. Exact mismatch remains `INTEGRITY_MISMATCH` and is excluded permanently. Do not repair the observation after the fact.
 
 ---
 
@@ -403,6 +441,16 @@ all three models are NOT_ELIGIBLE for scientific analysis on that date
 official_published_score
 official_formula_score
 ```
+
+`official_published_score` is exactly:
+
+```text
+public/data/latest.json -> composite_score
+```
+
+from the **same** authorized first-attempt scheduled Daily ETL run whose factor snapshot is captured.
+
+**FIREWALL.** Do **not** read `official_published_score` from `public/data/history.csv`.
 
 `official_formula_score` is independently recomputed from the captured seven factor scores using the frozen Official v1.1.1 weights and the H8 scientific arithmetic in §8.
 
@@ -481,10 +529,38 @@ This creates a clean firewall between H7.2 completion / H8 design and the prospe
 The final observation date `2027-02-19` requires 30-day outcome coverage through:
 
 ```text
-2027-03-21
+C_2027-03-21
 ```
 
-**PROPOSED PROTOCOL DECISION.** H8 primary result evaluation must **not** occur before the completed `2027-03-21` UTC daily close has been prospectively captured and accepted in the H8 close tape.
+The exact BTC close dates needed for H8 v1 `MACE_30` are:
+
+```text
+2026-08-24 through 2027-03-21 inclusive
+```
+
+No earlier close is required for H8 primary analysis. No later close is required for H8 v1.
+
+**PROPOSED PROTOCOL DECISION.** Distinguish **close completion** from **prospective tape capture**. The `2027-03-21` UTC close becomes complete at the end of that UTC day, but H8 must **not** analyze merely because the market close now exists.
+
+H8 v1 performance analysis may begin only after **all** of the following are true:
+
+1. the completed `2027-03-21` close has been captured by an authorized first-attempt scheduled H8 close-capture run
+2. `research/h8-prospective/btc-closes/2027-03-21.json` exists
+3. that immutable close artifact has been committed
+4. the H8 capture / output integrity checks accept the complete prospective tape
+
+Under the expected daily schedule, the earliest normal capture event for `C_2027-03-21` is the `2027-03-22` first-attempt scheduled Daily ETL.
+
+If that scheduled capture fails or the close artifact is absent:
+
+```text
+WAIT.
+```
+
+**FIREWALL.** Do not reconstruct the close later merely to preserve the calendar.
+**FIREWALL.** Do not calculate H8 performance until the accepted prospective tape is complete enough for the frozen analysis rules.
+
+The study observation window itself remains the fixed 180-date window. Do not extend observations.
 
 **FIREWALL.** If H8 capture infrastructure is **not** fully merged and operational **before** the scheduled `2026-08-24` observation:
 
@@ -517,18 +593,52 @@ The workflow currently:
 2. runs `npm run etl:compute`
 3. commits `public/data`, `public/signals`, `public/extras`, `public/alerts` to `main`
 
-**PROPOSED PROTOCOL DECISION.** H8 study observations must be generated **only** from the scheduled Daily ETL event (`github.event_name == 'schedule'`).
+**PROPOSED PROTOCOL DECISION.** H8 study observations and H8 prospective BTC-close captures must be generated **only** from a **first-attempt** scheduled Daily ETL event.
 
-**FIREWALL.** The following must **not** create a new H8-eligible observation:
+Future study-capture gate:
+
+```text
+github.event_name == 'schedule' && github.run_attempt == 1
+```
+
+`github.event_name == 'schedule'` alone is **insufficient**, because a GitHub Actions rerun of a scheduled workflow still has `event_name = schedule`.
+
+This first-attempt-only rule applies to **both**:
+
+- H8 score observation capture
+- H8 prospective BTC-close capture
+
+**FIREWALL.** The following must **not** create a new H8 observation or H8 close artifact:
 
 - Refresh button
 - API refresh
 - local ETL
 - `workflow_dispatch`
-- rerun of a failed/non-schedule job
+- GitHub Actions rerun (`run_attempt != 1`), even if `event_name == 'schedule'`
 - any other ad-hoc execution
 
-**PROPOSED PROTOCOL DECISION.** The H8 observation timestamp is the **actual** production artifact as-of / capture timestamp from that scheduled run.
+**FIREWALL.** Do not provide a force / backfill override.
+
+**PROPOSED PROTOCOL DECISION.** `observation_as_of_utc` is the actual production artifact as-of timestamp from the scheduled ETL snapshot being captured.
+
+**PROPOSED PROTOCOL DECISION.** `observation_date` is the UTC calendar-date portion of `observation_as_of_utc`.
+
+Do **not** assign `observation_date` merely from:
+
+- nominal cron time
+- local date
+- `workflow_dispatch` date
+- filename expectation
+
+The scheduled observation must satisfy:
+
+```text
+2026-08-24 <= observation_date <= 2027-02-19
+```
+
+and the target observation file must not already exist.
+
+If a heavily delayed scheduled run crosses into another UTC calendar date, do **not** rewrite history to make it belong to the nominal prior date. Absent expected calendar dates remain `CAPTURE_MISSING` in universe reporting. A duplicate target observation date does not create a second observation.
 
 **FIREWALL.** Do not pretend the observation occurred exactly at 11:00 UTC if GitHub Actions started or completed late.
 
@@ -571,6 +681,11 @@ Each observation file should eventually contain at least:
 - `production_config_sha256`
 - `source_base_git_sha`
 - `latest_artifact_sha256`
+- operational provenance, including at least:
+  - `github_run_id`
+  - `github_run_attempt`
+  - `github_event_name`
+  - and preferably `github_workflow_ref` and `github_sha`
 - `common_eligibility_status`
 - `eligibility_reason`
 - required factor snapshot for all seven factors:
@@ -611,7 +726,40 @@ research/h8-prospective/btc-closes/YYYY-MM-DD.json
 
 One immutable file per completed UTC BTC close date.
 
-The scheduled Daily ETL on date `T` may capture the completed UTC close for `T-1` after that close exists in the production BTC history.
+The exact close dates required for H8 v1 `MACE_30` are:
+
+```text
+2026-08-24 through 2027-03-21 inclusive
+```
+
+No earlier close is required for H8 primary analysis. No later close is required for H8 v1.
+
+**PROPOSED PROTOCOL DECISION.** For a first-attempt scheduled ETL executed on UTC date `T`, the H8 close-capture step may create **exactly** the completed close artifact for:
+
+```text
+T - 1 UTC calendar day
+```
+
+if and only if that target close date is within `2026-08-24` through `2027-03-21` **and** the production completed-close source contains a valid finite positive close for **exactly** that date.
+
+If the required target close is unavailable:
+
+- do not substitute another date
+- do not use current spot
+- do not later overwrite
+- do not reconstruct silently
+
+That close remains prospectively missing unless the frozen protocol explicitly permits another first-attempt scheduled mechanism. This candidate provides **no** force / backfill override.
+
+Under the normal daily schedule:
+
+```text
+first required close  = 2026-08-24
+  expected capture by first-attempt scheduled ETL on 2026-08-25
+
+last required close   = 2027-03-21
+  expected capture by first-attempt scheduled ETL on 2027-03-22
+```
 
 Each close file should contain at least:
 
@@ -622,6 +770,7 @@ Each close file should contain at least:
 - `captured_at_utc`
 - `source_artifact_sha256`
 - `source_base_git_sha`
+- operational provenance, including at least `github_run_id`, `github_run_attempt`, and `github_event_name`
 
 Once committed:
 
@@ -692,7 +841,7 @@ The observation-time BTC snapshot may be stored only for provenance / future sep
 
 **PROPOSED PROTOCOL DECISION.** A date enters the H8 PRIMARY analysis only if:
 
-1. the H8 observation was prospectively captured by the authorized scheduled Daily ETL
+1. the H8 observation was prospectively captured by the authorized **first-attempt** scheduled Daily ETL
 2. `common_eligibility_status = ELIGIBLE`
 3. Official integrity check passed
 4. all exact prospectively captured BTC closes `C_D` through `C_D+30` exist and are valid finite positive values
@@ -830,7 +979,7 @@ The planned observation window is the fixed 180-date window:
 
 The performance result waits for final 30-day maturity.
 
-**FIREWALL.** No performance calculation before the completed `2027-03-21` UTC close is available in the prospective H8 close tape.
+**FIREWALL.** No performance calculation before the accepted prospective H8 close artifact `research/h8-prospective/btc-closes/2027-03-21.json` exists, has been committed, and has passed H8 capture / output integrity checks. Market completion of the `2027-03-21` UTC close is not sufficient by itself.
 
 ---
 
@@ -917,30 +1066,97 @@ For ordinary implementation or operational fixes that claim **not** to change mo
 
 ## 27. Model-contract fingerprint audit
 
-**FACT.** The following table records Git blob SHAs at parent main `9478099ff775f1d6630b83bd402727870f15ca10`. This pass did **not** modify these files.
+**FACT.** Identities below are recorded at parent main `9478099ff775f1d6630b83bd402727870f15ca10`. This pass did **not** modify these files. The fingerprint is conservative: a change to a transitive scientific helper must not pass unnoticed merely because a top-level importer stayed unchanged.
 
-A later blob change should **hard-stop H8 pending compatibility review** when marked `YES`. Files marked `NO` are documented so they are not mistaken for H8 scientific authority; a change to them still must not silently rewrite frozen H8 observations.
+**PROPOSED PROTOCOL DECISION.** Distinguish:
+
+```text
+MODEL-CONTRACT FINGERPRINT CHANGE
+versus
+ordinary data-artifact changes under public/data, public/signals, public/extras, public/alerts
+```
+
+Daily `public/data` updates must **not** themselves hard-stop H8.
+
+A model-contract fingerprint change during H8:
+
+- does **not** erase prior observations
+- does **not** silently authorize later observations
+- **pauses** H8 scientific capture pending explicit compatibility review
+
+If the code change is scientifically compatible: document the compatibility decision **before** subsequent observations are treated as belonging to H8 v1.
+
+If it changes methodology: H8 v1 does **not** silently continue.
+
+### 27.1 Scientific dependency trees
+
+**FACT.** Git tree SHAs at parent main:
+
+| Path | Git TREE SHA | Role | Hard-stop H8 on tree change? |
+|---|---|---|---|
+| `scripts/etl/factors/` | `3921332c0decd56800e78580183931b718b9a345` | Factor-formula helpers imported by production scoring (`trendValuation`, stablecoin aggregation/guard, market regime, onchain modules) | **YES** |
+| `scripts/etl/lib/` | `64c73c01db27f1e6dbcd12d45d08c2f12bc47b12` | Scoring / freshness / adjustment / snapshot / close-period helpers used by production ETL | **YES** |
+
+`scripts/etl/factors/` currently contains:
+
+```text
+marketRegime.mjs
+onchain-enhanced.mjs
+onchain.mjs
+stablecoinGrowthAggregation.mjs
+stablecoinGrowthGuard.mjs
+trendValuation.mjs
+```
+
+`scripts/etl/lib/` currently contains:
+
+```text
+completedPeriods.mjs
+etfZeroCross.mjs
+gscoreHistoryCsv.mjs
+macroFreshness.mjs
+officialAdjustments.mjs
+postComputeHealth.mjs
+riskBand.mjs
+signalV2.mjs
+snapshotPrice.mjs
+sourceObservationTime.mjs
+ssotSubweights.mjs
+termFreshness.mjs
+```
+
+A blob change inside either tree changes that tree SHA even if `factors.mjs` / `compute.mjs` themselves are unchanged.
+
+### 27.2 Required individual production blobs
 
 | Path | Git blob SHA | Role | Hard-stop H8 on blob change? |
 |---|---|---|---|
 | `config/dashboard-config.json` | `b5c606b8f14f9e2a2c29061f2ae1c4d4337c8a49` | Authoritative Official v1.1.1 weights, enabled flags, subweights, cycle/spike flags, model/ssot versions | **YES** |
-| `config/weights.json` | `9a8b2f8fba220bc9e5bd8de7f8bc1d27c707ba9b` | Older v1.1.0 config. **Not** H8 Official authority | NO as Official SSOT; still must not be treated as H8 Official if edited |
-| `scripts/etl/factors.mjs` | `e9fd06df79967f0041a901e2dd971b771e669b03` | Factor scoring + production composite assembly (`calculateEnhancedGScore`) | **YES** |
-| `scripts/etl/compute.mjs` | `6f16c1f24bc097d6079fffc0ea7b5889c91ea0d4` | ETL orchestration, adjustment gating, published `composite_score` / artifacts | **YES** |
-| `scripts/etl/lib/ssotSubweights.mjs` | `c33e13a92cbc75697e51ea3face379f503a40924` | Official subweight lock + intra-factor blend | **YES** |
-| `scripts/etl/lib/officialAdjustments.mjs` | `8dc663b1d202451d3a3c11a9a33604d69e775953` | Cycle/spike disable gating (`adj_pts = 0`) | **YES** |
-| `scripts/etl/adjustments.mjs` | `36a6d3c5220ac7ac9e7493bc49176840ed5fe9d7` | Cycle/spike math (currently gated off) | **YES** if reactivated or if gating bypassed |
-| `scripts/etl/factors/trendValuation.mjs` | `75046b4d47d73144f56c339c0461bdd4b6bf21b1` | Trend & Valuation factor formula | **YES** |
-| `scripts/etl/stalenessUtils.mjs` | `1c213b9b8eb659c9cda22d0834694ae3239eb768` | Production calendar-aware freshness | **YES** |
+| `lib/config-loader.mjs` | `8f439254ca813050703a7c17bcd658474c19e2b2` | Loads and normalizes Official SSOT for ETL scoring | **YES** |
+| `scripts/etl/compute.mjs` | `6f16c1f24bc097d6079fffc0ea7b5889c91ea0d4` | ETL orchestration, published `composite_score`, artifact as-of | **YES** |
+| `scripts/etl/factors.mjs` | `e9fd06df79967f0041a901e2dd971b771e669b03` | Factor scoring + production composite assembly | **YES** |
+| `scripts/etl/stalenessUtils.mjs` | `1c213b9b8eb659c9cda22d0834694ae3239eb768` | Production calendar-aware freshness / eligibility | **YES** |
 | `scripts/etl/marketCalendar.mjs` | `77c5669f77bef11cbc43fb85f82bb4a42bfc2136` | ETF / equity-calendar freshness helper | **YES** |
-| `scripts/etl/lib/macroFreshness.mjs` | `7781aedb1941d4052aa1f90c20f52615abb7d979` | Macro Overlay source-cadence freshness | **YES** |
-| `scripts/etl/lib/termFreshness.mjs` | `bc889e6b50f50c52b5d673c1d7f709ffe05c32e0` | Term / leverage freshness | **YES** |
-| `scripts/etl/priceHistory.mjs` | `515b02acdd0cf4a72e62889dafb83cec6e8acd95` | Production completed-UTC-close history used as the live source for later H8 close capture | **YES** for outcome-tape provenance |
-| `scripts/etl/lib/gscoreHistoryCsv.mjs` | `d1c8ed95a5ac2dbaf3946f9573f2817474851774` | Date-level upsert of `history.csv` — **not** H8 research SSOT | NO as research SSOT; upsert behavior is why H8 needs append-only files |
-| `lib/experimentalModel.ts` | `b041a44e37c6268e1d7ab4a9f9117ab0d27e2eeb` | UI-only pillar reweighting / Preview | **NO** for H8 scientific scores; UI may change without rewriting H8 formulas |
-| `lib/composite-validator.mjs` | `7a4b30dd84e77b1e4e2cafc06f515efdbf0341b2` | Dev/CI composite check with 0.5 tolerance; treats weights as percents in places. **Not** H8 scientific arithmetic | **NO** as H8 scoring SSOT |
-| `.github/workflows/daily-etl.yml` | `f2103048d384749310432eee610dffad2dad0f4f` | Scheduled capture mechanism | **YES** for observation-event gating; later H8 capture must not weaken scheduled-only rule |
-| `scripts/etl/lib/riskBand.mjs` | `f7b15ed2b43da3cdd2d70d0d3a34d226ea73fef1` | Band labels from composite. H8 v1 does **not** analyze bands | NO for H8 v1 scientific statistic |
+| `scripts/etl/adjustments.mjs` | `36a6d3c5220ac7ac9e7493bc49176840ed5fe9d7` | Cycle/spike math (currently gated off) | **YES** |
+| `scripts/etl/coinGeckoCache.mjs` | `fbfc5e35b3bd4af60eb00e780892b62f94e8bbff` | Price / social fetch cache used by factor scoring | **YES** |
+| `scripts/etl/priceHistory.mjs` | `515b02acdd0cf4a72e62889dafb83cec6e8acd95` | Production completed-UTC-close history used as the live source for later H8 close capture | **YES** |
+| `scripts/etl/fetch-helper.mjs` | `da8ca2b441088f2e13364249e7ecbbed40dc22a4` | Direct production fetch/retry helper imported by `factors.mjs` and `compute.mjs` | **YES** |
+| `.github/workflows/daily-etl.yml` | `f2103048d384749310432eee610dffad2dad0f4f` | Scheduled capture mechanism. Later H8 capture must not weaken first-attempt scheduled-only gating | **YES** |
+
+### 27.3 Documented non-authority / non-H8-statistic files
+
+These are recorded so they are not mistaken for H8 scientific authority. A change still must not silently rewrite frozen H8 observations.
+
+| Path | Git blob SHA | Role | Hard-stop H8 scientific capture? |
+|---|---|---|---|
+| `config/weights.json` | `9a8b2f8fba220bc9e5bd8de7f8bc1d27c707ba9b` | Older v1.1.0 config. **Not** H8 Official authority | NO as Official SSOT |
+| `lib/experimentalModel.ts` | `b041a44e37c6268e1d7ab4a9f9117ab0d27e2eeb` | UI-only pillar reweighting / Preview | **NO** for H8 scientific scores |
+| `lib/composite-validator.mjs` | `7a4b30dd84e77b1e4e2cafc06f515efdbf0341b2` | Dev/CI composite check with 0.5 tolerance. **Not** H8 scientific arithmetic | **NO** as H8 scoring SSOT |
+| `scripts/etl/lib/gscoreHistoryCsv.mjs` | `d1c8ed95a5ac2dbaf3946f9573f2817474851774` | Date-level upsert of `history.csv` — **not** H8 research SSOT | NO as research SSOT |
+| `scripts/etl/lib/riskBand.mjs` | `f7b15ed2b43da3cdd2d70d0d3a34d226ea73fef1` | Band labels from composite. H8 v1 does **not** analyze bands | NO for H8 v1 statistic |
+| `scripts/etl/factor-history-tracking.mjs` | `76cf56349944ac6b8f28e6401d2d981b25126b6f` | Post-compute operational history sync; does not define H8 scientific scores | NO for H8 scientific scores |
+
+UI / application files unrelated to scientific score generation are not fingerprinted.
 
 This is provenance design only. This pass did not modify any of these files.
 
@@ -971,23 +1187,27 @@ to `main`.
 **IMPLEMENTATION DETAIL — proposed, not implemented.** Later H8 capture should occur:
 
 ```text
-AFTER successful production ETL compute
-BEFORE artifact commit
+1. production ETL succeeds
+2. authorized first-attempt scheduled H8 capture runs
+3. production + newly created H8 artifacts are committed
 ```
 
-Recommended future workflow condition for **study observations**:
+Recommended future workflow condition for **study observations and prospective close capture**:
 
 ```text
-if: github.event_name == 'schedule'
+if: github.event_name == 'schedule' && github.run_attempt == 1
 ```
 
-Recommended placement:
+Future workflow staging must explicitly include **only** the intended H8 append-only paths in addition to existing production artifacts:
 
-1. `npm run etl:compute` succeeds
-2. **new H8 capture step** (create-only observation + optional T-1 close file)
-3. existing `git add` / commit of production artifacts, extended to include the new append-only research paths **only when the capture step created a new file**
+```text
+research/h8-prospective/observations/
+research/h8-prospective/btc-closes/
+```
 
-`workflow_dispatch` may remain for operational production ETL. It must **not** write a new H8 observation.
+**FIREWALL.** Do **not** use `git add research` or another broad research-tree stage.
+
+`workflow_dispatch` may remain for operational production ETL. Manual / `workflow_dispatch` production commits must **not** create or alter H8 artifacts. GitHub reruns must **not** create or alter H8 artifacts.
 
 **FIREWALL.** This pass does **not** edit `.github/workflows/daily-etl.yml`.
 
@@ -1001,7 +1221,8 @@ Recommended placement:
 - create-only
 - hard-fail on attempted overwrite
 - idempotent only in the sense that an existing identical date artifact causes **STOP / no new scientific observation**, not overwrite
-- scheduled-event-only for study observations
+- first-attempt scheduled-event-only for study observations and prospective close capture (`github.event_name == 'schedule' && github.run_attempt == 1`)
+- no force / backfill override
 - network-free beyond data already retrieved by production ETL
 - deterministic
 - schema validated
@@ -1038,7 +1259,7 @@ before performance is observed.
 
 ## 31. What this candidate pass does and does not do
 
-This candidate pass creates **only**:
+This candidate amendment modifies **only**:
 
 ```text
 docs/H8_PROSPECTIVE_30D_RISK_DISCRIMINATION_PREREGISTRATION.md
@@ -1065,8 +1286,9 @@ It does **not**:
 
 ## 32. Stop
 
-**STOP FOR INDEPENDENT H8 PROTOCOL-CANDIDATE REVIEW.**
+**STOP FOR FINAL INDEPENDENT H8 PROTOCOL-CANDIDATE REVIEW.**
 
 Do not freeze this document until that review accepts or amends it.
+Do not assign `H8_PROTOCOL_SHA` yet.
 Do not implement capture until a freeze exists.
 Do not start the 180-date window if capture infrastructure is not operational before `2026-08-24`.
