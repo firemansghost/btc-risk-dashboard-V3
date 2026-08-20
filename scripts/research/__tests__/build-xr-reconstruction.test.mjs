@@ -1955,3 +1955,93 @@ test('validator rejects self-consistent XR_COMPOSITE score that disagrees with o
   assert.equal(result.ok, false);
   assert.equal(result.error, 'bridge_composite_xr_score:2099-03-03');
 });
+
+function makeNotEligibleSocialMissing(date) {
+  const scores = {
+    trend_valuation: 36,
+    stablecoins: 63,
+    etf_flows: 43,
+    net_liquidity: 59,
+    term_leverage: 57,
+    macro_overlay: 28,
+    social_interest: null,
+  };
+  const roles = {
+    trend_valuation: 'C_SURROGATE',
+    stablecoins: 'B_METHOD_PIT',
+    etf_flows: 'B_METHOD_PIT',
+    net_liquidity: 'C_PIT_CONSERVATIVE',
+    term_leverage: 'C_SURROGATE',
+    macro_overlay: 'C_PIT_CONSERVATIVE',
+    social_interest: 'MISSING',
+  };
+  const availability = Object.fromEntries(
+    OFFICIAL_FACTOR_ORDER.map((k) => [k, k === 'social_interest' ? 'MISSING' : 'AVAILABLE_C'])
+  );
+  availability.stablecoins = 'AVAILABLE_B';
+  availability.etf_flows = 'AVAILABLE_B';
+  const lineage = [];
+  for (const factorKey of OFFICIAL_FACTOR_ORDER) {
+    for (const componentKey of FACTOR_COMPONENT_ORDER[factorKey]) {
+      if (factorKey === 'social_interest') {
+        lineage.push(missingComp(date, factorKey, componentKey, 'NO_BITCOIN_RANK'));
+      } else {
+        lineage.push(presentComp(date, factorKey, componentKey, roles[factorKey], { source_name: 'synthetic' }));
+      }
+    }
+  }
+  return assembleDateRecords({
+    observationDate: date,
+    clock: {
+      valid: true,
+      reconstruction_as_of_utc: `${date}T11:30:00.000Z`,
+      reconstruction_clock_source: 'FIXED_1130_UTC',
+    },
+    factorScores: scores,
+    factorRoles: roles,
+    factorAvailability: availability,
+    lineage,
+  });
+}
+
+function validateNotEligibleNoBridge(one) {
+  return validateH71CrossFileInvariants({
+    observationDates: [one.observation.observation_date],
+    observations: [one.observation],
+    missingness: [one.missingness],
+    lineage: one.lineage,
+    bridge: [],
+    analysisSourceSha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    protocolVersion: H7_PROTOCOL_VERSION,
+    requireFrozenBridgeDates: false,
+  });
+}
+
+test('validator rejects finite score on lineage-MISSING factor without a bridge', () => {
+  const date = '2099-03-05';
+  const one = makeNotEligibleSocialMissing(date);
+  assert.equal(one.observation.social_score, '');
+  assert.equal(one.missingness.social_available, 'MISSING');
+  assert.equal(one.observation.social_role, 'MISSING');
+  assert.equal(one.observation.xr_status, 'NOT_ELIGIBLE');
+  assert.equal(validateNotEligibleNoBridge(one).ok, true);
+  one.observation.social_score = 61;
+  const result = validateNotEligibleNoBridge(one);
+  assert.equal(result.ok, false);
+  assert.equal(result.error, `missing_factor_score_present:${date}:social_interest`);
+});
+
+test('validator rejects zero and nonnumeric scores on lineage-MISSING factor', () => {
+  const date = '2099-03-05';
+  const zero = makeNotEligibleSocialMissing(date);
+  assert.equal(validateNotEligibleNoBridge(zero).ok, true);
+  zero.observation.social_score = 0;
+  const zeroResult = validateNotEligibleNoBridge(zero);
+  assert.equal(zeroResult.ok, false);
+  assert.equal(zeroResult.error, `missing_factor_score_present:${date}:social_interest`);
+  const text = makeNotEligibleSocialMissing(date);
+  text.observation.social_score = 'present';
+  const textResult = validateNotEligibleNoBridge(text);
+  assert.equal(textResult.ok, false);
+  assert.equal(textResult.error, `missing_factor_score_present:${date}:social_interest`);
+});

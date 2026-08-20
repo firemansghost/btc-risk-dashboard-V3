@@ -2461,6 +2461,11 @@ export function validateH71CrossFileInvariants({
         if (!isStrictFiniteNumber(obs[FACTOR_SCORE_FIELDS[factorKey]])) {
           return { ok: false, error: `available_nonfinite:${date}:${factorKey}` };
         }
+      } else if (avail === 'MISSING') {
+        const score = obs[FACTOR_SCORE_FIELDS[factorKey]];
+        if (score !== '' && score != null) {
+          return { ok: false, error: `missing_factor_score_present:${date}:${factorKey}` };
+        }
       }
     }
     const actualMissing = OFFICIAL_FACTOR_ORDER.filter(
