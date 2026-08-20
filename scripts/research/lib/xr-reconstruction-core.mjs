@@ -2379,6 +2379,20 @@ export function csvRowsToObjects(text) {
   });
 }
 
+export function recomputeXrCompositeFromObservationRow(observation) {
+  let weighted = 0;
+  for (const key of OFFICIAL_FACTOR_ORDER) {
+    const score = observation?.[FACTOR_SCORE_FIELDS[key]];
+    if (!isStrictFiniteNumber(score) || !Number.isFinite(FACTOR_WEIGHTS[key])) return null;
+    weighted += score * FACTOR_WEIGHTS[key];
+  }
+  return Math.max(0, Math.min(100, Math.round(weighted)));
+}
+
+function observationScoreIsMissing(value) {
+  return !isStrictFiniteNumber(value);
+}
+
 export function validateH71CrossFileInvariants({
   observationDates,
   observations,
@@ -2479,6 +2493,10 @@ export function validateH71CrossFileInvariants({
       if (!isStrictFiniteNumber(obs.xr_score)) {
         return { ok: false, error: `eligible_missing_score:${date}` };
       }
+      const expectedXr = recomputeXrCompositeFromObservationRow(obs);
+      if (obs.xr_score !== expectedXr) {
+        return { ok: false, error: `observation_xr_composite:${date}` };
+      }
       if (obs.reconstruction_grade !== 'EXPLORATORY_ONLY') {
         return { ok: false, error: `eligible_grade:${date}` };
       }
@@ -2570,7 +2588,8 @@ export function validateH71CrossFileInvariants({
     const composites = rows.filter((r) => r.factor_key === '__XR_COMPOSITE__');
     if (composites.length > 1) return { ok: false, error: `bridge_duplicate_composite:${date}` };
     const obs = observations.find((r) => r.observation_date === date);
-    if (obs?.xr_status === 'ELIGIBLE') {
+    if (!obs) return { ok: false, error: `bridge_observation_missing:${date}` };
+    if (obs.xr_status === 'ELIGIBLE') {
       if (composites.length !== 1) return { ok: false, error: `bridge_composite:${date}` };
     } else if (composites.length !== 0) {
       return { ok: false, error: `bridge_composite_not_eligible:${date}` };
@@ -2595,6 +2614,9 @@ export function validateH71CrossFileInvariants({
           if (row.difference !== row.xr_factor_score - row.production_factor_score) {
             return { ok: false, error: `bridge_composite_difference:${date}` };
           }
+        }
+        if (row.xr_factor_score !== obs.xr_score) {
+          return { ok: false, error: `bridge_composite_xr_score:${date}` };
         }
         continue;
       }
@@ -2625,6 +2647,15 @@ export function validateH71CrossFileInvariants({
         return { ok: false, error: `bridge_status:${date}:${row.factor_key}` };
       } else if (row.difference !== '' && row.difference != null) {
         return { ok: false, error: `bridge_difference:${date}:${row.factor_key}` };
+      }
+      const obsScore = obs[FACTOR_SCORE_FIELDS[row.factor_key]];
+      const obsMissing = observationScoreIsMissing(obsScore);
+      const bridgeMissing = observationScoreIsMissing(row.xr_factor_score);
+      if (obsMissing !== bridgeMissing || (!obsMissing && row.xr_factor_score !== obsScore)) {
+        return { ok: false, error: `bridge_xr_factor_score:${date}:${row.factor_key}` };
+      }
+      if (row.xr_input_role !== obs[FACTOR_ROLE_FIELDS[row.factor_key]]) {
+        return { ok: false, error: `bridge_xr_input_role:${date}:${row.factor_key}` };
       }
     }
   }

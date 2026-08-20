@@ -1914,3 +1914,44 @@ test('validator checks bridge difference/status arithmetic', () => {
   assert.equal(missingStatus.ok, false);
   assert.equal(missingStatus.error, 'bridge_status:2099-03-03:stablecoins');
 });
+
+test('validator rejects eligible xr_score that does not match independent composite', () => {
+  const { assembled } = makeEligibleBundle();
+  assert.equal(validateBundle(assembled).ok, true);
+  assembled.observations[0].xr_score = assembled.observations[0].xr_score + 1;
+  const result = validateBundle(assembled);
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'observation_xr_composite:2099-03-03');
+});
+
+test('validator rejects self-consistent bridge factor score that disagrees with observation', () => {
+  const { assembled } = makeEligibleBundle();
+  assert.equal(validateBundle(assembled).ok, true);
+  const trend = assembled.bridge.find((r) => r.factor_key === 'trend_valuation');
+  trend.xr_factor_score = trend.xr_factor_score + 1;
+  trend.difference = trend.xr_factor_score - trend.production_factor_score;
+  const result = validateBundle(assembled);
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'bridge_xr_factor_score:2099-03-03:trend_valuation');
+});
+
+test('validator rejects bridge factor role that disagrees with observation', () => {
+  const { assembled } = makeEligibleBundle();
+  assert.equal(validateBundle(assembled).ok, true);
+  const trend = assembled.bridge.find((r) => r.factor_key === 'trend_valuation');
+  trend.xr_input_role = 'B_METHOD_PIT';
+  const result = validateBundle(assembled);
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'bridge_xr_input_role:2099-03-03:trend_valuation');
+});
+
+test('validator rejects self-consistent XR_COMPOSITE score that disagrees with observation', () => {
+  const { assembled } = makeEligibleBundle();
+  assert.equal(validateBundle(assembled).ok, true);
+  const composite = assembled.bridge.find((r) => r.factor_key === '__XR_COMPOSITE__');
+  composite.xr_factor_score = composite.xr_factor_score + 1;
+  composite.difference = composite.xr_factor_score - composite.production_factor_score;
+  const result = validateBundle(assembled);
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'bridge_composite_xr_score:2099-03-03');
+});
