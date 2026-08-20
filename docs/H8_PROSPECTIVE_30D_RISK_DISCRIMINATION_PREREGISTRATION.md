@@ -1,10 +1,10 @@
 # H8 Prospective 30-Day Risk-Discrimination Preregistration
 
-**Date:** 2026-08-20  
-**Phase:** H8 — prospective three-model forward holdout  
-**Status:** `PROTOCOL CANDIDATE — METHODOLOGY PROPOSED — NOT YET FROZEN`  
-**Proposed protocol version:** `h8-prospective-three-model-v1`  
-**Branch:** `research/h8-prospective-three-model-preregistration`  
+**Date:** 2026-08-20
+**Phase:** H8 — prospective three-model forward holdout
+**Status:** `PROTOCOL CANDIDATE — METHODOLOGY PROPOSED — NOT YET FROZEN`
+**Proposed protocol version:** `h8-prospective-three-model-v1`
+**Branch:** `research/h8-prospective-three-model-preregistration`
 **Parent main HEAD at candidate creation:** `9478099ff775f1d6630b83bd402727870f15ca10`
 
 This document is a **protocol candidate**. Methodology is **proposed**, not frozen. Independent review may amend it. Changing any later **frozen** PROTOCOL DECISION will require a new protocol version. H8 capture has **not** been implemented. H8 performance has **not** been calculated. Calibration remains **CLOSED**.
@@ -99,10 +99,10 @@ H8 is **not**:
 | SECONDARY CHALLENGER | `liq-heavy-v1` | research only |
 | SECONDARY CHALLENGER | `mom-tilted-v1` | research only |
 
-**FIREWALL.** No fourth model is authorized.  
-**FIREWALL.** No fifth model is authorized.  
-**FIREWALL.** Do not create Official v2 inside H8 v1.  
-**FIREWALL.** Do not tune weights.  
+**FIREWALL.** No fourth model is authorized.
+**FIREWALL.** No fifth model is authorized.
+**FIREWALL.** Do not create Official v2 inside H8 v1.
+**FIREWALL.** Do not tune weights.
 **FIREWALL.** Calibration remains **CLOSED**.
 
 Any future new candidate must have an explicit hypothesis, frozen formula, version, prospective start date, and **separate** preregistration **before** its performance is observed.
@@ -127,7 +127,7 @@ Only the frozen **top-level factor weights** differ.
 
 This makes H8 a **controlled weighting comparison**.
 
-**FIREWALL.** Do not alter factor formulas for H8.  
+**FIREWALL.** Do not alter factor formulas for H8.
 **FIREWALL.** Do not give one challenger a different eligible-day set than another.
 
 ---
@@ -339,10 +339,10 @@ score =
 
 Use JavaScript `Number` semantics. No intermediate rounding. All three models produce integer scores in `0–100`.
 
-**FIREWALL.** Do not use a serialized score as an arithmetic input.  
-**FIREWALL.** Do not use UI missing-factor omission / pillar renormalization as the H8 scientific scoring rule.  
-**FIREWALL.** Do not renormalize around a missing factor.  
-**FIREWALL.** Do not substitute a prior factor score.  
+**FIREWALL.** Do not use a serialized score as an arithmetic input.
+**FIREWALL.** Do not use UI missing-factor omission / pillar renormalization as the H8 scientific scoring rule.
+**FIREWALL.** Do not renormalize around a missing factor.
+**FIREWALL.** Do not substitute a prior factor score.
 **FIREWALL.** Do not backfill an observation later.
 
 **OPEN FOR REVIEW — production composite vs H8 scientific rule.** At parent main, production `scripts/etl/factors.mjs` `calculateEnhancedGScore` divides `weightedSum / totalWeight` of **fresh** factors, then `Math.round`. Production `scripts/etl/compute.mjs` then applies:
@@ -422,8 +422,8 @@ INTEGRITY_MISMATCH
 
 and must **not** enter H8 analysis.
 
-**FIREWALL.** Do not silently choose one value.  
-**FIREWALL.** Do not repair the observation after the fact.  
+**FIREWALL.** Do not silently choose one value.
+**FIREWALL.** Do not repair the observation after the fact.
 **FIREWALL.** The mismatch remains permanently documented.
 
 ---
@@ -709,7 +709,7 @@ INTEGRITY_MISMATCH
 OUTCOME_INCOMPLETE
 ```
 
-**FIREWALL.** Do not interpolate.  
+**FIREWALL.** Do not interpolate.
 **FIREWALL.** Do not substitute.
 
 ---
@@ -739,9 +739,9 @@ A positive delta does **not** automatically:
 - authorize new weights
 - validate the challenger
 
-**FIREWALL.** No p-values.  
-**FIREWALL.** No confidence intervals.  
-**FIREWALL.** No significance labels.  
+**FIREWALL.** No p-values.
+**FIREWALL.** No confidence intervals.
+**FIREWALL.** No significance labels.
 **FIREWALL.** No threshold such as “challenger wins if delta > X”.
 
 ---
@@ -1030,8 +1030,8 @@ Any future new candidate must have:
 
 before performance is observed.
 
-**FIREWALL.** Do not search the historical data for a better weighting combination.  
-**FIREWALL.** Do not grid-search weights.  
+**FIREWALL.** Do not search the historical data for a better weighting combination.
+**FIREWALL.** Do not grid-search weights.
 **FIREWALL.** Do not optimize 30-day rho.
 
 ---
@@ -1067,6 +1067,6 @@ It does **not**:
 
 **STOP FOR INDEPENDENT H8 PROTOCOL-CANDIDATE REVIEW.**
 
-Do not freeze this document until that review accepts or amends it.  
-Do not implement capture until a freeze exists.  
+Do not freeze this document until that review accepts or amends it.
+Do not implement capture until a freeze exists.
 Do not start the 180-date window if capture infrastructure is not operational before `2026-08-24`.
