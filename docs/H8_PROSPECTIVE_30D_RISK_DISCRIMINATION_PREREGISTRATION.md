@@ -7,7 +7,7 @@
 **Branch:** `research/h8-prospective-three-model-preregistration`
 **Parent main HEAD at candidate creation:** `9478099ff775f1d6630b83bd402727870f15ca10`
 
-This document is a **protocol candidate**. Methodology is **proposed**, not frozen. Independent review of the prior candidate (`80de0bb4b8e290399bdca02363d1b898c5fea700`) approved the core H8 design and required four pre-freeze resolutions, which this amendment records. Changing any later **frozen** PROTOCOL DECISION will require a new protocol version. H8 capture has **not** been implemented. H8 performance has **not** been calculated. `H8_PROTOCOL_SHA` is **not** assigned. Calibration remains **CLOSED**.
+This document is a **protocol candidate**. Methodology is **proposed**, not frozen. Independent review of `b0c1c2f0b42bfd08d5167814044a8e40770ecdc4` approved the core H8 design and confirmed the four prior review findings were resolved. This amendment records one final pre-freeze resolution: deterministic automatic BTC-close catch-up inside a fixed recovery window, plus separation of the scientific model-contract fingerprint from the later H8 capture-implementation identity. Changing any later **frozen** PROTOCOL DECISION will require a new protocol version. H8 capture has **not** been implemented. H8 performance has **not** been calculated. `H8_PROTOCOL_SHA` is **not** assigned. `H8_CAPTURE_SOURCE_SHA` is **not** assigned. Calibration remains **CLOSED**.
 
 Do **not** write the eventual freeze-commit SHA into this document. The Git commit that later freezes accepted bytes becomes `H8_PROTOCOL_SHA` only after independent review and an explicit freeze.
 
@@ -538,27 +538,31 @@ The exact BTC close dates needed for H8 v1 `MACE_30` are:
 2026-08-24 through 2027-03-21 inclusive
 ```
 
-No earlier close is required for H8 primary analysis. No later close is required for H8 v1.
+No earlier close is required for H8 primary analysis. No later close enters H8 v1 MACE.
 
 **PROPOSED PROTOCOL DECISION.** Distinguish **close completion** from **prospective tape capture**. The `2027-03-21` UTC close becomes complete at the end of that UTC day, but H8 must **not** analyze merely because the market close now exists.
 
-H8 v1 performance analysis may begin only after **all** of the following are true:
+H8 performance must **not** be calculated:
 
-1. the completed `2027-03-21` close has been captured by an authorized first-attempt scheduled H8 close-capture run
-2. `research/h8-prospective/btc-closes/2027-03-21.json` exists
-3. that immutable close artifact has been committed
-4. the H8 capture / output integrity checks accept the complete prospective tape
+- during the 180-date observation window
+- during ordinary 30-day maturation
+- during the fixed close-capture recovery period through `2027-03-29` UTC
 
-Under the expected daily schedule, the earliest normal capture event for `C_2027-03-21` is the `2027-03-22` first-attempt scheduled Daily ETL.
+The first H8 performance-analysis process may begin only **after all** of the following are true:
 
-If that scheduled capture fails or the close artifact is absent:
+1. the authorized H8 observation window is closed
+2. `C_2027-03-21` has completed
+3. all authorized first-attempt scheduled close-capture opportunities through UTC date `2027-03-29` are finished or conclusively absent/failed
+4. the immutable H8 score-observation tape is frozen for analysis
+5. the immutable H8 BTC-close tape is frozen for analysis
+6. independent capture-integrity review accepts those frozen tapes
 
-```text
-WAIT.
-```
+Any still-missing required close remains missing. Apply the already-frozen sample rule: an observation lacking any exact `C_D` … `C_D+30` close is `OUTCOME_INCOMPLETE` and is excluded from Spearman.
 
-**FIREWALL.** Do not reconstruct the close later merely to preserve the calendar.
-**FIREWALL.** Do not calculate H8 performance until the accepted prospective tape is complete enough for the frozen analysis rules.
+**FIREWALL.** Do not postpone analysis indefinitely trying to obtain missing close values.
+**FIREWALL.** Do not reconstruct the entire outcome tape in March 2027 from a later moving file.
+**FIREWALL.** Do not extend the 180 observation dates.
+**FIREWALL.** Do not add post-`2027-03-21` closes to MACE.
 
 The study observation window itself remains the fixed 180-date window. Do not extend observations.
 
@@ -593,9 +597,9 @@ The workflow currently:
 2. runs `npm run etl:compute`
 3. commits `public/data`, `public/signals`, `public/extras`, `public/alerts` to `main`
 
-**PROPOSED PROTOCOL DECISION.** H8 study observations and H8 prospective BTC-close captures must be generated **only** from a **first-attempt** scheduled Daily ETL event.
+**PROPOSED PROTOCOL DECISION.** H8 study **score observations** and H8 prospective **BTC-close artifacts** may be written **only** during a **first-attempt** scheduled Daily ETL event.
 
-Future study-capture gate:
+Future capture gate for both classes:
 
 ```text
 github.event_name == 'schedule' && github.run_attempt == 1
@@ -606,7 +610,7 @@ github.event_name == 'schedule' && github.run_attempt == 1
 This first-attempt-only rule applies to **both**:
 
 - H8 score observation capture
-- H8 prospective BTC-close capture
+- H8 prospective BTC-close capture, including automatic close catch-up
 
 **FIREWALL.** The following must **not** create a new H8 observation or H8 close artifact:
 
@@ -616,8 +620,44 @@ This first-attempt-only rule applies to **both**:
 - `workflow_dispatch`
 - GitHub Actions rerun (`run_attempt != 1`), even if `event_name == 'schedule'`
 - any other ad-hoc execution
+- any CLI / UI / workflow flag that lets an operator choose dates to fill
 
-**FIREWALL.** Do not provide a force / backfill override.
+### 13.1 Score capture versus outcome capture
+
+**PROPOSED PROTOCOL DECISION.** Distinguish two artifact classes:
+
+```text
+SCORE OBSERVATION
+  = the prospective model signal
+  = may never be backfilled
+
+BTC CLOSE ARTIFACT
+  = an outcome measurement
+  = may use deterministic AUTOMATIC CATCH-UP under §15
+```
+
+This does **not** permit:
+
+- manual outcome selection
+- discretionary reconstruction
+- operator-selected dates
+- post-result repair
+- overwriting a captured value
+
+The catch-up rule is automatic, mechanical, and fixed **before outcomes exist**.
+
+**FIREWALL.** H8 score observations remain:
+
+- first-attempt scheduled-event-only
+- one immutable observation per UTC observation date
+- never overwritten
+- never backfilled
+- never reconstructed later
+- never created from `workflow_dispatch`
+- never created from GitHub reruns
+- never created from Refresh / API / local runs
+
+If the authorized score observation for an expected UTC date is missed, that observation remains `CAPTURE_MISSING` forever under H8 v1.
 
 **PROPOSED PROTOCOL DECISION.** `observation_as_of_utc` is the actual production artifact as-of timestamp from the scheduled ETL snapshot being captured.
 
@@ -680,6 +720,7 @@ Each observation file should eventually contain at least:
 - `production_config_git_blob`
 - `production_config_sha256`
 - `source_base_git_sha`
+- `h8_capture_source_sha` (accepted capture-implementation identity; distinct from the daily-data / current Git SHA)
 - `latest_artifact_sha256`
 - operational provenance, including at least:
   - `github_run_id`
@@ -732,57 +773,156 @@ The exact close dates required for H8 v1 `MACE_30` are:
 2026-08-24 through 2027-03-21 inclusive
 ```
 
-No earlier close is required for H8 primary analysis. No later close is required for H8 v1.
+No earlier close is required for H8 primary analysis. No later close enters H8 v1 MACE.
 
-**PROPOSED PROTOCOL DECISION.** For a first-attempt scheduled ETL executed on UTC date `T`, the H8 close-capture step may create **exactly** the completed close artifact for:
+**PROPOSED PROTOCOL DECISION.** BTC close capture remains authorized **only** during:
 
 ```text
-T - 1 UTC calendar day
+github.event_name == 'schedule' && github.run_attempt == 1
 ```
 
-if and only if that target close date is within `2026-08-24` through `2027-03-21` **and** the production completed-close source contains a valid finite positive close for **exactly** that date.
+No `workflow_dispatch`, GitHub rerun, Refresh/API, local run, manual force, or manual backfill may write an H8 BTC-close artifact.
 
-If the required target close is unavailable:
+### 15.1 Deterministic automatic close catch-up
+
+**PROPOSED PROTOCOL DECISION.** Replace any rule that an authorized run may capture only `T-1`.
+
+For every authorized first-attempt scheduled ETL on UTC date `T`:
+
+AFTER production ETL successfully updates the canonical completed UTC BTC history, the H8 close-capture process deterministically considers **all** required H8 close dates `d` satisfying:
+
+```text
+2026-08-24 <= d <= 2027-03-21
+AND
+d <= T - 1 UTC calendar day
+AND
+research/h8-prospective/btc-closes/d.json does not already exist
+AND
+the UTC run-date T is <= 2027-03-29
+```
+
+Process eligible missing dates in **ascending date order**.
+
+For each missing required date:
+
+If the post-ETL canonical completed-price artifact contains a row for **exactly** `d` whose close is present, finite, `> 0`, and a completed UTC daily candle, then create the immutable H8 close artifact for `d`.
+
+If the source row for `d` is absent or invalid:
 
 - do not substitute another date
-- do not use current spot
-- do not later overwrite
-- do not reconstruct silently
+- do not use spot price
+- do not invent a value
+- leave `d` uncaptured
+- continue deterministically according to the later implementation contract
 
-That close remains prospectively missing unless the frozen protocol explicitly permits another first-attempt scheduled mechanism. This candidate provides **no** force / backfill override.
+A later authorized first-attempt scheduled run may automatically capture `d` if it remains missing, the canonical source then contains a valid completed close, and the run-date is still within the authorized close-capture window.
+
+This is **AUTOMATIC CATCH-UP**. It is **not** discretionary backfill.
+
+**FIREWALL.** There must be no CLI / UI / workflow flag allowing the operator to choose which historical H8 close dates to fill.
+
+### 15.2 First-authorized-value rule
+
+**FACT.** The production canonical BTC history performs recent-date upserts from Coinbase.
+
+**PROPOSED PROTOCOL DECISION.** For a required close date `d` that does not yet have an H8 close artifact: the first valid close value for `d` encountered by the deterministic H8 close-capture process at an authorized first-attempt scheduled event becomes the **permanent** H8 value.
+
+Once `research/h8-prospective/btc-closes/d.json` exists, **NEVER**:
+
+- overwrite it
+- revise it
+- replace it with a later Coinbase value
+- synchronize it to a revised production history
+- select another provider value
+
+even if the canonical production BTC history later changes its row for `d`.
+
+The H8 outcome tape therefore records the prospectively captured canonical value, not a later hindsight-corrected value.
+
+### 15.3 Normal expected capture examples
 
 Under the normal daily schedule:
 
 ```text
 first required close  = 2026-08-24
-  expected capture by first-attempt scheduled ETL on 2026-08-25
+  normally first eligible during first-attempt scheduled ETL on 2026-08-25
 
 last required close   = 2027-03-21
-  expected capture by first-attempt scheduled ETL on 2027-03-22
+  normally first eligible during first-attempt scheduled ETL on 2027-03-22
 ```
 
-Each close file should contain at least:
+Under normal operations, automatic catch-up usually finds only `T-1` missing. If an earlier authorized capture failed, the next authorized scheduled run automatically considers that older missing date as well.
+
+### 15.4 Fixed close-capture recovery window
+
+**PROPOSED PROTOCOL DECISION.** Do not allow outcome catch-up indefinitely.
+
+Automatic H8 BTC-close capture is authorized on first-attempt scheduled runs through:
+
+```text
+2027-03-29 UTC inclusive
+```
+
+Thus:
+
+```text
+normal final-close capture opportunity begins = 2027-03-22
+fixed operational recovery grace continues through = 2027-03-29
+```
+
+After the end of the authorized `2027-03-29` UTC capture opportunity, **no new H8 v1 BTC-close artifact may be created**. No manual repair. No discretionary extension. No waiting until the tape happens to become complete. Remaining missing close artifacts remain missing permanently for H8 v1.
+
+This recovery period changes only operational capture resilience. It does **not**:
+
+- extend the observation window
+- extend the MACE horizon
+- add later market closes to MACE
+- alter model scores
+- alter the primary statistic
+
+### 15.5 Why automatic catch-up does not convert H8 into reconstruction
+
+H8 model observations:
+
+- are captured before future outcomes exist
+- are immutable
+- cannot be backfilled
+
+BTC outcome values:
+
+- are captured automatically during a fixed preregistered operational window
+- use the canonical completed-close source available at the first authorized capture opportunity that successfully records them
+- become immutable when captured
+- cannot be manually selected or revised
+
+The final analysis uses only these frozen prospective artifacts.
+
+**FIREWALL.** Do not reconstruct the entire outcome tape in March 2027 from a later moving file.
+
+### 15.6 Close-artifact provenance
+
+Each eventual close artifact must preserve enough provenance to identify the exact source state used. At minimum later implementation must capture:
 
 - `study_id`
+- `protocol_version`
 - `close_date_utc`
 - `close_usd`
 - `source`
+- `source_row_ingested_at_utc`
 - `captured_at_utc`
 - `source_artifact_sha256`
 - `source_base_git_sha`
-- operational provenance, including at least `github_run_id`, `github_run_attempt`, and `github_event_name`
+- `h8_capture_source_sha`
+- operational provenance at least: `github_run_id`, `github_run_attempt`, `github_event_name`
+- preferably also: `github_workflow_ref`, `github_sha`
 
-Once committed:
+Exact JSON schema remains an implementation-contract detail.
+
+Once an H8 close artifact is created and committed:
 
 - **NEVER MODIFY**
 - **NEVER OVERWRITE**
-- **NEVER BACKFILL WITH A DIFFERENT VALUE**
-
-If a completed close was not prospectively captured, mark it missing for H8 outcome coverage.
-
-**FIREWALL.** Do not substitute a later revised close silently.
-
-The H8 outcome tape must therefore itself be prospective.
+- **NEVER REPLACE WITH A DIFFERENT VALUE**
 
 ---
 
@@ -963,7 +1103,7 @@ Operational integrity monitoring **is** allowed:
 
 **FIREWALL.** Monitoring must not join scores to future outcomes for performance analysis.
 
-The first H8 v1 performance calculation occurs only after the complete study window has matured.
+The first H8 v1 performance calculation occurs only after the conditions in §12 are met: observation window closed, `C_2027-03-21` complete, authorized close-capture opportunities through `2027-03-29` finished or conclusively absent/failed, both tapes frozen, and independent capture-integrity review accepted. Missing required closes remain `OUTCOME_INCOMPLETE`. Do not wait indefinitely.
 
 ---
 
@@ -977,9 +1117,11 @@ The planned observation window is the fixed 180-date window:
 2026-08-24 through 2027-02-19
 ```
 
-The performance result waits for final 30-day maturity.
+The performance result waits for the frozen analysis-readiness rule in §12. It does **not** wait indefinitely for missing close values.
 
-**FIREWALL.** No performance calculation before the accepted prospective H8 close artifact `research/h8-prospective/btc-closes/2027-03-21.json` exists, has been committed, and has passed H8 capture / output integrity checks. Market completion of the `2027-03-21` UTC close is not sufficient by itself.
+**FIREWALL.** No performance calculation during the observation window, ordinary 30-day maturation, or the fixed close-capture recovery period through `2027-03-29` UTC.
+**FIREWALL.** After that recovery window ends, remaining missing close artifacts stay missing; affected observations are `OUTCOME_INCOMPLETE`.
+**FIREWALL.** No post-`2027-03-21` close enters MACE.
 
 ---
 
@@ -1071,14 +1213,16 @@ For ordinary implementation or operational fixes that claim **not** to change mo
 **PROPOSED PROTOCOL DECISION.** Distinguish:
 
 ```text
-MODEL-CONTRACT FINGERPRINT CHANGE
+H8 SCIENTIFIC MODEL-CONTRACT FINGERPRINT CHANGE
+versus
+H8 CAPTURE-IMPLEMENTATION FINGERPRINT CHANGE
 versus
 ordinary data-artifact changes under public/data, public/signals, public/extras, public/alerts
 ```
 
-Daily `public/data` updates must **not** themselves hard-stop H8.
+Daily `public/data` updates must **not** themselves hard-stop H8. Ordinary Git `HEAD` will advance every day during H8 and will **not** remain equal to the later `H8_CAPTURE_SOURCE_SHA`.
 
-A model-contract fingerprint change during H8:
+A scientific model-contract fingerprint change during H8:
 
 - does **not** erase prior observations
 - does **not** silently authorize later observations
@@ -1088,7 +1232,9 @@ If the code change is scientifically compatible: document the compatibility deci
 
 If it changes methodology: H8 v1 does **not** silently continue.
 
-### 27.1 Scientific dependency trees
+The future H8 capture implementation **must not** modify any scientific model-contract fingerprint path without STOP / independent protocol review.
+
+### 27.1 Scientific model-contract dependency trees
 
 **FACT.** Git tree SHAs at parent main:
 
@@ -1127,7 +1273,7 @@ termFreshness.mjs
 
 A blob change inside either tree changes that tree SHA even if `factors.mjs` / `compute.mjs` themselves are unchanged.
 
-### 27.2 Required individual production blobs
+### 27.2 Scientific model-contract individual production blobs
 
 | Path | Git blob SHA | Role | Hard-stop H8 on blob change? |
 |---|---|---|---|
@@ -1141,7 +1287,6 @@ A blob change inside either tree changes that tree SHA even if `factors.mjs` / `
 | `scripts/etl/coinGeckoCache.mjs` | `fbfc5e35b3bd4af60eb00e780892b62f94e8bbff` | Price / social fetch cache used by factor scoring | **YES** |
 | `scripts/etl/priceHistory.mjs` | `515b02acdd0cf4a72e62889dafb83cec6e8acd95` | Production completed-UTC-close history used as the live source for later H8 close capture | **YES** |
 | `scripts/etl/fetch-helper.mjs` | `da8ca2b441088f2e13364249e7ecbbed40dc22a4` | Direct production fetch/retry helper imported by `factors.mjs` and `compute.mjs` | **YES** |
-| `.github/workflows/daily-etl.yml` | `f2103048d384749310432eee610dffad2dad0f4f` | Scheduled capture mechanism. Later H8 capture must not weaken first-attempt scheduled-only gating | **YES** |
 
 ### 27.3 Documented non-authority / non-H8-statistic files
 
@@ -1159,6 +1304,57 @@ These are recorded so they are not mistaken for H8 scientific authority. A chang
 UI / application files unrelated to scientific score generation are not fingerprinted.
 
 This is provenance design only. This pass did not modify any of these files.
+
+### 27.4 H8 capture-implementation fingerprint — not assigned yet
+
+**PROPOSED PROTOCOL DECISION.** The H8 capture-implementation fingerprint does **not** exist yet. It will be established only AFTER:
+
+- protocol freeze / merge
+- capture code is written
+- workflow is updated
+- synthetic tests pass
+- independent implementation review accepts the exact bytes
+
+At that later point formally assign `H8_CAPTURE_SOURCE_SHA` to the accepted capture-implementation commit.
+
+**FIREWALL.** Do **not** assign `H8_CAPTURE_SOURCE_SHA` in this document.
+
+The later implementation freeze must record the exact accepted blobs for at least:
+
+- `.github/workflows/daily-etl.yml`
+- H8 capture script(s)
+- H8 schemas / validation code
+- other H8-specific runtime scientific-capture code
+
+The implementation commit may add those H8 paths and modify the workflow, but must **not** alter the frozen scientific model-contract fingerprint absent a separately reviewed compatibility issue.
+
+`H8_CAPTURE_SOURCE_SHA` identifies the accepted capture implementation commit, **not** the current daily-data commit. Each observation should eventually record both:
+
+```text
+h8_capture_source_sha
+source_base_git_sha / github_sha
+```
+
+as distinct provenance concepts. The implementation contract will define exact runtime verification of frozen capture-script / workflow identities despite normal daily data commits.
+
+After `H8_CAPTURE_SOURCE_SHA` is frozen, a later change to the accepted H8 runtime workflow fingerprint pauses scientific capture pending compatibility review.
+
+### 27.5 Pre-H8 workflow blob — baseline, not final runtime identity
+
+**FACT.** Current `.github/workflows/daily-etl.yml` at parent main:
+
+```text
+git blob SHA = f2103048d384749310432eee610dffad2dad0f4f
+label        = PRE-H8 CAPTURE WORKFLOW BASELINE
+```
+
+This is **historical / pre-implementation provenance**. It is **not** the final frozen H8 runtime workflow identity.
+
+Its expected one-time change to install the accepted H8 capture step does **not** itself constitute a model-methodology change. That workflow change must still be:
+
+- independently reviewed
+- frozen before first observation
+- included in `H8_CAPTURE_SOURCE_SHA` provenance
 
 ---
 
@@ -1209,7 +1405,10 @@ research/h8-prospective/btc-closes/
 
 `workflow_dispatch` may remain for operational production ETL. Manual / `workflow_dispatch` production commits must **not** create or alter H8 artifacts. GitHub reruns must **not** create or alter H8 artifacts.
 
+The expected one-time workflow change that installs the accepted H8 capture step is a **capture-implementation** change, not a scientific model-methodology change. It must still be independently reviewed, frozen before first observation, and included in later `H8_CAPTURE_SOURCE_SHA` provenance. After that freeze, a later change to the accepted runtime workflow pauses scientific capture pending compatibility review.
+
 **FIREWALL.** This pass does **not** edit `.github/workflows/daily-etl.yml`.
+**FIREWALL.** `H8_CAPTURE_SOURCE_SHA` is **not** assigned in this document.
 
 ---
 
@@ -1219,17 +1418,30 @@ research/h8-prospective/btc-closes/
 
 - append-only by UTC date
 - create-only
-- hard-fail on attempted overwrite
-- idempotent only in the sense that an existing identical date artifact causes **STOP / no new scientific observation**, not overwrite
-- first-attempt scheduled-event-only for study observations and prospective close capture (`github.event_name == 'schedule' && github.run_attempt == 1`)
-- no force / backfill override
+- hard-fail on attempted overwrite of an existing H8 artifact
+- first-attempt scheduled-event-only (`github.event_name == 'schedule' && github.run_attempt == 1`)
 - network-free beyond data already retrieved by production ETL
 - deterministic
 - schema validated
 - hash / provenance rich
 - independently tested with synthetic fixtures
 
-**FIREWALL.** Manual refresh must never alter a frozen H8 observation.
+Score-observation capture additionally:
+
+- one immutable file per UTC observation date
+- never backfilled, never reconstructed
+- idempotent only in the sense that an existing identical date artifact causes **STOP / no new scientific observation**, not overwrite
+- no force / backfill override of any kind
+
+BTC-close capture additionally:
+
+- deterministic automatic catch-up of missing required dates `d <= T-1` inside `2026-08-24`…`2027-03-21` while the UTC run-date is `<= 2027-03-29`
+- first-authorized-valid value becomes immutable
+- no operator-selected dates
+- no CLI / UI / workflow flag to choose which historical close dates to fill
+- no overwrite if the production canonical history later revises `d`
+
+**FIREWALL.** Manual refresh must never alter a frozen H8 observation or frozen H8 close artifact.
 
 **FIREWALL.** This pass writes **no** capture code, **no** research capture directory, **no** score files, and **no** outcome files.
 
@@ -1290,5 +1502,6 @@ It does **not**:
 
 Do not freeze this document until that review accepts or amends it.
 Do not assign `H8_PROTOCOL_SHA` yet.
+Do not assign `H8_CAPTURE_SOURCE_SHA` yet.
 Do not implement capture until a freeze exists.
 Do not start the 180-date window if capture infrastructure is not operational before `2026-08-24`.
