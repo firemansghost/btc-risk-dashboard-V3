@@ -28,7 +28,9 @@ Future directory: `research/exploratory-reconstruction/`
 
 ## `xr_observations.csv`
 
-One row per observation date `T` in `2025-12-11`..`2026-08-19`.
+One row per UTC calendar date `T` in `2025-12-11`..`2026-08-19` inclusive.
+
+Exactly **252** rows. Ordered ascending by `observation_date`. Dates unique. Calendar gaps = 0. Do **not** drop a date because H3 has `NO_DAILY_PRIMARY` / `REVIEW_REQUIRED`, because no official G-Score exists, or because reconstruction inputs are missing.
 
 Exact columns, in order:
 
@@ -70,6 +72,10 @@ Rules:
 - Factor-level role is the most limiting required component role using this reporting precedence (not an empirical ranking among C categories): `MISSING` then `C_SURROGATE` then `C_CURRENT_HISTORY` then `C_PIT_CONSERVATIVE` then `B_METHOD_PIT`.
 - Do not emit official band labels or playbook recommendations in this file.
 - Do not infer availability or eligibility from a numeric factor score.
+- `reconstruction_clock_source` has exactly three H7.1 v1 values: `ARTIFACT_AS_OF_UTC`, `ARTIFACT_LEGACY_TIMESTAMP`, `FIXED_1130_UTC`.
+- Clock is determined by inspecting the selected H3.1 `DAILY_PRIMARY` raw `latest.json` artifact (raw `as_of_utc` first; else first valid H3.1 legacy `updated_at` then `generated_at` then `timestamp` whose UTC date equals `T`; else `T` 11:30:00 UTC). Do not treat derived `primary_observation_as_of_utc` as proof that raw `as_of_utc` existed.
+- Git commit timestamp, `daily_close_date`, commit-date fallback, `REVIEW_REQUIRED` artifacts, and unselected candidates are forbidden as the reconstruction clock.
+- If a clock cannot be validly formed (including conflicting explicit timestamps): keep the date row; leave inputs that require a clock `MISSING`; full XR is `NOT_ELIGIBLE`. Do not invent a fourth enum value. Do not drop the date.
 - Generated outputs must record/hash frozen identities where the listed columns apply (`h7_base_sha`, `model_source_sha`, `protocol_version`). Do not invent future SHAs in this protocol.
 
 ---
@@ -107,13 +113,14 @@ Rules:
 - Preserve component-level reconstruction roles here. Factor-level roles in `xr_observations.csv` are aggregated from these required-component roles.
 - For the shared Term/Social price vector: record CASE A vs CASE B. CASE A records the entire contemporaneous Git `market_chart_30_daily` vector unchanged. CASE B records the exact 31-point `C_SURROGATE` construction (UTC dates T-30 through T-1 plus Coinbase completed 5-minute T proxy last).
 - Do not record a mixed B-plus-surrogate construction for the same date.
+- For Stablecoin pre-run baseline: record raw capture commit SHA, raw capture blob SHA, first-parent commit SHA, and pre-run `stablecoins-historical` blob SHA where applicable. Use existing `git_commit_sha` / `git_blob_sha` plus `notes` (and/or a second lineage row using the same columns). Do not add schema columns. The parent relationship must be auditable.
 - No missing factor may be silently omitted from lineage.
 
 ---
 
 ## `xr_missingness.csv`
 
-One row per observation date.
+One row per UTC calendar date. Exactly **252** rows, same date universe and order as `xr_observations.csv`. Do **not** drop dates.
 
 Exact columns, in order:
 

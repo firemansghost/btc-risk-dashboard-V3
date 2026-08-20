@@ -6,7 +6,7 @@
 **H7_BASE_SHA:** `6c03730df19adafd8e4e3b1f84361e64a378a6a6`  
 **MODEL_SOURCE_SHA:** `6b2fa9cf56ce738c74c8da6de0f5a972858f8a52`  
 **H7_PROTOCOL_VERSION:** `h7-exploratory-reconstruction-v1`
-**Correction pass:** Git-chart precedence; exact 31-point surrogate; factor-role/availability aggregation; two-stage ANALYSIS_SOURCE_SHA
+**Correction pass:** 252-date universe; deterministic reconstruction clock; first-parent Stablecoin baseline; exact ALFRED T-1 vintage
 **Frozen H6.1 factor-update blob:** `bddbe3f85721c594fb1e2a628646da5d29afbd44`  
 **Calibration gate:** CLOSED
 
@@ -133,6 +133,27 @@ Frozen H7 v1 candidate window:
 - `XR_START_DATE` = **2025-12-11**
 - `XR_END_DATE` = **2026-08-19**
 
+The H7.1 observation universe is **every UTC calendar date** from `XR_START_DATE` through `XR_END_DATE` inclusive.
+
+Expected date count: **252**.
+
+No date is omitted merely because H3/H3.1 has `NO_DAILY_PRIMARY` or `REVIEW_REQUIRED`, no historical official G-Score exists, or no production run occurred. H7 is an exploratory reconstruction calendar, not a list of historical production prints.
+
+Therefore future `xr_observations.csv` and `xr_missingness.csv` must each contain **exactly 252 rows**, ordered ascending by `observation_date`, one row per UTC calendar date. If required reconstruction inputs are missing: retain the date and record factor `MISSING` and/or `xr_status = NOT_ELIGIBLE`. Do **not** drop the date.
+
+`xr_factor_lineage.csv` may contain multiple rows per date. `xr_bridge_check.csv` remains limited to its three bridge dates.
+
+Future H7.1 must validate:
+
+- first `observation_date` = `2025-12-11`
+- last `observation_date` = `2026-08-19`
+- row count = 252
+- dates unique = TRUE
+- dates strictly ascending = TRUE
+- calendar gaps = 0
+
+Any violation: **STOP generation**. Do not silently repair.
+
 Do **not** extend earlier in H7.1. 2025-12-11 is the first date with dense historical Term funding and Social trending provenance in addition to Stablecoin and ETF evidence. Pre-2025-12-11 reconstruction would require more aggressive source substitution and is **OUT OF SCOPE**.
 
 H7.1 may **not** silently expand the series with later dates. A future extension requires a separately frozen snapshot/version.
@@ -141,15 +162,42 @@ H7.1 may **not** silently expand the series with later dates. A future extension
 
 ## 7. Observation-clock rule
 
-Every observation date `T` has an explicit reconstruction clock `reconstruction_as_of_utc`.
+Every observation date `T` has an explicit reconstruction clock `reconstruction_as_of_utc`. Do **not** use a subjective “trustworthy” test.
 
-**Preferred:** the contemporaneous H3/H3.1 `DAILY_PRIMARY` artifact's explicit `observation_as_of_utc` / `as_of_utc` when available and trustworthy.
+For each calendar date `T`:
 
-**Fallback:** `11:30:00 UTC` on `T`.
+**STEP 1.** If H3.1 `daily_analytical_view.csv` has a selected `DAILY_PRIMARY` and `primary_artifact_id`, `primary_artifact_commit_sha`, and `primary_observation_as_of_utc` are populated, resolve that **exact** primary artifact.
 
-Record which clock source was used (`reconstruction_clock_source`).
+H3.1's `primary_observation_as_of_utc` may originate from `as_of_utc` or from legacy `updated_at` / `generated_at` / `timestamp`. The derived H3 field may identify/confirm the selected observation, but it is **not** proof that raw `as_of_utc` existed. Raw artifact provenance determines `reconstruction_clock_source`.
 
-Do **not** use Git commit time as a substitute for observation time when a better source exists.
+**STEP 2.** Inspect the selected raw `latest.json` artifact. Clock precedence:
+
+**A.** If the raw artifact contains an explicit valid `as_of_utc` whose UTC calendar date equals `T`:
+
+- `reconstruction_as_of_utc` = raw `as_of_utc`
+- `reconstruction_clock_source` = `ARTIFACT_AS_OF_UTC`
+
+**B.** Else, use the first valid explicit legacy timestamp under the same frozen H3.1-builder precedence: `updated_at`, then `generated_at`, then `timestamp`, provided its UTC calendar date equals `T`:
+
+- `reconstruction_as_of_utc` = that legacy instant
+- `reconstruction_clock_source` = `ARTIFACT_LEGACY_TIMESTAMP`
+
+**C.** Otherwise:
+
+- `reconstruction_as_of_utc` = `T` at `11:30:00 UTC`
+- `reconstruction_clock_source` = `FIXED_1130_UTC`
+
+When `T` has `NO_DAILY_PRIMARY`, `REVIEW_REQUIRED`, or no H3.1 selected primary: use `T` at `11:30:00 UTC` with `reconstruction_clock_source` = `FIXED_1130_UTC`. This does **not** make the date a historical production print. It is H7's frozen exploratory observation clock.
+
+Do **not** use Git commit timestamp, `daily_close_date`, a commit-date fallback, a `REVIEW_REQUIRED` artifact, or an unselected candidate artifact as the reconstruction clock.
+
+If explicit timestamps conflict in UTC date: **STOP** for that date / mark the reconstruction clock invalid. Do not choose among conflicts. The date **remains** in the 252-row outputs. Reconstruction inputs requiring a clock become `MISSING` and full XR is `NOT_ELIGIBLE`. Do not invent a fourth `reconstruction_clock_source` value.
+
+H7.1 v1 enum for `reconstruction_clock_source` is exactly:
+
+- `ARTIFACT_AS_OF_UTC`
+- `ARTIFACT_LEGACY_TIMESTAMP`
+- `FIXED_1130_UTC`
 
 The reconstruction clock is used for:
 
@@ -197,7 +245,7 @@ Do **not**:
 - redistribute weight
 - renormalize remaining factors
 
-Partial-factor rows may be retained for research diagnostics. They are **not** XR-Score observations.
+Retain every calendar date in the 252-row universe. Partial-factor / `NOT_ELIGIBLE` rows are research diagnostics. They are **not** XR-Score observations. Do **not** drop the date.
 
 ---
 
@@ -248,7 +296,29 @@ Preferred inputs:
 
 Role: `B_METHOD_PIT`.
 
-Use the prior committed baseline blob for observation `T`. Do **not** use the same-run post-run baseline as the observation-`T` percentile universe.
+For each observation `T` with an eligible contemporaneous dated Stablecoin raw capture:
+
+1. Identify the exact Git commit `C` in which that dated raw Stablecoin capture **first appeared**.
+2. Confirm the raw dated capture used for `T` is the immutable capture associated with `C`.
+3. Read `public/data/stablecoins-historical.json` from **`C`'s FIRST PARENT tree**.
+4. That first-parent file is the PRE-RUN baseline state for the reconstruction.
+5. Use that pre-run baseline under the H6.1 `B_METHOD_PIT` path.
+
+Do **not** use:
+
+- `stablecoins-historical.json` from `C` itself
+- a later same-day commit
+- the latest blob before `T` selected merely by wall-clock time
+- the current HEAD baseline
+- a baseline from a future commit
+
+The raw-capture commit / first-parent relationship is authoritative.
+
+If the first-parent baseline is absent when current methodology requires an existing baseline, is malformed, does not satisfy the structural H6.1 state-lineage contract, or cannot be deterministically tied to the dated raw capture: Stablecoins factor = `MISSING` for `T`. Do **not** fall back to another baseline.
+
+The H7 window begins after initial baseline creation, so the special first-ever empty-baseline bootstrap is **not expected** inside the H7 window. Do not invent it if evidence disagrees.
+
+Future `xr_factor_lineage.csv` must record, where applicable: raw capture commit SHA, raw capture blob SHA, first-parent commit SHA, and pre-run `stablecoins-historical` blob SHA. Use existing lineage fields plus `notes` if no dedicated column exists. Do not change the frozen output schema merely for these values. The lineage must make the parent relationship auditable.
 
 Do **not** fill dates with missing Stablecoin raw capture using a later API query in H7 v1. No alternate basket. No modern replacement for BUSD/TUSD/etc.
 
@@ -288,10 +358,24 @@ H6.1 left Net Liquidity `U` because exact 11:00/11:30 UTC historical production 
 
 H7 may use an explicitly conservative official-vintage path. Required series: `WALCL`, `RRPONTSYD`, `WTREGEN`.
 
-For observation `T`:
+For every `C_PIT_CONSERVATIVE` ALFRED/FRED path:
 
-- `realtime_end` / vintage cutoff `<= T-1` calendar day
-- exclude any returned observation whose observation date is `>= T`
+- `VINTAGE_DATE` = UTC calendar date `T-1` (literal prior UTC calendar date)
+- `realtime_start` = `VINTAGE_DATE`
+- `realtime_end` = `VINTAGE_DATE`
+- `observation_end` = `VINTAGE_DATE`
+
+Do **not** select an earlier vintage merely because it is available. Do **not** roll `VINTAGE_DATE` backward for weekends, holidays, or missing releases. The API's state as known on that date is the conservative vintage state.
+
+For `WALCL`, `RRPONTSYD`, and `WTREGEN` specifically:
+
+- `realtime_start` = `T-1`
+- `realtime_end` = `T-1`
+- `observation_end` = `T-1`
+- observation start must provide the current production-required lookback
+- preserve `frequency=w` and `aggregation_method=avg` when using the FRED/ALFRED API path, because current production requests those semantics
+
+Reject returned observations with `observation_date >= T` even if the provider response unexpectedly contains them. No same-day `T` information.
 
 Role: `C_PIT_CONSERVATIVE`.
 
@@ -299,7 +383,7 @@ This intentionally sacrifices some same-day information to avoid using future-of
 
 Reproduce current Net Liquidity mathematics (`level` / `rate_of_change` / `momentum`) without changing weights or score mapping.
 
-Production fetches FRED with `frequency=w` and `aggregation_method=avg`. If H7.1 must locally emulate that weekly aggregation, it **must first prove** the aggregation convention and document it. Do not silently invent an aggregation convention. If equivalence cannot be established: factor = `MISSING`.
+If H7.1 must locally emulate weekly aggregation: prove equivalence first, or factor = `MISSING`. Do not silently invent an aggregation convention.
 
 ---
 
@@ -329,16 +413,21 @@ Required current inputs: `DTWEXBGS`, `DGS2`, `DGS10`, `VIXCLS`.
 
 Use official ALFRED/FRED historical vintages.
 
-H6.1 proved calendar-day vintage can contain same-day VIX that was not available by the historical morning run. H7 v1 therefore uses:
+H6.1 proved calendar-day vintage can contain same-day VIX that was not available by the historical morning run. For `DTWEXBGS`, `DGS2`, `DGS10`, and `VIXCLS`, freeze:
 
-- vintage cutoff `<= T-1`
-- exclude `observation_date >= T`
+- `VINTAGE_DATE` = UTC calendar date `T-1`
+- `realtime_start` = `T-1`
+- `realtime_end` = `T-1`
+- `observation_end` = `T-1`
+- sufficient current-math lookback
+
+Do **not** roll vintage date to a business day. Do **not** use same-day `T` vintage. Do **not** use current revised history without vintage controls. Reject any returned observation with `observation_date >= T`.
 
 Role: `C_PIT_CONSERVATIVE`.
 
-Run current Macro mathematics (`dxy_20d`, `us2y_20d`, DGS10 inversion bonus on the rates score, `vix_pct`) without modification.
+This does **not** promote Macro to validation-grade methodology replay.
 
-Do not use same-day US close data. Do not use today's fully revised FRED history without vintage control.
+Run current Macro mathematics (`dxy_20d`, `us2y_20d`, DGS10 inversion bonus on the rates score, `vix_pct`) without modification.
 
 If required vintage inputs are missing: factor = `MISSING`.
 
@@ -549,6 +638,8 @@ Potential H7.1 **generated** outputs (do **not** create them now except this pro
 
 Exact intended columns are frozen in `research/exploratory-reconstruction/H7_1_OUTPUT_SCHEMA.md`.
 
+`xr_observations.csv` and `xr_missingness.csv` must each contain exactly 252 calendar rows (`2025-12-11` through `2026-08-19` inclusive). Do not drop dates.
+
 H7.1 must use a **two-stage immutable** process:
 
 **Stage A — implementation source.** Create and independently review the H7.1 reconstruction implementation **without** generated XR outputs. Commit that implementation. Freeze `H7_1_ANALYSIS_SOURCE_SHA` = that exact implementation-only Git commit SHA. No generated XR CSV may be part of that commit.
@@ -643,7 +734,7 @@ Do not implement reconstruction during H7 protocol creation. Do not calculate ex
 
 | Item | Result |
 |---|---|
-| XR window | 2025-12-11 through 2026-08-19 |
+| XR window | 2025-12-11 through 2026-08-19; exactly 252 UTC calendar dates |
 | XR-Score | research construct; not historical G-Score |
 | Full XR eligibility | all seven factors available; else NULL |
 | Reconstruction grade | `EXPLORATORY_ONLY` for every eligible composite |

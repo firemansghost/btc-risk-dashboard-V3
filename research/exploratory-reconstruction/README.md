@@ -21,10 +21,14 @@ H7 pre-registers how a later **H7.1** implementation may build a labeled **XR-Sc
 
 H7 does **not** recreate as-published GhostGauge, exact historical production behavior, or validation-grade current-methodology history.
 
-Hardened vector / SHA contracts:
+Hardened vector / SHA / selection contracts:
 
 - If a valid contemporaneous Git `market_chart_30_daily` capture exists for `T`, Term and Social use that entire captured vector **unchanged** (`B_METHOD_PIT`). Do not replace, append, drop, or reshape it.
 - Only if no valid Git chart exists, construct the exact 31-point `C_SURROGATE` vector: UTC dates T-30 through T-1 plus one Coinbase completed 5-minute T proxy last.
+- Observation universe is every UTC calendar date from 2025-12-11 through 2026-08-19 inclusive (**252** rows). Do not drop dates.
+- Reconstruction clock is deterministic: selected H3.1 `DAILY_PRIMARY` raw `as_of_utc` if UTC date equals `T`; else first valid legacy `updated_at` then `generated_at` then `timestamp`; else `T` 11:30:00 UTC. Enum: `ARTIFACT_AS_OF_UTC` / `ARTIFACT_LEGACY_TIMESTAMP` / `FIXED_1130_UTC`. Git commit timestamp is forbidden.
+- Stablecoin pre-run baseline is `public/data/stablecoins-historical.json` from the **first parent** of the Git commit that first introduced the dated raw capture. Do not use the same-commit post-run baseline.
+- Conservative ALFRED/FRED vintage is exact UTC `T-1`: `realtime_start = T-1`, `realtime_end = T-1`, `observation_end = T-1`. Do not roll backward for weekends or holidays.
 - H7.1 generation is two-stage: freeze `H7_1_ANALYSIS_SOURCE_SHA` on an implementation-only commit, then generate outputs from that SHA. `ANALYSIS_SOURCE_SHA.txt` records that implementation SHA, not the later output-commit SHA.
 
 ## Frozen identity
@@ -34,7 +38,7 @@ Hardened vector / SHA contracts:
 | `H7_BASE_SHA` | `6c03730df19adafd8e4e3b1f84361e64a378a6a6` |
 | `MODEL_SOURCE_SHA` | `6b2fa9cf56ce738c74c8da6de0f5a972858f8a52` |
 | Protocol | `h7-exploratory-reconstruction-v1` |
-| Window | 2025-12-11 through 2026-08-19 |
+| Window | 2025-12-11 through 2026-08-19 (exactly 252 UTC calendar dates) |
 
 ## Files present now (protocol only)
 
@@ -49,9 +53,9 @@ Hardened vector / SHA contracts:
 
 Do **not** create these until H7 is reviewed, merged, and its protocol / contract / schema blobs are frozen:
 
-- `xr_observations.csv`
+- `xr_observations.csv` (exactly 252 calendar rows)
 - `xr_factor_lineage.csv`
-- `xr_missingness.csv`
+- `xr_missingness.csv` (exactly 252 calendar rows)
 - `xr_bridge_check.csv`
 - `ANALYSIS_SOURCE_SHA.txt` (Stage A implementation SHA only; not the output-commit SHA)
 - `PROTOCOL_VERSION.txt`
