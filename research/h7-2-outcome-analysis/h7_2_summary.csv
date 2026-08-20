@@ -1,0 +1,4 @@
+horizon_days,role,universe_n,xr_eligible_n,xr_not_eligible_n,outcome_complete_n,outcome_incomplete_n,analysis_n,spearman_rho,direction_label,protocol_version,protocol_sha,analysis_source_sha
+30,PRIMARY,252,234,18,205,29,205,0.24995025751099909,DIRECTIONALLY_ALIGNED,h7-2-outcome-analysis-v1,1886cb2c12f292f03d5deab7ef23200f02d1694d,b6472b761ef2550497ef86168b72457aba37fd68
+90,SECONDARY,252,234,18,149,85,149,-0.11303577217168077,DIRECTIONALLY_OPPOSED,h7-2-outcome-analysis-v1,1886cb2c12f292f03d5deab7ef23200f02d1694d,b6472b761ef2550497ef86168b72457aba37fd68
+180,SECONDARY,252,234,18,68,166,68,-0.1676827086357634,DIRECTIONALLY_OPPOSED,h7-2-outcome-analysis-v1,1886cb2c12f292f03d5deab7ef23200f02d1694d,b6472b761ef2550497ef86168b72457aba37fd68
