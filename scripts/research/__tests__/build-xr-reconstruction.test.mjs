@@ -64,6 +64,21 @@ import {
   CASE_B_COINGECKO_LOOKBACK_DAYS,
   unwrapCoinGeckoCachePayload,
   extractEtfRollingSumBaseline,
+  extractProductionFactorScores,
+  reconstructTrendIslandSeries,
+  parseBtcPriceHistoryCsv,
+  retainCoinbaseHistoryWindow,
+  coinbaseRetainedHistoryCutoffDate,
+  DEFAULT_BACKFILL_DAYS,
+  isUtcWeekday,
+  isUsTradingDay,
+  BRIDGE_PRODUCTION_CAPTURES,
+  H7_PROTOCOL_VERSION,
+  FACTOR_COMPONENT_ORDER,
+  FACTOR_AVAIL_FIELDS,
+  FACTOR_SCORE_FIELDS,
+  FACTOR_ROLE_FIELDS,
+  finalizeFactorRecords,
 } from '../lib/xr-reconstruction-core.mjs';
 import {
   buildAlfredRequest,
@@ -72,8 +87,11 @@ import {
   fetchWithRetryInjected,
   findIntroductionCandidates,
   gitBlobExists,
+  gitFirstParent,
   resolveFirstIntroduction,
   resolveStablecoinCapture,
+  resolveTrendBIsland,
+  GIT_PATHS,
   sanitizeFredUrl,
   XrRuntimeSourceError,
   XrHistoricalMissingError,
@@ -90,6 +108,11 @@ import {
   previewCsv,
   runStageBGeneration,
   finalizeAtomicOutputs,
+  assembleDateRecords,
+  assembleStageBOutputSet,
+  reconstructOneDate,
+  presentComp,
+  missingComp,
 } from '../build-xr-reconstruction.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -108,6 +131,9 @@ test('identity: frozen H7 blobs and MODEL_CODE_BLOBS are populated', () => {
   assert.equal(ETF_HISTORICAL_BASELINE_BLOB, '2986a65e565516f374f57bf031a672c84647330c');
   assert.equal(CASE_A_CHART_CAPTURES['2026-08-17'].blobSha, '3eaaca33a4e0b63a0f0b9257982fee1ca1c2a275');
   assert.equal(TREND_B_ISLAND_CAPTURES['2026-08-19'].latestJsonBlobSha, 'fca84aed72c35344706eed247dff7bfe04d934be');
+  assert.equal(BRIDGE_PRODUCTION_CAPTURES['2026-08-17'].blobSha, '82db3c2c0525aaa6dc1aa16932eabe143d7dff45');
+  assert.equal(BRIDGE_PRODUCTION_CAPTURES['2026-08-18'].blobSha, 'd16a1a140930888a590eaa5f0a56a1c9830971b7');
+  assert.equal(BRIDGE_PRODUCTION_CAPTURES['2026-08-19'].commitSha, 'ad6be423dc5222c0844e1a367742984d1e69c2d7');
 });
 
 test('identity: factor weights and subweights', () => {
@@ -429,6 +455,10 @@ test('stablecoins: first-introduction / parent / same-commit / ambiguous', () =>
     if (args[0] === 'cat-file' && args[1] === '-t') return Buffer.from('commit\n');
     const cmd = args.join(' ');
     if (cmd.startsWith('log --diff-filter=A')) return Buffer.from('C1\n');
+    if (args[0] === 'rev-list' && args.includes('--parents')) {
+      const sha = args[args.length - 1];
+      return Buffer.from(`${sha} ${parents[sha]}\n`);
+    }
     if (args[0] === 'rev-parse' && args[1].endsWith('^')) return Buffer.from(parents[args[1].slice(0, -1)] + '\n');
     if (args[0] === 'rev-parse') {
       const spec = args[1];
@@ -458,6 +488,10 @@ test('stablecoins: first-introduction / parent / same-commit / ambiguous', () =>
   const gitExecAmbiguous = (args) => {
     if (args[0] === 'cat-file' && args[1] === '-t') return Buffer.from('commit\n');
     if (args[0] === 'log') return Buffer.from('C1\nC2\n');
+    if (args[0] === 'rev-list' && args.includes('--parents')) {
+      const sha = args[args.length - 1];
+      return Buffer.from(`${sha} ${sha === 'C1' ? 'P1' : 'P2'}\n`);
+    }
     if (args[0] === 'rev-parse' && String(args[1]).endsWith('^')) {
       const sha = args[1].slice(0, -1);
       return Buffer.from(`${sha === 'C1' ? 'P1' : 'P2'}\n`);
@@ -686,6 +720,8 @@ test('contract-check: frozen blobs, 252 dates, no network/files/scores', () => {
   assert.equal(result.columnCounts.xr_observations, 25);
   assert.equal(result.columnCounts.xr_bridge_check, 8);
   assert.equal(result.caseACaptures['2026-08-18'].blobSha, '4b9c8a1cbc460081b02f633a53741b1ca2975770');
+  assert.equal(result.bridgeProductionCaptures['2026-08-19'].blobSha, 'fca84aed72c35344706eed247dff7bfe04d934be');
+  assert.equal(Object.keys(result.bridgeProductionCaptures).length, 3);
 });
 
 test('eligibility: available-but-nonfinite throws invariant', () => {
@@ -705,6 +741,12 @@ test('ETF holiday calendar matches MODEL_SOURCE_SHA set', () => {
   assert.equal(getExpectedLatestUsTradingDay('2026-05-25T18:00:00.000Z'), '2026-05-22');
   assert.equal(getExpectedLatestUsTradingDay('2026-02-10T15:00:00.000Z'), '2026-02-09');
   assert.equal(getExpectedLatestUsTradingDay('2026-02-10T16:00:00.000Z'), '2026-02-10');
+  assert.equal(isUtcWeekday('2026-01-17'), false);
+  assert.equal(isUtcWeekday('2026-01-18'), false);
+  assert.equal(isUtcWeekday('2026-01-19'), true);
+  assert.equal(isUsTradingDay('2026-01-19'), false);
+  assert.equal(isUtcWeekday('2026-01-16'), true);
+  assert.equal(isUsTradingDay('2026-01-16'), true);
 });
 
 test('CASE A envelope and raw payloads keep prices unchanged', () => {
@@ -758,7 +800,8 @@ test('CASE B required dates reject duplicates and missing values', () => {
 });
 
 test('ETF frozen baseline extractor rejects malformed objects', () => {
-  assert.equal(extractEtfRollingSumBaseline({ rollingSums: [{ sum: 10 }, { sum: 20 }] }).ok, true);
+  assert.equal(extractEtfRollingSumBaseline({ rollingSums: [{ date: '2026-01-16', sum: 10 }, { date: '2026-01-20', sum: 20 }] }).ok, true);
+  assert.equal(extractEtfRollingSumBaseline({ rollingSums: [{ sum: 10 }, { sum: 20 }] }).ok, false);
   assert.equal(extractEtfRollingSumBaseline({ rollingSums: [] }).ok, false);
 });
 
@@ -775,82 +818,435 @@ test('atomic finalize uses sibling staging and leaves no partial final dir', () 
     assert.equal(fs.readFileSync(path.join(finalDir, name), 'utf8'), files[name]);
   }
   assert.throws(() => finalizeAtomicOutputs(finalDir, files), /already exists/);
+  const corruptDir = path.join(parent, 'corrupt');
+  const corruptFs = {
+    existsSync: (p) => fs.existsSync(p),
+    mkdirSync: (p, opts) => fs.mkdirSync(p, opts),
+    writeFileSync: (p, data, opts) => {
+      if (String(p).endsWith('PROTOCOL_VERSION.txt')) {
+        fs.writeFileSync(p, 'tampered\n', opts);
+        return;
+      }
+      fs.writeFileSync(p, data, opts);
+    },
+    readFileSync: (p) => fs.readFileSync(p),
+    readdirSync: (p) => fs.readdirSync(p),
+    renameSync: (a, b) => fs.renameSync(a, b),
+    rmSync: (p, opts) => fs.rmSync(p, opts),
+  };
+  assert.throws(
+    () => finalizeAtomicOutputs(corruptDir, files, { fsImpl: corruptFs }),
+    /staged bytes mismatch/
+  );
+  assert.equal(fs.existsSync(corruptDir), false);
   fs.rmSync(parent, { recursive: true, force: true });
 });
 
 test('mocked end-to-end Stage-B orchestration is callable without HTTP', async () => {
-  const dates = ['2099-03-02', '2099-03-03', '2099-03-04'];
+  const date = '2099-03-03';
+  const dates = [date];
+  const scores = {
+    trend_valuation: 36,
+    stablecoins: 63,
+    etf_flows: 43,
+    net_liquidity: 59,
+    term_leverage: 57,
+    macro_overlay: 28,
+    social_interest: 61,
+  };
+  const roles = {
+    trend_valuation: 'C_SURROGATE',
+    stablecoins: 'B_METHOD_PIT',
+    etf_flows: 'B_METHOD_PIT',
+    net_liquidity: 'C_PIT_CONSERVATIVE',
+    term_leverage: 'C_SURROGATE',
+    macro_overlay: 'C_PIT_CONSERVATIVE',
+    social_interest: 'B_METHOD_PIT',
+  };
+  const availability = Object.fromEntries(
+    OFFICIAL_FACTOR_ORDER.map((k) => [
+      k,
+      roles[k] === 'B_METHOD_PIT' ? 'AVAILABLE_B' : 'AVAILABLE_C',
+    ])
+  );
+  const lineage = [];
+  for (const factorKey of OFFICIAL_FACTOR_ORDER) {
+    for (const componentKey of FACTOR_COMPONENT_ORDER[factorKey]) {
+      lineage.push(
+        presentComp(date, factorKey, componentKey, roles[factorKey], {
+          source_name: 'synthetic',
+          notes:
+            factorKey === 'stablecoins'
+              ? 'capture_commit=aa;capture_blob=bb;first_parent=cc;baseline_blob=dd'
+              : factorKey === 'net_liquidity'
+                ? 'request=https://api.stlouisfed.org/fred/series/observations?api_key=REDACTED;sha256=abc'
+                : '',
+        })
+      );
+    }
+  }
+  const clock = {
+    valid: true,
+    reconstruction_as_of_utc: '2099-03-03T11:30:00.000Z',
+    reconstruction_clock_source: 'FIXED_1130_UTC',
+  };
+  const one = assembleDateRecords({
+    observationDate: date,
+    clock,
+    factorScores: scores,
+    factorRoles: roles,
+    factorAvailability: availability,
+    lineage,
+  });
+  assert.equal(one.eligibility.xr_status, 'ELIGIBLE');
+  assert.equal(one.eligibility.eligible_full_composite, true);
+  assert.equal(one.eligibility.missing_factor_count, 0);
+  assert.equal(one.eligibility.missing_factors, '');
+  assert.equal(one.eligibility.reconstruction_grade, 'EXPLORATORY_ONLY');
+  assert.equal(one.observation.xr_score, 48);
+  assert.equal(blendOfficialComposite(scores), 48);
+  for (const key of OFFICIAL_FACTOR_ORDER) {
+    assert.equal(Number.isFinite(one.factorScores[key]), true);
+    assert.equal(['AVAILABLE_B', 'AVAILABLE_C'].includes(one.missingness[FACTOR_AVAIL_FIELDS[key]]), true);
+  }
+  const production = {
+    factorScores: {
+      trend_valuation: 40,
+      stablecoins: 60,
+      etf_flows: 40,
+      net_liquidity: 50,
+      term_leverage: 50,
+      macro_overlay: 30,
+      social_interest: 60,
+    },
+    gScore: 47,
+  };
+  const assembled = assembleStageBOutputSet({
+    dates,
+    reconstructions: [one],
+    analysisSourceSha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    productionByDate: { [date]: production },
+    frozenUniverse: false,
+  });
+  assert.equal(assembled.bridge.filter((r) => r.factor_key !== '__XR_COMPOSITE__').length, 7);
+  assert.equal(assembled.bridge.filter((r) => r.factor_key === '__XR_COMPOSITE__').length, 1);
+  assert.equal(
+    assembled.bridge.find((r) => r.factor_key === 'trend_valuation').difference,
+    36 - 40
+  );
+  assert.match(assembled.files['xr_factor_lineage.csv'], /first_parent=cc/);
+  assert.match(assembled.files['xr_factor_lineage.csv'], /api_key=REDACTED/);
+  assert.equal(
+    assembled.files['ANALYSIS_SOURCE_SHA.txt'],
+    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n'
+  );
+  assert.equal(assembled.files['PROTOCOL_VERSION.txt'], `${H7_PROTOCOL_VERSION}\n`);
   const parent = fs.mkdtempSync(path.join(os.tmpdir(), 'xr-h71-e2e-'));
   const outputDir = path.join(parent, 'xr-out');
-  const daily = [
-    'observation_date,selection_status,primary_artifact_id,primary_artifact_commit_sha,primary_observation_as_of_utc',
-    ...dates.map((d) => `${d},NO_DAILY_PRIMARY,,,`),
-  ].join('\n') + '\n';
-  const gitExec = (args) => {
-    const cmd = args.join(' ');
-    if (args[0] === 'cat-file' && args[1] === '-t') return Buffer.from('commit\n');
-    if (args[0] === 'status') return Buffer.from('');
-    if (cmd.startsWith('rev-parse HEAD')) return Buffer.from('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n');
-    if (cmd.includes('daily_analytical_view.csv') && args[0] === 'show') return Buffer.from(daily);
-    if (args[0] === 'log') return Buffer.from('');
-    if (args[0] === 'cat-file' && args[1] === '-p') {
-      return Buffer.from(JSON.stringify({ rollingSums: [{ sum: 100 }, { sum: 200 }] }));
-    }
-    throw new XrRuntimeSourceError(`path '${args[1] || ''}' exists on disk, but not in 'HEAD'`);
-  };
-  const fetchImpl = async (url) => {
-    if (url.includes('stlouisfed')) {
-      const body = JSON.stringify({ observations: [{ date: '2099-01-01', value: '1' }] });
-      return { status: 200, ok: true, arrayBuffer: async () => Buffer.from(body) };
-    }
-    if (url.includes('coingecko')) {
-      const T = '2099-03-02';
-      const prices = [];
-      for (let i = 120; i >= 1; i--) {
-        const date = addUtcDays(T, -i);
-        prices.push([Date.parse(`${date}T00:00:00.000Z`), 100]);
-      }
-      const body = JSON.stringify({ prices });
-      return { status: 200, ok: true, arrayBuffer: async () => Buffer.from(body) };
-    }
-    if (url.includes('granularity=300')) {
-      const asOf = Date.parse('2099-03-02T11:30:00.000Z') / 1000;
-      const body = JSON.stringify([[asOf - 300, 1, 1, 1, 101, 1]]);
-      return { status: 200, ok: true, arrayBuffer: async () => Buffer.from(body) };
-    }
-    if (url.includes('granularity=86400')) {
-      const rows = [];
-      for (let i = 400; i >= 1; i--) {
-        const date = addUtcDays('2099-03-02', -i);
-        rows.push([Date.parse(`${date}T00:00:00.000Z`) / 1000, 1, 1, 1, 100, 1]);
-      }
-      const body = JSON.stringify(rows);
-      return { status: 200, ok: true, arrayBuffer: async () => Buffer.from(body) };
-    }
-    throw new Error(url);
-  };
   try {
-    const result = await runStageBGeneration({
-      analysisSourceSha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-      outputDir,
-      allowNetwork: true,
-      gitExec,
-      fetchImpl,
-      env: { FRED_API_KEY: 'test' },
-      observationDates: dates,
-      skipIdentityGuards: true,
-      requireFrozenUniverse: false,
-    });
-    assert.equal(result.ok, true);
+    finalizeAtomicOutputs(outputDir, assembled.files);
     assert.equal(fs.existsSync(path.join(outputDir, 'xr_observations.csv')), true);
-    assert.equal(fs.existsSync(path.join(outputDir, 'PROTOCOL_VERSION.txt')), true);
-    const obs = fs.readFileSync(path.join(outputDir, 'xr_observations.csv'), 'utf8');
-    assert.match(obs, /2099-03-02/);
-    assert.match(obs, /NOT_ELIGIBLE|ELIGIBLE/);
-    const lineage = fs.readFileSync(path.join(outputDir, 'xr_factor_lineage.csv'), 'utf8');
-    assert.match(lineage, /trend_valuation/);
-    assert.equal(fs.readFileSync(path.join(outputDir, 'ANALYSIS_SOURCE_SHA.txt'), 'utf8').trim(), 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
   } finally {
     fs.rmSync(parent, { recursive: true, force: true });
   }
+});
+
+test('synthetic one-factor MISSING is NOT_ELIGIBLE without renormalization', () => {
+  const date = '2099-03-04';
+  const scores = {
+    trend_valuation: 36,
+    stablecoins: 63,
+    etf_flows: 43,
+    net_liquidity: 59,
+    term_leverage: 57,
+    macro_overlay: 28,
+    social_interest: null,
+  };
+  const roles = {
+    trend_valuation: 'C_SURROGATE',
+    stablecoins: 'B_METHOD_PIT',
+    etf_flows: 'B_METHOD_PIT',
+    net_liquidity: 'C_PIT_CONSERVATIVE',
+    term_leverage: 'C_SURROGATE',
+    macro_overlay: 'C_PIT_CONSERVATIVE',
+    social_interest: 'MISSING',
+  };
+  const availability = Object.fromEntries(
+    OFFICIAL_FACTOR_ORDER.map((k) => [k, k === 'social_interest' ? 'MISSING' : 'AVAILABLE_C'])
+  );
+  availability.stablecoins = 'AVAILABLE_B';
+  availability.etf_flows = 'AVAILABLE_B';
+  const lineage = [];
+  for (const factorKey of OFFICIAL_FACTOR_ORDER) {
+    for (const componentKey of FACTOR_COMPONENT_ORDER[factorKey]) {
+      if (factorKey === 'social_interest') {
+        lineage.push(missingComp(date, factorKey, componentKey, 'NO_BITCOIN_RANK'));
+      } else {
+        lineage.push(presentComp(date, factorKey, componentKey, roles[factorKey], { source_name: 'synthetic' }));
+      }
+    }
+  }
+  const one = assembleDateRecords({
+    observationDate: date,
+    clock: {
+      valid: true,
+      reconstruction_as_of_utc: '2099-03-04T11:30:00.000Z',
+      reconstruction_clock_source: 'FIXED_1130_UTC',
+    },
+    factorScores: scores,
+    factorRoles: roles,
+    factorAvailability: availability,
+    lineage,
+  });
+  assert.equal(one.observation.xr_status, 'NOT_ELIGIBLE');
+  assert.equal(one.observation.xr_score, '');
+  assert.equal(one.observation.reconstruction_grade, '');
+  assert.equal(one.observation.missing_factor_count, 1);
+  assert.equal(one.observation.missing_factors, 'social_interest');
+  assert.equal(one.observation.eligible_full_composite, false);
+  const bridge = buildBridgeRows({
+    observationDate: date,
+    xrFactorScores: scores,
+    productionFactorScores: { trend_valuation: 10 },
+    xrRoles: roles,
+    eligible: false,
+    xrScore: null,
+    productionGScore: 40,
+  });
+  assert.equal(bridge.some((r) => r.factor_key === '__XR_COMPOSITE__'), false);
+});
+
+test('Trend B-island reconstruction path uses finite daily closes', () => {
+  const observationDate = '2026-08-17';
+  const asOfUtc = '2026-08-17T11:30:00.000Z';
+  const lines = ['date_utc,close_usd'];
+  for (let i = 250; i >= 1; i--) {
+    lines.push(`${addUtcDays(observationDate, -i)},100`);
+  }
+  const historyRows = parseBtcPriceHistoryCsv(`${lines.join('\n')}\n`);
+  const island = { historyRows, snapshotPrice: 110 };
+  const series = reconstructTrendIslandSeries(island, asOfUtc);
+  assert.equal(series.dailyCloses.every(Number.isFinite), true);
+  assert.equal(series.dailyCloses.length >= 200, true);
+  assert.equal(series.weeklyCloses.every((w) => Number.isFinite(w.close)), true);
+  assert.equal(series.weeklyCloses.length >= 22, true);
+  const result = scoreTrendComponents({
+    snapshotPrice: 110,
+    dailyCloses: series.dailyCloses,
+    weeklyCloses: series.weeklyCloses,
+  });
+  assert.equal(Number.isFinite(result.factorScore), true);
+});
+
+test('Trend B-island resolver uses frozen identities with synthetic CSV', () => {
+  const expected = TREND_B_ISLAND_CAPTURES['2026-08-17'];
+  const lines = ['date_utc,close_usd'];
+  for (let i = 250; i >= 1; i--) {
+    lines.push(`${addUtcDays('2026-08-17', -i)},100`);
+  }
+  const csv = `${lines.join('\n')}\n`;
+  const latest = {
+    price_kind: 'utc_intraday_snapshot',
+    snapshot_date: '2026-08-17',
+    btc: { spot_usd: 110 },
+  };
+  const gitExec = (args) => {
+    if (args[0] === 'cat-file' && args[1] === '-t') return Buffer.from('commit\n');
+    if (args[0] === 'rev-parse' && String(args[1]).includes(GIT_PATHS.latestJson)) {
+      return Buffer.from(`${expected.latestJsonBlobSha}\n`);
+    }
+    if (args[0] === 'rev-parse' && String(args[1]).includes(GIT_PATHS.priceHistoryCsv)) {
+      return Buffer.from(`${expected.btcPriceHistoryBlobSha}\n`);
+    }
+    if (args[0] === 'show' && String(args[1]).includes(GIT_PATHS.latestJson)) {
+      return Buffer.from(JSON.stringify(latest));
+    }
+    if (args[0] === 'show' && String(args[1]).includes(GIT_PATHS.priceHistoryCsv)) {
+      return Buffer.from(csv);
+    }
+    throw new XrRuntimeSourceError(`path '${args[1] || ''}' exists on disk, but not in '${expected.latestJsonCommitSha}'`);
+  };
+  const island = resolveTrendBIsland('2026-08-17', gitExec);
+  assert.equal(island.ok, true);
+  const series = reconstructTrendIslandSeries(island, '2026-08-17T11:30:00.000Z');
+  assert.equal(series.dailyCloses.every(Number.isFinite), true);
+  const scored = scoreTrendComponents({
+    snapshotPrice: island.snapshotPrice,
+    dailyCloses: series.dailyCloses,
+    weeklyCloses: series.weeklyCloses,
+  });
+  assert.equal(Number.isFinite(scored.factorScore), true);
+});
+
+test('ETF frozen baseline weekday filter keeps holiday Monday and drops weekend', () => {
+  const extracted = extractEtfRollingSumBaseline({
+    rollingSums: [
+      { date: '2026-01-16', sum: 11 },
+      { date: '2026-01-17', sum: 12 },
+      { date: '2026-01-18', sum: 13 },
+      { date: '2026-01-19', sum: 14 },
+      { date: '2026-01-20', sum: 15 },
+    ],
+  });
+  assert.equal(extracted.ok, true);
+  assert.deepEqual(extracted.values, [11, 14, 15]);
+});
+
+test('production factors array extraction recovers all seven scores and composite', () => {
+  const raw = {
+    composite_score: 47,
+    factors: [
+      { key: 'trend_valuation', score: 46 },
+      { key: 'stablecoins', score: 50 },
+      { key: 'etf_flows', score: 40 },
+      { key: 'net_liquidity', score: 30 },
+      { key: 'term_leverage', score: 55 },
+      { key: 'macro_overlay', score: 20 },
+      { key: 'social_interest', score: 70 },
+    ],
+  };
+  const extracted = extractProductionFactorScores(raw);
+  assert.equal(extracted.gScore, 47);
+  assert.equal(extracted.factorScores.trend_valuation, 46);
+  assert.equal(extracted.factorScores.stablecoins, 50);
+  assert.equal(extracted.factorScores.etf_flows, 40);
+  assert.equal(extracted.factorScores.net_liquidity, 30);
+  assert.equal(extracted.factorScores.term_leverage, 55);
+  assert.equal(extracted.factorScores.macro_overlay, 20);
+  assert.equal(extracted.factorScores.social_interest, 70);
+  const bridge = buildBridgeRows({
+    observationDate: '2026-08-19',
+    xrFactorScores: extracted.factorScores,
+    productionFactorScores: extracted.factorScores,
+    xrRoles: Object.fromEntries(OFFICIAL_FACTOR_ORDER.map((k) => [k, 'B_METHOD_PIT'])),
+    eligible: true,
+    xrScore: 47,
+    productionGScore: 47,
+  });
+  assert.equal(bridge.filter((r) => r.factor_key !== '__XR_COMPOSITE__').length, 7);
+  assert.equal(bridge.find((r) => r.factor_key === 'trend_valuation').difference, 0);
+  const missingProd = extractProductionFactorScores({
+    composite_score: 47,
+    factors: [{ key: 'trend_valuation', score: 46 }],
+  });
+  const missingBridge = buildBridgeRows({
+    observationDate: '2026-08-17',
+    xrFactorScores: {
+      trend_valuation: 10,
+      stablecoins: 20,
+      etf_flows: 30,
+      net_liquidity: 40,
+      term_leverage: 50,
+      macro_overlay: 60,
+      social_interest: 70,
+    },
+    productionFactorScores: missingProd.factorScores,
+    xrRoles: Object.fromEntries(OFFICIAL_FACTOR_ORDER.map((k) => [k, 'B_METHOD_PIT'])),
+    eligible: false,
+    xrScore: null,
+    productionGScore: 47,
+  });
+  assert.equal(
+    missingBridge.find((r) => r.factor_key === 'stablecoins').comparison_status,
+    'PRODUCTION_MISSING'
+  );
+  assert.equal(missingBridge.some((r) => r.factor_key === '__XR_COMPOSITE__'), false);
+});
+
+test('Aug19 bridge production artifact does not alter FIXED_1130_UTC clock', () => {
+  const clock = selectReconstructionClock({
+    observationDate: '2026-08-19',
+    dailyRow: { selection_status: 'NO_DAILY_PRIMARY' },
+    rawArtifact: {
+      as_of_utc: '2026-08-19T16:45:00.000Z',
+      updated_at: '2026-08-19T16:45:00.000Z',
+      composite_score: 47,
+      factors: [{ key: 'trend_valuation', score: 46 }],
+    },
+  });
+  assert.equal(clock.reconstruction_clock_source, 'FIXED_1130_UTC');
+  assert.equal(clock.reconstruction_as_of_utc, '2026-08-19T11:30:00.000Z');
+  assert.equal(BRIDGE_PRODUCTION_CAPTURES['2026-08-17'].blobSha, TREND_B_ISLAND_CAPTURES['2026-08-17'].latestJsonBlobSha);
+  assert.equal(BRIDGE_PRODUCTION_CAPTURES['2026-08-18'].blobSha, TREND_B_ISLAND_CAPTURES['2026-08-18'].latestJsonBlobSha);
+  assert.equal(BRIDGE_PRODUCTION_CAPTURES['2026-08-19'].blobSha, TREND_B_ISLAND_CAPTURES['2026-08-19'].latestJsonBlobSha);
+});
+
+test('Coinbase retained history uses production 730-day cutoff', () => {
+  const asOfUtc = '2099-06-01T11:30:00.000Z';
+  const cutoff = coinbaseRetainedHistoryCutoffDate(asOfUtc);
+  assert.equal(cutoff, addUtcDays('2099-06-01', -DEFAULT_BACKFILL_DAYS));
+  const rows = [];
+  for (let i = 800; i >= 1; i--) {
+    const date = addUtcDays('2099-06-01', -i);
+    rows.push({ date_utc: date, close: 100, close_usd: 100 });
+  }
+  const retained = retainCoinbaseHistoryWindow(rows, asOfUtc);
+  assert.equal(retained[0].date_utc >= cutoff, true);
+  assert.equal(retained.some((r) => r.date_utc < cutoff), false);
+  assert.equal(retained.length < rows.length, true);
+});
+
+test('first-parent Git runtime failure is not historical missing', () => {
+  const root = gitFirstParent('ROOT', (args) => {
+    if (args[0] === 'cat-file' && args[1] === '-t') return Buffer.from('commit\n');
+    if (args[0] === 'rev-list' && args.includes('--parents')) return Buffer.from('ROOT\n');
+    throw new XrRuntimeSourceError('unexpected');
+  });
+  assert.equal(root, null);
+  assert.throws(
+    () =>
+      gitFirstParent('C', (args) => {
+        if (args[0] === 'cat-file' && args[1] === '-t') return Buffer.from('commit\n');
+        throw new XrRuntimeSourceError('fatal: bad object C', { status: 128 });
+      }),
+    (err) => err instanceof XrRuntimeSourceError
+  );
+  assert.throws(
+    () =>
+      findIntroductionCandidates('public/data/cache/stablecoins/2026-01-02.json', (args) => {
+        if (args[0] === 'log') return Buffer.from('C1\n');
+        if (args[0] === 'cat-file' && args[1] === '-t') return Buffer.from('commit\n');
+        if (args[0] === 'rev-parse') return Buffer.from('blob\n');
+        if (args[0] === 'rev-list') {
+          throw new XrRuntimeSourceError('fatal: not a git repository', { status: 128 });
+        }
+        throw new XrRuntimeSourceError('unexpected');
+      }),
+    (err) => err instanceof XrRuntimeSourceError && /not a git repository/i.test(err.message)
+  );
+});
+
+test('finalizeFactorRecords preserves valid snapshot when history is insufficient', () => {
+  const recs = [
+    presentComp('2099-01-01', 'trend_valuation', 'utc_intraday_snapshot', 'C_SURROGATE', {
+      source_name: 'coinbase_5m',
+      external_snapshot_sha256: 'abc123',
+    }),
+    presentComp('2099-01-01', 'trend_valuation', 'bmsb_distance', 'C_CURRENT_HISTORY', {
+      source_name: 'coinbase_daily',
+    }),
+    presentComp('2099-01-01', 'trend_valuation', 'mayer_stretch', 'C_CURRENT_HISTORY', {
+      source_name: 'coinbase_daily',
+    }),
+    presentComp('2099-01-01', 'trend_valuation', 'weekly_rsi', 'C_CURRENT_HISTORY', {
+      source_name: 'coinbase_daily',
+    }),
+  ];
+  const fin = finalizeFactorRecords(recs, { scores: null, reasonCode: 'INSUFFICIENT_LOOKBACK' }, 'trend_valuation');
+  assert.equal(fin.availability, 'MISSING');
+  assert.equal(fin.records[0].reconstruction_role, 'C_SURROGATE');
+  assert.equal(fin.records[0].external_snapshot_sha256, 'abc123');
+  assert.equal(fin.records[1].reconstruction_role, 'MISSING');
+  assert.equal(fin.records[1].missing_reason, 'INSUFFICIENT_LOOKBACK');
+});
+
+test('runStageBGeneration has no identity or date-universe bypass', async () => {
+  await assert.rejects(
+    () => runStageBGeneration({ analysisSourceSha: 'abc', outputDir: '/tmp/x', allowNetwork: false }),
+    /allow-network/
+  );
+  const src = runStageBGeneration.toString();
+  assert.equal(src.includes('skipIdentityGuards'), false);
+  assert.equal(src.includes('observationDates'), false);
+  assert.equal(src.includes('requireFrozenUniverse'), false);
 });

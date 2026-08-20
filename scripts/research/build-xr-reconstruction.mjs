@@ -5,6 +5,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import {
   FROZEN_H7_BLOBS,
@@ -22,6 +23,7 @@ import {
   H7_PROTOCOL_VERSION,
   CASE_A_CHART_CAPTURES,
   TREND_B_ISLAND_CAPTURES,
+  BRIDGE_PRODUCTION_CAPTURES,
   H6_1_EVIDENCE_MANIFEST_PATH,
   H6_1_EVIDENCE_MANIFEST_BLOB,
   ETF_HISTORICAL_BASELINE_PATH,
@@ -29,6 +31,7 @@ import {
   STAGE_B_OUTPUT_FILES,
   OFFICIAL_FACTOR_ORDER,
   FACTOR_COMPONENT_ORDER,
+  SCORED_COMPONENT_ORDER,
   BRIDGE_DATES,
   csvRowsToObjects,
   selectReconstructionClock,
@@ -46,7 +49,7 @@ import {
   sortLineageRows,
   formatMissingFactors,
   firstMissingReason,
-  sma200DenominatorCloses,
+  reconstructTrendIslandSeries,
   createWeeklyCloses,
   filterCompletedWeeklyCloses,
   buildCaseBSurrogateVector,
@@ -54,6 +57,10 @@ import {
   selectCompletedCoinbase5mCandle,
   unwrapCoinGeckoCachePayload,
   validateH71OutputSet,
+  validateH71CrossFileInvariants,
+  extractProductionFactorScores,
+  finalizeFactorRecords,
+  appendLineageNote,
   H7_BASE_SHA,
   FACTOR_SCORE_FIELDS,
   FACTOR_ROLE_FIELDS,
@@ -74,6 +81,7 @@ import {
   resolveSocialRank,
   resolveStablecoinCapture,
   resolveSelectedPrimaryArtifact,
+  resolveBridgeProductionArtifact,
   fetchCoinbaseCompletedHistory,
   fetchCoinbase5mProxy,
   fetchCoinGeckoCaseBRange,
@@ -148,6 +156,13 @@ export function runContractCheck({ gitExec = defaultGitExec } = {}) {
       islandMismatches.push({ date, latest, csv });
     }
   }
+  const bridgeProductionMismatches = [];
+  for (const [date, expected] of Object.entries(BRIDGE_PRODUCTION_CAPTURES)) {
+    const actual = gitRevParse(`${expected.commitSha}:${expected.path}`, gitExec);
+    if (actual !== expected.blobSha) {
+      bridgeProductionMismatches.push({ date, expected: expected.blobSha, actual });
+    }
+  }
   const dates = generateObservationUniverse();
   const universe = validateObservationUniverse(dates);
   const columnCounts = {
@@ -162,6 +177,7 @@ export function runContractCheck({ gitExec = defaultGitExec } = {}) {
     extraMismatches.length === 0 &&
     caseAMismatches.length === 0 &&
     islandMismatches.length === 0 &&
+    bridgeProductionMismatches.length === 0 &&
     universe.ok;
   return {
     ok,
@@ -170,10 +186,12 @@ export function runContractCheck({ gitExec = defaultGitExec } = {}) {
     extraMismatches,
     caseAMismatches,
     islandMismatches,
+    bridgeProductionMismatches,
     universe,
     columnCounts,
     caseACaptures: CASE_A_CHART_CAPTURES,
     trendBIslandCaptures: TREND_B_ISLAND_CAPTURES,
+    bridgeProductionCaptures: BRIDGE_PRODUCTION_CAPTURES,
     networkRequests: CONTRACT_CHECK_NETWORK_REQUESTS,
     filesWritten: CONTRACT_CHECK_FILES_WRITTEN,
     historicalScoreCalculations: CONTRACT_CHECK_HISTORICAL_SCORES,
@@ -223,6 +241,9 @@ export function assertSafeOutputDir(outputDir, repoRoot) {
       throw new XrRuntimeSourceError(`refusing output-dir inside production path: ${resolved}`);
     }
   }
+  if (fs.existsSync(resolved)) {
+    throw new XrRuntimeSourceError(`final output directory already exists: ${resolved}`);
+  }
   return resolved;
 }
 
@@ -250,6 +271,30 @@ export function finalizeAtomicOutputs(finalDir, files, { fsImpl = fs } = {}) {
         throw new XrRuntimeSourceError(`staged file missing after write: ${name}`);
       }
     }
+    const stagedNames = [...fsImpl.readdirSync(staging)].sort();
+    const expectedNames = [...STAGE_B_OUTPUT_FILES].sort();
+    if (
+      stagedNames.length !== expectedNames.length ||
+      stagedNames.some((name, i) => name !== expectedNames[i])
+    ) {
+      throw new XrRuntimeSourceError(
+        `staged filename set mismatch: ${stagedNames.join(',')} !== ${expectedNames.join(',')}`
+      );
+    }
+    for (const name of STAGE_B_OUTPUT_FILES) {
+      const actual = fsImpl.readFileSync(path.join(staging, name));
+      const expected = Buffer.from(files[name], 'utf8');
+      if (!Buffer.isBuffer(actual)) {
+        throw new XrRuntimeSourceError(`staged file read was not bytes: ${name}`);
+      }
+      if (!actual.equals(expected)) {
+        const actualSha = crypto.createHash('sha256').update(actual).digest('hex');
+        const expectedSha = crypto.createHash('sha256').update(expected).digest('hex');
+        throw new XrRuntimeSourceError(
+          `staged bytes mismatch for ${name}: ${actualSha} !== ${expectedSha}`
+        );
+      }
+    }
     fsImpl.renameSync(staging, resolved);
   } catch (error) {
     try {
@@ -274,7 +319,7 @@ export function previewCsv(columns, rows) {
   return serializeCsv(columns, rows);
 }
 
-function missingComp(date, factorKey, componentKey, reasonCode, extra = {}) {
+export function missingComp(date, factorKey, componentKey, reasonCode, extra = {}) {
   return {
     observation_date: date,
     factor_key: factorKey,
@@ -300,7 +345,7 @@ function missingComp(date, factorKey, componentKey, reasonCode, extra = {}) {
   };
 }
 
-function presentComp(date, factorKey, componentKey, role, extra = {}) {
+export function presentComp(date, factorKey, componentKey, role, extra = {}) {
   return {
     observation_date: date,
     factor_key: factorKey,
@@ -333,35 +378,11 @@ function vectorPrices(vector) {
 }
 
 function finalizeFactor(date, factorKey, componentRecords, scoreResult) {
-  const roles = componentRecords.map((r) => r.reconstruction_role);
-  if (roles.some((r) => r === 'MISSING')) {
-    return {
-      score: null,
-      role: 'MISSING',
-      availability: 'MISSING',
-      records: componentRecords,
-    };
-  }
-  if (!scoreResult || !Number.isFinite(scoreResult.factorScore)) {
-    const reason = scoreResult?.reasonCode || 'MISSING_COMPONENT';
-    return {
-      score: null,
-      role: 'MISSING',
-      availability: 'MISSING',
-      records: componentRecords.map((r) => ({
-        ...r,
-        reconstruction_role: 'MISSING',
-        availability_status: 'MISSING',
-        missing_reason: r.missing_reason || reason,
-      })),
-    };
-  }
-  return {
-    score: scoreResult.factorScore,
-    role: aggregateFactorRole(roles),
-    availability: aggregateFactorAvailability(roles),
-    records: componentRecords,
-  };
+  return finalizeFactorRecords(componentRecords, scoreResult, factorKey);
+}
+
+function httpNote(requestIdentity, sha256) {
+  return `request=${requestIdentity};sha256=${sha256}`;
 }
 
 export async function reconstructOneDate(observationDate, ctx) {
@@ -402,13 +423,9 @@ export async function reconstructOneDate(observationDate, ctx) {
     if (island.ok) {
       snapshotPrice = island.snapshotPrice;
       snapshotRole = 'B_METHOD_PIT';
-      dailyCloses = sma200DenominatorCloses(island.historyRows, asOfUtc).map((r) => r.close ?? r.close_usd);
-      weeklyCloses = filterCompletedWeeklyCloses(
-        createWeeklyCloses(
-          island.historyRows.map((r) => ({ timestamp: r.timestamp, close: r.close_usd }))
-        ),
-        asOfUtc
-      );
+      const series = reconstructTrendIslandSeries(island, asOfUtc);
+      dailyCloses = series.dailyCloses;
+      weeklyCloses = series.weeklyCloses;
       historyRole = 'B_METHOD_PIT';
       const trendScore = scoreTrendComponents({ snapshotPrice, dailyCloses, weeklyCloses });
       const recs = [
@@ -459,20 +476,37 @@ export async function reconstructOneDate(observationDate, ctx) {
           presentComp(observationDate, 'trend_valuation', 'utc_intraday_snapshot', snapshotRole, {
             ...extra,
             source_name: 'coinbase_5m',
+            source_type: 'http',
             external_snapshot_sha256: proxy.sha256,
+            notes: httpNote(proxy.url, proxy.sha256),
           }),
           presentComp(observationDate, 'trend_valuation', 'bmsb_distance', historyRole, {
             ...extra,
             source_name: 'coinbase_daily',
+            source_type: 'http',
+            notes: (history.lineage || [])
+              .map((chunk, i) => `chunk=${i};${httpNote(chunk.url, chunk.sha256)}`)
+              .join('|'),
           }),
           presentComp(observationDate, 'trend_valuation', 'mayer_stretch', historyRole, {
             ...extra,
             source_name: 'coinbase_daily',
+            source_type: 'http',
           }),
           presentComp(observationDate, 'trend_valuation', 'weekly_rsi', historyRole, {
             ...extra,
             source_name: 'coinbase_daily',
+            source_type: 'http',
           }),
+          ...(history.lineage || []).map((chunk, i) =>
+            presentComp(observationDate, 'trend_valuation', 'bmsb_distance', historyRole, {
+              ...extra,
+              source_name: `coinbase_daily_chunk_${i}`,
+              source_type: 'http',
+              external_snapshot_sha256: chunk.sha256,
+              notes: httpNote(chunk.url, chunk.sha256),
+            })
+          ),
         ];
         const fin = finalizeFactor(observationDate, 'trend_valuation', recs, trendScore);
         lineage.push(...fin.records);
@@ -495,6 +529,7 @@ export async function reconstructOneDate(observationDate, ctx) {
           git_commit_sha: stable.captureCommitSha,
           git_blob_sha: stable.captureBlobSha,
           source_name: 'stablecoins_dated_cache',
+          notes: `capture_commit=${stable.captureCommitSha};capture_blob=${stable.captureBlobSha};first_parent=${stable.firstParentSha};baseline_blob=${stable.baselineBlobSha}`,
         })
       );
       const fin = finalizeFactor(observationDate, 'stablecoins', recs, scored);
@@ -531,31 +566,60 @@ export async function reconstructOneDate(observationDate, ctx) {
 
     const nlReqs = buildNetLiquidityRequests(observationDate, ctx.fredKey);
     const nlObs = {};
+    const nlLineageExtras = [];
     for (const req of nlReqs) {
       const got = await fetchAlfredSeries(req, ctx.runtime);
       nlObs[req.seriesId] = parseFredObservations(got.json, observationDate);
+      nlLineageExtras.push({
+        seriesId: req.seriesId,
+        sanitizedUrl: req.sanitizedUrl,
+        sha256: got.sha256,
+      });
     }
     const nlScored = scoreNetLiquidityComponents(nlObs, observationDate);
-    if (!nlScored || !Number.isFinite(nlScored.factorScore)) {
-      markAll('net_liquidity', nlScored?.reasonCode || 'INSUFFICIENT_LOOKBACK');
-    } else {
-      const recs = FACTOR_COMPONENT_ORDER.net_liquidity.map((componentKey) =>
+    const nlComponentBySeries = {
+      WALCL: 'level',
+      RRPONTSYD: 'rate_of_change',
+      WTREGEN: 'momentum',
+    };
+    const nlRecs = [
+      ...FACTOR_COMPONENT_ORDER.net_liquidity.map((componentKey) =>
         presentComp(observationDate, 'net_liquidity', componentKey, 'C_PIT_CONSERVATIVE', {
           ...extra,
           source_name: 'alfred',
+          source_type: 'http',
+          notes: nlLineageExtras
+            .map((item) => `${item.seriesId};${httpNote(item.sanitizedUrl, item.sha256)}`)
+            .join('|'),
         })
-      );
-      const fin = finalizeFactor(observationDate, 'net_liquidity', recs, nlScored);
-      lineage.push(...fin.records);
-      factorScores.net_liquidity = fin.score;
-      factorRoles.net_liquidity = fin.role;
-      factorAvailability.net_liquidity = fin.availability;
-    }
+      ),
+      ...nlLineageExtras.map((item) =>
+        presentComp(
+          observationDate,
+          'net_liquidity',
+          nlComponentBySeries[item.seriesId],
+          'C_PIT_CONSERVATIVE',
+          {
+            ...extra,
+            source_name: `alfred_${item.seriesId}`,
+            source_type: 'http',
+            external_snapshot_sha256: item.sha256,
+            notes: httpNote(item.sanitizedUrl, item.sha256),
+          }
+        )
+      ),
+    ];
+    const nlFin = finalizeFactor(observationDate, 'net_liquidity', nlRecs, nlScored);
+    lineage.push(...nlFin.records);
+    factorScores.net_liquidity = nlFin.score;
+    factorRoles.net_liquidity = nlFin.role;
+    factorAvailability.net_liquidity = nlFin.availability;
 
     const shared = resolveSharedPriceVector(observationDate, ctx.gitExec);
     let priceVector = null;
     let priceRole = 'MISSING';
     let priceReason = shared.reasonCode || 'MISSING_CAPTURE';
+    let caseBLineage = [];
     if (shared.ok) {
       priceVector = shared.vector;
       priceRole = 'B_METHOD_PIT';
@@ -575,6 +639,18 @@ export async function reconstructOneDate(observationDate, ctx) {
         if (built.ok) {
           priceVector = built.vector;
           priceRole = 'C_SURROGATE';
+          caseBLineage = [
+            {
+              source_name: 'coingecko_range',
+              sha256: cg.sha256,
+              request: cg.request?.url,
+            },
+            {
+              source_name: 'coinbase_5m',
+              sha256: proxy.sha256,
+              request: proxy.url,
+            },
+          ];
         } else priceReason = built.reasonCode;
       } else {
         priceReason = selected5m.ok ? normalized.reasonCode || 'MISSING_CAPTURE' : selected5m.reasonCode;
@@ -601,11 +677,23 @@ export async function reconstructOneDate(observationDate, ctx) {
         presentComp(observationDate, 'term_leverage', 'realized_vol', priceRole, {
           ...extra,
           source_name: priceRole === 'B_METHOD_PIT' ? 'market_chart_30_daily' : 'case_b_surrogate',
+          source_type: priceRole === 'B_METHOD_PIT' ? 'git' : 'http',
+          notes: caseBLineage.map((item) => `${item.source_name};${httpNote(item.request, item.sha256)}`).join('|'),
         }),
         presentComp(observationDate, 'term_leverage', 'stress', priceRole, {
           ...extra,
           source_name: priceRole === 'B_METHOD_PIT' ? 'market_chart_30_daily' : 'case_b_surrogate',
+          source_type: priceRole === 'B_METHOD_PIT' ? 'git' : 'http',
         }),
+        ...caseBLineage.map((item) =>
+          presentComp(observationDate, 'term_leverage', 'realized_vol', priceRole, {
+            ...extra,
+            source_name: item.source_name,
+            source_type: 'http',
+            external_snapshot_sha256: item.sha256,
+            notes: httpNote(item.request, item.sha256),
+          })
+        ),
       ];
       const fin = finalizeFactor(observationDate, 'term_leverage', recs, scored);
       lineage.push(...fin.records);
@@ -616,26 +704,55 @@ export async function reconstructOneDate(observationDate, ctx) {
 
     const macroReqs = buildMacroRequests(observationDate, ctx.fredKey);
     const macroObs = {};
+    const macroLineageExtras = [];
     for (const req of macroReqs) {
       const got = await fetchAlfredSeries(req, ctx.runtime);
       macroObs[req.seriesId] = parseFredObservations(got.json, observationDate);
+      macroLineageExtras.push({
+        seriesId: req.seriesId,
+        sanitizedUrl: req.sanitizedUrl,
+        sha256: got.sha256,
+      });
     }
     const macroScored = scoreMacroComponents(macroObs, observationDate);
-    if (!macroScored || !Number.isFinite(macroScored.factorScore)) {
-      markAll('macro_overlay', macroScored?.reasonCode || 'INSUFFICIENT_LOOKBACK');
-    } else {
-      const recs = FACTOR_COMPONENT_ORDER.macro_overlay.map((componentKey) =>
+    const macroComponentBySeries = {
+      DTWEXBGS: 'dxy_20d',
+      DGS2: 'us2y_20d',
+      DGS10: 'us2y_20d',
+      VIXCLS: 'vix_pct',
+    };
+    const macroRecs = [
+      ...FACTOR_COMPONENT_ORDER.macro_overlay.map((componentKey) =>
         presentComp(observationDate, 'macro_overlay', componentKey, 'C_PIT_CONSERVATIVE', {
           ...extra,
           source_name: 'alfred',
+          source_type: 'http',
+          notes: macroLineageExtras
+            .map((item) => `${item.seriesId};${httpNote(item.sanitizedUrl, item.sha256)}`)
+            .join('|'),
         })
-      );
-      const fin = finalizeFactor(observationDate, 'macro_overlay', recs, macroScored);
-      lineage.push(...fin.records);
-      factorScores.macro_overlay = fin.score;
-      factorRoles.macro_overlay = fin.role;
-      factorAvailability.macro_overlay = fin.availability;
-    }
+      ),
+      ...macroLineageExtras.map((item) =>
+        presentComp(
+          observationDate,
+          'macro_overlay',
+          macroComponentBySeries[item.seriesId],
+          'C_PIT_CONSERVATIVE',
+          {
+            ...extra,
+            source_name: `alfred_${item.seriesId}`,
+            source_type: 'http',
+            external_snapshot_sha256: item.sha256,
+            notes: httpNote(item.sanitizedUrl, item.sha256),
+          }
+        )
+      ),
+    ];
+    const macroFin = finalizeFactor(observationDate, 'macro_overlay', macroRecs, macroScored);
+    lineage.push(...macroFin.records);
+    factorScores.macro_overlay = macroFin.score;
+    factorRoles.macro_overlay = macroFin.role;
+    factorAvailability.macro_overlay = macroFin.availability;
 
     const social = resolveSocialRank(observationDate, ctx.trendingIndex, ctx.socialIndex, ctx.gitExec);
     if (!social.ok || priceRole === 'MISSING') {
@@ -655,7 +772,18 @@ export async function reconstructOneDate(observationDate, ctx) {
         presentComp(observationDate, 'social_interest', 'btc_price_momentum_7d', priceRole, {
           ...extra,
           source_name: priceRole === 'B_METHOD_PIT' ? 'market_chart_30_daily' : 'case_b_surrogate',
+          source_type: priceRole === 'B_METHOD_PIT' ? 'git' : 'http',
+          notes: caseBLineage.map((item) => `${item.source_name};${httpNote(item.request, item.sha256)}`).join('|'),
         }),
+        ...caseBLineage.map((item) =>
+          presentComp(observationDate, 'social_interest', 'btc_price_momentum_7d', priceRole, {
+            ...extra,
+            source_name: item.source_name,
+            source_type: 'http',
+            external_snapshot_sha256: item.sha256,
+            notes: httpNote(item.request, item.sha256),
+          })
+        ),
       ];
       const fin = finalizeFactor(observationDate, 'social_interest', recs, scored);
       lineage.push(...fin.records);
@@ -666,16 +794,38 @@ export async function reconstructOneDate(observationDate, ctx) {
   }
 
   const eligibility = buildEligibility({ factorAvailability, factorScores });
+  return assembleDateRecords({
+    observationDate,
+    clock,
+    factorScores,
+    factorRoles,
+    factorAvailability,
+    lineage,
+    eligibility,
+  });
+}
+
+export function assembleDateRecords({
+  observationDate,
+  clock,
+  factorScores,
+  factorRoles,
+  factorAvailability,
+  lineage,
+  eligibility = null,
+}) {
+  const resolvedEligibility =
+    eligibility || buildEligibility({ factorAvailability, factorScores });
   const observation = {
     observation_date: observationDate,
     reconstruction_as_of_utc: clock.valid ? clock.reconstruction_as_of_utc : '',
     reconstruction_clock_source: clock.valid ? clock.reconstruction_clock_source : '',
-    xr_score: eligibility.xr_score == null ? '' : eligibility.xr_score,
-    xr_status: eligibility.xr_status,
-    reconstruction_grade: eligibility.reconstruction_grade,
-    eligible_full_composite: eligibility.eligible_full_composite,
-    missing_factor_count: eligibility.missing_factor_count,
-    missing_factors: eligibility.missing_factors,
+    xr_score: resolvedEligibility.xr_score == null ? '' : resolvedEligibility.xr_score,
+    xr_status: resolvedEligibility.xr_status,
+    reconstruction_grade: resolvedEligibility.reconstruction_grade,
+    eligible_full_composite: resolvedEligibility.eligible_full_composite,
+    missing_factor_count: resolvedEligibility.missing_factor_count,
+    missing_factors: resolvedEligibility.missing_factors,
     h7_base_sha: H7_BASE_SHA,
     model_source_sha: MODEL_SOURCE_SHA,
     protocol_version: H7_PROTOCOL_VERSION,
@@ -686,8 +836,8 @@ export async function reconstructOneDate(observationDate, ctx) {
   }
   const missingness = {
     observation_date: observationDate,
-    eligible_full_composite: eligibility.eligible_full_composite,
-    missing_factors: eligibility.missing_factors,
+    eligible_full_composite: resolvedEligibility.eligible_full_composite,
+    missing_factors: resolvedEligibility.missing_factors,
     primary_missing_reason: firstMissingReason(lineage),
     protocol_version: H7_PROTOCOL_VERSION,
   };
@@ -700,10 +850,78 @@ export async function reconstructOneDate(observationDate, ctx) {
     missingness,
     factorScores,
     factorRoles,
-    eligibility,
+    eligibility: resolvedEligibility,
     clock,
-    rawArtifact,
   };
+}
+
+export function assembleStageBOutputSet({
+  dates,
+  reconstructions,
+  analysisSourceSha,
+  protocolVersion = H7_PROTOCOL_VERSION,
+  productionByDate = {},
+  frozenUniverse = true,
+}) {
+  const observations = reconstructions.map((row) => row.observation);
+  const lineage = sortLineageRows(reconstructions.flatMap((row) => row.lineage));
+  const missingness = reconstructions.map((row) => row.missingness);
+  const bridge = [];
+  for (const row of reconstructions) {
+    const date = row.observation.observation_date;
+    const includeBridge = frozenUniverse
+      ? BRIDGE_DATES.includes(date)
+      : Boolean(productionByDate[date]);
+    if (!includeBridge) continue;
+    const prod = productionByDate[date] || { factorScores: {}, gScore: null };
+    bridge.push(
+      ...buildBridgeRows({
+        observationDate: date,
+        xrFactorScores: row.factorScores,
+        productionFactorScores: prod.factorScores,
+        xrRoles: row.factorRoles,
+        eligible: row.eligibility.xr_status === 'ELIGIBLE',
+        xrScore: row.eligibility.xr_score,
+        productionGScore: prod.gScore,
+      })
+    );
+  }
+  const files = {
+    'xr_observations.csv': serializeCsv(XR_OBSERVATION_COLUMNS, observations),
+    'xr_factor_lineage.csv': serializeCsv(XR_FACTOR_LINEAGE_COLUMNS, lineage),
+    'xr_missingness.csv': serializeCsv(XR_MISSINGNESS_COLUMNS, missingness),
+    'xr_bridge_check.csv': serializeCsv(XR_BRIDGE_COLUMNS, bridge),
+    'ANALYSIS_SOURCE_SHA.txt': `${analysisSourceSha}\n`,
+    'PROTOCOL_VERSION.txt': `${protocolVersion}\n`,
+  };
+  const validated = frozenUniverse
+    ? validateH71OutputSet({
+        observationDates: dates,
+        observations,
+        missingness,
+        lineage,
+        bridge,
+        analysisSourceSha,
+        protocolVersion,
+        sidecarAnalysisSourceSha: files['ANALYSIS_SOURCE_SHA.txt'],
+        sidecarProtocolVersion: files['PROTOCOL_VERSION.txt'],
+      })
+    : validateH71CrossFileInvariants({
+        observationDates: dates,
+        observations,
+        missingness,
+        lineage,
+        bridge,
+        analysisSourceSha,
+        protocolVersion,
+        sidecarAnalysisSourceSha: files['ANALYSIS_SOURCE_SHA.txt'],
+        sidecarProtocolVersion: files['PROTOCOL_VERSION.txt'],
+        requireFrozenBridgeDates: false,
+      });
+  if (!validated.ok) {
+    throw new XrRuntimeSourceError(`output validation failed: ${validated.error}`);
+  }
+  return { files, observations, lineage, missingness, bridge, validated };
 }
 
 export async function runStageBGeneration({
@@ -713,28 +931,25 @@ export async function runStageBGeneration({
   gitExec = defaultGitExec,
   fetchImpl,
   env = {},
-  observationDates = null,
-  skipIdentityGuards = false,
-  requireFrozenUniverse = true,
-  fsImpl = fs,
 } = {}) {
   if (!allowNetwork) {
     throw new XrRuntimeSourceError('Stage B generation requires --allow-network');
   }
-  if (!skipIdentityGuards) {
-    assertCleanWorktree(gitExec);
-    assertAnalysisSourceSha(analysisSourceSha, gitExec);
-    const identity = runContractCheck({ gitExec });
-    if (!identity.ok) {
-      throw new XrRuntimeSourceError('frozen identity mismatch before generation');
-    }
+  if (typeof fetchImpl !== 'function') {
+    throw new XrRuntimeSourceError('Stage B generation requires an injected fetchImpl');
+  }
+  assertCleanWorktree(gitExec);
+  assertAnalysisSourceSha(analysisSourceSha, gitExec);
+  const identity = runContractCheck({ gitExec });
+  if (!identity.ok) {
+    throw new XrRuntimeSourceError('frozen identity mismatch before generation');
   }
   const resolvedOut = assertSafeOutputDir(outputDir, process.cwd());
   const runtime = { fetchImpl, redact: (u) => u };
   const dailyText = gitShowText(`HEAD:${GIT_PATHS.dailyView}`, gitExec);
   const dailyRows = csvRowsToObjects(dailyText);
   const dailyByDate = new Map(dailyRows.map((r) => [r.observation_date, r]));
-  const dates = observationDates || generateObservationUniverse();
+  const dates = generateObservationUniverse();
   const etfBaseline = resolveFrozenEtfBaseline(gitExec);
   const fredKey = requireFredApiKey(env);
   const termIndex = indexPathBlobTransitions(GIT_PATHS.termCache, gitExec);
@@ -750,62 +965,23 @@ export async function runStageBGeneration({
     trendingIndex,
     socialIndex,
   };
-  const observations = [];
-  const lineage = [];
-  const missingness = [];
-  const bridge = [];
+  const reconstructions = [];
   for (const date of dates) {
-    const one = await reconstructOneDate(date, ctx);
-    observations.push(one.observation);
-    lineage.push(...one.lineage);
-    missingness.push(one.missingness);
-    if (BRIDGE_DATES.includes(date)) {
-      const prod = one.rawArtifact
-        ? {
-            factorScores: Object.fromEntries(
-              OFFICIAL_FACTOR_ORDER.map((k) => {
-                const score = Number(one.rawArtifact?.factors?.[k]?.score);
-                return [k, Number.isFinite(score) ? score : null];
-              })
-            ),
-            gScore: Number(one.rawArtifact?.composite_score),
-          }
-        : { factorScores: {}, gScore: null };
-      bridge.push(
-        ...buildBridgeRows({
-          observationDate: date,
-          xrFactorScores: one.factorScores,
-          productionFactorScores: prod.factorScores,
-          xrRoles: one.factorRoles,
-          eligible: one.eligibility.xr_status === 'ELIGIBLE',
-          xrScore: one.eligibility.xr_score,
-          productionGScore: prod.gScore,
-        })
-      );
-    }
+    reconstructions.push(await reconstructOneDate(date, ctx));
   }
-  const files = {
-    'xr_observations.csv': serializeCsv(XR_OBSERVATION_COLUMNS, observations),
-    'xr_factor_lineage.csv': serializeCsv(XR_FACTOR_LINEAGE_COLUMNS, lineage),
-    'xr_missingness.csv': serializeCsv(XR_MISSINGNESS_COLUMNS, missingness),
-    'xr_bridge_check.csv': serializeCsv(XR_BRIDGE_COLUMNS, bridge),
-    'ANALYSIS_SOURCE_SHA.txt': `${analysisSourceSha}\n`,
-    'PROTOCOL_VERSION.txt': `${H7_PROTOCOL_VERSION}\n`,
-  };
-  const validated = validateH71OutputSet({
-    observationDates: dates,
-    observations,
-    missingness,
-    lineage,
-    bridge,
+  const productionByDate = {};
+  for (const date of BRIDGE_DATES) {
+    const artifact = resolveBridgeProductionArtifact(date, gitExec);
+    productionByDate[date] = extractProductionFactorScores(artifact.raw);
+  }
+  const assembled = assembleStageBOutputSet({
+    dates,
+    reconstructions,
     analysisSourceSha,
-    protocolVersion: H7_PROTOCOL_VERSION,
-    requireFrozenUniverse,
+    productionByDate,
+    frozenUniverse: true,
   });
-  if (!validated.ok) {
-    throw new XrRuntimeSourceError(`output validation failed: ${validated.error}`);
-  }
-  finalizeAtomicOutputs(resolvedOut, files, { fsImpl });
+  finalizeAtomicOutputs(resolvedOut, assembled.files);
   return { ok: true, dates, filesWritten: STAGE_B_OUTPUT_FILES.length, outputDir: resolvedOut };
 }
 

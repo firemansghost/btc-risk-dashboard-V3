@@ -28,7 +28,9 @@ import {
   parseBtcPriceHistoryCsv,
   extractEtfRollingSumBaseline,
   normalizeCoinbaseDailyCandles,
+  retainCoinbaseHistoryWindow,
   utcCalendarDateFromInstant,
+  BRIDGE_PRODUCTION_CAPTURES,
 } from './xr-reconstruction-core.mjs';
 
 export const GIT_PATHS = Object.freeze({
@@ -77,8 +79,27 @@ export function gitShowText(spec, gitExec = defaultGitExec) {
 }
 
 export function gitFirstParent(commitSha, gitExec = defaultGitExec) {
-  const out = gitExec(['rev-parse', `${commitSha}^`]);
-  return out.toString('utf8').trim();
+  gitCommitExists(commitSha, gitExec);
+  const out = gitExec(['rev-list', '--parents', '-n', '1', commitSha]);
+  const parts = out
+    .toString('utf8')
+    .trim()
+    .split(/\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (parts.length === 0) {
+    throw new XrRuntimeSourceError(`unable to read commit parents: ${commitSha}`, {
+      commitSha,
+    });
+  }
+  if (parts[0] !== commitSha) {
+    throw new XrRuntimeSourceError(`rev-list parent output mismatch for ${commitSha}`, {
+      commitSha,
+      output: parts[0],
+    });
+  }
+  if (parts.length === 1) return null;
+  return parts[1];
 }
 
 export function gitCatFileType(sha, gitExec = defaultGitExec) {
@@ -157,14 +178,8 @@ export function findIntroductionCandidates(gitPath, gitExec = defaultGitExec) {
   const valid = [];
   for (const sha of shas) {
     if (!gitBlobExists(sha, gitPath, gitExec)) continue;
-    let parent;
-    try {
-      parent = gitFirstParent(sha, gitExec);
-    } catch {
-      valid.push({ commitSha: sha, firstParentSha: null });
-      continue;
-    }
-    if (gitBlobExists(parent, gitPath, gitExec)) continue;
+    const parent = gitFirstParent(sha, gitExec);
+    if (parent && gitBlobExists(parent, gitPath, gitExec)) continue;
     valid.push({ commitSha: sha, firstParentSha: parent });
   }
   return valid;
@@ -241,7 +256,7 @@ export function resolveStablecoinCapture(observationDate, gitExec = defaultGitEx
     capture,
     baseline,
     path,
-    notes: `capture=${intro.commitSha};parent=${intro.firstParentSha};baseline_blob=${baselineBlobSha}`,
+    notes: `capture_commit=${intro.commitSha};capture_blob=${captureBlobSha};first_parent=${intro.firstParentSha};baseline_blob=${baselineBlobSha}`,
   };
 }
 
@@ -281,6 +296,25 @@ export function resolveSelectedPrimaryArtifact(dailyRow, gitExec = defaultGitExe
     return { ok: false, reasonCode: 'MISSING_CAPTURE' };
   }
   return { ok: true, commitSha, blobSha: shown.blobSha, raw };
+}
+
+export function resolveBridgeProductionArtifact(observationDate, gitExec = defaultGitExec) {
+  const expected = BRIDGE_PRODUCTION_CAPTURES[observationDate];
+  if (!expected) return missingResult('MISSING_CAPTURE');
+  gitCommitExists(expected.commitSha, gitExec);
+  const shown = resolveGitBlobAtCommit(expected.commitSha, GIT_PATHS.latestJson, gitExec);
+  if (!shown.ok || shown.blobSha !== expected.blobSha) {
+    throw new XrRuntimeSourceError(
+      `bridge production blob mismatch for ${observationDate}: expected ${expected.blobSha} got ${shown.blobSha || 'missing'}`
+    );
+  }
+  let raw;
+  try {
+    raw = JSON.parse(shown.text);
+  } catch {
+    throw new XrRuntimeSourceError(`bridge production artifact is not JSON for ${observationDate}`);
+  }
+  return { ok: true, raw, ...expected };
 }
 
 function sleep(ms, sleepImpl) {
@@ -716,12 +750,20 @@ export async function fetchCoinbaseCompletedHistory(asOfUtc, runtime) {
     if (!Array.isArray(json)) {
       throw new XrRuntimeSourceError('unexpected Coinbase daily payload', { url: req.url });
     }
-    candles.push(...json);
-    lineage.push({ url: req.url, sha256: got.sha256, bytes: got.bodyBytes.length });
+  candles.push(...json);
+    lineage.push({
+      url: req.url,
+      sha256: got.sha256,
+      bytes: got.bodyBytes.length,
+      startUtc: req.startUtc,
+      endUtc: req.endUtc,
+    });
   }
+  const normalized = normalizeCoinbaseDailyCandles(candles, asOfUtc);
   return {
-    rows: normalizeCoinbaseDailyCandles(candles, asOfUtc),
+    rows: retainCoinbaseHistoryWindow(normalized, asOfUtc),
     lineage,
+    paddedRows: normalized,
   };
 }
 

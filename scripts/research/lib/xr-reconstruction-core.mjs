@@ -127,6 +127,27 @@ export const TREND_B_ISLAND_CAPTURES = Object.freeze({
   }),
 });
 
+export const BRIDGE_PRODUCTION_CAPTURES = Object.freeze({
+  '2026-08-17': Object.freeze({
+    observationDate: '2026-08-17',
+    commitSha: 'db789cd9c59b474044d428bfdccbe07312798236',
+    blobSha: '82db3c2c0525aaa6dc1aa16932eabe143d7dff45',
+    path: 'public/data/latest.json',
+  }),
+  '2026-08-18': Object.freeze({
+    observationDate: '2026-08-18',
+    commitSha: '3e0c07ff08a236e59ad60e12373ff02eb138c7fb',
+    blobSha: 'd16a1a140930888a590eaa5f0a56a1c9830971b7',
+    path: 'public/data/latest.json',
+  }),
+  '2026-08-19': Object.freeze({
+    observationDate: '2026-08-19',
+    commitSha: 'ad6be423dc5222c0844e1a367742984d1e69c2d7',
+    blobSha: 'fca84aed72c35344706eed247dff7bfe04d934be',
+    path: 'public/data/latest.json',
+  }),
+});
+
 export const TERM_CACHE_H7_COVERAGE = Object.freeze({
   uniqueDates: 241,
   first: '2025-12-11',
@@ -245,6 +266,20 @@ export const ROLE_PRECEDENCE = Object.freeze([
   'C_CURRENT_HISTORY',
   'C_PIT_CONSERVATIVE',
   'B_METHOD_PIT',
+]);
+
+export const RECONSTRUCTION_ROLE_ENUM = Object.freeze([
+  'B_METHOD_PIT',
+  'C_SURROGATE',
+  'C_CURRENT_HISTORY',
+  'C_PIT_CONSERVATIVE',
+  'MISSING',
+]);
+
+export const AVAILABILITY_STATUS_ENUM = Object.freeze([
+  'AVAILABLE_B',
+  'AVAILABLE_C',
+  'MISSING',
 ]);
 
 export const CLOCK_SOURCE_ENUM = Object.freeze([
@@ -597,6 +632,21 @@ export function sma200DenominatorCloses(rows, asOfUtc) {
     .filter(Number.isFinite);
 }
 
+export function reconstructTrendIslandSeries(island, asOfUtc) {
+  const historyRows = island?.historyRows || [];
+  const dailyCloses = sma200DenominatorCloses(historyRows, asOfUtc);
+  const weeklyCloses = filterCompletedWeeklyCloses(
+    createWeeklyCloses(
+      historyRows.map((r) => ({
+        timestamp: r.timestamp,
+        close: r.close ?? r.close_usd,
+      }))
+    ),
+    asOfUtc
+  );
+  return { dailyCloses, weeklyCloses };
+}
+
 export function utcCalendarMidnightIso(asOfUtc) {
   const asOf = new Date(asOfUtc);
   if (Number.isNaN(asOf.getTime())) throw new Error(`invalid asOfUtc: ${asOfUtc}`);
@@ -723,6 +773,66 @@ export function aggregateFactorAvailability(componentRoles) {
   if (roles.length === 0 || roles.some((r) => r === 'MISSING' || r == null)) return 'MISSING';
   if (roles.every((r) => r === 'B_METHOD_PIT')) return 'AVAILABLE_B';
   return 'AVAILABLE_C';
+}
+
+export function availabilityStatusForRole(role) {
+  if (role === 'MISSING' || !role) return 'MISSING';
+  if (role === 'B_METHOD_PIT') return 'AVAILABLE_B';
+  return 'AVAILABLE_C';
+}
+
+export function appendLineageNote(existing, extra) {
+  const parts = [existing, extra].map((part) => String(part || '').trim()).filter(Boolean);
+  return parts.join(';');
+}
+
+export function finalizeFactorRecords(componentRecords, scoreResult, factorKey) {
+  const requiredScored = SCORED_COMPONENT_ORDER[factorKey] || [];
+  const roles = componentRecords.map((r) => r.reconstruction_role);
+  if (roles.some((r) => r === 'MISSING')) {
+    return {
+      score: null,
+      role: 'MISSING',
+      availability: 'MISSING',
+      records: componentRecords,
+    };
+  }
+  if (scoreResult && Number.isFinite(scoreResult.factorScore)) {
+    return {
+      score: scoreResult.factorScore,
+      role: aggregateFactorRole(roles),
+      availability: aggregateFactorAvailability(roles),
+      records: componentRecords,
+    };
+  }
+  const reason = scoreResult?.reasonCode || 'MISSING_COMPONENT';
+  const scores = scoreResult?.scores;
+  const records = componentRecords.map((r) => {
+    if (r.reconstruction_role === 'MISSING') return r;
+    const isRequiredScored = requiredScored.includes(r.component_key);
+    const componentScore = scores?.[r.component_key];
+    const componentFailed =
+      isRequiredScored && (scores == null || !Number.isFinite(componentScore));
+    if (componentFailed && !r.external_snapshot_sha256) {
+      return {
+        ...r,
+        reconstruction_role: 'MISSING',
+        availability_status: 'MISSING',
+        missing_reason: reason,
+        notes: appendLineageNote(r.notes, `factor_unavailable:${reason}`),
+      };
+    }
+    return {
+      ...r,
+      notes: appendLineageNote(r.notes, componentFailed ? `factor_unavailable:${reason}` : ''),
+    };
+  });
+  return {
+    score: null,
+    role: 'MISSING',
+    availability: 'MISSING',
+    records,
+  };
 }
 
 export function blendRequiredComponentScores(scoreByKey, weightsByKey, requiredKeys) {
@@ -1170,17 +1280,25 @@ export function isUtcWeekend(dateIso) {
   return day === 0 || day === 6;
 }
 
+export function isUtcWeekday(dateIso) {
+  return !isUtcWeekend(dateIso);
+}
+
 export function isUsMarketHoliday(dateIso) {
   return US_MARKET_HOLIDAYS_UTC.has(dateIso);
 }
 
+export function isUsTradingDay(dateIso) {
+  return isUtcWeekday(dateIso) && !isUsMarketHoliday(dateIso);
+}
+
 export function isUtcBusinessDay(dateIso) {
-  return !isUtcWeekend(dateIso) && !isUsMarketHoliday(dateIso);
+  return isUsTradingDay(dateIso);
 }
 
 export function getPreviousUsTradingDay(dateIso) {
   let cursor = addUtcDays(dateIso, -1);
-  while (!isUtcBusinessDay(cursor)) cursor = addUtcDays(cursor, -1);
+  while (!isUsTradingDay(cursor)) cursor = addUtcDays(cursor, -1);
   return cursor;
 }
 
@@ -1189,7 +1307,7 @@ export function getExpectedLatestUsTradingDay(asOfUtc) {
   let candidate = formatUtcDate(
     new Date(Date.UTC(asOf.getUTCFullYear(), asOf.getUTCMonth(), asOf.getUTCDate()))
   );
-  if (isUtcBusinessDay(candidate)) {
+  if (isUsTradingDay(candidate)) {
     if (asOf.getUTCHours() < ETF_FLOW_PUBLISH_HOUR_UTC) {
       candidate = getPreviousUsTradingDay(candidate);
     }
@@ -1320,7 +1438,7 @@ export function parseEtfFlowsFromHtml(html) {
       }
       if (hasData) flow = sum * scale;
     }
-    if (Number.isFinite(flow) && isUtcBusinessDay(date)) {
+    if (Number.isFinite(flow) && isUtcWeekday(date)) {
       flows.push({ date, flow });
       if (Object.keys(individualFlows).length > 0) {
         individualEtfFlows.push({ date, flows: individualFlows });
@@ -1346,7 +1464,7 @@ export function calculate21DayRollingSum(flows) {
     let sum = 0;
     let j = i;
     while (j >= 0 && businessDaysCounted < 21) {
-      if (isUtcBusinessDay(flows[j].date)) {
+      if (isUtcWeekday(flows[j].date)) {
         sum += flows[j].flow;
         businessDaysCounted++;
       }
@@ -2104,10 +2222,19 @@ export function extractEtfRollingSumBaseline(json) {
   }
   const values = [];
   for (const row of rows) {
-    const sum = Number(row?.sum ?? row);
+    if (!row || typeof row !== 'object' || Array.isArray(row)) {
+      return { ok: false, reasonCode: 'MALFORMED_BASELINE' };
+    }
+    const date = String(row.date || '');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return { ok: false, reasonCode: 'MALFORMED_BASELINE' };
+    }
+    const sum = Number(row.sum);
     if (!Number.isFinite(sum)) return { ok: false, reasonCode: 'MALFORMED_BASELINE' };
+    if (!isUtcWeekday(date)) continue;
     values.push(sum);
   }
+  if (values.length === 0) return { ok: false, reasonCode: 'MALFORMED_BASELINE' };
   return { ok: true, values };
 }
 
@@ -2151,10 +2278,17 @@ export function extractLabeledSnapshotPrice(rawArtifact) {
 }
 
 export function extractProductionFactorScores(rawArtifact) {
-  const factors = rawArtifact?.factors || {};
+  const factors = rawArtifact?.factors;
   const out = {};
   for (const key of OFFICIAL_FACTOR_ORDER) {
-    const score = Number(factors?.[key]?.score);
+    let rawScore;
+    if (Array.isArray(factors)) {
+      const row = factors.find((entry) => entry && entry.key === key);
+      rawScore = row?.score;
+    } else if (factors && typeof factors === 'object') {
+      rawScore = factors[key]?.score;
+    }
+    const score = Number(rawScore);
     out[key] = Number.isFinite(score) ? score : null;
   }
   const g = Number(rawArtifact?.composite_score ?? rawArtifact?.score);
@@ -2194,6 +2328,25 @@ export function normalizeCoinbaseDailyCandles(candles, asOfUtc) {
     .map((row) => ({ date_utc: row.date, close_usd: row.close, close: row.close, timestamp: row.startSec * 1000 }));
 }
 
+export function coinbaseRetainedHistoryCutoffDate(asOfUtc, days = DEFAULT_BACKFILL_DAYS) {
+  return addUtcDays(utcCalendarMidnightIso(asOfUtc).slice(0, 10), -days);
+}
+
+export function retainCoinbaseHistoryWindow(
+  rows,
+  asOfUtc,
+  days = DEFAULT_BACKFILL_DAYS
+) {
+  const cutoff = coinbaseRetainedHistoryCutoffDate(asOfUtc, days);
+  return (rows || [])
+    .filter((row) => {
+      const date = row?.date_utc || row?.date;
+      const close = Number(row?.close ?? row?.close_usd);
+      return Boolean(date) && date >= cutoff && Number.isFinite(close);
+    })
+    .sort((a, b) => (a.date_utc || a.date).localeCompare(b.date_utc || b.date));
+}
+
 export function csvRowsToObjects(text) {
   const rows = parseCsv(text);
   if (rows.length === 0) return [];
@@ -2205,7 +2358,7 @@ export function csvRowsToObjects(text) {
   });
 }
 
-export function validateH71OutputSet({
+export function validateH71CrossFileInvariants({
   observationDates,
   observations,
   missingness,
@@ -2213,14 +2366,21 @@ export function validateH71OutputSet({
   bridge,
   analysisSourceSha,
   protocolVersion,
-  requireFrozenUniverse = true,
+  sidecarAnalysisSourceSha = null,
+  sidecarProtocolVersion = null,
+  requireFrozenBridgeDates = false,
 }) {
-  if (requireFrozenUniverse) {
-    if (observationDates.length !== XR_EXPECTED_DATE_COUNT) {
-      return { ok: false, error: `observation_count:${observationDates.length}` };
+  if (!Array.isArray(observationDates) || observationDates.length === 0) {
+    return { ok: false, error: 'observation_dates_empty' };
+  }
+  const unique = new Set(observationDates);
+  if (unique.size !== observationDates.length) return { ok: false, error: 'observation_dates_not_unique' };
+  for (let i = 1; i < observationDates.length; i++) {
+    if (observationDates[i] <= observationDates[i - 1]) {
+      return { ok: false, error: 'observation_dates_not_strict_ascending' };
     }
-    if (observationDates[0] !== XR_START_DATE || observationDates.at(-1) !== XR_END_DATE) {
-      return { ok: false, error: 'observation_bounds' };
+    if (observationDates[i] !== addUtcDays(observationDates[i - 1], 1)) {
+      return { ok: false, error: `observation_calendar_gap:${observationDates[i - 1]}` };
     }
   }
   if (observations.length !== observationDates.length) {
@@ -2230,77 +2390,172 @@ export function validateH71OutputSet({
     return { ok: false, error: 'missingness_row_count' };
   }
   for (let i = 0; i < observationDates.length; i++) {
-    if (observations[i].observation_date !== observationDates[i]) {
-      return { ok: false, error: `observation_order:${i}` };
-    }
-    if (missingness[i].observation_date !== observationDates[i]) {
-      return { ok: false, error: `missingness_order:${i}` };
-    }
-    const rowCheck = validateObservationRow(observations[i]);
+    const date = observationDates[i];
+    const obs = observations[i];
+    const miss = missingness[i];
+    if (obs.observation_date !== date) return { ok: false, error: `observation_order:${i}` };
+    if (miss.observation_date !== date) return { ok: false, error: `missingness_order:${i}` };
+    const rowCheck = validateObservationRow(obs);
     if (!rowCheck.ok) return rowCheck;
-    const eligible =
-      observations[i].xr_status === 'ELIGIBLE' && observations[i].eligible_full_composite === true;
-    if (eligible) {
-      if (!Number.isFinite(Number(observations[i].xr_score))) {
-        return { ok: false, error: 'eligible_missing_score' };
+    for (const factorKey of OFFICIAL_FACTOR_ORDER) {
+      const availField = FACTOR_AVAIL_FIELDS[factorKey];
+      const avail = miss[availField];
+      if (!AVAILABILITY_STATUS_ENUM.includes(avail)) {
+        return { ok: false, error: `bad_availability:${date}:${factorKey}:${avail}` };
       }
-      if (observations[i].reconstruction_grade !== 'EXPLORATORY_ONLY') {
-        return { ok: false, error: 'eligible_grade' };
+      const roleField = FACTOR_ROLE_FIELDS[factorKey];
+      if (!RECONSTRUCTION_ROLE_ENUM.includes(obs[roleField])) {
+        return { ok: false, error: `bad_role:${date}:${factorKey}:${obs[roleField]}` };
+      }
+    }
+    const actualMissing = OFFICIAL_FACTOR_ORDER.filter(
+      (k) => miss[FACTOR_AVAIL_FIELDS[k]] === 'MISSING'
+    );
+    const expectedList = formatMissingFactors(actualMissing);
+    if (Number(obs.missing_factor_count) !== actualMissing.length) {
+      return { ok: false, error: `missing_factor_count:${date}` };
+    }
+    if (String(obs.missing_factors ?? '') !== expectedList) {
+      return { ok: false, error: `missing_factors:${date}` };
+    }
+    if (String(miss.missing_factors ?? '') !== expectedList) {
+      return { ok: false, error: `missingness_missing_factors:${date}` };
+    }
+    const allAvailable = actualMissing.length === 0;
+    const allScoresFinite = OFFICIAL_FACTOR_ORDER.every((k) =>
+      Number.isFinite(Number(obs[FACTOR_SCORE_FIELDS[k]]))
+    );
+    if (allAvailable) {
+      if (!allScoresFinite) return { ok: false, error: `available_nonfinite:${date}` };
+      if (obs.xr_status !== 'ELIGIBLE' || obs.eligible_full_composite !== true) {
+        return { ok: false, error: `eligible_expected:${date}` };
+      }
+      if (!Number.isFinite(Number(obs.xr_score))) return { ok: false, error: `eligible_missing_score:${date}` };
+      if (obs.reconstruction_grade !== 'EXPLORATORY_ONLY') {
+        return { ok: false, error: `eligible_grade:${date}` };
       }
     } else {
-      if (observations[i].xr_score !== '' && observations[i].xr_score != null) {
-        return { ok: false, error: 'not_eligible_score_present' };
+      if (obs.xr_status !== 'NOT_ELIGIBLE' || obs.eligible_full_composite !== false) {
+        return { ok: false, error: `not_eligible_expected:${date}` };
       }
-      if (observations[i].reconstruction_grade) {
-        return { ok: false, error: 'not_eligible_grade_present' };
+      if (obs.xr_score !== '' && obs.xr_score != null) {
+        return { ok: false, error: `not_eligible_score_present:${date}` };
       }
+      if (obs.reconstruction_grade) return { ok: false, error: `not_eligible_grade_present:${date}` };
     }
   }
   for (const date of observationDates) {
     for (const factorKey of OFFICIAL_FACTOR_ORDER) {
       for (const componentKey of FACTOR_COMPONENT_ORDER[factorKey]) {
-        const rec = lineage.find(
+        const recs = lineage.filter(
           (r) =>
             r.observation_date === date &&
             r.factor_key === factorKey &&
             r.component_key === componentKey
         );
-        if (!rec) return { ok: false, error: `lineage_missing:${date}:${factorKey}:${componentKey}` };
-      }
-    }
-  }
-  const bridgeDates = [...new Set(bridge.map((r) => r.observation_date))];
-  for (const date of bridgeDates) {
-    if (!BRIDGE_DATES.includes(date)) return { ok: false, error: `unexpected_bridge_date:${date}` };
-  }
-  if (requireFrozenUniverse) {
-    for (const date of BRIDGE_DATES) {
-      const rows = bridge.filter((r) => r.observation_date === date);
-      const factorRows = rows.filter((r) => r.factor_key !== '__XR_COMPOSITE__');
-      if (factorRows.length !== OFFICIAL_FACTOR_ORDER.length) {
-        return { ok: false, error: `bridge_factor_rows:${date}` };
-      }
-      const obs = observations.find((r) => r.observation_date === date);
-      const composites = rows.filter((r) => r.factor_key === '__XR_COMPOSITE__');
-      if (obs?.xr_status === 'ELIGIBLE') {
-        if (composites.length !== 1) return { ok: false, error: `bridge_composite:${date}` };
-      } else if (composites.length !== 0) {
-        return { ok: false, error: `bridge_composite_not_eligible:${date}` };
-      }
-      for (const row of rows) {
-        for (const col of XR_BRIDGE_COLUMNS) {
-          if (!(col in row)) return { ok: false, error: `bridge_column:${col}` };
+        if (recs.length === 0) {
+          return { ok: false, error: `lineage_missing:${date}:${factorKey}:${componentKey}` };
         }
       }
     }
   }
-  if (analysisSourceSha && !/^[0-9a-f]{40}$/i.test(analysisSourceSha.trim())) {
+  for (const rec of lineage) {
+    if (!RECONSTRUCTION_ROLE_ENUM.includes(rec.reconstruction_role)) {
+      return { ok: false, error: `lineage_role:${rec.observation_date}:${rec.component_key}` };
+    }
+    const expectedAvail = availabilityStatusForRole(rec.reconstruction_role);
+    if (rec.availability_status !== expectedAvail) {
+      return { ok: false, error: `lineage_availability:${rec.observation_date}:${rec.component_key}` };
+    }
+    if (rec.reconstruction_role === 'MISSING') {
+      if (!MISSING_REASON_CODES.includes(rec.missing_reason)) {
+        return { ok: false, error: `lineage_missing_reason:${rec.observation_date}:${rec.component_key}` };
+      }
+    } else if (rec.missing_reason) {
+      return { ok: false, error: `lineage_unexpected_missing_reason:${rec.observation_date}:${rec.component_key}` };
+    }
+  }
+  const bridgeDates = [...new Set(bridge.map((r) => r.observation_date))];
+  if (requireFrozenBridgeDates) {
+    for (const date of bridgeDates) {
+      if (!BRIDGE_DATES.includes(date)) return { ok: false, error: `unexpected_bridge_date:${date}` };
+    }
+    for (const date of BRIDGE_DATES) {
+      if (!bridgeDates.includes(date)) return { ok: false, error: `missing_bridge_date:${date}` };
+    }
+  }
+  for (const date of bridgeDates) {
+    const rows = bridge.filter((r) => r.observation_date === date);
+    const factorRows = rows.filter((r) => r.factor_key !== '__XR_COMPOSITE__');
+    if (factorRows.length !== OFFICIAL_FACTOR_ORDER.length) {
+      return { ok: false, error: `bridge_factor_rows:${date}` };
+    }
+    const keys = factorRows.map((r) => r.factor_key);
+    if (new Set(keys).size !== keys.length) return { ok: false, error: `bridge_duplicate_factor:${date}` };
+    for (const key of OFFICIAL_FACTOR_ORDER) {
+      if (!keys.includes(key)) return { ok: false, error: `bridge_missing_factor:${date}:${key}` };
+    }
+    const composites = rows.filter((r) => r.factor_key === '__XR_COMPOSITE__');
+    if (composites.length > 1) return { ok: false, error: `bridge_duplicate_composite:${date}` };
+    const obs = observations.find((r) => r.observation_date === date);
+    if (obs?.xr_status === 'ELIGIBLE') {
+      if (composites.length !== 1) return { ok: false, error: `bridge_composite:${date}` };
+    } else if (composites.length !== 0) {
+      return { ok: false, error: `bridge_composite_not_eligible:${date}` };
+    }
+    for (const row of rows) {
+      for (const col of XR_BRIDGE_COLUMNS) {
+        if (!(col in row)) return { ok: false, error: `bridge_column:${col}` };
+      }
+      if (!BRIDGE_COMPARISON_STATUS_ENUM.includes(row.comparison_status)) {
+        return { ok: false, error: `bridge_comparison_status:${date}:${row.factor_key}` };
+      }
+    }
+  }
+  if (sidecarAnalysisSourceSha != null) {
+    if (sidecarAnalysisSourceSha !== `${analysisSourceSha}\n`) {
+      return { ok: false, error: 'sidecar_analysis_source_sha_content' };
+    }
+  } else if (analysisSourceSha && !/^[0-9a-f]{40}$/i.test(String(analysisSourceSha).trim())) {
     return { ok: false, error: 'sidecar_analysis_source_sha' };
   }
-  if (protocolVersion !== H7_PROTOCOL_VERSION) {
+  if (sidecarProtocolVersion != null) {
+    if (sidecarProtocolVersion !== `${H7_PROTOCOL_VERSION}\n`) {
+      return { ok: false, error: 'sidecar_protocol_version_content' };
+    }
+  } else if (protocolVersion !== H7_PROTOCOL_VERSION) {
     return { ok: false, error: 'sidecar_protocol_version' };
   }
   return { ok: true };
+}
+
+export function validateH71OutputSet({
+  observationDates,
+  observations,
+  missingness,
+  lineage,
+  bridge,
+  analysisSourceSha,
+  protocolVersion,
+  sidecarAnalysisSourceSha = null,
+  sidecarProtocolVersion = null,
+}) {
+  const universe = validateObservationUniverse(observationDates);
+  if (!universe.ok) {
+    return { ok: false, error: `observation_universe:${universe.errors.join(',')}` };
+  }
+  return validateH71CrossFileInvariants({
+    observationDates,
+    observations,
+    missingness,
+    lineage,
+    bridge,
+    analysisSourceSha,
+    protocolVersion,
+    sidecarAnalysisSourceSha,
+    sidecarProtocolVersion,
+    requireFrozenBridgeDates: true,
+  });
 }
 
 assertWeightInvariants();
