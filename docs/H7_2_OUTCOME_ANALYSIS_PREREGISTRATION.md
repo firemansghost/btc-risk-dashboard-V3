@@ -1,39 +1,35 @@
-# H7.2 Outcome-Analysis Preregistration Framework
+# H7.2 Outcome-Analysis Preregistration
 
-**Date:** 2026-08-20  
-**Phase:** H7.2 Stage A — protocol design only  
-**Status:** `DRAFT FRAMEWORK — NOT FROZEN`  
-**Branch:** `research/h7-2-outcome-analysis-preregistration`  
-**Draft protocol label:** `h7-2-outcome-analysis-preregistration-draft`  
+**Date:** 2026-08-20
+**Phase:** H7.2 — protocol candidate
+**Status:** `PROTOCOL CANDIDATE — METHODOLOGY RESOLVED — NOT YET FROZEN`
+**Branch:** `research/h7-2-outcome-analysis-preregistration`
+**Protocol candidate label:** `h7-2-outcome-analysis-v1-candidate`
 **Parent main HEAD at branch creation:** `a8f22b8fadd91be8ef30a3b740b103647fd38326`
 
-This document is a **preregistration framework**. It does **not** freeze methodology. It does **not** implement analysis. It does **not** retrieve Bitcoin outcome data. It does **not** calculate returns, correlations, drawdowns, MACE, or any other result.
-
-Independent methodology review must resolve the open decisions below **before** any outcome statistic is computed.
+This document is a **resolved methodology candidate**. Independent review has closed the major H7.2 design choices. It is **not yet frozen**. It does **not** implement analysis. It does **not** calculate returns, MACE, correlations, or any other outcome statistic. Do not assign a final H7.2 protocol SHA in this pass.
 
 Labels used below:
 
-- **FACT** — inherited from closed H7.1 identities or frozen H7 protocol text
-- **FIREWALL** — a prohibition that is already in force and is not open to casual weakening
-- **OPEN FOR REVIEW** — a substantive research-design choice that must be resolved before H7.2 is frozen
+- **FACT** — inherited from closed H7.1 identities, frozen H7 protocol text, or this pass’s source-integrity audit
+- **PROTOCOL DECISION** — resolved methodology; changing it requires a new protocol candidate / version
+- **FIREWALL** — a prohibition that is not open to casual weakening
 - **LIMITATION** — a bound on what later H7.2 execution may claim even after results exist
+- **IMPLEMENTATION DETAIL** — later code/schema design, not an open methodology choice
 
 ---
 
-## 0. Purpose of this stage
+## 0. Purpose
 
-H7.2 Stage A exists so that the outcome-analysis methodology is written down **before anyone sees whether high or low XR scores preceded better or worse Bitcoin paths**.
+H7.2 exists so that the outcome-analysis methodology is written down **before anyone sees whether high or low XR scores preceded better or worse Bitcoin paths**.
 
-H7.2 Stage A **may**:
+This candidate **may**:
 
-- identify the immutable H7.1 input
-- distinguish analysis questions
-- list candidate outcomes, horizons, price conventions, and statistics
-- record tradeoffs
-- recommend an option when a justification already exists
-- mark every remaining choice for independent review
+- freeze the H7.2 research question, outcome, horizon, statistic, eligibility, and claim language
+- record the immutable H7.1 input identities
+- record the frozen outcome-price source identity and structural coverage
 
-H7.2 Stage A **may not**:
+This candidate **may not**:
 
 - calculate outcome statistics
 - load future BTC-return results into analysis
@@ -41,7 +37,7 @@ H7.2 Stage A **may not**:
 - inspect whether high or low XR scores performed better
 - tune weights or bands
 - write analysis code
-- merge this draft as if it were a frozen protocol
+- merge this candidate as if it were a frozen protocol
 
 ---
 
@@ -96,13 +92,15 @@ Required companion identities at the same commit:
 That includes:
 
 - all 252 dates remain in the reporting universe
-- the exact 234 `ELIGIBLE` observations remain the default primary inferential sample unless a different treatment is separately preregistered **before** results
-- all 18 `NOT_ELIGIBLE` dates remain recorded missing / ineligible observations; they must not be silently dropped from reporting
+- the exact 234 `ELIGIBLE` observations remain the default XR-eligibility set
+- all 18 `NOT_ELIGIBLE` dates remain recorded missing / ineligible observations
 - all existing XR scores remain unchanged
 - all factor scores remain unchanged
 - all H7.1 roles / provenance remain unchanged
 
-**FIREWALL.** H7.2 may attach outcome fields in later analysis outputs. It may not overwrite `xr_observations.csv` or any other accepted H7.1 artifact.
+**FIREWALL.** H7.2 may later attach outcome fields in separately generated analysis outputs. It may not overwrite `xr_observations.csv` or any other accepted H7.1 artifact.
+
+**FIREWALL.** Do not modify `xr_status`.
 
 ---
 
@@ -123,372 +121,545 @@ That includes:
 
 ## 4. A. Analysis question
 
-**OPEN FOR REVIEW.** What exactly is H7.2 testing about XR?
+**PROTOCOL DECISION.** Primary H7.2 question:
 
-These are different questions. Do not casually call all of them “prediction.”
+> Within the frozen H7.1 exploratory reconstruction sample, was higher XR associated with greater subsequent Bitcoin downside measured from completed UTC daily closes?
 
-| Question class | Meaning | H7.2 status |
-|---|---|---|
-| Association | Did XR and a later Bitcoin quantity tend to move together in this frozen sample? | Candidate primary class |
-| Ranking usefulness | Did higher XR ranks coincide with worse (or better) subsequent outcomes than lower XR ranks? | Candidate refinement of association |
-| Risk discrimination | Did higher XR coincide with larger subsequent downside / instability? | Candidate primary class, given GhostGauge’s risk-gauge purpose |
-| Forecasting | Did XR provide usable ex-ante forecasts of future Bitcoin moves? | Not supported by this design unless a separate forecast protocol is written |
-| Calibration | Do XR values match empirical frequencies, or should weights/bands change? | Forbidden in H7.2 |
+**PROTOCOL DECISION.** Classify H7.2 as:
 
-**Recommended option, pending review:** treat H7.2 as a **descriptive association / ranking-usefulness** study of frozen XR versus one pre-registered subsequent Bitcoin outcome. If the chosen outcome is a downside-path measure, the study may also be described as **risk discrimination in this sample**. It should **not** be described as forecasting or calibration.
+```text
+DESCRIPTIVE RISK-DISCRIMINATION / RANKING-USEFULNESS ANALYSIS
+```
 
-**Tradeoffs:**
+It is **not**:
 
-- Association is the weakest scientifically honest claim and matches H7’s “hypothesis generation” purpose.
-- Risk discrimination is closer to what a risk gauge is for, but still cannot validate production GhostGauge because XR is not historical G-Score.
-- Forecasting would require an explicit forecast design, embargo rules, and a claim that the reconstruction was available as a live signal. H7.1 does not establish that.
-- Calibration would reopen weights/bands. That is separately forbidden.
+- forecasting validation
+- historical G-Score validation
+- as-published replay
+- trading-strategy backtest
+- calibration
+- weight or band optimization
 
-**FIREWALL.** Do not reframe H7.2 after seeing results as “GhostGauge predicted X historically.”
+**PROTOCOL DECISION.** Expected directional relationship, frozen before any result is viewed:
+
+```text
+higher XR
+    ->
+larger subsequent Maximum Adverse Close Excursion
+    ->
+positive Spearman rho
+```
+
+Rejected alternatives:
+
+- forecasting / ex-ante prediction audit
+- calibration of weights or bands
+- horse race versus published G-Score
+- terminal-return usefulness as the primary question
+
+**LIMITATION.** This is a descriptive association in one frozen exploratory sample. It is not a forecast test and not a production-validation test.
 
 ---
 
 ## 5. B. Primary outcome
 
-**OPEN FOR REVIEW.** Define one primary Bitcoin outcome before viewing results.
+**PROTOCOL DECISION.** Primary outcome:
 
-Candidate families, inherited as **design options** from earlier GhostGauge research rather than as automatic H7.2 decisions:
+```text
+name        = maximum_adverse_close_excursion_30d
+short label = MACE_30
+```
 
-| Candidate | Precedent | What it tests | Main hazard |
-|---|---|---|---|
-| Terminal forward return | H4 / H4.1 | Did higher XR precede weaker (or stronger) subsequent completed-close returns? | Easy to over-read as a trading-signal test; H4.1 already found published G-Score did not show the expected return ordering |
-| Maximum Adverse Close Excursion (MACE) | H5 / H5.1 | Did higher XR precede larger subsequent close-path downside from a defined start price? | Close-only; not true intraday MAE; start-price for XR is not yet defined |
-| Maximum Close Drawdown (MCDD) | H5 secondary | Path drawdown from a running close peak | Secondary unless elevated before results |
-| Volatility / downside-volatility family | H5 secondary | Subsequent close-to-close instability | Easy to mine if promoted after a weak primary |
+XR does not contain an immutable artifact spot-price field. H7.2 therefore does **not** invent or reconstruct a new artifact spot start price.
 
-**Recommended option, pending review:** choose **one** primary outcome from the H5-style downside-path family **or** the H4-style terminal-return family, and freeze that choice before execution. A risk-gauge motivation makes MACE the more coherent *candidate*, but that is not yet a frozen H7.2 decision because:
+**PROTOCOL DECISION.** Start / baseline price:
 
-1. XR is not G-Score, so H5’s primary outcome does not transfer automatically.
-2. XR rows have no artifact spot-price column; H5’s start-price definition cannot be copied blindly.
-3. Choosing terminal return because “H4.1 was disappointing” would itself be post-hoc relative to prior G-Score results, even if XR outcomes have not been seen.
+```text
+S = C_D
+```
 
-**FIREWALL.** Do not inspect XR-versus-Bitcoin results in order to pick the primary outcome.
+where `C_D` is the completed UTC daily close for XR observation date `D`.
 
-**FIREWALL.** H7.2 is not a horse race versus published G-Score unless a separate, later protocol explicitly preregisters that comparison. This framework does not authorize it.
+**FACT.** Every H7.1 reconstruction timestamp belongs to UTC date `D` and occurs before that UTC day’s closing boundary. Therefore `C_D` is the first completed UTC daily close after the XR observation.
+
+**PROTOCOL DECISION.** For horizon `N`:
+
+```text
+path_N = C_D, C_D+1, ..., C_D+N
+MACE_N = 1 - min(C_D, C_D+1, ..., C_D+N) / C_D
+```
+
+For `N = 30`:
+
+- 31 close observations
+- 30 forward calendar-day intervals
+- `C_D` is the baseline
+- MACE is non-negative
+- MACE = 0 if no later completed close through `D+30` falls below `C_D`
+- MACE = 0.20 means the worst completed UTC close through `D+30` was 20% below `C_D`
+
+**LIMITATION.** This remains **close-only MACE**. It is **not** true intraday maximum adverse excursion.
+
+**FIREWALL.** Do not use:
+
+- reconstruction-time Coinbase surrogate as `S`
+- the same H7.1 internal price vector as `S`
+- previous-day close
+- current live BTC price
+- intraday lows
+- terminal return as MACE
+
+This definition differs from H5, which used artifact spot as `S` and included that spot in the path. H7.2 cannot copy that start-price rule because XR has no artifact spot field.
 
 ---
 
 ## 6. C. Forward horizons
 
-**OPEN FOR REVIEW.** Pre-register the exact forward horizon or horizons before seeing which one “works.”
-
-Design options:
-
-1. Copy H4/H5 exactly: **30 / 90 / 180** UTC calendar days, with one of those declared primary.
-2. Choose a **single** primary horizon and treat any others as coverage-only or secondary.
-3. Add shorter horizons because the XR window ends on `2026-08-19` and, as of this draft date `2026-08-20`, long completed windows cannot exist for the most recent XR dates.
-
-**Tradeoffs:**
-
-- Copying 30/90/180 preserves comparability with H4/H5 language, but comparability of **samples** is still imperfect: H4/H5 used Daily Rule `DAILY_PRIMARY` G-Scores, not XR.
-- Multiple horizons without a declared primary invite mining.
-- Shorter horizons increase recent-date coverage but are a new choice and must be justified before results, not after.
-
-**Coverage fact that does not require outcome calculation:** XR observation dates run through `2026-08-19`. Any horizon of `N` UTC days is incomplete for observation dates after `as-of date − N`, where the as-of date is the last available valid outcome price. This coverage truncation must be pre-registered as a reporting rule, not used to drop inconvenient recent XR rows from the 252-date universe.
-
-**Recommended option, pending review:** freeze **one primary horizon** and at most the H4/H5 secondary set. Do not add extra horizons after seeing results. Do not drop incomplete-horizon dates from the H7.1 universe; report them as incomplete-outcome rows.
-
-**FIREWALL.** Do not choose horizons after looking at which one performs best.
-
----
-
-## 7. D. Price convention
-
-**OPEN FOR REVIEW.** Define the exact outcome-price source and timestamp convention before execution.
-
-XR `xr_observations.csv` does **not** contain a Bitcoin start price. H7.2 therefore cannot inherit H5’s `start_price = artifact_spot_price_usd` without a new, explicit mapping.
-
-Required decisions:
-
-| Decision | Options | Notes |
-|---|---|---|
-| Price source | Pin a Git blob of `public/data/btc_price_history.csv`; use another documented completed-close series; use an exchange-native series | Moving working-tree market files are not a reproducibility contract |
-| Entry / reference price `S` | Same-UTC-date completed close; next UTC close after `reconstruction_as_of_utc`; a clock-aligned intraday print; reconstruction-time surrogate already used inside XR | Using an XR-internal surrogate as both score input and outcome start would mix signal construction with outcome measurement |
-| Future price | Completed UTC close on `observation_date + N`; first available close at or after that date | “First available” is a weekend/holiday rule and must be frozen, not improvised |
-| UTC boundary | Observation date is already a UTC calendar date; outcome dates should use the same UTC date key | Do not mix local-exchange dates with UTC observation dates |
-| Weekends | Bitcoin trades daily in the current completed-UTC-close series used by H4/H5; traditional FX/equity weekend rules are likely irrelevant | Confirm against the pinned series before execution |
-| Missing market data | Hard STOP vs mark outcome incomplete vs exclude from the statistic while retaining the XR row in reporting | Silent interpolation is forbidden |
-| Provider corrections | Use the pinned blob bytes; do not “fix” later restatements inside H7.2 | A later corrected series requires a new snapshot identity |
-
-**Recommended option, pending review:**
-
-- Pin one Git blob of a completed-UTC-close Bitcoin series **after** independent review, then freeze that blob SHA in the final protocol.
-- Treat invalid/missing required closes as incomplete outcomes, not as license to repair XR rows.
-- Do not use future-of-day information that would not have been knowable at `reconstruction_as_of_utc` if the study is described as temporally disciplined. If the study is only a same-sample descriptive association against later closes, say so explicitly.
-
-**FIREWALL.** This draft does **not** retrieve, pin, or inspect outcome prices. No BTC return series is loaded here.
-
----
-
-## 8. E. Eligibility
-
-**Recommended inherited rule, pending confirmation:** primary inferential analysis uses the frozen **234 `ELIGIBLE`** XR dates.
-
-**FIREWALL.** The **18 `NOT_ELIGIBLE`** rows must not be silently dropped from reporting. They remain part of the 252-date universe as recorded missing / ineligible observations.
-
-**OPEN FOR REVIEW.** Additional outcome-completeness eligibility:
-
-- If a primary-horizon price path is incomplete, is that row excluded from the primary statistic, retained as `OUTCOME_INCOMPLETE`, or a hard STOP?
-- Are `NOT_ELIGIBLE` XR rows excluded from all inferential statistics, or also summarized as a missingness appendix only?
-
-**Recommended option, pending review:**
-
-- Inferential sample = `xr_status = ELIGIBLE` **and** complete primary-outcome path under the frozen price rule.
-- Universe reporting = all 252 dates, with explicit counts for `ELIGIBLE` / `NOT_ELIGIBLE` / outcome-complete / outcome-incomplete.
-- Do not recode `NOT_ELIGIBLE` to `ELIGIBLE` because an outcome exists.
-- Do not recode `ELIGIBLE` to missing because the outcome is inconvenient.
-
----
-
-## 9. F. Primary statistic
-
-**OPEN FOR REVIEW.** Define one primary statistic before results are seen.
-
-Conceptual candidates (evaluate during preregistration, select one before execution):
-
-1. **Spearman rank correlation** of XR versus the primary outcome, using independent average-rank vectors and Pearson-on-ranks, matching H4/H5 rank convention. No p-value unless a later protocol adds an explicit inference framework.
-2. **Mean or median outcome difference** between pre-registered high and low XR groups.
-3. **A discrimination statistic** such as AUC of XR against a pre-registered binary tail event.
-
-**Tradeoffs:**
-
-- Spearman is continuous, rank-based, and already used in H4/H5, which reduces the chance of inventing a new favorite metric after seeing XR results.
-- Group-mean differences are easier to narrate and easier to manipulate through grouping.
-- AUC requires a binary event that must itself be frozen before results.
-
-**Recommended option, pending review:** if the primary outcome is continuous, prefer **one Spearman association** as the primary statistic because it avoids post-hoc band invention. This remains an open decision, not a freeze.
-
-**FIREWALL.** Do not compute the candidates “just to see.” Selection happens on this protocol branch before execution.
-
----
-
-## 10. G. Secondary statistics
-
-**OPEN FOR REVIEW.** Secondary / exploratory metrics must be labeled as such before execution.
-
-Likely secondary candidates, if the primary is a Spearman-on-continuous-outcome design:
-
-- the other horizon(s), if more than one horizon is kept
-- the non-primary outcome family (return if MACE is primary, or MACE if return is primary)
-- MCDD / volatility-family path measures, if retained from H5
-- pre-registered tail incidence
-- descriptive quantiles of the primary outcome by pre-registered XR groups
-
-**FIREWALL.** A secondary result may not replace the primary result after looking at the numbers. Weak primary + strong secondary = still a weak/inconclusive primary, plus a labeled secondary finding.
-
----
-
-## 11. H. MACE
-
-**OPEN FOR REVIEW.** Include MACE only if the exact formula, horizon, sign convention, benchmark, and aggregation are frozen first.
-
-If MACE is included, the H5 formula is a **candidate**, not an automatic H7.2 definition:
+**PROTOCOL DECISION.** One primary horizon:
 
 ```text
-path = S, C_D, C_D+1, ..., C_D+N
-minimum_path_price = min(path)
-MACE = 1 - (minimum_path_price / S)
+30 UTC calendar days
 ```
 
-Candidate properties from H5, to accept or explicitly replace:
+Rationale:
 
-- close-only; not true intraday MAE
-- MACE is non-negative
-- MACE = 0 if no completed close in the window falls below `S`
-- do not convert to dollars for primary analysis
-- do not substitute terminal `D+N` return for MACE
+- closest of the inherited H4/H5 horizons to a daily risk-gauge use case
+- maximizes usable frozen-snapshot coverage relative to 90d/180d
+- was already part of prior GhostGauge research
+- avoids selecting among multiple horizons after results
 
-H7.2-specific unresolved pieces:
+**PROTOCOL DECISION.** Secondary horizons only:
 
-- what `S` is, because XR has no artifact spot field
-- whether `C_D` is the same-date close, the next close after `reconstruction_as_of_utc`, or something else
-- which `N` is primary
-- whether aggregation is Spearman of XR vs MACE, mean MACE by group, or both with one declared primary
+```text
+90 UTC calendar days
+180 UTC calendar days
+```
 
-**LIMITATION.** Close-only MACE is not true intraday maximum adverse excursion.
+The same MACE definition applies, with `N` replaced.
 
-**FIREWALL.** Do not calculate MACE in this draft.
+**FIREWALL.** No additional horizons are permitted in H7.2. Do not add `1d`, `7d`, `14d`, `21d`, `45d`, `60d`, `120d`, `365d`, or any other horizon.
+
+**PROTOCOL DECISION.** Primary H7.2 result = 30-day MACE association. 90-day and 180-day MACE are **SECONDARY** only. A stronger secondary result may not replace a weaker primary result.
+
+**FIREWALL.** Do not characterize H7.2 based on whichever horizon has the largest rho.
 
 ---
 
-## 12. I. Drawdown / maximum adverse excursion
+## 7. D. Outcome price source
 
-**OPEN FOR REVIEW.** If maximum adverse excursion or forward drawdown is included, freeze all of the following before calculation:
+**PROTOCOL DECISION.** Freeze outcome market data to the same Git commit that contains the accepted H7.1 Stage-B outputs.
 
-| Item | Questions to resolve |
+```text
+OUTCOME_SOURCE_COMMIT_SHA = b596619621aa4805d337c3047d98f1686529e6e7
+path                      = public/data/btc_price_history.csv
+git blob SHA              = e93a74edba11d04969ba81c141361acbab6ec3c3
+```
+
+Conceptual read:
+
+```text
+git show b596619621aa4805d337c3047d98f1686529e6e7:public/data/btc_price_history.csv
+```
+
+**FACT.** Independently verified Git blob identity at that commit/path is `e93a74edba11d04969ba81c141361acbab6ec3c3`. This protocol-design pass confirmed that blob SHA and did not substitute another snapshot.
+
+**FACT.** SHA-256 of the exact Git blob bytes:
+
+```text
+8c3b57f779b764def7cfdff65205238cc14f2726c86572e63c450357e0852db1
+```
+
+**FACT.** Structural source-integrity audit of those blob bytes (no outcome statistics):
+
+| Item | Value |
 |---|---|
-| Exact interval | Primary `N` only, or also 30/90/180? Inclusive of `D`? |
-| Intraday vs closing prices | H4/H5 series is close-only. True intraday MAE/drawdown would need a separately pinned OHLC or tick source |
-| Sign convention | Magnitude of adverse move vs signed return vs peak-to-trough from a running peak (MCDD) |
-| Recovery | Is recovery inside the window ignored (pure adverse excursion) or netted (terminal return)? |
-| Aggregation | Spearman, mean/median, tail incidence, or group contrast |
+| Columns | `date_utc`, `close_usd`, `source`, `ingested_at_utc` |
+| Date row count | 733 |
+| Unique date-key count | 733 |
+| First UTC date | `2024-08-17` |
+| Last UTC date | `2026-08-19` |
+| Duplicate-date count | 0 |
+| Calendar-gap count | 0 |
+| Malformed `date_utc` count | 0 |
+| Non-finite / non-positive `close_usd` count | 0 |
 
-**Recommended option, pending review:** if a path measure is used, keep the H5 distinction:
+**FACT.** The pinned series therefore supplies an exact UTC-calendar close for every date from `2024-08-17` through `2026-08-19` inclusive. That range covers the entire H7.1 observation window as baseline dates. It does **not** extend past `2026-08-19`, so required `D+N` dates after that last close are incomplete by construction.
 
-- **MACE** = adverse excursion from a fixed start `S`
-- **MCDD** = close-to-close running-peak drawdown
+**FIREWALL.** Do not use a later working-tree copy. Do not use current live market data. Do not extend the price series after H7.1. Do not replace historical prices with later provider corrections. Do not retrieve another provider.
 
-and do not claim either is intraday.
-
-**FIREWALL.** Do not calculate drawdowns in this draft.
-
----
-
-## 13. J. Score relationship
-
-**OPEN FOR REVIEW.** Pre-register whether XR is treated as continuous, ordinal/rank, fixed bands, or a combination.
-
-Options:
-
-1. **Continuous 0–100 XR** for the primary statistic.
-2. **Ranks of XR** (Spearman already rank-transforms).
-3. **Fixed production GhostGauge bands**, applied to XR only if the exact production band map is copied and labeled as an exploratory overlay, not as official XR bands.
-4. **New XR-specific bands.**
-
-**FIREWALL.** No new score bands may be invented after seeing outcomes.
-
-**Recommended option, pending review:** primary analysis treats XR as **continuous / rank**. Any band overlay must use a pre-copied production map or a grouping frozen in the final protocol. Do not create “XR-native” bands during or after execution.
-
-**LIMITATION.** Applying production band labels to XR does not make XR an official G-Score print.
+**FIREWALL.** If a later execution finds a different Git blob SHA than `e93a74edba11d04969ba81c141361acbab6ec3c3`, **STOP**. Do not substitute another snapshot.
 
 ---
 
-## 14. K. Multiple comparisons
+## 8. Outcome date rule
 
-**OPEN FOR REVIEW.** Define primary versus secondary so dozens of horizon/statistic combinations cannot be mined for a favorable answer.
+**PROTOCOL DECISION.** For observation date `D` and horizon `N`, required price dates are **exactly**:
 
-Minimum freeze required before execution:
+```text
+D, D+1, ..., D+N
+```
 
-- one analysis question class
-- one primary outcome
-- one primary horizon
-- one primary statistic
-- one inferential sample rule
+using UTC calendar-date keys matching `btc_price_history.date_utc`.
 
-Everything else is secondary, coverage, or diagnostic.
+**PROTOCOL DECISION.** Bitcoin trades every calendar day in this pinned series. Do not apply:
 
-**Recommended option, pending review:** report the full pre-registered secondary set, but interpret only the primary combination as the H7.2 result. Do not add “just one more” horizon, tail threshold, or grouping after results.
+- business-day shifting
+- weekend shifting
+- holiday shifting
+- nearest-date selection
+- first-available-after-date substitution
 
-**FIREWALL.** p-hacking by horizon, by statistic, by dropping `NOT_ELIGIBLE` dates, by dropping incomplete recent dates, or by inventing bands is prohibited.
+**FIREWALL.** Each required close must exist for its exact UTC calendar date. No interpolation. No forward fill. No backward fill. No substitute provider.
+
+**PROTOCOL DECISION.** A required close is valid only if it is present, numeric, finite, and `> 0`. Any other value makes that horizon’s path incomplete.
 
 ---
 
-## 15. L. Null / inconclusive result
+## 9. E. Universe and eligibility
 
-**OPEN FOR REVIEW.** Define supportive / contradictory / inconclusive **before** observing results.
+**PROTOCOL DECISION.** Reporting universe remains all **252** H7.1 dates.
 
-The final protocol must fill numeric or ordinal thresholds. This draft only states the required shape.
+**FACT.** XR status remains frozen:
 
-Candidate interpretation skeleton, not yet frozen:
+- 234 `ELIGIBLE`
+- 18 `NOT_ELIGIBLE`
 
-| Label | Meaning to freeze |
+**PROTOCOL DECISION.** Horizon-specific analysis status:
+
+| Condition | Status | Enters that horizon’s Spearman? |
+|---|---|---|
+| `xr_status = NOT_ELIGIBLE` | `XR_NOT_ELIGIBLE` | No |
+| `xr_status = ELIGIBLE` and every required close `C_D` through `C_D+N` exists, is finite, and `> 0` | `OUTCOME_COMPLETE` | Yes |
+| `xr_status = ELIGIBLE` and the complete required price path does not exist | `OUTCOME_INCOMPLETE` | No |
+
+Primary 30-day analysis sample:
+
+```text
+xr_status = ELIGIBLE
+AND
+every required close C_D through C_D+30 exists and is finite and > 0
+```
+
+**PROTOCOL DECISION.** Apply the same independent eligibility rule to 90d and 180d secondary horizons. Completeness is horizon-specific. A date may be complete for 30d and incomplete for 90d/180d.
+
+**FIREWALL.** Do not modify `xr_status`. Do not repair XR. Do not silently delete incomplete recent dates from the 252-date universe.
+
+**PROTOCOL DECISION.** The later H7.2 report must show, for each horizon, coverage counts only:
+
+- 252 total universe rows
+- `XR_ELIGIBLE` count
+- `XR_NOT_ELIGIBLE` count
+- `OUTCOME_COMPLETE` count
+- `OUTCOME_INCOMPLETE` count
+- final analysis `N`
+
+These are coverage counts, not performance statistics.
+
+**IMPLEMENTATION DETAIL.** Exact output filenames / column order for those coverage tables are left to later execution design. The counts themselves are required.
+
+---
+
+## 10. F. Primary statistic
+
+**PROTOCOL DECISION.** Primary statistic:
+
+```text
+Spearman rank correlation between XR score and MACE_30
+```
+
+computed only on the primary 30-day analysis sample.
+
+**PROTOCOL DECISION.** Use the same rank convention already frozen in H4/H5:
+
+- rank XR independently
+- rank MACE independently
+- conceptual ranks are 1-based
+- tied values receive the arithmetic mean of occupied ranks
+- `rho` = Pearson correlation of the two rank vectors
+
+**FIREWALL.** Do not use:
+
+- Pearson on raw XR / MACE
+- regression coefficient
+- R-squared
+- AUC
+- high-vs-low mean difference
+- band spread
+
+**FIREWALL.** No p-value. No confidence interval. No significance star. No hypothesis-test language.
+
+**PROTOCOL DECISION.** If either rank vector has zero variance:
+
+```text
+rho = null
+status = UNDEFINED_ZERO_VARIANCE
+```
+
+Never emit `NaN`, `Infinity`, or `0` as a substitute for undefined.
+
+**PROTOCOL DECISION.** Expected preregistered direction:
+
+```text
+rho > 0
+```
+
+**IMPLEMENTATION DETAIL.** CSV serialization of `null` rho (empty field versus explicit token) may be specified at execution time, provided it is not emitted as `0`, `NaN`, or `Infinity`.
+
+---
+
+## 11. G. Secondary statistics
+
+**PROTOCOL DECISION.** H7.2 permits **exactly two** secondary outcome statistics:
+
+```text
+Spearman(XR, MACE_90)
+Spearman(XR, MACE_180)
+```
+
+using the exact same ranking and horizon-specific eligibility rules.
+
+**FIREWALL.** No other secondary outcome family is authorized. Specifically do **not** calculate in H7.2:
+
+- terminal forward return
+- MCDD
+- realized volatility
+- downside volatility
+- tail-event rates
+- AUC
+- band outcome tables
+- quintile outcome tables
+- high/low group differences
+- alternative correlation measures
+- factor-by-factor outcome correlations
+
+If those questions are worth studying later, they require a separate preregistered experiment.
+
+---
+
+## 12. H. MACE inclusion
+
+**PROTOCOL DECISION.** MACE is the **only** authorized outcome family in H7.2. The exact formula is §5. Horizons are §6. Sign convention is non-negative close-path adverse excursion from `S = C_D`. Aggregation is Spearman as in §10–§11.
+
+No other MACE variant is authorized (intraday MAE, dollar MACE, terminal-return-as-MACE, or a different start price).
+
+---
+
+## 13. I. Drawdown / MAE
+
+**PROTOCOL DECISION.** True intraday MAE and maximum close drawdown (MCDD) are **out of scope** for H7.2.
+
+**LIMITATION.** Close-only MACE is not true intraday maximum adverse excursion and is not peak-to-trough MCDD.
+
+---
+
+## 14. J. Score treatment
+
+**PROTOCOL DECISION.** Treat XR only as a **continuous 0–100 score**, with rank transformation for Spearman.
+
+**FIREWALL.** Do not analyze:
+
+- production score bands
+- new XR bands
+- quintiles
+- tertiles
+- high / medium / low groups
+- threshold events
+
+No grouping scheme is part of H7.2. No new score bands may be invented after seeing outcomes.
+
+**LIMITATION.** Not applying production band labels does not make XR an official G-Score print; XR remains exploratory reconstruction either way.
+
+---
+
+## 15. K. Multiple-comparison firewall
+
+**PROTOCOL DECISION.** There is exactly one **PRIMARY** combination:
+
+```text
+XR × 30-day MACE × Spearman rho
+```
+
+Secondary combinations are exactly:
+
+```text
+XR × 90-day MACE × Spearman rho
+XR × 180-day MACE × Spearman rho
+```
+
+Nothing else.
+
+**FIREWALL.** Do not add additional outcomes after seeing results. Do not promote a secondary result to primary. Do not characterize H7.2 based on whichever horizon has the largest rho.
+
+---
+
+## 16. Serial dependence / overlapping windows
+
+**LIMITATION.** Daily XR observations are serially related. Forward MACE windows overlap heavily. Consecutive 30-day observations share nearly the entire subsequent price window.
+
+Therefore H7.2 observations must **not** be treated as statistically independent trials.
+
+Consequences:
+
+- Spearman rho is descriptive
+- no ordinary independent-observation p-value
+- no ordinary confidence interval
+- no significance language
+- no claim that `N` daily rows equal `N` independent experiments
+- no causal interpretation
+
+This limitation is part of the H7.2 design, not an after-the-fact caveat. It must appear in later result interpretation.
+
+**FIREWALL.** Do **not** add a non-overlapping subsample in H7.2. That would create another analysis choice.
+
+---
+
+## 17. L. Result-language rule
+
+**PROTOCOL DECISION.** Do not invent an arbitrary numeric success cutoff such as `rho >= 0.10`, `0.20`, `0.30`, or `0.50`. H5 deliberately avoided arbitrary correlation pass/fail thresholds. H7.2 retains that restraint.
+
+**PROTOCOL DECISION.** Descriptive direction labels:
+
+| Observed rho | Label |
 |---|---|
-| Supportive | Primary statistic has the pre-registered sign/direction and is large enough, under the frozen sample, to count as support for the stated XR-to-outcome association. Exact threshold TBD in review. |
-| Contradictory | Primary statistic has the opposite sign/direction, or a pre-registered magnitude strong enough to count against the stated association. Exact threshold TBD in review. |
-| Inconclusive | Magnitude too small, coverage too thin, or primary sample too incomplete to support either claim. |
+| `rho > 0` | `DIRECTIONALLY_ALIGNED` |
+| `rho = 0` | `NO_DIRECTIONAL_ASSOCIATION` |
+| `rho < 0` | `DIRECTIONALLY_OPPOSED` |
+| rho undefined because of zero variance | `UNDEFINED` |
 
-**Recommended option, pending review:** do **not** use a p-value cutoff as the sole decision rule unless an inference framework is separately preregistered. H4/H5 reported rank associations without significance stars; copying that restraint is coherent. Magnitude and coverage still need explicit inconclusive bounds so a near-zero result cannot be narrated as success.
+Always report:
 
-**FIREWALL.** A near-zero primary result is not license to promote a prettier secondary chart.
+- exact rho
+- analysis `N`
+- horizon
+- outcome definition
+
+**FIREWALL.** A tiny positive rho remains numerically tiny even though its direction is aligned.
+
+Do **not** translate `DIRECTIONALLY_ALIGNED` into: validated, successful, predictive, significant, or “works.”
+
+Do **not** translate `DIRECTIONALLY_OPPOSED` into: invalidated, broken, or failed.
+
+The final interpretation must discuss the actual magnitude and limitations without a model pass/fail declaration.
 
 ---
 
-## 16. M. Claim firewall
+## 18. M. Claim firewall
 
-**FIREWALL.** H7.2 may not claim:
+**FIREWALL.** Permitted language is bounded to forms such as:
 
-- “GhostGauge predicted X historically”
-- “GhostGauge would have predicted X”
-- “historical G-Score did Y” from XR evidence
-- “the model is validated / invalidated”
-- “weights or bands should change”
-- “XR is as-published”
-- “XR is point-in-time validation”
+> In the frozen H7.1 exploratory reconstruction sample, higher XR was directionally aligned / opposed / unassociated with greater subsequent close-based downside over the preregistered horizon.
 
-Permitted later language, and only if the frozen design actually supports it:
+XR remains:
 
-- “In this frozen exploratory reconstruction sample, XR was associated with …”
-- “This is hypothesis generation, not validation.”
-- “XR remains exploratory reconstruction, not historical G-Score.”
+- exploratory reconstruction
+- not historical G-Score
+- not as-published
+- not validation-grade replay
+- not a production backtest
+
+**FIREWALL.** Do not say:
+
+- “GhostGauge predicted…”
+- “GhostGauge would have predicted…”
+- “Historical G-Score…” from XR evidence
+- “The model was validated…”
+- “The model was invalidated…”
+- “the weights are correct / wrong”
+- “the bands should change”
 
 **LIMITATION.** Association in an exploratory reconstruction sample is not a trading result, not a forecast audit, and not a production-calibration result.
 
 ---
 
-## 17. N. Tuning firewall
-
-**FIREWALL.** No result from H7.2 may automatically change:
-
-- weights
-- subweights
-- bands
-- thresholds
-- production methodology
-- reconstruction roles or scores
+## 19. N. Tuning firewall
 
 **FIREWALL.** Calibration remains **CLOSED**.
 
-Any future calibration work must be a separately authorized experiment with its own protocol, identities, and review. H7.2 cannot be that experiment.
+No H7.2 result may alter:
+
+- factor weights
+- factor subweights
+- production bands
+- thresholds
+- factor definitions
+- reconstruction roles
+- XR values
+- production methodology
+
+Any future calibration experiment requires its own separately authorized protocol. H7.2 cannot be that experiment.
 
 ---
 
-## 18. Implementation gate
+## 20. Future data accrual
 
-This document is **framework only**.
+**PROTOCOL DECISION.** The outcome price snapshot is frozen at:
+
+```text
+H7_1_OUTPUT_COMMIT_SHA = b596619621aa4805d337c3047d98f1686529e6e7
+```
+
+**FIREWALL.** Do not later extend H7.2 when additional future outcomes mature. If later research wants more completed 30d/90d/180d windows for the recent XR dates, that requires a **new** protocol/version and a newly frozen market-data snapshot.
+
+Do not append later prices to H7.2.
+
+---
+
+## 21. Implementation gate
+
+This document is a **protocol candidate**. Methodology is resolved. The candidate is **not yet frozen**.
 
 H7.2 execution **may not begin** until:
 
-1. independent methodology review of this framework
-2. open decisions A–N are resolved or explicitly deferred
-3. a later commit freezes a real protocol version, distinct from this draft label
-4. any pinned outcome-price blob SHA is recorded
-5. analysis code is written against those frozen identities only
+1. independent review of this protocol candidate
+2. a later commit freezes a real protocol version and protocol-document identity
+3. analysis code is written against those frozen identities only
 
 Until then:
 
 - do not write analysis code
-- do not retrieve outcome data for this study
+- do not retrieve additional outcome data
 - do not calculate statistics
 - do not merge H7.2 as complete
+- do not assign a final H7.2 protocol SHA in this pass
+
+**IMPLEMENTATION DETAIL.** Later execution may specify output paths, CSV column order, and rho serialization mechanics, provided they implement this methodology unchanged.
 
 ---
 
-## 19. Explicit non-actions in this draft
+## 22. Explicit non-actions in this candidate
 
-Confirmed for this Stage A commit:
+Confirmed for this protocol-candidate commit:
 
-- no outcome data retrieved
-- no outcome statistics calculated
+- no outcome statistic calculated
+- no returns calculated
+- no MACE calculated
+- no correlation calculated
+- no XR-conditioned market analysis
+- no analysis code written
 - no H7.1 data changed
 - no tuning
 - no calibration
-- no analysis implementation
 - H7.2 not merged
 
 ---
 
-## 20. Review checklist
+## 23. Closed A–N checklist
 
-Independent review should resolve or explicitly defer:
+| Item | Resolution |
+|---|---|
+| A. Analysis question | Descriptive risk-discrimination / ranking-usefulness: higher XR associated with greater subsequent close-based downside |
+| B. Primary outcome | `MACE_30`; `S = C_D`; close-only |
+| C. Horizons | Primary 30d; secondary 90d and 180d only |
+| D. Price source | `b5966196` / `public/data/btc_price_history.csv` / blob `e93a74ed…` |
+| E. Eligibility | 252-date universe; Spearman uses `ELIGIBLE` and outcome-complete rows only; `NOT_ELIGIBLE` and incomplete retained in reporting |
+| F. Primary statistic | Spearman(XR, `MACE_30`); H4/H5 ranks; no p-value |
+| G. Secondary statistics | Spearman(XR, `MACE_90`) and Spearman(XR, `MACE_180`) only |
+| H. MACE | Included; formula in §5 |
+| I. Drawdown / MAE | Out of scope |
+| J. Score treatment | Continuous 0–100 with rank transform; no bands or groups |
+| K. Multiple comparisons | One primary combination; two secondary combinations |
+| L. Result language | Direction labels only; no rho cutoff; no pass/fail |
+| M. Claim firewall | Exploratory-sample association language only |
+| N. Tuning firewall | Calibration CLOSED |
 
-- [ ] A. Analysis question class
-- [ ] B. One primary Bitcoin outcome
-- [ ] C. Exact forward horizon(s), with one primary
-- [ ] D. Price source blob, `S`, future price, UTC/weekend/missing-data rules
-- [ ] E. Inferential sample vs universe reporting for the 18 `NOT_ELIGIBLE` dates and incomplete outcomes
-- [ ] F. One primary statistic
-- [ ] G. Labeled secondary list
-- [ ] H. MACE formula / inclusion decision
-- [ ] I. Drawdown formula / inclusion decision
-- [ ] J. Continuous vs rank vs frozen bands
-- [ ] K. Primary-versus-secondary firewall
-- [ ] L. Supportive / contradictory / inconclusive thresholds
-- [ ] M. Claim language
-- [ ] N. Tuning / calibration remaining closed
-
-STOP FOR INDEPENDENT H7.2 METHODOLOGY REVIEW.
+STOP FOR INDEPENDENT H7.2 PROTOCOL-CANDIDATE REVIEW.
