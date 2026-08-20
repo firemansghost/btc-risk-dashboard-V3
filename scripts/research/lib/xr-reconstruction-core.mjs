@@ -48,7 +48,114 @@ export const MODEL_CODE_BLOBS = Object.freeze({
   'scripts/etl/stalenessUtils.mjs': '1c213b9b8eb659c9cda22d0834694ae3239eb768',
   'scripts/etl/lib/termFreshness.mjs': 'bc889e6b50f50c52b5d673c1d7f709ffe05c32e0',
   'scripts/etl/fetch-helper.mjs': 'da8ca2b441088f2e13364249e7ecbbed40dc22a4',
+  'scripts/etl/coinGeckoCache.mjs': 'fbfc5e35b3bd4af60eb00e780892b62f94e8bbff',
 });
+
+export const H6_1_EVIDENCE_MANIFEST_PATH =
+  'research/point-in-time-replay/h6_1_evidence_manifest.csv';
+export const H6_1_EVIDENCE_MANIFEST_BLOB =
+  '17c0312a4ae4e8bfdae5faf422af68393416f38b';
+export const H6_1_FACTOR_UPDATES_PATH =
+  'research/point-in-time-replay/h6_1_factor_updates.csv';
+export const H6_1_FACTOR_UPDATES_BLOB = 'bddbe3f85721c594fb1e2a628646da5d29afbd44';
+
+export const ETF_HISTORICAL_BASELINE_PATH = 'public/data/etf-flows-historical.json';
+export const ETF_HISTORICAL_BASELINE_BLOB =
+  '2986a65e565516f374f57bf031a672c84647330c';
+
+export const CASE_B_COINGECKO_LOOKBACK_DAYS = 100;
+
+export const US_MARKET_HOLIDAYS_UTC = Object.freeze(
+  new Set([
+    '2026-01-01',
+    '2026-01-19',
+    '2026-02-16',
+    '2026-04-03',
+    '2026-05-25',
+    '2026-06-19',
+    '2026-07-03',
+    '2026-09-07',
+    '2026-11-26',
+    '2026-12-25',
+  ])
+);
+
+export const CASE_A_CHART_DATES = Object.freeze(['2026-08-17', '2026-08-18', '2026-08-19']);
+
+export const CASE_A_CHART_CAPTURES = Object.freeze({
+  '2026-08-17': Object.freeze({
+    observationDate: '2026-08-17',
+    commitSha: 'db789cd9c59b474044d428bfdccbe07312798236',
+    blobSha: '3eaaca33a4e0b63a0f0b9257982fee1ca1c2a275',
+    path: 'public/data/cache/market_chart_30_daily.json',
+  }),
+  '2026-08-18': Object.freeze({
+    observationDate: '2026-08-18',
+    commitSha: '3e0c07ff08a236e59ad60e12373ff02eb138c7fb',
+    blobSha: '4b9c8a1cbc460081b02f633a53741b1ca2975770',
+    path: 'public/data/cache/market_chart_30_daily.json',
+  }),
+  '2026-08-19': Object.freeze({
+    observationDate: '2026-08-19',
+    commitSha: 'ad6be423dc5222c0844e1a367742984d1e69c2d7',
+    blobSha: 'cc0e00a323629cc155c466d7b4213bf298182325',
+    path: 'public/data/cache/market_chart_30_daily.json',
+  }),
+});
+
+export const TREND_B_ISLAND_CAPTURES = Object.freeze({
+  '2026-08-17': Object.freeze({
+    observationDate: '2026-08-17',
+    latestJsonCommitSha: 'db789cd9c59b474044d428bfdccbe07312798236',
+    latestJsonBlobSha: '82db3c2c0525aaa6dc1aa16932eabe143d7dff45',
+    btcPriceHistoryBlobSha: 'ccfa44f025c28a05b86e26c61dfad7320a92594c',
+    btcPriceHistoryCommitSha: 'db789cd9c59b474044d428bfdccbe07312798236',
+  }),
+  '2026-08-18': Object.freeze({
+    observationDate: '2026-08-18',
+    latestJsonCommitSha: '3e0c07ff08a236e59ad60e12373ff02eb138c7fb',
+    latestJsonBlobSha: 'd16a1a140930888a590eaa5f0a56a1c9830971b7',
+    btcPriceHistoryBlobSha: 'e472247d7099e3e999daa99917864e92477213b5',
+    btcPriceHistoryCommitSha: '3e0c07ff08a236e59ad60e12373ff02eb138c7fb',
+  }),
+  '2026-08-19': Object.freeze({
+    observationDate: '2026-08-19',
+    latestJsonCommitSha: 'ad6be423dc5222c0844e1a367742984d1e69c2d7',
+    latestJsonBlobSha: 'fca84aed72c35344706eed247dff7bfe04d934be',
+    btcPriceHistoryBlobSha: '419cd6a2430ad1939b6182f78cac95b117b74cb3',
+    btcPriceHistoryCommitSha: 'ad6be423dc5222c0844e1a367742984d1e69c2d7',
+  }),
+});
+
+export const TERM_CACHE_H7_COVERAGE = Object.freeze({
+  uniqueDates: 241,
+  first: '2025-12-11',
+  last: '2026-08-19',
+  commitTouches: 253,
+});
+
+export const SOCIAL_CACHE_H7_COVERAGE = Object.freeze({
+  uniqueDates: 241,
+  first: '2025-12-11',
+  last: '2026-08-19',
+  commitTouches: 252,
+});
+
+export const TRENDING_JSON_H7_COVERAGE = Object.freeze({
+  uniqueDates: 3,
+  first: '2026-08-17',
+  last: '2026-08-19',
+  commitTouches: 3,
+});
+
+export const STAGE_B_OUTPUT_FILES = Object.freeze([
+  'xr_observations.csv',
+  'xr_factor_lineage.csv',
+  'xr_missingness.csv',
+  'xr_bridge_check.csv',
+  'ANALYSIS_SOURCE_SHA.txt',
+  'PROTOCOL_VERSION.txt',
+]);
 
 export const OFFICIAL_FACTOR_ORDER = Object.freeze([
   'trend_valuation',
@@ -337,6 +444,15 @@ export class XrRuntimeSourceError extends Error {
     super(message);
     this.name = 'XrRuntimeSourceError';
     this.kind = 'runtime_source';
+    this.details = details;
+  }
+}
+
+export class XrInvariantError extends Error {
+  constructor(message, details = {}) {
+    super(message);
+    this.name = 'XrInvariantError';
+    this.kind = 'invariant';
     this.details = details;
   }
 }
@@ -1048,31 +1164,39 @@ export function scoreStablecoinComponents({ responses, baseline }) {
   return { scores, factorScore, snapshot };
 }
 
-export function isUtcBusinessDay(dateIso) {
+export function isUtcWeekend(dateIso) {
   const d = utcDateFromIso(dateIso);
   const day = d.getUTCDay();
-  return day >= 1 && day <= 5;
+  return day === 0 || day === 6;
+}
+
+export function isUsMarketHoliday(dateIso) {
+  return US_MARKET_HOLIDAYS_UTC.has(dateIso);
+}
+
+export function isUtcBusinessDay(dateIso) {
+  return !isUtcWeekend(dateIso) && !isUsMarketHoliday(dateIso);
+}
+
+export function getPreviousUsTradingDay(dateIso) {
+  let cursor = addUtcDays(dateIso, -1);
+  while (!isUtcBusinessDay(cursor)) cursor = addUtcDays(cursor, -1);
+  return cursor;
 }
 
 export function getExpectedLatestUsTradingDay(asOfUtc) {
   const asOf = new Date(asOfUtc);
-  let candidate = new Date(Date.UTC(asOf.getUTCFullYear(), asOf.getUTCMonth(), asOf.getUTCDate()));
-  const isTrading = (d) => {
-    const iso = formatUtcDate(d);
-    return isUtcBusinessDay(iso);
-  };
-  const previous = (d) => {
-    const n = new Date(d);
-    do n.setUTCDate(n.getUTCDate() - 1);
-    while (!isTrading(n));
-    return n;
-  };
-  if (isTrading(candidate)) {
-    if (asOf.getUTCHours() < ETF_FLOW_PUBLISH_HOUR_UTC) candidate = previous(candidate);
+  let candidate = formatUtcDate(
+    new Date(Date.UTC(asOf.getUTCFullYear(), asOf.getUTCMonth(), asOf.getUTCDate()))
+  );
+  if (isUtcBusinessDay(candidate)) {
+    if (asOf.getUTCHours() < ETF_FLOW_PUBLISH_HOUR_UTC) {
+      candidate = getPreviousUsTradingDay(candidate);
+    }
   } else {
-    candidate = previous(candidate);
+    candidate = getPreviousUsTradingDay(candidate);
   }
-  return formatUtcDate(candidate);
+  return candidate;
 }
 
 export function selectPublishedEtfFlowRows(rows, asOfUtc) {
@@ -1235,6 +1359,9 @@ export function calculate21DayRollingSum(flows) {
 }
 
 export function scoreEtfComponents({ html, asOfUtc, historicalBaseline = null }) {
+  if (!Array.isArray(historicalBaseline) || historicalBaseline.length === 0) {
+    return { scores: null, reasonCode: 'MISSING_BASELINE' };
+  }
   const parsed = parseEtfFlowsFromHtml(html);
   const publishedFlows = selectPublishedEtfFlowRows(parsed.flows, asOfUtc);
   const publishedIndividual = selectPublishedEtfFlowRows(parsed.individualEtfFlows, asOfUtc);
@@ -1242,9 +1369,7 @@ export function scoreEtfComponents({ html, asOfUtc, historicalBaseline = null })
   const flows21d = calculate21DayRollingSum(publishedFlows);
   if (flows21d.length === 0) return { scores: null, reasonCode: 'INSUFFICIENT_LOOKBACK' };
   const latest21d = flows21d[flows21d.length - 1];
-  const percentile = historicalBaseline
-    ? percentileRankUnitInterval(historicalBaseline, latest21d)
-    : percentileRankUnitInterval(flows21d, latest21d);
+  const percentile = percentileRankUnitInterval(historicalBaseline, latest21d);
   const score21d = riskFromPercentileUnitInterval(percentile, { invert: true, k: 3 });
   const flows7d = publishedFlows.slice(-7).reduce((sum, f) => sum + f.flow, 0);
   const flows14d = publishedFlows.slice(-14, -7).reduce((sum, f) => sum + f.flow, 0);
@@ -1536,8 +1661,17 @@ export function scoreTermComponents({ fundingRates, spotPrices }) {
   return { scores, factorScore };
 }
 
+export function extractSocialBitcoinRank(payload) {
+  const fromTrending = extractBitcoinRank(payload);
+  if (Number.isFinite(fromTrending)) return fromTrending;
+  const rank = Number(payload?.bitcoinRank ?? payload?.metrics?.trending_rank);
+  return Number.isFinite(rank) && rank >= 1 ? rank : null;
+}
+
 export function extractBitcoinRank(trendingPayload) {
-  const coins = trendingPayload?.coins;
+  const unwrapped = unwrapCoinGeckoCachePayload(trendingPayload);
+  const payload = unwrapped.ok ? unwrapped.data : trendingPayload;
+  const coins = payload?.coins;
   if (!Array.isArray(coins)) return null;
   const bitcoinTrending = coins.find(
     (coin) => coin.item?.id === 'bitcoin' || coin.item?.symbol?.toLowerCase() === 'btc'
@@ -1593,16 +1727,69 @@ export function scoreSocialComponents({ bitcoinRank, prices }) {
 }
 
 export function extractMarketChartPrices(chart) {
-  const prices = chart?.prices;
+  const unwrapped = unwrapCoinGeckoCachePayload(chart);
+  if (!unwrapped.ok) return null;
+  const prices = unwrapped.data?.prices;
   if (!Array.isArray(prices)) return null;
   return prices;
 }
 
-export function validateCaseAChartVector(chart) {
-  const prices = extractMarketChartPrices(chart);
-  if (!prices || prices.length === 0) return { ok: false, reasonCode: 'MISSING_CAPTURE' };
-  const copied = prices.map((row) => (Array.isArray(row) ? [...row] : row));
-  return { ok: true, vector: copied, role: 'B_METHOD_PIT' };
+export function isCoinGeckoDiskCacheEnvelope(parsed) {
+  return Boolean(
+    parsed &&
+      typeof parsed === 'object' &&
+      !Array.isArray(parsed) &&
+      Object.prototype.hasOwnProperty.call(parsed, 'data') &&
+      typeof parsed.cachedAt === 'string'
+  );
+}
+
+export function unwrapCoinGeckoCachePayload(parsed) {
+  if (isCoinGeckoDiskCacheEnvelope(parsed)) {
+    return { ok: true, envelope: true, cachedAt: parsed.cachedAt, data: parsed.data };
+  }
+  if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && Array.isArray(parsed.prices)) {
+    return { ok: true, envelope: false, cachedAt: null, data: parsed };
+  }
+  return { ok: false, reasonCode: 'MISSING_CAPTURE' };
+}
+
+export function validateCaseAPriceRows(prices) {
+  if (!Array.isArray(prices) || prices.length === 0) {
+    return { ok: false, reasonCode: 'MISSING_CAPTURE' };
+  }
+  const copied = [];
+  let lastTs = -Infinity;
+  for (const row of prices) {
+    if (!Array.isArray(row) || row.length < 2) {
+      return { ok: false, reasonCode: 'MALFORMED_BASELINE' };
+    }
+    const ts = Number(row[0]);
+    const price = Number(row[1]);
+    if (!Number.isFinite(ts) || !Number.isFinite(price)) {
+      return { ok: false, reasonCode: 'NON_FINITE' };
+    }
+    if (ts < lastTs) return { ok: false, reasonCode: 'OUT_OF_ORDER' };
+    lastTs = ts;
+    copied.push([ts, price]);
+  }
+  return { ok: true, vector: copied };
+}
+
+export function validateCaseAChartVector(chart, { observationDate = null, expectedBlobSha = null } = {}) {
+  const unwrapped = unwrapCoinGeckoCachePayload(chart);
+  if (!unwrapped.ok) return { ok: false, reasonCode: unwrapped.reasonCode || 'MISSING_CAPTURE' };
+  const validated = validateCaseAPriceRows(unwrapped.data?.prices);
+  if (!validated.ok) return validated;
+  return {
+    ok: true,
+    vector: validated.vector,
+    role: 'B_METHOD_PIT',
+    envelope: unwrapped.envelope,
+    cachedAt: unwrapped.cachedAt,
+    observationDate,
+    expectedBlobSha,
+  };
 }
 
 export function requiredCompletedSurrogateDates(observationDate) {
@@ -1787,16 +1974,18 @@ export function buildEligibility({ factorAvailability, factorScores }) {
       missing_factors: formatMissingFactors(missing),
     };
   }
+  const nonFinite = OFFICIAL_FACTOR_ORDER.filter(
+    (k) => !Number.isFinite(factorScores?.[k])
+  );
+  if (nonFinite.length > 0) {
+    throw new XrInvariantError(
+      'available factors must all have finite scores before composite eligibility',
+      { nonFinite }
+    );
+  }
   const xr_score = blendOfficialComposite(factorScores);
   if (xr_score == null) {
-    return {
-      xr_status: 'NOT_ELIGIBLE',
-      eligible_full_composite: false,
-      xr_score: null,
-      reconstruction_grade: '',
-      missing_factor_count: 0,
-      missing_factors: '',
-    };
+    throw new XrInvariantError('composite was null after all factors were available and finite');
   }
   return {
     xr_status: 'ELIGIBLE',
@@ -1904,6 +2093,212 @@ export function validateObservationRow(row) {
     !CLOCK_SOURCE_ENUM.includes(row.reconstruction_clock_source)
   ) {
     return { ok: false, error: `bad_clock:${row.reconstruction_clock_source}` };
+  }
+  return { ok: true };
+}
+
+export function extractEtfRollingSumBaseline(json) {
+  const rows = json?.rollingSums;
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return { ok: false, reasonCode: 'MALFORMED_BASELINE' };
+  }
+  const values = [];
+  for (const row of rows) {
+    const sum = Number(row?.sum ?? row);
+    if (!Number.isFinite(sum)) return { ok: false, reasonCode: 'MALFORMED_BASELINE' };
+    values.push(sum);
+  }
+  return { ok: true, values };
+}
+
+export function parseBtcPriceHistoryCsv(text) {
+  const rows = parseCsv(text);
+  if (rows.length < 2) return [];
+  const header = rows[0].map((h) => String(h).trim());
+  const dateIdx = header.indexOf('date_utc');
+  const closeIdx = header.indexOf('close_usd');
+  if (dateIdx < 0 || closeIdx < 0) return [];
+  const out = [];
+  for (let i = 1; i < rows.length; i++) {
+    const date = rows[i][dateIdx];
+    const close = Number(rows[i][closeIdx]);
+    if (!date || !Number.isFinite(close)) continue;
+    out.push({
+      date_utc: date,
+      close_usd: close,
+      timestamp: Date.parse(`${date}T00:00:00.000Z`),
+      close,
+    });
+  }
+  return out.sort((a, b) => a.date_utc.localeCompare(b.date_utc));
+}
+
+export function extractLabeledSnapshotPrice(rawArtifact) {
+  if (!rawArtifact || typeof rawArtifact !== 'object') {
+    return { ok: false, reasonCode: 'MISSING_CAPTURE' };
+  }
+  if (rawArtifact.price_kind !== 'utc_intraday_snapshot') {
+    return { ok: false, reasonCode: 'MISSING_CAPTURE' };
+  }
+  const price = Number(rawArtifact.btc?.spot_usd);
+  if (!Number.isFinite(price)) return { ok: false, reasonCode: 'NON_FINITE' };
+  return {
+    ok: true,
+    price,
+    snapshotDate: rawArtifact.snapshot_date || null,
+    priceKind: rawArtifact.price_kind,
+  };
+}
+
+export function extractProductionFactorScores(rawArtifact) {
+  const factors = rawArtifact?.factors || {};
+  const out = {};
+  for (const key of OFFICIAL_FACTOR_ORDER) {
+    const score = Number(factors?.[key]?.score);
+    out[key] = Number.isFinite(score) ? score : null;
+  }
+  const g = Number(rawArtifact?.composite_score ?? rawArtifact?.score);
+  return { factorScores: out, gScore: Number.isFinite(g) ? g : null };
+}
+
+export function caseBCoinGeckoRangeBounds(observationDate) {
+  const fromDate = addUtcDays(observationDate, -CASE_B_COINGECKO_LOOKBACK_DAYS);
+  const fromSec = Math.floor(Date.parse(`${fromDate}T00:00:00.000Z`) / 1000);
+  const toSec = Math.floor(Date.parse(`${observationDate}T00:00:00.000Z`) / 1000) - 1;
+  return { fromDate, fromSec, toSec, spanDays: CASE_B_COINGECKO_LOOKBACK_DAYS };
+}
+
+export function normalizeCoinbaseDailyCandles(candles, asOfUtc) {
+  const byDate = new Map();
+  for (const candle of candles || []) {
+    let startSec;
+    let close;
+    if (Array.isArray(candle)) {
+      startSec = Number(candle[0]);
+      close = Number(candle[4]);
+    } else {
+      startSec = Number(candle.start ?? candle.time ?? candle[0]);
+      close = Number(candle.close ?? candle[4]);
+    }
+    if (!Number.isFinite(startSec) || !Number.isFinite(close)) continue;
+    if (startSec > 1e12) startSec = startSec / 1000;
+    const date = new Date(startSec * 1000).toISOString().slice(0, 10);
+    if (!isCompletedDailyCandle(date, asOfUtc)) continue;
+    const existing = byDate.get(date);
+    if (!existing || startSec >= existing.startSec) {
+      byDate.set(date, { date, close, startSec });
+    }
+  }
+  return [...byDate.values()]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((row) => ({ date_utc: row.date, close_usd: row.close, close: row.close, timestamp: row.startSec * 1000 }));
+}
+
+export function csvRowsToObjects(text) {
+  const rows = parseCsv(text);
+  if (rows.length === 0) return [];
+  const header = rows[0];
+  return rows.slice(1).map((row) => {
+    const obj = {};
+    for (let i = 0; i < header.length; i++) obj[header[i]] = row[i] ?? '';
+    return obj;
+  });
+}
+
+export function validateH71OutputSet({
+  observationDates,
+  observations,
+  missingness,
+  lineage,
+  bridge,
+  analysisSourceSha,
+  protocolVersion,
+  requireFrozenUniverse = true,
+}) {
+  if (requireFrozenUniverse) {
+    if (observationDates.length !== XR_EXPECTED_DATE_COUNT) {
+      return { ok: false, error: `observation_count:${observationDates.length}` };
+    }
+    if (observationDates[0] !== XR_START_DATE || observationDates.at(-1) !== XR_END_DATE) {
+      return { ok: false, error: 'observation_bounds' };
+    }
+  }
+  if (observations.length !== observationDates.length) {
+    return { ok: false, error: 'observations_row_count' };
+  }
+  if (missingness.length !== observationDates.length) {
+    return { ok: false, error: 'missingness_row_count' };
+  }
+  for (let i = 0; i < observationDates.length; i++) {
+    if (observations[i].observation_date !== observationDates[i]) {
+      return { ok: false, error: `observation_order:${i}` };
+    }
+    if (missingness[i].observation_date !== observationDates[i]) {
+      return { ok: false, error: `missingness_order:${i}` };
+    }
+    const rowCheck = validateObservationRow(observations[i]);
+    if (!rowCheck.ok) return rowCheck;
+    const eligible =
+      observations[i].xr_status === 'ELIGIBLE' && observations[i].eligible_full_composite === true;
+    if (eligible) {
+      if (!Number.isFinite(Number(observations[i].xr_score))) {
+        return { ok: false, error: 'eligible_missing_score' };
+      }
+      if (observations[i].reconstruction_grade !== 'EXPLORATORY_ONLY') {
+        return { ok: false, error: 'eligible_grade' };
+      }
+    } else {
+      if (observations[i].xr_score !== '' && observations[i].xr_score != null) {
+        return { ok: false, error: 'not_eligible_score_present' };
+      }
+      if (observations[i].reconstruction_grade) {
+        return { ok: false, error: 'not_eligible_grade_present' };
+      }
+    }
+  }
+  for (const date of observationDates) {
+    for (const factorKey of OFFICIAL_FACTOR_ORDER) {
+      for (const componentKey of FACTOR_COMPONENT_ORDER[factorKey]) {
+        const rec = lineage.find(
+          (r) =>
+            r.observation_date === date &&
+            r.factor_key === factorKey &&
+            r.component_key === componentKey
+        );
+        if (!rec) return { ok: false, error: `lineage_missing:${date}:${factorKey}:${componentKey}` };
+      }
+    }
+  }
+  const bridgeDates = [...new Set(bridge.map((r) => r.observation_date))];
+  for (const date of bridgeDates) {
+    if (!BRIDGE_DATES.includes(date)) return { ok: false, error: `unexpected_bridge_date:${date}` };
+  }
+  if (requireFrozenUniverse) {
+    for (const date of BRIDGE_DATES) {
+      const rows = bridge.filter((r) => r.observation_date === date);
+      const factorRows = rows.filter((r) => r.factor_key !== '__XR_COMPOSITE__');
+      if (factorRows.length !== OFFICIAL_FACTOR_ORDER.length) {
+        return { ok: false, error: `bridge_factor_rows:${date}` };
+      }
+      const obs = observations.find((r) => r.observation_date === date);
+      const composites = rows.filter((r) => r.factor_key === '__XR_COMPOSITE__');
+      if (obs?.xr_status === 'ELIGIBLE') {
+        if (composites.length !== 1) return { ok: false, error: `bridge_composite:${date}` };
+      } else if (composites.length !== 0) {
+        return { ok: false, error: `bridge_composite_not_eligible:${date}` };
+      }
+      for (const row of rows) {
+        for (const col of XR_BRIDGE_COLUMNS) {
+          if (!(col in row)) return { ok: false, error: `bridge_column:${col}` };
+        }
+      }
+    }
+  }
+  if (analysisSourceSha && !/^[0-9a-f]{40}$/i.test(analysisSourceSha.trim())) {
+    return { ok: false, error: 'sidecar_analysis_source_sha' };
+  }
+  if (protocolVersion !== H7_PROTOCOL_VERSION) {
+    return { ok: false, error: 'sidecar_protocol_version' };
   }
   return { ok: true };
 }

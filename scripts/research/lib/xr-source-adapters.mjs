@@ -15,7 +15,20 @@ import {
   MACRO_LOOKBACK_DAYS,
   COINBASE_CANDLE_GRANULARITY_SEC,
   buildCoinbaseHistoricalChunkRanges,
-  requiredCompletedSurrogateDates,
+  CASE_A_CHART_CAPTURES,
+  TREND_B_ISLAND_CAPTURES,
+  ETF_HISTORICAL_BASELINE_PATH,
+  ETF_HISTORICAL_BASELINE_BLOB,
+  caseBCoinGeckoRangeBounds,
+  validateCaseAChartVector,
+  unwrapCoinGeckoCachePayload,
+  extractLabeledSnapshotPrice,
+  extractSocialBitcoinRank,
+  validateBitmexFundingWindow,
+  parseBtcPriceHistoryCsv,
+  extractEtfRollingSumBaseline,
+  normalizeCoinbaseDailyCandles,
+  utcCalendarDateFromInstant,
 } from './xr-reconstruction-core.mjs';
 
 export const GIT_PATHS = Object.freeze({
@@ -29,6 +42,7 @@ export const GIT_PATHS = Object.freeze({
   socialCache: 'public/data/cache/social_interest/social_interest_cache.json',
   dailyView: 'research/historical-observations/daily_analytical_view.csv',
   priceHistoryCsv: 'public/data/btc_price_history.csv',
+  etfHistorical: 'public/data/etf-flows-historical.json',
 });
 
 function defaultGitExec(args, options = {}) {
@@ -67,22 +81,55 @@ export function gitFirstParent(commitSha, gitExec = defaultGitExec) {
   return out.toString('utf8').trim();
 }
 
-export function isGitMissingObjectError(error) {
+export function gitCatFileType(sha, gitExec = defaultGitExec) {
+  const out = gitExec(['cat-file', '-t', sha]);
+  return out.toString('utf8').trim();
+}
+
+export function gitCommitExists(commitSha, gitExec = defaultGitExec) {
+  let type;
+  try {
+    type = gitCatFileType(commitSha, gitExec);
+  } catch (error) {
+    throw new XrRuntimeSourceError(`required commit unavailable: ${commitSha}`, {
+      commitSha,
+      cause: error?.message,
+    });
+  }
+  if (type !== 'commit') {
+    throw new XrRuntimeSourceError(`revision is not a commit: ${commitSha}`, {
+      commitSha,
+      type,
+    });
+  }
+  return true;
+}
+
+export function isMissingPathInExistingCommitError(error, commitSha, gitPath) {
   if (!(error instanceof XrRuntimeSourceError)) return false;
-  if (error.details?.code === 'missing_git_object') return true;
-  if (error.details?.status === 128) return true;
   const msg = String(error.message || '');
-  return /does not exist in|exists on disk, but not in|Needed a single revision|bad revision|unknown revision|invalid object name/i.test(
-    msg
+  if (/not a git repository/i.test(msg)) return false;
+  if (/corrupt|bad object|unable to read|permission denied|spawn failed/i.test(msg)) {
+    return false;
+  }
+  const escapedPath = String(gitPath).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const escapedSha = String(commitSha).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return (
+    /exists on disk, but not in/i.test(msg) ||
+    new RegExp(`path ['"]${escapedPath}['"] .*not in`, 'i').test(msg) ||
+    new RegExp(`does not exist in ['"]${escapedSha}`, 'i').test(msg) ||
+    new RegExp(`Not a valid object name ${escapedSha}:${escapedPath}`, 'i').test(msg) ||
+    new RegExp(`does not exist in tree`, 'i').test(msg)
   );
 }
 
 export function gitBlobExists(commitSha, gitPath, gitExec = defaultGitExec) {
+  gitCommitExists(commitSha, gitExec);
   try {
     gitRevParse(`${commitSha}:${gitPath}`, gitExec);
     return true;
   } catch (error) {
-    if (isGitMissingObjectError(error)) return false;
+    if (isMissingPathInExistingCommitError(error, commitSha, gitPath)) return false;
     throw error;
   }
 }
@@ -236,31 +283,6 @@ export function resolveSelectedPrimaryArtifact(dailyRow, gitExec = defaultGitExe
   return { ok: true, commitSha, blobSha: shown.blobSha, raw };
 }
 
-export function resolveContemporaneousGitFile({
-  observationDate,
-  gitPath,
-  primaryCommitSha,
-  requireNoFallback = false,
-  gitExec = defaultGitExec,
-}) {
-  if (primaryCommitSha) {
-    const atPrimary = resolveGitBlobAtCommit(primaryCommitSha, gitPath, gitExec);
-    if (atPrimary.ok) return { ...atPrimary, role: 'B_METHOD_PIT' };
-    if (requireNoFallback) {
-      return { ok: false, reasonCode: 'BRIDGE_CAPTURE_UNRESOLVED' };
-    }
-  }
-  const dated = gitPath.includes(observationDate)
-    ? resolveFirstIntroduction(gitPath, gitExec)
-    : { ok: false };
-  if (dated.ok) {
-    const blob = resolveGitBlobAtCommit(dated.commitSha, gitPath, gitExec);
-    if (blob.ok) return { ...blob, role: 'B_METHOD_PIT' };
-  }
-  if (requireNoFallback) return { ok: false, reasonCode: 'BRIDGE_CAPTURE_UNRESOLVED' };
-  return { ok: false, reasonCode: 'MISSING_CAPTURE' };
-}
-
 function sleep(ms, sleepImpl) {
   if (sleepImpl) return sleepImpl(ms);
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -410,13 +432,10 @@ export function parseFredObservations(json, observationDate) {
 }
 
 export function buildCoinGeckoHistoryRangeRequest(observationDate) {
-  const required = requiredCompletedSurrogateDates(observationDate);
-  const fromDate = addUtcDays(required[0], -15);
-  const fromSec = Math.floor(Date.parse(`${fromDate}T00:00:00.000Z`) / 1000);
-  const toSec = Math.floor(Date.parse(`${observationDate}T00:00:00.000Z`) / 1000) - 1;
+  const bounds = caseBCoinGeckoRangeBounds(observationDate);
   const url =
-    `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range?vs_currency=usd&from=${fromSec}&to=${toSec}`;
-  return { url, fromSec, toSec, fromDate, toExclusive: observationDate };
+    `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range?vs_currency=usd&from=${bounds.fromSec}&to=${bounds.toSec}`;
+  return { url, ...bounds, toExclusive: observationDate };
 }
 
 export function buildCoinbaseCandleRequest(asOfUtc, lookbackMinutes = 180) {
@@ -460,6 +479,276 @@ export function classifyMissingVsRuntime(error) {
 
 export function missingResult(reasonCode, extra = {}) {
   return { ok: false, kind: 'historical_missing', reasonCode, ...extra };
+}
+
+export function gitCatFileBlob(blobSha, gitExec = defaultGitExec) {
+  return gitExec(['cat-file', '-p', blobSha]);
+}
+
+export function indexPathBlobTransitions(gitPath, gitExec = defaultGitExec) {
+  const out = gitExec(['log', '--diff-filter=AM', '--format=%H %cI', '--', gitPath]).toString(
+    'utf8'
+  );
+  const byDate = new Map();
+  for (const line of out.trim().split(/\n/).filter(Boolean)) {
+    const [sha, iso] = line.split(/\s+/);
+    if (!sha || !iso) continue;
+    const date = iso.slice(0, 10);
+    const blobSha = gitRevParse(`${sha}:${gitPath}`, gitExec);
+    if (!byDate.has(date)) byDate.set(date, []);
+    byDate.get(date).push({ commitSha: sha, blobSha, commitUtc: iso, path: gitPath });
+  }
+  return byDate;
+}
+
+function uniqueBlobs(entries) {
+  const seen = new Set();
+  const out = [];
+  for (const entry of entries || []) {
+    if (seen.has(entry.blobSha)) continue;
+    seen.add(entry.blobSha);
+    out.push(entry);
+  }
+  return out;
+}
+
+export function resolveDatedCacheUpdate(observationDate, gitPath, index) {
+  const entries = uniqueBlobs(index.get(observationDate) || []);
+  if (entries.length === 0) return missingResult('MISSING_CAPTURE');
+  if (entries.length > 1) {
+    return missingResult('AMBIGUOUS_INTRODUCTION', { candidates: entries });
+  }
+  return { ok: true, ...entries[0] };
+}
+
+export function resolveCaseAMarketChart(observationDate, gitExec = defaultGitExec) {
+  const expected = CASE_A_CHART_CAPTURES[observationDate];
+  if (!expected) return missingResult('MISSING_CAPTURE', { notCaseADate: true });
+  gitCommitExists(expected.commitSha, gitExec);
+  const shown = resolveGitBlobAtCommit(expected.commitSha, expected.path, gitExec);
+  if (!shown.ok) return missingResult('BRIDGE_CAPTURE_UNRESOLVED');
+  if (shown.blobSha !== expected.blobSha) return missingResult('BRIDGE_CAPTURE_UNRESOLVED');
+  let parsed;
+  try {
+    parsed = JSON.parse(shown.text);
+  } catch {
+    return missingResult('BRIDGE_CAPTURE_UNRESOLVED');
+  }
+  const validated = validateCaseAChartVector(parsed, {
+    observationDate,
+    expectedBlobSha: expected.blobSha,
+  });
+  if (!validated.ok) return missingResult(validated.reasonCode || 'BRIDGE_CAPTURE_UNRESOLVED');
+  return {
+    ok: true,
+    role: 'B_METHOD_PIT',
+    ...expected,
+    vector: validated.vector,
+    envelope: validated.envelope,
+    cachedAt: validated.cachedAt,
+  };
+}
+
+export function resolveSharedPriceVector(observationDate, gitExec = defaultGitExec) {
+  if (CASE_A_CHART_CAPTURES[observationDate]) {
+    const caseA = resolveCaseAMarketChart(observationDate, gitExec);
+    if (!caseA.ok) return { ...caseA, forbidSurrogate: true };
+    return caseA;
+  }
+  return { ok: false, reasonCode: 'MISSING_CAPTURE', useCaseB: true };
+}
+
+export function resolveTrendBIsland(observationDate, gitExec = defaultGitExec) {
+  const expected = TREND_B_ISLAND_CAPTURES[observationDate];
+  if (!expected) return { ok: false, outsideIsland: true };
+  gitCommitExists(expected.latestJsonCommitSha, gitExec);
+  const latest = resolveGitBlobAtCommit(
+    expected.latestJsonCommitSha,
+    GIT_PATHS.latestJson,
+    gitExec
+  );
+  if (!latest.ok || latest.blobSha !== expected.latestJsonBlobSha) {
+    return missingResult('BRIDGE_CAPTURE_UNRESOLVED');
+  }
+  let raw;
+  try {
+    raw = JSON.parse(latest.text);
+  } catch {
+    return missingResult('BRIDGE_CAPTURE_UNRESOLVED');
+  }
+  const snapshot = extractLabeledSnapshotPrice(raw);
+  if (!snapshot.ok || snapshot.snapshotDate !== observationDate) {
+    return missingResult('BRIDGE_CAPTURE_UNRESOLVED');
+  }
+  const csv = resolveGitBlobAtCommit(
+    expected.btcPriceHistoryCommitSha,
+    GIT_PATHS.priceHistoryCsv,
+    gitExec
+  );
+  if (!csv.ok || csv.blobSha !== expected.btcPriceHistoryBlobSha) {
+    return missingResult('BRIDGE_CAPTURE_UNRESOLVED');
+  }
+  return {
+    ok: true,
+    role: 'B_METHOD_PIT',
+    snapshotPrice: snapshot.price,
+    raw,
+    historyRows: parseBtcPriceHistoryCsv(csv.text),
+    ...expected,
+  };
+}
+
+export function resolveFrozenEtfBaseline(gitExec = defaultGitExec) {
+  const bytes = gitCatFileBlob(ETF_HISTORICAL_BASELINE_BLOB, gitExec);
+  let json;
+  try {
+    json = JSON.parse(bytes.toString('utf8'));
+  } catch {
+    return missingResult('MALFORMED_BASELINE');
+  }
+  const extracted = extractEtfRollingSumBaseline(json);
+  if (!extracted.ok) return missingResult(extracted.reasonCode);
+  return {
+    ok: true,
+    blobSha: ETF_HISTORICAL_BASELINE_BLOB,
+    path: ETF_HISTORICAL_BASELINE_PATH,
+    values: extracted.values,
+  };
+}
+
+export function resolveSameDateEtfHtml(observationDate, gitExec = defaultGitExec) {
+  const path = GIT_PATHS.etfDated(observationDate);
+  const intro = resolveFirstIntroduction(path, gitExec);
+  if (!intro.ok) return intro;
+  const shown = resolveGitBlobAtCommit(intro.commitSha, path, gitExec);
+  if (!shown.ok) return missingResult('NO_SAME_DATE_ETF');
+  return { ok: true, html: shown.text, ...shown, path, role: 'B_METHOD_PIT' };
+}
+
+export function parseTermCachePayload(json, asOfUtc) {
+  const validated = validateBitmexFundingWindow(json?.fundingData || json?.funding || []);
+  if (!validated.ok) return validated;
+  const details = Array.isArray(json?.details) ? json.details : [];
+  const sourceLabel = details.find((d) => /data source/i.test(d?.label || ''))?.value || '';
+  const provider = String(json?.funding_provider || sourceLabel || '').toLowerCase();
+  if (provider && !/bitmex/.test(provider)) return missingResult('NO_BITMEX_EVIDENCE');
+  const future = validated.rates.some((row) => row.timestamp && row.timestamp > asOfUtc);
+  if (future) return missingResult('FUTURE_OBSERVATION');
+  return { ok: true, rates: validated.rates, provider: 'bitmex', json };
+}
+
+export function resolveTermFunding(observationDate, asOfUtc, termIndex, gitExec = defaultGitExec) {
+  const update = resolveDatedCacheUpdate(observationDate, GIT_PATHS.termCache, termIndex);
+  if (!update.ok) return update;
+  const shown = resolveGitBlobAtCommit(update.commitSha, GIT_PATHS.termCache, gitExec);
+  if (!shown.ok) return missingResult('MISSING_CAPTURE');
+  let json;
+  try {
+    json = JSON.parse(shown.text);
+  } catch {
+    return missingResult('MISSING_CAPTURE');
+  }
+  const obsUtc =
+    json.funding_observation_utc || json.lastUpdated || json.spot_observation_utc || update.commitUtc;
+  if (obsUtc && utcCalendarDateFromInstant(obsUtc) && utcCalendarDateFromInstant(obsUtc) !== observationDate) {
+    return missingResult('MISSING_CAPTURE');
+  }
+  const parsed = parseTermCachePayload(json, asOfUtc);
+  if (!parsed.ok) return parsed;
+  return { ok: true, role: 'B_METHOD_PIT', ...update, ...parsed };
+}
+
+export function resolveSocialRank(observationDate, trendingIndex, socialIndex, gitExec = defaultGitExec) {
+  const trendingUpdate = resolveDatedCacheUpdate(observationDate, GIT_PATHS.trending, trendingIndex);
+  if (trendingUpdate.ok) {
+    const shown = resolveGitBlobAtCommit(trendingUpdate.commitSha, GIT_PATHS.trending, gitExec);
+    if (shown.ok) {
+      let json;
+      try {
+        json = JSON.parse(shown.text);
+      } catch {
+        json = null;
+      }
+      if (json) {
+        const unwrapped = unwrapCoinGeckoCachePayload(json);
+        if (unwrapped.ok && unwrapped.cachedAt) {
+          const cachedDate = utcCalendarDateFromInstant(unwrapped.cachedAt);
+          if (cachedDate && cachedDate !== observationDate) {
+            return missingResult('MISSING_CAPTURE');
+          }
+        }
+        const rank = extractSocialBitcoinRank(json);
+        if (Number.isFinite(rank)) {
+          return { ok: true, role: 'B_METHOD_PIT', rank, ...trendingUpdate, source: 'trending.json' };
+        }
+      }
+    }
+  }
+  const socialUpdate = resolveDatedCacheUpdate(observationDate, GIT_PATHS.socialCache, socialIndex);
+  if (!socialUpdate.ok) return missingResult('NO_BITCOIN_RANK');
+  const shown = resolveGitBlobAtCommit(socialUpdate.commitSha, GIT_PATHS.socialCache, gitExec);
+  if (!shown.ok) return missingResult('NO_BITCOIN_RANK');
+  let json;
+  try {
+    json = JSON.parse(shown.text);
+  } catch {
+    return missingResult('NO_BITCOIN_RANK');
+  }
+  const rank = extractSocialBitcoinRank(json);
+  if (!Number.isFinite(rank)) return missingResult('NO_BITCOIN_RANK');
+  return { ok: true, role: 'B_METHOD_PIT', rank, ...socialUpdate, source: 'social_interest_cache.json' };
+}
+
+export async function fetchCoinbaseCompletedHistory(asOfUtc, runtime) {
+  const requests = buildCoinbaseDailyChunkRequests(asOfUtc);
+  const candles = [];
+  const lineage = [];
+  for (const req of requests) {
+    const got = await fetchWithRetryInjected(req.url, {}, runtime);
+    let json;
+    try {
+      json = JSON.parse(got.bodyBytes.toString('utf8'));
+    } catch {
+      throw new XrRuntimeSourceError('malformed unexpected API JSON', {
+        url: runtime?.redact ? runtime.redact(req.url) : req.url,
+      });
+    }
+    if (!Array.isArray(json)) {
+      throw new XrRuntimeSourceError('unexpected Coinbase daily payload', { url: req.url });
+    }
+    candles.push(...json);
+    lineage.push({ url: req.url, sha256: got.sha256, bytes: got.bodyBytes.length });
+  }
+  return {
+    rows: normalizeCoinbaseDailyCandles(candles, asOfUtc),
+    lineage,
+  };
+}
+
+export async function fetchCoinbase5mProxy(asOfUtc, runtime) {
+  const req = buildCoinbaseCandleRequest(asOfUtc);
+  const got = await fetchWithRetryInjected(req.url, {}, runtime);
+  let json;
+  try {
+    json = JSON.parse(got.bodyBytes.toString('utf8'));
+  } catch {
+    throw new XrRuntimeSourceError('malformed unexpected API JSON', { url: req.url });
+  }
+  return { candles: json, sha256: got.sha256, url: req.url, bodyBytes: got.bodyBytes };
+}
+
+export async function fetchCoinGeckoCaseBRange(observationDate, runtime) {
+  const req = buildCoinGeckoHistoryRangeRequest(observationDate);
+  const got = await fetchJsonSource(req.url, {}, runtime);
+  return { ...got, request: req };
+}
+
+export async function fetchAlfredSeries(request, runtime) {
+  const got = await fetchJsonSource(request.url, {}, {
+    ...runtime,
+    redact: (url) => request.sanitizedUrl || url,
+  });
+  return { ...got, request };
 }
 
 export { defaultGitExec, XrRuntimeSourceError, XrHistoricalMissingError };
