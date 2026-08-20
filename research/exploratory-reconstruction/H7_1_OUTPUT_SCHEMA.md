@@ -61,11 +61,16 @@ Exact columns, in order:
 Rules:
 
 - No official G-Score field in this primary file.
-- `xr_score` is NULL / empty when `eligible_full_composite` is false.
-- `xr_status` distinguishes eligible XR observations from `NOT ELIGIBLE` partial rows.
+- `xr_score` is NULL / empty when `eligible_full_composite` is FALSE.
+- `xr_status` has exactly two H7.1 v1 values:
+  - `ELIGIBLE` when all seven factors are available and `xr_score` is populated; `eligible_full_composite` = TRUE
+  - `NOT_ELIGIBLE` when one or more factors are `MISSING` and `xr_score` is empty; `eligible_full_composite` = FALSE
 - `reconstruction_grade` is `EXPLORATORY_ONLY` for every eligible full composite.
 - Factor role fields use `B_METHOD_PIT`, `C_PIT_CONSERVATIVE`, `C_CURRENT_HISTORY`, `C_SURROGATE`, or `MISSING`.
+- Factor-level role is the most limiting required component role using this reporting precedence (not an empirical ranking among C categories): `MISSING` then `C_SURROGATE` then `C_CURRENT_HISTORY` then `C_PIT_CONSERVATIVE` then `B_METHOD_PIT`.
 - Do not emit official band labels or playbook recommendations in this file.
+- Do not infer availability or eligibility from a numeric factor score.
+- Generated outputs must record/hash frozen identities where the listed columns apply (`h7_base_sha`, `model_source_sha`, `protocol_version`). Do not invent future SHAs in this protocol.
 
 ---
 
@@ -99,7 +104,9 @@ Exact columns, in order:
 
 Rules:
 
-- Record completed-history source, current-day proxy source, observation cutoff, and response hash for the common 30-day vector.
+- Preserve component-level reconstruction roles here. Factor-level roles in `xr_observations.csv` are aggregated from these required-component roles.
+- For the shared Term/Social price vector: record CASE A vs CASE B. CASE A records the entire contemporaneous Git `market_chart_30_daily` vector unchanged. CASE B records the exact 31-point `C_SURROGATE` construction (UTC dates T-30 through T-1 plus Coinbase completed 5-minute T proxy last).
+- Do not record a mixed B-plus-surrogate construction for the same date.
 - No missing factor may be silently omitted from lineage.
 
 ---
@@ -123,8 +130,15 @@ Exact columns, in order:
 11. `primary_missing_reason`
 12. `protocol_version`
 
-Availability values: `AVAILABLE_B`, `AVAILABLE_C`, or `MISSING`.  
-No missing factor may be silently hidden.
+Availability values: `AVAILABLE_B`, `AVAILABLE_C`, or `MISSING`.
+
+Factor availability is aggregated from required components:
+
+- any required component `MISSING` → factor `MISSING`
+- else every required component `B_METHOD_PIT` → `AVAILABLE_B`
+- else → `AVAILABLE_C`
+
+This file and `eligible_full_composite` must be driven by that rule. Do not infer availability from a numeric factor score. No missing factor may be silently hidden.
 
 ---
 
@@ -143,7 +157,17 @@ Exact columns, in order:
 7. `comparison_status`
 8. `notes`
 
-Optional additional rows or columns for full XR versus production G-Score difference must remain labeled diagnostic and must not feed reconstruction-rule changes.
+These eight columns are exact. No additional columns.
+
+If full XR-versus-production G-Score diagnostic comparison is included, represent it as an additional **row** using `factor_key = __XR_COMPOSITE__` and the **same eight columns**. For that row:
+
+- `xr_factor_score` = eligible XR-Score
+- `production_factor_score` = genuine production G-Score
+- `difference` = `xr_factor_score - production_factor_score`
+- `xr_input_role` = `EXPLORATORY_ONLY`
+- `comparison_status` = diagnostic status
+
+Do not create the `__XR_COMPOSITE__` row if XR is not eligible. No tuning follows from any bridge difference.
 
 If XR differs from production: report the difference. Do not change frozen H7 rules to make it match.
 
@@ -151,4 +175,24 @@ If XR differs from production: report the difference. Do not change frozen H7 ru
 
 ## Identity sidecars (H7.1)
 
-`ANALYSIS_SOURCE_SHA.txt` and `PROTOCOL_VERSION.txt` must record the reconstruction implementation SHA and `h7-exploratory-reconstruction-v1` (or a later frozen version increment). They are not created in H7.
+H7.1 must use a two-stage immutable process.
+
+**Stage A — implementation source.** Create and independently review the reconstruction implementation without generated XR outputs. Commit that implementation. Freeze `H7_1_ANALYSIS_SOURCE_SHA` as that exact implementation-only Git commit SHA. No generated XR CSV may be part of that commit.
+
+**Stage B — generation.** Execute reconstruction from exactly `H7_1_ANALYSIS_SOURCE_SHA` against the frozen H7 protocol/blob contracts. Generate the approved H7.1 output files.
+
+`ANALYSIS_SOURCE_SHA.txt` must contain `H7_1_ANALYSIS_SOURCE_SHA` only. The later output-commit SHA is **not** written into `ANALYSIS_SOURCE_SHA.txt`. This avoids a circular self-referential SHA.
+
+`PROTOCOL_VERSION.txt` records `h7-exploratory-reconstruction-v1` (or a later frozen version increment).
+
+Any implementation change after the Stage A SHA invalidates generated outputs and requires a new implementation source SHA and complete regeneration. No silent source drift.
+
+Before generated outputs are accepted, H7.1 lineage must freeze:
+
+- H7 protocol blob
+- `factor_input_contract.csv` blob
+- `H7_1_OUTPUT_SCHEMA.md` blob
+- `H7_1_ANALYSIS_SOURCE_SHA`
+- `MODEL_SOURCE_SHA`
+
+Do not invent those future SHAs in this protocol. These sidecars are not created in H7.

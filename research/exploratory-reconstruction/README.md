@@ -21,6 +21,12 @@ H7 pre-registers how a later **H7.1** implementation may build a labeled **XR-Sc
 
 H7 does **not** recreate as-published GhostGauge, exact historical production behavior, or validation-grade current-methodology history.
 
+Hardened vector / SHA contracts:
+
+- If a valid contemporaneous Git `market_chart_30_daily` capture exists for `T`, Term and Social use that entire captured vector **unchanged** (`B_METHOD_PIT`). Do not replace, append, drop, or reshape it.
+- Only if no valid Git chart exists, construct the exact 31-point `C_SURROGATE` vector: UTC dates T-30 through T-1 plus one Coinbase completed 5-minute T proxy last.
+- H7.1 generation is two-stage: freeze `H7_1_ANALYSIS_SOURCE_SHA` on an implementation-only commit, then generate outputs from that SHA. `ANALYSIS_SOURCE_SHA.txt` records that implementation SHA, not the later output-commit SHA.
+
 ## Frozen identity
 
 | Item | Value |
@@ -41,13 +47,13 @@ H7 does **not** recreate as-published GhostGauge, exact historical production be
 
 ## Files H7.1 may generate later
 
-Do **not** create these until H7 is reviewed, merged, and its blobs are frozen:
+Do **not** create these until H7 is reviewed, merged, and its protocol / contract / schema blobs are frozen:
 
 - `xr_observations.csv`
 - `xr_factor_lineage.csv`
 - `xr_missingness.csv`
 - `xr_bridge_check.csv`
-- `ANALYSIS_SOURCE_SHA.txt`
+- `ANALYSIS_SOURCE_SHA.txt` (Stage A implementation SHA only; not the output-commit SHA)
 - `PROTOCOL_VERSION.txt`
 
 H7.1 must not calculate returns, MACE, drawdowns, correlations, or other outcome metrics.
@@ -58,4 +64,4 @@ Never say from XR alone that GhostGauge would have predicted X, worked or failed
 
 ## Implementation gate
 
-H7.1 may not begin until this protocol is independently reviewed and merged and the protocol plus `factor_input_contract.csv` blobs are frozen. H7.1 requires its own branch.
+H7.1 may not begin until this protocol is independently reviewed and merged and the protocol, `factor_input_contract.csv`, and `H7_1_OUTPUT_SCHEMA.md` blobs are frozen. H7.1 requires its own branch, a Stage A implementation-only commit, and generation only from `H7_1_ANALYSIS_SOURCE_SHA`.

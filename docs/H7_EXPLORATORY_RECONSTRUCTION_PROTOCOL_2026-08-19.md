@@ -5,7 +5,8 @@
 **Branch:** `research/h7-exploratory-reconstruction-protocol`  
 **H7_BASE_SHA:** `6c03730df19adafd8e4e3b1f84361e64a378a6a6`  
 **MODEL_SOURCE_SHA:** `6b2fa9cf56ce738c74c8da6de0f5a972858f8a52`  
-**H7_PROTOCOL_VERSION:** `h7-exploratory-reconstruction-v1`  
+**H7_PROTOCOL_VERSION:** `h7-exploratory-reconstruction-v1`
+**Correction pass:** Git-chart precedence; exact 31-point surrogate; factor-role/availability aggregation; two-stage ANALYSIS_SOURCE_SHA
 **Frozen H6.1 factor-update blob:** `bddbe3f85721c594fb1e2a628646da5d29afbd44`  
 **Calibration gate:** CLOSED
 
@@ -56,7 +57,7 @@ H7 is exploratory because:
 1. A full seven-factor validation-grade current-methodology replay was **not** established.
 2. Net Liquidity and Macro remain `U` at H6.1 methodology class; H7 uses conservative vintage rules that **differ** from production timing.
 3. Pre-2026-08-17 Trend uses a Coinbase 5-minute **surrogate**, not current `utc_intraday_snapshot` identity.
-4. Term/Social 30-day vectors outside Git `market_chart_30_daily` captures use a hybrid **surrogate**, not the live CoinGecko `market_chart` response.
+4. Term/Social 30-day vectors outside Git `market_chart_30_daily` captures use the frozen 31-observation `C_SURROGATE` vector, not the live CoinGecko `market_chart` response.
 5. Any eligible full composite therefore includes one or more `C` paths.
 
 A mixed `B`/`C` composite is **not** validation-grade. Isolation or intermittency of `B` coverage does not convert `C` paths into `B`.
@@ -176,14 +177,14 @@ Use **exactly** these roles. No `A_EXACT` claim is required for XR. H7's purpose
 
 ## 9. Missingness / no-renormalization rule
 
-For each date `T`, classify every factor as `AVAILABLE_B`, `AVAILABLE_C`, or `MISSING`.
+For each date `T`, classify every factor as `AVAILABLE_B`, `AVAILABLE_C`, or `MISSING` using the section 18 aggregation rule (component roles first; never infer availability from a numeric factor score).
 
 A full XR-Score may be produced **only** when all seven factor scores are available under the pre-registered H7 input paths (`AVAILABLE_B` or `AVAILABLE_C`).
 
 If any required factor is unavailable:
 
-- `XR-Score` = `NULL` / `NOT ELIGIBLE`
-- `eligible_full_composite` = false
+- `XR-Score` = `NULL` / `xr_status` = `NOT_ELIGIBLE`
+- `eligible_full_composite` = FALSE
 
 Do **not**:
 
@@ -310,12 +311,13 @@ Current required components: `funding` 0.40, `realized_vol` 0.35, `stress` 0.25.
 
 Preferred H7 v1 decision: **Git funding evidence only**. Missing Git funding dates remain `MISSING`. H7 v1 does **not** select an official BitMEX historical retrieval fallback. Do not silently carry forward.
 
-**30-day price vector:**
+**30-day price vector (shared with Social; section 17):**
 
-- Where contemporaneous `market_chart_30_daily` Git capture exists: role `B_METHOD_PIT`.
-- Otherwise, one frozen exploratory construction (section 17): CoinGecko current historical **daily** prices for completed UTC dates through `T-1`, plus the same Coinbase 5-minute Trend proxy as the observation-`T` current-price point. Role: `C_SURROGATE`.
+**CASE A.** If a valid contemporaneous Git capture of `public/data/cache/market_chart_30_daily.json` exists for `T` under the H6.1-proven measurement path: use the **entire captured price vector exactly as preserved**. Do **not** replace its current-day observation, append a Coinbase proxy, drop an observation, substitute completed daily history, or normalize it to a different vector shape. Role: `B_METHOD_PIT`. Term and Social must consume the **same exact captured vector**.
 
-This hybrid vector is **not** claimed to equal the historical live CoinGecko `market_chart` response. It exists solely to prevent using `T`'s final daily close, which would leak future-of-run information.
+**CASE B.** Only if no valid contemporaneous Git chart exists: construct the frozen 31-observation `C_SURROGATE` vector (section 17). Do **not** mix B and surrogate construction on the same date.
+
+This surrogate is **not** claimed to equal the historical live CoinGecko `market_chart` response. It exists solely when the Git capture is absent, and to prevent using `T`'s final daily close.
 
 Run current realized-volatility and stress mathematics unchanged in H7.1. No funding averages, realized volatility, stress, or Term scores are calculated in H7.
 
@@ -359,7 +361,10 @@ Use the raw `bitcoinRank`, **not** old aggregate Social factor scores. Do **not*
 
 If no valid contemporaneous Bitcoin rank exists: Social factor = `MISSING`.
 
-**Momentum:** the **same** exploratory 30-day vector contract defined for Term (section 17). Role: `C_SURROGATE` when the Git chart is absent; `B_METHOD_PIT` when the Git chart exists.
+**Momentum:** the **same** 30-day price-vector contract as Term (section 17).
+
+- If a valid contemporaneous Git `market_chart_30_daily` capture exists for `T`: use that **entire captured vector unchanged**. Role: `B_METHOD_PIT`. The 31-point surrogate rule does **not** apply.
+- Only if no valid contemporaneous Git chart exists: use the frozen 31-observation `C_SURROGATE` vector. Role: `C_SURROGATE`.
 
 Run current 7-vs-7 percentile mechanics unchanged. The resulting Social factor is exploratory whenever a required component is `C`.
 
@@ -367,32 +372,90 @@ Run current 7-vs-7 percentile mechanics unchanged. The resulting Social factor i
 
 ## 17. Common reconstructed 30-day price-vector contract
 
-Term and Social **must** use the same reconstructed 30-day price vector for the same observation date. Do not independently construct two historical price series.
+Term and Social **must** use the same price vector for the same observation date. Do not independently construct two historical price series. Do not mix CASE A and CASE B on the same date.
 
-Frozen construction:
+### CASE A — contemporaneous Git chart exists
 
-1. Completed-history source: CoinGecko historical **daily** BTC prices for completed UTC dates through `T-1`, **or** the contemporaneous Git `market_chart_30_daily` capture when it exists for that `T`.
-2. Current-day proxy: the Coinbase 5-minute completed candle defined for Trend (`<= reconstruction_as_of_utc`).
-3. Observation cutoff: never include `T`'s completed final daily close if `reconstruction_as_of_utc` occurred before UTC day close.
-4. All historical completed-day values limited to `<= T-1`; the intraday proxy supplies `T`.
+If a valid contemporaneous `public/data/cache/market_chart_30_daily.json` Git capture exists for `T` under the H6.1-proven measurement path:
 
-H7.1 lineage must record completed-history source, current-day proxy source, observation cutoff, and response snapshot/hash.
+- use the **entire captured price vector exactly as preserved**
+- do **not** replace its current-day observation
+- do **not** append a Coinbase proxy
+- do **not** drop an observation
+- do **not** substitute completed daily history
+- do **not** normalize it to a different vector shape
 
-This hybrid vector is a `C_SURROGATE` except on dates where the Git 30-day chart itself is used as `B_METHOD_PIT` for the completed window **and** the current-day point still follows the no-lookahead proxy rule.
+Role: `B_METHOD_PIT`.
+
+On **2026-08-17, 2026-08-18, and 2026-08-19**, where H6.1 has proven contemporaneous captures: Term and Social **must** use those Git-captured charts unchanged as `B_METHOD_PIT`. Do **not** use the `C_SURROGATE` vector on those dates if the approved capture is present and valid. If an expected bridge capture cannot be resolved or validated: mark the affected input `MISSING` and report it. Do **not** silently fall back during the bridge.
+
+### CASE B — no contemporaneous Git chart exists
+
+Only then construct the frozen exploratory hybrid vector. Role: `C_SURROGATE`.
+
+Exact shape:
+
+- 30 completed daily BTC observations for UTC dates **T-30 through T-1 inclusive**, chronological order, one observation per UTC calendar date
+- **plus** exactly one observation-`T` Coinbase proxy: the most recent **completed** 5-minute BTC-USD candle whose **end** boundary is `<= reconstruction_as_of_utc`
+- result: **exactly 31** ordered price observations; the T proxy is the **final** element
+
+Do **not** use `T`'s completed final UTC daily close. Do **not** include `T-31`. Do **not** allow 29 completed days, 31 completed days, variable-length windows, nearest dates, interpolation, or duplicate UTC dates.
+
+Completed historical observations may come from the frozen `C_CURRENT_HISTORY` CoinGecko historical daily path. No numerical vector generation occurs in this protocol.
+
+If **any one** of the required 30 completed daily observations is unavailable: the surrogate vector = `MISSING`, and every component requiring it follows its existing missing rule.
+
+H7.1 must **reject** (not silently repair) duplicate completed UTC dates, missing required UTC dates, out-of-order points, or more/fewer than 31 total points.
+
+H7.1 lineage must record which case applied, source identities, observation cutoff, and response snapshot/hash.
 
 ---
 
 ## 18. Full composite eligibility
 
+### Factor-level role aggregation
+
+`xr_factor_lineage.csv` preserves component-level reconstruction roles. `xr_observations.csv` has one role column per factor.
+
+The factor-level role is the **most limiting** required component role, applied mechanically in this **reporting** precedence (it does **not** assert an empirical ranking among C categories):
+
+1. `MISSING`
+2. `C_SURROGATE`
+3. `C_CURRENT_HISTORY`
+4. `C_PIT_CONSERVATIVE`
+5. `B_METHOD_PIT`
+
+Examples:
+
+- Trend before Aug 17: snapshot `C_SURROGATE` + completed history `C_CURRENT_HISTORY` → `trend_role = C_SURROGATE`
+- Term on a normal non-chart-capture date: funding `B_METHOD_PIT` + price vector `C_SURROGATE` → `term_leverage_role = C_SURROGATE`
+- Social on a normal non-chart-capture date: trending `B_METHOD_PIT` + momentum `C_SURROGATE` → `social_role = C_SURROGATE`
+- Net Liquidity: all required path `C_PIT_CONSERVATIVE` → `net_liquidity_role = C_PIT_CONSERVATIVE`
+- Macro: `C_PIT_CONSERVATIVE`
+- Stablecoins: `B_METHOD_PIT` when fully available under its preferred H6.1 path
+- ETF: `B_METHOD_PIT` when fully available under its preferred H6.1 path
+- Bridge Trend/Term/Social may be `B_METHOD_PIT` only when **all** required components use the proven B path
+
+### Factor availability
+
+If any required component is `MISSING`: factor availability = `MISSING`.
+Else if **every** required component is `B_METHOD_PIT`: factor availability = `AVAILABLE_B`.
+Else: factor availability = `AVAILABLE_C`.
+
+This drives `xr_missingness.csv` and `eligible_full_composite`. Do not infer availability from a numeric factor score.
+
+### Full XR eligibility
+
 Eligible full XR-Score only if all seven factors are `AVAILABLE_B` or `AVAILABLE_C`.
 
 If even one factor is `MISSING`: full XR-Score = `NULL`. No renormalization, imputation, interpolation, or nearest-date replacement.
 
-Every eligible full XR-Score must carry:
+`xr_status` in `xr_observations.csv` has exactly two H7.1 v1 values:
 
-`reconstruction_grade` = `EXPLORATORY_ONLY`
+- `ELIGIBLE` when all seven factors are available and `xr_score` is populated; `eligible_full_composite` = TRUE
+- `NOT_ELIGIBLE` when one or more factors are `MISSING` and `xr_score` is empty; `eligible_full_composite` = FALSE
 
-even if some factors are `B`. Reason: the full composite includes one or more `C` reconstruction paths. Do **not** call a mixed `B`/`C` composite validation-grade. Record factor-specific source roles separately.
+Every eligible full XR-Score must carry `reconstruction_grade` = `EXPLORATORY_ONLY`, even if some factors are `B`. Reason: the full composite includes one or more `C` reconstruction paths. Do **not** call a mixed `B`/`C` composite validation-grade.
 
 ---
 
@@ -420,6 +483,10 @@ Frozen non-tuning bridge / implementation-check period:
 - 2026-08-17
 - 2026-08-18
 - 2026-08-19
+
+On these dates, where H6.1 has proven contemporaneous `market_chart_30_daily` captures: Term and Social must use the Git-captured chart **unchanged** as `B_METHOD_PIT`. Do **not** use the `C_SURROGATE` vector if the approved capture is present and valid. If an expected bridge capture cannot be resolved or validated: mark the affected input `MISSING` and report it. Do **not** silently fall back.
+
+Trend on these dates uses the H6.1 labeled-snapshot plus contemporaneous CSV path (`B_METHOD_PIT`) when all required Trend components are on the proven B path.
 
 H7.1 may later compare XR reconstruction inputs/factor outputs with genuine current `v1.1.1` production observations on these dates.
 
@@ -482,14 +549,33 @@ Potential H7.1 **generated** outputs (do **not** create them now except this pro
 
 Exact intended columns are frozen in `research/exploratory-reconstruction/H7_1_OUTPUT_SCHEMA.md`.
 
+H7.1 must use a **two-stage immutable** process:
+
+**Stage A — implementation source.** Create and independently review the H7.1 reconstruction implementation **without** generated XR outputs. Commit that implementation. Freeze `H7_1_ANALYSIS_SOURCE_SHA` = that exact implementation-only Git commit SHA. No generated XR CSV may be part of that commit.
+
+**Stage B — generation.** Execute reconstruction from **exactly** `H7_1_ANALYSIS_SOURCE_SHA` against the frozen H7 protocol/blob contracts. Generate the approved H7.1 output files. `ANALYSIS_SOURCE_SHA.txt` must contain `H7_1_ANALYSIS_SOURCE_SHA`. The later output-commit SHA is **not** written into `ANALYSIS_SOURCE_SHA.txt`. This avoids a circular self-referential SHA.
+
+Any implementation change after the Stage A SHA invalidates generated outputs and requires a new implementation source SHA and complete regeneration. No silent source drift.
+
+Before generated outputs are accepted, H7.1 lineage must freeze (do **not** invent these future SHAs now):
+
+- H7 protocol blob
+- `factor_input_contract.csv` blob
+- `H7_1_OUTPUT_SCHEMA.md` blob
+- `H7_1_ANALYSIS_SOURCE_SHA`
+- `MODEL_SOURCE_SHA`
+
+Generated outputs must record/hash these identities where applicable.
+
 Future workflow:
 
 1. H7 protocol (this document)
-2. independent review and merge
-3. H7.1 reconstruction implementation on its own branch
-4. freeze XR series and hashes
-5. independent review
-6. **only then** consider a separate exploratory outcome-analysis protocol
+2. independent review and merge; freeze protocol and contract blobs
+3. H7.1 Stage A implementation commit (`H7_1_ANALYSIS_SOURCE_SHA`)
+4. H7.1 Stage B generation from that SHA
+5. freeze XR series and hashes
+6. independent review
+7. **only then** consider a separate exploratory outcome-analysis protocol
 
 H7.1 must **not** calculate 30d/90d/180d returns, MACE, MCDD, volatility outcomes, downside outcomes, Spearman, band performance, or strategy performance.
 
@@ -543,8 +629,9 @@ H7.1 **MAY NOT BEGIN UNTIL**:
 - the protocol is merged
 - the exact protocol blob is frozen
 - the exact `factor_input_contract.csv` blob is frozen
+- the exact `H7_1_OUTPUT_SCHEMA.md` blob is frozen
 
-H7.1 will require its own branch and independent review.
+H7.1 will require its own branch, independent review of the Stage A implementation commit, and generation only from `H7_1_ANALYSIS_SOURCE_SHA`.
 
 Do not implement reconstruction during H7 protocol creation. Do not calculate exploratory scores.
 
