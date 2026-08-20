@@ -1,18 +1,20 @@
 # H7.2 Outcome-Analysis Preregistration
 
 **Date:** 2026-08-20
-**Phase:** H7.2 — protocol candidate
-**Status:** `PROTOCOL CANDIDATE — METHODOLOGY RESOLVED — NOT YET FROZEN`
+**Phase:** H7.2 — frozen protocol
+**Status:** `FROZEN PROTOCOL — OUTCOME ANALYSIS NOT YET EXECUTED`
 **Branch:** `research/h7-2-outcome-analysis-preregistration`
-**Protocol candidate label:** `h7-2-outcome-analysis-v1-candidate`
+**H7_2_PROTOCOL_VERSION:** `h7-2-outcome-analysis-v1`
 **Parent main HEAD at branch creation:** `a8f22b8fadd91be8ef30a3b740b103647fd38326`
 
-This document is a **resolved methodology candidate**. Independent review has closed the major H7.2 design choices. It is **not yet frozen**. It does **not** implement analysis. It does **not** calculate returns, MACE, correlations, or any other outcome statistic. Do not assign a final H7.2 protocol SHA in this pass.
+This document is the **frozen H7.2 protocol**. Methodology is frozen. Changing any **PROTOCOL DECISION** requires a new protocol version. H7.2 analysis has not yet been implemented. No outcome statistic has yet been calculated. Calibration remains **CLOSED**.
+
+Do **not** write the eventual freeze-commit SHA into this document. The Git commit that freezes these bytes becomes `H7_2_PROTOCOL_SHA` after that commit exists.
 
 Labels used below:
 
-- **FACT** — inherited from closed H7.1 identities, frozen H7 protocol text, or this pass’s source-integrity audit
-- **PROTOCOL DECISION** — resolved methodology; changing it requires a new protocol candidate / version
+- **FACT** — inherited from closed H7.1 identities, frozen H7 protocol text, or source-integrity / structural-coverage audit
+- **PROTOCOL DECISION** — frozen methodology; changing it requires a new protocol version
 - **FIREWALL** — a prohibition that is not open to casual weakening
 - **LIMITATION** — a bound on what later H7.2 execution may claim even after results exist
 - **IMPLEMENTATION DETAIL** — later code/schema design, not an open methodology choice
@@ -23,21 +25,21 @@ Labels used below:
 
 H7.2 exists so that the outcome-analysis methodology is written down **before anyone sees whether high or low XR scores preceded better or worse Bitcoin paths**.
 
-This candidate **may**:
+This frozen protocol **does**:
 
-- freeze the H7.2 research question, outcome, horizon, statistic, eligibility, and claim language
+- freeze the H7.2 research question, outcome, horizon, statistic, eligibility, claim language, and structural coverage invariants
 - record the immutable H7.1 input identities
-- record the frozen outcome-price source identity and structural coverage
+- record the frozen outcome-price source identity
 
-This candidate **may not**:
+This frozen protocol **does not**:
 
+- implement analysis
 - calculate outcome statistics
 - load future BTC-return results into analysis
 - calculate correlations, drawdowns, or MACE
 - inspect whether high or low XR scores performed better
 - tune weights or bands
-- write analysis code
-- merge this candidate as if it were a frozen protocol
+- authorize a merge of H7.2 as complete analysis
 
 ---
 
@@ -181,6 +183,18 @@ S = C_D
 where `C_D` is the completed UTC daily close for XR observation date `D`.
 
 **FACT.** Every H7.1 reconstruction timestamp belongs to UTC date `D` and occurs before that UTC day’s closing boundary. Therefore `C_D` is the first completed UTC daily close after the XR observation.
+
+**LIMITATION.** `C_D` is the first completed UTC daily close after the H7.1 reconstruction timestamp for observation date `D`. Because H7.2 uses `S = C_D`, the H7.2 MACE measure does **not** include price movement between `reconstruction_as_of_utc` and the completed UTC close `C_D`.
+
+Therefore H7.2 measures **close-based downside beginning from the observation-date completed UTC close**. It does **not** measure immediate adverse excursion beginning at the exact XR reconstruction timestamp.
+
+This is an intentional measurement convention caused by XR having no frozen artifact spot-price field. Do **not** change `S` away from `C_D`. Do **not** introduce an intraday price to close that gap.
+
+It must **not** later be described as “maximum downside immediately after the XR signal” or equivalent language.
+
+Permitted description:
+
+> subsequent close-based downside measured from the first completed UTC daily close after the XR observation.
 
 **PROTOCOL DECISION.** For horizon `N`:
 
@@ -354,6 +368,42 @@ every required close C_D through C_D+30 exists and is finite and > 0
 - final analysis `N`
 
 These are coverage counts, not performance statistics.
+
+### 9.1 Pre-execution structural coverage invariants
+
+**PROTOCOL DECISION.** The following expected structural coverage values are frozen **before** any outcome calculation. They are derived solely from:
+
+- the frozen 252 H7.1 observation dates
+- frozen `xr_status`
+- the pinned outcome series ending `2026-08-19`
+- the verified fact that the pinned outcome date series is contiguous with no gaps
+
+They do **not** use price changes, MACE, returns, or correlation.
+
+| Horizon | Latest observation date with a complete `D..D+N` price-date path | `XR_ELIGIBLE` | `XR_NOT_ELIGIBLE` | Expected `OUTCOME_COMPLETE` among `XR_ELIGIBLE` | Expected `OUTCOME_INCOMPLETE` among `XR_ELIGIBLE` | Expected analysis `N` |
+|---|---|---|---|---|---|---|
+| 30d (primary) | `2026-07-20` | 234 | 18 | 205 | 29 | **205** |
+| 90d (secondary) | `2026-05-21` | 234 | 18 | 149 | 85 | **149** |
+| 180d (secondary) | `2026-02-20` | 234 | 18 | 68 | 166 | **68** |
+
+For each horizon:
+
+```text
+XR_NOT_ELIGIBLE
+  + OUTCOME_COMPLETE among XR_ELIGIBLE
+  + OUTCOME_INCOMPLETE among XR_ELIGIBLE
+  = 252
+```
+
+Therefore:
+
+```text
+30d:  18 + 205 + 29 = 252
+90d:  18 + 149 + 85 = 252
+180d: 18 +  68 + 166 = 252
+```
+
+**FIREWALL.** These are **pre-execution structural invariants**. Later H7.2 implementation must **STOP** if actual horizon eligibility differs from these expected counts. Do not automatically “fix” the sample. Do not substitute dates. Do not extend the market-data snapshot. Do not calculate MACE in order to verify these counts.
 
 **IMPLEMENTATION DETAIL.** Exact output filenames / column order for those coverage tables are left to later execution design. The counts themselves are required.
 
@@ -606,29 +656,25 @@ Do not append later prices to H7.2.
 
 ## 21. Implementation gate
 
-This document is a **protocol candidate**. Methodology is resolved. The candidate is **not yet frozen**.
+This document is the **frozen H7.2 protocol**. Methodology is frozen. H7.2 analysis has **not** yet been implemented. No outcome statistic has yet been calculated.
 
-H7.2 execution **may not begin** until:
+H7.2 execution **may not begin** until independent frozen-protocol verification of this document’s Git identity. After that verification, analysis code may be written against these frozen identities only. Changing any **PROTOCOL DECISION** requires a new protocol version.
 
-1. independent review of this protocol candidate
-2. a later commit freezes a real protocol version and protocol-document identity
-3. analysis code is written against those frozen identities only
-
-Until then:
+Until execution is separately authorized:
 
 - do not write analysis code
 - do not retrieve additional outcome data
 - do not calculate statistics
-- do not merge H7.2 as complete
-- do not assign a final H7.2 protocol SHA in this pass
+- do not merge H7.2 as complete analysis
+- do not write `H7_2_PROTOCOL_SHA` into this document
 
 **IMPLEMENTATION DETAIL.** Later execution may specify output paths, CSV column order, and rho serialization mechanics, provided they implement this methodology unchanged.
 
 ---
 
-## 22. Explicit non-actions in this candidate
+## 22. Explicit non-actions in this freeze
 
-Confirmed for this protocol-candidate commit:
+Confirmed for this frozen-protocol commit:
 
 - no outcome statistic calculated
 - no returns calculated
@@ -648,10 +694,10 @@ Confirmed for this protocol-candidate commit:
 | Item | Resolution |
 |---|---|
 | A. Analysis question | Descriptive risk-discrimination / ranking-usefulness: higher XR associated with greater subsequent close-based downside |
-| B. Primary outcome | `MACE_30`; `S = C_D`; close-only |
+| B. Primary outcome | `MACE_30`; `S = C_D`; close-only; does not include `reconstruction_as_of_utc` → `C_D` path |
 | C. Horizons | Primary 30d; secondary 90d and 180d only |
 | D. Price source | `b5966196` / `public/data/btc_price_history.csv` / blob `e93a74ed…` |
-| E. Eligibility | 252-date universe; Spearman uses `ELIGIBLE` and outcome-complete rows only; `NOT_ELIGIBLE` and incomplete retained in reporting |
+| E. Eligibility | 252-date universe; Spearman uses `ELIGIBLE` and outcome-complete rows only; expected N 205 / 149 / 68; `NOT_ELIGIBLE` and incomplete retained in reporting |
 | F. Primary statistic | Spearman(XR, `MACE_30`); H4/H5 ranks; no p-value |
 | G. Secondary statistics | Spearman(XR, `MACE_90`) and Spearman(XR, `MACE_180`) only |
 | H. MACE | Included; formula in §5 |
@@ -662,4 +708,4 @@ Confirmed for this protocol-candidate commit:
 | M. Claim firewall | Exploratory-sample association language only |
 | N. Tuning firewall | Calibration CLOSED |
 
-STOP FOR INDEPENDENT H7.2 PROTOCOL-CANDIDATE REVIEW.
+STOP FOR INDEPENDENT H7.2 FROZEN-PROTOCOL VERIFICATION.
