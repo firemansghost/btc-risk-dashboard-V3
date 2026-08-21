@@ -529,6 +529,20 @@ export function parseCanonicalJson(text, label = 'json') {
   return JSON.parse(text);
 }
 
+export function parseAndAssertCanonicalArtifact(text, label = 'json') {
+  const obj = parseCanonicalJson(text, label);
+  const again = canonicalizeJson(obj);
+  if (again !== text) throw new Error(`STOP: ${label} is not canonical serialized JSON`);
+  return obj;
+}
+
+export function parseStrictSha256(value, label = 'sha256') {
+  if (typeof value !== 'string' || !/^[0-9a-f]{64}$/.test(value)) {
+    throw new Error(`STOP: ${label} is not a 64-character lowercase SHA256`);
+  }
+  return value;
+}
+
 function factorTimestamp(factor) {
   const hasLastUtc = factor.last_utc != null;
   const hasLastUpdated = factor.lastUpdated != null;
@@ -905,6 +919,164 @@ export function validateCloseSchema(obj) {
   if ('mace' in obj || 'score' in obj || 'return' in obj) {
     throw new Error('STOP: close artifact contains performance fields');
   }
+}
+
+function assertGithubProvenance(obj, label) {
+  if (typeof obj.github_run_id !== 'string') throw new Error(`STOP: ${label} github_run_id must be a string`);
+  parseGitHubRunId(obj.github_run_id);
+  if (obj.github_run_attempt !== 1) throw new Error(`STOP: ${label} github_run_attempt must be 1`);
+  if (obj.github_event_name !== 'schedule') throw new Error(`STOP: ${label} github_event_name must be schedule`);
+  if (typeof obj.github_workflow_ref !== 'string' || obj.github_workflow_ref === '') {
+    throw new Error(`STOP: ${label} github_workflow_ref must be a non-empty string`);
+  }
+  parseStrictLowerSha(obj.github_sha, `${label}.github_sha`);
+  parseStrictLowerSha(obj.source_base_git_sha, `${label}.source_base_git_sha`);
+  if (obj.source_base_git_sha !== obj.github_sha) {
+    throw new Error(`STOP: ${label} source_base_git_sha must equal github_sha`);
+  }
+}
+
+export function validateCompleteObservation(obj, { expectedDate, captureSourceSha }) {
+  validateObservationSchema(obj);
+  if (obj.study_id !== STUDY_ID) throw new Error('STOP: observation study_id mismatch');
+  if (obj.protocol_version !== H8_PROTOCOL_VERSION) {
+    throw new Error('STOP: observation protocol_version mismatch');
+  }
+  if (obj.protocol_sha !== H8_PROTOCOL_SHA) throw new Error('STOP: observation protocol_sha mismatch');
+  if (obj.h8_capture_source_sha !== parseStrictLowerSha(captureSourceSha, 'captureSourceSha')) {
+    throw new Error('STOP: observation h8_capture_source_sha mismatch');
+  }
+  if (obj.capture_contract_version !== H8_CAPTURE_CONTRACT_VERSION) {
+    throw new Error('STOP: observation capture_contract_version mismatch');
+  }
+  if (obj.capture_contract_sha !== H8_CAPTURE_CONTRACT_SHA) {
+    throw new Error('STOP: observation capture_contract_sha mismatch');
+  }
+  if (obj.observation_date !== parseStrictUtcCalendarDate(expectedDate, 'expectedDate')) {
+    throw new Error('STOP: observation_date does not match expected date');
+  }
+  if (obj.scheduled_event !== SCHEDULED_EVENT) throw new Error('STOP: scheduled_event mismatch');
+  parseStrictUtcTimestamp(obj.observation_as_of_utc, 'observation_as_of_utc');
+  parseStrictUtcTimestamp(obj.capture_created_utc, 'capture_created_utc');
+  parseStrictUtcTimestamp(obj.etl_started_utc, 'etl_started_utc');
+  assertSameRunTemporalProof({
+    etlStartedUtc: obj.etl_started_utc,
+    asOfUtc: obj.observation_as_of_utc,
+    captureRunUtc: obj.capture_created_utc,
+  });
+  assertGithubProvenance(obj, 'observation');
+  if (obj.production_model_version !== EXPECTED_LATEST_MODEL_VERSION) {
+    throw new Error('STOP: production_model_version mismatch');
+  }
+  if (obj.production_implementation_revision !== EXPECTED_IMPLEMENTATION_REVISION) {
+    throw new Error('STOP: production_implementation_revision mismatch');
+  }
+  if (obj.production_ssot_version !== EXPECTED_SSOT_VERSION) {
+    throw new Error('STOP: production_ssot_version mismatch');
+  }
+  if (obj.production_config_git_blob !== PRODUCTION_CONFIG_GIT_BLOB) {
+    throw new Error('STOP: production_config_git_blob mismatch');
+  }
+  if (obj.production_config_sha256 !== PRODUCTION_CONFIG_SHA256) {
+    throw new Error('STOP: production_config_sha256 mismatch');
+  }
+  parseStrictSha256(obj.latest_artifact_sha256, 'latest_artifact_sha256');
+  if (!['ELIGIBLE', 'NOT_ELIGIBLE'].includes(obj.common_eligibility_status)) {
+    throw new Error('STOP: invalid common_eligibility_status');
+  }
+  if (typeof obj.eligibility_reason !== 'string' || obj.eligibility_reason === '') {
+    throw new Error('STOP: eligibility_reason missing');
+  }
+  if (
+    obj.common_eligibility_status === 'ELIGIBLE' &&
+    obj.eligibility_reason !== 'ALL_REQUIRED_FACTORS_FRESH'
+  ) {
+    throw new Error('STOP: eligible observation has unexpected eligibility_reason');
+  }
+  if (
+    !['MATCH', 'INTEGRITY_MISMATCH', 'NOT_CHECKED_NOT_ELIGIBLE'].includes(obj.official_integrity_status)
+  ) {
+    throw new Error('STOP: invalid official_integrity_status');
+  }
+  if (!['ELIGIBLE', 'INTEGRITY_MISMATCH', 'OBSERVATION_NOT_ELIGIBLE'].includes(obj.analysis_status)) {
+    throw new Error('STOP: invalid analysis_status');
+  }
+  const expectedStatus = classifyAnalysisStatus({
+    eligibilityStatus: obj.common_eligibility_status,
+    integrityStatus: obj.official_integrity_status,
+  });
+  if (obj.analysis_status !== expectedStatus) {
+    throw new Error('STOP: analysis_status inconsistent with eligibility/integrity');
+  }
+  obj.factors.forEach((factor, index) => {
+    const key = REQUIRED_FACTOR_KEYS[index];
+    if (factor.official_weight !== OFFICIAL_WEIGHTS[key]) {
+      throw new Error(`STOP: factor official_weight mismatch for ${key}`);
+    }
+    if (factor.score != null) {
+      if (typeof factor.score !== 'number' || !Number.isFinite(factor.score) || factor.score < 0 || factor.score > 100) {
+        throw new Error(`STOP: factor score out of bounds for ${key}`);
+      }
+    }
+    if (obj.common_eligibility_status === 'ELIGIBLE') {
+      if (factor.status !== 'fresh') throw new Error(`STOP: eligible factor ${key} is not fresh`);
+      parseStrictUtcTimestamp(factor.last_updated_utc, `${key}.last_updated_utc`);
+    }
+  });
+  if (obj.common_eligibility_status === 'NOT_ELIGIBLE') {
+    if (obj.official_formula_score !== null || obj.liq_heavy_score !== null || obj.mom_tilted_score !== null) {
+      throw new Error('STOP: NOT_ELIGIBLE observation must null formula/challenger scores');
+    }
+    if (obj.official_integrity_status !== 'NOT_CHECKED_NOT_ELIGIBLE') {
+      throw new Error('STOP: NOT_ELIGIBLE integrity status mismatch');
+    }
+  } else {
+    for (const field of ['official_formula_score', 'liq_heavy_score', 'mom_tilted_score', 'official_published_score']) {
+      const value = obj[field];
+      if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 100) {
+        throw new Error(`STOP: ${field} out of bounds`);
+      }
+    }
+  }
+  const versions = obj.model_versions;
+  if (
+    versions.official !== MODEL_VERSIONS.official ||
+    versions.liq_heavy !== MODEL_VERSIONS.liq_heavy ||
+    versions.mom_tilted !== MODEL_VERSIONS.mom_tilted
+  ) {
+    throw new Error('STOP: model_versions mismatch');
+  }
+  if (canonicalizeJson(obj.model_weight_definitions) !== canonicalizeJson(buildModelWeightDefinitions())) {
+    throw new Error('STOP: model_weight_definitions mismatch');
+  }
+}
+
+export function validateCompleteClose(obj, { expectedDate, captureSourceSha }) {
+  validateCloseSchema(obj);
+  if (obj.study_id !== STUDY_ID) throw new Error('STOP: close study_id mismatch');
+  if (obj.protocol_version !== H8_PROTOCOL_VERSION) throw new Error('STOP: close protocol_version mismatch');
+  if (obj.protocol_sha !== H8_PROTOCOL_SHA) throw new Error('STOP: close protocol_sha mismatch');
+  if (obj.h8_capture_source_sha !== parseStrictLowerSha(captureSourceSha, 'captureSourceSha')) {
+    throw new Error('STOP: close h8_capture_source_sha mismatch');
+  }
+  if (obj.capture_contract_version !== H8_CAPTURE_CONTRACT_VERSION) {
+    throw new Error('STOP: close capture_contract_version mismatch');
+  }
+  if (obj.capture_contract_sha !== H8_CAPTURE_CONTRACT_SHA) {
+    throw new Error('STOP: close capture_contract_sha mismatch');
+  }
+  if (obj.close_date_utc !== parseStrictUtcCalendarDate(expectedDate, 'expectedDate')) {
+    throw new Error('STOP: close_date_utc does not match expected date');
+  }
+  if (typeof obj.close_usd !== 'number' || !Number.isFinite(obj.close_usd) || !(obj.close_usd > 0)) {
+    throw new Error('STOP: close_usd must be finite > 0');
+  }
+  if (typeof obj.source !== 'string' || obj.source === '') throw new Error('STOP: close source is blank');
+  parseStrictUtcTimestamp(obj.source_row_ingested_at_utc, 'source_row_ingested_at_utc');
+  parseStrictUtcTimestamp(obj.captured_at_utc, 'captured_at_utc');
+  if (obj.source_artifact_path !== BTC_SOURCE_PATH) throw new Error('STOP: source_artifact_path mismatch');
+  parseStrictSha256(obj.source_artifact_sha256, 'source_artifact_sha256');
+  assertGithubProvenance(obj, 'close');
 }
 
 export function sha256HexFromNodeCrypto(crypto, buf) {

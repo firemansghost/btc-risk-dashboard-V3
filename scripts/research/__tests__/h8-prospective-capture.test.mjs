@@ -23,6 +23,7 @@ import {
   BTC_HEADER,
   canonicalizeJson,
   parseCanonicalJson,
+  parseAndAssertCanonicalArtifact,
   parseStrictUtcTimestamp,
   utcCalendarDateFromTimestamp,
   addUtcDays,
@@ -47,6 +48,8 @@ import {
   selectCatchUpCloseDates,
   proposeObservation,
   proposeCloseArtifacts,
+  validateCompleteObservation,
+  validateCompleteClose,
   buildCreatedManifest,
   assertAllowedManifestPath,
   parseSidecarBytes,
@@ -66,8 +69,16 @@ import {
   assertSourceSurvival,
   sha256Bytes,
   validateExistingObservation,
+  validateExistingClose,
+  verifyActivatedSidecar,
+  verifyRuntimeFilesAgainstCommit,
+  assertIsAncestor,
+  writeCreatedManifest,
+  prepareCreateOnlyTarget,
+  assertUnderRunnerTemp,
+  removeSameRunH8Files,
 } from '../lib/h8-prospective-capture-io.mjs';
-import { parseArgs, runCapture } from '../capture-h8-prospective.mjs';
+import { parseArgs, runCapture, planCapture, materializeCaptureCreates } from '../capture-h8-prospective.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 
@@ -388,8 +399,8 @@ test('C missing sidecar fails capture before writes', () => {
 
 test('I malformed existing observation fails closed', () => {
   assert.throws(
-    () => validateExistingObservation('{"not":"h8"}\n', '2026-08-24'),
-    /observation/
+    () => validateExistingObservation('{"not":"h8"}\n', '2026-08-24', 'a'.repeat(40)),
+    /observation|canonical|JSON/
   );
 });
 
@@ -806,13 +817,14 @@ test('NOT_ELIGIBLE observations null formula scores', () => {
 
 test('escrow copies exact bytes and restore is create-only', () => {
   const repo = tmpDir();
+  const runnerTemp = tmpDir();
   const rel = 'research/h8-prospective/observations/2026-08-24.json';
   const abs = path.join(repo, ...rel.split('/'));
   fs.mkdirSync(path.dirname(abs), { recursive: true });
   const body = canonicalizeJson({ hello: 'h8' });
   fs.writeFileSync(abs, body);
   const sha = sha256Bytes(Buffer.from(body));
-  const manifestPath = path.join(repo, 'manifest.json');
+  const manifestPath = path.join(runnerTemp, 'h8-created-manifest.json');
   fs.writeFileSync(
     manifestPath,
     canonicalizeJson({
@@ -821,10 +833,615 @@ test('escrow copies exact bytes and restore is create-only', () => {
       files: [{ path: rel, sha256: sha }],
     })
   );
-  const escrowDir = path.join(repo, 'escrow');
-  escrowH8Artifacts({ repoRoot: repo, manifestPath, escrowDir });
+  const escrowDir = path.join(runnerTemp, 'h8-escrow');
+  escrowH8Artifacts({ repoRoot: repo, manifestPath, escrowDir, runnerTemp });
   assert.equal(fs.existsSync(abs), false);
   restoreH8Artifacts({ repoRoot: repo, manifestPath, escrowDir });
   assert.equal(fs.readFileSync(abs, 'utf8'), body);
   assert.throws(() => restoreH8Artifacts({ repoRoot: repo, manifestPath, escrowDir }), /already exists/);
+});
+
+function validObservation() {
+  const latestBytes = Buffer.from(canonicalizeJson(makeLatest()));
+  return proposeObservation({
+    latest: makeLatest(),
+    config: makeConfig(),
+    latestSha256: sha256Bytes(latestBytes),
+    etlStartedUtc: '2026-08-24T11:00:00.000Z',
+    captureRunUtc: '2026-08-24T11:32:00.000Z',
+    captureSourceSha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    provenance: provenance(),
+    production: production(),
+  });
+}
+
+function validClose() {
+  const csv = btcCsv([{ date: '2026-08-24', close: '100.5' }]);
+  return proposeCloseArtifacts({
+    csvText: csv,
+    sourceArtifactSha256: sha256Bytes(Buffer.from(csv)),
+    captureRunUtc: '2026-08-25T11:00:00.000Z',
+    existingCloseDates: [],
+    captureSourceSha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    provenance: provenance(),
+  })[0];
+}
+
+test('plan validates everything before any scientific write', () => {
+  const repo = tmpDir();
+  fs.mkdirSync(path.join(repo, 'public', 'data'), { recursive: true });
+  fs.mkdirSync(path.join(repo, 'config'), { recursive: true });
+  const latest = makeLatest();
+  const latestBytes = Buffer.from(canonicalizeJson(latest));
+  fs.writeFileSync(path.join(repo, 'public', 'data', 'latest.json'), latestBytes);
+  fs.writeFileSync(path.join(repo, 'config', 'dashboard-config.json'), canonicalizeJson(makeConfig()));
+  fs.writeFileSync(path.join(repo, 'public', 'data', 'btc_price_history.csv'), 'bad-header\n');
+  assert.throws(
+    () =>
+      planCapture({
+        repoRoot: repo,
+        captureSourceSha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        etlStartedUtc: '2026-08-24T11:00:00.000Z',
+        captureRunUtc: '2026-08-24T11:32:00.000Z',
+        latestBytes,
+        configText: canonicalizeJson(makeConfig()),
+        csvBytes: Buffer.from('bad-header\n'),
+        provenance: provenance(),
+      }),
+    /header/
+  );
+  assert.equal(fs.existsSync(path.join(repo, 'research', 'h8-prospective')), false);
+});
+
+test('materialization failure rolls back newly created H8 files', () => {
+  resetCounters();
+  const repo = tmpDir();
+  const planned = validObservation();
+  const bytes = Buffer.from(canonicalizeJson(planned.observation));
+  const close = validClose();
+  const closeBytes = Buffer.from(canonicalizeJson(close.close));
+  const creates = [
+    { path: planned.path, bytes, sha256: sha256Bytes(bytes), kind: 'observation' },
+    { path: close.path, bytes: closeBytes, sha256: sha256Bytes(closeBytes), kind: 'close' },
+  ];
+  assert.throws(
+    () =>
+      materializeCaptureCreates({
+        repoRoot: repo,
+        creates,
+        testHooks: {
+          afterWrite() {
+            throw new Error('STOP: synthetic materialization failure');
+          },
+        },
+      }),
+    /synthetic materialization failure/
+  );
+  assert.equal(fs.existsSync(path.join(repo, ...planned.path.split('/'))), false);
+  assert.equal(fs.existsSync(path.join(repo, ...close.path.split('/'))), false);
+});
+
+test('deep existing observation validation', () => {
+  const planned = validObservation();
+  const text = canonicalizeJson(planned.observation);
+  validateExistingObservation(text, '2026-08-24', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+  const mutate = (fn) => {
+    const obj = JSON.parse(text);
+    fn(obj);
+    return canonicalizeJson(obj);
+  };
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.h8_capture_source_sha = 'b'.repeat(40);
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /h8_capture_source_sha/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.scheduled_event = 'MANUAL';
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /scheduled_event/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.production_model_version = 'v9';
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /production_model_version/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.production_ssot_version = '0';
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /production_ssot_version/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.production_config_git_blob = 'c'.repeat(40);
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /production_config_git_blob/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.production_config_sha256 = 'd'.repeat(64);
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /production_config_sha256/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.factors[0].official_weight = 30;
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /official_weight/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.model_versions.official = 'nope';
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /model_versions/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.model_weight_definitions.official.trend_valuation.definition = 'changed';
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /model_weight_definitions/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.github_run_attempt = 2;
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /github_run_attempt/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.source_base_git_sha = 'e'.repeat(40);
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /source_base_git_sha must equal github_sha/
+  );
+  assert.throws(
+    () => validateExistingObservation(text.replace('\n', '\n \n').replace(/ \n$/, '\n'), '2026-08-24', 'a'.repeat(40)),
+    /canonical|JSON/
+  );
+  const spaced = `${JSON.stringify(JSON.parse(text), null, 4)}\n`;
+  assert.throws(
+    () => validateExistingObservation(spaced, '2026-08-24', 'a'.repeat(40)),
+    /canonical/
+  );
+});
+
+test('deep existing close validation', () => {
+  const planned = validClose();
+  const text = canonicalizeJson(planned.close);
+  validateExistingClose(text, '2026-08-24', 'a'.repeat(40));
+  const mutate = (fn) => {
+    const obj = JSON.parse(text);
+    fn(obj);
+    return canonicalizeJson(obj);
+  };
+  assert.throws(
+    () =>
+      validateExistingClose(
+        mutate((obj) => {
+          obj.h8_capture_source_sha = 'b'.repeat(40);
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /h8_capture_source_sha/
+  );
+  assert.throws(
+    () =>
+      validateExistingClose(
+        mutate((obj) => {
+          obj.protocol_version = 'other';
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /protocol_version/
+  );
+  assert.throws(
+    () =>
+      validateExistingClose(
+        mutate((obj) => {
+          obj.capture_contract_version = 'other';
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /capture_contract_version/
+  );
+  assert.throws(
+    () =>
+      validateExistingClose(
+        mutate((obj) => {
+          obj.close_usd = 0;
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /close_usd/
+  );
+  assert.throws(
+    () =>
+      validateExistingClose(
+        mutate((obj) => {
+          obj.source = '';
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /source is blank/
+  );
+  assert.throws(
+    () =>
+      validateExistingClose(
+        mutate((obj) => {
+          obj.source_artifact_sha256 = 'zz';
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /SHA256/
+  );
+  assert.throws(
+    () =>
+      validateExistingClose(
+        mutate((obj) => {
+          obj.github_run_attempt = 2;
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /github_run_attempt/
+  );
+  assert.throws(
+    () =>
+      validateExistingClose(
+        mutate((obj) => {
+          obj.source_base_git_sha = 'e'.repeat(40);
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /source_base_git_sha must equal github_sha/
+  );
+  assert.throws(
+    () => validateExistingClose(`${JSON.stringify(JSON.parse(text), null, 4)}\n`, '2026-08-24', 'a'.repeat(40)),
+    /canonical/
+  );
+});
+
+test('activated sidecar HEAD/worktree integrity', () => {
+  const dir = tmpDir();
+  runGit(dir, ['init']);
+  const sidecarRel = 'research/h8-prospective/H8_CAPTURE_SOURCE_SHA.txt';
+  fs.mkdirSync(path.join(dir, 'research', 'h8-prospective'), { recursive: true });
+  runGit(dir, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '--allow-empty', '-m', 'base']);
+  const first = runGit(dir, ['rev-parse', 'HEAD']).trim();
+  fs.writeFileSync(path.join(dir, sidecarRel), `${first}\n`);
+  runGit(dir, ['add', sidecarRel]);
+  runGit(dir, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-m', 'sidecar']);
+  assert.equal(verifyActivatedSidecar({ repoRoot: dir }), first);
+
+  fs.writeFileSync(path.join(dir, sidecarRel), 'not-a-sha\n');
+  assert.throws(() => verifyActivatedSidecar({ repoRoot: dir }), /sidecar|lowercase|41 bytes/);
+  fs.writeFileSync(path.join(dir, sidecarRel), `${first}\n`);
+
+  fs.writeFileSync(path.join(dir, sidecarRel), `${'b'.repeat(40)}\n`);
+  assert.throws(() => verifyActivatedSidecar({ repoRoot: dir }), /hash-object|does not equal/);
+  fs.writeFileSync(path.join(dir, sidecarRel), `${first}\n`);
+
+  fs.writeFileSync(path.join(dir, sidecarRel), `${'c'.repeat(40)}\n`);
+  runGit(dir, ['add', sidecarRel]);
+  fs.writeFileSync(path.join(dir, sidecarRel), `${first}\n`);
+  assert.throws(() => verifyActivatedSidecar({ repoRoot: dir }), /staged modification/);
+  runGit(dir, ['restore', '--staged', sidecarRel]);
+  fs.writeFileSync(path.join(dir, sidecarRel), `${first}\n`);
+
+  const dir2 = tmpDir();
+  runGit(dir2, ['init']);
+  fs.mkdirSync(path.join(dir2, 'research', 'h8-prospective'), { recursive: true });
+  fs.writeFileSync(path.join(dir2, sidecarRel), `${first}\n`);
+  assert.throws(() => verifyActivatedSidecar({ repoRoot: dir2 }), /missing from HEAD/);
+
+  const malformed = tmpDir();
+  runGit(malformed, ['init']);
+  fs.mkdirSync(path.join(malformed, 'research', 'h8-prospective'), { recursive: true });
+  fs.writeFileSync(path.join(malformed, sidecarRel), 'notasha\n');
+  runGit(malformed, ['add', sidecarRel]);
+  runGit(malformed, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-m', 'bad sidecar']);
+  assert.throws(() => verifyActivatedSidecar({ repoRoot: malformed }), /sidecar|lowercase|41 bytes/);
+});
+
+test('sidecar Stage-A SHA must be ancestor and matching runtime passes', () => {
+  const dir = tmpDir();
+  runGit(dir, ['init']);
+  runGit(dir, ['checkout', '-b', 'main']);
+  for (const rel of STAGE_A_RUNTIME_PATHS) {
+    const dest = path.join(dir, ...rel.split('/'));
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.copyFileSync(path.join(REPO_ROOT, ...rel.split('/')), dest);
+  }
+  runGit(dir, ['add', '.']);
+  runGit(dir, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-m', 'runtime']);
+  const source = runGit(dir, ['rev-parse', 'HEAD']).trim();
+  const sidecarRel = 'research/h8-prospective/H8_CAPTURE_SOURCE_SHA.txt';
+  fs.mkdirSync(path.join(dir, 'research', 'h8-prospective'), { recursive: true });
+  fs.writeFileSync(path.join(dir, sidecarRel), `${source}\n`);
+  runGit(dir, ['add', sidecarRel]);
+  runGit(dir, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-m', 'activate']);
+  assert.equal(verifyActivatedSidecar({ repoRoot: dir }), source);
+  assert.equal(
+    verifyRuntimeFilesAgainstCommit({ repoRoot: dir, sourceSha: source }).runtimeSourceIdentity,
+    'PASS'
+  );
+
+  const orphan = tmpDir();
+  runGit(orphan, ['init']);
+  runGit(orphan, ['checkout', '-b', 'main']);
+  fs.writeFileSync(path.join(orphan, 'a.txt'), 'a\n');
+  runGit(orphan, ['add', 'a.txt']);
+  runGit(orphan, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-m', 'a']);
+  const a = runGit(orphan, ['rev-parse', 'HEAD']).trim();
+  runGit(orphan, ['checkout', '--orphan', 'other']);
+  runGit(orphan, ['rm', '-rf', '.']);
+  fs.writeFileSync(path.join(orphan, 'b.txt'), 'b\n');
+  runGit(orphan, ['add', 'b.txt']);
+  runGit(orphan, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-m', 'b']);
+  const b = runGit(orphan, ['rev-parse', 'HEAD']).trim();
+  fs.mkdirSync(path.join(orphan, 'research', 'h8-prospective'), { recursive: true });
+  fs.writeFileSync(path.join(orphan, sidecarRel), `${a}\n`);
+  runGit(orphan, ['add', sidecarRel]);
+  runGit(orphan, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-m', 'sidecar']);
+  assert.equal(verifyActivatedSidecar({ repoRoot: orphan }), a);
+  assert.throws(() => assertIsAncestor(a, runGit(orphan, ['rev-parse', 'HEAD']).trim(), undefined, orphan), /ancestor/);
+});
+
+test('existing skip path uses deep validators', () => {
+  const repo = tmpDir();
+  fs.mkdirSync(path.join(repo, 'research', 'h8-prospective', 'observations'), { recursive: true });
+  const planned = validObservation();
+  const obj = JSON.parse(canonicalizeJson(planned.observation));
+  obj.h8_capture_source_sha = 'b'.repeat(40);
+  fs.writeFileSync(path.join(repo, ...planned.path.split('/')), canonicalizeJson(obj));
+  const latest = makeLatest();
+  const latestBytes = Buffer.from(canonicalizeJson(latest));
+  assert.throws(
+    () =>
+      planCapture({
+        repoRoot: repo,
+        captureSourceSha: 'a'.repeat(40),
+        etlStartedUtc: '2026-08-24T11:00:00.000Z',
+        captureRunUtc: '2026-08-24T11:32:00.000Z',
+        latestBytes,
+        configText: canonicalizeJson(makeConfig()),
+        csvBytes: Buffer.from(btcCsv([{ date: '2026-08-24', close: '100.5' }])),
+        provenance: provenance(),
+      }),
+    /h8_capture_source_sha/
+  );
+});
+
+test('sidecar symlink fails activated verification', () => {
+  if (process.platform === 'win32') return;
+  const dir = tmpDir();
+  runGit(dir, ['init']);
+  const sidecarRel = 'research/h8-prospective/H8_CAPTURE_SOURCE_SHA.txt';
+  fs.mkdirSync(path.join(dir, 'research', 'h8-prospective'), { recursive: true });
+  runGit(dir, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '--allow-empty', '-m', 'base']);
+  const first = runGit(dir, ['rev-parse', 'HEAD']).trim();
+  fs.writeFileSync(path.join(dir, sidecarRel), `${first}\n`);
+  runGit(dir, ['add', sidecarRel]);
+  runGit(dir, ['-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-m', 'sidecar']);
+  fs.rmSync(path.join(dir, sidecarRel));
+  fs.symlinkSync(path.join(dir, 'research', 'h8-prospective'), path.join(dir, sidecarRel));
+  assert.throws(() => verifyActivatedSidecar({ repoRoot: dir }), /symlink/);
+});
+
+test('realpath rejects target symlink and parent escape', () => {
+  const repo = tmpDir();
+  const rel = 'research/h8-prospective/observations/2026-08-24.json';
+  const abs = path.join(repo, ...rel.split('/'));
+  fs.mkdirSync(path.dirname(abs), { recursive: true });
+  fs.writeFileSync(abs, '{"ok":true}\n');
+  assert.doesNotThrow(() => prepareCreateOnlyTarget(repo, rel));
+  if (process.platform !== 'win32') {
+    fs.rmSync(abs);
+    fs.symlinkSync('/tmp', abs);
+    assert.throws(() => prepareCreateOnlyTarget(repo, rel), /symlink|escaped/);
+  }
+  const escaped = tmpDir();
+  const repo2 = tmpDir();
+  fs.mkdirSync(path.join(repo2, 'research'), { recursive: true });
+  const link = path.join(repo2, 'research', 'h8-prospective');
+  try {
+    fs.symlinkSync(escaped, link, 'dir');
+  } catch {
+    const result = spawnSync('cmd', ['/c', 'mklink', '/J', link, escaped], { encoding: 'utf8' });
+    if (result.status !== 0) return;
+  }
+  fs.mkdirSync(path.join(link, 'observations'), { recursive: true });
+  const target = 'research/h8-prospective/observations/2026-08-24.json';
+  fs.writeFileSync(path.join(link, 'observations', '2026-08-24.json'), '{"ok":true}\n');
+  assert.throws(() => prepareCreateOnlyTarget(repo2, target), /escaped|symlink/);
+});
+
+test('RUNNER_TEMP is mandatory for manifest and escrow', () => {
+  const repo = tmpDir();
+  const runnerTemp = tmpDir();
+  assert.throws(
+    () =>
+      writeCreatedManifest({
+        manifestPath: path.join(runnerTemp, 'm.json'),
+        repoRoot: repo,
+        runnerTemp: '',
+        captureRunUtc: '2026-08-24T11:32:00.000Z',
+        files: [],
+      }),
+    /RUNNER_TEMP is required/
+  );
+  const nested = path.join(runnerTemp, 'repo');
+  fs.mkdirSync(nested);
+  assert.throws(
+    () =>
+      writeCreatedManifest({
+        manifestPath: path.join(nested, 'inside.json'),
+        repoRoot: nested,
+        runnerTemp,
+        captureRunUtc: '2026-08-24T11:32:00.000Z',
+        files: [],
+      }),
+    /outside the repository/
+  );
+  assert.throws(
+    () =>
+      writeCreatedManifest({
+        manifestPath: path.join(tmpDir(), 'outside.json'),
+        repoRoot: repo,
+        runnerTemp,
+        captureRunUtc: '2026-08-24T11:32:00.000Z',
+        files: [],
+      }),
+    /RUNNER_TEMP/
+  );
+  assert.doesNotThrow(() =>
+    writeCreatedManifest({
+      manifestPath: path.join(runnerTemp, 'h8-created-manifest.json'),
+      repoRoot: repo,
+      runnerTemp,
+      captureRunUtc: '2026-08-24T11:32:00.000Z',
+      files: [],
+    })
+  );
+  assert.throws(
+    () =>
+      escrowH8Artifacts({
+        repoRoot: repo,
+        manifestPath: path.join(runnerTemp, 'h8-created-manifest.json'),
+        escrowDir: path.join(tmpDir(), 'escrow'),
+        runnerTemp,
+      }),
+    /RUNNER_TEMP|H8_ESCROW_DIR/
+  );
+});
+
+test('missing RUNNER_TEMP fails real capture', () => {
+  const head = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: REPO_ROOT, encoding: 'utf8' }).stdout.trim();
+  assert.throws(
+    () =>
+      runCapture({
+        cwd: REPO_ROOT,
+        env: {
+          GITHUB_ACTIONS: 'true',
+          H8_GITHUB_EVENT_NAME: 'schedule',
+          H8_GITHUB_RUN_ATTEMPT: '1',
+          H8_GITHUB_RUN_ID: '1',
+          H8_GITHUB_SHA: head,
+          H8_GITHUB_WORKFLOW_REF: 'ref',
+          H8_ETL_STARTED_UTC: '2026-08-24T11:00:00.000Z',
+          H8_CREATED_MANIFEST_PATH: path.join(os.tmpdir(), 'x.json'),
+        },
+      }),
+    /RUNNER_TEMP is required/
+  );
+});
+
+test('mid-escrow failure cleans same-run files', () => {
+  const repo = tmpDir();
+  const runnerTemp = tmpDir();
+  const rel = 'research/h8-prospective/observations/2026-08-24.json';
+  const abs = path.join(repo, ...rel.split('/'));
+  fs.mkdirSync(path.dirname(abs), { recursive: true });
+  const body = canonicalizeJson({ hello: 'h8' });
+  fs.writeFileSync(abs, body);
+  const manifestPath = path.join(runnerTemp, 'h8-created-manifest.json');
+  fs.writeFileSync(
+    manifestPath,
+    canonicalizeJson({
+      manifest_version: 'h8-created-manifest-v1',
+      capture_run_utc: '2026-08-24T11:32:00.000Z',
+      files: [
+        { path: rel, sha256: sha256Bytes(Buffer.from(body)) },
+        {
+          path: 'research/h8-prospective/btc-closes/2026-08-24.json',
+          sha256: 'a'.repeat(64),
+        },
+      ],
+    })
+  );
+  assert.throws(
+    () =>
+      escrowH8Artifacts({
+        repoRoot: repo,
+        manifestPath,
+        escrowDir: path.join(runnerTemp, 'h8-escrow'),
+        runnerTemp,
+      }),
+    /STOP/
+  );
+  assert.equal(fs.existsSync(abs), false);
+});
+
+test('frozen identity verifier is reused after git movement', () => {
+  const yaml = readWorkflow();
+  assert.match(yaml, /H8 scientific commit/);
+  const io = fs.readFileSync(path.join(REPO_ROOT, 'scripts/research/lib/h8-prospective-capture-io.mjs'), 'utf8');
+  const cli = fs.readFileSync(path.join(REPO_ROOT, 'scripts/research/capture-h8-prospective.mjs'), 'utf8');
+  assert.equal(io.includes('verifyActivatedH8RuntimeState'), true);
+  assert.equal((io.match(/verifyActivatedH8RuntimeState/g) || []).length >= 4, true);
+  assert.equal(cli.includes('verifyActivatedH8RuntimeState'), true);
 });

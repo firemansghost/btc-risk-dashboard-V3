@@ -29,8 +29,9 @@ import {
   parseStrictLowerSha,
   assertAllowedManifestPath,
   buildCreatedManifest,
-  validateObservationSchema,
-  validateCloseSchema,
+  parseAndAssertCanonicalArtifact,
+  validateCompleteObservation,
+  validateCompleteClose,
   incrementCounter,
   sha256HexFromNodeCrypto,
   OBSERVATION_PATH_RE,
@@ -90,6 +91,15 @@ export function assertIsAncestor(ancestorSha, descendantSha, gitExec = defaultGi
   }
 }
 
+export function sidecarTrackedInHead(repoRoot, gitExec = defaultGitExec) {
+  try {
+    gitRevParse(`HEAD:${H8_CAPTURE_SOURCE_SIDECAR_PATH}`, gitExec, repoRoot);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function readSidecarSha(repoRoot, fsImpl = fs) {
   const abs = repoPath(repoRoot, H8_CAPTURE_SOURCE_SIDECAR_PATH);
   if (!fsImpl.existsSync(abs)) {
@@ -100,6 +110,53 @@ export function readSidecarSha(repoRoot, fsImpl = fs) {
     throw new Error('STOP: H8_CAPTURE_SOURCE_SHA.txt must be a normal file');
   }
   return parseSidecarBytes(fsImpl.readFileSync(abs));
+}
+
+export function verifyActivatedSidecar({
+  repoRoot,
+  gitExec = defaultGitExec,
+  fsImpl = fs,
+}) {
+  let headBlob;
+  try {
+    headBlob = gitRevParse(`HEAD:${H8_CAPTURE_SOURCE_SIDECAR_PATH}`, gitExec, repoRoot);
+  } catch {
+    throw new Error('STOP: H8_CAPTURE_SOURCE_SHA.txt is missing from HEAD');
+  }
+  const abs = repoPath(repoRoot, H8_CAPTURE_SOURCE_SIDECAR_PATH);
+  if (!fsImpl.existsSync(abs)) {
+    throw new Error('STOP: H8_CAPTURE_SOURCE_SHA.txt is missing');
+  }
+  const st = fsImpl.lstatSync(abs);
+  if (st.isSymbolicLink()) throw new Error('STOP: H8_CAPTURE_SOURCE_SHA.txt must not be a symlink');
+  if (!st.isFile()) throw new Error('STOP: H8_CAPTURE_SOURCE_SHA.txt must be a normal file');
+  const headBytes = gitExec(['cat-file', 'blob', headBlob], { cwd: repoRoot });
+  const worktreeBytes = fsImpl.readFileSync(abs);
+  const headSha = parseSidecarBytes(Buffer.from(headBytes));
+  const worktreeSha = parseSidecarBytes(Buffer.from(worktreeBytes));
+  const worktreeBlob = gitExec(['hash-object', H8_CAPTURE_SOURCE_SIDECAR_PATH], { cwd: repoRoot })
+    .toString('utf8')
+    .trim();
+  if (worktreeBlob !== headBlob) {
+    throw new Error('STOP: sidecar worktree hash-object does not equal HEAD blob');
+  }
+  if (headSha !== worktreeSha) {
+    throw new Error('STOP: sidecar HEAD SHA does not equal worktree SHA');
+  }
+  const staged = gitExec(['diff', '--cached', '--name-only', '--', H8_CAPTURE_SOURCE_SIDECAR_PATH], {
+    cwd: repoRoot,
+  })
+    .toString('utf8')
+    .trim();
+  if (staged !== '') throw new Error('STOP: staged modification for activation sidecar');
+  const dirty = gitExec(
+    ['status', '--porcelain=v1', '--untracked-files=all', '--', H8_CAPTURE_SOURCE_SIDECAR_PATH],
+    { cwd: repoRoot }
+  )
+    .toString('utf8')
+    .trim();
+  if (dirty !== '') throw new Error('STOP: activation sidecar is dirty');
+  return headSha;
 }
 
 export function sidecarExists(repoRoot, fsImpl = fs) {
@@ -233,6 +290,29 @@ export function verifyRuntimeFilesAgainstCommit({
   return { runtimeSourceIdentity: 'PASS', captureSourceSha: sourceSha };
 }
 
+export function verifyActivatedH8RuntimeState({
+  repoRoot,
+  gitExec = defaultGitExec,
+  fsImpl = fs,
+}) {
+  const captureSourceSha = verifyActivatedSidecar({ repoRoot, gitExec, fsImpl });
+  const identities = verifyProtocolAndContractIdentity({ repoRoot, gitExec, fsImpl });
+  const fingerprint = verifyScientificFingerprint({ repoRoot, gitExec, fsImpl });
+  const runtime = verifyRuntimeFilesAgainstCommit({
+    repoRoot,
+    sourceSha: captureSourceSha,
+    gitExec,
+    fsImpl,
+  });
+  return {
+    captureSourceSha,
+    protocolIdentity: identities.protocolIdentity,
+    contractIdentity: identities.contractIdentity,
+    scientificFingerprint: fingerprint.scientificFingerprint,
+    runtimeSourceIdentity: runtime.runtimeSourceIdentity,
+  };
+}
+
 export function assertHeadEquals(expectedSha, gitExec = defaultGitExec, cwd) {
   const head = gitRevParse('HEAD', gitExec, cwd);
   if (head !== expectedSha) {
@@ -265,60 +345,130 @@ export function ensureParentDir(absPath, fsImpl = fs) {
   fsImpl.mkdirSync(path.dirname(absPath), { recursive: true });
 }
 
-export function validateExistingObservation(text, expectedDate) {
-  const obj = parseCanonicalJson(text, 'existing observation');
-  validateObservationSchema(obj);
-  if (obj.observation_date !== expectedDate) {
-    throw new Error('STOP: existing observation date identity mismatch');
-  }
-  if (obj.protocol_sha !== H8_PROTOCOL_SHA || obj.capture_contract_sha !== H8_CAPTURE_CONTRACT_SHA) {
-    throw new Error('STOP: existing observation has wrong protocol/contract identity');
+export function validateExistingObservation(text, expectedDate, captureSourceSha) {
+  const obj = parseAndAssertCanonicalArtifact(text, 'existing observation');
+  validateCompleteObservation(obj, { expectedDate, captureSourceSha });
+  return obj;
+}
+
+export function validateExistingClose(text, expectedDate, captureSourceSha) {
+  const obj = parseAndAssertCanonicalArtifact(text, 'existing close');
+  validateCompleteClose(obj, { expectedDate, captureSourceSha });
+  return obj;
+}
+
+function realpathResolved(abs, fsImpl = fs) {
+  if (typeof fsImpl.realpathSync !== 'function') return path.resolve(abs);
+  return fsImpl.realpathSync(abs);
+}
+
+function assertInsideRealRoot(candidate, realRoot) {
+  const rel = path.relative(realRoot, candidate);
+  if (rel === '') return;
+  if (rel.startsWith('..') || path.isAbsolute(rel)) {
+    throw new Error('STOP: path escaped real repository root');
   }
 }
 
-export function validateExistingClose(text, expectedDate) {
-  const obj = parseCanonicalJson(text, 'existing close');
-  validateCloseSchema(obj);
-  if (obj.close_date_utc !== expectedDate) {
-    throw new Error('STOP: existing close date identity mismatch');
-  }
-  if (obj.protocol_sha !== H8_PROTOCOL_SHA || obj.capture_contract_sha !== H8_CAPTURE_CONTRACT_SHA) {
-    throw new Error('STOP: existing close has wrong protocol/contract identity');
+function assertNoSymlinkEscape(abs, realRoot, fsImpl = fs) {
+  let current = abs;
+  while (true) {
+    if (fsImpl.existsSync(current)) {
+      const st = fsImpl.lstatSync(current);
+      if (st.isSymbolicLink()) {
+        const real = realpathResolved(current, fsImpl);
+        assertInsideRealRoot(real, realRoot);
+      }
+    }
+    const parent = path.dirname(current);
+    if (parent === current) break;
+    current = parent;
   }
 }
 
 export function assertManifestPathResolved(repoRoot, repoRelative, fsImpl = fs) {
   const allowed = assertAllowedManifestPath(repoRelative);
   const abs = repoPath(repoRoot, allowed);
-  const root = path.resolve(repoRoot);
-  const rel = path.relative(root, abs);
+  const resolvedRoot = path.resolve(repoRoot);
+  const rel = path.relative(resolvedRoot, abs);
   if (rel.startsWith('..') || path.isAbsolute(rel)) {
     throw new Error('STOP: resolved manifest path escaped repository root');
   }
-  if (path.normalize(abs) !== abs && process.platform !== 'win32') {
-    throw new Error('STOP: manifest path normalization changed');
-  }
   assertNormalFile(abs, fsImpl);
+  const realRoot = realpathResolved(resolvedRoot, fsImpl);
+  const realAbs = realpathResolved(abs, fsImpl);
+  assertInsideRealRoot(realAbs, realRoot);
+  assertNoSymlinkEscape(abs, realRoot, fsImpl);
   return abs;
 }
 
-export function writeCreatedManifest({ manifestPath, repoRoot, runnerTemp, captureRunUtc, files, fsImpl = fs }) {
-  if (!manifestPath) throw new Error('STOP: H8_CREATED_MANIFEST_PATH is required');
-  const resolvedManifest = path.resolve(manifestPath);
+export function prepareCreateOnlyTarget(repoRoot, repoRelative, fsImpl = fs) {
+  const allowed = assertAllowedManifestPath(repoRelative);
+  const abs = repoPath(repoRoot, allowed);
   const resolvedRoot = path.resolve(repoRoot);
-  const resolvedTemp = runnerTemp ? path.resolve(runnerTemp) : null;
-  if (resolvedTemp) {
-    const relTemp = path.relative(resolvedTemp, resolvedManifest);
-    if (relTemp.startsWith('..') || path.isAbsolute(relTemp)) {
-      throw new Error('STOP: H8_CREATED_MANIFEST_PATH must resolve under RUNNER_TEMP');
-    }
+  const rel = path.relative(resolvedRoot, abs);
+  if (rel.startsWith('..') || path.isAbsolute(rel)) {
+    throw new Error('STOP: create target escaped repository root');
   }
-  const relRoot = path.relative(resolvedRoot, resolvedManifest);
-  if (relRoot === '' || (!relRoot.startsWith('..') && !path.isAbsolute(relRoot))) {
-    throw new Error('STOP: H8_CREATED_MANIFEST_PATH must be outside the repository');
+  const realRoot = realpathResolved(resolvedRoot, fsImpl);
+  assertNoSymlinkEscape(path.dirname(abs), realRoot, fsImpl);
+  ensureParentDir(abs, fsImpl);
+  const realParent = realpathResolved(path.dirname(abs), fsImpl);
+  assertInsideRealRoot(realParent, realRoot);
+  if (fsImpl.existsSync(abs)) {
+    const st = fsImpl.lstatSync(abs);
+    if (st.isSymbolicLink()) throw new Error(`STOP: target is a symlink: ${allowed}`);
   }
-  const manifest = buildCreatedManifest({ captureRunUtc, files });
+  return abs;
+}
+
+export function assertUnderRunnerTemp(targetPath, runnerTemp, fsImpl = fs, label = 'path') {
+  if (typeof runnerTemp !== 'string' || runnerTemp.trim() === '') {
+    throw new Error('STOP: RUNNER_TEMP is required');
+  }
+  const resolvedTemp = path.resolve(runnerTemp);
+  if (!fsImpl.existsSync(resolvedTemp)) {
+    throw new Error('STOP: RUNNER_TEMP does not exist');
+  }
+  const realTemp = realpathResolved(resolvedTemp, fsImpl);
+  const resolvedTarget = path.resolve(targetPath);
+  const parent = path.dirname(resolvedTarget);
+  if (!fsImpl.existsSync(parent)) {
+    fsImpl.mkdirSync(parent, { recursive: true });
+  }
+  const realParent = realpathResolved(parent, fsImpl);
+  const rel = path.relative(realTemp, realParent);
+  if (rel.startsWith('..') || path.isAbsolute(rel)) {
+    throw new Error(`STOP: ${label} must resolve under RUNNER_TEMP`);
+  }
+}
+
+export function assertOutsideRepo(targetPath, repoRoot, fsImpl = fs, label = 'path') {
+  const realRoot = realpathResolved(path.resolve(repoRoot), fsImpl);
+  const resolvedTarget = path.resolve(targetPath);
+  const parent = path.dirname(resolvedTarget);
+  const realParent = fsImpl.existsSync(parent) ? realpathResolved(parent, fsImpl) : path.resolve(parent);
+  const rel = path.relative(realRoot, realParent);
+  if (rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel))) {
+    throw new Error(`STOP: ${label} must be outside the repository`);
+  }
+}
+
+export function writeCreatedManifest({
+  manifestPath,
+  repoRoot,
+  runnerTemp,
+  captureRunUtc,
+  files,
+  fsImpl = fs,
+  manifestObject = null,
+}) {
+  if (!manifestPath) throw new Error('STOP: H8_CREATED_MANIFEST_PATH is required');
+  assertUnderRunnerTemp(manifestPath, runnerTemp, fsImpl, 'H8_CREATED_MANIFEST_PATH');
+  assertOutsideRepo(manifestPath, repoRoot, fsImpl, 'H8_CREATED_MANIFEST_PATH');
+  const manifest = manifestObject || buildCreatedManifest({ captureRunUtc, files });
   const text = canonicalizeJson(manifest);
+  const resolvedManifest = path.resolve(manifestPath);
   ensureParentDir(resolvedManifest, fsImpl);
   fsImpl.writeFileSync(resolvedManifest, text, { encoding: 'utf8' });
   return { manifest, text, path: resolvedManifest };
@@ -337,27 +487,71 @@ export function readCreatedManifest(manifestPath, fsImpl = fs) {
   return obj;
 }
 
+export function removeSameRunH8Files({ repoRoot, paths, gitExec = defaultGitExec, fsImpl = fs }) {
+  for (const repoRelative of paths) {
+    assertAllowedManifestPath(repoRelative);
+    let tracked = '';
+    try {
+      tracked = gitExec(['ls-files', '--', repoRelative], { cwd: repoRoot }).toString('utf8').trim();
+    } catch {
+      tracked = '';
+    }
+    if (tracked !== '') continue;
+    const abs = repoPath(repoRoot, repoRelative);
+    if (!fsImpl.existsSync(abs)) continue;
+    const st = fsImpl.lstatSync(abs);
+    if (st.isSymbolicLink() || !st.isFile()) continue;
+    fsImpl.unlinkSync(abs);
+  }
+}
+
 export function escrowH8Artifacts({
   repoRoot,
   manifestPath,
   escrowDir,
+  runnerTemp,
+  gitExec = defaultGitExec,
   fsImpl = fs,
 }) {
   const manifest = readCreatedManifest(manifestPath, fsImpl);
+  if (typeof runnerTemp !== 'string' || runnerTemp.trim() === '') {
+    throw new Error('STOP: RUNNER_TEMP is required');
+  }
+  assertUnderRunnerTemp(escrowDir, runnerTemp, fsImpl, 'H8_ESCROW_DIR');
+  assertOutsideRepo(escrowDir, repoRoot, fsImpl, 'H8_ESCROW_DIR');
   const resolvedEscrow = path.resolve(escrowDir);
   fsImpl.mkdirSync(resolvedEscrow, { recursive: true });
-  for (const entry of manifest.files) {
-    const abs = assertManifestPathResolved(repoRoot, entry.path, fsImpl);
-    const bytes = fsImpl.readFileSync(abs);
-    if (sha256Bytes(bytes) !== entry.sha256) {
-      throw new Error(`STOP: escrow source SHA256 mismatch for ${entry.path}`);
+  const copied = [];
+  try {
+    for (const entry of manifest.files) {
+      const abs = assertManifestPathResolved(repoRoot, entry.path, fsImpl);
+      const bytes = fsImpl.readFileSync(abs);
+      if (sha256Bytes(bytes) !== entry.sha256) {
+        throw new Error(`STOP: escrow source SHA256 mismatch for ${entry.path}`);
+      }
+      const dest = path.join(resolvedEscrow, entry.path.replaceAll('/', path.sep));
+      fsImpl.mkdirSync(path.dirname(dest), { recursive: true });
+      fsImpl.writeFileSync(dest, bytes);
+      if (sha256Bytes(fsImpl.readFileSync(dest)) !== entry.sha256) {
+        throw new Error(`STOP: escrow copy SHA256 mismatch for ${entry.path}`);
+      }
+      copied.push(entry.path);
     }
-    const dest = path.join(resolvedEscrow, entry.path.replaceAll('/', path.sep));
-    fsImpl.mkdirSync(path.dirname(dest), { recursive: true });
-    fsImpl.writeFileSync(dest, bytes);
-    const copyHash = sha256Bytes(fsImpl.readFileSync(dest));
-    if (copyHash !== entry.sha256) throw new Error(`STOP: escrow copy SHA256 mismatch for ${entry.path}`);
-    fsImpl.unlinkSync(abs);
+    if (copied.length !== manifest.files.length) {
+      throw new Error('STOP: escrow copy set incomplete');
+    }
+    for (const entry of manifest.files) {
+      const abs = repoPath(repoRoot, entry.path);
+      fsImpl.unlinkSync(abs);
+    }
+  } catch (error) {
+    removeSameRunH8Files({
+      repoRoot,
+      paths: manifest.files.map((entry) => entry.path),
+      gitExec,
+      fsImpl,
+    });
+    throw error;
   }
   return manifest;
 }
@@ -371,7 +565,7 @@ export function restoreH8Artifacts({
   const manifest = readCreatedManifest(manifestPath, fsImpl);
   for (const entry of manifest.files) {
     assertAllowedManifestPath(entry.path);
-    const abs = repoPath(repoRoot, entry.path);
+    const abs = prepareCreateOnlyTarget(repoRoot, entry.path, fsImpl);
     if (fsImpl.existsSync(abs)) {
       throw new Error(`STOP: H8 target already exists on restore: ${entry.path}`);
     }
@@ -380,7 +574,6 @@ export function restoreH8Artifacts({
     if (sha256Bytes(bytes) !== entry.sha256) {
       throw new Error(`STOP: escrow restore SHA256 mismatch for ${entry.path}`);
     }
-    ensureParentDir(abs, fsImpl);
     exclusiveWriteFile(abs, bytes, fsImpl, { count: false });
     const restored = sha256Bytes(fsImpl.readFileSync(abs));
     if (restored !== entry.sha256) {
@@ -468,8 +661,18 @@ export function runEscrowPhase({
   if (!manifestPath || !fsImpl.existsSync(manifestPath)) {
     throw new Error('STOP: H8 created manifest missing for escrow');
   }
+  if (typeof env.RUNNER_TEMP !== 'string' || env.RUNNER_TEMP.trim() === '') {
+    throw new Error('STOP: RUNNER_TEMP is required');
+  }
   const escrowDir = env.H8_ESCROW_DIR || path.join(env.RUNNER_TEMP, 'h8-escrow');
-  return escrowH8Artifacts({ repoRoot, manifestPath, escrowDir, fsImpl });
+  return escrowH8Artifacts({
+    repoRoot,
+    manifestPath,
+    escrowDir,
+    runnerTemp: env.RUNNER_TEMP,
+    gitExec,
+    fsImpl,
+  });
 }
 
 function verifyManifestBytes({ repoRoot, manifest, fsImpl = fs }) {
@@ -488,10 +691,14 @@ export function runH8ScientificPhase({
 } = {}) {
   const repoRoot = resolveRepoRoot(gitExec);
   const manifestPath = env.H8_CREATED_MANIFEST_PATH;
-  const escrowDir = env.H8_ESCROW_DIR || path.join(env.RUNNER_TEMP, 'h8-escrow');
+  const escrowDir = env.H8_ESCROW_DIR || path.join(env.RUNNER_TEMP || '', 'h8-escrow');
+  if (typeof env.RUNNER_TEMP !== 'string' || env.RUNNER_TEMP.trim() === '') {
+    throw new Error('STOP: RUNNER_TEMP is required');
+  }
   if (!manifestPath || !fsImpl.existsSync(manifestPath)) {
     throw new Error('STOP: H8 created manifest missing for scientific commit');
   }
+  verifyActivatedH8RuntimeState({ repoRoot, gitExec, fsImpl });
   const manifest = restoreH8Artifacts({ repoRoot, manifestPath, escrowDir, fsImpl });
   if (manifest.files.length === 0) {
     return { committed: false, reason: 'ZERO_FILES' };
@@ -519,6 +726,7 @@ export function runH8ScientificPhase({
   } catch (error) {
     throw new Error(`STOP: H8 rebase failed closed: ${error.message}`);
   }
+  verifyActivatedH8RuntimeState({ repoRoot, gitExec, fsImpl });
   verifyManifestBytes({ repoRoot, manifest, fsImpl });
   assertSourceSurvival({ repoRoot, manifest, fsImpl });
   let pushed = false;
@@ -531,6 +739,7 @@ export function runH8ScientificPhase({
     } catch (error) {
       lastError = error;
       gitExec(['pull', '--rebase', 'origin', 'main'], { cwd: repoRoot });
+      verifyActivatedH8RuntimeState({ repoRoot, gitExec, fsImpl });
       verifyManifestBytes({ repoRoot, manifest, fsImpl });
       assertSourceSurvival({ repoRoot, manifest, fsImpl });
     }
