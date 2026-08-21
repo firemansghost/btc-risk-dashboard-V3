@@ -1,21 +1,31 @@
 # H8 Capture Implementation Contract
 
-**Date:** 2026-08-20
-**Phase:** H8 — capture implementation contract
-**Status:** `IMPLEMENTATION CONTRACT CANDIDATE — NOT YET ACCEPTED`
-**Proposed contract version:** `h8-capture-implementation-contract-v1`
+**Date:** 2026-08-21
+**Phase:** H8 — capture implementation contract freeze
+**Status:** `IMPLEMENTATION CONTRACT FROZEN — CAPTURE SOURCE NOT YET IMPLEMENTED`
+**Contract version:** `h8-capture-implementation-contract-v1`
 **H8_CAPTURE_CONTRACT_VERSION:** `h8-capture-implementation-contract-v1`
 **Branch:** `research/h8-capture-implementation-contract`
 **Parent main HEAD at candidate creation:** `737cdce75e4c7e0f94b6268f502a2439943b5a7c`
+**Final accepted candidate immediately before freeze:** `47c4f43cd7934cc21869ee51325f0b40c58e4f43`
 
-This document specifies the **future machinery** that will prospectively capture already-frozen H8 evidence. It does **not** change H8 scientific methodology. Independent review of `f0095daf5dfd1737ce2531466d1d471698bc739b` approved the core contract design. This amendment records pre-freeze implementation / provenance hardening only. Capture code does **not** yet exist. `H8_CAPTURE_CONTRACT_SHA` is **not** assigned. `H8_CAPTURE_SOURCE_SHA` is **not** assigned.
+This document specifies the **future machinery** that will prospectively capture already-frozen H8 evidence. It does **not** change H8 scientific methodology.
 
-Do **not** write a future freeze-commit SHA into this document. The Git commit that later freezes accepted contract bytes becomes `H8_CAPTURE_CONTRACT_SHA` only after independent review and an explicit freeze.
+- The H8 scientific protocol remains frozen and unchanged.
+- This capture implementation contract is now frozen.
+- Changing frozen implementation requirements requires a new capture-contract version or an explicitly reviewed successor contract.
+- Stage-A capture code does not yet exist.
+- `H8_CAPTURE_SOURCE_SHA` is not assigned.
+- H8 has zero study observations.
+- H8 has zero performance results.
+- Calibration remains CLOSED.
+
+Do **not** write the freeze-commit SHA into this document. The Git commit created by this freeze pass becomes `H8_CAPTURE_CONTRACT_SHA` only after independent freeze-commit verification. `47c4f43cd7934cc21869ee51325f0b40c58e4f43` is the final accepted candidate immediately before freeze; it is **not** `H8_CAPTURE_CONTRACT_SHA`.
 
 Labels used below:
 
 - **FACT** — inherited from frozen H8 protocol identities or current production workflow/config at parent main
-- **CANDIDATE IMPLEMENTATION DECISION** — proposed capture machinery; not accepted until independent review freezes this contract
+- **FROZEN IMPLEMENTATION DECISION** — accepted capture machinery; changing it requires a new capture-contract version or an explicitly reviewed successor contract
 - **FIREWALL** — a prohibition that is not open to casual weakening
 - **LIMITATION** — a bound on what later capture implementation may do even after this contract is accepted
 
@@ -48,7 +58,7 @@ Labels used below:
 
 ## 1. Purpose
 
-**CANDIDATE IMPLEMENTATION DECISION.** The later capture implementation must mechanically implement:
+**FROZEN IMPLEMENTATION DECISION.** The later capture implementation must mechanically implement:
 
 - frozen model identities
 - frozen score formulas
@@ -77,7 +87,7 @@ Labels used below:
 
 ## 2. Frozen scientific dates
 
-**FACT / CANDIDATE IMPLEMENTATION DECISION.** Copy the frozen protocol dates exactly.
+**FACT / FROZEN IMPLEMENTATION DECISION.** Copy the frozen protocol dates exactly.
 
 Observation window:
 
@@ -130,7 +140,7 @@ concurrency:
   cancel-in-progress: false
 ```
 
-**CANDIDATE IMPLEMENTATION DECISION.** Stage A must preserve this concurrency behavior. H8 must not weaken or remove that serialization.
+**FROZEN IMPLEMENTATION DECISION.** Stage A must preserve this concurrency behavior. H8 must not weaken or remove that serialization.
 
 A `workflow_dispatch` ETL and scheduled ETL must not execute concurrently and race over `public/data/latest.json` or `public/data/btc_price_history.csv` during H8 capture.
 
@@ -152,7 +162,7 @@ Current sequence:
 
 **FACT.** A scheduled ETL artifact commit can be rebased onto a later `main` before it is pushed.
 
-**CANDIDATE IMPLEMENTATION DECISION.** `source_base_git_sha` / `github_sha` must identify the **original scheduled-run source checkout** used to calculate the scores. It must **not** be rewritten to the later rebased daily artifact commit SHA.
+**FROZEN IMPLEMENTATION DECISION.** `source_base_git_sha` / `github_sha` must identify the **original scheduled-run source checkout** used to calculate the scores. It must **not** be rewritten to the later rebased daily artifact commit SHA.
 
 **FIREWALL.** This contract pass does **not** edit `.github/workflows/daily-etl.yml`.
 
@@ -160,7 +170,7 @@ Current sequence:
 
 ## 4. Authorized future implementation files
 
-**CANDIDATE IMPLEMENTATION DECISION.** The later implementation phase is narrowly scoped. Authorize the implementation candidate to change or create **only**:
+**FROZEN IMPLEMENTATION DECISION.** The later implementation phase is narrowly scoped. Authorize the implementation candidate to change or create **only**:
 
 1. `.github/workflows/daily-etl.yml`
 2. `scripts/research/capture-h8-prospective.mjs`
@@ -196,7 +206,7 @@ node scripts/research/capture-h8-prospective.mjs --capture
 
 ### 5.1 Stage A — implementation source commit
 
-**CANDIDATE IMPLEMENTATION DECISION.** The future implementation candidate will contain:
+**FROZEN IMPLEMENTATION DECISION.** The future implementation candidate will contain:
 
 - accepted workflow change
 - capture CLI
@@ -218,7 +228,7 @@ H8_CAPTURE_SOURCE_SHA
 
 ### 5.2 Stage B — activation commit
 
-**CANDIDATE IMPLEMENTATION DECISION.** After `H8_CAPTURE_SOURCE_SHA` is assigned, create a separate activation commit whose only new scientific-control file is:
+**FROZEN IMPLEMENTATION DECISION.** After `H8_CAPTURE_SOURCE_SHA` is assigned, create a separate activation commit whose only new scientific-control file is:
 
 ```text
 research/h8-prospective/H8_CAPTURE_SOURCE_SHA.txt
@@ -245,13 +255,13 @@ The activation commit must **not** modify any Stage-A implementation file.
 
 The implementation branch containing Stage A + Stage B is then independently verified and merged before the first study observation.
 
-**FIREWALL.** Do **not** assign `H8_CAPTURE_SOURCE_SHA` during this contract-candidate pass.
+**FIREWALL.** Do **not** assign `H8_CAPTURE_SOURCE_SHA` during this freeze pass.
 
 ---
 
 ## 6. Runtime capture-source verification
 
-**CANDIDATE IMPLEMENTATION DECISION.** Real `--capture` mode must require `research/h8-prospective/H8_CAPTURE_SOURCE_SHA.txt` to exist.
+**FROZEN IMPLEMENTATION DECISION.** Real `--capture` mode must require `research/h8-prospective/H8_CAPTURE_SOURCE_SHA.txt` to exist.
 
 Read and strictly parse it. Require:
 
@@ -306,7 +316,7 @@ The synthetic test file should be recorded in implementation acceptance provenan
 
 ## 7. Frozen H8 protocol verification at runtime
 
-**CANDIDATE IMPLEMENTATION DECISION.** Hard-code / freeze in implementation:
+**FROZEN IMPLEMENTATION DECISION.** Hard-code / freeze in implementation:
 
 ```text
 H8_PROTOCOL_VERSION = h8-prospective-three-model-v1
@@ -328,7 +338,7 @@ If mismatch: **STOP BEFORE WRITES**.
 
 ## 7.1 Frozen capture-contract identity at runtime
 
-**CANDIDATE IMPLEMENTATION DECISION.** After this contract is frozen and merged, Stage-A implementation must know and hard-code:
+**FROZEN IMPLEMENTATION DECISION.** After this contract is frozen and merged, Stage-A implementation must know and hard-code:
 
 ```text
 H8_CAPTURE_CONTRACT_VERSION = h8-capture-implementation-contract-v1
@@ -353,7 +363,7 @@ If mismatch: **STOP BEFORE WRITES**.
 
 ## 8. Scientific model-contract runtime fingerprint
 
-**CANDIDATE IMPLEMENTATION DECISION.** Before **any** H8 write, verify the frozen scientific model-contract fingerprint against the current scheduled-run checkout, using the exact frozen protocol identities.
+**FROZEN IMPLEMENTATION DECISION.** Before **any** H8 write, verify the frozen scientific model-contract fingerprint against the current scheduled-run checkout, using the exact frozen protocol identities.
 
 | Path | Identity | Value |
 |---|---|---|
@@ -400,7 +410,7 @@ An untracked file inside a frozen scientific directory must **not** silently pas
 
 ## 9. Source-checkout identity
 
-**CANDIDATE IMPLEMENTATION DECISION.** Real capture must receive GitHub operational provenance explicitly from the workflow. Pass at least:
+**FROZEN IMPLEMENTATION DECISION.** Real capture must receive GitHub operational provenance explicitly from the workflow. Pass at least:
 
 ```text
 H8_GITHUB_RUN_ID        = ${{ github.run_id }}
@@ -426,7 +436,7 @@ The frozen H8 observation later records this original `source_base_git_sha` even
 
 ## 10. Real capture event gate — defense in depth
 
-**CANDIDATE IMPLEMENTATION DECISION.** Workflow gate:
+**FROZEN IMPLEMENTATION DECISION.** Workflow gate:
 
 ```text
 if: github.event_name == 'schedule' && github.run_attempt == 1
@@ -458,7 +468,7 @@ valid numeric H8_GITHUB_RUN_ID
 
 ## 11. CLI modes
 
-**CANDIDATE IMPLEMENTATION DECISION.** Future CLI supports exactly two conceptual modes.
+**FROZEN IMPLEMENTATION DECISION.** Future CLI supports exactly two conceptual modes.
 
 ### 11.1 `--contract-check`
 
@@ -511,7 +521,7 @@ No date / output override.
 
 ## 12. Single capture-run timestamp
 
-**CANDIDATE IMPLEMENTATION DECISION.** At the beginning of a real authorized `--capture` invocation, capture exactly one UTC timestamp:
+**FROZEN IMPLEMENTATION DECISION.** At the beginning of a real authorized `--capture` invocation, capture exactly one UTC timestamp:
 
 ```text
 capture_run_utc = new Date().toISOString()
@@ -531,7 +541,7 @@ captured_at_utc      = capture_run_utc   (close artifacts created by that invoca
 
 ## 12.1 Same-run ETL temporal marker
 
-**CANDIDATE IMPLEMENTATION DECISION.** Immediately **before** `npm run etl:compute`, the workflow must capture one UTC timestamp:
+**FROZEN IMPLEMENTATION DECISION.** Immediately **before** `npm run etl:compute`, the workflow must capture one UTC timestamp:
 
 ```text
 H8_ETL_STARTED_UTC
@@ -557,7 +567,7 @@ Record `etl_started_utc` in each future score observation. It may also be stored
 
 ## 13. Observation input authority
 
-**CANDIDATE IMPLEMENTATION DECISION.** Observation scientific input comes from the post-ETL `public/data/latest.json` produced by the **same** scheduled ETL invocation.
+**FROZEN IMPLEMENTATION DECISION.** Observation scientific input comes from the post-ETL `public/data/latest.json` produced by the **same** scheduled ETL invocation.
 
 Compute `latest_artifact_sha256` from the exact bytes after `npm run etl:compute` and before capture.
 
@@ -605,13 +615,13 @@ The observation date is the UTC calendar-date portion of `latest.json -> as_of_u
 
 If `snapshot_date` is present: require it is consistent with the UTC date of `as_of_utc`. If inconsistent: **STOP observation creation**. Do not rewrite either value.
 
-**CANDIDATE IMPLEMENTATION DECISION.** Fail-closed: any structural `latest.json` integrity failure means **no H8 writes** during that invocation. Close catch-up does not proceed after an observation-input structural failure.
+**FROZEN IMPLEMENTATION DECISION.** Fail-closed: any structural `latest.json` integrity failure means **no H8 writes** during that invocation. Close catch-up does not proceed after an observation-input structural failure.
 
 ---
 
 ## 14. Required factor snapshot
 
-**CANDIDATE IMPLEMENTATION DECISION.** Required factors, exact scientific order:
+**FROZEN IMPLEMENTATION DECISION.** Required factors, exact scientific order:
 
 1. `trend_valuation`
 2. `stablecoins`
@@ -683,7 +693,7 @@ For `last_updated_utc`: use the production factor timestamp deterministically. I
 
 ## 15. Common eligibility
 
-**CANDIDATE IMPLEMENTATION DECISION.**
+**FROZEN IMPLEMENTATION DECISION.**
 
 ```text
 common_eligibility_status = ELIGIBLE
@@ -713,7 +723,7 @@ All three models share this eligibility.
 
 ## 16. Frozen score formulas
 
-**CANDIDATE IMPLEMENTATION DECISION.** Only if `common_eligibility_status = ELIGIBLE`, calculate scores from the seven captured factor scores.
+**FROZEN IMPLEMENTATION DECISION.** Only if `common_eligibility_status = ELIGIBLE`, calculate scores from the seven captured factor scores.
 
 Use JavaScript `Number` semantics. No intermediate rounding.
 
@@ -774,7 +784,7 @@ social_interest = 0.10
 
 ## 17. Official published-score integrity
 
-**CANDIDATE IMPLEMENTATION DECISION.** `official_published_score` is exactly:
+**FROZEN IMPLEMENTATION DECISION.** `official_published_score` is exactly:
 
 ```text
 public/data/latest.json -> composite_score
@@ -809,7 +819,7 @@ official_integrity_status = NOT_CHECKED_NOT_ELIGIBLE
 
 ## 18. Observation analysis-status field
 
-**CANDIDATE IMPLEMENTATION DECISION.** Capture-time `analysis_status`:
+**FROZEN IMPLEMENTATION DECISION.** Capture-time `analysis_status`:
 
 ```text
 if common_eligibility_status != ELIGIBLE:
@@ -828,7 +838,7 @@ This is capture-time eligibility only.
 
 ## 19. Immutable observation path
 
-**CANDIDATE IMPLEMENTATION DECISION.** Observation target:
+**FROZEN IMPLEMENTATION DECISION.** Observation target:
 
 ```text
 research/h8-prospective/observations/YYYY-MM-DD.json
@@ -858,7 +868,7 @@ If the existing target is malformed or has wrong protocol / capture identity: **
 
 ## 20. Observation JSON schema
 
-**CANDIDATE IMPLEMENTATION DECISION.** Exact deterministic top-level key order:
+**FROZEN IMPLEMENTATION DECISION.** Exact deterministic top-level key order:
 
 ```text
 study_id
@@ -915,7 +925,7 @@ For `NOT_ELIGIBLE` observations: challenger / formula fields that cannot scienti
 
 ## 21. Model version / weight definition record
 
-**CANDIDATE IMPLEMENTATION DECISION.** Each observation must carry immutable model identifiers:
+**FROZEN IMPLEMENTATION DECISION.** Each observation must carry immutable model identifiers:
 
 ```text
 official   = v1.1.1
@@ -936,7 +946,7 @@ The frozen protocol remains the mathematical authority.
 
 ## 22. Canonical JSON serialization
 
-**CANDIDATE IMPLEMENTATION DECISION.** All H8 JSON artifacts must use deterministic serialization:
+**FROZEN IMPLEMENTATION DECISION.** All H8 JSON artifacts must use deterministic serialization:
 
 ```text
 JSON.stringify(value, null, 2) + '\n'
@@ -958,7 +968,7 @@ Before accepting a generated artifact: reparse serialized bytes, validate exact 
 
 ## 23. Create-only file writes
 
-**CANDIDATE IMPLEMENTATION DECISION.** H8 artifacts are create-only.
+**FROZEN IMPLEMENTATION DECISION.** H8 artifacts are create-only.
 
 Use exclusive creation semantics equivalent to `flag: 'wx'`.
 
@@ -976,7 +986,7 @@ Because the GitHub runner is ephemeral, files created during a failed script inv
 
 ## 24. BTC source authority
 
-**CANDIDATE IMPLEMENTATION DECISION.** BTC close source after ETL:
+**FROZEN IMPLEMENTATION DECISION.** BTC close source after ETL:
 
 ```text
 public/data/btc_price_history.csv
@@ -1011,7 +1021,7 @@ Compute `source_artifact_sha256` from the exact post-ETL CSV bytes before creati
 
 ## 25. Deterministic BTC close catch-up
 
-**CANDIDATE IMPLEMENTATION DECISION.** Let `T` = UTC date of `capture_run_utc`.
+**FROZEN IMPLEMENTATION DECISION.** Let `T` = UTC date of `capture_run_utc`.
 
 Only if `T <= 2027-03-29`, consider missing required close dates.
 
@@ -1043,7 +1053,7 @@ After `T > 2027-03-29`: create **zero** new H8 BTC-close artifacts.
 
 ## 26. First-authorized-value immutability
 
-**CANDIDATE IMPLEMENTATION DECISION.** If `research/h8-prospective/btc-closes/d.json` already exists:
+**FROZEN IMPLEMENTATION DECISION.** If `research/h8-prospective/btc-closes/d.json` already exists:
 
 - do not replace it
 - do not compare production's newer value and update H8
@@ -1058,7 +1068,7 @@ The first successfully committed authorized captured value remains permanent for
 
 ## 27. BTC close JSON schema
 
-**CANDIDATE IMPLEMENTATION DECISION.** Exact deterministic top-level key order:
+**FROZEN IMPLEMENTATION DECISION.** Exact deterministic top-level key order:
 
 ```text
 study_id
@@ -1096,7 +1106,7 @@ capture_contract_sha     = <H8_CAPTURE_CONTRACT_SHA assigned after freeze>
 
 ## 28. Created-file manifest outside repository
 
-**CANDIDATE IMPLEMENTATION DECISION.** Freeze environment name:
+**FROZEN IMPLEMENTATION DECISION.** Freeze environment name:
 
 ```text
 H8_CREATED_MANIFEST_PATH
@@ -1164,7 +1174,7 @@ The activation sidecar `research/h8-prospective/H8_CAPTURE_SOURCE_SHA.txt` must 
 
 ## 29. H8 failure must not break production ETL
 
-**CANDIDATE IMPLEMENTATION DECISION.** H8 is research infrastructure.
+**FROZEN IMPLEMENTATION DECISION.** H8 is research infrastructure.
 
 A failure of H8-specific identity verification, fingerprint verification, contract verification, observation validation, close validation, create-only write, H8 commit, or H8 push must **not** by itself prevent ordinary GhostGauge production ETL artifacts from being committed / pushed.
 
@@ -1182,7 +1192,7 @@ Examples:
 
 ## 29.1 Pre-ETL and post-ETL identity safety
 
-**CANDIDATE IMPLEMENTATION DECISION.** The future workflow should perform a READ-ONLY H8 identity preflight on authorized first-attempt scheduled runs **before** production ETL.
+**FROZEN IMPLEMENTATION DECISION.** The future workflow should perform a READ-ONLY H8 identity preflight on authorized first-attempt scheduled runs **before** production ETL.
 
 The preflight must verify at least:
 
@@ -1208,7 +1218,7 @@ This is H8 research safety. It must not convert an H8 research problem into a pr
 
 ## 30. Separate production commit from H8 scientific commit
 
-**CANDIDATE IMPLEMENTATION DECISION.** H8 capture still occurs **after** successful `npm run etl:compute` and **before** either artifact commit. This preserves the frozen protocol ordering.
+**FROZEN IMPLEMENTATION DECISION.** H8 capture still occurs **after** successful `npm run etl:compute` and **before** either artifact commit. This preserves the frozen protocol ordering.
 
 After successful H8 capture:
 
@@ -1261,7 +1271,7 @@ This separation ensures a research conflict cannot take down the live daily dash
 
 ## 31. Exact H8 scientific staging
 
-**CANDIDATE IMPLEMENTATION DECISION.** Production commit must **never** stage research paths.
+**FROZEN IMPLEMENTATION DECISION.** Production commit must **never** stage research paths.
 
 H8 scientific commit must stage only exact files from the validated manifest.
 
@@ -1279,7 +1289,7 @@ If it is modified: H8 capture is **BLOCKED**.
 
 ## 32. Source-artifact survival verification
 
-**CANDIDATE IMPLEMENTATION DECISION.** In addition to verifying created H8 artifact SHA256 after rebase, require verification of the **source bytes** referenced by those H8 artifacts.
+**FROZEN IMPLEMENTATION DECISION.** In addition to verifying created H8 artifact SHA256 after rebase, require verification of the **source bytes** referenced by those H8 artifacts.
 
 For a newly created score observation, recorded `latest_artifact_sha256` must still equal current `public/data/latest.json` SHA256 immediately before the separate H8 scientific commit.
 
@@ -1293,7 +1303,7 @@ If source bytes differ: do not alter the H8 artifact; do not recalculate it; do 
 
 ## 32.1 H8 local failure cleanup / transactionality
 
-**CANDIDATE IMPLEMENTATION DECISION.** Because H8 research artifacts may be created locally before their separate scientific commit, freeze local-run failure semantics.
+**FROZEN IMPLEMENTATION DECISION.** Because H8 research artifacts may be created locally before their separate scientific commit, freeze local-run failure semantics.
 
 The capture implementation must track every repository H8 path successfully created by the current invocation.
 
@@ -1315,7 +1325,7 @@ The implementation should minimize this need by validating all proposed H8 outpu
 
 ## 32.2 Push retries for the H8 scientific commit
 
-**CANDIDATE IMPLEMENTATION DECISION.** A push retry inside the **same** GitHub Actions `run_attempt == 1` is operationally allowed. It does **not** constitute a second scientific capture.
+**FROZEN IMPLEMENTATION DECISION.** A push retry inside the **same** GitHub Actions `run_attempt == 1` is operationally allowed. It does **not** constitute a second scientific capture.
 
 **FIREWALL.** Do **not** rerun the capture script to regenerate H8 artifacts during push retry. Reuse the exact originally generated bytes.
 
@@ -1375,7 +1385,7 @@ Synthetic tests must not use network.
 
 ## 35. Contract-check mode
 
-**CANDIDATE IMPLEMENTATION DECISION.** The future read-only `--contract-check` mode must prove at least:
+**FROZEN IMPLEMENTATION DECISION.** The future read-only `--contract-check` mode must prove at least:
 
 - protocol commit exists
 - protocol is ancestor
@@ -1407,7 +1417,7 @@ After Stage-B activation / merge, ordinary `--contract-check` must read `H8_CAPT
 
 ## 36. Instrumentation counters
 
-**CANDIDATE IMPLEMENTATION DECISION.** For independent runtime review expose simple counters. At minimum:
+**FROZEN IMPLEMENTATION DECISION.** For independent runtime review expose simple counters. At minimum:
 
 ```text
 networkRequests
@@ -1440,7 +1450,7 @@ while all identity checks pass.
 
 ## 37. Synthetic test requirements
 
-**CANDIDATE IMPLEMENTATION DECISION.** The later implementation test suite must cover at least:
+**FROZEN IMPLEMENTATION DECISION.** The later implementation test suite must cover at least:
 
 **A. Protocol identity**
 
@@ -1645,7 +1655,7 @@ while all identity checks pass.
 
 ## 38. Pre-window dress rehearsal
 
-**CANDIDATE IMPLEMENTATION DECISION.** The implementation should be merged / activated early enough that at least one normal scheduled first-attempt Daily ETL before `2026-08-24` can exercise the real capture machinery.
+**FROZEN IMPLEMENTATION DECISION.** The implementation should be merged / activated early enough that at least one normal scheduled first-attempt Daily ETL before `2026-08-24` can exercise the real capture machinery.
 
 Because the observation window has not opened, that run should:
 
@@ -1666,7 +1676,7 @@ This is an operational dress rehearsal, **not** an H8 observation.
 
 ## 39. First study observation
 
-**CANDIDATE IMPLEMENTATION DECISION.** The first authorized study score observation is the first qualifying first-attempt scheduled ETL whose `latest.json -> as_of_utc` has UTC date `2026-08-24`.
+**FROZEN IMPLEMENTATION DECISION.** The first authorized study score observation is the first qualifying first-attempt scheduled ETL whose `latest.json -> as_of_utc` has UTC date `2026-08-24`.
 
 **FIREWALL.** If capture infrastructure is not accepted, activated, merged, and operational before that scheduled observation: H8 v1 must **not** silently start late. **STOP.** A new protocol version / start date would be required.
 
@@ -1674,7 +1684,7 @@ This is an operational dress rehearsal, **not** an H8 observation.
 
 ## 40. Implementation acceptance sequence
 
-**CANDIDATE IMPLEMENTATION DECISION.** Freeze the future process:
+**FROZEN IMPLEMENTATION DECISION.** Freeze the future process:
 
 1. Freeze and merge this capture implementation contract. `H8_CAPTURE_CONTRACT_SHA` must be assigned **before** Stage-A implementation.
 2. Create Stage-A implementation branch from the then-current merged `main`.
@@ -1697,7 +1707,7 @@ This is an operational dress rehearsal, **not** an H8 observation.
 
 ## 41. Repository checks for future implementation
 
-**CANDIDATE IMPLEMENTATION DECISION.** Require at least:
+**FROZEN IMPLEMENTATION DECISION.** Require at least:
 
 ```text
 node --test scripts/research/__tests__/h8-prospective-capture.test.mjs
@@ -1715,25 +1725,25 @@ CI / Vercel green where applicable.
 
 ## 42. Contract status / SHA
 
-**FACT.** This pass creates only the implementation-contract candidate.
+**FACT.** This pass freezes the accepted capture implementation contract.
 
-**FIREWALL.** Do **not** assign `H8_CAPTURE_CONTRACT_SHA` yet.
+**FIREWALL.** Do **not** write `H8_CAPTURE_CONTRACT_SHA` into this document. The freeze commit created by this pass becomes `H8_CAPTURE_CONTRACT_SHA` only after independent freeze-commit verification.
 
-After independent review accepts the exact contract bytes, a later freeze commit may become `H8_CAPTURE_CONTRACT_SHA`.
+The final accepted candidate immediately before freeze is `47c4f43cd7934cc21869ee51325f0b40c58e4f43`. That SHA is **not** `H8_CAPTURE_CONTRACT_SHA`.
 
-**FIREWALL.** Do **not** assign `H8_CAPTURE_SOURCE_SHA` during contract work.
+**FIREWALL.** Do **not** assign `H8_CAPTURE_SOURCE_SHA` during freeze.
 
 ---
 
-## 43. What this candidate amendment does and does not do
+## 43. What this freeze pass does and does not do
 
-This candidate amendment modifies **only**:
+This freeze pass modifies **only**:
 
 ```text
 docs/H8_CAPTURE_IMPLEMENTATION_CONTRACT.md
 ```
 
-It hardens implementation / provenance rules. It does **not** change frozen H8 scientific methodology.
+It records freeze status terminology. It does **not** change frozen H8 scientific methodology or any accepted implementation requirement.
 
 It does **not**:
 
@@ -1746,7 +1756,7 @@ It does **not**:
 - create a fourth or fifth model
 - modify the frozen H8 protocol
 - modify H7 / H7.1 / H7.2
-- assign `H8_CAPTURE_CONTRACT_SHA`
+- invent `H8_CAPTURE_CONTRACT_SHA` inside the document
 - assign `H8_CAPTURE_SOURCE_SHA`
 - merge this branch
 
@@ -1755,7 +1765,7 @@ It does **not**:
 ## 44. Stop
 
 ```text
-H8 PROTOCOL STATUS:
+H8 SCIENTIFIC PROTOCOL:
 FROZEN / MERGED / CLOSED TO METHODOLOGY CHANGES
 
 H8_PROTOCOL_VERSION:
@@ -1764,11 +1774,17 @@ h8-prospective-three-model-v1
 H8_PROTOCOL_SHA:
 85fb5bcbdb5c6d04333a3a9516629851efd890eb
 
-CAPTURE IMPLEMENTATION:
-NOT YET IMPLEMENTED
+H8 CAPTURE IMPLEMENTATION CONTRACT:
+FROZEN
+
+H8_CAPTURE_CONTRACT_VERSION:
+h8-capture-implementation-contract-v1
 
 H8_CAPTURE_CONTRACT_SHA:
-NOT YET ASSIGNED
+PENDING INDEPENDENT FREEZE-COMMIT VERIFICATION
+
+CAPTURE IMPLEMENTATION:
+NOT YET IMPLEMENTED
 
 H8_CAPTURE_SOURCE_SHA:
 NOT YET ASSIGNED
@@ -1783,8 +1799,7 @@ CALIBRATION:
 CLOSED
 ```
 
-**STOP FOR FINAL INDEPENDENT H8 CAPTURE-CONTRACT REVIEW.**
+**STOP FOR INDEPENDENT H8 CAPTURE-CONTRACT FREEZE VERIFICATION.**
 
-Do not freeze this contract until that review accepts or amends it.
-Do not write capture code until a freeze exists.
+Do not write Stage-A code until this freeze commit is independently verified and merged.
 Do not start H8 if accepted capture implementation is not operational before the scheduled `2026-08-24` observation.
