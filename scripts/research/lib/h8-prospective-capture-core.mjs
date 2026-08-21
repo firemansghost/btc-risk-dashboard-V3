@@ -867,6 +867,84 @@ export function buildCreatedManifest({ captureRunUtc, files }) {
   });
 }
 
+export function validateCreatedManifest(obj) {
+  const keys = Object.keys(obj);
+  if (keys.length !== MANIFEST_KEY_ORDER.length) {
+    throw new Error('STOP: created manifest key count mismatch');
+  }
+  for (let i = 0; i < keys.length; i += 1) {
+    if (keys[i] !== MANIFEST_KEY_ORDER[i]) {
+      throw new Error(`STOP: created manifest key order mismatch at ${MANIFEST_KEY_ORDER[i]}`);
+    }
+  }
+  if (obj.manifest_version !== MANIFEST_VERSION) {
+    throw new Error('STOP: manifest_version mismatch');
+  }
+  parseStrictUtcTimestamp(obj.capture_run_utc, 'capture_run_utc');
+  if (!Array.isArray(obj.files)) throw new Error('STOP: manifest files must be an array');
+  let previousPath = null;
+  const seen = new Set();
+  for (const entry of obj.files) {
+    const entryKeys = Object.keys(entry);
+    if (entryKeys.length !== MANIFEST_FILE_KEY_ORDER.length) {
+      throw new Error('STOP: manifest file entry key count mismatch');
+    }
+    for (let i = 0; i < entryKeys.length; i += 1) {
+      if (entryKeys[i] !== MANIFEST_FILE_KEY_ORDER[i]) {
+        throw new Error(`STOP: manifest file entry key order mismatch at ${MANIFEST_FILE_KEY_ORDER[i]}`);
+      }
+    }
+    const allowed = assertAllowedManifestPath(entry.path);
+    parseStrictSha256(entry.sha256, 'manifest file sha256');
+    if (seen.has(allowed)) throw new Error(`STOP: duplicate manifest path ${allowed}`);
+    if (previousPath !== null && allowed <= previousPath) {
+      throw new Error('STOP: manifest files are not in deterministic lexicographic path order');
+    }
+    seen.add(allowed);
+    previousPath = allowed;
+  }
+  return obj;
+}
+
+export function deriveEligibilityFromStoredFactors(factors) {
+  const reasons = [];
+  for (let index = 0; index < REQUIRED_FACTOR_KEYS.length; index += 1) {
+    const key = REQUIRED_FACTOR_KEYS[index];
+    const factor = Array.isArray(factors) ? factors[index] : null;
+    if (!factor || factor.key !== key) {
+      reasons.push(`MISSING_FACTOR:${key}`);
+      continue;
+    }
+    if (factor.official_weight !== OFFICIAL_WEIGHTS[key]) {
+      throw new Error(`STOP: factor official_weight mismatch for ${key}`);
+    }
+    const scoreOk =
+      typeof factor.score === 'number' &&
+      Number.isFinite(factor.score) &&
+      factor.score >= 0 &&
+      factor.score <= 100;
+    if (!scoreOk) reasons.push(`INVALID_SCORE:${key}`);
+    if (factor.status !== 'fresh') reasons.push(`STATUS_NOT_FRESH:${key}`);
+    let lastUpdated = null;
+    if (factor.last_updated_utc != null) {
+      lastUpdated = parseStrictUtcTimestamp(factor.last_updated_utc, `${key}.last_updated_utc`);
+    }
+    if (factor.status === 'fresh' && lastUpdated == null) {
+      reasons.push(`MISSING_TIMESTAMP:${key}`);
+    }
+  }
+  if (reasons.length === 0) {
+    return {
+      common_eligibility_status: 'ELIGIBLE',
+      eligibility_reason: 'ALL_REQUIRED_FACTORS_FRESH',
+    };
+  }
+  return {
+    common_eligibility_status: 'NOT_ELIGIBLE',
+    eligibility_reason: reasons.join('|'),
+  };
+}
+
 export function validateObservationSchema(obj) {
   const keys = Object.keys(obj);
   if (keys.length !== OBSERVATION_KEY_ORDER.length) {
@@ -981,62 +1059,16 @@ export function validateCompleteObservation(obj, { expectedDate, captureSourceSh
     throw new Error('STOP: production_config_sha256 mismatch');
   }
   parseStrictSha256(obj.latest_artifact_sha256, 'latest_artifact_sha256');
-  if (!['ELIGIBLE', 'NOT_ELIGIBLE'].includes(obj.common_eligibility_status)) {
-    throw new Error('STOP: invalid common_eligibility_status');
+  const asOfDate = utcCalendarDateFromTimestamp(obj.observation_as_of_utc, 'observation_as_of_utc');
+  if (obj.observation_date !== asOfDate) {
+    throw new Error('STOP: observation_date does not match observation_as_of_utc UTC date');
   }
-  if (typeof obj.eligibility_reason !== 'string' || obj.eligibility_reason === '') {
-    throw new Error('STOP: eligibility_reason missing');
+  const derivedEligibility = deriveEligibilityFromStoredFactors(obj.factors);
+  if (obj.common_eligibility_status !== derivedEligibility.common_eligibility_status) {
+    throw new Error('STOP: stored common_eligibility_status does not match derived eligibility');
   }
-  if (
-    obj.common_eligibility_status === 'ELIGIBLE' &&
-    obj.eligibility_reason !== 'ALL_REQUIRED_FACTORS_FRESH'
-  ) {
-    throw new Error('STOP: eligible observation has unexpected eligibility_reason');
-  }
-  if (
-    !['MATCH', 'INTEGRITY_MISMATCH', 'NOT_CHECKED_NOT_ELIGIBLE'].includes(obj.official_integrity_status)
-  ) {
-    throw new Error('STOP: invalid official_integrity_status');
-  }
-  if (!['ELIGIBLE', 'INTEGRITY_MISMATCH', 'OBSERVATION_NOT_ELIGIBLE'].includes(obj.analysis_status)) {
-    throw new Error('STOP: invalid analysis_status');
-  }
-  const expectedStatus = classifyAnalysisStatus({
-    eligibilityStatus: obj.common_eligibility_status,
-    integrityStatus: obj.official_integrity_status,
-  });
-  if (obj.analysis_status !== expectedStatus) {
-    throw new Error('STOP: analysis_status inconsistent with eligibility/integrity');
-  }
-  obj.factors.forEach((factor, index) => {
-    const key = REQUIRED_FACTOR_KEYS[index];
-    if (factor.official_weight !== OFFICIAL_WEIGHTS[key]) {
-      throw new Error(`STOP: factor official_weight mismatch for ${key}`);
-    }
-    if (factor.score != null) {
-      if (typeof factor.score !== 'number' || !Number.isFinite(factor.score) || factor.score < 0 || factor.score > 100) {
-        throw new Error(`STOP: factor score out of bounds for ${key}`);
-      }
-    }
-    if (obj.common_eligibility_status === 'ELIGIBLE') {
-      if (factor.status !== 'fresh') throw new Error(`STOP: eligible factor ${key} is not fresh`);
-      parseStrictUtcTimestamp(factor.last_updated_utc, `${key}.last_updated_utc`);
-    }
-  });
-  if (obj.common_eligibility_status === 'NOT_ELIGIBLE') {
-    if (obj.official_formula_score !== null || obj.liq_heavy_score !== null || obj.mom_tilted_score !== null) {
-      throw new Error('STOP: NOT_ELIGIBLE observation must null formula/challenger scores');
-    }
-    if (obj.official_integrity_status !== 'NOT_CHECKED_NOT_ELIGIBLE') {
-      throw new Error('STOP: NOT_ELIGIBLE integrity status mismatch');
-    }
-  } else {
-    for (const field of ['official_formula_score', 'liq_heavy_score', 'mom_tilted_score', 'official_published_score']) {
-      const value = obj[field];
-      if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 100) {
-        throw new Error(`STOP: ${field} out of bounds`);
-      }
-    }
+  if (obj.eligibility_reason !== derivedEligibility.eligibility_reason) {
+    throw new Error('STOP: stored eligibility_reason does not match derived factor deficiencies');
   }
   const versions = obj.model_versions;
   if (
@@ -1048,6 +1080,67 @@ export function validateCompleteObservation(obj, { expectedDate, captureSourceSh
   }
   if (canonicalizeJson(obj.model_weight_definitions) !== canonicalizeJson(buildModelWeightDefinitions())) {
     throw new Error('STOP: model_weight_definitions mismatch');
+  }
+  if (derivedEligibility.common_eligibility_status === 'NOT_ELIGIBLE') {
+    if (obj.official_formula_score !== null || obj.liq_heavy_score !== null || obj.mom_tilted_score !== null) {
+      throw new Error('STOP: NOT_ELIGIBLE observation must null formula/challenger scores');
+    }
+    if (obj.official_integrity_status !== 'NOT_CHECKED_NOT_ELIGIBLE') {
+      throw new Error('STOP: NOT_ELIGIBLE integrity status mismatch');
+    }
+    if (obj.analysis_status !== 'OBSERVATION_NOT_ELIGIBLE') {
+      throw new Error('STOP: NOT_ELIGIBLE analysis_status mismatch');
+    }
+    if (obj.official_published_score != null) {
+      if (
+        typeof obj.official_published_score !== 'number' ||
+        !Number.isFinite(obj.official_published_score) ||
+        obj.official_published_score < 0 ||
+        obj.official_published_score > 100
+      ) {
+        throw new Error('STOP: official_published_score out of bounds');
+      }
+    }
+    return;
+  }
+  const scoresByKey = {};
+  for (const factor of obj.factors) {
+    scoresByKey[factor.key] = factor.score;
+  }
+  const recomputedOfficial = computeOfficialScore(scoresByKey);
+  const recomputedLiqHeavy = computeLiqHeavyScore(scoresByKey);
+  const recomputedMomTilted = computeMomTiltedScore(scoresByKey);
+  if (obj.official_formula_score !== recomputedOfficial) {
+    throw new Error('STOP: stored official_formula_score does not equal recomputed Official score');
+  }
+  if (obj.liq_heavy_score !== recomputedLiqHeavy) {
+    throw new Error('STOP: stored liq_heavy_score does not equal recomputed Liq-Heavy score');
+  }
+  if (obj.mom_tilted_score !== recomputedMomTilted) {
+    throw new Error('STOP: stored mom_tilted_score does not equal recomputed Mom-Tilted score');
+  }
+  if (
+    typeof obj.official_published_score !== 'number' ||
+    !Number.isFinite(obj.official_published_score) ||
+    obj.official_published_score < 0 ||
+    obj.official_published_score > 100
+  ) {
+    throw new Error('STOP: official_published_score out of bounds');
+  }
+  const expectedIntegrity = classifyOfficialIntegrity({
+    eligible: true,
+    publishedScore: obj.official_published_score,
+    formulaScore: recomputedOfficial,
+  });
+  if (obj.official_integrity_status !== expectedIntegrity) {
+    throw new Error('STOP: official_integrity_status does not match recomputed Official integrity');
+  }
+  const expectedAnalysis = classifyAnalysisStatus({
+    eligibilityStatus: 'ELIGIBLE',
+    integrityStatus: expectedIntegrity,
+  });
+  if (obj.analysis_status !== expectedAnalysis) {
+    throw new Error('STOP: analysis_status inconsistent with eligibility/integrity');
   }
 }
 
@@ -1074,6 +1167,19 @@ export function validateCompleteClose(obj, { expectedDate, captureSourceSha }) {
   if (typeof obj.source !== 'string' || obj.source === '') throw new Error('STOP: close source is blank');
   parseStrictUtcTimestamp(obj.source_row_ingested_at_utc, 'source_row_ingested_at_utc');
   parseStrictUtcTimestamp(obj.captured_at_utc, 'captured_at_utc');
+  if (compareUtcDates(obj.close_date_utc, CLOSE_UNIVERSE_START) < 0) {
+    throw new Error('STOP: close_date_utc is before CLOSE_UNIVERSE_START');
+  }
+  if (compareUtcDates(obj.close_date_utc, CLOSE_UNIVERSE_END) > 0) {
+    throw new Error('STOP: close_date_utc is after CLOSE_UNIVERSE_END');
+  }
+  const capturedDate = utcCalendarDateFromTimestamp(obj.captured_at_utc, 'captured_at_utc');
+  if (compareUtcDates(capturedDate, CLOSE_RECOVERY_CUTOFF) > 0) {
+    throw new Error('STOP: captured_at_utc is after CLOSE_RECOVERY_CUTOFF');
+  }
+  if (!isCompletedUtcCandle(obj.close_date_utc, obj.captured_at_utc)) {
+    throw new Error('STOP: close_date_utc was not a completed UTC candle at capture');
+  }
   if (obj.source_artifact_path !== BTC_SOURCE_PATH) throw new Error('STOP: source_artifact_path mismatch');
   parseStrictSha256(obj.source_artifact_sha256, 'source_artifact_sha256');
   assertGithubProvenance(obj, 'close');

@@ -298,11 +298,14 @@ export function materializeCaptureCreates({
   try {
     for (const item of creates) {
       const abs = prepareCreateOnlyTarget(repoRoot, item.path, fsImpl);
-      exclusiveWriteFile(abs, item.bytes, fsImpl);
+      exclusiveWriteFile(abs, item.bytes, fsImpl, { testHooks });
+      createdPaths.push(item.path);
+      if (typeof testHooks.corruptWrittenFile === 'function') {
+        testHooks.corruptWrittenFile(abs, item);
+      }
       if (sha256Bytes(fsImpl.readFileSync(abs)) !== item.sha256) {
         throw new Error(`STOP: written bytes SHA256 mismatch for ${item.path}`);
       }
-      createdPaths.push(item.path);
       if (item.kind === 'observation') incrementCounter('observationFilesCreated');
       else incrementCounter('closeFilesCreated');
       if (typeof testHooks.afterWrite === 'function') {

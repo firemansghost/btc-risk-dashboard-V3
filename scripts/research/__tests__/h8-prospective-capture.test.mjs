@@ -50,6 +50,7 @@ import {
   proposeCloseArtifacts,
   validateCompleteObservation,
   validateCompleteClose,
+  validateCreatedManifest,
   buildCreatedManifest,
   assertAllowedManifestPath,
   parseSidecarBytes,
@@ -76,7 +77,10 @@ import {
   writeCreatedManifest,
   prepareCreateOnlyTarget,
   assertUnderRunnerTemp,
+  assertSafeRunnerTempTarget,
   removeSameRunH8Files,
+  readCreatedManifest,
+  runH8ScientificPhase,
 } from '../lib/h8-prospective-capture-io.mjs';
 import { parseArgs, runCapture, planCapture, materializeCaptureCreates } from '../capture-h8-prospective.mjs';
 
@@ -1415,11 +1419,11 @@ test('mid-escrow failure cleans same-run files', () => {
       manifest_version: 'h8-created-manifest-v1',
       capture_run_utc: '2026-08-24T11:32:00.000Z',
       files: [
-        { path: rel, sha256: sha256Bytes(Buffer.from(body)) },
         {
           path: 'research/h8-prospective/btc-closes/2026-08-24.json',
           sha256: 'a'.repeat(64),
         },
+        { path: rel, sha256: sha256Bytes(Buffer.from(body)) },
       ],
     })
   );
@@ -1444,4 +1448,411 @@ test('frozen identity verifier is reused after git movement', () => {
   assert.equal(io.includes('verifyActivatedH8RuntimeState'), true);
   assert.equal((io.match(/verifyActivatedH8RuntimeState/g) || []).length >= 4, true);
   assert.equal(cli.includes('verifyActivatedH8RuntimeState'), true);
+});
+
+function tryDirLink(src, dest) {
+  try {
+    fs.symlinkSync(src, dest, 'dir');
+    return true;
+  } catch {
+    const result = spawnSync('cmd', ['/c', 'mklink', '/J', dest, src], { encoding: 'utf8' });
+    return result.status === 0;
+  }
+}
+
+function tryFileLink(src, dest) {
+  try {
+    fs.symlinkSync(src, dest);
+    return true;
+  } catch {
+    const result = spawnSync('cmd', ['/c', 'mklink', dest, src], { encoding: 'utf8' });
+    return result.status === 0;
+  }
+}
+
+test('existing observation rederives eligibility, scores, and integrity', () => {
+  const planned = validObservation();
+  const text = canonicalizeJson(planned.observation);
+  validateExistingObservation(text, '2026-08-24', 'a'.repeat(40));
+  const mutate = (fn) => {
+    const obj = JSON.parse(text);
+    fn(obj);
+    return canonicalizeJson(obj);
+  };
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.observation_date = '2026-08-23';
+        }),
+        '2026-08-23',
+        'a'.repeat(40)
+      ),
+    /observation_as_of_utc UTC date/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.factors[0].score = null;
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /derived eligibility|INVALID_SCORE/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.factors[0].score = 101;
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /derived eligibility|INVALID_SCORE/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.factors[0].status = 'stale';
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /derived eligibility|STATUS_NOT_FRESH/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.factors[0].last_updated_utc = null;
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /derived eligibility|MISSING_TIMESTAMP/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.official_formula_score = 49;
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /recomputed Official score/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.liq_heavy_score = 1;
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /recomputed Liq-Heavy score/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.mom_tilted_score = 1;
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /recomputed Mom-Tilted score/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.official_published_score = 51;
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /Official integrity/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.official_integrity_status = 'INTEGRITY_MISMATCH';
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /Official integrity/
+  );
+  assert.throws(
+    () =>
+      validateExistingObservation(
+        mutate((obj) => {
+          obj.analysis_status = 'OBSERVATION_NOT_ELIGIBLE';
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /analysis_status/
+  );
+  const notEligible = proposeObservation({
+    latest: makeLatest({ factorOverrides: { term_leverage: { status: 'stale' } } }),
+    config: makeConfig(),
+    latestSha256: 'ab'.repeat(32),
+    etlStartedUtc: '2026-08-24T11:00:00.000Z',
+    captureRunUtc: '2026-08-24T11:32:00.000Z',
+    captureSourceSha: 'a'.repeat(40),
+    provenance: provenance(),
+    production: production(),
+  });
+  validateExistingObservation(canonicalizeJson(notEligible.observation), '2026-08-24', 'a'.repeat(40));
+  const badNotEligible = JSON.parse(canonicalizeJson(notEligible.observation));
+  badNotEligible.official_formula_score = 50;
+  assert.throws(
+    () => validateExistingObservation(canonicalizeJson(badNotEligible), '2026-08-24', 'a'.repeat(40)),
+    /null formula/
+  );
+});
+
+test('existing close enforces universe, cutoff, and completed candle', () => {
+  const planned = validClose();
+  const text = canonicalizeJson(planned.close);
+  validateExistingClose(text, '2026-08-24', 'a'.repeat(40));
+  const mutate = (fn) => {
+    const obj = JSON.parse(text);
+    fn(obj);
+    return canonicalizeJson(obj);
+  };
+  assert.throws(
+    () =>
+      validateExistingClose(
+        mutate((obj) => {
+          obj.close_date_utc = '2026-08-23';
+        }),
+        '2026-08-23',
+        'a'.repeat(40)
+      ),
+    /CLOSE_UNIVERSE_START/
+  );
+  assert.throws(
+    () =>
+      validateExistingClose(
+        mutate((obj) => {
+          obj.close_date_utc = '2027-03-22';
+          obj.captured_at_utc = '2027-03-23T11:00:00.000Z';
+        }),
+        '2027-03-22',
+        'a'.repeat(40)
+      ),
+    /CLOSE_UNIVERSE_END/
+  );
+  assert.throws(
+    () =>
+      validateExistingClose(
+        mutate((obj) => {
+          obj.captured_at_utc = '2027-03-30T11:00:00.000Z';
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /CLOSE_RECOVERY_CUTOFF/
+  );
+  assert.throws(
+    () =>
+      validateExistingClose(
+        mutate((obj) => {
+          obj.captured_at_utc = '2026-08-24T11:00:00.000Z';
+        }),
+        '2026-08-24',
+        'a'.repeat(40)
+      ),
+    /completed UTC candle/
+  );
+  assert.throws(
+    () =>
+      validateExistingClose(
+        mutate((obj) => {
+          obj.close_date_utc = '2026-08-26';
+          obj.captured_at_utc = '2026-08-25T11:00:00.000Z';
+        }),
+        '2026-08-26',
+        'a'.repeat(40)
+      ),
+    /completed UTC candle/
+  );
+});
+
+test('exclusive create write and hash failures leave no stray H8 files', () => {
+  resetCounters();
+  const repo = tmpDir();
+  const preexistingRel = 'research/h8-prospective/observations/2026-08-25.json';
+  const preexistingAbs = path.join(repo, ...preexistingRel.split('/'));
+  fs.mkdirSync(path.dirname(preexistingAbs), { recursive: true });
+  fs.writeFileSync(preexistingAbs, '{"keep":true}\n');
+  const planned = validObservation();
+  const bytes = Buffer.from(canonicalizeJson(planned.observation));
+  const creates = [{ path: planned.path, bytes, sha256: sha256Bytes(bytes), kind: 'observation' }];
+  assert.throws(
+    () =>
+      materializeCaptureCreates({
+        repoRoot: repo,
+        creates,
+        testHooks: {
+          afterExclusiveOpen() {
+            throw new Error('STOP: synthetic write failure after exclusive create');
+          },
+        },
+      }),
+    /synthetic write failure after exclusive create/
+  );
+  assert.equal(fs.existsSync(path.join(repo, ...planned.path.split('/'))), false);
+  assert.equal(fs.readFileSync(preexistingAbs, 'utf8'), '{"keep":true}\n');
+  assert.throws(
+    () =>
+      materializeCaptureCreates({
+        repoRoot: repo,
+        creates,
+        testHooks: {
+          corruptWrittenFile(abs) {
+            fs.writeFileSync(abs, '{"tampered":true}\n');
+          },
+        },
+      }),
+    /SHA256 mismatch/
+  );
+  assert.equal(fs.existsSync(path.join(repo, ...planned.path.split('/'))), false);
+  assert.equal(fs.readFileSync(preexistingAbs, 'utf8'), '{"keep":true}\n');
+});
+
+test('created manifest is strictly canonical', () => {
+  const good = buildCreatedManifest({
+    captureRunUtc: '2026-08-24T11:32:00.000Z',
+    files: [
+      { path: 'research/h8-prospective/btc-closes/2026-08-24.json', sha256: 'a'.repeat(64) },
+      { path: 'research/h8-prospective/observations/2026-08-24.json', sha256: 'b'.repeat(64) },
+    ],
+  });
+  validateCreatedManifest(good);
+  const repo = tmpDir();
+  const runnerTemp = tmpDir();
+  const manifestPath = path.join(runnerTemp, 'h8-created-manifest.json');
+  fs.writeFileSync(manifestPath, canonicalizeJson(good));
+  readCreatedManifest(manifestPath);
+  assert.throws(
+    () => validateCreatedManifest({ ...good, extra: true }),
+    /key count|key order/
+  );
+  const unordered = JSON.parse(canonicalizeJson(good));
+  unordered.files = [unordered.files[1], unordered.files[0]];
+  assert.throws(() => validateCreatedManifest(unordered), /lexicographic/);
+  const dup = JSON.parse(canonicalizeJson(good));
+  dup.files = [dup.files[0], { ...dup.files[0] }];
+  assert.throws(() => validateCreatedManifest(dup), /duplicate|lexicographic/);
+  const spaced = `${JSON.stringify(good, null, 4)}\n`;
+  fs.writeFileSync(manifestPath, spaced);
+  assert.throws(() => readCreatedManifest(manifestPath), /canonical/);
+});
+
+test('RUNNER_TEMP rejects final-component and parent symlink escape', () => {
+  const repo = tmpDir();
+  const runnerTemp = tmpDir();
+  const outside = tmpDir();
+  writeCreatedManifest({
+    manifestPath: path.join(runnerTemp, 'h8-created-manifest.json'),
+    repoRoot: repo,
+    runnerTemp,
+    captureRunUtc: '2026-08-24T11:32:00.000Z',
+    files: [],
+  });
+  const escrowDir = path.join(runnerTemp, 'h8-escrow');
+  fs.mkdirSync(escrowDir, { recursive: true });
+  assertSafeRunnerTempTarget({
+    targetPath: escrowDir,
+    runnerTemp,
+    repoRoot: repo,
+    expectedKind: 'directory',
+  });
+  const linkedEscrow = path.join(runnerTemp, 'linked-escrow');
+  if (tryDirLink(outside, linkedEscrow)) {
+    assert.throws(
+      () =>
+        assertSafeRunnerTempTarget({
+          targetPath: linkedEscrow,
+          runnerTemp,
+          repoRoot: repo,
+          expectedKind: 'directory',
+        }),
+      /symlink|RUNNER_TEMP/
+    );
+    assert.throws(
+      () =>
+        runH8ScientificPhase({
+          env: {
+            RUNNER_TEMP: runnerTemp,
+            H8_ESCROW_DIR: linkedEscrow,
+            H8_CREATED_MANIFEST_PATH: path.join(runnerTemp, 'h8-created-manifest.json'),
+          },
+        }),
+      /symlink|RUNNER_TEMP|H8_ESCROW_DIR/
+    );
+  }
+  const parentLink = path.join(runnerTemp, 'escaped-parent');
+  if (tryDirLink(outside, parentLink)) {
+    assert.throws(
+      () =>
+        assertSafeRunnerTempTarget({
+          targetPath: path.join(parentLink, 'h8-escrow'),
+          runnerTemp,
+          repoRoot: repo,
+          mkdirParents: true,
+        }),
+      /RUNNER_TEMP|symlink/
+    );
+  }
+  const outsideManifest = path.join(outside, 'outside-manifest.json');
+  fs.writeFileSync(outsideManifest, '{}\n');
+  const linkedManifest = path.join(runnerTemp, 'linked-manifest.json');
+  if (tryFileLink(outsideManifest, linkedManifest)) {
+    assert.throws(
+      () =>
+        writeCreatedManifest({
+          manifestPath: linkedManifest,
+          repoRoot: repo,
+          runnerTemp,
+          captureRunUtc: '2026-08-24T11:32:00.000Z',
+          files: [],
+        }),
+      /symlink/
+    );
+  } else {
+    const mockFs = {
+      existsSync: fs.existsSync.bind(fs),
+      mkdirSync: fs.mkdirSync.bind(fs),
+      realpathSync: fs.realpathSync.bind(fs),
+      lstatSync(p) {
+        if (path.resolve(p) === path.resolve(linkedManifest)) {
+          return { isSymbolicLink: () => true, isFile: () => false, isDirectory: () => false };
+        }
+        return fs.lstatSync(p);
+      },
+    };
+    fs.writeFileSync(linkedManifest, '{}\n');
+    assert.throws(
+      () =>
+        assertSafeRunnerTempTarget({
+          targetPath: linkedManifest,
+          runnerTemp,
+          repoRoot: repo,
+          fsImpl: mockFs,
+          label: 'H8_CREATED_MANIFEST_PATH',
+          expectedKind: 'file',
+        }),
+      /symlink/
+    );
+  }
 });
