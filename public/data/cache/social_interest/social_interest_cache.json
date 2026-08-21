@@ -2,9 +2,9 @@
   "score": 88,
   "reason": "success",
   "status": "fresh",
-  "lastUpdated": "2026-08-20T11:29:10.000Z",
-  "trending_fetched_at": "2026-08-20T11:31:18.208Z",
-  "price_observation_utc": "2026-08-20T11:29:10.000Z",
+  "lastUpdated": "2026-08-21T11:28:40.000Z",
+  "trending_fetched_at": "2026-08-21T11:30:50.731Z",
+  "price_observation_utc": "2026-08-21T11:28:40.000Z",
   "components": {
     "searchScore": 85,
     "momentumScore": 95,
@@ -18,11 +18,11 @@
     },
     {
       "label": "Bitcoin Trending Rank",
-      "value": "#2"
+      "value": "#1"
     },
     {
       "label": "Price Signal (7d)",
-      "value": "Neutral"
+      "value": "Bullish"
     },
     {
       "label": "Volatility Level (14d)",
@@ -34,7 +34,7 @@
     },
     {
       "label": "Fetch Time",
-      "value": "1564ms"
+      "value": "1516ms"
     },
     {
       "label": "Data Sources",
@@ -49,14 +49,14 @@
       "value": "0"
     }
   ],
-  "bitcoinRank": 2,
-  "latestPrice": 71852.23843558125,
-  "fetchTime": 1564,
+  "bitcoinRank": 1,
+  "latestPrice": 77358.0371528454,
+  "fetchTime": 1516,
   "metrics": {
-    "trending_rank": 2,
-    "momentum_7d_pct": 2.2722940858503438,
+    "trending_rank": 1,
+    "momentum_7d_pct": 6.203962374249671,
     "score": 88
   },
-  "cachedAt": "2026-08-20T11:31:18.209Z",
+  "cachedAt": "2026-08-21T11:30:50.732Z",
   "version": "1.0.0"
 }

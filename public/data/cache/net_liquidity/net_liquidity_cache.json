@@ -1,11 +1,11 @@
 {
-  "score": 70,
+  "score": 68,
   "reason": "success",
-  "lastUpdated": "2026-08-12T00:00:00.000Z",
+  "lastUpdated": "2026-08-19T00:00:00.000Z",
   "details": [
     {
       "label": "Fed Balance Sheet (WALCL)",
-      "value": "$6.8T"
+      "value": "$6.7T"
     },
     {
       "label": "Reverse Repo (RRP)",
@@ -13,7 +13,7 @@
     },
     {
       "label": "Treasury General Account",
-      "value": "$964B"
+      "value": "$954B"
     },
     {
       "label": "Net Liquidity",
@@ -21,7 +21,7 @@
     },
     {
       "label": "4-week Change",
-      "value": "-3.2%"
+      "value": "-2.1%"
     },
     {
       "label": "Level Percentile (1y)",
@@ -29,19 +29,24 @@
     },
     {
       "label": "Fetch Time",
-      "value": "842ms"
+      "value": "6866ms"
     },
     {
       "label": "Component Scores",
-      "value": "Level: 56, RoC: 92, Momentum: 54"
+      "value": "Level: 56, RoC: 87, Momentum: 54"
     },
     {
       "label": "Data as of",
-      "value": "2026-08-12"
+      "value": "2026-08-19"
     }
   ],
-  "latestWalclDate": "2026-08-12",
-  "fetchTime": 842,
-  "cachedAt": "2026-08-14T11:48:41.706Z",
+  "latestWalclDate": "2026-08-19",
+  "fetchTime": 6866,
+  "metrics": {
+    "net_liquidity_usd": 5792086270000,
+    "roc4w_pct": -2.12358311823303,
+    "score": 68
+  },
+  "cachedAt": "2026-08-21T11:30:56.073Z",
   "version": "1.0.0"
 }
