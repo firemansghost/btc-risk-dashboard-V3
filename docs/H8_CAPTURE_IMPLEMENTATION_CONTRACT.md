@@ -4,10 +4,11 @@
 **Phase:** H8 — capture implementation contract
 **Status:** `IMPLEMENTATION CONTRACT CANDIDATE — NOT YET ACCEPTED`
 **Proposed contract version:** `h8-capture-implementation-contract-v1`
+**H8_CAPTURE_CONTRACT_VERSION:** `h8-capture-implementation-contract-v1`
 **Branch:** `research/h8-capture-implementation-contract`
 **Parent main HEAD at candidate creation:** `737cdce75e4c7e0f94b6268f502a2439943b5a7c`
 
-This document specifies the **future machinery** that will prospectively capture already-frozen H8 evidence. It does **not** change H8 scientific methodology. Capture code does **not** yet exist. `H8_CAPTURE_CONTRACT_SHA` is **not** assigned. `H8_CAPTURE_SOURCE_SHA` is **not** assigned.
+This document specifies the **future machinery** that will prospectively capture already-frozen H8 evidence. It does **not** change H8 scientific methodology. Independent review of `f0095daf5dfd1737ce2531466d1d471698bc739b` approved the core contract design. This amendment records pre-freeze implementation / provenance hardening only. Capture code does **not** yet exist. `H8_CAPTURE_CONTRACT_SHA` is **not** assigned. `H8_CAPTURE_SOURCE_SHA` is **not** assigned.
 
 Do **not** write a future freeze-commit SHA into this document. The Git commit that later freezes accepted contract bytes becomes `H8_CAPTURE_CONTRACT_SHA` only after independent review and an explicit freeze.
 
@@ -117,7 +118,23 @@ git blob SHA                 = f2103048d384749310432eee610dffad2dad0f4f
 label                        = PRE-H8 CAPTURE WORKFLOW BASELINE
 cron                         = 0 11 * * *
 triggers                     = schedule, workflow_dispatch
+concurrency.group            = etl
+concurrency.cancel-in-progress = false
 ```
+
+**FACT.** Daily ETL currently serializes all ETL runs with:
+
+```yaml
+concurrency:
+  group: etl
+  cancel-in-progress: false
+```
+
+**CANDIDATE IMPLEMENTATION DECISION.** Stage A must preserve this concurrency behavior. H8 must not weaken or remove that serialization.
+
+A `workflow_dispatch` ETL and scheduled ETL must not execute concurrently and race over `public/data/latest.json` or `public/data/btc_price_history.csv` during H8 capture.
+
+The future accepted workflow must continue using the single ETL concurrency group with `cancel-in-progress: false` unless a separately reviewed implementation amendment proves an equivalent serialization mechanism.
 
 Current sequence:
 
@@ -254,18 +271,28 @@ git cat-file -e <captureSourceSha>^{commit}
 captureSourceSha is an ancestor of current checkout HEAD
 ```
 
-**FIREWALL.** Do **not** require `HEAD == captureSourceSha`, because routine daily artifact commits will advance `main`.
+**FIREWALL.** Do **not** require `HEAD == captureSourceSha` after activation, because routine daily artifact commits will advance `main`.
 
-Runtime must verify that the currently checked-out H8 runtime implementation bytes still match the frozen capture-source commit. At minimum compare current Git blob identities against:
+Runtime must verify both committed Git identity **and** actual working-tree bytes. Git `HEAD:path` identity is necessary but not sufficient, because the implementation executes working-tree bytes.
+
+For Stage-A runtime files:
 
 ```text
-<captureSourceSha>:.github/workflows/daily-etl.yml
-<captureSourceSha>:scripts/research/capture-h8-prospective.mjs
-<captureSourceSha>:scripts/research/lib/h8-prospective-capture-core.mjs
-<captureSourceSha>:scripts/research/lib/h8-prospective-capture-io.mjs
+.github/workflows/daily-etl.yml
+scripts/research/capture-h8-prospective.mjs
+scripts/research/lib/h8-prospective-capture-core.mjs
+scripts/research/lib/h8-prospective-capture-io.mjs
 ```
 
-If any current runtime blob differs from the corresponding frozen Stage-A blob:
+require all of:
+
+1. `HEAD` Git blob identity equals `<captureSourceSha>:<path>`
+2. worktree file exists and is a normal file
+3. worktree file is not a symlink
+4. `git hash-object <path>` equals the expected frozen Git blob
+5. no staged modification exists for that path
+
+If any current runtime blob or worktree byte differs from the corresponding frozen Stage-A identity:
 
 ```text
 STOP BEFORE WRITES.
@@ -291,6 +318,34 @@ Before real capture require:
 
 - `H8_PROTOCOL_SHA` is an ancestor of current `HEAD`
 - current `docs/H8_PROSPECTIVE_30D_RISK_DISCRIMINATION_PREREGISTRATION.md` Git blob equals exactly `41594c82ab9d837fee4a5e894b3d2ed419d68bc9`
+- worktree file exists, is a normal file, is not a symlink
+- `git hash-object` of that path equals `41594c82ab9d837fee4a5e894b3d2ed419d68bc9`
+- no staged modification exists for that path
+
+If mismatch: **STOP BEFORE WRITES**.
+
+---
+
+## 7.1 Frozen capture-contract identity at runtime
+
+**CANDIDATE IMPLEMENTATION DECISION.** After this contract is frozen and merged, Stage-A implementation must know and hard-code:
+
+```text
+H8_CAPTURE_CONTRACT_VERSION = h8-capture-implementation-contract-v1
+H8_CAPTURE_CONTRACT_SHA     = <assigned only after this contract is frozen>
+Frozen contract document Git blob = <assigned only after this contract is frozen>
+```
+
+Do **not** invent those SHA/blob values in this candidate document. They are supplied to Stage A only after this contract is frozen.
+
+The Stage-A runtime `--contract-check` / `--capture` identity checks must verify:
+
+- `H8_CAPTURE_CONTRACT_SHA` exists as a commit
+- it is an ancestor of the current checkout
+- current `docs/H8_CAPTURE_IMPLEMENTATION_CONTRACT.md` Git blob equals the exact frozen contract-document blob
+- worktree file exists, is a normal file, is not a symlink
+- `git hash-object` of that path equals the frozen contract-document blob
+- no staged modification exists for that path
 
 If mismatch: **STOP BEFORE WRITES**.
 
@@ -322,7 +377,22 @@ config/dashboard-config.json SHA256 =
 712a6d138b7e58dee3e325ec2740044aad2a7a80fe027a8f3e3fef294ac3b57a
 ```
 
-**FIREWALL.** If **any** scientific fingerprint check differs: **STOP BEFORE ALL H8 WRITES**, including BTC-close writes. Do not silently continue. Do not classify compatibility automatically. A later explicit compatibility review is required.
+For every frozen **individual** scientific file in the table above, require all of:
+
+1. `HEAD` Git blob identity equals the expected frozen blob
+2. worktree file exists and is a normal file
+3. worktree file is not a symlink
+4. `git hash-object <path>` equals the expected frozen Git blob
+5. no staged modification exists for that path
+
+For frozen scientific directories `scripts/etl/factors/` and `scripts/etl/lib/`, require **both**:
+
+- `HEAD` tree identity equals the frozen tree SHA
+- no tracked or untracked worktree difference exists inside that directory
+
+An untracked file inside a frozen scientific directory must **not** silently pass. The exact shell/Node implementation can be decided in Stage A, but the contract requirement is: **actual scientific/runtime bytes executed by the run must match the frozen identities**.
+
+**FIREWALL.** If **any** scientific fingerprint check differs: **STOP BEFORE ALL H8 WRITES**, including BTC-close writes. Do not silently continue. Do not classify compatibility automatically. A later explicit compatibility review is required. H8 capture is blocked; ordinary production ETL artifact handling continues (§11 production isolation).
 
 **FIREWALL.** Routine `public/data` changes are **not** fingerprint changes.
 
@@ -382,7 +452,7 @@ valid numeric H8_GITHUB_RUN_ID
 - developer shell
 - test run
 
-**FIREWALL.** There must be **no** `--date`, `--force`, `--backfill`, `--output-dir`, `--overwrite`, `--event`, `--run-attempt`, or other CLI option that permits a human to make real capture eligible.
+**FIREWALL.** There must be **no** `--date`, `--force`, `--backfill`, `--output-dir`, `--overwrite`, `--event`, `--run-attempt`, `--manifest-path`, or other CLI option that permits a human to make real capture eligible.
 
 ---
 
@@ -397,14 +467,32 @@ READ-ONLY. No H8 artifact write.
 May validate:
 
 - frozen protocol identity
+- frozen capture-contract identity
 - scientific fingerprint
 - capture runtime file structure
+- working-tree scientific/runtime cleanliness
 - current input schemas
 - workflow static structure
 
-Before `H8_CAPTURE_SOURCE_SHA` exists, `--contract-check` may accept a clearly read-only candidate-source identity argument solely for implementation review.
+The exact read-only candidate-source argument name is frozen as:
 
-**FIREWALL.** That argument must **not** be accepted in `--capture` mode.
+```text
+--candidate-source-sha <Stage-A commit SHA>
+```
+
+It is allowed **only** with `--contract-check`.
+
+Before `H8_CAPTURE_SOURCE_SHA` exists, `--contract-check --candidate-source-sha <Stage-A SHA>` is the source-anchored review check. It must require:
+
+```text
+HEAD == supplied candidate Stage-A SHA
+```
+
+and validate current Stage-A runtime blobs / worktree bytes against that exact commit.
+
+After Stage-B activation / merge, ordinary `--contract-check` must read `research/h8-prospective/H8_CAPTURE_SOURCE_SHA.txt` and must **reject** `--candidate-source-sha`.
+
+**FIREWALL.** `--candidate-source-sha` must **not** be accepted in `--capture` mode.
 
 ### 11.2 `--capture`
 
@@ -441,19 +529,68 @@ captured_at_utc      = capture_run_utc   (close artifacts created by that invoca
 
 ---
 
+## 12.1 Same-run ETL temporal marker
+
+**CANDIDATE IMPLEMENTATION DECISION.** Immediately **before** `npm run etl:compute`, the workflow must capture one UTC timestamp:
+
+```text
+H8_ETL_STARTED_UTC
+```
+
+using an ISO-8601 UTC timestamp generated on the runner. It must be exported to subsequent H8 steps.
+
+**FIREWALL.** The value must not be operator supplied. The value must not be accepted as a CLI override.
+
+During real `--capture` require `H8_ETL_STARTED_UTC` is a valid UTC timestamp, and:
+
+```text
+H8_ETL_STARTED_UTC <= latest.json -> as_of_utc <= capture_run_utc
+```
+
+If not: **BLOCK H8 CAPTURE FOR THAT INVOCATION**. No H8 writes. Do not rewrite timestamps. Do not substitute an earlier `latest.json`.
+
+This rule, together with preserved `concurrency.group = etl`, establishes that the H8 observation is tied to the current scheduled ETL invocation rather than an earlier manual or scheduled artifact.
+
+Record `etl_started_utc` in each future score observation. It may also be stored in BTC-close provenance; score observation provenance is required.
+
+---
+
 ## 13. Observation input authority
 
 **CANDIDATE IMPLEMENTATION DECISION.** Observation scientific input comes from the post-ETL `public/data/latest.json` produced by the **same** scheduled ETL invocation.
 
 Compute `latest_artifact_sha256` from the exact bytes after `npm run etl:compute` and before capture.
 
-Strictly require:
+Strictly require from same-run `public/data/latest.json`:
 
 - `latest.json` parses as JSON
 - `ok == true`
 - `as_of_utc` is a valid offset-aware UTC timestamp
-- `model_version == v1.1.1`
-- `implementation_revision == integrity-2026-08`
+- `model_version == "v1.1.1"`
+- `implementation_revision == "integrity-2026-08"`
+
+From verified frozen `config/dashboard-config.json` strictly require:
+
+- `model_version == "v1.1.1"`
+- `implementation_revision == "integrity-2026-08"`
+- `ssot_version == "2.1.1"`
+
+Also require:
+
+```text
+latest.model_version == config.model_version
+latest.implementation_revision == config.implementation_revision
+```
+
+Record:
+
+```text
+production_model_version              = latest.model_version
+production_implementation_revision    = latest.implementation_revision
+production_ssot_version               = config.ssot_version
+```
+
+Record the already-verified config Git blob and byte SHA256. No UI/config fallback.
 
 The observation date is the UTC calendar-date portion of `latest.json -> as_of_utc`. This value becomes `observation_date`.
 
@@ -510,7 +647,35 @@ social_interest = 0.10
 
 **FIREWALL.** Do not derive scientific Official weights from the UI.
 
-Validate any published factor `weight` / `weight_pct` against the frozen Official weight when that field exists.
+The frozen scientific Official weights are **decimal fractions**. Production `latest.json` currently publishes factor `weight` and `weight_pct` in **percent units**.
+
+Freeze:
+
+```text
+expectedPublishedPercent = frozenOfficialDecimalWeight * 100
+```
+
+If latest factor `weight` exists: require exact finite numeric equality to `expectedPublishedPercent`.
+If `weight_pct` exists: require exact finite numeric equality to `expectedPublishedPercent`.
+If both exist: require they also equal each other.
+
+Examples:
+
+```text
+trend_valuation:
+  scientific decimal weight = 0.30
+  published weight          = 30
+  published weight_pct      = 30
+
+etf_flows:
+  scientific decimal weight = 0.077
+  published weight          = 7.7
+  published weight_pct      = 7.7
+```
+
+The observation's scientific `official_weight` field remains the **decimal** value (`0.30`, `0.18`, `0.077`, …). Do **not** store the published percent as the scientific model weight.
+
+A published weight-unit mismatch is structural input failure for H8 capture for that invocation.
 
 For `last_updated_utc`: use the production factor timestamp deterministically. If both `last_utc` and `lastUpdated` exist and are non-null: require equality. For a fresh factor require a valid timestamp. Do not invent one.
 
@@ -700,10 +865,13 @@ study_id
 protocol_version
 protocol_sha
 h8_capture_source_sha
+capture_contract_version
+capture_contract_sha
 observation_date
 scheduled_event
 observation_as_of_utc
 capture_created_utc
+etl_started_utc
 source_base_git_sha
 github_run_id
 github_run_attempt
@@ -735,6 +903,8 @@ Recommended frozen constants:
 study_id         = h8-prospective-three-model-v1
 scheduled_event  = DAILY_ETL
 protocol_sha     = 85fb5bcbdb5c6d04333a3a9516629851efd890eb
+capture_contract_version = h8-capture-implementation-contract-v1
+capture_contract_sha     = <H8_CAPTURE_CONTRACT_SHA assigned after freeze>
 ```
 
 For `NOT_ELIGIBLE` observations: challenger / formula fields that cannot scientifically be calculated without renormalization must be JSON `null`.
@@ -895,6 +1065,8 @@ study_id
 protocol_version
 protocol_sha
 h8_capture_source_sha
+capture_contract_version
+capture_contract_sha
 close_date_utc
 close_usd
 source
@@ -914,6 +1086,8 @@ Recommended:
 
 ```text
 source_artifact_path = public/data/btc_price_history.csv
+capture_contract_version = h8-capture-implementation-contract-v1
+capture_contract_sha     = <H8_CAPTURE_CONTRACT_SHA assigned after freeze>
 ```
 
 **FIREWALL.** No MACE. No score. No forward return. No performance field.
@@ -922,30 +1096,125 @@ source_artifact_path = public/data/btc_price_history.csv
 
 ## 28. Created-file manifest outside repository
 
-**CANDIDATE IMPLEMENTATION DECISION.** The capture program should communicate the exact files it created to the workflow without creating another in-repo research artifact.
-
-Use a path under `$RUNNER_TEMP` passed through an environment variable such as:
+**CANDIDATE IMPLEMENTATION DECISION.** Freeze environment name:
 
 ```text
 H8_CREATED_MANIFEST_PATH
 ```
 
-The manifest must be **outside** the repository.
+In GitHub Actions real capture, require `H8_CREATED_MANIFEST_PATH` resolves underneath `RUNNER_TEMP` and outside the repository root.
 
-For every newly created H8 artifact record at least:
+**FIREWALL.** Do not allow the CLI to expose a human `--manifest-path` override in `--capture` mode.
 
-- repository-relative path
-- SHA256 of exact bytes
+Freeze a deterministic JSON manifest. Exact top-level key order:
 
-If no H8 file is created: write an empty / valid manifest or otherwise expose an unambiguous zero-file result.
+```text
+manifest_version
+capture_run_utc
+files
+```
 
-The workflow must use this manifest to stage **only** files actually created by that authorized capture invocation.
+```text
+manifest_version = h8-created-manifest-v1
+```
+
+`files` is an array in deterministic repository-relative path order. Each entry exact key order:
+
+```text
+path
+sha256
+```
+
+Canonical serialization: `JSON.stringify(value, null, 2) + '\n'`
+
+For zero new files: `files = []`
+
+Before workflow staging, strictly validate every path. Allowed exact patterns only:
+
+```text
+^research/h8-prospective/observations/[0-9]{4}-[0-9]{2}-[0-9]{2}\.json$
+OR
+^research/h8-prospective/btc-closes/[0-9]{4}-[0-9]{2}-[0-9]{2}\.json$
+```
+
+Additionally reject:
+
+- absolute paths
+- `..`
+- `.`
+- backslashes
+- repeated separators
+- non-canonical separators
+- path normalization changes
+- symlinks
+- directories
+- files outside repository root after resolution
+
+Require each staged target:
+
+- exists as a normal file
+- is not a symlink
+- SHA256 exactly equals the manifest entry
+
+**FIREWALL.** A mere string-prefix check is **not** sufficient.
+
+The activation sidecar `research/h8-prospective/H8_CAPTURE_SOURCE_SHA.txt` must **never** appear in a daily capture manifest.
 
 ---
 
-## 29. Narrow Git staging
+## 29. H8 failure must not break production ETL
 
-**CANDIDATE IMPLEMENTATION DECISION.** Retain existing production staging for:
+**CANDIDATE IMPLEMENTATION DECISION.** H8 is research infrastructure.
+
+A failure of H8-specific identity verification, fingerprint verification, contract verification, observation validation, close validation, create-only write, H8 commit, or H8 push must **not** by itself prevent ordinary GhostGauge production ETL artifacts from being committed / pushed.
+
+Production ETL failure itself may of course fail the production workflow. But: **H8 failure ≠ production ETL failure**.
+
+Examples:
+
+- If scientific fingerprint changes: write ZERO H8 artifacts, mark/log H8 capture `BLOCKED`, continue ordinary production artifact handling.
+- If `latest.json` fails an H8-specific integrity requirement after a successful production ETL: write ZERO H8 artifacts; the H8 observation becomes effectively missed / `CAPTURE_MISSING`; production artifacts may still be committed normally.
+- If H8 commit / push ultimately fails: the production update already remains safe; no rerun may recreate the score observation; later close recovery remains governed by protocol.
+
+**FIREWALL.** Do not silently hide H8 failures. They must be visible in workflow logs / step summary.
+
+---
+
+## 29.1 Pre-ETL and post-ETL identity safety
+
+**CANDIDATE IMPLEMENTATION DECISION.** The future workflow should perform a READ-ONLY H8 identity preflight on authorized first-attempt scheduled runs **before** production ETL.
+
+The preflight must verify at least:
+
+- activated capture source identity
+- H8 protocol identity
+- frozen capture-contract identity
+- scientific model fingerprint
+- runtime implementation bytes
+- working-tree scientific / runtime cleanliness
+
+**FIREWALL.** An H8 preflight failure must **not** stop the ordinary production ETL. Instead it sets an internal workflow state equivalent to `H8_CAPTURE_ALLOWED=false` and records / logs the reason. Production ETL then continues normally.
+
+After ETL, real H8 `--capture` may run only if `H8_CAPTURE_ALLOWED=true` and must repeat the relevant fail-closed identity / worktree checks before H8 writes.
+
+Thus:
+
+- pre-ETL check proves the frozen scientific code at computation start
+- post-ETL check proves it remained unchanged through computation
+
+This is H8 research safety. It must not convert an H8 research problem into a production outage.
+
+---
+
+## 30. Separate production commit from H8 scientific commit
+
+**CANDIDATE IMPLEMENTATION DECISION.** H8 capture still occurs **after** successful `npm run etl:compute` and **before** either artifact commit. This preserves the frozen protocol ordering.
+
+After successful H8 capture:
+
+### 30.1 Phase 1 — production artifact commit / push
+
+Stage **only** normal production paths:
 
 ```text
 public/data
@@ -954,69 +1223,105 @@ public/extras
 public/alerts
 ```
 
-For H8:
+**FIREWALL.** Do **not** stage H8 research artifacts in the production commit.
+
+Commit / pull / rebase / push ordinary production artifacts using safe production behavior. H8 research files generated by this invocation remain uncommitted during this phase.
+
+If production commit / push ultimately fails: the H8 research artifacts from this invocation must **not** be committed. The scientific observation did not successfully land.
+
+### 30.2 Phase 2 — H8 scientific artifact commit / push
+
+Only **after** the production artifact update has successfully landed, revalidate:
+
+- H8 created-file bytes against `RUNNER_TEMP` manifest SHA256
+- source `latest.json` SHA256 referenced by any new observation
+- source `btc_price_history.csv` SHA256 referenced by any new close artifacts
+- frozen identities still valid
+- no existing target was introduced by the updated `main`
+
+If any referenced source artifact bytes differ from those used during H8 capture: **DO NOT COMMIT H8**. The production update remains valid. Do not alter the H8 artifact. Do not recalculate it. Do not substitute new data. Treat the H8 capture for that score date as not successfully landed.
+
+If all revalidation passes: stage **only** exact H8 paths from the trusted validated manifest. Create a separate H8 scientific commit.
+
+Suggested runtime commit subject:
+
+```text
+research(h8): capture prospective artifacts [skip ci]
+```
+
+The exact subject may be finalized in Stage A but must remain deterministic.
+
+Then pull / rebase against current `origin/main` if needed, reverify H8 bytes and relevant source hashes, then push.
+
+**FIREWALL.** For the H8 scientific commit: **no** automatic merge fallback. Rebase conflict: **FAIL H8 CLOSED**. Production remains already updated. Do not rerun capture. Do not rebuild the score observation.
+
+This separation ensures a research conflict cannot take down the live daily dashboard.
+
+---
+
+## 31. Exact H8 scientific staging
+
+**CANDIDATE IMPLEMENTATION DECISION.** Production commit must **never** stage research paths.
+
+H8 scientific commit must stage only exact files from the validated manifest.
 
 **FIREWALL.** Do **not** use `git add research`.
-**FIREWALL.** Do **not** broadly stage `research/h8-prospective`.
+**FIREWALL.** Do **not** use `git add research/h8-prospective`.
+**FIREWALL.** Do **not** use wildcard broad staging.
 
-Instead, stage only the exact H8 artifact paths listed in the trusted `RUNNER_TEMP` created-file manifest.
+Use exact validated path arguments individually.
 
-Before staging each path verify it begins exactly with either:
+Activation sidecar `research/h8-prospective/H8_CAPTURE_SOURCE_SHA.txt` is pre-existing tracked scientific control. It must **never** appear in a daily capture manifest. It must **never** be staged as a changed runtime artifact.
 
-```text
-research/h8-prospective/observations/
-research/h8-prospective/btc-closes/
-```
-
-Reject any other path.
-
-The activation sidecar is already tracked before study runtime and must **not** be modified by scheduled capture.
+If it is modified: H8 capture is **BLOCKED**.
 
 ---
 
-## 30. Post-commit / post-rebase byte verification
+## 32. Source-artifact survival verification
 
-**CANDIDATE IMPLEMENTATION DECISION.** The current production workflow commits before pulling / rebasing from `main`. H8 must account for this.
+**CANDIDATE IMPLEMENTATION DECISION.** In addition to verifying created H8 artifact SHA256 after rebase, require verification of the **source bytes** referenced by those H8 artifacts.
 
-Before the artifact commit: record exact SHA256 of every newly created H8 file in the `RUNNER_TEMP` manifest.
+For a newly created score observation, recorded `latest_artifact_sha256` must still equal current `public/data/latest.json` SHA256 immediately before the separate H8 scientific commit.
 
-After any `git pull --rebase` and before `git push`: recompute SHA256 for every newly created H8 file. Require exact match.
+For newly created close artifacts, recorded `source_artifact_sha256` must still equal current `public/data/btc_price_history.csv` SHA256 immediately before H8 scientific commit.
 
-If any H8 artifact byte changes: **STOP**. Do not push.
+After any pull / rebase before the H8 push: repeat the applicable checks.
 
-For every additional pull / rebase during push retry: repeat H8 byte verification before retrying push.
-
----
-
-## 31. Rebase failure with H8 artifacts
-
-**CANDIDATE IMPLEMENTATION DECISION.** The existing workflow falls back from failed rebase to a merge.
-
-For a scheduled run that created one or more H8 scientific artifacts: **do not** use the current automatic merge fallback after a rebase conflict.
-
-If `git pull --rebase origin main` fails while the current scheduled-run commit contains newly created H8 artifacts:
-
-```text
-ABORT / FAIL CLOSED
-```
-
-Do not resolve the scientific artifact conflict automatically. Do not rerun capture. Do not overwrite an existing observation.
-
-The missed commit can result in `CAPTURE_MISSING` if it never successfully lands.
-
-For runs that created **zero** H8 artifacts, ordinary production behavior may remain as currently designed unless implementation review recommends a safe simplification.
+If source bytes differ: do not alter the H8 artifact; do not recalculate it; do not substitute new data; do not push it. Treat the H8 capture for that score date as not successfully landed. The production commit remains unaffected.
 
 ---
 
-## 32. Push retries
+## 32.1 H8 local failure cleanup / transactionality
+
+**CANDIDATE IMPLEMENTATION DECISION.** Because H8 research artifacts may be created locally before their separate scientific commit, freeze local-run failure semantics.
+
+The capture implementation must track every repository H8 path successfully created by the current invocation.
+
+If real H8 capture later fails before successful H8 scientific commit:
+
+- never overwrite anything
+- remove only **uncommitted** H8 files created by this same invocation from the ephemeral GitHub runner when necessary to permit production Git operations
+- never remove a file that existed before the invocation
+- never remove a tracked / committed prior H8 artifact
+- never use a broad `rm` on `research/h8-prospective`
+
+Local cleanup of an uncommitted ephemeral-run file is **not** rewriting H8 scientific history because the artifact never became a successfully committed H8 observation.
+
+The implementation should minimize this need by validating all proposed H8 outputs before materialization. If Stage A can implement a safer temporary-materialization architecture under `RUNNER_TEMP` while preserving the frozen scientific semantics, document it during implementation review.
+
+**FIREWALL.** Do not silently change the scientific artifact paths or accepted-byte rules.
+
+---
+
+## 32.2 Push retries for the H8 scientific commit
 
 **CANDIDATE IMPLEMENTATION DECISION.** A push retry inside the **same** GitHub Actions `run_attempt == 1` is operationally allowed. It does **not** constitute a second scientific capture.
 
 **FIREWALL.** Do **not** rerun the capture script to regenerate H8 artifacts during push retry. Reuse the exact originally generated bytes.
 
-After each pull / rebase: reverify SHA256 against the `RUNNER_TEMP` manifest.
+After each pull / rebase: reverify SHA256 against the `RUNNER_TEMP` manifest and the applicable source-artifact survival hashes.
 
-If the workflow run ultimately cannot push: the uncommitted / unpushed H8 file does **not** become an accepted H8 observation.
+If the workflow run ultimately cannot push the H8 scientific commit: the uncommitted / unpushed H8 file does **not** become an accepted H8 observation.
 
 A later GitHub Actions rerun has `run_attempt != 1` and therefore cannot recreate the missed score observation.
 
@@ -1074,17 +1379,27 @@ Synthetic tests must not use network.
 
 - protocol commit exists
 - protocol is ancestor
-- protocol document blob exact
-- frozen scientific model fingerprint exact
+- protocol document blob exact, including worktree `git hash-object`
+- frozen capture-contract identity / blob exact after the contract is frozen
+- frozen scientific model fingerprint exact, including worktree bytes
 - current production config SHA256 exact
+- frozen scientific directories have no dirty or untracked worktree difference
 - current workflow has required future H8 gate once implemented
 - current H8 runtime files are structurally present
 - no real output is written
 - `filesWritten` counter = `0`
 
-Before capture-source freeze, candidate `--contract-check` may use the proposed candidate implementation commit SHA as a **READ-ONLY** review argument.
+Source-SHA-anchored candidate `--contract-check` is **not** required before the Stage-A commit exists.
 
-After activation, ordinary `--contract-check` must read `H8_CAPTURE_SOURCE_SHA.txt` and validate runtime blobs against that source.
+After the Stage-A commit, and only then, run:
+
+```text
+node scripts/research/capture-h8-prospective.mjs --contract-check --candidate-source-sha <Stage-A SHA>
+```
+
+requiring `HEAD ==` that SHA.
+
+After Stage-B activation / merge, ordinary `--contract-check` must read `H8_CAPTURE_SOURCE_SHA.txt`, validate runtime blobs against that source, and **reject** `--candidate-source-sha`.
 
 **FIREWALL.** No `--contract-check` may create observations, close artifacts, research directories, or performance output.
 
@@ -1248,12 +1563,83 @@ while all identity checks pass.
 **R. CLI**
 
 - no default capture
-- `--capture` rejects candidate-source override
+- `--capture` rejects `--candidate-source-sha`
+- `--candidate-source-sha` rejected after activation where appropriate
 - no `--date`
 - no `--force`
 - no `--backfill`
 - no `--output-dir`
+- no `--manifest-path` in `--capture`
 - `--contract-check` is write-free
+
+**S. Worktree identity**
+
+- correct committed + worktree bytes pass
+- `HEAD` blob correct but modified worktree file fails
+- staged scientific / runtime modification fails
+- untracked file inside frozen scientific tree fails
+- symlink substituted for frozen runtime file fails
+
+**T. Same-run temporal proof**
+
+- valid ETL start `<= latest.as_of <=` capture time passes
+- `latest.as_of` before ETL start blocks H8
+- `latest.as_of` after capture time blocks H8
+- malformed ETL-start timestamp blocks H8
+
+**U. Weight units**
+
+- trend published `30` maps to scientific `0.30`
+- ETF published `7.7` maps to scientific `0.077`
+- direct `0.30` published value fails where `30` is required
+- `weight` vs `weight_pct` mismatch fails
+
+**V. SSOT version**
+
+- config `ssot_version` `2.1.1` passes
+- missing / wrong `ssot_version` fails
+- latest / config model revision disagreement fails
+
+**W. Contract identity**
+
+- frozen capture-contract SHA ancestor passes
+- wrong contract document blob fails
+- artifact schema records contract version / SHA
+
+**X. Candidate contract-check**
+
+- source-anchored candidate check runs after Stage-A commit
+- supplied candidate SHA must equal `HEAD`
+- candidate-source argument rejected in `--capture`
+- candidate-source argument rejected after activation where appropriate
+
+**Y. Production isolation**
+
+- H8 blocked before writes still allows production staging path
+- H8 validation failure produces no staged H8 path
+- production commit does not include H8 files
+- H8 commit does not include production files
+- H8 rebase failure does not rewrite or rerun capture
+- H8 rebase failure does not undo already-landed production update
+
+**Z. Source survival**
+
+- unchanged latest hash permits observation H8 commit
+- changed latest hash blocks observation H8 commit
+- unchanged BTC-history hash permits close H8 commit
+- changed BTC-history hash blocks close H8 commit
+
+**AA. Manifest path safety**
+
+- canonical observation path passes
+- canonical close path passes
+- `../` traversal rejected
+- absolute path rejected
+- backslash path rejected
+- prefix-plus-traversal rejected
+- symlink rejected
+- wrong SHA256 rejected
+- activation sidecar path rejected
 
 ---
 
@@ -1290,18 +1676,21 @@ This is an operational dress rehearsal, **not** an H8 observation.
 
 **CANDIDATE IMPLEMENTATION DECISION.** Freeze the future process:
 
-1. Implement only the authorized Stage-A files.
-2. Run synthetic tests / repository checks / `--contract-check`.
-3. Commit Stage A.
-4. Independent review of exact Stage-A commit / code / workflow / tests.
-5. If accepted, formally assign `H8_CAPTURE_SOURCE_SHA = <Stage-A commit>`.
-6. Create Stage-B activation commit adding only `research/h8-prospective/H8_CAPTURE_SOURCE_SHA.txt` with exact Stage-A SHA + LF.
-7. Independently verify activation commit and unchanged Stage-A runtime blobs.
-8. Merge implementation + activation normally to `main`.
-9. Run read-only `--contract-check` on merged `main`.
-10. Allow ordinary scheduled pre-window dress rehearsal.
-11. First qualifying `2026-08-24` observation begins H8.
+1. Freeze and merge this capture implementation contract. `H8_CAPTURE_CONTRACT_SHA` must be assigned **before** Stage-A implementation.
+2. Create Stage-A implementation branch from the then-current merged `main`.
+3. Implement only authorized Stage-A files.
+4. Run dedicated synthetic tests, `npm test`, `npm run typecheck`, and `git diff --check`. No source-SHA-anchored candidate `--contract-check` yet.
+5. Commit Stage A.
+6. Require clean Stage-A worktree. Run read-only `--contract-check --candidate-source-sha <Stage-A SHA>`.
+7. Independent Stage-A review. If accepted assign `H8_CAPTURE_SOURCE_SHA = <Stage-A SHA>`.
+8. Create Stage-B activation commit adding only `research/h8-prospective/H8_CAPTURE_SOURCE_SHA.txt` with exact Stage-A SHA + LF.
+9. Independent activation review.
+10. Merge Stage A + Stage B normally.
+11. On merged `main` run ordinary activated read-only `--contract-check`.
+12. Allow ordinary scheduled pre-window dress rehearsal.
+13. First qualifying observation-date `2026-08-24` begins H8.
 
+**FIREWALL.** No Stage-A coding begins before this contract is frozen and merged.
 **FIREWALL.** Do not assign `H8_CAPTURE_SOURCE_SHA` before Stage-A review.
 
 ---
@@ -1336,13 +1725,15 @@ After independent review accepts the exact contract bytes, a later freeze commit
 
 ---
 
-## 43. What this candidate pass does and does not do
+## 43. What this candidate amendment does and does not do
 
-This candidate pass creates **only**:
+This candidate amendment modifies **only**:
 
 ```text
 docs/H8_CAPTURE_IMPLEMENTATION_CONTRACT.md
 ```
+
+It hardens implementation / provenance rules. It does **not** change frozen H8 scientific methodology.
 
 It does **not**:
 
@@ -1392,7 +1783,7 @@ CALIBRATION:
 CLOSED
 ```
 
-**STOP FOR INDEPENDENT H8 CAPTURE-CONTRACT REVIEW.**
+**STOP FOR FINAL INDEPENDENT H8 CAPTURE-CONTRACT REVIEW.**
 
 Do not freeze this contract until that review accepts or amends it.
 Do not write capture code until a freeze exists.
