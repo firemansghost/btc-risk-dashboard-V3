@@ -441,13 +441,9 @@ jq '.factors.social_interest // .social_interest | {status, last_updated_utc}' p
 
 **Note**: The `--soft-fail` flag allows the ETL to complete even if post-check fails, useful for one-time recovery scenarios. The next run should pass once timestamps are properly propagated.
 
-### Trend & Valuation Specific Guard
+### Trend & Valuation
 
-The Trend & Valuation factor has additional guards:
-- Always recomputes if unified price history CSV (`public/data/btc_price_history.csv`) mtime is newer than cache
-- Always recomputes if cache is missing
-- Always recomputes if cache age > TTL (6h) or stale_beyond_hours (12h)
-- Updates `lastUpdated` timestamp even when using cached calculations
+Trend & Valuation is intentionally uncached in the production ETL because the current BTC snapshot participates directly in the score. Each ETL invocation computes Trend fresh from completed canonical price history plus the current snapshot.
 
 ### Expected Log Output
 

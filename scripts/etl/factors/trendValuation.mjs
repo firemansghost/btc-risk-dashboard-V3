@@ -1,9 +1,8 @@
 // scripts/etl/factors/trendValuation.mjs
-// Trend & Valuation factor with true BMSB calculation and unified Coinbase price source
-// Enhanced with caching, incremental updates, and parallel processing
-
-import { promises as fs } from 'node:fs';
-import { join } from 'node:path';
+// Trend & Valuation factor with true BMSB calculation and unified Coinbase price source.
+// Computed fresh on each invocation because the current BTC snapshot is a scientific
+// scoring input. Result caching must not be reintroduced unless every scoring input,
+// including the snapshot, is explicitly validated/fingerprinted.
 
 import { computeMarketRegime, createWeeklyCloses } from './marketRegime.mjs';
 import {
@@ -22,104 +21,6 @@ import {
   requireSubWeights,
   SsotSubweightError,
 } from '../lib/ssotSubweights.mjs';
-
-// Cache configuration
-const CACHE_DIR = '../../public/data/cache/trend_valuation';
-const CACHE_TTL_HOURS = 24; // Cache for 24 hours
-const CACHE_FILE = 'trend_valuation_cache.json';
-
-/**
- * Load cached Trend & Valuation data
- * @returns {Object|null} Cached data or null
- */
-async function loadTrendValuationCache() {
-  try {
-    const cachePath = join(CACHE_DIR, CACHE_FILE);
-    const cacheData = await fs.readFile(cachePath, 'utf8');
-    const parsed = JSON.parse(cacheData);
-    
-    // Check if cache is still valid
-    const cacheAge = Date.now() - new Date(parsed.cachedAt).getTime();
-    const maxAge = CACHE_TTL_HOURS * 60 * 60 * 1000;
-    
-    if (cacheAge < maxAge) {
-      console.log(`Trend & Valuation: Using cached data (${Math.round(cacheAge / (60 * 1000))} minutes old)`);
-      return parsed;
-    } else {
-      console.log(`Trend & Valuation: Cache expired (${Math.round(cacheAge / (60 * 60 * 1000))} hours old)`);
-      return null;
-    }
-  } catch (error) {
-    console.log(`Trend & Valuation: No valid cache found: ${error.message}`);
-    return null;
-  }
-}
-
-/**
- * Save Trend & Valuation data to cache
- * @param {Object} data - Data to cache
- */
-async function saveTrendValuationCache(data) {
-  try {
-    await fs.mkdir(CACHE_DIR, { recursive: true });
-    const cachePath = join(CACHE_DIR, CACHE_FILE);
-    
-    const cacheData = {
-      ...data,
-      cachedAt: new Date().toISOString(),
-      version: '1.0.0'
-    };
-    
-    await fs.writeFile(cachePath, JSON.stringify(cacheData, null, 2));
-    console.log(`Trend & Valuation: Cached data saved to ${cachePath}`);
-  } catch (error) {
-    console.warn(`Trend & Valuation: Failed to save cache: ${error.message}`);
-  }
-}
-
-/**
- * Check if price data has changed since last cache
- * @param {Array} currentCandles - Current price data
- * @param {Object} cachedData - Cached data
- * @returns {boolean} True if data has changed
- */
-function hasPriceDataChanged(currentCandles, cachedData) {
-  if (!cachedData || !cachedData.candles || !cachedData.candles.length) {
-    return true;
-  }
-  
-  const currentLatest = currentCandles[currentCandles.length - 1];
-  const cachedLatest = cachedData.candles[cachedData.candles.length - 1];
-  
-  // Check if latest candle has changed
-  return !currentLatest || !cachedLatest || 
-         currentLatest.timestamp !== cachedLatest.timestamp ||
-         currentLatest.close !== cachedLatest.close;
-}
-
-/**
- * Check if unified price history CSV has been modified since cache was created
- * @param {string} csvPath - Path to price history CSV
- * @param {Object} cachedData - Cached data with cachedAt timestamp
- * @returns {Promise<boolean>} True if CSV is newer than cache
- */
-async function hasPriceHistoryCsvChanged(csvPath, cachedData) {
-  if (!cachedData || !cachedData.cachedAt) {
-    return true; // No cache, must recompute
-  }
-  
-  try {
-    const csvStats = await fs.stat(csvPath);
-    const cacheTime = new Date(cachedData.cachedAt).getTime();
-    const csvMtime = csvStats.mtime.getTime();
-    
-    // If CSV was modified after cache was created, recompute
-    return csvMtime > cacheTime;
-  } catch (error) {
-    // CSV doesn't exist or can't be read, assume changed
-    return true;
-  }
-}
 
 /**
  * Calculate BMSB component in parallel
@@ -446,16 +347,13 @@ function calculateBMSB(weeklyCloses, snapshotPrice = null) {
 }
 
 /**
- * Compute Trend & Valuation factor with true BMSB and unified Coinbase price source
- * Enhanced with caching, incremental updates, and parallel processing
+ * Compute Trend & Valuation factor with true BMSB and unified Coinbase price source.
+ * Always computed fresh: the current BTC snapshot participates in Mayer and BMSB scoring.
  * @param {number} dailyClose - Daily close price from main ETL (for consistency)
  * @returns {Object} Factor computation result
  */
 export async function computeTrendValuation(dailyClose = null) {
   try {
-    // Check for cached data first
-    const cachedData = await loadTrendValuationCache();
-    
     // Load price history from unified CSV (Alpha Vantage backfill + Coinbase primary)
     const asOfUtc = new Date().toISOString();
     const { candles, provenance } = await loadPriceHistoryForTrend(asOfUtc);
@@ -469,56 +367,7 @@ export async function computeTrendValuation(dailyClose = null) {
       };
     }
 
-    // Check if we can use cached data (incremental update)
-    // Also check if unified price history CSV has been modified
-    const priceHistoryCsvPath = resolveCanonicalPriceHistoryPath();
-    const csvChanged = await hasPriceHistoryCsvChanged(priceHistoryCsvPath, cachedData);
-    const dataChanged = hasPriceDataChanged(candles, cachedData) || csvChanged;
-    
-    // Also check cache age against TTL (6h) and stale_beyond_hours (12h)
-    let cacheTooOld = false;
-    if (cachedData && cachedData.cachedAt) {
-      const { getStalenessConfig, getDataAgeHours } = await import('../stalenessUtils.mjs');
-      const stalenessConfig = await getStalenessConfig('trend_valuation');
-      const ageHours = getDataAgeHours(cachedData.cachedAt);
-      
-      // Recompute if cache is older than stale_beyond_hours (12h) or TTL (6h) if we're being strict
-      if (ageHours > stalenessConfig.staleBeyondHours || ageHours > stalenessConfig.ttlHours) {
-        cacheTooOld = true;
-      }
-    }
-    
-    if (cachedData && !dataChanged && !cacheTooOld) {
-      console.log('Trend & Valuation: Using cached calculations (no price data changes)');
-      const lastDailyDateUtc = latestCompletedUtcDate(asOfUtc);
-      const priceForRegime =
-        dailyClose != null && Number.isFinite(dailyClose)
-          ? dailyClose
-          : candles[candles.length - 1]?.close;
-      let marketRegime = cachedData.marketRegime;
-      if (!marketRegime && lastDailyDateUtc && Number.isFinite(priceForRegime)) {
-        const wc = createWeeklyCloses(candles);
-        marketRegime = computeMarketRegime(wc, asOfUtc, priceForRegime);
-      }
-      const updatedResult = {
-        score: cachedData.score,
-        reason: "success_cached",
-        lastUpdated: cachedData.lastUpdated,
-        timestamp: cachedData.lastUpdated,
-        details: cachedData.details,
-        bmsb: cachedData.bmsb,
-        weeklyClose: cachedData.weeklyClose,
-        weekEnd: cachedData.weekEnd,
-        sma50wDiagnostic: cachedData.sma50wDiagnostic,
-        marketRegime,
-        provenance: cachedData.provenance || [provenance]
-      };
-      // Update cache file with fresh timestamp
-      await saveTrendValuationCache(updatedResult);
-      return updatedResult;
-    }
-
-    console.log('Trend & Valuation: Computing fresh calculations (price data changed or no cache)');
+    console.log('Trend & Valuation: Computing fresh calculations...');
 
     // SMA200 denominator uses completed UTC daily candles only.
     // Mayer numerator is the current snapshot price (dailyClose), not an open CSV row.
@@ -679,7 +528,7 @@ export async function computeTrendValuation(dailyClose = null) {
       sma50wDiagnostic,
       marketRegime,
       provenance: [provenance],
-      candles, // Include candles for cache comparison
+      candles, // retained in the returned fresh result
       parallelTime, // Include timing info
       metrics: {
         mayer: Number.isFinite(mayerData?.mayerMultiple) ? mayerData.mayerMultiple : null,
@@ -687,9 +536,6 @@ export async function computeTrendValuation(dailyClose = null) {
         score,
       },
     };
-
-    // Save to cache for future use
-    await saveTrendValuationCache(result);
 
     return result;
 
