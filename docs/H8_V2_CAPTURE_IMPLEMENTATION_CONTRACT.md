@@ -865,15 +865,35 @@ Do not silently honor an override.
 
 **FIREWALL.** `GIT_AUTHOR_DATE` is also prohibited in the scientific research-commit phase to remove provenance ambiguity even though author time is not `R`.
 
-### 16.2 Rebase rule
+### 16.2 Rebase, replacement, and which commit may define R
 
-If the research commit is rebased and therefore rewritten, the **pre-rebase** commit is **not** the qualifying commit.
+If the research commit is rebased, replaced, or otherwise rewritten locally, the **pre-rebase / abandoned** commit is **not** the qualifying commit.
 
-Only the **FINAL** successfully pushed commit object can qualify.
+A **provisional research commit** is a local, unpushed commit created from the current landable set. It is **not** accepted scientific evidence. It may be rewritten or replaced locally by the frozen reconciliation process before any successful push.
 
-The final commit SHA and its genuine final committer timestamp are authoritative.
+A **final research commit** is the exact commit object that is ultimately successfully pushed and proven reachable from `origin/main`. Only that final commit can become accepted scientific evidence.
 
-**FIREWALL.** Do **not** attempt to preserve the old pre-rebase committer timestamp.
+For `NON_STUDY_REHEARSAL`:
+
+```text
+rehearsal_commit_sha =
+  the FINAL successfully pushed/reachable research commit
+
+R =
+  that FINAL commit's genuine Git COMMITTER timestamp
+```
+
+Any provisional, pre-rebase, abandoned, or superseded commit:
+
+- does not qualify
+- does not define `R`
+- is not scientific evidence
+
+Committer-timestamp integrity checks apply to the exact **final local commit proposed for push**. If reconciliation creates a replacement commit: run the timestamp-integrity checks again. Its genuine committer timestamp supersedes abandoned local commit timestamps. Do **not** preserve the abandoned commit SHA, abandoned committer timestamp, pre-rebase timestamp, or old parent identity.
+
+**FIREWALL.** Do **not** attempt to preserve the old pre-rebase or abandoned committer timestamp.
+
+For a rehearsal, `R` may be derived **only** after final successful push and remote reachability.
 
 ### 16.3 Parsing R
 
@@ -1507,21 +1527,109 @@ For closes: gaps remain governed by normal future close recovery.
 
 For `NON_STUDY_REHEARSAL`: the scheduled run does **NOT** qualify as a successful rehearsal. No empty commit may satisfy the mandatory rehearsal requirement.
 
-### 23.4 Rebase revalidation of landable status
+### 23.4 Rebase revalidation and local unpushed commit rebuild
 
-After **every** research rebase: recompute / revalidate the landable status of the **original** manifest entries.
+After **every** research rebase or origin-main synchronization of an unpushed research transaction:
 
-Do **NOT** regenerate artifact bytes. Do **NOT** rewrite the original manifest.
+1. Revalidate the immutable **original created manifest**. Do **NOT** rewrite it.
+2. Recompute `landableCommitEntries` from that original manifest. Do **NOT** regenerate artifact bytes.
+3. Compare the newly derived landable set with the artifact paths contained in the current local provisional / rebased research commit.
 
-If an entry that was previously landable becomes invalid after rebase: remove it from the landable commit set. Restage exactly the resulting landable set.
+**CASE A — SET UNCHANGED**
 
-If all entries become invalid: no research commit / push. For a rehearsal, no successful rehearsal.
+If committed research paths equal current `landableCommitEntries` paths, and all artifact hashes / source-survival / identity checks still pass: the rebased commit may proceed toward final push after all remaining checks.
+
+**CASE B — LANDABLE SET SHRANK**
+
+If one or more previously committed entries are no longer landable:
+
+- **DO NOT** push the current rebased commit
+- **DO NOT** merely restage while leaving the old commit unchanged
+
+Staging alone cannot remove an invalid artifact from an already-created commit object.
+
+The current local research commit must be **ABANDONED / REPLACED** before push.
+
+Build a replacement local research commit on top of the current accepted `origin/main` using **ONLY** the current `landableCommitEntries`.
+
+A replacement research commit must satisfy:
+
+- parent is the then-current synchronized main base
+- contains only current `landableCommitEntries`
+- every included artifact path existed in `originalManifest.files`
+- every included artifact byte SHA256 equals its immutable original-manifest SHA256
+- no artifact is recalculated
+- no artifact is regenerated from market/provider data
+- no source value is substituted
+- no new scientific path is introduced
+- no invalidated path remains in the commit
+- original manifest remains unchanged
+- exact commit subject remains the frozen subject for that mode
+- ordinary genuine runner clock is used
+- no `GIT_COMMITTER_DATE`
+- no `GIT_AUTHOR_DATE`
+- no timestamp preservation from the abandoned commit
+
+It is permissible to restore the exact original escrowed artifact bytes for the surviving landable paths.
+
+This is **COMMIT RECONSTRUCTION**. It is **NOT** scientific recapture.
+
+The replacement commit is a new ordinary Git commit object. Its own genuine committer timestamp applies. For a rehearsal, if that replacement commit ultimately lands and qualifies, **that final commit's committer timestamp is `R`**. No earlier local commit may define `R`.
+
+**CASE C — ZERO LANDABLE AFTER REBASE**
+
+If the revalidated landable set becomes empty:
+
+- abandon the current local research commit
+- create **no** replacement commit
+- push **no** research commit
+- production remains valid
+
+Observation originally created → never landed → `CAPTURE_MISSING` when applicable → never recreate.
+
+BTC close → remains missing → future recovery only through frozen scheduled catch-up.
+
+Rehearsal → does not qualify.
+
+If `origin/main` moves again before the replacement commit successfully pushes: the same frozen reconciliation process repeats. Do **NOT** rerun scientific capture. Do **NOT** regenerate artifact bytes. Do **NOT** mutate the original manifest.
+
+The implementation may impose a finite retry limit. If the transaction ultimately cannot land: **FAIL H8 CLOSED FOR THAT INVOCATION**. Production remains valid. No observation replay.
+
+**FIREWALL.** Never rewrite remote accepted history. Never force push. Never alter a previously pushed H8 scientific commit.
+
+This rebuild authority applies **ONLY** to a local, not-yet-successfully-pushed research transaction from the **same** authorized `run_attempt == 1`.
 
 ---
 
 ## 24. Research Git policy
 
-**CANDIDATE IMPLEMENTATION DECISION.** Fail-closed research Git policy after production lands:
+**CANDIDATE IMPLEMENTATION DECISION.** Fail-closed research Git policy after production lands.
+
+Conceptual sequence:
+
+```text
+production lands
+→ synchronize origin/main
+→ clean tracked state
+→ restore escrow
+→ derive landable set
+→ if zero: stop research transaction
+→ stage exact landable set
+→ create PROVISIONAL research commit
+→ fetch origin/main
+→ if unchanged: final commit-content validation / push
+→ if moved: rebase / synchronize
+→ revalidate landable set
+→ if commit contents still equal landable set: continue
+→ if landable set shrank: abandon / rebuild local commit (§23.4)
+→ repeat bounded reconciliation as needed
+→ FINAL push
+→ remote reachability / blob verification
+```
+
+**NO** merge fallback. **NO** recapture. **NO** force push.
+
+Mechanically:
 
 1. synchronize safely with `origin/main`
 2. verify clean tracked state
@@ -1532,35 +1640,46 @@ If all entries become invalid: no research commit / push. For a rehearsal, no su
 7. otherwise stage exact landable paths individually
 8. verify staged path set equals `landableCommitEntries` paths exactly (§23.2)
 9. verify each staged artifact SHA256 equals the original manifest entry SHA256
-10. create separate deterministic H8 v2 research commit **without** `GIT_COMMITTER_DATE` / `GIT_AUTHOR_DATE`
+10. create a **provisional** local research commit **without** `GIT_COMMITTER_DATE` / `GIT_AUTHOR_DATE`
 11. fetch current `origin/main`
-12. rebase only if necessary, using ordinary `git rebase` and the genuine runner clock
-13. **NO automatic merge fallback**
-14. after every rebase, revalidate:
-    - original manifest still unchanged
-    - landable status of original manifest entries (§23.4)
-    - artifact SHA256 of remaining landable entries
-    - source hashes by artifact class
-    - scientific identities
-    - exact staged/committed research paths equal the **current** landable set
-    - final commit identity
-    - final committer-timestamp integrity
-    - absence of `GIT_COMMITTER_DATE` / `GIT_AUTHOR_DATE` in the process environment
-15. if the landable set becomes empty after rebase: create **no** research push
-16. otherwise push
-17. fetch origin
-18. prove the final research commit is reachable from `origin/main`
-19. prove each landable artifact blob exists in that final reachable commit
+12. if `origin/main` is unchanged: proceed to final commit-content verification
+13. if `origin/main` moved: rebase / synchronize using ordinary `git rebase` and the genuine runner clock. **NO automatic merge fallback**
+14. after every rebase / synchronization, apply §23.4:
+    - revalidate original manifest (unchanged)
+    - recompute landable status
+    - **CASE A:** committed paths still equal landable set and checks pass → continue
+    - **CASE B:** landable set shrank → abandon the current local commit and rebuild a replacement commit from exact surviving escrow bytes
+    - **CASE C:** landable set empty → abandon; create no replacement; push nothing
+15. before any push, verify the **actual commit tree/diff**, not merely the index:
+    - changed paths in the FINAL local research commit == current `landableCommitEntries` paths exactly
+    - for every committed research artifact: commit blob bytes SHA256 == original manifest SHA256
+    - no extra path
+    - no missing landable path
+    - no production path inside the research commit
+16. run committer-timestamp integrity checks on that exact final local commit proposed for push (§16.2 / §16.4)
+17. push (retries inside the same `run_attempt == 1` may be allowed; never recapture; never force push)
+18. fetch origin
+19. prove the exact FINAL research commit:
+    - exists remotely
+    - is reachable from `origin/main`
+    - has the expected parent/history relationship after reconciliation
+    - contains exactly the final landable research paths
+    - contains exact original artifact bytes
+    - contains no invalidated artifact
+
+Only then are its artifacts accepted as successfully landed.
+
+For rehearsal qualification, only then may its FINAL commit SHA and final committer timestamp be considered for `R`.
+
+The contract does not freeze one exact Git command sequence. Stage A may use a safe local mechanism such as abandoning/resetting the unpushed research commit, synchronizing to current `origin/main`, restoring exact surviving escrow bytes, staging only landable paths, and creating a new ordinary research commit — or an independently reviewed equivalent — provided the semantic result above holds.
 
 **FIREWALL.** Do not use `git add research`.
 **FIREWALL.** Do not use `git add research/h8-v2-prospective`.
 **FIREWALL.** Do not use wildcard broad staging.
-
-Push retries inside the **same** `run_attempt == 1` may be allowed.
-
+**FIREWALL.** Never rewrite remote accepted history. Never force push. Never alter a previously pushed H8 scientific commit.
 **FIREWALL.** Do not rerun capture to regenerate artifact bytes. Reuse the exact escrowed bytes.
 
-If the final push never succeeds: no artifact from that invocation is accepted scientific evidence.
+If the transaction ultimately cannot land: **FAIL H8 CLOSED FOR THAT INVOCATION**. Production remains valid. No observation replay.
 
 For a score observation that was originally created but never landed: that date becomes `CAPTURE_MISSING` according to the frozen protocol. Never recreate that observation later.
 
@@ -2429,6 +2548,9 @@ The rehearsal must prove the NON-EMPTY research path.
 - one genuinely earlier whole second fails the lower bound
 - manufactured future timestamp fails the upper bound
 - `R` equals the exact stored Git committer instant and is not shifted by the 120-second tolerance
+- timestamp-integrity checks apply to the final local commit proposed for push
+- a replacement commit is re-checked; abandoned timestamps do not apply
+- `R` is derived only after final successful push / reachability
 
 **G. Research Git**
 
@@ -2453,6 +2575,19 @@ The rehearsal must prove the NON-EMPTY research path.
 - close-only landing
 - landable subset preserves original manifest hashes
 - no new path can appear in the landable set
+- rebase with unchanged landable set preserves valid final commit contents
+- rebase shrinking an observation+close set does NOT push the old full commit
+- shrinking set causes replacement of the local provisional commit, not mere restaging
+- replacement commit contains only surviving landable entries
+- replacement artifact bytes equal original manifest hashes
+- abandoned local commit is never treated as accepted
+- abandoned rehearsal commit cannot define `R`
+- replacement rehearsal commit, if finally pushed, is the only `R` candidate
+- second origin movement repeats reconciliation without recapture
+- zero landable after rebase => no replacement commit / no push
+- final commit diff equals the landable set exactly
+- no force push
+- no rewrite of previously pushed scientific history
 
 **H. Start authorization**
 
@@ -2549,13 +2684,13 @@ If compatibility cannot be proven: **STOP H8 v2** and require a successor study.
 
 ## 41. What this pass does and does not do
 
-This final interaction-repair revision modifies **only**:
+This research-commit reconciliation repair modifies **only**:
 
 ```text
 docs/H8_V2_CAPTURE_IMPLEMENTATION_CONTRACT.md
 ```
 
-It distinguishes the immutable original created manifest from the deterministic landable commit set, and it separates pre-merge start rejection from post-merge terminal invalid-start failure.
+It distinguishes a provisional local research commit from the final pushed/reachable commit, and requires abandoning/rebuilding an unpushed commit when the landable set shrinks after rebase.
 
 It does **not**:
 
@@ -2563,8 +2698,9 @@ It does **not**:
 - assign `H8_V2_CAPTURE_CONTRACT_SHA`
 - assign `H8_V2_CAPTURE_SOURCE_SHA` / `H8_V2_START_SHA`
 - change scientific methodology
-- redefine `R`
+- redefine `R`'s timestamp source
 - change `start_selection_rule`
+- change start-authorization topology or post-merge invalid-start semantics
 - implement capture machinery
 - edit `.github/workflows/daily-etl.yml`
 - create v2 runtime files
@@ -2579,7 +2715,7 @@ It does **not**:
 - tune weights
 - reopen calibration
 
-The next authorized phases after independent repaired-contract review are:
+The next authorized phases after contract-freeze readiness review are:
 
 ```text
 CONTRACT FREEZE
@@ -2594,7 +2730,7 @@ CONTRACT FREEZE
 
 ## 42. Stop
 
-**STOP FOR FINAL INDEPENDENT H8 V2 CAPTURE-CONTRACT REVIEW.**
+**STOP FOR CONTRACT-FREEZE READINESS REVIEW.**
 
 Do not implement capture machinery in this pass.
 Do not select a study start date in this pass.
