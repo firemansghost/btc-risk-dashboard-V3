@@ -1,8 +1,8 @@
 # H8 v2 Capture Implementation Contract
 
 **Date:** 2026-08-27
-**Phase:** H8 v2 — capture implementation contract candidate
-**Status:** `CANDIDATE — NOT FROZEN — CAPTURE NOT IMPLEMENTED — START UNASSIGNED`
+**Phase:** H8 v2 — capture implementation contract freeze
+**Status:** `CONTRACT FROZEN — CAPTURE NOT IMPLEMENTED — START UNASSIGNED`
 **Contract version:** `h8-v2-capture-implementation-contract-v1`
 **H8_V2_CAPTURE_CONTRACT_VERSION:** `h8-v2-capture-implementation-contract-v1`
 **Study namespace:** `h8-v2-prospective`
@@ -15,27 +15,44 @@ H8 v2 observations             = ZERO
 H8 v2 matured outcomes         = ZERO
 H8 v2 performance              = NONE
 H8 v2 capture implementation   = NOT YET IMPLEMENTED
-H8_V2_CAPTURE_CONTRACT_SHA     = NOT YET ASSIGNED
 H8_V2_CAPTURE_SOURCE_SHA       = NOT YET ASSIGNED
 H8_V2_START_SHA                = NOT YET ASSIGNED
 Calibration                    = CLOSED
 ```
 
-This document specifies the **future machinery** that will prospectively capture already-frozen H8 v2 evidence. It does **not** change H8 v2 scientific methodology.
+This document is the **frozen H8 v2 capture implementation contract**.
 
-This document is a **contract candidate**. It is **not** frozen.
+The final accepted candidate immediately before freeze was:
 
-Do **not** assign `H8_V2_CAPTURE_CONTRACT_SHA` in this document. The later contract-freeze commit becomes `H8_V2_CAPTURE_CONTRACT_SHA` only after independent freeze verification of its exact bytes.
+```text
+7de41cabfc02b8bdbdb8d092f2f183ce24827f9c
+```
+
+Its document blob was:
+
+```text
+038745688aa52a3a5ce1e47de6a15749242688c5
+```
+
+That candidate SHA is **not** `H8_V2_CAPTURE_CONTRACT_SHA`. Do **not** write the freeze-commit SHA into this document. `H8_V2_CAPTURE_CONTRACT_SHA` is the external Git identity of this contract-freeze commit; it is intentionally not self-embedded in this document. The Git commit that freezes these bytes becomes `H8_V2_CAPTURE_CONTRACT_SHA` only after independent verification.
+
+The capture machinery described here is now frozen as the required implementation contract.
+
+Capture implementation has not yet been written. `H8_V2_CAPTURE_SOURCE_SHA` remains unassigned. The study start remains unassigned. No H8 v2 scientific observation exists. Calibration remains **CLOSED**.
+
+No Stage-A implementation exists. No Stage-B activation exists. No rehearsal exists. No start authorization exists. No observation exists. No BTC close exists.
+
+Any later substantive change to a **FROZEN IMPLEMENTATION REQUIREMENT** requires a successor capture-contract version where the frozen protocol explicitly permits compatible capture-only repair, or a successor scientific protocol/study if scientific compatibility cannot be proven.
+
+This contract does **not** change H8 v2 scientific methodology.
 
 Labels used below:
 
 - **FACT** — inherited from the frozen H8 v2 protocol, closed H8 v1 identities, or current production workflow/config at parent main
 - **FROZEN SCIENTIFIC REQUIREMENT** — already frozen in `H8_V2_PROTOCOL_SHA`; this contract may not change it
-- **CANDIDATE IMPLEMENTATION DECISION** — proposed capture machinery for independent review; freeze requires a later accepted contract-freeze commit
+- **FROZEN IMPLEMENTATION REQUIREMENT** — accepted frozen capture machinery; changing it requires a successor capture-contract version where the frozen protocol permits compatible capture-only repair, or a successor scientific protocol/study
 - **FIREWALL** — a prohibition that is not open to casual weakening
-- **LIMITATION** — a bound on what later capture implementation may do even after this contract is accepted
-
-After independent acceptance, a **separate freeze pass** will convert `CANDIDATE IMPLEMENTATION DECISION` labels to frozen implementation labels. This candidate pass does not perform that freeze.
+- **LIMITATION** — a bound on what later capture implementation may do even after this contract is frozen
 
 ---
 
@@ -57,7 +74,7 @@ After independent acceptance, a **separate freeze pass** will convert `CANDIDATE
 
 **FACT.** `H8_V2_PROTOCOL_SHA` is the freeze commit itself. It is **not** the protocol-merge commit `23d2ce476777577789ba10627b8156c90f28a96c`.
 
-**CANDIDATE IMPLEMENTATION DECISION.** This contract may freeze operational machinery, schemas, identity checks, Git policy, and runtime paths.
+**FROZEN IMPLEMENTATION REQUIREMENT.** This contract freezes operational machinery, schemas, identity checks, Git policy, and runtime paths.
 
 **FIREWALL.** This contract may **NOT** change:
 
@@ -87,7 +104,7 @@ After independent acceptance, a **separate freeze pass** will convert `CANDIDATE
 
 ## 1. Purpose
 
-**CANDIDATE IMPLEMENTATION DECISION.** Later Stage-A implementation must mechanically implement:
+**FROZEN IMPLEMENTATION REQUIREMENT.** Later Stage-A implementation must mechanically implement:
 
 - frozen model identities
 - frozen score formulas
@@ -120,7 +137,7 @@ After independent acceptance, a **separate freeze pass** will convert `CANDIDATE
 
 ## 2. Zero state
 
-**FACT.** At this contract-candidate creation:
+**FACT.** At this contract freeze:
 
 ```text
 H8 v2 start date               = UNASSIGNED
@@ -128,7 +145,6 @@ H8 v2 observations             = ZERO
 H8 v2 matured outcomes         = ZERO
 H8 v2 performance              = NONE
 H8 v2 capture implementation   = NOT YET IMPLEMENTED
-H8_V2_CAPTURE_CONTRACT_SHA     = NOT YET ASSIGNED
 H8_V2_CAPTURE_SOURCE_SHA       = NOT YET ASSIGNED
 H8_V2_START_SHA                = NOT YET ASSIGNED
 Calibration                    = CLOSED
@@ -138,7 +154,9 @@ Calibration                    = CLOSED
 
 **FACT.** Historical v1 sidecar `research/h8-prospective/H8_CAPTURE_SOURCE_SHA.txt` is absent.
 
-**FIREWALL.** This contract-candidate pass must not create the v2 research namespace, a rehearsal, a start file, an observation, a close, or the v1 sidecar.
+**FACT.** No Stage-A implementation exists. No Stage-B activation exists. No rehearsal exists. No start authorization exists. No observation exists. No BTC close exists.
+
+**FIREWALL.** This freeze pass must not create the v2 research namespace, a rehearsal, a start file, an observation, a close, or the v1 sidecar.
 
 ---
 
@@ -175,7 +193,7 @@ scripts/research/__tests__/h8-prospective-capture.test.mjs
 
 **FIREWALL.** Treat the v1 contract and v1 capture scripts as historical engineering reference only. Do not copy v1 fixed calendar dates into v2. Do not reactivate v1.
 
-**CANDIDATE IMPLEMENTATION DECISION.** Future v2 implementation creates **new** v2-specific runtime files. It must **not** edit the historical v1 capture scripts. Future workflow integration must **replace** the dormant v1 workflow calls with v2 calls. That workflow replacement is not a modification of the v1 capture scripts.
+**FROZEN IMPLEMENTATION REQUIREMENT.** Future v2 implementation creates **new** v2-specific runtime files. It must **not** edit the historical v1 capture scripts. Future workflow integration must **replace** the dormant v1 workflow calls with v2 calls. That workflow replacement is not a modification of the v1 capture scripts.
 
 ---
 
@@ -204,7 +222,7 @@ concurrency:
 
 **FACT.** The current workflow still contains dormant H8 v1 integration that calls the historical v1 scripts (`scripts/research/capture-h8-prospective.mjs` and v1 IO helpers), with `continue-on-error: true` so v1 failure does not fail production.
 
-**CANDIDATE IMPLEMENTATION DECISION.** Stage A must preserve:
+**FROZEN IMPLEMENTATION REQUIREMENT.** Stage A must preserve:
 
 ```text
 concurrency.group = etl
@@ -217,7 +235,7 @@ npm ci --ignore-scripts --no-audit --fund=false
 
 A `workflow_dispatch` ETL and a scheduled ETL must not execute concurrently and race over `public/data/latest.json` or `public/data/btc_price_history.csv` during H8 v2 capture.
 
-**CANDIDATE IMPLEMENTATION DECISION.** Stage A replaces the WORKFLOW INTEGRATION with v2 integration. It does **not** modify historical v1 capture scripts. The deleted v1 activation sidecar remains absent permanently.
+**FROZEN IMPLEMENTATION REQUIREMENT.** Stage A replaces the WORKFLOW INTEGRATION with v2 integration. It does **not** modify historical v1 capture scripts. The deleted v1 activation sidecar remains absent permanently.
 
 Current conceptual sequence, which Stage A must preserve as production-safe ordering:
 
@@ -235,7 +253,7 @@ checkout
 
 ## 5. Authorized future v2 implementation surface
 
-**CANDIDATE IMPLEMENTATION DECISION.** Stage A may change or create **only**:
+**FROZEN IMPLEMENTATION REQUIREMENT.** Stage A may change or create **only**:
 
 ```text
 .github/workflows/daily-etl.yml
@@ -302,7 +320,7 @@ node scripts/research/capture-h8-v2-prospective.mjs --capture
 
 ### 7.1 Stage A — implementation source commit
 
-**CANDIDATE IMPLEMENTATION DECISION.** The accepted implementation source commit contains:
+**FROZEN IMPLEMENTATION REQUIREMENT.** The accepted implementation source commit contains:
 
 - workflow integration
 - v2 capture CLI
@@ -324,7 +342,7 @@ H8_V2_CAPTURE_SOURCE_SHA
 
 ### 7.2 Stage B — activation commit
 
-**CANDIDATE IMPLEMENTATION DECISION.** Create a separate activation commit whose only new scientific-control file is:
+**FROZEN IMPLEMENTATION REQUIREMENT.** Create a separate activation commit whose only new scientific-control file is:
 
 ```text
 research/h8-v2-prospective/H8_V2_CAPTURE_SOURCE_SHA.txt
@@ -351,13 +369,13 @@ Stage B must not modify any Stage-A implementation byte.
 
 **FIREWALL.** No H8 v2 rehearsal may occur until Stage A + Stage B are independently accepted and merged.
 
-**FIREWALL.** Do not assign `H8_V2_CAPTURE_SOURCE_SHA` in this contract-candidate pass.
+**FIREWALL.** Do not assign `H8_V2_CAPTURE_SOURCE_SHA` in this freeze pass.
 
 ---
 
 ## 8. Runtime identity preflight
 
-**CANDIDATE IMPLEMENTATION DECISION.** Freeze both pre-ETL and post-ETL fail-closed identity checks.
+**FROZEN IMPLEMENTATION REQUIREMENT.** Freeze both pre-ETL and post-ETL fail-closed identity checks.
 
 Before any H8 v2 write, verify all of the following:
 
@@ -409,7 +427,7 @@ Pre-ETL `--contract-check` failure sets workflow state equivalent to `H8_V2_CAPT
 
 ## 9. Event authority
 
-**FROZEN SCIENTIFIC REQUIREMENT / CANDIDATE IMPLEMENTATION DECISION.** Real H8 v2 activity may occur only when:
+**FROZEN SCIENTIFIC REQUIREMENT / FROZEN IMPLEMENTATION REQUIREMENT.** Real H8 v2 activity may occur only when:
 
 ```text
 github.event_name == 'schedule'
@@ -431,7 +449,7 @@ Defense in depth: the workflow `if:` condition is necessary but not sufficient. 
 
 ## 10. CLI modes
 
-**CANDIDATE IMPLEMENTATION DECISION.** Freeze a small conceptual interface.
+**FROZEN IMPLEMENTATION REQUIREMENT.** Freeze a small conceptual interface.
 
 ### 10.1 `--contract-check`
 
@@ -491,7 +509,7 @@ May accept a landed qualifying rehearsal commit SHA and mechanically report:
 
 ## 11. Workflow environment names
 
-**CANDIDATE IMPLEMENTATION DECISION.** Use v2-prefixed runner environment names so v1 historical names are not reused:
+**FROZEN IMPLEMENTATION REQUIREMENT.** Use v2-prefixed runner environment names so v1 historical names are not reused:
 
 ```text
 H8_V2_CAPTURE_ALLOWED
@@ -509,7 +527,7 @@ H8_V2_ESCROW_DIR
 
 **FIREWALL.** `H8_V2_ETL_STARTED_UTC` must be generated on the runner immediately before `npm run etl:compute` using `new Date().toISOString()` or equivalent. It must not be operator supplied. It must not be accepted as a CLI override.
 
-**CANDIDATE IMPLEMENTATION DECISION.** At the beginning of the authorized workflow, before ETL or any production Git commit/rebase, require:
+**FROZEN IMPLEMENTATION REQUIREMENT.** At the beginning of the authorized workflow, before ETL or any production Git commit/rebase, require:
 
 ```text
 H8_V2_GITHUB_SHA = github.sha
@@ -519,7 +537,7 @@ and require the checkout `HEAD` equals that value at initial identity preflight.
 
 ### 11.1 Original scheduled-run source checkout
 
-**CANDIDATE IMPLEMENTATION DECISION.** Define the original scheduled-run source checkout exactly.
+**FROZEN IMPLEMENTATION REQUIREMENT.** Define the original scheduled-run source checkout exactly.
 
 ```text
 source_base_git_sha =
@@ -560,7 +578,7 @@ After production / research Git operations advance `HEAD`, provenance continues 
 
 **FROZEN SCIENTIFIC REQUIREMENT.** No market-based rehearsal selection. No convenience-based rejection. No rehearsal shopping.
 
-**CANDIDATE IMPLEMENTATION DECISION.** Exact operational behavior:
+**FROZEN IMPLEMENTATION REQUIREMENT.** Exact operational behavior:
 
 ### A. Capture source not activated
 
@@ -592,7 +610,7 @@ Rehearsal mode is permanently disabled for that study. Study-mode date rules app
 
 ### 12.1 Runtime definition of a live candidate rehearsal
 
-**CANDIDATE IMPLEMENTATION DECISION.** A rehearsal is a **live candidate** if and only if all of:
+**FROZEN IMPLEMENTATION REQUIREMENT.** A rehearsal is a **live candidate** if and only if all of:
 
 - its artifact exists under `research/h8-v2-prospective/rehearsals/`
 - the exact final Git commit containing that artifact is reachable from accepted `origin/main`
@@ -613,7 +631,7 @@ Independent rejection for a defect that runtime did **not** already fail closed 
 
 ## 13. Operational-control schema
 
-**CANDIDATE IMPLEMENTATION DECISION.** Authorize one pre-start control namespace:
+**FROZEN IMPLEMENTATION REQUIREMENT.** Authorize one pre-start control namespace:
 
 ```text
 research/h8-v2-prospective/controls/
@@ -690,7 +708,7 @@ Create-only. Canonical JSON (§35). One record per rehearsal run ID.
 research/h8-v2-prospective/rehearsals/
 ```
 
-**CANDIDATE IMPLEMENTATION DECISION.** Deterministic unique filename based on the genuine GitHub run ID:
+**FROZEN IMPLEMENTATION REQUIREMENT.** Deterministic unique filename based on the genuine GitHub run ID:
 
 ```text
 research/h8-v2-prospective/rehearsals/run-<github_run_id>.json
@@ -838,7 +856,7 @@ Independent review either accepts it or rejects it for a documented operational 
 
 ## 16. Committer-timestamp integrity
 
-**CANDIDATE IMPLEMENTATION DECISION.** This is a mandatory H8 v2 capture-integrity repair. It does **not** change the frozen scientific timestamp source. `R` remains the genuine Git committer timestamp of the final qualifying commit.
+**FROZEN IMPLEMENTATION REQUIREMENT.** This is a mandatory H8 v2 capture-integrity repair. It does **not** change the frozen scientific timestamp source. `R` remains the genuine Git committer timestamp of the final qualifying commit.
 
 ### 16.1 Prohibited timestamp manufacture
 
@@ -1067,7 +1085,7 @@ start_selection_rule = earliest_daily_etl_date_at_least_72h_after_accepted_rehea
 
 `qualifying_rehearsal_commit_committer_utc` **MUST** equal `R` derived directly from the exact qualifying commit object.
 
-`capture_contract_sha` and `capture_source_sha` are filled only after those identities exist. This candidate document does not invent them.
+`capture_contract_sha` and `capture_source_sha` are filled only after those identities exist. This frozen contract document does not invent them.
 
 Date fields `start_date_utc`, `observation_end_date_utc`, `required_close_end_date_utc`, and `recovery_end_date_utc` are `YYYY-MM-DD` UTC calendar dates.
 
@@ -1081,7 +1099,7 @@ Canonical JSON (§35). Create-only after independent review. One-shot.
 
 ### 19.1 Two identities
 
-**CANDIDATE IMPLEMENTATION DECISION.** Do not confuse:
+**FROZEN IMPLEMENTATION REQUIREMENT.** Do not confuse:
 
 ```text
 A. H8_V2_START_SHA
@@ -1096,7 +1114,7 @@ B. start_authorization_merge_time
 
 ### 19.2 Required merge strategy
 
-**CANDIDATE IMPLEMENTATION DECISION.** The start authorization must enter `main` through a reviewed **normal two-parent PR merge**. Not squash. Not rebase-onto-main as the landing method. Not amend. Not direct rewrite of `main`.
+**FROZEN IMPLEMENTATION REQUIREMENT.** The start authorization must enter `main` through a reviewed **normal two-parent PR merge**. Not squash. Not rebase-onto-main as the landing method. Not amend. Not direct rewrite of `main`.
 
 Expected merge parents after current `main` is unchanged except for the start file:
 
@@ -1172,7 +1190,7 @@ Do **not** move `S` later. Require another genuine scheduled rehearsal.
 
 ### 19.5 GitHub merge-time cross-check
 
-**CANDIDATE IMPLEMENTATION DECISION.** Because the contract requires a reviewed normal GitHub two-parent PR merge, independent review must retrieve that PR's GitHub `merged_at` and compare it with `M`'s Git committer timestamp.
+**FROZEN IMPLEMENTATION REQUIREMENT.** Because the contract requires a reviewed normal GitHub two-parent PR merge, independent review must retrieve that PR's GitHub `merged_at` and compare it with `M`'s Git committer timestamp.
 
 Recommended sanity tolerance:
 
@@ -1211,7 +1229,7 @@ If implementation review later concludes that fully automated enforcement requir
 
 ### 19.6 Pre-merge vs post-merge start failure
 
-**CANDIDATE IMPLEMENTATION DECISION.** Distinguish the two failure regimes.
+**FROZEN IMPLEMENTATION REQUIREMENT.** Distinguish the two failure regimes.
 
 **BEFORE** start authorization merges:
 
@@ -1237,7 +1255,7 @@ No in-place repair. Successor protocol / study required.
 
 ## 20. Start-file one-shot validation
 
-**CANDIDATE IMPLEMENTATION DECISION.** Separate runtime-verifiable start conditions from independent post-merge acceptance.
+**FROZEN IMPLEMENTATION REQUIREMENT.** Separate runtime-verifiable start conditions from independent post-merge acceptance.
 
 ### 20.1 Runtime-verifiable start conditions
 
@@ -1295,7 +1313,7 @@ Do not add a mutable environment override marking independent review as passed.
 
 **FROZEN SCIENTIFIC REQUIREMENT.** H8 failure must not break GhostGauge production.
 
-**CANDIDATE IMPLEMENTATION DECISION.** Future sequence:
+**FROZEN IMPLEMENTATION REQUIREMENT.** Future sequence:
 
 ```text
 pre-ETL identity check
@@ -1347,7 +1365,7 @@ Production Git may retain its existing pull/rebase/merge-fallback behavior **for
 
 **FACT.** The v1 start failure occurred because `npm ci` dirtied tracked `node_modules` and the research rebase failed before the scientific artifact could land. `node_modules` tracking has since been repaired.
 
-**CANDIDATE IMPLEMENTATION DECISION.** The v2 contract still defends generically against dirty tracked state.
+**FROZEN IMPLEMENTATION REQUIREMENT.** The v2 contract still defends generically against dirty tracked state.
 
 Before restoring escrowed H8 v2 artifacts for the research commit, require a **clean tracked worktree** after the production Git phase.
 
@@ -1373,7 +1391,7 @@ This check must occur **before** the research commit.
 
 ## 23. Escrow and created-file manifest
 
-**CANDIDATE IMPLEMENTATION DECISION.** Preserve the strong v1 escrow architecture with v2 names.
+**FROZEN IMPLEMENTATION REQUIREMENT.** Preserve the strong v1 escrow architecture with v2 names.
 
 ```text
 H8_V2_CREATED_MANIFEST_PATH
@@ -1427,7 +1445,7 @@ If real capture later fails before successful research commit: never overwrite a
 
 ### 23.1 Original created manifest vs landable commit set
 
-**CANDIDATE IMPLEMENTATION DECISION.** Freeze two distinct concepts.
+**FROZEN IMPLEMENTATION REQUIREMENT.** Freeze two distinct concepts.
 
 **A. ORIGINAL CREATED MANIFEST** — `H8_V2_CREATED_MANIFEST_PATH`
 
@@ -1487,7 +1505,7 @@ Stage-A implementation review must prove both structures.
 
 ### 23.2 Exact staging rule
 
-**CANDIDATE IMPLEMENTATION DECISION.**
+**FROZEN IMPLEMENTATION REQUIREMENT.**
 
 ```text
 set(stagedPaths)
@@ -1603,7 +1621,7 @@ This rebuild authority applies **ONLY** to a local, not-yet-successfully-pushed 
 
 ## 24. Research Git policy
 
-**CANDIDATE IMPLEMENTATION DECISION.** Fail-closed research Git policy after production lands.
+**FROZEN IMPLEMENTATION REQUIREMENT.** Fail-closed research Git policy after production lands.
 
 Conceptual sequence:
 
@@ -1689,7 +1707,7 @@ Future close recovery may still operate according to the frozen close rules.
 
 ## 25. Same-run observation input
 
-**CANDIDATE IMPLEMENTATION DECISION.** At the beginning of a real authorized `--capture` invocation, capture exactly one UTC timestamp:
+**FROZEN IMPLEMENTATION REQUIREMENT.** At the beginning of a real authorized `--capture` invocation, capture exactly one UTC timestamp:
 
 ```text
 capture_run_utc = new Date().toISOString()
@@ -1759,7 +1777,7 @@ github_sha                         = H8_V2_GITHUB_SHA
 
 ### 25.1 Independent write gating after global H8 integrity
 
-**CANDIDATE IMPLEMENTATION DECISION.** The frozen scientific protocol governs the observation tape and BTC-close tape separately. After global H8 identity / start / event gates pass, validate the two artifact classes independently.
+**FROZEN IMPLEMENTATION REQUIREMENT.** The frozen scientific protocol governs the observation tape and BTC-close tape separately. After global H8 identity / start / event gates pass, validate the two artifact classes independently.
 
 **GLOBAL H8 INTEGRITY FAILURE** stops **all** H8 v2 writes for the invocation. Examples:
 
@@ -1853,7 +1871,7 @@ Before writing, if the target already exists: do not overwrite; if structurally 
 
 ## 27. Required factor snapshot
 
-**CANDIDATE IMPLEMENTATION DECISION.** Required factors, exact scientific order:
+**FROZEN IMPLEMENTATION REQUIREMENT.** Required factors, exact scientific order:
 
 1. `trend_valuation`
 2. `stablecoins`
@@ -1909,7 +1927,7 @@ For `last_updated_utc`: use the production factor timestamp deterministically. I
 
 **FROZEN SCIENTIFIC REQUIREMENT.** The three models use the same eligible observation set. No missing-factor renormalization.
 
-**CANDIDATE IMPLEMENTATION DECISION.**
+**FROZEN IMPLEMENTATION REQUIREMENT.**
 
 ```text
 common_eligibility_status = ELIGIBLE
@@ -2023,7 +2041,7 @@ axis_a_status = INTEGRITY_MISMATCH
 
 Do not repair. Do not choose one. Do not calculate challenger scientific scores for that observation.
 
-**CANDIDATE IMPLEMENTATION DECISION.** Capture-time Axis A:
+**FROZEN IMPLEMENTATION REQUIREMENT.** Capture-time Axis A:
 
 ```text
 if common_eligibility_status != ELIGIBLE:
@@ -2045,7 +2063,7 @@ else:
 
 ## 31. Observation schema
 
-**CANDIDATE IMPLEMENTATION DECISION.** Path:
+**FROZEN IMPLEMENTATION REQUIREMENT.** Path:
 
 ```text
 research/h8-v2-prospective/observations/YYYY-MM-DD.json
@@ -2134,7 +2152,7 @@ Production snapshot BTC price may be omitted from this schema. If later needed f
 
 ### 31.1 Score-presence rules
 
-**FROZEN SCIENTIFIC REQUIREMENT / CANDIDATE IMPLEMENTATION DECISION.** This schema uses **fixed fields** and JSON `null` for scientifically absent scores.
+**FROZEN SCIENTIFIC REQUIREMENT / FROZEN IMPLEMENTATION REQUIREMENT.** This schema uses **fixed fields** and JSON `null` for scientifically absent scores.
 
 **ELIGIBLE**
 
@@ -2168,7 +2186,7 @@ Production snapshot BTC price may be omitted from this schema. If later needed f
 
 ## 32. BTC close source
 
-**CANDIDATE IMPLEMENTATION DECISION.** Freeze the same local source architecture used by v1:
+**FROZEN IMPLEMENTATION REQUIREMENT.** Freeze the same local source architecture used by v1:
 
 ```text
 public/data/btc_price_history.csv
@@ -2255,7 +2273,7 @@ If the target already exists: do not replace it; do not synchronize to a later p
 
 ## 34. BTC close JSON schema
 
-**CANDIDATE IMPLEMENTATION DECISION.** Exact deterministic top-level key order:
+**FROZEN IMPLEMENTATION REQUIREMENT.** Exact deterministic top-level key order:
 
 ```text
 schema_version
@@ -2301,7 +2319,7 @@ as defined in §11.1. Later production/research rebases must not rewrite these p
 
 ## 35. Canonical serialization / create-only
 
-**CANDIDATE IMPLEMENTATION DECISION.** Use deterministic serialization:
+**FROZEN IMPLEMENTATION REQUIREMENT.** Use deterministic serialization:
 
 ```text
 JSON.stringify(value, null, 2) + '\n'
@@ -2333,7 +2351,7 @@ Build and validate all proposed outputs in memory before writes.
 
 ## 36. Source-byte survival
 
-**CANDIDATE IMPLEMENTATION DECISION.** Clarify source-survival validation **by artifact class**.
+**FROZEN IMPLEMENTATION REQUIREMENT.** Clarify source-survival validation **by artifact class**.
 
 Observation artifacts depend on:
 
@@ -2375,7 +2393,7 @@ Production remains valid. Do not invent a performance consequence.
 
 ## 37. Network and performance firewalls
 
-**CANDIDATE IMPLEMENTATION DECISION.** Freeze the distinction between scientific/data-source network use and required Git transport.
+**FROZEN IMPLEMENTATION REQUIREMENT.** Freeze the distinction between scientific/data-source network use and required Git transport.
 
 ### 37.1 Scientific / data-source network firewall
 
@@ -2442,7 +2460,7 @@ References in comments explaining prohibited functionality are okay.
 
 ## 38. Instrumentation
 
-**CANDIDATE IMPLEMENTATION DECISION.** Freeze simple counters useful for independent review:
+**FROZEN IMPLEMENTATION REQUIREMENT.** Freeze simple counters useful for independent review:
 
 ```text
 networkRequests
@@ -2494,7 +2512,7 @@ The rehearsal must prove the NON-EMPTY research path.
 
 ## 39. Synthetic test contract
 
-**CANDIDATE IMPLEMENTATION DECISION.** The future Stage-A test suite must cover at least the following. Later Stage-A implementation review determines PASS/FAIL objectively against this list.
+**FROZEN IMPLEMENTATION REQUIREMENT.** The future Stage-A test suite must cover at least the following. Later Stage-A implementation review determines PASS/FAIL objectively against this list.
 
 **A. Identities**
 
@@ -2682,25 +2700,20 @@ If compatibility cannot be proven: **STOP H8 v2** and require a successor study.
 
 ---
 
-## 41. What this pass does and does not do
+## 41. What this freeze pass does and does not do
 
-This research-commit reconciliation repair modifies **only**:
+This freeze-only pass modifies **only**:
 
 ```text
 docs/H8_V2_CAPTURE_IMPLEMENTATION_CONTRACT.md
 ```
 
-It distinguishes a provisional local research commit from the final pushed/reachable commit, and requires abandoning/rebuilding an unpushed commit when the landable set shrinks after rebase.
+It converts the accepted capture-contract candidate into a visibly frozen contract. It does **not** change implementation requirements or scientific methodology.
 
 It does **not**:
 
-- freeze this contract
-- assign `H8_V2_CAPTURE_CONTRACT_SHA`
+- assign `H8_V2_CAPTURE_CONTRACT_SHA` inside this document
 - assign `H8_V2_CAPTURE_SOURCE_SHA` / `H8_V2_START_SHA`
-- change scientific methodology
-- redefine `R`'s timestamp source
-- change `start_selection_rule`
-- change start-authorization topology or post-merge invalid-start semantics
 - implement capture machinery
 - edit `.github/workflows/daily-etl.yml`
 - create v2 runtime files
@@ -2715,11 +2728,10 @@ It does **not**:
 - tune weights
 - reopen calibration
 
-The next authorized phases after contract-freeze readiness review are:
+The next authorized phases after independent freeze verification are:
 
 ```text
-CONTRACT FREEZE
-→ STAGE-A IMPLEMENTATION
+STAGE-A IMPLEMENTATION
 → STAGE-B ACTIVATION
 → REAL SCHEDULED NON-STUDY REHEARSAL
 → START AUTHORIZATION
@@ -2730,11 +2742,10 @@ CONTRACT FREEZE
 
 ## 42. Stop
 
-**STOP FOR CONTRACT-FREEZE READINESS REVIEW.**
+**STOP FOR INDEPENDENT H8 V2 CAPTURE-CONTRACT FREEZE VERIFICATION.**
 
 Do not implement capture machinery in this pass.
 Do not select a study start date in this pass.
-Do not freeze this contract in this pass.
 Do not reactivate H8 v1.
 Do not calculate performance.
-Do not open a PR unless independently requested after review.
+Do not open a PR until independent freeze verification accepts the freeze commit.
