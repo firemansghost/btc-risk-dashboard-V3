@@ -387,13 +387,21 @@ Use Git object identity **and** `git hash-object` of the actual worktree bytes.
 
 **FIREWALL.** `HEAD` does **not** need to equal `H8_V2_CAPTURE_SOURCE_SHA`, because routine ETL commits will advance `main`.
 
+At **initial** pre-ETL identity preflight, before ETL or any production Git commit/rebase, require:
+
+```text
+HEAD == H8_V2_GITHUB_SHA == github.sha
+```
+
+That original checkout SHA is frozen into provenance (§11.1) and is **not** rewritten when later Git operations advance `HEAD`.
+
 If any frozen identity differs:
 
 ```text
 H8 V2 STOP BEFORE WRITES
 ```
 
-Production ETL must continue independently.
+This is a **GLOBAL H8 INTEGRITY FAILURE**. It stops all H8 v2 writes for the invocation, including rehearsal, observation, and BTC-close catch-up. Production ETL must continue independently.
 
 Pre-ETL `--contract-check` failure sets workflow state equivalent to `H8_V2_CAPTURE_ALLOWED=false` and must **not** fail the production job. Post-ETL `--capture` may run only if that gate is true, and must repeat fail-closed identity / worktree checks before writes.
 
@@ -500,6 +508,51 @@ H8_V2_ESCROW_DIR
 ```
 
 **FIREWALL.** `H8_V2_ETL_STARTED_UTC` must be generated on the runner immediately before `npm run etl:compute` using `new Date().toISOString()` or equivalent. It must not be operator supplied. It must not be accepted as a CLI override.
+
+**CANDIDATE IMPLEMENTATION DECISION.** At the beginning of the authorized workflow, before ETL or any production Git commit/rebase, require:
+
+```text
+H8_V2_GITHUB_SHA = github.sha
+```
+
+and require the checkout `HEAD` equals that value at initial identity preflight.
+
+### 11.1 Original scheduled-run source checkout
+
+**CANDIDATE IMPLEMENTATION DECISION.** Define the original scheduled-run source checkout exactly.
+
+```text
+source_base_git_sha =
+  the original scheduled-run checkout SHA used to execute the production ETL
+  whose snapshot is being captured
+
+github_sha =
+  that same original github.sha
+
+H8_V2_GITHUB_SHA =
+  that same original github.sha, captured into the runner environment
+  before later Git history advances
+```
+
+Therefore for observation and close provenance:
+
+```text
+source_base_git_sha == github_sha == H8_V2_GITHUB_SHA
+```
+
+The value is captured **before** later Git history advances.
+
+**FIREWALL.** It must **NOT** be rewritten to:
+
+- production artifact commit SHA
+- post-production rebased `HEAD`
+- research commit SHA
+- post-research rebased commit SHA
+- final `origin/main` SHA
+
+For `NON_STUDY_REHEARSAL`, `source_checkout_sha` has the **same** meaning: the original `github.sha` checkout used by that genuine scheduled run.
+
+After production / research Git operations advance `HEAD`, provenance continues to record the original source checkout.
 
 ---
 
@@ -689,6 +742,8 @@ study_id       = h8-v2-prospective
 
 `scientific_fingerprint` is a deterministic object listing the §6 path → SHA identities.
 
+`source_checkout_sha` equals the original scheduled-run `github.sha` checkout defined in §11.1. Rehearsal artifacts depend on neither `latest.json` nor `btc_price_history.csv` for scientific values.
+
 The rehearsal artifact records only provenance known **before** its research commit. The escrow manifest, not the rehearsal JSON, records the artifact file's SHA256.
 
 Do **not** put the future commit SHA, push result, reachability result, or `R` into the artifact.
@@ -832,15 +887,30 @@ Normalize to UTC without changing the represented instant. Serialize as a `YYYY-
 
 ### 16.4 Runtime sanity bounds
 
-Require at least:
+Git commit timestamps have whole-second precision, while `artifact_created_utc` and `H8_V2_ETL_STARTED_UTC` may carry milliseconds. Compare the lower bounds at Git's effective precision so a legitimate commit later within the same integer second does not false-fail.
+
+Recommended exact rule:
 
 ```text
-final_committer_utc >= rehearsal artifact_created_utc
-final_committer_utc >= H8_V2_ETL_STARTED_UTC
-final_committer_utc <= immediate_post_commit_verification_utc + 120 seconds
+final_committer_epoch_seconds
+  >= floor(Date.parse(artifact_created_utc) / 1000)
+
+AND
+
+final_committer_epoch_seconds
+  >= floor(Date.parse(H8_V2_ETL_STARTED_UTC) / 1000)
+
+AND
+
+final_committer_epoch_seconds
+  <= floor(Date.parse(immediate_post_commit_verification_utc) / 1000) + 120
 ```
 
-The 120-second future bound is only a runner-clock sanity check against a manufactured-future timestamp. It does **not** redefine `R`.
+An equivalent rigorously defined whole-second comparison is acceptable.
+
+**FIREWALL.** Do **not** add 120 seconds to the scientific `R` value. The 120-second future bound is only a runner-clock sanity check against a manufactured-future timestamp. It does **not** redefine `R`.
+
+`R` remains the exact stored Git committer instant of the final qualifying commit.
 
 If any runtime timestamp-integrity check fails: **do not push** that commit as a qualifying rehearsal. If it somehow already exists remotely, it is disqualified and cannot be referenced by `H8_V2_START.json`.
 
@@ -1015,33 +1085,50 @@ parent 1 = then-current origin/main
 parent 2 = the start-file commit (H8_V2_START_SHA)
 ```
 
-### 19.3 Exact Git-history verification method
+### 19.3 Exact main-entry proof
 
-After merge, independently derive main-entry as follows:
+Let `M` be the main-entry commit. The following **semantic** conditions are authoritative:
 
-1. Fetch `origin/main`.
-2. Require `H8_V2_START.json` exists at `origin/main`.
-3. Require the start-file blob is identical to the blob at `H8_V2_START_SHA`.
-4. Identify the first first-parent commit on `origin/main` that introduces the file:
+1. `M` is on the first-parent history of accepted `origin/main`.
+2. `M` contains `research/h8-v2-prospective/H8_V2_START.json` with exactly the independently accepted start-file blob.
+3. `M^1` does **not** contain that path.
+4. `M` has exactly two parents.
+5. `M^2` is exactly `H8_V2_START_SHA`.
+6. `H8_V2_START_SHA` is the exact file-creating commit. It is **not** redefined as `M`.
+7. Relative to its parent, `H8_V2_START_SHA` adds exactly **one** repository path:
+
+```text
+research/h8-v2-prospective/H8_V2_START.json
+```
+
+No other file.
+8. The reviewed PR introducing the start authorization changes exactly that one path.
+9. From `M` through current accepted `origin/main` first-parent history, no later commit may:
+
+- modify the start file
+- delete it
+- replace it
+- delete and re-add it
+- change its blob
+
+Runtime / independent verification must prove the start blob remained unchanged for the entire first-parent history after main entry.
+
+A useful implementation method for locating `M` is:
 
 ```text
 git log --first-parent --reverse --diff-filter=A --format=%H \
   origin/main -- research/h8-v2-prospective/H8_V2_START.json
 ```
 
-Take the first SHA printed. That SHA is the **main-entry commit**. For a normal two-parent PR merge, it is the merge commit.
+The first SHA printed is a candidate for `M` and must then be checked against conditions 1–9. The command is **not** itself the proof.
 
-5. Parse that commit's committer timestamp:
+Parse `M`'s committer timestamp:
 
 ```text
-git show -s --format=%cI <main_entry_commit>
+git show -s --format=%cI <M>
 ```
 
 Normalize to UTC. That instant is `start_authorization_merge_time`.
-
-6. Require `H8_V2_START_SHA` is an ancestor of `origin/main` and is **not** redefined as the merge SHA.
-
-7. Require the merge commit has exactly two parents if the main-entry commit is a merge.
 
 **FIREWALL.** The start-file creation commit's older timestamp alone must **not** be used to fake the 24-hour lead time if the file entered `main` later.
 
@@ -1062,6 +1149,22 @@ READINESS EXPIRES FOR THAT REHEARSAL
 ```
 
 Do **not** move `S` later. Require another genuine scheduled rehearsal.
+
+### 19.5 GitHub merge-time cross-check
+
+**CANDIDATE IMPLEMENTATION DECISION.** Because the contract requires a reviewed normal GitHub two-parent PR merge, independent review must retrieve that PR's GitHub `merged_at` and compare it with `M`'s Git committer timestamp.
+
+Recommended sanity tolerance:
+
+```text
+abs(M committer timestamp - PR merged_at) <= 5 minutes
+```
+
+This cross-check validates that the Git merge-commit time is consistent with the GitHub server merge event.
+
+**FIREWALL.** It does **NOT** redefine `start_authorization_merge_time`. That remains `M`'s Git committer timestamp.
+
+If the cross-check fails: do **not** accept the start authorization. Readiness expires if the frozen `S-1` 11:00 UTC deadline cannot subsequently be met. Do **not** move `S`.
 
 ---
 
@@ -1085,8 +1188,11 @@ Do **not** move `S` later. Require another genuine scheduled rehearsal.
 - `start_date_utc` exactly matches frozen derivation from `R`
 - derived end dates exact
 - main-entry lead-time rule passed
+- main-entry commit `M` satisfies the exact proof in §19.3
+- GitHub `merged_at` / `M` committer cross-check in §19.5 passed during independent start-authorization review
 - file blob on `HEAD` equals the blob at `H8_V2_START_SHA`
-- file has never been modified, overwritten, or deleted after main entry
+- file has never been modified, overwritten, deleted, replaced, or deleted-and-re-added after main entry
+- no later first-parent commit changes the start-file blob
 - no second start-authorization path exists
 
 If malformed or inconsistent:
@@ -1336,17 +1442,76 @@ From verified frozen `config/dashboard-config.json` strictly require:
 
 Also require `latest.model_version == config.model_version` and `latest.implementation_revision == config.implementation_revision`.
 
-If `snapshot_date` is present: require it is consistent with the UTC date of `as_of_utc`. If inconsistent: **STOP observation creation**.
+If `snapshot_date` is present: require it is consistent with the UTC date of `as_of_utc`. If inconsistent: **STOP observation creation** for this invocation. Do **not** automatically block independently valid BTC-close catch-up.
 
-**CANDIDATE IMPLEMENTATION DECISION.** Any structural `latest.json` integrity failure means **no H8 scientific writes** during that invocation, including close catch-up. Rehearsal mode does not consume `latest.json` for scores, but identity preflight and production landing still apply.
-
-Record:
+Record, when an observation is created:
 
 ```text
 production_model_version           = latest.model_version
 production_implementation_revision = latest.implementation_revision
 production_ssot_version            = config.ssot_version
+source_base_git_sha                = H8_V2_GITHUB_SHA
+github_sha                         = H8_V2_GITHUB_SHA
 ```
+
+### 25.1 Independent write gating after global H8 integrity
+
+**CANDIDATE IMPLEMENTATION DECISION.** The frozen scientific protocol governs the observation tape and BTC-close tape separately. After global H8 identity / start / event gates pass, validate the two artifact classes independently.
+
+**GLOBAL H8 INTEGRITY FAILURE** stops **all** H8 v2 writes for the invocation. Examples:
+
+- frozen protocol mismatch
+- frozen contract mismatch
+- capture-source mismatch
+- scientific fingerprint mismatch
+- invalid start authorization
+- event / attempt gate failure
+- runtime implementation identity failure
+- initial checkout `HEAD` ≠ `github.sha` at pre-ETL preflight
+
+**OBSERVATION-SPECIFIC INPUT FAILURE** examples:
+
+- `latest.json` malformed
+- `latest.json` same-run timestamp invalid
+- latest model / implementation mismatch
+- required factor structure invalid
+- published factor-weight unit mismatch
+- observation-specific structural failure
+
+These failures:
+
+- create **NO** score observation
+- do **NOT** reconstruct it later
+- that opportunity ultimately becomes `CAPTURE_MISSING` when appropriate
+- do **NOT** automatically block independently valid BTC-close catch-up
+
+BTC-close catch-up may continue in the same authorized scheduled invocation if:
+
+- global H8 identity / preflight passes
+- valid `H8_V2_START.json` exists
+- schedule + attempt 1 gate passes
+- run date is inside authorized recovery rules
+- `btc_price_history.csv` independently passes its required validation
+
+**BTC-CLOSE-SPECIFIC INPUT FAILURE** examples:
+
+- malformed BTC CSV
+- duplicate BTC date
+- invalid / nonpositive close
+- structurally untrustworthy BTC source artifact
+
+These failures:
+
+- create no affected BTC-close artifact(s)
+- do **NOT** automatically invalidate an otherwise valid score observation
+
+**FIREWALL.** Do not use one source artifact's structural failure as an automatic reason to discard scientifically independent valid evidence from the other tape.
+
+This does not authorize partial overwrites or reconstruction.
+
+Rehearsal mode does not consume `latest.json` or `btc_price_history.csv` for scientific values. Identity preflight and production landing still apply.
+
+If a later Stage-A design cannot safely land independently valid artifact classes when another class fails source-survival validation: **STOP** during Stage-A review and report the limitation rather than silently changing this contract. Do not invent a performance consequence.
 
 ---
 
@@ -1635,6 +1800,14 @@ scheduled_event = DAILY_ETL
 protocol_sha    = a46e5cefe9b0d1215931f04296e1d8c5f0ae4fd3
 ```
 
+Require:
+
+```text
+source_base_git_sha == github_sha == H8_V2_GITHUB_SHA
+```
+
+as defined in §11.1. Later production/research rebases must not rewrite these provenance fields.
+
 `model_versions`:
 
 ```text
@@ -1719,11 +1892,13 @@ Strict parser. Reject:
 
 Compute SHA256 of exact source bytes after ETL and before creating any close artifacts.
 
-**FIREWALL.** H8 v2 capture code must make **ZERO** network requests.
+**FIREWALL.** H8 v2 scientific capture logic must make **ZERO** external data/provider requests. See §37.
 
 No direct Coinbase / CoinGecko / FRED / provider calls.
 
 The ordinary production ETL performs network collection. H8 consumes only the locally produced canonical artifact.
+
+A BTC-close-specific source failure does **not** automatically invalidate an otherwise valid score observation (§25.1).
 
 ---
 
@@ -1809,6 +1984,14 @@ source_artifact_path = public/data/btc_price_history.csv
 captured_at_utc      = capture_run_utc
 ```
 
+Require:
+
+```text
+source_base_git_sha == github_sha == H8_V2_GITHUB_SHA
+```
+
+as defined in §11.1. Later production/research rebases must not rewrite these provenance fields.
+
 **FIREWALL.** No MACE. No score. No forward return. No performance field.
 
 ---
@@ -1847,39 +2030,90 @@ Build and validate all proposed outputs in memory before writes.
 
 ## 36. Source-byte survival
 
-**CANDIDATE IMPLEMENTATION DECISION.** Before the separate research commit, and again after any research rebase, verify:
+**CANDIDATE IMPLEMENTATION DECISION.** Clarify source-survival validation **by artifact class**.
 
-- new observation artifact hash still equals escrow manifest
-- referenced `latest.json` hash still equals the source bytes used at capture
-- new close artifact hash still equals escrow manifest
-- referenced `btc_price_history.csv` hash still equals source bytes used at capture
-- new rehearsal artifact hash still equals escrow manifest
+Observation artifacts depend on:
 
-If source bytes change during production synchronization / rebase:
+```text
+public/data/latest.json
+```
 
-- do not recalculate the research artifact
-- do not substitute new values
-- do not push that artifact
+BTC-close artifacts depend on:
 
-Production remains valid.
+```text
+public/data/btc_price_history.csv
+```
+
+Rehearsal artifacts depend on neither for scientific values.
+
+Before the separate research commit, and again after any research rebase:
+
+- a new observation artifact hash must still equal the escrow manifest
+- that observation's referenced `latest.json` hash must still equal the source bytes used at capture
+- a new close artifact hash must still equal the escrow manifest
+- that close's referenced `btc_price_history.csv` hash must still equal the source bytes used at capture
+- a new rehearsal artifact hash must still equal the escrow manifest
+
+A `latest.json` source-survival failure invalidates the **affected observation** artifact. It does **not** by itself invalidate independently valid close artifacts whose CSV source bytes still match.
+
+A `btc_price_history.csv` source-survival failure invalidates the **affected close** artifacts. It does **not** by itself invalidate an independently valid observation whose `latest.json` source bytes still match.
+
+**FIREWALL.** Do not describe one source as scientific authority for the other class.
+
+Do not recalculate an invalidated research artifact. Do not substitute new values. Do not push an invalidated artifact.
+
+The implementation architecture may preserve **one** research commit when every remaining manifest entry remains valid. Entries that failed source-survival must be omitted from that commit and treated as not landed (`CAPTURE_MISSING` for a score date; close gap remains retryable only under frozen close rules).
+
+If a later Stage-A design cannot safely land independently valid artifact classes when another class fails source-survival validation: **STOP** during Stage-A review and report the limitation rather than silently changing this contract.
+
+Production remains valid. Do not invent a performance consequence.
 
 ---
 
 ## 37. Network and performance firewalls
 
-**FIREWALL.** Future H8 v2 runtime files must contain no network client behavior.
+**CANDIDATE IMPLEMENTATION DECISION.** Freeze the distinction between scientific/data-source network use and required Git transport.
+
+### 37.1 Scientific / data-source network firewall
+
+H8 v2 scientific capture logic must make **ZERO** external data/provider requests.
 
 No:
 
-- `fetch`
-- `http`
-- `https`
-- `axios`
-- Coinbase calls
-- CoinGecko calls
-- FRED calls
+- JavaScript `fetch` for market/provider data
+- `http` / `https` provider clients
+- `axios` provider calls
+- Coinbase requests
+- CoinGecko requests
+- FRED requests
+- any substitute external price/factor provider
 
-**FIREWALL.** Also no performance implementation:
+The ordinary production ETL remains responsible for external data collection.
+
+H8 consumes the local production artifacts.
+
+**FIREWALL.** Do not weaken the provider-data firewall.
+
+Runtime-file responsibility:
+
+- core / scientific capture logic (`h8-v2-prospective-capture-core.mjs` and scientific portions of the CLI): no provider network clients
+- IO layer (`h8-v2-prospective-capture-io.mjs`): ordinary Git transport is allowed **only** for the contract-authorized repository transaction
+
+### 37.2 Git transport is explicitly permitted
+
+Repository synchronization required by the frozen research transaction may use ordinary Git commands such as:
+
+```text
+git fetch
+git pull --rebase   where this contract authorizes it
+git push
+```
+
+These Git transport operations are operational repository plumbing. They are **NOT** scientific/data-source network requests.
+
+### 37.3 Performance firewall
+
+**FIREWALL.** No performance implementation:
 
 - MACE
 - future returns
@@ -1925,6 +2159,18 @@ networkRequests = 0
 overwriteAttempts = 0
 performanceCalculations = 0
 ```
+
+```text
+networkRequests = 0
+```
+
+means:
+
+```text
+external scientific/data-provider requests made by H8 capture logic = 0
+```
+
+It must **NOT** count required Git transport operations (`git fetch` / authorized `git pull --rebase` / `git push`).
 
 For `NON_STUDY_REHEARSAL`:
 
@@ -1995,6 +2241,10 @@ The rehearsal must prove the NON-EMPTY research path.
 - pre-rebase commit cannot define `R`
 - failed / unpushed commit cannot define `R`
 - remote reachability required
+- same-second legitimate commit passes the whole-second lower bound
+- one genuinely earlier whole second fails the lower bound
+- manufactured future timestamp fails the upper bound
+- `R` equals the exact stored Git committer instant and is not shifted by the 120-second tolerance
 
 **G. Research Git**
 
@@ -2002,7 +2252,8 @@ The rehearsal must prove the NON-EMPTY research path.
 - exact research staging only
 - no merge fallback in research Git phase
 - escrow hash mismatch fails
-- source-byte mutation after production sync fails closed without rewriting artifact
+- `latest.json` source-byte mutation after production sync invalidates the observation artifact only
+- `btc_price_history.csv` source-byte mutation after production sync invalidates close artifacts only
 
 **H. Start authorization**
 
@@ -2015,6 +2266,15 @@ The rehearsal must prove the NON-EMPTY research path.
 - one-shot immutable start file
 - main-entry time, not creation-commit time, governs lead time
 - `--capture` cannot create the start file
+- main-entry first parent lacks the start file
+- main-entry contains the exact accepted blob
+- second parent equals `H8_V2_START_SHA`
+- `H8_V2_START_SHA` adds exactly one path
+- later start-file modification fails
+- delete / re-add fails
+- PR `merged_at` / merge-commit timestamp sanity passes when within 5 minutes
+- PR `merged_at` / merge-commit timestamp sanity fails when outside 5 minutes
+- failed cross-check does not redefine `start_authorization_merge_time`
 
 **I. Observation semantics**
 
@@ -2038,11 +2298,27 @@ The rehearsal must prove the NON-EMPTY research path.
 
 **K. Firewalls**
 
-- no network (`networkRequests = 0`)
+- provider/data network call is prohibited
+- `networkRequests` remains `0` for scientific/data-provider requests
+- ordinary required `git fetch` / `git push` is permitted
+- Git transport does not increment scientific `networkRequests`
 - no performance (`performanceCalculations = 0`)
 - production / research separation
 - no CLI date / force / backfill override
 - no default mode
+
+**L. Tape independence**
+
+- `latest.json` structural failure blocks observation but permits valid close catch-up
+- BTC CSV structural failure blocks closes but permits valid observation when all observation requirements pass
+- global scientific identity failure blocks both
+
+**M. Source-checkout provenance**
+
+- initial `HEAD` must equal `github.sha`
+- `source_base_git_sha` remains original `github.sha` after production rebase
+- `source_base_git_sha` remains original `github.sha` after research rebase
+- rehearsal `source_checkout_sha` has the same original-checkout meaning
 
 ---
 
@@ -2066,17 +2342,22 @@ If compatibility cannot be proven: **STOP H8 v2** and require a successor study.
 
 ## 41. What this pass does and does not do
 
-This contract-candidate pass modifies **only**:
+This repair-before-freeze revision modifies **only**:
 
 ```text
 docs/H8_V2_CAPTURE_IMPLEMENTATION_CONTRACT.md
 ```
+
+It tightens write-gating, Git-transport vs provider-network distinction, original source-checkout provenance, whole-second timestamp sanity, and start-authorization main-entry proof.
 
 It does **not**:
 
 - freeze this contract
 - assign `H8_V2_CAPTURE_CONTRACT_SHA`
 - assign `H8_V2_CAPTURE_SOURCE_SHA` / `H8_V2_START_SHA`
+- change scientific methodology
+- redefine `R`
+- change `start_selection_rule`
 - implement capture machinery
 - edit `.github/workflows/daily-etl.yml`
 - create v2 runtime files
@@ -2091,7 +2372,7 @@ It does **not**:
 - tune weights
 - reopen calibration
 
-The next authorized phases after independent contract review are:
+The next authorized phases after independent repaired-contract review are:
 
 ```text
 CONTRACT FREEZE
@@ -2106,11 +2387,11 @@ CONTRACT FREEZE
 
 ## 42. Stop
 
-**STOP FOR INDEPENDENT H8 V2 CAPTURE-CONTRACT REVIEW.**
+**STOP FOR INDEPENDENT REPAIRED H8 V2 CAPTURE-CONTRACT REVIEW.**
 
 Do not implement capture machinery in this pass.
 Do not select a study start date in this pass.
 Do not freeze this contract in this pass.
 Do not reactivate H8 v1.
 Do not calculate performance.
-Do not push or open a PR unless independently requested after review.
+Do not open a PR unless independently requested after review.
