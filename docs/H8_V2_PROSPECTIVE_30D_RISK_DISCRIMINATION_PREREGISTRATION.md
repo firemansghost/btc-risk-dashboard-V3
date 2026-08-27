@@ -566,12 +566,57 @@ The exact derived calendar dates are populated only in the later start authoriza
 
 Use the **first** successfully committed-and-pushed qualifying scheduled `NON_STUDY_REHEARSAL` as the objective anchor.
 
-Define:
+The qualifying rehearsal research commit is the immutable Git commit that contains the `NON_STUDY_REHEARSAL` artifact and that was successfully pushed by the authorized scheduled Daily ETL run.
+
+Define mechanically:
 
 ```text
-R = UTC timestamp of that qualifying rehearsal's successfully pushed
-    research commit
+rehearsal_commit_sha =
+  the exact Git commit containing the qualifying rehearsal artifact
+
+R =
+  the Git COMMITTER timestamp of that exact Git commit object,
+  converted to UTC without changing the represented instant
 ```
+
+Equivalent Git provenance may later be obtained from the commit object's committer date (`%cI`).
+
+The capture contract may define exact parsing / serialization. It may **NOT** choose another timestamp source.
+
+**FIREWALL.** Do **not** use as `R`:
+
+- artifact creation timestamp
+- workflow scheduled time
+- cron time
+- workflow start time
+- observation time
+- independent-review time
+- PR merge time
+- operator-entered timestamp
+- GitHub UI display time
+- an inferred push timestamp
+
+Successful remote push remains a **separate qualification gate**. Using the committer timestamp as `R` does **not** make an unpushed local commit a qualifying rehearsal.
+
+A rehearsal qualifies only if the exact rehearsal research commit:
+
+- was produced by a genuine first-attempt scheduled Daily ETL
+- contains the authorized `NON_STUDY_REHEARSAL` artifact
+- passed all identity / integrity requirements
+- traversed the required non-empty research commit path
+- was successfully pushed
+- is independently verifiable in the remote repository
+- is reachable from the accepted `main` history after the scheduled run
+
+An ephemeral / local commit that never lands remotely **DOES NOT QUALIFY** and cannot define `R`.
+
+Rationale for the committer timestamp:
+
+- it is part of the immutable Git commit object
+- it is mechanically reproducible from the accepted rehearsal commit SHA
+- it avoids dependence on expiring Actions logs for the scientific start calculation
+- successful remote push / reachability is verified separately
+- if push / review delays consume too much of the 72-hour window, the frozen `S-1` authorization deadline causes readiness to expire and another rehearsal is required
 
 Independent review may **accept** or **reject** that rehearsal, but it may **not** substitute a later successful rehearsal merely because market conditions are preferable.
 
@@ -675,7 +720,7 @@ The future start authorization must contain at minimum:
 - `qualifying_rehearsal_path`
 - `qualifying_rehearsal_commit_sha`
 - `qualifying_rehearsal_run_id`
-- `qualifying_rehearsal_utc`
+- `qualifying_rehearsal_commit_committer_utc`
 - `start_selection_rule`
 - `start_date_utc`
 - `observation_end_date_utc`
@@ -683,11 +728,15 @@ The future start authorization must contain at minimum:
 - `recovery_end_date_utc`
 - `authorization_created_utc`
 
+`qualifying_rehearsal_commit_committer_utc` **equals** `R`.
+
 `start_selection_rule` must identify the frozen deterministic rule:
 
 ```text
 earliest_daily_etl_date_at_least_72h_after_accepted_rehearsal_v1
 ```
+
+A later capture contract may add a separate operational field for workflow / push verification. That field must **not** redefine `R`.
 
 Exact JSON schema remains capture-contract work. The scientific requirements above are frozen here.
 
@@ -742,7 +791,7 @@ READINESS EXPIRES FOR THAT REHEARSAL
 
 Require another genuine scheduled `NON_STUDY_REHEARSAL`.
 
-The first later rehearsal that passes all requirements becomes the new `R`.
+The first later rehearsal that passes all requirements becomes the new `R`, taken from that new successfully pushed rehearsal research commit's Git **committer** timestamp.
 
 Then derive a new `S` mechanically using the same 72-hour rule.
 
@@ -785,7 +834,7 @@ NOT_FOR_PERFORMANCE
 
 It must contain **no** scientific model scores, no challenger scores, no MACE, no returns, no rank statistics, and no performance result.
 
-It may contain operational provenance needed to prove the path worked, such as:
+The immutable `NON_STUDY_REHEARSAL` artifact may contain **pre-commit** operational provenance already known when the artifact bytes are finalized, such as:
 
 - scheduled run ID
 - run attempt
@@ -794,9 +843,24 @@ It may contain operational provenance needed to prove the path worked, such as:
 - protocol identity
 - contract identity
 - capture-source identity
-- scientific-fingerprint hashes
+- scientific-fingerprint identities
 - manifest / hash information
-- escrow / commit / push success metadata
+- escrow provenance available before the research commit
+
+**FIREWALL.** The artifact must **not** self-certify:
+
+- its own future commit success
+- its own future push success
+- its own remote reachability
+
+Those are verified **AFTER** the research commit / push using:
+
+- exact rehearsal research commit SHA
+- Git commit identity (including committer timestamp = `R`, if that commit later qualifies)
+- remote repository reachability / history
+- scheduled workflow / run evidence
+
+The later independent review and start authorization may reference that verified evidence.
 
 The rehearsal must traverse the same mechanism that real observations will use:
 
@@ -843,7 +907,11 @@ It may **not** be rejected merely to wait for a more convenient start date.
 
 If rejected, the next qualifying scheduled rehearsal is evaluated under the **same** rule.
 
+If the research commit never successfully pushes, that scheduled attempt is **not** a successfully qualifying rehearsal and therefore cannot define `R`.
+
 **FIREWALL.** No rehearsal shopping.
+**FIREWALL.** No market-based rejection.
+**FIREWALL.** No convenience-based rejection.
 
 ---
 
@@ -1483,7 +1551,7 @@ H8 v2 is scientifically equivalent to H8 v1 except for the following identified 
 
 4. **Start date is assigned later** through an independently frozen prospective `research/h8-v2-prospective/H8_V2_START.json` authorization, with derived window dates populated only then.
 
-5. **Deterministic rehearsal-anchored start-date selection.** The first independently accepted qualifying scheduled `NON_STUDY_REHEARSAL` defines `R`. `S` is the earliest UTC date `D` whose nominal 11:00 UTC Daily ETL opportunity is at least 72 hours after `R`. No market-based or convenience-based discretion. These are candidate repairs made **before** protocol freeze, not post-hoc changes after freeze.
+5. **Deterministic rehearsal-anchored start-date selection.** The first independently accepted qualifying scheduled `NON_STUDY_REHEARSAL` defines `R` as the immutable Git **committer** timestamp of that accepted qualifying rehearsal research commit, normalized to UTC. `S` is the earliest UTC date `D` whose nominal 11:00 UTC Daily ETL opportunity is at least 72 hours after `R`. No market-based or convenience-based discretion. These are candidate repairs made **before** protocol freeze, not post-hoc changes after freeze. This item clarifies the already intended deterministic rule; it does not add a new scientific methodology.
 
 6. **No discretionary start delay.** Once `R` is accepted, researchers may not voluntarily choose a later valid `S`. If start authorization is not merged by 11:00 UTC on `S-1`, readiness expires for that rehearsal and another genuine scheduled rehearsal is required.
 
