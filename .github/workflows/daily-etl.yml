@@ -31,32 +31,38 @@ jobs:
       - name: Install deps
         run: npm ci --ignore-scripts --no-audit --fund=false
 
-      - name: Initialize H8 capture gate
+      - name: Initialize H8 v2 capture gate
         run: |
-          echo "H8_CAPTURE_ALLOWED=false" >> "$GITHUB_ENV"
-          echo "H8_CAPTURE_COMPLETED=false" >> "$GITHUB_ENV"
-          echo "H8_PRODUCTION_OK=false" >> "$GITHUB_ENV"
+          echo "H8_V2_CAPTURE_ALLOWED=false" >> "$GITHUB_ENV"
+          echo "H8_V2_CAPTURE_COMPLETED=false" >> "$GITHUB_ENV"
+          echo "H8_V2_PRODUCTION_OK=false" >> "$GITHUB_ENV"
 
-      - name: H8 identity preflight
+      - name: H8 v2 identity preflight
         if: github.event_name == 'schedule' && github.run_attempt == 1
         continue-on-error: true
+        env:
+          H8_V2_GITHUB_SHA: ${{ github.sha }}
+          H8_V2_GITHUB_EVENT_NAME: ${{ github.event_name }}
+          H8_V2_GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
+          H8_V2_GITHUB_RUN_ID: ${{ github.run_id }}
+          H8_V2_GITHUB_WORKFLOW_REF: ${{ github.workflow_ref }}
         run: |
           set +e
-          node scripts/research/capture-h8-prospective.mjs --contract-check
+          node scripts/research/capture-h8-v2-prospective.mjs --contract-check
           status=$?
           set -e
           if [ "$status" -eq 0 ]; then
-            echo "H8_CAPTURE_ALLOWED=true" >> "$GITHUB_ENV"
-            echo "H8 preflight PASS" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "H8_V2_CAPTURE_ALLOWED=true" >> "$GITHUB_ENV"
+            echo "H8 v2 preflight PASS" | tee -a "$GITHUB_STEP_SUMMARY"
           else
-            echo "H8_CAPTURE_ALLOWED=false" >> "$GITHUB_ENV"
-            echo "H8 preflight BLOCKED — production ETL continues" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "H8_V2_CAPTURE_ALLOWED=false" >> "$GITHUB_ENV"
+            echo "H8 v2 preflight BLOCKED — production ETL continues" | tee -a "$GITHUB_STEP_SUMMARY"
           fi
           exit 0
 
-      - name: Record H8 ETL start UTC
+      - name: Record H8 v2 ETL start UTC
         run: |
-          echo "H8_ETL_STARTED_UTC=$(node -e 'process.stdout.write(new Date().toISOString())')" >> "$GITHUB_ENV"
+          echo "H8_V2_ETL_STARTED_UTC=$(node -e 'process.stdout.write(new Date().toISOString())')" >> "$GITHUB_ENV"
 
       - name: Run ETL compute (with self-check)
         run: npm run etl:compute
@@ -80,45 +86,45 @@ jobs:
           git config user.name "ghostgauge-bot"
           git config user.email "bot@ghostgauge.local"
 
-      - name: H8 prospective capture
-        if: github.event_name == 'schedule' && github.run_attempt == 1 && env.H8_CAPTURE_ALLOWED == 'true'
+      - name: H8 v2 prospective capture
+        if: github.event_name == 'schedule' && github.run_attempt == 1 && env.H8_V2_CAPTURE_ALLOWED == 'true'
         continue-on-error: true
         env:
-          H8_GITHUB_RUN_ID: ${{ github.run_id }}
-          H8_GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
-          H8_GITHUB_EVENT_NAME: ${{ github.event_name }}
-          H8_GITHUB_SHA: ${{ github.sha }}
-          H8_GITHUB_WORKFLOW_REF: ${{ github.workflow_ref }}
-          H8_CREATED_MANIFEST_PATH: ${{ runner.temp }}/h8-created-manifest.json
-          H8_ESCROW_DIR: ${{ runner.temp }}/h8-escrow
+          H8_V2_GITHUB_RUN_ID: ${{ github.run_id }}
+          H8_V2_GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
+          H8_V2_GITHUB_EVENT_NAME: ${{ github.event_name }}
+          H8_V2_GITHUB_SHA: ${{ github.sha }}
+          H8_V2_GITHUB_WORKFLOW_REF: ${{ github.workflow_ref }}
+          H8_V2_CREATED_MANIFEST_PATH: ${{ runner.temp }}/h8-v2-created-manifest.json
+          H8_V2_ESCROW_DIR: ${{ runner.temp }}/h8-v2-escrow
         run: |
           set +e
-          node scripts/research/capture-h8-prospective.mjs --capture
+          node scripts/research/capture-h8-v2-prospective.mjs --capture
           status=$?
           set -e
           if [ "$status" -eq 0 ]; then
-            echo "H8_CAPTURE_COMPLETED=true" >> "$GITHUB_ENV"
-            echo "H8 capture created artifacts (not yet committed)" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "H8_V2_CAPTURE_COMPLETED=true" >> "$GITHUB_ENV"
+            echo "H8 v2 capture created artifacts (not yet committed)" | tee -a "$GITHUB_STEP_SUMMARY"
           else
-            echo "H8_CAPTURE_COMPLETED=false" >> "$GITHUB_ENV"
-            echo "H8 capture BLOCKED/FAILED — production ETL continues; no H8 commit" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "H8_V2_CAPTURE_COMPLETED=false" >> "$GITHUB_ENV"
+            echo "H8 v2 capture BLOCKED/FAILED — production ETL continues; no H8 commit" | tee -a "$GITHUB_STEP_SUMMARY"
           fi
           exit 0
 
-      - name: Escrow H8 artifacts
-        if: env.H8_CAPTURE_COMPLETED == 'true'
+      - name: Escrow H8 v2 artifacts
+        if: env.H8_V2_CAPTURE_COMPLETED == 'true'
         continue-on-error: true
         env:
-          H8_CREATED_MANIFEST_PATH: ${{ runner.temp }}/h8-created-manifest.json
-          H8_ESCROW_DIR: ${{ runner.temp }}/h8-escrow
+          H8_V2_CREATED_MANIFEST_PATH: ${{ runner.temp }}/h8-v2-created-manifest.json
+          H8_V2_ESCROW_DIR: ${{ runner.temp }}/h8-v2-escrow
         run: |
           set +e
-          node --input-type=module -e "import { runEscrowPhase } from './scripts/research/lib/h8-prospective-capture-io.mjs'; runEscrowPhase();"
+          node --input-type=module -e "import { runEscrowPhase } from './scripts/research/lib/h8-v2-prospective-capture-io.mjs'; runEscrowPhase();"
           status=$?
           set -e
           if [ "$status" -ne 0 ]; then
-            echo "H8_CAPTURE_COMPLETED=false" >> "$GITHUB_ENV"
-            echo "H8 escrow failed — production continues; H8 will not commit" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "H8_V2_CAPTURE_COMPLETED=false" >> "$GITHUB_ENV"
+            echo "H8 v2 escrow failed — production continues; H8 will not commit" | tee -a "$GITHUB_STEP_SUMMARY"
           fi
           exit 0
 
@@ -128,7 +134,7 @@ jobs:
           if git diff --cached --name-only | grep -E '^research/'; then
             echo "STOP: research paths must never be staged in the production commit"
             git restore --staged --worktree -- research || true
-            echo "H8_PRODUCTION_OK=false" >> "$GITHUB_ENV"
+            echo "H8_V2_PRODUCTION_OK=false" >> "$GITHUB_ENV"
             exit 1
           fi
           if git diff --cached --quiet; then
@@ -138,7 +144,7 @@ jobs:
               echo "Rebase failed, trying merge instead..."
               git pull origin main
             }
-            echo "H8_PRODUCTION_OK=true" >> "$GITHUB_ENV"
+            echo "H8_V2_PRODUCTION_OK=true" >> "$GITHUB_ENV"
             exit 0
           fi
           git commit -m "chore(etl): update artifacts [skip ci]"
@@ -163,26 +169,28 @@ jobs:
           done
           if [ "$PUSHED" != "true" ]; then
             echo "Production push failed after retries"
-            echo "H8_PRODUCTION_OK=false" >> "$GITHUB_ENV"
+            echo "H8_V2_PRODUCTION_OK=false" >> "$GITHUB_ENV"
             exit 1
           fi
-          echo "H8_PRODUCTION_OK=true" >> "$GITHUB_ENV"
+          echo "H8_V2_PRODUCTION_OK=true" >> "$GITHUB_ENV"
 
-      - name: H8 scientific commit
-        if: env.H8_CAPTURE_COMPLETED == 'true' && env.H8_PRODUCTION_OK == 'true'
+      - name: H8 v2 scientific commit
+        if: env.H8_V2_CAPTURE_COMPLETED == 'true' && env.H8_V2_PRODUCTION_OK == 'true'
         continue-on-error: true
         env:
-          H8_CREATED_MANIFEST_PATH: ${{ runner.temp }}/h8-created-manifest.json
-          H8_ESCROW_DIR: ${{ runner.temp }}/h8-escrow
+          H8_V2_CREATED_MANIFEST_PATH: ${{ runner.temp }}/h8-v2-created-manifest.json
+          H8_V2_ESCROW_DIR: ${{ runner.temp }}/h8-v2-escrow
         run: |
-          # research(h8): capture prospective artifacts [skip ci]
+          # research(h8-v2): capture prospective artifacts [skip ci]
+          # research(h8-v2): non-study rehearsal [skip ci]
+          # NO merge fallback in the H8 v2 scientific commit phase.
           set +e
-          node --input-type=module -e "import { runH8ScientificPhase } from './scripts/research/lib/h8-prospective-capture-io.mjs'; runH8ScientificPhase();"
+          node --input-type=module -e "import { runH8V2ScientificPhase } from './scripts/research/lib/h8-v2-prospective-capture-io.mjs'; runH8V2ScientificPhase();"
           status=$?
           set -e
           if [ "$status" -eq 0 ]; then
-            echo "H8 scientific commit/push complete" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "H8 v2 scientific commit/push complete" | tee -a "$GITHUB_STEP_SUMMARY"
           else
-            echo "H8 scientific commit/push FAILED CLOSED — production update remains landed" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "H8 v2 scientific commit/push FAILED CLOSED — production update remains landed" | tee -a "$GITHUB_STEP_SUMMARY"
           fi
           exit 0
