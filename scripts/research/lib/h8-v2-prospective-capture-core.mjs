@@ -758,6 +758,30 @@ export function extractRequiredFactors(latest) {
   return byKey;
 }
 
+export function missingFactorPlaceholder(key) {
+  if (!REQUIRED_FACTOR_KEYS.includes(key)) {
+    throw new Error(`STOP: unknown required factor ${key}`);
+  }
+  return orderedObject(FACTOR_SNAPSHOT_KEY_ORDER, {
+    key,
+    score: null,
+    status: null,
+    last_updated_utc: null,
+    official_weight: OFFICIAL_WEIGHTS[key],
+  });
+}
+
+export function isMissingFactorPlaceholder(factor, key) {
+  return Boolean(
+    factor &&
+      factor.key === key &&
+      factor.score === null &&
+      factor.status === null &&
+      factor.last_updated_utc === null &&
+      factor.official_weight === OFFICIAL_WEIGHTS[key]
+  );
+}
+
 export function evaluateCommonEligibility(factorsByKey) {
   const reasons = [];
   const snapshots = [];
@@ -765,6 +789,7 @@ export function evaluateCommonEligibility(factorsByKey) {
     const factor = factorsByKey.get(key);
     if (!factor) {
       reasons.push(`MISSING_FACTOR:${key}`);
+      snapshots.push(missingFactorPlaceholder(key));
       continue;
     }
     validatePublishedWeight(factor, OFFICIAL_WEIGHTS[key]);
@@ -1006,7 +1031,7 @@ export function classifyPreStartAction({
 }) {
   if (!activated) return PRE_START_ACTIONS.INACTIVE;
   if (startExists) return PRE_START_ACTIONS.STUDY;
-  if (liveCandidate && !readinessExpired) return PRE_START_ACTIONS.HOLD_LIVE_CANDIDATE;
+  if (liveCandidate) return PRE_START_ACTIONS.HOLD_LIVE_CANDIDATE;
   if (readinessExpired || disqualificationPresent || !liveCandidate) {
     return PRE_START_ACTIONS.REHEARSAL;
   }
@@ -1038,10 +1063,16 @@ export function assertForbiddenGitArgs(args) {
   if (args[0] === 'commit-tree' || args.includes('commit-tree')) {
     throw new Error('STOP: git commit-tree is forbidden');
   }
+  if (args[0] === 'filter-branch' || args.includes('filter-branch')) {
+    throw new Error('STOP: git filter-branch is forbidden');
+  }
+  if (args[0] === 'filter-repo' || args.includes('filter-repo')) {
+    throw new Error('STOP: git filter-repo is forbidden');
+  }
   if (args.includes('--committer-date-is-author-date')) {
     throw new Error('STOP: --committer-date-is-author-date is forbidden');
   }
-  if (args.includes('--date')) {
+  if (args.some((arg) => arg === '--date' || (typeof arg === 'string' && arg.startsWith('--date=')))) {
     throw new Error('STOP: git --date is forbidden');
   }
   if (args[0] === 'push' && (args.includes('--force') || args.includes('-f') || args.includes('--force-with-lease'))) {
@@ -1336,6 +1367,10 @@ export function deriveEligibilityFromStoredFactors(factors) {
     }
     if (factor.official_weight !== OFFICIAL_WEIGHTS[key]) {
       throw new Error(`STOP: factor official_weight mismatch for ${key}`);
+    }
+    if (isMissingFactorPlaceholder(factor, key)) {
+      reasons.push(`MISSING_FACTOR:${key}`);
+      continue;
     }
     const scoreOk =
       typeof factor.score === 'number' &&
@@ -1836,6 +1871,13 @@ export function workflowStaticChecks(yamlText) {
   const captureIdx = yamlText.indexOf('H8 v2 prospective capture');
   if (preflightIdx === -1 || etlIdx === -1 || preflightIdx > etlIdx) {
     findings.push('H8 v2 preflight is not before ETL');
+  } else {
+    const preflightSlice = yamlText.slice(preflightIdx);
+    const nextPreflightStep = preflightSlice.search(/\n      - name:/);
+    const preflightBlock = nextPreflightStep === -1 ? preflightSlice : preflightSlice.slice(0, nextPreflightStep);
+    if (!preflightBlock.includes('H8_V2_GITHUB_SHA: ${{ github.sha }}')) {
+      findings.push('H8 v2 preflight missing H8_V2_GITHUB_SHA github.sha provenance');
+    }
   }
   if (captureIdx === -1 || captureIdx < etlIdx) {
     findings.push('H8 v2 capture is not after ETL');

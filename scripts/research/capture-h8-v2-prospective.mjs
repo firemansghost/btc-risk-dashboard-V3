@@ -35,13 +35,10 @@ import {
   validateCompleteObservation,
   validateCompleteClose,
   validateCompleteRehearsal,
-  validateCompleteStart,
   buildCreatedManifest,
   ObservationInputError,
   CloseInputError,
-  deriveCandidateS,
   addUtcDays,
-  normalizeGitCommitterUtc,
   buildRehearsalObject,
   rehearsalPathForRunId,
   classifyPreStartAction,
@@ -67,15 +64,15 @@ import {
   assertV1SidecarAbsent,
   validateExistingObservation,
   validateExistingClose,
-  assertCommitExists,
-  assertIsAncestor,
+  startFileExists,
+  loadAndValidateStartFile,
+  evaluatePreStartState,
+  validateQualifyingRehearsalCommit,
 } from './lib/h8-v2-prospective-capture-io.mjs';
 
 const H8_V2_START_PATH = 'research/h8-v2-prospective/H8_V2_START.json';
 const H8_V2_SIDECAR_PATH = 'research/h8-v2-prospective/H8_V2_CAPTURE_SOURCE_SHA.txt';
-const H8_V2_REHEARSAL_DIR = 'research/h8-v2-prospective/rehearsals';
 const H8_V2_OBSERVATION_DIR = 'research/h8-v2-prospective/observations';
-const H8_V2_CONTROL_DIR = 'research/h8-v2-prospective/controls';
 
 const FORBIDDEN_CREATE_SUBSTRINGS = Object.freeze([
   'H8_V2_START.json',
@@ -109,55 +106,6 @@ function isCloseInputError(error) {
   return error instanceof CloseInputError || error?.name === 'CloseInputError';
 }
 
-function gitText(gitExec, args, cwd) {
-  return gitExec(args, { cwd }).toString('utf8').replace(/\r/g, '').trim();
-}
-
-function candidateSFromDerivation(derived) {
-  if (typeof derived === 'string') return parseStrictUtcCalendarDate(derived, 'candidate S');
-  if (derived && typeof derived === 'object') {
-    const value =
-      derived.candidateS ||
-      derived.startDateUtc ||
-      derived.start_date_utc ||
-      derived.S ||
-      derived.s;
-    if (typeof value === 'string') return parseStrictUtcCalendarDate(value, 'candidate S');
-  }
-  throw new Error('STOP: deriveCandidateS did not return a UTC calendar date');
-}
-
-function authorizationDeadlineUtc(startDateUtc) {
-  const previous = addUtcDays(startDateUtc, -1);
-  return `${previous}T11:00:00.000Z`;
-}
-
-function windowDatesFromS(startDateUtc) {
-  return {
-    observationEndDateUtc: addUtcDays(startDateUtc, 179),
-    requiredCloseEndDateUtc: addUtcDays(startDateUtc, 209),
-    recoveryEndDateUtc: addUtcDays(startDateUtc, 217),
-  };
-}
-
-function deadlineAlreadyPassed(deadlineUtc, nowUtc) {
-  return Date.parse(nowUtc) > Date.parse(deadlineUtc);
-}
-
-function committerSanityOk({ committerUtc, artifactCreatedUtc, etlStartedUtc, verificationUtc }) {
-  const committerEpoch = Math.floor(Date.parse(committerUtc) / 1000);
-  const artifactEpoch = Math.floor(Date.parse(artifactCreatedUtc) / 1000);
-  const etlEpoch = Math.floor(Date.parse(etlStartedUtc) / 1000);
-  const verificationEpoch = Math.floor(Date.parse(verificationUtc) / 1000);
-  if (!Number.isFinite(committerEpoch) || !Number.isFinite(artifactEpoch)) return false;
-  if (!Number.isFinite(etlEpoch) || !Number.isFinite(verificationEpoch)) return false;
-  return (
-    committerEpoch >= artifactEpoch &&
-    committerEpoch >= etlEpoch &&
-    committerEpoch <= verificationEpoch + 120
-  );
-}
-
 function sidecarPresent({ repoRoot, gitExec, fsImpl }) {
   if (sidecarTrackedInHead(repoRoot, gitExec)) return true;
   const abs = repoPath(repoRoot, H8_V2_SIDECAR_PATH);
@@ -188,57 +136,6 @@ function listExistingObservationDates(repoRoot, fsImpl) {
     .map((name) => name.slice(0, 10));
 }
 
-function listRehearsalFileNames(repoRoot, fsImpl) {
-  const dir = repoPath(repoRoot, H8_V2_REHEARSAL_DIR);
-  if (!fsImpl.existsSync(dir)) return [];
-  return fsImpl.readdirSync(dir).filter((name) => /^run-[0-9]+\.json$/.test(name));
-}
-
-function disqualificationPathForRunId(runId) {
-  return `${H8_V2_CONTROL_DIR}/disqualification-${runId}.json`;
-}
-
-function disqualificationExists(repoRoot, runId, fsImpl) {
-  return fsImpl.existsSync(repoPath(repoRoot, disqualificationPathForRunId(runId)));
-}
-
-function startFileExists(repoRoot, fsImpl) {
-  return fsImpl.existsSync(repoPath(repoRoot, H8_V2_START_PATH));
-}
-
-function rFromCommit(sha, gitExec, repoRoot) {
-  const raw = gitText(gitExec, ['show', '-s', '--format=%cI', sha], repoRoot);
-  return normalizeGitCommitterUtc(raw);
-}
-
-function findIntroducingCommit(repoRelative, gitExec, repoRoot, range = 'origin/main') {
-  const out = gitText(
-    gitExec,
-    ['log', '--reverse', '--diff-filter=A', '--format=%H', range, '--', repoRelative],
-    repoRoot
-  );
-  const shas = out.split('\n').map((line) => line.trim()).filter(Boolean);
-  return shas[0] || null;
-}
-
-function blobAt(spec, gitExec, repoRoot) {
-  return gitText(gitExec, ['rev-parse', spec], repoRoot);
-}
-
-function laterHistoryChangedPath(repoRelative, gitExec, repoRoot, range = 'origin/main') {
-  const modified = gitText(
-    gitExec,
-    ['log', '--first-parent', '--diff-filter=M', '--format=%H', range, '--', repoRelative],
-    repoRoot
-  );
-  const deleted = gitText(
-    gitExec,
-    ['log', '--first-parent', '--diff-filter=D', '--format=%H', range, '--', repoRelative],
-    repoRoot
-  );
-  return modified !== '' || deleted !== '';
-}
-
 function assertIdentityGates({ repoRoot, gitExec, fsImpl }) {
   assertV1SidecarAbsent({ repoRoot, gitExec, fsImpl });
   return verifyActivatedH8V2RuntimeState({ repoRoot, gitExec, fsImpl });
@@ -259,221 +156,12 @@ function freezeProvenance(env, head) {
   };
 }
 
-function assertGitContainedStartAuthorization(startObj, { repoRoot, gitExec, fsImpl }) {
-  try {
-    validateCompleteStart(startObj);
-    const rehearsalPath = startObj.qualifying_rehearsal_path;
-    const rehearsalCommitSha = parseStrictLowerSha(
-      startObj.qualifying_rehearsal_commit_sha,
-      'qualifying_rehearsal_commit_sha'
-    );
-    assertCommitExists(rehearsalCommitSha, gitExec, repoRoot);
-    const originMain = gitRevParse('origin/main', gitExec, repoRoot);
-    assertIsAncestor(rehearsalCommitSha, originMain, gitExec, repoRoot);
-    const rehearsalAbs = repoPath(repoRoot, rehearsalPath);
-    if (!fsImpl.existsSync(rehearsalAbs)) {
-      throw new Error('STOP: qualifying rehearsal artifact is missing');
-    }
-    const rehearsal = parseAndAssertCanonicalArtifact(
-      fsImpl.readFileSync(rehearsalAbs, 'utf8'),
-      'qualifying rehearsal'
-    );
-    validateCompleteRehearsal(rehearsal, { captureSourceSha: startObj.capture_source_sha });
-    if (String(rehearsal.github_run_id) !== String(startObj.qualifying_rehearsal_run_id)) {
-      throw new Error('STOP: start file rehearsal run id mismatch');
-    }
-    if (rehearsal.github_event_name !== 'schedule' || Number(rehearsal.github_run_attempt) !== 1) {
-      throw new Error('STOP: qualifying rehearsal was not schedule attempt 1');
-    }
-    const rUtc = rFromCommit(rehearsalCommitSha, gitExec, repoRoot);
-    if (rUtc !== startObj.qualifying_rehearsal_commit_committer_utc) {
-      throw new Error('STOP: qualifying_rehearsal_commit_committer_utc does not equal R');
-    }
-    const candidateS = candidateSFromDerivation(deriveCandidateS(rUtc));
-    if (candidateS !== startObj.start_date_utc) {
-      throw new Error('STOP: start_date_utc does not match frozen S derivation from R');
-    }
-    const windows = windowDatesFromS(candidateS);
-    if (startObj.observation_end_date_utc !== windows.observationEndDateUtc) {
-      throw new Error('STOP: observation_end_date_utc mismatch');
-    }
-    if (startObj.required_close_end_date_utc !== windows.requiredCloseEndDateUtc) {
-      throw new Error('STOP: required_close_end_date_utc mismatch');
-    }
-    if (startObj.recovery_end_date_utc !== windows.recoveryEndDateUtc) {
-      throw new Error('STOP: recovery_end_date_utc mismatch');
-    }
-    const mainEntry = gitText(
-      gitExec,
-      [
-        'log',
-        '--first-parent',
-        '--reverse',
-        '--diff-filter=A',
-        '--format=%H',
-        'origin/main',
-        '--',
-        H8_V2_START_PATH,
-      ],
-      repoRoot
-    )
-      .split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean);
-    if (mainEntry.length !== 1) {
-      throw new Error('STOP: start file main-entry commit is not unique');
-    }
-    const mergeCommit = mainEntry[0];
-    const parents = gitText(gitExec, ['show', '-s', '--format=%P', mergeCommit], repoRoot)
-      .split(/\s+/)
-      .filter(Boolean);
-    if (parents.length !== 2) {
-      throw new Error('STOP: start main-entry commit must have exactly two parents');
-    }
-    const firstParent = parents[0];
-    const startSha = parents[1];
-    try {
-      gitRevParse(`${firstParent}:${H8_V2_START_PATH}`, gitExec, repoRoot);
-      throw new Error('STOP: start file must be absent from main-entry first parent');
-    } catch (error) {
-      if (String(error.message).includes('must be absent')) throw error;
-    }
-    const mergeBlob = blobAt(`${mergeCommit}:${H8_V2_START_PATH}`, gitExec, repoRoot);
-    const startBlob = blobAt(`${startSha}:${H8_V2_START_PATH}`, gitExec, repoRoot);
-    const headBlob = blobAt(`HEAD:${H8_V2_START_PATH}`, gitExec, repoRoot);
-    if (mergeBlob !== startBlob || headBlob !== startBlob) {
-      throw new Error('STOP: start file blob is not immutable from H8_V2_START_SHA');
-    }
-    const addedPaths = gitText(
-      gitExec,
-      ['diff-tree', '--no-commit-id', '--name-only', '-r', startSha],
-      repoRoot
-    )
-      .split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean);
-    if (addedPaths.length !== 1 || addedPaths[0] !== H8_V2_START_PATH) {
-      throw new Error('STOP: H8_V2_START_SHA must add exactly one path');
-    }
-    if (laterHistoryChangedPath(H8_V2_START_PATH, gitExec, repoRoot)) {
-      throw new Error('STOP: start file was modified or deleted after main entry');
-    }
-    const mergeTime = rFromCommit(mergeCommit, gitExec, repoRoot);
-    const deadline = authorizationDeadlineUtc(candidateS);
-    if (Date.parse(mergeTime) > Date.parse(deadline)) {
-      throw new Error('STOP: start authorization missed the S-1 11:00 UTC deadline');
-    }
-    if (!committerSanityOk({
-      committerUtc: rUtc,
-      artifactCreatedUtc: rehearsal.artifact_created_utc,
-      etlStartedUtc: rehearsal.etl_started_utc,
-      verificationUtc: mergeTime,
-    })) {
-      throw new Error('STOP: qualifying rehearsal failed timestamp-integrity checks');
-    }
-  } catch (error) {
-    const detail = error instanceof Error ? error.message : String(error);
-    throw new Error(`STOP H8 V2 BEFORE SCIENTIFIC WRITES: ${detail}`);
-  }
-}
-
-function loadAndValidateStartFile({ repoRoot, gitExec, fsImpl }) {
-  const abs = repoPath(repoRoot, H8_V2_START_PATH);
-  const startObj = parseAndAssertCanonicalArtifact(fsImpl.readFileSync(abs, 'utf8'), 'H8_V2_START.json');
-  assertGitContainedStartAuthorization(startObj, { repoRoot, gitExec, fsImpl });
-  return startObj;
-}
-
-function evaluateRehearsalCandidate(fileName, { repoRoot, gitExec, fsImpl, captureRunUtc }) {
-  const repoRelative = `${H8_V2_REHEARSAL_DIR}/${fileName}`;
-  const abs = repoPath(repoRoot, repoRelative);
-  let rehearsal;
-  try {
-    rehearsal = parseAndAssertCanonicalArtifact(fsImpl.readFileSync(abs, 'utf8'), 'rehearsal');
-    validateCompleteRehearsal(rehearsal, { captureSourceSha: rehearsal.capture_source_sha });
-  } catch {
-    return { live: false, expired: false, disqualified: false };
-  }
-  const runId = rehearsal.github_run_id;
-  const disqualified = disqualificationExists(repoRoot, runId, fsImpl);
-  if (disqualified) {
-    return { live: false, expired: false, disqualified: true, runId, path: repoRelative };
-  }
-  if (rehearsal.github_event_name !== 'schedule' || Number(rehearsal.github_run_attempt) !== 1) {
-    return { live: false, expired: false, disqualified: false, runId, path: repoRelative };
-  }
-  let introducingSha;
-  try {
-    introducingSha = findIntroducingCommit(repoRelative, gitExec, repoRoot);
-    if (!introducingSha) return { live: false, expired: false, disqualified: false, runId, path: repoRelative };
-    const originMain = gitRevParse('origin/main', gitExec, repoRoot);
-    assertIsAncestor(introducingSha, originMain, gitExec, repoRoot);
-    const commitBlob = blobAt(`${introducingSha}:${repoRelative}`, gitExec, repoRoot);
-    const headBlob = blobAt(`HEAD:${repoRelative}`, gitExec, repoRoot);
-    if (commitBlob !== headBlob) {
-      return { live: false, expired: false, disqualified: false, runId, path: repoRelative };
-    }
-    if (laterHistoryChangedPath(repoRelative, gitExec, repoRoot)) {
-      return { live: false, expired: false, disqualified: false, runId, path: repoRelative };
-    }
-  } catch {
-    return { live: false, expired: false, disqualified: false, runId, path: repoRelative };
-  }
-  let rUtc;
-  try {
-    rUtc = rFromCommit(introducingSha, gitExec, repoRoot);
-  } catch {
-    return { live: false, expired: false, disqualified: false, runId, path: repoRelative };
-  }
-  if (
-    !committerSanityOk({
-      committerUtc: rUtc,
-      artifactCreatedUtc: rehearsal.artifact_created_utc,
-      etlStartedUtc: rehearsal.etl_started_utc,
-      verificationUtc: captureRunUtc,
-    })
-  ) {
-    return { live: false, expired: false, disqualified: false, runId, path: repoRelative, commitSha: introducingSha };
-  }
-  const candidateS = candidateSFromDerivation(deriveCandidateS(rUtc));
-  const deadline = authorizationDeadlineUtc(candidateS);
-  const expired = deadlineAlreadyPassed(deadline, captureRunUtc);
-  return {
-    live: !expired,
-    expired,
-    disqualified: false,
-    runId,
-    path: repoRelative,
-    commitSha: introducingSha,
-    rUtc,
-    candidateS,
-    deadlineUtc: deadline,
-  };
-}
-
-function evaluatePreStartState({ repoRoot, gitExec, fsImpl, captureRunUtc }) {
-  const names = listRehearsalFileNames(repoRoot, fsImpl);
-  if (names.length === 0) {
-    return {
-      liveCandidate: false,
-      readinessExpired: false,
-      disqualificationPresent: false,
-      liveCandidates: [],
-    };
-  }
-  gitRevParse('origin/main', gitExec, repoRoot);
-  const evaluations = names.map((name) =>
-    evaluateRehearsalCandidate(name, { repoRoot, gitExec, fsImpl, captureRunUtc })
-  );
-  const liveCandidates = evaluations.filter((item) => item.live);
-  return {
-    liveCandidate: liveCandidates.length === 1,
-    multipleLiveCandidates: liveCandidates.length > 1,
-    readinessExpired: evaluations.some((item) => item.expired),
-    disqualificationPresent: evaluations.some((item) => item.disqualified),
-    liveCandidates,
-    evaluations,
-  };
+function assertScheduledPreflightHead(env, gitExec, repoRoot) {
+  if (env.GITHUB_ACTIONS !== 'true') return;
+  if (env.H8_V2_GITHUB_EVENT_NAME !== 'schedule') return;
+  if (String(env.H8_V2_GITHUB_RUN_ATTEMPT) !== '1') return;
+  const githubSha = parseStrictLowerSha(env.H8_V2_GITHUB_SHA, 'H8_V2_GITHUB_SHA');
+  assertHeadEquals(githubSha, gitExec, repoRoot);
 }
 
 export function parseArgs(argv = process.argv.slice(2)) {
@@ -529,6 +217,7 @@ export function runContractCheck({
   gitExec = defaultGitExec,
   fsImpl = fs,
   cwd,
+  env = process.env,
 } = {}) {
   resetCounters();
   const repoRoot = resolveRepoRoot(gitExec, cwd);
@@ -564,6 +253,7 @@ export function runContractCheck({
     protocolIdentity = activatedState.protocolIdentity;
     contractIdentity = activatedState.contractIdentity;
     scientificFingerprint = activatedState.scientificFingerprint;
+    assertScheduledPreflightHead(env, gitExec, repoRoot);
   }
   const workflowText = fsImpl.readFileSync(repoPath(repoRoot, '.github/workflows/daily-etl.yml'), 'utf8');
   const workflowFindings = workflowStaticChecks(workflowText);
@@ -605,27 +295,41 @@ export function runValidateStartCandidate({
   const repoRoot = resolveRepoRoot(gitExec, cwd);
   assertV1SidecarAbsent({ repoRoot, gitExec, fsImpl });
   const nowUtc = parseStrictUtcTimestamp(now(), 'now');
+  if (rehearsalCommitSha) {
+    parseStrictLowerSha(rehearsalCommitSha, 'qualifying rehearsal commit SHA');
+  }
+  const activated = verifyActivatedH8V2RuntimeState({ repoRoot, gitExec, fsImpl });
+  const captureSourceSha = activated.captureSourceSha;
   let sha = rehearsalCommitSha;
-  let liveReport = null;
   if (!sha) {
     const preStart = evaluatePreStartState({
       repoRoot,
       gitExec,
       fsImpl,
       captureRunUtc: nowUtc,
+      captureSourceSha,
     });
+    if (preStart.multipleLiveCandidates) {
+      throw new Error('STOP: multiple live candidate rehearsals exist');
+    }
     if (!preStart.liveCandidate || preStart.liveCandidates.length !== 1) {
       throw new Error('STOP: --validate-start-candidate requires a qualifying rehearsal commit SHA');
     }
-    liveReport = preStart.liveCandidates[0];
-    sha = liveReport.commitSha;
+    sha = preStart.liveCandidates[0].commitSha;
   }
-  const parsedSha = parseStrictLowerSha(sha, 'qualifying rehearsal commit SHA');
-  assertCommitExists(parsedSha, gitExec, repoRoot);
-  const rUtc = liveReport?.rUtc || rFromCommit(parsedSha, gitExec, repoRoot);
-  const candidateS = liveReport?.candidateS || candidateSFromDerivation(deriveCandidateS(rUtc));
-  const windows = windowDatesFromS(candidateS);
-  const deadlineUtc = liveReport?.deadlineUtc || authorizationDeadlineUtc(candidateS);
+  const report = validateQualifyingRehearsalCommit({
+    rehearsalCommitSha: sha,
+    repoRoot,
+    gitExec,
+    fsImpl,
+    captureSourceSha,
+    nowUtc,
+  });
+  const windows = {
+    observationEndDateUtc: addUtcDays(report.candidateS, 179),
+    requiredCloseEndDateUtc: addUtcDays(report.candidateS, 209),
+    recoveryEndDateUtc: addUtcDays(report.candidateS, 217),
+  };
   assertNoPerformanceOrNetwork();
   const counters = snapshotCounters();
   if (counters.filesWritten !== 0) {
@@ -634,14 +338,14 @@ export function runValidateStartCandidate({
   return {
     ok: true,
     mode: 'validate-start-candidate',
-    rehearsalCommitSha: parsedSha,
-    r: rUtc,
-    candidateS,
+    rehearsalCommitSha: report.rehearsalCommitSha,
+    r: report.rUtc,
+    candidateS: report.candidateS,
     observationEndDateUtc: windows.observationEndDateUtc,
     requiredCloseEndDateUtc: windows.requiredCloseEndDateUtc,
     recoveryEndDateUtc: windows.recoveryEndDateUtc,
-    authorizationDeadlineUtc: deadlineUtc,
-    deadlineAlreadyPassed: deadlineAlreadyPassed(deadlineUtc, nowUtc),
+    authorizationDeadlineUtc: report.deadlineUtc,
+    deadlineAlreadyPassed: report.deadlineAlreadyPassed,
     assignsStart: false,
     filesWritten: 0,
     networkRequests: counters.networkRequests,
@@ -932,10 +636,10 @@ export function runCapture({
   let mode;
   let startAuthorization = null;
   if (startFileExists(repoRoot, fsImpl)) {
-    startAuthorization = loadAndValidateStartFile({ repoRoot, gitExec, fsImpl });
+    startAuthorization = loadAndValidateStartFile({ repoRoot, gitExec, fsImpl, captureSourceSha });
     mode = 'STUDY';
   } else {
-    const preStart = evaluatePreStartState({ repoRoot, gitExec, fsImpl, captureRunUtc });
+    const preStart = evaluatePreStartState({ repoRoot, gitExec, fsImpl, captureRunUtc, captureSourceSha });
     if (preStart.multipleLiveCandidates) {
       throw new Error('STOP: multiple live candidate rehearsals exist');
     }
@@ -1032,7 +736,7 @@ export function main(argv = process.argv.slice(2), env = process.env) {
   const args = parseArgs(argv);
   let result;
   if (args.contractCheck) {
-    result = runContractCheck({ candidateSourceSha: args.candidateSourceSha });
+    result = runContractCheck({ candidateSourceSha: args.candidateSourceSha, env });
   } else if (args.validateStartCandidate) {
     result = runValidateStartCandidate({ rehearsalCommitSha: args.rehearsalCommitSha });
   } else {

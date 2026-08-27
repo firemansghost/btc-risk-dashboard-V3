@@ -40,6 +40,12 @@ jobs:
       - name: H8 v2 identity preflight
         if: github.event_name == 'schedule' && github.run_attempt == 1
         continue-on-error: true
+        env:
+          H8_V2_GITHUB_SHA: ${{ github.sha }}
+          H8_V2_GITHUB_EVENT_NAME: ${{ github.event_name }}
+          H8_V2_GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
+          H8_V2_GITHUB_RUN_ID: ${{ github.run_id }}
+          H8_V2_GITHUB_WORKFLOW_REF: ${{ github.workflow_ref }}
         run: |
           set +e
           node scripts/research/capture-h8-v2-prospective.mjs --contract-check

@@ -1,4 +1,4 @@
-import test from 'node:test';
+import test, { describe } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -77,9 +77,12 @@ import {
   rehearsalPathForRunId,
   observationPathForDate,
   closePathForDate,
+  disqualificationPathForRunId,
   buildScientificFingerprint,
   authorizationDeadlineUtc,
   buildRehearsalObject,
+  missingFactorPlaceholder,
+  isMissingFactorPlaceholder,
 } from '../lib/h8-v2-prospective-capture-core.mjs';
 import {
   verifyFrozenFile,
@@ -96,6 +99,12 @@ import {
   assertCleanTrackedWorktree,
   stageExactLandablePaths,
   defaultGitExec,
+  runH8V2ScientificPhase,
+  loadAndValidateStartFile,
+  evaluatePreStartState,
+  validateMergedDisqualification,
+  rFromCommit,
+  findFirstParentIntroducingCommit,
 } from '../lib/h8-v2-prospective-capture-io.mjs';
 import {
   parseArgs,
@@ -104,6 +113,10 @@ import {
   runValidateStartCandidate,
   planCapture,
 } from '../capture-h8-v2-prospective.mjs';
+
+if (typeof describe.configure === 'function') {
+  describe.configure({ concurrency: false });
+}
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const SOURCE_SHA = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
@@ -627,6 +640,19 @@ test('D. activated + no start + no live candidate → REHEARSAL', () => {
   );
 });
 
+test('D. live candidate dominates historical expired/disqualified flags', () => {
+  assert.equal(
+    classifyPreStartAction({
+      activated: true,
+      startExists: false,
+      liveCandidate: true,
+      disqualificationPresent: true,
+      readinessExpired: true,
+    }),
+    PRE_START_ACTIONS.HOLD_LIVE_CANDIDATE
+  );
+});
+
 test('D. live candidate + not expired → HOLD_LIVE_CANDIDATE (no second rehearsal)', () => {
   assert.equal(
     classifyPreStartAction({
@@ -677,12 +703,12 @@ test('D. planCapture REHEARSAL produces a non-empty no-score manifest', () => {
   assert.equal(Object.hasOwn(rehearsal, 'official_formula_score'), false);
 });
 
-test('D. readiness expired → REHEARSAL', () => {
+test('D. readiness expired without a live candidate → REHEARSAL', () => {
   assert.equal(
     classifyPreStartAction({
       activated: true,
       startExists: false,
-      liveCandidate: true,
+      liveCandidate: false,
       disqualificationPresent: false,
       readinessExpired: true,
     }),
@@ -1096,11 +1122,19 @@ test('G. landable subset preserves original hashes and order', () => {
   assert.equal(shrunk[0].sha256, fx.closeSha);
 });
 
-test('G. no force push / no git add research / no commit-tree', () => {
+test('G. no force push / no git add research / no commit-tree / no --date= / no filter-branch / no filter-repo', () => {
   assert.throws(() => assertForbiddenGitArgs(['push', '--force']), /force push/);
   assert.throws(() => assertForbiddenGitArgs(['add', 'research']), /git add research/);
   assert.throws(() => assertForbiddenGitArgs(['add', 'research/h8-v2-prospective']), /git add research/);
   assert.throws(() => assertForbiddenGitArgs(['commit-tree', 'abc']), /commit-tree/);
+  assert.throws(() => assertForbiddenGitArgs(['commit', '--date', '2020-01-01']), /--date/);
+  assert.throws(() => assertForbiddenGitArgs(['commit', '--date=2020-01-01T00:00:00']), /--date/);
+  assert.throws(() => assertForbiddenGitArgs(['filter-branch', '--', 'HEAD']), /filter-branch/);
+  assert.throws(() => assertForbiddenGitArgs(['filter-repo']), /filter-repo/);
+  assert.doesNotThrow(() => assertForbiddenGitArgs(['commit', '-m', 'research(h8-v2): capture']));
+  assert.doesNotThrow(() => assertForbiddenGitArgs(['rebase', 'origin/main']));
+  assert.doesNotThrow(() => assertForbiddenGitArgs(['fetch', 'origin']));
+  assert.doesNotThrow(() => assertForbiddenGitArgs(['push', 'origin', 'main']));
 });
 
 test('G. escrow hash mismatch fails', () => {
@@ -1247,7 +1281,7 @@ test('H. --validate-start-candidate is read-only (filesWritten=0) and fails with
         fsImpl: fs,
         now: () => '2099-06-03T10:00:00.000Z',
       }),
-    /qualifying rehearsal commit SHA/
+    /STOP|missing/
   );
   assert.equal(snapshotCounters().filesWritten, 0);
   resetCounters();
@@ -1284,6 +1318,31 @@ test('I. observation date from latest.as_of_utc even if capture T is next UTC da
   assert.equal(proposed.skip, false);
   assert.equal(proposed.observationDate, SYNTHETIC_S);
   assert.equal(proposed.observation.observation_date, SYNTHETIC_S);
+});
+
+test('I. missing required factor produces NOT_ELIGIBLE observation, not CAPTURE_MISSING', () => {
+  const latest = makeLatest();
+  latest.factors = latest.factors.filter((item) => item.key !== 'social_interest');
+  const proposed = proposeObservation(observationArgs({ latest }));
+  assert.equal(proposed.skip, false);
+  assert.equal(proposed.observation.factors.length, 7);
+  const social = proposed.observation.factors[REQUIRED_FACTOR_KEYS.indexOf('social_interest')];
+  assert.equal(social.key, 'social_interest');
+  assert.equal(isMissingFactorPlaceholder(social, 'social_interest'), true);
+  assert.deepEqual(social, missingFactorPlaceholder('social_interest'));
+  assert.equal(proposed.observation.common_eligibility_status, 'NOT_ELIGIBLE');
+  assert.match(proposed.observation.eligibility_reason, /MISSING_FACTOR:social_interest/);
+  assert.equal(proposed.observation.eligibility_reason.includes('INVALID_SCORE:social_interest'), false);
+  assert.equal(proposed.observation.eligibility_reason.includes('STATUS_NOT_FRESH:social_interest'), false);
+  assert.equal(proposed.observation.official_formula_score, null);
+  assert.equal(proposed.observation.liq_heavy_score, null);
+  assert.equal(proposed.observation.mom_tilted_score, null);
+  assert.equal(proposed.observation.official_integrity_status, 'NOT_COMPUTED');
+  assert.equal(proposed.observation.axis_a_status, 'NOT_ELIGIBLE');
+  validateCompleteObservation(proposed.observation, {
+    expectedDate: SYNTHETIC_S,
+    captureSourceSha: SOURCE_SHA,
+  });
 });
 
 test('I. common eligibility NOT_ELIGIBLE nulls formula/challenger scores', () => {
@@ -1700,4 +1759,1005 @@ test('close artifacts validate and remain first-authorized', () => {
     startDateUtc: SYNTHETIC_S,
   });
   assert.deepEqual(skipped, []);
+});
+
+function sleepMs(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+function withWorldLock(fn) {
+  const lockPath = path.join(os.tmpdir(), 'h8-v2-stage-a-world.lock');
+  for (;;) {
+    try {
+      fs.mkdirSync(lockPath);
+      break;
+    } catch (error) {
+      if (!error || error.code !== 'EEXIST') throw error;
+      sleepMs(100);
+    }
+  }
+  try {
+    return fn();
+  } finally {
+    try {
+      fs.rmdirSync(lockPath);
+    } catch {
+      // ignore
+    }
+  }
+}
+
+function gitOk(cwd, args, envExtra = {}) {
+  const result = spawnSync('git', args, {
+    cwd,
+    encoding: 'utf8',
+    env: { ...process.env, GIT_TERMINAL_PROMPT: '0', ...envExtra },
+  });
+  if (result.status !== 0) {
+    throw new Error((result.stderr || result.stdout || args.join(' ')).trim());
+  }
+  return (result.stdout || '').replace(/\r/g, '').trim();
+}
+
+function blobIdOfBytes(cwd, bytes) {
+  const result = spawnSync('git', ['hash-object', '--stdin'], {
+    cwd,
+    input: bytes,
+    env: { ...process.env, GIT_TERMINAL_PROMPT: '0' },
+  });
+  if (result.status !== 0) {
+    throw new Error((result.stderr || result.stdout || 'hash-object --stdin').toString().trim());
+  }
+  return (result.stdout || '').toString('utf8').replace(/\r/g, '').trim();
+}
+
+function blobIdAt(cwd, rev, rel) {
+  return gitOk(cwd, ['rev-parse', `${rev}:${rel}`]);
+}
+
+function gitCommit(cwd, message, envExtra = {}) {
+  gitOk(
+    cwd,
+    [
+      '-c',
+      'user.name=h8-v2-test',
+      '-c',
+      'user.email=h8-v2-test@example.test',
+      '-c',
+      'commit.gpgsign=false',
+      'commit',
+      '-m',
+      message,
+    ],
+    envExtra
+  );
+  return gitOk(cwd, ['rev-parse', 'HEAD']);
+}
+
+function dateEnv(iso) {
+  return { GIT_COMMITTER_DATE: iso, GIT_AUTHOR_DATE: iso };
+}
+
+function commitRehearsalDirect(work, sourceSha, runId, committerIso) {
+  const etlStartedUtc = new Date(Date.parse(committerIso) - 180000).toISOString();
+  const artifactCreatedUtc = new Date(Date.parse(committerIso) - 120000).toISOString();
+  const rehearsal = makeRehearsalArtifact(sourceSha, runId, etlStartedUtc, artifactCreatedUtc);
+  const repoRelative = rehearsalPathForRunId(runId);
+  writeRepoRelative(work, repoRelative, Buffer.from(canonicalizeJson(rehearsal)));
+  gitOk(work, ['add', '--', repoRelative]);
+  const sha = gitCommit(work, `rehearsal ${runId}`, dateEnv(committerIso));
+  gitOk(work, ['push', 'origin', 'main']);
+  const rUtc = rFromCommit(sha, gitExecFor(work), work);
+  return { sha, repoRelative, rUtc, rehearsal, etlStartedUtc, artifactCreatedUtc };
+}
+
+function configureGitIdentity(cwd) {
+  gitOk(cwd, ['config', 'user.name', 'h8-v2-test']);
+  gitOk(cwd, ['config', 'user.email', 'h8-v2-test@example.test']);
+  gitOk(cwd, ['config', 'core.autocrlf', 'false']);
+  gitOk(cwd, ['config', 'commit.gpgsign', 'false']);
+}
+
+let activatedTemplate = null;
+
+function createActivatedTemplateUnlocked() {
+  if (activatedTemplate) return activatedTemplate;
+  const dir = tmpDir();
+  gitOk(path.dirname(dir), ['clone', '--local', '-c', 'core.autocrlf=false', '--', REPO_ROOT, dir]);
+  configureGitIdentity(dir);
+  gitOk(dir, ['checkout', '-B', 'main']);
+  gitOk(dir, ['reset', '--hard', 'HEAD']);
+  for (const rel of STAGE_A_RUNTIME_PATHS) {
+    fs.copyFileSync(path.join(REPO_ROOT, ...rel.split('/')), path.join(dir, ...rel.split('/')));
+  }
+  gitOk(dir, ['add', '--', ...STAGE_A_RUNTIME_PATHS]);
+  const dirty = gitOk(dir, ['status', '--porcelain']);
+  if (dirty) gitCommit(dir, 'synthetic Stage-A repair source');
+  const sourceSha = gitOk(dir, ['rev-parse', 'HEAD']);
+  writeRepoRelative(dir, H8_V2_CAPTURE_SOURCE_SIDECAR_PATH, Buffer.from(`${sourceSha}\n`));
+  gitOk(dir, ['add', '--', H8_V2_CAPTURE_SOURCE_SIDECAR_PATH]);
+  gitCommit(dir, 'synthetic Stage-B sidecar');
+  activatedTemplate = { dir, sourceSha };
+  return activatedTemplate;
+}
+
+function createActivatedTemplate() {
+  if (activatedTemplate) return activatedTemplate;
+  return withWorldLock(() => createActivatedTemplateUnlocked());
+}
+
+function forkWorld() {
+  return withWorldLock(() => {
+    const template = createActivatedTemplateUnlocked();
+    const root = tmpDir();
+    const origin = path.join(root, 'origin.git');
+    const work = path.join(root, 'work');
+    gitOk(path.dirname(origin), ['clone', '--bare', '-c', 'core.autocrlf=false', '--', template.dir, origin]);
+    gitOk(root, ['clone', '-c', 'core.autocrlf=false', '--', origin, work]);
+    configureGitIdentity(work);
+    gitOk(work, ['checkout', '-B', 'main']);
+    gitOk(work, ['reset', '--hard', 'HEAD']);
+    gitOk(work, ['remote', 'set-url', 'origin', origin]);
+    gitOk(work, ['fetch', 'origin']);
+    gitOk(work, ['branch', '-u', 'origin/main', 'main']);
+    return { root, origin, work, sourceSha: template.sourceSha };
+  });
+}
+
+function siblingClone(origin) {
+  return withWorldLock(() => {
+    const dir = tmpDir();
+    gitOk(path.dirname(dir), ['clone', '-c', 'core.autocrlf=false', '--', origin, dir]);
+    configureGitIdentity(dir);
+    gitOk(dir, ['reset', '--hard', 'HEAD']);
+    return dir;
+  });
+}
+
+function gitExecFor(work) {
+  return (args, options = {}) => defaultGitExec(args, { ...options, cwd: options.cwd || work });
+}
+
+function recentIso(offsetMs = -120000) {
+  return new Date(Date.now() + offsetMs).toISOString();
+}
+
+function makeRehearsalArtifact(sourceSha, runId, etlStartedUtc, artifactCreatedUtc) {
+  return buildRehearsalObject({
+    captureSourceSha: sourceSha,
+    provenance: provenance({
+      sourceBaseGitSha: sourceSha,
+      githubSha: sourceSha,
+      githubRunId: String(runId),
+    }),
+    artifactCreatedUtc,
+    etlStartedUtc,
+  });
+}
+
+function writeManifestAndEscrow(work, files, captureRunUtc, runnerTemp) {
+  const manifest = buildCreatedManifest({ captureRunUtc, files });
+  const manifestPath = path.join(runnerTemp, 'h8-v2-created-manifest.json');
+  const escrowDir = path.join(runnerTemp, 'h8-v2-escrow');
+  fs.writeFileSync(manifestPath, canonicalizeJson(manifest));
+  escrowH8Artifacts({
+    repoRoot: work,
+    manifestPath,
+    escrowDir,
+    runnerTemp,
+    gitExec: gitExecFor(work),
+  });
+  return { manifest, manifestPath, escrowDir };
+}
+
+function scientificEnv(runnerTemp, etlStartedUtc, manifestPath, escrowDir) {
+  return {
+    RUNNER_TEMP: runnerTemp,
+    H8_V2_CREATED_MANIFEST_PATH: manifestPath,
+    H8_V2_ESCROW_DIR: escrowDir,
+    H8_V2_ETL_STARTED_UTC: etlStartedUtc,
+  };
+}
+
+function landRehearsal(work, sourceSha, runId) {
+  const etlStartedUtc = recentIso(-180000);
+  const captureRunUtc = recentIso(-120000);
+  const rehearsal = makeRehearsalArtifact(sourceSha, runId, etlStartedUtc, captureRunUtc);
+  const repoRelative = rehearsalPathForRunId(runId);
+  const bytes = Buffer.from(canonicalizeJson(rehearsal));
+  writeRepoRelative(work, repoRelative, bytes);
+  const runnerTemp = tmpDir();
+  const files = [{ path: repoRelative, sha256: sha256Bytes(bytes) }];
+  const { manifestPath, escrowDir } = writeManifestAndEscrow(work, files, captureRunUtc, runnerTemp);
+  const result = runH8V2ScientificPhase({
+    env: scientificEnv(runnerTemp, etlStartedUtc, manifestPath, escrowDir),
+    gitExec: gitExecFor(work),
+    cwd: work,
+  });
+  assert.equal(result.committed, true);
+  const rUtc = rFromCommit(result.finalCommitSha, gitExecFor(work), work);
+  return { ...result, repoRelative, rUtc, rehearsal, runnerTemp, etlStartedUtc, captureRunUtc };
+}
+
+function installStartMerge(
+  work,
+  { sourceSha, rehearsalPath, rehearsalCommitSha, rehearsalRunId, rUtc, mergeIso = null }
+) {
+  const startDate = deriveCandidateS(rUtc);
+  const start = makeStart({
+    capture_source_sha: sourceSha,
+    qualifying_rehearsal_path: rehearsalPath,
+    qualifying_rehearsal_commit_sha: rehearsalCommitSha,
+    qualifying_rehearsal_run_id: String(rehearsalRunId),
+    qualifying_rehearsal_commit_committer_utc: rUtc,
+    start_date_utc: startDate,
+    observation_end_date_utc: addUtcDays(startDate, 179),
+    required_close_end_date_utc: addUtcDays(startDate, 209),
+    recovery_end_date_utc: addUtcDays(startDate, 217),
+    authorization_created_utc: mergeIso || new Date().toISOString(),
+  });
+  gitOk(work, ['checkout', '-B', 'h8-v2-start-auth']);
+  writeRepoRelative(work, H8_V2_START_PATH, Buffer.from(canonicalizeJson(start)));
+  gitOk(work, ['add', '--', H8_V2_START_PATH]);
+  const startSha = gitCommit(work, 'Add H8_V2_START.json', mergeIso ? dateEnv(mergeIso) : {});
+  gitOk(work, ['checkout', 'main']);
+  gitOk(
+    work,
+    [
+      '-c',
+      'user.name=h8-v2-test',
+      '-c',
+      'user.email=h8-v2-test@example.test',
+      '-c',
+      'commit.gpgsign=false',
+      'merge',
+      '--no-ff',
+      '-m',
+      'Merge H8 V2 start authorization',
+      startSha,
+    ],
+    mergeIso ? dateEnv(mergeIso) : {}
+  );
+  gitOk(work, ['push', 'origin', 'main']);
+  return { startSha, start, startDate };
+}
+
+function pushUnrelatedOriginCommit(origin, message = 'unrelated origin movement') {
+  const sib = siblingClone(origin);
+  writeRepoRelative(sib, 'public/extras/h8-v2-unrelated.txt', Buffer.from(`${message}\n`));
+  gitOk(sib, ['add', '--', 'public/extras/h8-v2-unrelated.txt']);
+  const sha = gitCommit(sib, message);
+  gitOk(sib, ['push', 'origin', 'main']);
+  return sha;
+}
+
+test('§39 A. full landable set restores, commits, and pushes exact escrow bytes', () => {
+  const world = forkWorld();
+  const landed = landRehearsal(world.work, world.sourceSha, '5001');
+  const originMain = gitOk(world.work, ['rev-parse', 'origin/main']);
+  assert.equal(originMain, landed.finalCommitSha);
+  const changed = gitOk(world.work, [
+    'diff-tree',
+    '--no-commit-id',
+    '--name-only',
+    '-r',
+    landed.finalCommitSha,
+  ]);
+  assert.equal(changed, landed.repoRelative);
+  const blob = gitOk(world.origin, ['rev-parse', `main:${landed.repoRelative}`]);
+  const localBlob = gitOk(world.work, ['rev-parse', `HEAD:${landed.repoRelative}`]);
+  assert.equal(blob, localBlob);
+  assert.equal(gitOk(world.work, ['merge-base', '--is-ancestor', landed.finalCommitSha, 'origin/main']), '');
+});
+
+test('§39 B. origin movement with unchanged set rebases and lands correct bytes', () => {
+  const world = forkWorld();
+  const etlStartedUtc = recentIso(-180000);
+  const captureRunUtc = recentIso(-120000);
+  const rehearsal = makeRehearsalArtifact(world.sourceSha, '5002', etlStartedUtc, captureRunUtc);
+  const repoRelative = rehearsalPathForRunId('5002');
+  const bytes = Buffer.from(canonicalizeJson(rehearsal));
+  writeRepoRelative(world.work, repoRelative, bytes);
+  const runnerTemp = tmpDir();
+  const { manifestPath, escrowDir } = writeManifestAndEscrow(
+    world.work,
+    [{ path: repoRelative, sha256: sha256Bytes(bytes) }],
+    captureRunUtc,
+    runnerTemp
+  );
+  const originalGitBlob = blobIdOfBytes(world.work, bytes);
+  let commits = 0;
+  const gitExec = (args, options = {}) => {
+    const out = defaultGitExec(args, { ...options, cwd: options.cwd || world.work });
+    if (args[0] === 'commit') {
+      commits += 1;
+      if (commits === 1) pushUnrelatedOriginCommit(world.origin, 'origin moved after provisional');
+    }
+    return out;
+  };
+  const result = runH8V2ScientificPhase({
+    env: scientificEnv(runnerTemp, etlStartedUtc, manifestPath, escrowDir),
+    gitExec,
+    cwd: world.work,
+  });
+  assert.equal(result.committed, true);
+  assert.equal(result.landablePaths.join('\n'), repoRelative);
+  assert.equal(blobIdAt(world.origin, 'main', repoRelative), originalGitBlob);
+});
+
+test('§39 C. origin movement shrinks landable set; original escrow hash survives', () => {
+  const world = forkWorld();
+  const rehearsalCommitter = '2026-08-20T12:00:00.000Z';
+  const mergeIso = '2026-08-22T10:00:00.000Z';
+  const landed = commitRehearsalDirect(world.work, world.sourceSha, '5003', rehearsalCommitter);
+  installStartMerge(world.work, {
+    sourceSha: world.sourceSha,
+    rehearsalPath: landed.repoRelative,
+    rehearsalCommitSha: landed.sha,
+    rehearsalRunId: '5003',
+    rUtc: landed.rUtc,
+    mergeIso,
+  });
+  const startDate = deriveCandidateS(landed.rUtc);
+  const observationDate = new Date().toISOString().slice(0, 10);
+  const latest = makeLatest({
+    as_of_utc: `${observationDate}T11:31:00.000Z`,
+    snapshot_date: observationDate,
+  });
+  const latestBytes = Buffer.from(canonicalizeJson(latest));
+  writeRepoRelative(world.work, LATEST_PATH, latestBytes);
+  gitOk(world.work, ['add', '--', LATEST_PATH]);
+  gitCommit(world.work, 'seed latest for study artifacts');
+  gitOk(world.work, ['push', 'origin', 'main']);
+  const csv = btcCsv([
+    { date: startDate, close: '100.5' },
+    { date: addUtcDays(startDate, 1), close: '101' },
+    { date: addUtcDays(observationDate, -1), close: '102' },
+  ]);
+  const csvBytes = Buffer.from(csv);
+  writeRepoRelative(world.work, BTC_SOURCE_PATH, csvBytes);
+  gitOk(world.work, ['add', '--', BTC_SOURCE_PATH]);
+  gitCommit(world.work, 'seed csv for study artifacts');
+  gitOk(world.work, ['push', 'origin', 'main']);
+  const proposedObs = proposeObservation(
+    observationArgs({
+      latest,
+      latestSha256: sha256Bytes(latestBytes),
+      etlStartedUtc: `${observationDate}T11:00:00.000Z`,
+      captureRunUtc: `${observationDate}T11:32:00.000Z`,
+      captureSourceSha: world.sourceSha,
+      startDateUtc: startDate,
+      provenance: provenance({ sourceBaseGitSha: world.sourceSha, githubSha: world.sourceSha }),
+    })
+  );
+  assert.equal(proposedObs.skip, false);
+  const obsBytes = Buffer.from(canonicalizeJson(proposedObs.observation));
+  writeRepoRelative(world.work, proposedObs.path, obsBytes);
+  const closes = proposeCloseArtifacts({
+    csvText: csv,
+    sourceArtifactSha256: sha256Bytes(csvBytes),
+    captureRunUtc: new Date().toISOString(),
+    existingCloseDates: [],
+    captureSourceSha: world.sourceSha,
+    provenance: provenance({ sourceBaseGitSha: world.sourceSha, githubSha: world.sourceSha }),
+    startDateUtc: startDate,
+  });
+  assert.equal(closes.length >= 1, true);
+  const closeBytes = Buffer.from(canonicalizeJson(closes[0].close));
+  writeRepoRelative(world.work, closes[0].path, closeBytes);
+  const etlStartedUtc = recentIso(-180000);
+  const captureRunUtc = recentIso(-120000);
+  const runnerTemp = tmpDir();
+  const files = [
+    { path: proposedObs.path, sha256: sha256Bytes(obsBytes) },
+    { path: closes[0].path, sha256: sha256Bytes(closeBytes) },
+  ];
+  const { manifestPath, escrowDir } = writeManifestAndEscrow(world.work, files, captureRunUtc, runnerTemp);
+  const originalCloseBlob = blobIdOfBytes(world.work, closeBytes);
+  let commits = 0;
+  const gitExec = (args, options = {}) => {
+    const out = defaultGitExec(args, { ...options, cwd: options.cwd || world.work });
+    if (args[0] === 'commit') {
+      commits += 1;
+      if (commits === 1) {
+        const sib = siblingClone(world.origin);
+        writeRepoRelative(sib, LATEST_PATH, Buffer.from('{"ok":false,"note":"survival-break"}\n'));
+        gitOk(sib, ['add', '--', LATEST_PATH]);
+        gitCommit(sib, 'break observation source survival');
+        gitOk(sib, ['push', 'origin', 'main']);
+      }
+    }
+    return out;
+  };
+  const result = runH8V2ScientificPhase({
+    env: scientificEnv(runnerTemp, etlStartedUtc, manifestPath, escrowDir),
+    gitExec,
+    cwd: world.work,
+  });
+  assert.equal(result.committed, true);
+  assert.deepEqual(result.landablePaths, [closes[0].path]);
+  assert.equal(blobIdAt(world.origin, 'main', closes[0].path), originalCloseBlob);
+  const remoteTree = gitOk(world.origin, ['ls-tree', '-r', '--name-only', 'main']);
+  assert.equal(remoteTree.includes(proposedObs.path), false);
+});
+
+test('§39 D. abandoned provisional rehearsal SHA is not R', () => {
+  const world = forkWorld();
+  const etlStartedUtc = recentIso(-180000);
+  const captureRunUtc = recentIso(-120000);
+  const rehearsal = makeRehearsalArtifact(world.sourceSha, '5004', etlStartedUtc, captureRunUtc);
+  const repoRelative = rehearsalPathForRunId('5004');
+  const bytes = Buffer.from(canonicalizeJson(rehearsal));
+  writeRepoRelative(world.work, repoRelative, bytes);
+  const runnerTemp = tmpDir();
+  const { manifestPath, escrowDir } = writeManifestAndEscrow(
+    world.work,
+    [{ path: repoRelative, sha256: sha256Bytes(bytes) }],
+    captureRunUtc,
+    runnerTemp
+  );
+  const provisional = [];
+  let commits = 0;
+  const gitExec = (args, options = {}) => {
+    const out = defaultGitExec(args, { ...options, cwd: options.cwd || world.work });
+    if (args[0] === 'commit') {
+      commits += 1;
+      const sha = gitOk(world.work, ['rev-parse', 'HEAD']);
+      provisional.push(sha);
+      if (commits === 1) pushUnrelatedOriginCommit(world.origin, 'force rebase of rehearsal');
+    }
+    return out;
+  };
+  const result = runH8V2ScientificPhase({
+    env: scientificEnv(runnerTemp, etlStartedUtc, manifestPath, escrowDir),
+    gitExec,
+    cwd: world.work,
+  });
+  assert.equal(result.committed, true);
+  assert.notEqual(provisional[0], result.finalCommitSha);
+  const ancestor = spawnSync(
+    'git',
+    ['merge-base', '--is-ancestor', provisional[0], 'origin/main'],
+    { cwd: world.work, encoding: 'utf8' }
+  );
+  assert.notEqual(ancestor.status, 0);
+  const preStart = evaluatePreStartState({
+    repoRoot: world.work,
+    gitExec: gitExecFor(world.work),
+    fsImpl: fs,
+    captureRunUtc: new Date().toISOString(),
+    captureSourceSha: world.sourceSha,
+  });
+  assert.equal(preStart.liveCandidate, true);
+  assert.equal(preStart.liveCandidates[0].commitSha, result.finalCommitSha);
+  assert.notEqual(preStart.liveCandidates[0].commitSha, provisional[0]);
+});
+
+test('§39 E. second origin movement repeats reconciliation without recapture or force push', () => {
+  const world = forkWorld();
+  const etlStartedUtc = recentIso(-180000);
+  const captureRunUtc = recentIso(-120000);
+  const rehearsal = makeRehearsalArtifact(world.sourceSha, '5005', etlStartedUtc, captureRunUtc);
+  const repoRelative = rehearsalPathForRunId('5005');
+  const bytes = Buffer.from(canonicalizeJson(rehearsal));
+  writeRepoRelative(world.work, repoRelative, bytes);
+  const runnerTemp = tmpDir();
+  const { manifest, manifestPath, escrowDir } = writeManifestAndEscrow(
+    world.work,
+    [{ path: repoRelative, sha256: sha256Bytes(bytes) }],
+    captureRunUtc,
+    runnerTemp
+  );
+  const originalManifestText = fs.readFileSync(manifestPath);
+  let commits = 0;
+  let pushes = 0;
+  const gitExec = (args, options = {}) => {
+    if (args[0] === 'push' && (args.includes('--force') || args.includes('-f') || args.includes('--force-with-lease'))) {
+      throw new Error('force push invoked');
+    }
+    if (args[0] === 'push') {
+      pushes += 1;
+      if (pushes === 1) {
+        pushUnrelatedOriginCommit(world.origin, 'second origin movement before first push');
+      }
+    }
+    const out = defaultGitExec(args, { ...options, cwd: options.cwd || world.work });
+    if (args[0] === 'commit') {
+      commits += 1;
+      if (commits === 1) pushUnrelatedOriginCommit(world.origin, 'first origin movement after provisional');
+    }
+    return out;
+  };
+  const result = runH8V2ScientificPhase({
+    env: scientificEnv(runnerTemp, etlStartedUtc, manifestPath, escrowDir),
+    gitExec,
+    cwd: world.work,
+  });
+  assert.equal(result.committed, true);
+  assert.equal(Buffer.from(fs.readFileSync(manifestPath)).equals(Buffer.from(originalManifestText)), true);
+  assert.deepEqual(result.originalManifest, manifest);
+  assert.equal(pushes >= 2, true);
+});
+
+test('§39 F. zero landable after rebase creates no replacement commit or push', () => {
+  const world = forkWorld();
+  const helper = commitRehearsalDirect(world.work, world.sourceSha, '5099', '2026-08-20T12:00:00.000Z');
+  const etlStartedUtc = recentIso(-180000);
+  const captureRunUtc = recentIso(-120000);
+  const rehearsal = makeRehearsalArtifact(world.sourceSha, '5006', etlStartedUtc, captureRunUtc);
+  const repoRelative = rehearsalPathForRunId('5006');
+  const bytes = Buffer.from(canonicalizeJson(rehearsal));
+  writeRepoRelative(world.work, repoRelative, bytes);
+  const runnerTemp = tmpDir();
+  const { manifestPath, escrowDir } = writeManifestAndEscrow(
+    world.work,
+    [{ path: repoRelative, sha256: sha256Bytes(bytes) }],
+    captureRunUtc,
+    runnerTemp
+  );
+  const beforeOrigin = gitOk(world.origin, ['rev-parse', 'main']);
+  let commits = 0;
+  const gitExec = (args, options = {}) => {
+    const out = defaultGitExec(args, { ...options, cwd: options.cwd || world.work });
+    if (args[0] === 'commit') {
+      commits += 1;
+      if (commits === 1) {
+        const sib = siblingClone(world.origin);
+        installStartMerge(sib, {
+          sourceSha: world.sourceSha,
+          rehearsalPath: helper.repoRelative,
+          rehearsalCommitSha: helper.sha,
+          rehearsalRunId: '5099',
+          rUtc: helper.rUtc,
+          mergeIso: '2026-08-22T10:00:00.000Z',
+        });
+      }
+    }
+    return out;
+  };
+  const result = runH8V2ScientificPhase({
+    env: scientificEnv(runnerTemp, etlStartedUtc, manifestPath, escrowDir),
+    gitExec,
+    cwd: world.work,
+  });
+  assert.equal(result.committed, false);
+  assert.equal(result.reason, 'ZERO_LANDABLE');
+  const afterOrigin = gitOk(world.origin, ['rev-parse', 'main']);
+  assert.equal(
+    spawnSync('git', ['merge-base', '--is-ancestor', beforeOrigin, afterOrigin], {
+      cwd: world.origin,
+      encoding: 'utf8',
+    }).status,
+    0
+  );
+  const names = gitOk(world.origin, ['ls-tree', '-r', '--name-only', 'main']);
+  assert.equal(names.includes(repoRelative), false);
+});
+
+test('§39 G. valid start topology lets runCapture enter STUDY', () => {
+  const world = forkWorld();
+  const landed = landRehearsal(world.work, world.sourceSha, '5007');
+  const installed = installStartMerge(world.work, {
+    sourceSha: world.sourceSha,
+    rehearsalPath: landed.repoRelative,
+    rehearsalCommitSha: landed.finalCommitSha,
+    rehearsalRunId: '5007',
+    rUtc: landed.rUtc,
+  });
+  const parents = gitOk(world.work, ['show', '-s', '--format=%P', 'HEAD']).split(/\s+/);
+  assert.equal(parents.length, 2);
+  assert.equal(parents[1], installed.startSha);
+  assert.equal(
+    spawnSync('git', ['rev-parse', `${parents[0]}:${H8_V2_START_PATH}`], {
+      cwd: world.work,
+      encoding: 'utf8',
+    }).status !== 0,
+    true
+  );
+  const startObj = loadAndValidateStartFile({
+    repoRoot: world.work,
+    gitExec: gitExecFor(world.work),
+    fsImpl: fs,
+    captureSourceSha: world.sourceSha,
+  });
+  assert.equal(startObj.start_date_utc, installed.startDate);
+  const head = gitOk(world.work, ['rev-parse', 'HEAD']);
+  const runnerTemp = tmpDir();
+  const result = runCapture({
+    cwd: world.work,
+    gitExec: gitExecFor(world.work),
+    env: {
+      ...eventGateEnv({ H8_V2_GITHUB_SHA: head }),
+      H8_V2_ETL_STARTED_UTC: recentIso(-180000),
+      H8_V2_CREATED_MANIFEST_PATH: path.join(runnerTemp, 'manifest.json'),
+      RUNNER_TEMP: runnerTemp,
+    },
+    now: () => new Date().toISOString(),
+  });
+  assert.equal(result.preStartAction, 'STUDY');
+});
+
+test('§39 H. invalid start topologies fail closed', () => {
+  const world = forkWorld();
+  const landed = landRehearsal(world.work, world.sourceSha, '5008');
+  installStartMerge(world.work, {
+    sourceSha: world.sourceSha,
+    rehearsalPath: landed.repoRelative,
+    rehearsalCommitSha: landed.finalCommitSha,
+    rehearsalRunId: '5008',
+    rUtc: landed.rUtc,
+  });
+  const load = () =>
+    loadAndValidateStartFile({
+      repoRoot: world.work,
+      gitExec: gitExecFor(world.work),
+      fsImpl: fs,
+      captureSourceSha: world.sourceSha,
+    });
+  assert.doesNotThrow(load);
+
+  const unrelated = world.sourceSha;
+  const startAbs = path.join(world.work, ...H8_V2_START_PATH.split('/'));
+  const valid = JSON.parse(fs.readFileSync(startAbs, 'utf8'));
+
+  const runIdMismatch = { ...valid, qualifying_rehearsal_run_id: '9999' };
+  fs.writeFileSync(startAbs, canonicalizeJson(runIdMismatch));
+  assert.throws(load, /run id|qualifying_rehearsal_path|STOP/);
+  fs.writeFileSync(startAbs, canonicalizeJson(valid));
+
+  const unrelatedSha = { ...valid, qualifying_rehearsal_commit_sha: unrelated };
+  fs.writeFileSync(startAbs, canonicalizeJson(unrelatedSha));
+  assert.throws(load, /introducing|qualifying_rehearsal_commit_sha|STOP/);
+  fs.writeFileSync(startAbs, canonicalizeJson(valid));
+
+  const sourceMismatch = { ...valid, capture_source_sha: 'b'.repeat(40) };
+  fs.writeFileSync(startAbs, canonicalizeJson(sourceMismatch));
+  assert.throws(load, /capture_source_sha|STOP/);
+  fs.writeFileSync(startAbs, canonicalizeJson(valid));
+
+  writeRepoRelative(world.work, landed.repoRelative, Buffer.from(`${canonicalizeJson(landed.rehearsal).trim()}\n `));
+  assert.throws(load, /immutable|canonical|STOP/);
+  gitOk(world.work, ['checkout', '--', landed.repoRelative]);
+});
+
+test('§39 I. live candidate dominates expired and disqualified history; multiple live STOP', () => {
+  const world = forkWorld();
+  const expired = commitRehearsalDirect(world.work, world.sourceSha, '5010', '2020-01-02T12:00:00.000Z');
+  const live = landRehearsal(world.work, world.sourceSha, '5011');
+  const nowUtc = new Date().toISOString();
+  const oldPlusLive = evaluatePreStartState({
+    repoRoot: world.work,
+    gitExec: gitExecFor(world.work),
+    fsImpl: fs,
+    captureRunUtc: nowUtc,
+    captureSourceSha: world.sourceSha,
+  });
+  assert.equal(oldPlusLive.liveCandidate, true);
+  assert.equal(oldPlusLive.liveCandidates[0].commitSha, live.finalCommitSha);
+  assert.equal(oldPlusLive.readinessExpired, false);
+  assert.equal(
+    classifyPreStartAction({
+      activated: true,
+      startExists: false,
+      liveCandidate: oldPlusLive.liveCandidate,
+      disqualificationPresent: oldPlusLive.disqualificationPresent,
+      readinessExpired: oldPlusLive.readinessExpired,
+    }),
+    PRE_START_ACTIONS.HOLD_LIVE_CANDIDATE
+  );
+
+  const dq = {
+    schema_version: 'h8-v2-disqualification-v1',
+    study_id: STUDY_ID,
+    artifact_type: 'REHEARSAL_DISQUALIFICATION',
+    protocol_version: 'h8-prospective-three-model-v2',
+    protocol_sha: H8_V2_PROTOCOL_SHA,
+    capture_contract_version: 'h8-v2-capture-implementation-contract-v1',
+    capture_contract_sha: H8_V2_CAPTURE_CONTRACT_SHA,
+    capture_source_sha: world.sourceSha,
+    qualifying_rehearsal_path: expired.repoRelative,
+    qualifying_rehearsal_commit_sha: expired.sha,
+    qualifying_rehearsal_run_id: '5010',
+    disqualification_reason_code: 'timestamp_integrity_failure',
+    disqualification_created_utc: nowUtc,
+  };
+  const dqPath = disqualificationPathForRunId('5010');
+  writeRepoRelative(world.work, dqPath, Buffer.from(canonicalizeJson(dq)));
+  gitOk(world.work, ['add', '--', dqPath]);
+  gitCommit(world.work, 'merged disqualification for expired rehearsal');
+  gitOk(world.work, ['push', 'origin', 'main']);
+  const dqPlusLive = evaluatePreStartState({
+    repoRoot: world.work,
+    gitExec: gitExecFor(world.work),
+    fsImpl: fs,
+    captureRunUtc: nowUtc,
+    captureSourceSha: world.sourceSha,
+  });
+  assert.equal(dqPlusLive.liveCandidate, true);
+  assert.equal(dqPlusLive.liveCandidates[0].commitSha, live.finalCommitSha);
+
+  landRehearsal(world.work, world.sourceSha, '5012');
+  assert.throws(
+    () =>
+      runCapture({
+        cwd: world.work,
+        gitExec: gitExecFor(world.work),
+        env: {
+          ...eventGateEnv({ H8_V2_GITHUB_SHA: gitOk(world.work, ['rev-parse', 'HEAD']) }),
+          H8_V2_ETL_STARTED_UTC: recentIso(-180000),
+          H8_V2_CREATED_MANIFEST_PATH: path.join(tmpDir(), 'manifest.json'),
+          RUNNER_TEMP: tmpDir(),
+        },
+        now: () => nowUtc,
+      }),
+    /multiple live candidate/
+  );
+});
+
+test('§39 I. expired-only permits next rehearsal; one live only HOLD', () => {
+  const world = forkWorld();
+  commitRehearsalDirect(world.work, world.sourceSha, '5013', '2020-01-02T12:00:00.000Z');
+  const expiredOnly = evaluatePreStartState({
+    repoRoot: world.work,
+    gitExec: gitExecFor(world.work),
+    fsImpl: fs,
+    captureRunUtc: new Date().toISOString(),
+    captureSourceSha: world.sourceSha,
+  });
+  assert.equal(expiredOnly.liveCandidate, false);
+  assert.equal(expiredOnly.readinessExpired, true);
+  assert.equal(
+    classifyPreStartAction({
+      activated: true,
+      startExists: false,
+      liveCandidate: false,
+      disqualificationPresent: expiredOnly.disqualificationPresent,
+      readinessExpired: true,
+    }),
+    PRE_START_ACTIONS.REHEARSAL
+  );
+  landRehearsal(world.work, world.sourceSha, '5014');
+  const oneLive = evaluatePreStartState({
+    repoRoot: world.work,
+    gitExec: gitExecFor(world.work),
+    fsImpl: fs,
+    captureRunUtc: new Date().toISOString(),
+    captureSourceSha: world.sourceSha,
+  });
+  assert.equal(oneLive.liveCandidate, true);
+  assert.equal(oneLive.multipleLiveCandidates, false);
+});
+
+test('§39 J. disqualification operational effect requires merged canonical control', () => {
+  const world = forkWorld();
+  const live = landRehearsal(world.work, world.sourceSha, '5015');
+  const nowUtc = new Date().toISOString();
+  const dqPath = disqualificationPathForRunId('5015');
+  const dq = {
+    schema_version: 'h8-v2-disqualification-v1',
+    study_id: STUDY_ID,
+    artifact_type: 'REHEARSAL_DISQUALIFICATION',
+    protocol_version: 'h8-prospective-three-model-v2',
+    protocol_sha: H8_V2_PROTOCOL_SHA,
+    capture_contract_version: 'h8-v2-capture-implementation-contract-v1',
+    capture_contract_sha: H8_V2_CAPTURE_CONTRACT_SHA,
+    capture_source_sha: world.sourceSha,
+    qualifying_rehearsal_path: live.repoRelative,
+    qualifying_rehearsal_commit_sha: live.finalCommitSha,
+    qualifying_rehearsal_run_id: '5015',
+    disqualification_reason_code: 'timestamp_integrity_failure',
+    disqualification_created_utc: nowUtc,
+  };
+  writeRepoRelative(world.work, dqPath, Buffer.from(canonicalizeJson(dq)));
+  const untracked = validateMergedDisqualification({
+    repoRoot: world.work,
+    gitExec: gitExecFor(world.work),
+    fsImpl: fs,
+    captureSourceSha: world.sourceSha,
+    expectedRunId: '5015',
+    expectedRehearsalPath: live.repoRelative,
+    expectedRehearsalCommitSha: live.finalCommitSha,
+  });
+  assert.equal(untracked.operational, false);
+  const stillLive = evaluatePreStartState({
+    repoRoot: world.work,
+    gitExec: gitExecFor(world.work),
+    fsImpl: fs,
+    captureRunUtc: nowUtc,
+    captureSourceSha: world.sourceSha,
+  });
+  assert.equal(stillLive.liveCandidate, true);
+
+  gitOk(world.work, ['add', '--', dqPath]);
+  gitCommit(world.work, 'valid merged disqualification');
+  gitOk(world.work, ['push', 'origin', 'main']);
+  const merged = validateMergedDisqualification({
+    repoRoot: world.work,
+    gitExec: gitExecFor(world.work),
+    fsImpl: fs,
+    captureSourceSha: world.sourceSha,
+    expectedRunId: '5015',
+    expectedRehearsalPath: live.repoRelative,
+    expectedRehearsalCommitSha: live.finalCommitSha,
+  });
+  assert.equal(merged.operational, true);
+  const afterDq = evaluatePreStartState({
+    repoRoot: world.work,
+    gitExec: gitExecFor(world.work),
+    fsImpl: fs,
+    captureRunUtc: nowUtc,
+    captureSourceSha: world.sourceSha,
+  });
+  assert.equal(afterDq.liveCandidate, false);
+  assert.equal(afterDq.disqualificationPresent, true);
+  assert.equal(
+    classifyPreStartAction({
+      activated: true,
+      startExists: false,
+      liveCandidate: false,
+      disqualificationPresent: true,
+      readinessExpired: false,
+    }),
+    PRE_START_ACTIONS.REHEARSAL
+  );
+
+  const mismatch = {
+    ...dq,
+    qualifying_rehearsal_commit_sha: gitOk(world.work, ['rev-parse', 'HEAD^']),
+    qualifying_rehearsal_run_id: '5015',
+  };
+  const world2 = forkWorld();
+  const live2 = landRehearsal(world2.work, world2.sourceSha, '5016');
+  const mismatchPath = disqualificationPathForRunId('5016');
+  writeRepoRelative(world2.work, mismatchPath, Buffer.from(canonicalizeJson({
+    ...mismatch,
+    capture_source_sha: world2.sourceSha,
+    qualifying_rehearsal_path: live2.repoRelative,
+    qualifying_rehearsal_run_id: '5016',
+  })));
+  gitOk(world2.work, ['add', '--', mismatchPath]);
+  gitCommit(world2.work, 'mismatched disqualification commit sha');
+  gitOk(world2.work, ['push', 'origin', 'main']);
+  const mismatchResult = validateMergedDisqualification({
+    repoRoot: world2.work,
+    gitExec: gitExecFor(world2.work),
+    fsImpl: fs,
+    captureSourceSha: world2.sourceSha,
+    expectedRunId: '5016',
+    expectedRehearsalPath: live2.repoRelative,
+    expectedRehearsalCommitSha: live2.finalCommitSha,
+  });
+  assert.equal(mismatchResult.operational, false);
+
+  const world3 = forkWorld();
+  landRehearsal(world3.work, world3.sourceSha, '5017');
+  const badPath = disqualificationPathForRunId('5017');
+  writeRepoRelative(world3.work, badPath, Buffer.from('{"not":"canonical"}\n'));
+  gitOk(world3.work, ['add', '--', badPath]);
+  gitCommit(world3.work, 'malformed disqualification');
+  gitOk(world3.work, ['push', 'origin', 'main']);
+  assert.throws(
+    () =>
+      evaluatePreStartState({
+        repoRoot: world3.work,
+        gitExec: gitExecFor(world3.work),
+        fsImpl: fs,
+        captureRunUtc: nowUtc,
+        captureSourceSha: world3.sourceSha,
+      }),
+    /STOP/
+  );
+});
+
+test('§39 K. start merged during rehearsal run is not committed or pushed', () => {
+  const world = forkWorld();
+  const helper = commitRehearsalDirect(world.work, world.sourceSha, '5018', '2026-08-20T12:00:00.000Z');
+  const etlStartedUtc = recentIso(-180000);
+  const captureRunUtc = recentIso(-120000);
+  const rehearsal = makeRehearsalArtifact(world.sourceSha, '5019', etlStartedUtc, captureRunUtc);
+  const repoRelative = rehearsalPathForRunId('5019');
+  const bytes = Buffer.from(canonicalizeJson(rehearsal));
+  writeRepoRelative(world.work, repoRelative, bytes);
+  const runnerTemp = tmpDir();
+  const { manifestPath, escrowDir } = writeManifestAndEscrow(
+    world.work,
+    [{ path: repoRelative, sha256: sha256Bytes(bytes) }],
+    captureRunUtc,
+    runnerTemp
+  );
+  let commits = 0;
+  const gitExec = (args, options = {}) => {
+    const out = defaultGitExec(args, { ...options, cwd: options.cwd || world.work });
+    if (args[0] === 'commit') {
+      commits += 1;
+      if (commits === 1) {
+        const sib = siblingClone(world.origin);
+        installStartMerge(sib, {
+          sourceSha: world.sourceSha,
+          rehearsalPath: helper.repoRelative,
+          rehearsalCommitSha: helper.sha,
+          rehearsalRunId: '5018',
+          rUtc: helper.rUtc,
+          mergeIso: '2026-08-22T10:00:00.000Z',
+        });
+      }
+    }
+    return out;
+  };
+  const result = runH8V2ScientificPhase({
+    env: scientificEnv(runnerTemp, etlStartedUtc, manifestPath, escrowDir),
+    gitExec,
+    cwd: world.work,
+  });
+  assert.equal(result.committed, false);
+  assert.equal(result.reason, 'ZERO_LANDABLE');
+  const names = gitOk(world.origin, ['ls-tree', '-r', '--name-only', 'main']);
+  assert.equal(names.includes(repoRelative), false);
+});
+
+test('Repair 6. scheduled preflight requires HEAD == H8_V2_GITHUB_SHA; candidate-source does not', () => {
+  const world = forkWorld();
+  const head = gitOk(world.work, ['rev-parse', 'HEAD']);
+  const pass = runContractCheck({
+    cwd: world.work,
+    gitExec: gitExecFor(world.work),
+    env: {
+      GITHUB_ACTIONS: 'true',
+      H8_V2_GITHUB_EVENT_NAME: 'schedule',
+      H8_V2_GITHUB_RUN_ATTEMPT: '1',
+      H8_V2_GITHUB_SHA: head,
+    },
+  });
+  assert.equal(pass.ok, true);
+  assert.equal(pass.workflowStructure, 'PASS');
+  assert.throws(
+    () =>
+      runContractCheck({
+        cwd: world.work,
+        gitExec: gitExecFor(world.work),
+        env: {
+          GITHUB_ACTIONS: 'true',
+          H8_V2_GITHUB_EVENT_NAME: 'schedule',
+          H8_V2_GITHUB_RUN_ATTEMPT: '1',
+          H8_V2_GITHUB_SHA: 'b'.repeat(40),
+        },
+      }),
+    /HEAD/
+  );
+  gitOk(world.work, ['checkout', '--detach', world.sourceSha]);
+  const candidate = runContractCheck({
+    cwd: world.work,
+    gitExec: gitExecFor(world.work),
+    candidateSourceSha: world.sourceSha,
+    env: {},
+  });
+  assert.equal(candidate.ok, true);
+  assert.equal(candidate.runtimeSourceIdentity, 'PASS');
+  assert.equal(candidate.filesWritten, 0);
+});
+
+test('Repair 10. --validate-start-candidate accepts landed rehearsal and rejects arbitrary commits', () => {
+  const world = forkWorld();
+  const landed = landRehearsal(world.work, world.sourceSha, '5020');
+  const report = runValidateStartCandidate({
+    rehearsalCommitSha: landed.finalCommitSha,
+    cwd: world.work,
+    gitExec: gitExecFor(world.work),
+    now: () => new Date().toISOString(),
+  });
+  assert.equal(report.ok, true);
+  assert.equal(report.assignsStart, false);
+  assert.equal(report.filesWritten, 0);
+  assert.equal(report.rehearsalCommitSha, landed.finalCommitSha);
+  const sidecarCommit = gitOk(world.work, ['rev-parse', `${landed.finalCommitSha}^`]);
+  assert.throws(
+    () =>
+      runValidateStartCandidate({
+        rehearsalCommitSha: sidecarCommit,
+        cwd: world.work,
+        gitExec: gitExecFor(world.work),
+        now: () => new Date().toISOString(),
+      }),
+    /qualifying rehearsal|STOP/
+  );
 });
