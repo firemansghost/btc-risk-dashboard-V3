@@ -560,6 +560,61 @@ The exact derived calendar dates are populated only in the later start authoriza
 
 **FIREWALL.** No start date is assigned in this candidate document.
 
+### 14.1 Objective start-date selection
+
+**CANDIDATE PROTOCOL DECISION.** `S` remains unassigned during protocol / implementation / rehearsal. Which future date becomes `S` is **not** discretionary.
+
+Use the **first** successfully committed-and-pushed qualifying scheduled `NON_STUDY_REHEARSAL` as the objective anchor.
+
+Define:
+
+```text
+R = UTC timestamp of that qualifying rehearsal's successfully pushed
+    research commit
+```
+
+Independent review may **accept** or **reject** that rehearsal, but it may **not** substitute a later successful rehearsal merely because market conditions are preferable.
+
+If the first qualifying rehearsal is rejected for a **documented operational or integrity defect**, it is disqualified and the next qualifying genuine scheduled rehearsal becomes `R`.
+
+Once a rehearsal is independently accepted, derive `S` mechanically.
+
+Frozen selection rule:
+
+```text
+start_selection_rule =
+  earliest_daily_etl_date_at_least_72h_after_accepted_rehearsal_v1
+
+S = the earliest UTC calendar date D whose nominal 11:00 UTC Daily ETL
+    opportunity is at least 72 hours after R
+
+S = min D such that:
+      11:00 UTC on D  >=  R + 72 hours
+  AND all start-readiness requirements remain satisfied
+```
+
+The 72-hour interval provides time for:
+
+- independent rehearsal review
+- creation / review of start authorization
+- required pre-start merge lead time
+
+The selection of `S` must **NOT** depend on:
+
+- Bitcoin price
+- G-Score
+- factor values
+- macro regime
+- volatility
+- ETF flows
+- market direction
+- analyst preference
+- convenience
+- expected future conditions
+
+**FIREWALL.** Once `R` is accepted, `S` is mechanically derived.
+**FIREWALL.** Researchers / operators may not voluntarily delay `S` to a later valid date because market conditions appear more or less favorable.
+
 ---
 
 ## 15. Start authorization record
@@ -572,6 +627,43 @@ research/h8-v2-prospective/H8_V2_START.json
 
 This file **DOES NOT exist** during protocol drafting or implementation / rehearsal.
 
+### 15.1 One-shot immutability
+
+**CANDIDATE PROTOCOL DECISION.** Exactly **one** accepted start-authorization artifact exists for an H8 v2 study.
+
+It must be:
+
+- created prospectively
+- committed and pushed before study start
+- never modified after merge
+- never overwritten
+- never deleted
+- never rewritten to another `S`
+- never amended with a new observation-end date
+- never amended with a new close-end date
+- never amended with a new recovery-end date
+
+Once successfully merged and independently verified:
+
+```text
+H8_V2_START.json is immutable
+H8_V2_START_SHA permanently identifies that authorization
+```
+
+If a merged `H8_V2_START.json` is later proven malformed, inconsistent, scientifically incompatible, or invalid under the frozen protocol:
+
+```text
+STOP BEFORE STUDY CAPTURE
+```
+
+Do **NOT** edit or replace that start file.
+
+Require a **successor protocol / study** rather than rewriting the scientific start record.
+
+The normal procedure must prevent invalid start authorization from merging in the first place.
+
+### 15.2 Required content
+
 The future start authorization must contain at minimum:
 
 - `protocol_version`
@@ -579,12 +671,25 @@ The future start authorization must contain at minimum:
 - `capture_contract_version`
 - `capture_contract_sha`
 - `capture_source_sha`
-- scientific-fingerprint identities
+- `scientific_fingerprint`
+- `qualifying_rehearsal_path`
+- `qualifying_rehearsal_commit_sha`
+- `qualifying_rehearsal_run_id`
+- `qualifying_rehearsal_utc`
+- `start_selection_rule`
 - `start_date_utc`
 - `observation_end_date_utc`
 - `required_close_end_date_utc`
 - `recovery_end_date_utc`
 - `authorization_created_utc`
+
+`start_selection_rule` must identify the frozen deterministic rule:
+
+```text
+earliest_daily_etl_date_at_least_72h_after_accepted_rehearsal_v1
+```
+
+Exact JSON schema remains capture-contract work. The scientific requirements above are frozen here.
 
 The start-authorization commit becomes `H8_V2_START_SHA` after independent verification.
 
@@ -599,12 +704,13 @@ The start authorization may **ONLY** be created after:
 - mandatory scheduled non-study rehearsal successfully committed and pushed
 - rehearsal independently reviewed and accepted
 - no known unresolved production-integrity defect affecting scientific capture
+- `S` derived from accepted `R` by the frozen 72-hour rule
 
 **FIREWALL.** No start authorization during this protocol-candidate pass.
 
 ---
 
-## 16. Prospective start lead time
+## 16. Prospective start lead time and expired readiness
 
 **CANDIDATE PROTOCOL DECISION.** Freeze a minimum lead-time rule.
 
@@ -618,14 +724,30 @@ start_authorization_merge_time
 11:00 UTC on calendar date S-1
 ```
 
-If this condition is not satisfied:
+**FIREWALL.** Do not silently shorten the lead time.
+
+If the start authorization cannot be independently accepted and merged by:
 
 ```text
-S is invalid.
-Choose a later future S.
+11:00 UTC on S-1
 ```
 
-**FIREWALL.** Do not silently shorten the lead time.
+then that accepted rehearsal does **NOT** authorize a later discretionary `S`.
+
+Instead:
+
+```text
+READINESS EXPIRES FOR THAT REHEARSAL
+```
+
+Require another genuine scheduled `NON_STUDY_REHEARSAL`.
+
+The first later rehearsal that passes all requirements becomes the new `R`.
+
+Then derive a new `S` mechanically using the same 72-hour rule.
+
+**FIREWALL.** Do not convert a missed Monday authorization deadline into “just pick Thursday.”
+**FIREWALL.** No arbitrary later `S` after readiness expires.
 
 ---
 
@@ -689,6 +811,39 @@ capture artifact creation
 ```
 
 If a scheduled rehearsal opportunity never fires because GitHub's scheduler does not trigger it: **do not manually replace it**. Wait for another genuine scheduled opportunity.
+
+### 17.1 First-qualifying rehearsal — no shopping
+
+**CANDIDATE PROTOCOL DECISION.** The qualifying rehearsal is **not** chosen after inspecting several successful rehearsals.
+
+The **FIRST** genuine first-attempt scheduled rehearsal that:
+
+- uses the final accepted implementation
+- creates a non-empty `NON_STUDY_REHEARSAL` artifact
+- traverses escrow
+- allows production to remain safe
+- successfully stages / commits / pushes the research artifact
+- passes identity checks
+
+is the **candidate qualifying rehearsal**.
+
+Independent review either:
+
+```text
+ACCEPTS it
+```
+
+or
+
+```text
+REJECTS it for a documented operational / integrity defect
+```
+
+It may **not** be rejected merely to wait for a more convenient start date.
+
+If rejected, the next qualifying scheduled rehearsal is evaluated under the **same** rule.
+
+**FIREWALL.** No rehearsal shopping.
 
 ---
 
@@ -901,7 +1056,7 @@ Once created, committed, and pushed:
 - **NEVER OVERWRITE IT**
 - **NEVER BACKFILL IT**
 
-Each observation file should eventually contain at least:
+Each created observation file should eventually contain at least:
 
 - `study_id`
 - `protocol_version`
@@ -916,16 +1071,49 @@ Each observation file should eventually contain at least:
 - operational provenance (`github_run_id`, `github_run_attempt`, `github_event_name`, preferably `github_workflow_ref` and `github_sha`)
 - `common_eligibility_status`
 - `eligibility_reason`
-- required seven-factor snapshot
-- `official_published_score`
-- `official_formula_score`
-- `liq_heavy_score`
-- `mom_tilted_score`
+- required seven-factor snapshot, subject to the score-presence rules below
 - model version identifiers and frozen weight definitions, or an immutable reference to them
 
 Production snapshot BTC price may be captured for provenance. It is **not** the H8 primary MACE baseline.
 
 **FIREWALL.** Do not include future outcome data in an observation artifact.
+
+### 27.1 Score presence by observation status
+
+**CANDIDATE PROTOCOL DECISION.** Scientific score fields are populated according to Axis A status. Exact JSON null-versus-absent encoding remains a later frozen schema, but the scientific presence rules are:
+
+**ELIGIBLE**
+
+- seven-factor snapshot recorded
+- `official_published_score` recorded
+- `official_formula_score` recorded
+- `liq_heavy_score` recorded
+- `mom_tilted_score` recorded
+- all three research scores are valid for later analysis subject to Axis B outcome completeness
+
+**NOT_ELIGIBLE**
+
+- factor snapshot and eligibility reason recorded
+- no H8 scientific model score may be calculated using stale / missing / invalid factors
+- `official_formula_score` = null / absent according to later frozen schema
+- `liq_heavy_score` = null / absent
+- `mom_tilted_score` = null / absent
+- production published composite may be retained only as provenance if the later contract chooses, but it is **not** an H8 scientific score
+
+**INTEGRITY_MISMATCH**
+
+- factor snapshot recorded
+- `official_published_score` recorded
+- independently recomputed `official_formula_score` recorded so the mismatch is auditable
+- date excluded permanently from H8 scientific analysis
+- challenger scientific scores (`liq_heavy_score`, `mom_tilted_score`) are null / absent because the observation is not eligible for H8 scientific analysis
+
+**CAPTURE_MISSING**
+
+- no observation artifact is created after the fact
+- final accounting comes from the frozen opportunity ledger / analysis accounting, not reconstructed scores
+
+The common seven-factor eligibility gate itself is unchanged.
 
 **IMPLEMENTATION DETAIL.** Exact JSON key names / schema remain a later capture-implementation contract.
 
@@ -1064,7 +1252,7 @@ Primary:
 Spearman(Official score, MACE30)
 ```
 
-using only `ELIGIBLE` observations with complete required `MACE30` close windows.
+using only observations whose Axis A status is `ELIGIBLE` **and** whose Axis B status is `OUTCOME_COMPLETE`.
 
 Secondary:
 
@@ -1144,29 +1332,75 @@ Only then may outcome / performance analysis begin.
 
 ---
 
-## 34. Missingness accounting
+## 34. Two-axis missingness accounting
 
-**CANDIDATE PROTOCOL DECISION.** Final reporting must explicitly account for all **180** scheduled opportunities.
+**CANDIDATE PROTOCOL DECISION.** Final reporting uses **two separate dimensions**. Do not place outcome-completeness beside capture / eligibility as if they were one mutually exclusive list.
 
-Categories should distinguish at minimum:
+### 34.1 Axis A — observation / capture status
+
+Every one of the **180** observation opportunities must have exactly **ONE** mutually exclusive final observation status:
 
 ```text
 ELIGIBLE
 NOT_ELIGIBLE
 INTEGRITY_MISMATCH
 CAPTURE_MISSING
+```
+
+These four primary-status counts **MUST** reconcile exactly to:
+
+```text
+ELIGIBLE
++ NOT_ELIGIBLE
++ INTEGRITY_MISMATCH
++ CAPTURE_MISSING
+= 180
+```
+
+If useful, `CAPTURE_MISSING` may have non-scientific reason codes such as:
+
+```text
+scheduler_did_not_fire
+capture_failed
+escrow_failed
+research_commit_failed
+research_push_failed
+```
+
+Those remain **subreasons under `CAPTURE_MISSING`**. They are not additional top-level Axis A categories.
+
+**FIREWALL.** Do not create overlapping top-level Axis A categories.
+
+### 34.2 Axis B — outcome completeness
+
+Only observations whose Axis A status is `ELIGIBLE` receive an outcome-completeness classification after the close tape freezes:
+
+```text
+OUTCOME_COMPLETE
 OUTCOME_INCOMPLETE
 ```
 
-and any other frozen protocol classification genuinely necessary.
-
-Counts must reconcile to:
+Require:
 
 ```text
-180 total observation opportunities
+OUTCOME_COMPLETE + OUTCOME_INCOMPLETE
+= ELIGIBLE
 ```
 
+Primary analysis `N` is:
+
+```text
+ELIGIBLE observations
+AND
+OUTCOME_COMPLETE
+```
+
+`OUTCOME_INCOMPLETE` does **NOT** replace the underlying `ELIGIBLE` observation status.
+
+It is a second-axis outcome status.
+
 **FIREWALL.** No silent dropping of missing dates.
+**FIREWALL.** Do not count `OUTCOME_INCOMPLETE` toward the 180 Axis A total as a fifth capture status.
 
 ---
 
@@ -1249,15 +1483,23 @@ H8 v2 is scientifically equivalent to H8 v1 except for the following identified 
 
 4. **Start date is assigned later** through an independently frozen prospective `research/h8-v2-prospective/H8_V2_START.json` authorization, with derived window dates populated only then.
 
-5. **Mandatory successful genuine scheduled `NON_STUDY_REHEARSAL`** before start authorization.
+5. **Deterministic rehearsal-anchored start-date selection.** The first independently accepted qualifying scheduled `NON_STUDY_REHEARSAL` defines `R`. `S` is the earliest UTC date `D` whose nominal 11:00 UTC Daily ETL opportunity is at least 72 hours after `R`. No market-based or convenience-based discretion. These are candidate repairs made **before** protocol freeze, not post-hoc changes after freeze.
 
-6. **Rehearsal must exercise a non-empty research commit/push path.** Unit tests, empty manifests, `workflow_dispatch`, reruns, and local runs do not qualify.
+6. **No discretionary start delay.** Once `R` is accepted, researchers may not voluntarily choose a later valid `S`. If start authorization is not merged by 11:00 UTC on `S-1`, readiness expires for that rehearsal and another genuine scheduled rehearsal is required.
 
-7. **A scheduler miss on the first authorized observation date does not invalidate the study** if all readiness gates were satisfied before `S`. That date remains `CAPTURE_MISSING`.
+7. **Immutable one-shot `H8_V2_START.json`.** Exactly one accepted start-authorization artifact. Never modified, overwritten, deleted, or rewritten after merge. `H8_V2_START_SHA` is permanent. A malformed merged authorization cannot be repaired in place; a successor study is required.
 
-8. **Missed scheduled observations remain `CAPTURE_MISSING` and are never reconstructed.**
+8. **Mandatory successful genuine scheduled `NON_STUDY_REHEARSAL`** before start authorization. The first qualifying successful scheduled rehearsal is evaluated. Independent review accepts or rejects only on operational / integrity grounds. No rehearsal shopping.
 
-9. **Capture-only compatibility repairs** may use an independently reviewed successor capture contract without changing the frozen scientific model, but missing dates remain missing. If scientific compatibility cannot be proven, stop and require a successor study.
+9. **Rehearsal must exercise a non-empty research commit/push path.** Unit tests, empty manifests, `workflow_dispatch`, reruns, and local runs do not qualify.
+
+10. **A scheduler miss on the first authorized observation date does not invalidate the study** if all readiness gates were satisfied before `S`. That date remains `CAPTURE_MISSING`.
+
+11. **Missed scheduled observations remain `CAPTURE_MISSING` and are never reconstructed.**
+
+12. **Two-axis missingness / outcome accounting.** Axis A (`ELIGIBLE` / `NOT_ELIGIBLE` / `INTEGRITY_MISMATCH` / `CAPTURE_MISSING`) sums to 180. Axis B (`OUTCOME_COMPLETE` / `OUTCOME_INCOMPLETE`) applies only to `ELIGIBLE` and sums to `ELIGIBLE`. Analysis `N` is `ELIGIBLE` and `OUTCOME_COMPLETE` only.
+
+13. **Capture-only compatibility repairs** may use an independently reviewed successor capture contract without changing the frozen scientific model, but missing dates remain missing. If scientific compatibility cannot be proven, stop and require a successor study.
 
 Everything else remains scientifically equivalent to v1 unless this candidate explicitly identifies and justifies a change.
 
@@ -1265,11 +1507,13 @@ Everything else remains scientifically equivalent to v1 unless this candidate ex
 
 ## 39. What this candidate pass does and does not do
 
-This pass adds **only**:
+The candidate branch modifies **only**:
 
 ```text
 docs/H8_V2_PROSPECTIVE_30D_RISK_DISCRIMINATION_PREREGISTRATION.md
 ```
+
+This repair-before-freeze revision tightens start-date selection, start-authorization immutability, two-axis missingness, and score-presence rules. It does **not** change model math.
 
 It does **not**:
 
@@ -1293,11 +1537,10 @@ The capture implementation contract is the **next** phase after this protocol is
 
 ## 40. Stop
 
-**STOP FOR INDEPENDENT H8 V2 PROTOCOL-CANDIDATE REVIEW.**
+**STOP FOR INDEPENDENT REPAIRED H8 V2 PROTOCOL REVIEW.**
 
 Do not implement capture machinery in this pass.
 Do not select a study start date in this pass.
 Do not reactivate H8 v1.
 Do not calculate performance.
 Do not merge this candidate until independent scientific review accepts it.
-)
