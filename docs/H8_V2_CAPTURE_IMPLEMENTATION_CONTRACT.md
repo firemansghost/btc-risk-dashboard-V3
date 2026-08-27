@@ -1164,13 +1164,64 @@ This cross-check validates that the Git merge-commit time is consistent with the
 
 **FIREWALL.** It does **NOT** redefine `start_authorization_merge_time`. That remains `M`'s Git committer timestamp.
 
-If the cross-check fails: do **not** accept the start authorization. Readiness expires if the frozen `S-1` 11:00 UTC deadline cannot subsequently be met. Do **not** move `S`.
+If the cross-check fails **after** the start authorization has already entered `main`:
+
+```text
+H8 V2 START AUTHORIZATION IS INVALID
+STOP BEFORE STUDY CAPTURE
+```
+
+Do **NOT**:
+
+- edit `H8_V2_START.json`
+- replace it
+- delete / re-add it
+- create another `H8_V2_START.json`
+- choose another `S`
+- merely wait for another rehearsal
+- treat readiness expiry as permitting repair inside the same study
+
+Require a **successor protocol / study**, in accordance with the frozen protocol's one-shot invalid-start rule.
+
+This cross-check is mandatory **independent post-merge acceptance**. It depends on GitHub server metadata. Local capture CLI cannot independently prove that the review occurred. Do not fabricate a local machine-readable proof of external review. Do not add a mutable environment override saying “review passed.”
+
+Study capture is organizationally unauthorized until this independent post-merge acceptance is complete. The mandatory ≥24-hour pre-start lead time provides the review window.
+
+If implementation review later concludes that fully automated enforcement requires another immutable control artifact: **STOP** and request a capture-contract amendment before adding it. Do not silently invent one during Stage A.
+
+### 19.6 Pre-merge vs post-merge start failure
+
+**CANDIDATE IMPLEMENTATION DECISION.** Distinguish the two failure regimes.
+
+**BEFORE** start authorization merges:
+
+If independent review finds the proposed start file invalid:
+
+- do **not** merge it
+- repair / recreate the still-unmerged candidate as permitted by the review process
+- if the frozen `S-1` deadline is missed, readiness expires
+- require another rehearsal
+- do **not** move `S`
+
+**AFTER** start authorization merges:
+
+If independent verification finds the merged authorization invalid — including `merged_at` cross-check failure, wrong main-entry topology, wrong start blob, wrong second parent, start SHA not a one-path creation, or any other merged start-authorization integrity failure — then:
+
+```text
+STOP H8 V2
+```
+
+No in-place repair. Successor protocol / study required.
 
 ---
 
 ## 20. Start-file one-shot validation
 
-**CANDIDATE IMPLEMENTATION DECISION.** Before any study capture, runtime must verify:
+**CANDIDATE IMPLEMENTATION DECISION.** Separate runtime-verifiable start conditions from independent post-merge acceptance.
+
+### 20.1 Runtime-verifiable start conditions
+
+Before any study capture, runtime must verify repository-contained facts:
 
 - `H8_V2_START.json` exists
 - valid canonical JSON
@@ -1187,21 +1238,36 @@ If the cross-check fails: do **not** accept the start authorization. Readiness e
 - `start_selection_rule` equals `earliest_daily_etl_date_at_least_72h_after_accepted_rehearsal_v1` exactly
 - `start_date_utc` exactly matches frozen derivation from `R`
 - derived end dates exact
-- main-entry lead-time rule passed
-- main-entry commit `M` satisfies the exact proof in §19.3
-- GitHub `merged_at` / `M` committer cross-check in §19.5 passed during independent start-authorization review
+- main-entry lead-time from `M`'s Git committer timestamp
+- main-entry commit `M` satisfies the exact Git topology proof in §19.3
 - file blob on `HEAD` equals the blob at `H8_V2_START_SHA`
-- file has never been modified, overwritten, deleted, replaced, or deleted-and-re-added after main entry
+- immutable start-file Git history: never modified, overwritten, deleted, replaced, or deleted-and-re-added after main entry
 - no later first-parent commit changes the start-file blob
 - no second start-authorization path exists
 
-If malformed or inconsistent:
+If those repository-contained facts are malformed or inconsistent:
 
 ```text
 STOP H8 V2 BEFORE SCIENTIFIC WRITES
 ```
 
 Do not repair the merged start file in place. Require a successor protocol / study.
+
+**FIREWALL.** Runtime must **not** claim it can independently prove GitHub `merged_at` or that independent review occurred. Those are not locally derivable Git-object facts.
+
+### 20.2 Independent post-merge acceptance conditions
+
+Independent post-merge review additionally proves:
+
+- PR identity
+- reviewed one-file PR
+- GitHub `merged_at`
+- `merged_at` vs `M` timestamp sanity (§19.5)
+- overall start-authorization acceptance
+
+If that independent post-merge verification fails after merge: §19.6 applies. The authorization is invalid. **STOP H8 v2.** Successor protocol / study required.
+
+Do not add a mutable environment override marking independent review as passed.
 
 ---
 
@@ -1339,6 +1405,118 @@ A mere string-prefix check is **not** sufficient.
 
 If real capture later fails before successful research commit: never overwrite anything; remove only **uncommitted** files created by this same invocation from the ephemeral runner when necessary to permit production Git operations; never remove a file that existed before the invocation; never use a broad `rm` on `research/h8-v2-prospective`.
 
+### 23.1 Original created manifest vs landable commit set
+
+**CANDIDATE IMPLEMENTATION DECISION.** Freeze two distinct concepts.
+
+**A. ORIGINAL CREATED MANIFEST** — `H8_V2_CREATED_MANIFEST_PATH`
+
+This records the complete set of repository artifacts originally created by the authorized capture invocation before escrow.
+
+Once escrow succeeds, this original manifest is **immutable** for the invocation.
+
+Do **NOT** rewrite it. Do **NOT** delete entries from it. It remains evidence of what the capture invocation originally created.
+
+**B. LANDABLE COMMIT SET** — `landableCommitEntries`
+
+After production lands and all post-production / rebase survival checks run, derive a deterministic subset from `originalManifest.files`.
+
+Preserve original repository-relative manifest order. `landableCommitEntries` must be an order-preserving subset of `originalManifest.files`.
+
+No new path may be added. No artifact may be regenerated. No artifact bytes may be changed. No new scientific calculation may occur.
+
+An original manifest entry belongs to `landableCommitEntries` only if **all** artifact-specific requirements still pass immediately before the research commit.
+
+**OBSERVATION entry** — all of:
+
+- artifact SHA256 equals the original manifest entry
+- `latest.json` source-survival hash still passes
+- target has not been invalidly replaced / intentionally conflicted
+- all required H8 identities still pass
+
+**BTC-CLOSE entry** — all of:
+
+- artifact SHA256 equals the original manifest entry
+- `btc_price_history.csv` source-survival hash still passes
+- target remains create-only compatible
+- all required H8 identities still pass
+
+**REHEARSAL entry** — all of:
+
+- artifact SHA256 equals the original manifest entry
+- no observation / close source-survival dependency
+- all rehearsal identity / path requirements still pass
+
+Invalidated entries are simply **NOT LANDED**. Their original manifest entries remain unchanged outside the repository.
+
+For invalidated score observations: the observation did not successfully land → `CAPTURE_MISSING` under frozen accounting when applicable → never recreate it.
+
+For invalidated BTC closes: the close remains missing → later recovery only through frozen scheduled catch-up rules.
+
+For a rehearsal: a qualifying rehearsal requires its rehearsal artifact itself to land. If the rehearsal artifact is removed from the landable set, the rehearsal does **not** qualify.
+
+The landable set does **not** need to become a new repository artifact. It may be an in-memory / `RUNNER_TEMP` operational structure. If serialized under `RUNNER_TEMP` for transaction safety:
+
+- deterministic canonical JSON
+- outside the repository
+- no operator path override
+- derived mechanically from the immutable original manifest
+- must **not** replace or mutate the original manifest
+
+Stage-A implementation review must prove both structures.
+
+### 23.2 Exact staging rule
+
+**CANDIDATE IMPLEMENTATION DECISION.**
+
+```text
+set(stagedPaths)
+  ==
+set(landableCommitEntries.paths)
+
+AND
+
+landableCommitEntries
+  ⊆
+originalManifest.files
+```
+
+Require:
+
+- exact individual `git add` arguments
+- no wildcard staging
+- no extra research path
+- no missing landable path
+- no path outside the original manifest
+- staged artifact SHA256 equals the original manifest entry SHA256
+
+The original created manifest remains the immutable upper bound. No staged path may exist that was not in the original created manifest.
+
+### 23.3 Zero-landable-entry rule
+
+If `landableCommitEntries.length == 0`:
+
+- create **NO** research commit
+- push **NO** empty scientific commit
+- the H8 scientific transaction for that invocation ends as not landed
+- production remains valid
+
+For a prospective score observation originally created in that invocation: it remains unaccepted / `CAPTURE_MISSING` when applicable.
+
+For closes: gaps remain governed by normal future close recovery.
+
+For `NON_STUDY_REHEARSAL`: the scheduled run does **NOT** qualify as a successful rehearsal. No empty commit may satisfy the mandatory rehearsal requirement.
+
+### 23.4 Rebase revalidation of landable status
+
+After **every** research rebase: recompute / revalidate the landable status of the **original** manifest entries.
+
+Do **NOT** regenerate artifact bytes. Do **NOT** rewrite the original manifest.
+
+If an entry that was previously landable becomes invalid after rebase: remove it from the landable commit set. Restage exactly the resulting landable set.
+
+If all entries become invalid: no research commit / push. For a rehearsal, no successful rehearsal.
+
 ---
 
 ## 24. Research Git policy
@@ -1348,25 +1526,31 @@ If real capture later fails before successful research commit: never overwrite a
 1. synchronize safely with `origin/main`
 2. verify clean tracked state
 3. restore exact escrow bytes
-4. validate manifest hashes
-5. stage exact manifest paths individually
-6. verify staged path set equals the manifest exactly
-7. create separate deterministic H8 v2 research commit **without** `GIT_COMMITTER_DATE` / `GIT_AUTHOR_DATE`
-8. fetch current `origin/main`
-9. rebase only if necessary, using ordinary `git rebase` and the genuine runner clock
-10. **NO automatic merge fallback**
-11. after every rebase, revalidate:
-    - artifact SHA256
-    - source hashes
+4. validate original-manifest hashes against restored escrow bytes
+5. derive `landableCommitEntries` from the immutable original manifest (§23.1)
+6. if `landableCommitEntries.length == 0`: create **no** research commit; end the scientific transaction as not landed (§23.3)
+7. otherwise stage exact landable paths individually
+8. verify staged path set equals `landableCommitEntries` paths exactly (§23.2)
+9. verify each staged artifact SHA256 equals the original manifest entry SHA256
+10. create separate deterministic H8 v2 research commit **without** `GIT_COMMITTER_DATE` / `GIT_AUTHOR_DATE`
+11. fetch current `origin/main`
+12. rebase only if necessary, using ordinary `git rebase` and the genuine runner clock
+13. **NO automatic merge fallback**
+14. after every rebase, revalidate:
+    - original manifest still unchanged
+    - landable status of original manifest entries (§23.4)
+    - artifact SHA256 of remaining landable entries
+    - source hashes by artifact class
     - scientific identities
-    - exact staged/committed research paths
+    - exact staged/committed research paths equal the **current** landable set
     - final commit identity
     - final committer-timestamp integrity
     - absence of `GIT_COMMITTER_DATE` / `GIT_AUTHOR_DATE` in the process environment
-12. push
-13. fetch origin
-14. prove the final research commit is reachable from `origin/main`
-15. prove the exact artifact blob exists in that final reachable commit
+15. if the landable set becomes empty after rebase: create **no** research push
+16. otherwise push
+17. fetch origin
+18. prove the final research commit is reachable from `origin/main`
+19. prove each landable artifact blob exists in that final reachable commit
 
 **FIREWALL.** Do not use `git add research`.
 **FIREWALL.** Do not use `git add research/h8-v2-prospective`.
@@ -1376,9 +1560,9 @@ Push retries inside the **same** `run_attempt == 1` may be allowed.
 
 **FIREWALL.** Do not rerun capture to regenerate artifact bytes. Reuse the exact escrowed bytes.
 
-If the final push never succeeds: the artifact is **not** accepted scientific evidence.
+If the final push never succeeds: no artifact from that invocation is accepted scientific evidence.
 
-For a score observation, that date becomes `CAPTURE_MISSING` according to the frozen protocol. Never recreate that observation later.
+For a score observation that was originally created but never landed: that date becomes `CAPTURE_MISSING` according to the frozen protocol. Never recreate that observation later.
 
 Future close recovery may still operate according to the frozen close rules.
 
@@ -2062,7 +2246,7 @@ A `btc_price_history.csv` source-survival failure invalidates the **affected clo
 
 Do not recalculate an invalidated research artifact. Do not substitute new values. Do not push an invalidated artifact.
 
-The implementation architecture may preserve **one** research commit when every remaining manifest entry remains valid. Entries that failed source-survival must be omitted from that commit and treated as not landed (`CAPTURE_MISSING` for a score date; close gap remains retryable only under frozen close rules).
+Invalidated entries are omitted from `landableCommitEntries` (§23.1). The original created manifest remains unchanged. Independently valid entries may still land in the same research commit if they remain in the landable set.
 
 If a later Stage-A design cannot safely land independently valid artifact classes when another class fails source-survival validation: **STOP** during Stage-A review and report the limitation rather than silently changing this contract.
 
@@ -2254,6 +2438,21 @@ The rehearsal must prove the NON-EMPTY research path.
 - escrow hash mismatch fails
 - `latest.json` source-byte mutation after production sync invalidates the observation artifact only
 - `btc_price_history.csv` source-byte mutation after production sync invalidates close artifacts only
+- original created manifest remains unchanged when one entry becomes invalid
+- observation fails source survival while valid close remains landable
+- close fails source survival while valid observation remains landable
+- staged paths equal the landable set, not the original full manifest
+- landable set can never add a path absent from the original manifest
+- artifact SHA must still equal the original manifest SHA
+- all entries invalid => no research commit
+- invalid rehearsal entry => no qualifying rehearsal
+- rebase can shrink the landable set without regenerating bytes
+- original manifest remains immutable across revalidation
+- full manifest all-valid lands all entries
+- observation-only landing
+- close-only landing
+- landable subset preserves original manifest hashes
+- no new path can appear in the landable set
 
 **H. Start authorization**
 
@@ -2275,6 +2474,14 @@ The rehearsal must prove the NON-EMPTY research path.
 - PR `merged_at` / merge-commit timestamp sanity passes when within 5 minutes
 - PR `merged_at` / merge-commit timestamp sanity fails when outside 5 minutes
 - failed cross-check does not redefine `start_authorization_merge_time`
+- proposed / unmerged start failure can be rejected before merge
+- missing `S-1` deadline before merge => readiness expiry / new rehearsal
+- post-merge `merged_at` cross-check failure => terminal H8 v2 stop
+- post-merge topology / blob failure => terminal H8 v2 stop
+- no second start file after a merged invalid start authorization
+- runtime validates Git-contained start provenance
+- external GitHub `merged_at` is not falsely treated as locally derivable
+- no environment / manual override can mark independent review as passed
 
 **I. Observation semantics**
 
@@ -2342,13 +2549,13 @@ If compatibility cannot be proven: **STOP H8 v2** and require a successor study.
 
 ## 41. What this pass does and does not do
 
-This repair-before-freeze revision modifies **only**:
+This final interaction-repair revision modifies **only**:
 
 ```text
 docs/H8_V2_CAPTURE_IMPLEMENTATION_CONTRACT.md
 ```
 
-It tightens write-gating, Git-transport vs provider-network distinction, original source-checkout provenance, whole-second timestamp sanity, and start-authorization main-entry proof.
+It distinguishes the immutable original created manifest from the deterministic landable commit set, and it separates pre-merge start rejection from post-merge terminal invalid-start failure.
 
 It does **not**:
 
@@ -2387,7 +2594,7 @@ CONTRACT FREEZE
 
 ## 42. Stop
 
-**STOP FOR INDEPENDENT REPAIRED H8 V2 CAPTURE-CONTRACT REVIEW.**
+**STOP FOR FINAL INDEPENDENT H8 V2 CAPTURE-CONTRACT REVIEW.**
 
 Do not implement capture machinery in this pass.
 Do not select a study start date in this pass.
