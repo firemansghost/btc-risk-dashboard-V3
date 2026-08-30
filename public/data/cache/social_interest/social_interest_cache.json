@@ -1,28 +1,28 @@
 {
-  "score": 60,
+  "score": 65,
   "reason": "success",
   "status": "fresh",
-  "lastUpdated": "2026-08-29T15:21:40.000Z",
-  "trending_fetched_at": "2026-08-29T15:23:46.690Z",
-  "price_observation_utc": "2026-08-29T15:21:40.000Z",
+  "lastUpdated": "2026-08-30T15:15:10.000Z",
+  "trending_fetched_at": "2026-08-30T15:16:46.505Z",
+  "price_observation_utc": "2026-08-30T15:15:10.000Z",
   "components": {
-    "searchScore": 55,
-    "momentumScore": 71,
-    "volatilityScore": 37
+    "searchScore": 70,
+    "momentumScore": 54,
+    "volatilityScore": 13
   },
   "provider": "CoinGecko • trending",
   "details": [
     {
       "label": "Search Attention",
-      "value": "Moderate"
+      "value": "High"
     },
     {
       "label": "Bitcoin Trending Rank",
-      "value": "#10"
+      "value": "#6"
     },
     {
       "label": "Price Signal (7d)",
-      "value": "Strong Bullish"
+      "value": "Bullish"
     },
     {
       "label": "Volatility Level (14d)",
@@ -34,7 +34,7 @@
     },
     {
       "label": "Fetch Time",
-      "value": "1585ms"
+      "value": "1522ms"
     },
     {
       "label": "Data Sources",
@@ -42,21 +42,21 @@
     },
     {
       "label": "Component Scores",
-      "value": "Search: 55, Momentum: 71, Vol: 37"
+      "value": "Search: 70, Momentum: 54, Vol: 13"
     },
     {
       "label": "Fallback Attempts",
       "value": "0"
     }
   ],
-  "bitcoinRank": 10,
-  "latestPrice": 77943.66354233088,
-  "fetchTime": 1585,
+  "bitcoinRank": 6,
+  "latestPrice": 78669.7652286982,
+  "fetchTime": 1522,
   "metrics": {
-    "trending_rank": 10,
-    "momentum_7d_pct": 12.3570046427569,
-    "score": 60
+    "trending_rank": 6,
+    "momentum_7d_pct": 9.291806446161262,
+    "score": 65
   },
-  "cachedAt": "2026-08-29T15:23:46.690Z",
+  "cachedAt": "2026-08-30T15:16:46.506Z",
   "version": "1.0.0"
 }
