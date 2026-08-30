@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-08-23T11:44:55.046Z",
-  "lastUpdated": "2026-08-23T11:44:55.046Z",
+  "timestamp": "2026-08-30T15:24:58.763Z",
+  "lastUpdated": "2026-08-30T15:24:58.763Z",
   "dataRange": {
     "startDate": "2023-09-25",
-    "endDate": "2026-08-23",
-    "totalDays": 1029
+    "endDate": "2026-08-30",
+    "totalDays": 1034
   },
   "metadata": {
     "generatedBy": "weekly-backtesting-script",
@@ -767,12 +767,24 @@
           "gScore": 47,
           "price": 64317.37,
           "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2026-08-29",
+          "gScore": 46,
+          "price": 77835.84,
+          "originalBand": "Moderate Buying"
+        },
+        {
+          "date": "2026-08-30",
+          "gScore": 46,
+          "price": 78640.6,
+          "originalBand": "Moderate Buying"
         }
       ],
       "performance": {
-        "signalCount": 118,
-        "avgGScore": 44.779661016949156,
-        "avgPrice": 88809.05067796608,
+        "signalCount": 120,
+        "avgGScore": 44.8,
+        "avgPrice": 88632.87016666663,
         "winRate": 60,
         "avgReturn30d": 2.0068643223980387,
         "avgReturn90d": 0.32802484694359385,
@@ -4615,15 +4627,33 @@
           "gScore": 53,
           "price": 77269.34,
           "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2026-08-24",
+          "gScore": 54,
+          "price": 78020.48,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2026-08-25",
+          "gScore": 52,
+          "price": 79310.89,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2026-08-26",
+          "gScore": 54,
+          "price": 78584.19,
+          "originalBand": "Hold & Wait"
         }
       ],
       "performance": {
-        "signalCount": 639,
-        "avgGScore": 55.57902973395931,
-        "avgPrice": 72110.02242566505,
-        "winRate": 53.05785123966942,
-        "avgReturn30d": 3.4928910043167996,
-        "avgReturn90d": 10.501371056454913,
+        "signalCount": 642,
+        "avgGScore": 55.56853582554517,
+        "avgPrice": 72140.52942367595,
+        "winRate": 53.59477124183007,
+        "avgReturn30d": 3.716285573131353,
+        "avgReturn90d": 10.600284089835103,
         "bestReturn": 50.888065829088056,
         "worstReturn": -24.658162131480726
       }
@@ -6276,8 +6306,8 @@
       "monthlyAmount": 1000,
       "totalInvested": 35000,
       "totalBTC": 0.5266273297488346,
-      "finalValue": 40692.146195654816,
-      "totalReturn": 16.263274844728045,
+      "finalValue": 41414.28918784621,
+      "totalReturn": 18.326540536703458,
       "trades": [
         {
           "date": "2023-09-25",
@@ -6565,8 +6595,8 @@
       "monthlyAmount": 1000,
       "totalInvested": 17000,
       "totalBTC": 0.2610922322670152,
-      "finalValue": 20174.42446639897,
-      "totalReturn": 18.673085096464533,
+      "finalValue": 20532.449800817438,
+      "totalReturn": 20.77911647539669,
       "trades": [
         {
           "date": "2023-09-25",
@@ -6922,10 +6952,10 @@
     }
   },
   "summary": {
-    "totalDataPoints": 1029,
-    "riskBasedReturn": 18.673085096464533,
-    "dcaReturn": 16.263274844728045,
-    "outperformance": 2.409810251736488,
+    "totalDataPoints": 1034,
+    "riskBasedReturn": 20.77911647539669,
+    "dcaReturn": 18.326540536703458,
+    "outperformance": 2.452575938693233,
     "bestPerformingBand": "High Risk",
     "worstPerformingBand": "Regular DCA Buying"
   }
