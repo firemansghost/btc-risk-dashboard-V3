@@ -1,9 +1,9 @@
 {
-  "score": 50,
+  "score": 46,
   "reason": "success",
-  "lastUpdated": "2026-08-30T12:00:00.000Z",
-  "funding_observation_utc": "2026-08-30T12:00:00.000Z",
-  "spot_observation_utc": "2026-08-30T15:15:10.000Z",
+  "lastUpdated": "2026-09-01T12:00:00.000Z",
+  "funding_observation_utc": "2026-09-01T12:00:00.000Z",
+  "spot_observation_utc": "2026-09-01T15:23:40.000Z",
   "funding_provider": "bitmex",
   "details": [
     {
@@ -12,11 +12,11 @@
     },
     {
       "label": "30-day Average",
-      "value": "0.0091%"
+      "value": "0.0100%"
     },
     {
       "label": "Price Volatility (30d)",
-      "value": "2.35%"
+      "value": "2.36%"
     },
     {
       "label": "Leverage Regime",
@@ -28,7 +28,7 @@
     },
     {
       "label": "30-day Range",
-      "value": "-0.0079% - 0.0100%"
+      "value": "0.0087% - 0.0100%"
     },
     {
       "label": "Data Source",
@@ -40,10 +40,52 @@
     },
     {
       "label": "Component Scores",
-      "value": "Funding: 8, Vol: 73, Stress: 83"
+      "value": "Funding: 6, Vol: 73, Stress: 71"
     }
   ],
   "fundingData": [
+    {
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.0001,
+      "fundingRateDaily": 0.00030000000000000003
+    },
+    {
+      "timestamp": "2026-09-01T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.0001,
+      "fundingRateDaily": 0.00030000000000000003
+    },
+    {
+      "timestamp": "2026-08-31T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.0001,
+      "fundingRateDaily": 0.00030000000000000003
+    },
+    {
+      "timestamp": "2026-08-31T12:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.0001,
+      "fundingRateDaily": 0.00030000000000000003
+    },
+    {
+      "timestamp": "2026-08-31T04:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.0001,
+      "fundingRateDaily": 0.00030000000000000003
+    },
+    {
+      "timestamp": "2026-08-30T20:00:00.000Z",
+      "symbol": "XBTUSD",
+      "fundingInterval": "2000-01-01T08:00:00.000Z",
+      "fundingRate": 0.0001,
+      "fundingRateDaily": 0.00030000000000000003
+    },
     {
       "timestamp": "2026-08-30T12:00:00.000Z",
       "symbol": "XBTUSD",
@@ -211,48 +253,6 @@
       "fundingInterval": "2000-01-01T08:00:00.000Z",
       "fundingRate": 0.0001,
       "fundingRateDaily": 0.00030000000000000003
-    },
-    {
-      "timestamp": "2026-08-22T12:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": 0.0001,
-      "fundingRateDaily": 0.00030000000000000003
-    },
-    {
-      "timestamp": "2026-08-22T04:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": 0.0001,
-      "fundingRateDaily": 0.00030000000000000003
-    },
-    {
-      "timestamp": "2026-08-21T20:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": 0.0001,
-      "fundingRateDaily": 0.00030000000000000003
-    },
-    {
-      "timestamp": "2026-08-21T12:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": 0.000012,
-      "fundingRateDaily": 0.000036
-    },
-    {
-      "timestamp": "2026-08-21T04:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": -0.000079,
-      "fundingRateDaily": -0.000237
-    },
-    {
-      "timestamp": "2026-08-20T20:00:00.000Z",
-      "symbol": "XBTUSD",
-      "fundingInterval": "2000-01-01T08:00:00.000Z",
-      "fundingRate": 0.0001,
-      "fundingRateDaily": 0.00030000000000000003
     }
   ],
   "parallelTime": 1,
@@ -262,9 +262,9 @@
     "okx": "ok"
   },
   "metrics": {
-    "funding_30d_avg": 0.009066666666666669,
-    "score": 50
+    "funding_30d_avg": 0.009956666666666671,
+    "score": 46
   },
-  "cachedAt": "2026-08-30T15:16:47.211Z",
+  "cachedAt": "2026-09-01T15:26:01.766Z",
   "version": "1.0.0"
 }
