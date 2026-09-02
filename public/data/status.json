@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-01T15:27:24.712Z",
+  "updated_at": "2026-09-02T15:02:55.378Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -65,7 +65,7 @@
   "factors_successful": 7,
   "gold_cross_rates": {
     "status": "failed",
-    "reason": "error: CoinGecko 429"
+    "reason": "no_gold_price"
   },
   "satoshis_per_dollar": {
     "status": "success",
@@ -73,22 +73,22 @@
     "derived": true
   },
   "etf_schema_hash": "12cf3a62",
-  "etf_schema_last_check": "2026-09-01T15:26:00.770Z",
+  "etf_schema_last_check": "2026-09-02T15:02:02.970Z",
   "price_history": {
-    "total_rows": 745,
+    "total_rows": 746,
     "oldest_date": "2024-08-17",
-    "newest_date": "2026-08-31",
+    "newest_date": "2026-09-01",
     "alpha_vantage_backfill": null,
     "coinbase_daily_update": {
       "status": "success",
       "rows_fetched": 15,
-      "ms": 290
+      "ms": 294
     },
     "drift_check": null
   },
   "term_leverage": {
     "status": "fresh",
-    "last_updated_utc": "2026-09-01T12:00:00.000Z",
+    "last_updated_utc": "2026-09-02T12:00:00.000Z",
     "providers": {
       "bitmex": "ok",
       "binance": "451",
@@ -96,7 +96,7 @@
     },
     "ttl_hours": 6,
     "stale_beyond_hours": 12,
-    "score": 46,
+    "score": 44,
     "reason": "fresh_source_cadence"
   }
 }
