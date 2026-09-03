@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-02T15:02:55.378Z",
+  "updated_at": "2026-09-03T14:56:49.839Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -73,22 +73,22 @@
     "derived": true
   },
   "etf_schema_hash": "12cf3a62",
-  "etf_schema_last_check": "2026-09-02T15:02:02.970Z",
+  "etf_schema_last_check": "2026-09-03T14:55:39.042Z",
   "price_history": {
-    "total_rows": 746,
+    "total_rows": 747,
     "oldest_date": "2024-08-17",
-    "newest_date": "2026-09-01",
+    "newest_date": "2026-09-02",
     "alpha_vantage_backfill": null,
     "coinbase_daily_update": {
       "status": "success",
       "rows_fetched": 15,
-      "ms": 294
+      "ms": 223
     },
     "drift_check": null
   },
   "term_leverage": {
     "status": "fresh",
-    "last_updated_utc": "2026-09-02T12:00:00.000Z",
+    "last_updated_utc": "2026-09-03T12:00:00.000Z",
     "providers": {
       "bitmex": "ok",
       "binance": "451",
@@ -96,7 +96,7 @@
     },
     "ttl_hours": 6,
     "stale_beyond_hours": 12,
-    "score": 44,
+    "score": 41,
     "reason": "fresh_source_cadence"
   }
 }

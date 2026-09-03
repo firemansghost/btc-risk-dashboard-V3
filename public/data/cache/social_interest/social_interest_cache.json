@@ -1,24 +1,24 @@
 {
-  "score": 65,
+  "score": 52,
   "reason": "success",
   "status": "fresh",
-  "lastUpdated": "2026-09-02T14:59:50.000Z",
-  "trending_fetched_at": "2026-09-02T15:01:42.276Z",
-  "price_observation_utc": "2026-09-02T14:59:50.000Z",
+  "lastUpdated": "2026-09-03T14:54:00.000Z",
+  "trending_fetched_at": "2026-09-03T14:55:39.584Z",
+  "price_observation_utc": "2026-09-03T14:54:00.000Z",
   "components": {
-    "searchScore": 85,
-    "momentumScore": 17,
-    "volatilityScore": 7
+    "searchScore": 70,
+    "momentumScore": 9,
+    "volatilityScore": 9
   },
   "provider": "CoinGecko • trending",
   "details": [
     {
       "label": "Search Attention",
-      "value": "Extreme"
+      "value": "High"
     },
     {
       "label": "Bitcoin Trending Rank",
-      "value": "#3"
+      "value": "#7"
     },
     {
       "label": "Price Signal (7d)",
@@ -34,7 +34,7 @@
     },
     {
       "label": "Fetch Time",
-      "value": "1539ms"
+      "value": "1530ms"
     },
     {
       "label": "Data Sources",
@@ -42,21 +42,21 @@
     },
     {
       "label": "Component Scores",
-      "value": "Search: 85, Momentum: 17, Vol: 7"
+      "value": "Search: 70, Momentum: 9, Vol: 9"
     },
     {
       "label": "Fallback Attempts",
       "value": "0"
     }
   ],
-  "bitcoinRank": 3,
-  "latestPrice": 77032.13956615691,
-  "fetchTime": 1539,
+  "bitcoinRank": 7,
+  "latestPrice": 80190.17192366575,
+  "fetchTime": 1530,
   "metrics": {
-    "trending_rank": 3,
-    "momentum_7d_pct": 0.7995518415213978,
-    "score": 65
+    "trending_rank": 7,
+    "momentum_7d_pct": -0.4950125523410274,
+    "score": 52
   },
-  "cachedAt": "2026-09-02T15:01:42.276Z",
+  "cachedAt": "2026-09-03T14:55:39.585Z",
   "version": "1.0.0"
 }
