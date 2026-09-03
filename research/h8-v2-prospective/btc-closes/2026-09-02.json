@@ -1,0 +1,22 @@
+{
+  "schema_version": "h8-v2-close-v1",
+  "study_id": "h8-v2-prospective",
+  "protocol_version": "h8-prospective-three-model-v2",
+  "protocol_sha": "a46e5cefe9b0d1215931f04296e1d8c5f0ae4fd3",
+  "capture_contract_version": "h8-v2-capture-implementation-contract-v1",
+  "capture_contract_sha": "b1adc9889e40efd94197f33e75ddb012ec486fa2",
+  "h8_v2_capture_source_sha": "10a34be3e9a6955a972774a26b50377cb872e5bc",
+  "close_date_utc": "2026-09-02",
+  "close_usd": 77307.36,
+  "source": "coinbase",
+  "source_row_ingested_at_utc": "2026-09-03T14:55:37.666Z",
+  "captured_at_utc": "2026-09-03T14:56:50.135Z",
+  "source_artifact_path": "public/data/btc_price_history.csv",
+  "source_artifact_sha256": "ea6d48063787fac702bb902af1e63125c2fc4710f59208a98247ba2561e2a09a",
+  "source_base_git_sha": "bf7c5695e502978595f5c2199c8bc37ca2baf2f6",
+  "github_run_id": "33769672390",
+  "github_run_attempt": 1,
+  "github_event_name": "schedule",
+  "github_workflow_ref": "firemansghost/btc-risk-dashboard-V3/.github/workflows/daily-etl.yml@refs/heads/main",
+  "github_sha": "bf7c5695e502978595f5c2199c8bc37ca2baf2f6"
+}
