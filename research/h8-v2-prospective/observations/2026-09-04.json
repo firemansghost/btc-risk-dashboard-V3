@@ -1,0 +1,197 @@
+{
+  "schema_version": "h8-v2-observation-v1",
+  "study_id": "h8-v2-prospective",
+  "protocol_version": "h8-prospective-three-model-v2",
+  "protocol_sha": "a46e5cefe9b0d1215931f04296e1d8c5f0ae4fd3",
+  "capture_contract_version": "h8-v2-capture-implementation-contract-v1",
+  "capture_contract_sha": "b1adc9889e40efd94197f33e75ddb012ec486fa2",
+  "h8_v2_capture_source_sha": "10a34be3e9a6955a972774a26b50377cb872e5bc",
+  "observation_date": "2026-09-04",
+  "scheduled_event": "DAILY_ETL",
+  "observation_as_of_utc": "2026-09-04T14:53:41.507Z",
+  "capture_created_utc": "2026-09-04T14:53:43.817Z",
+  "etl_started_utc": "2026-09-04T14:52:30.634Z",
+  "source_base_git_sha": "54b9cb13b6fca9be786136770fd15b0365ca35ae",
+  "github_run_id": "33886206446",
+  "github_run_attempt": 1,
+  "github_event_name": "schedule",
+  "github_workflow_ref": "firemansghost/btc-risk-dashboard-V3/.github/workflows/daily-etl.yml@refs/heads/main",
+  "github_sha": "54b9cb13b6fca9be786136770fd15b0365ca35ae",
+  "production_model_version": "v1.1.1",
+  "production_implementation_revision": "integrity-2026-08",
+  "production_ssot_version": "2.1.1",
+  "production_config_git_blob": "b5c606b8f14f9e2a2c29061f2ae1c4d4337c8a49",
+  "production_config_sha256": "712a6d138b7e58dee3e325ec2740044aad2a7a80fe027a8f3e3fef294ac3b57a",
+  "latest_artifact_sha256": "87763dbd31f6aad602feb8ab29ecd1caf32a318463a20fd85920bff041f85ff8",
+  "scientific_fingerprint": {
+    "config/dashboard-config.json": "b5c606b8f14f9e2a2c29061f2ae1c4d4337c8a49",
+    "lib/config-loader.mjs": "8f439254ca813050703a7c17bcd658474c19e2b2",
+    "scripts/etl/compute.mjs": "6f16c1f24bc097d6079fffc0ea7b5889c91ea0d4",
+    "scripts/etl/factors.mjs": "e9fd06df79967f0041a901e2dd971b771e669b03",
+    "scripts/etl/factors/": "163b086f72ec43117e8bfcbbe5fd31732dae715d",
+    "scripts/etl/factors/trendValuation.mjs": "3abf6f0611f86f58aca06c736d9baf41c7eb4ae9",
+    "scripts/etl/lib/": "64c73c01db27f1e6dbcd12d45d08c2f12bc47b12",
+    "scripts/etl/stalenessUtils.mjs": "1c213b9b8eb659c9cda22d0834694ae3239eb768",
+    "scripts/etl/marketCalendar.mjs": "77c5669f77bef11cbc43fb85f82bb4a42bfc2136",
+    "scripts/etl/adjustments.mjs": "36a6d3c5220ac7ac9e7493bc49176840ed5fe9d7",
+    "scripts/etl/coinGeckoCache.mjs": "fbfc5e35b3bd4af60eb00e780892b62f94e8bbff",
+    "scripts/etl/priceHistory.mjs": "515b02acdd0cf4a72e62889dafb83cec6e8acd95",
+    "scripts/etl/fetch-helper.mjs": "da8ca2b441088f2e13364249e7ecbbed40dc22a4"
+  },
+  "common_eligibility_status": "ELIGIBLE",
+  "eligibility_reason": "ALL_REQUIRED_FACTORS_FRESH",
+  "official_integrity_status": "MATCH",
+  "axis_a_status": "ELIGIBLE",
+  "factors": [
+    {
+      "key": "trend_valuation",
+      "score": 52,
+      "status": "fresh",
+      "last_updated_utc": "2026-09-04T14:52:31.242Z",
+      "official_weight": 0.3
+    },
+    {
+      "key": "stablecoins",
+      "score": 44,
+      "status": "fresh",
+      "last_updated_utc": "2026-09-04T14:53:40.566Z",
+      "official_weight": 0.18
+    },
+    {
+      "key": "etf_flows",
+      "score": 65,
+      "status": "fresh",
+      "last_updated_utc": "2026-09-03T16:00:00.000Z",
+      "official_weight": 0.077
+    },
+    {
+      "key": "net_liquidity",
+      "score": 81,
+      "status": "fresh",
+      "last_updated_utc": "2026-09-02T00:00:00.000Z",
+      "official_weight": 0.043
+    },
+    {
+      "key": "term_leverage",
+      "score": 77,
+      "status": "fresh",
+      "last_updated_utc": "2026-09-04T12:00:00.000Z",
+      "official_weight": 0.2
+    },
+    {
+      "key": "macro_overlay",
+      "score": 31,
+      "status": "fresh",
+      "last_updated_utc": "2026-08-28T00:00:00.000Z",
+      "official_weight": 0.1
+    },
+    {
+      "key": "social_interest",
+      "score": 41,
+      "status": "fresh",
+      "last_updated_utc": "2026-09-04T14:50:40.000Z",
+      "official_weight": 0.1
+    }
+  ],
+  "official_published_score": 55,
+  "official_formula_score": 55,
+  "liq_heavy_score": 55,
+  "mom_tilted_score": 54,
+  "model_versions": {
+    "official": "v1.1.1",
+    "liq_heavy": "liq-heavy-v1",
+    "mom_tilted": "mom-tilted-v1"
+  },
+  "model_weight_definitions": {
+    "official": {
+      "trend_valuation": {
+        "definition": "0.30",
+        "evaluated_weight": 0.3
+      },
+      "stablecoins": {
+        "definition": "0.18",
+        "evaluated_weight": 0.18
+      },
+      "etf_flows": {
+        "definition": "0.077",
+        "evaluated_weight": 0.077
+      },
+      "net_liquidity": {
+        "definition": "0.043",
+        "evaluated_weight": 0.043
+      },
+      "term_leverage": {
+        "definition": "0.20",
+        "evaluated_weight": 0.2
+      },
+      "macro_overlay": {
+        "definition": "0.10",
+        "evaluated_weight": 0.1
+      },
+      "social_interest": {
+        "definition": "0.10",
+        "evaluated_weight": 0.1
+      }
+    },
+    "liq_heavy": {
+      "trend_valuation": {
+        "definition": "0.25",
+        "evaluated_weight": 0.25
+      },
+      "stablecoins": {
+        "definition": "0.18 * (0.35 / 0.30)",
+        "evaluated_weight": 0.21
+      },
+      "etf_flows": {
+        "definition": "0.077 * (0.35 / 0.30)",
+        "evaluated_weight": 0.08983333333333333
+      },
+      "net_liquidity": {
+        "definition": "0.043 * (0.35 / 0.30)",
+        "evaluated_weight": 0.050166666666666665
+      },
+      "term_leverage": {
+        "definition": "0.20",
+        "evaluated_weight": 0.2
+      },
+      "macro_overlay": {
+        "definition": "0.10",
+        "evaluated_weight": 0.1
+      },
+      "social_interest": {
+        "definition": "0.10",
+        "evaluated_weight": 0.1
+      }
+    },
+    "mom_tilted": {
+      "trend_valuation": {
+        "definition": "0.35",
+        "evaluated_weight": 0.35
+      },
+      "stablecoins": {
+        "definition": "0.18 * (0.25 / 0.30)",
+        "evaluated_weight": 0.15
+      },
+      "etf_flows": {
+        "definition": "0.077 * (0.25 / 0.30)",
+        "evaluated_weight": 0.06416666666666666
+      },
+      "net_liquidity": {
+        "definition": "0.043 * (0.25 / 0.30)",
+        "evaluated_weight": 0.035833333333333335
+      },
+      "term_leverage": {
+        "definition": "0.20",
+        "evaluated_weight": 0.2
+      },
+      "macro_overlay": {
+        "definition": "0.10",
+        "evaluated_weight": 0.1
+      },
+      "social_interest": {
+        "definition": "0.10",
+        "evaluated_weight": 0.1
+      }
+    }
+  }
+}
