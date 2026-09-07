@@ -31,7 +31,7 @@
     },
     {
       "label": "Fetch Time",
-      "value": "743ms"
+      "value": "851ms"
     },
     {
       "label": "Component Scores",
@@ -43,11 +43,11 @@
     }
   ],
   "latestDxyDate": "2026-08-28",
-  "fetchTime": 743,
+  "fetchTime": 851,
   "metrics": {
     "dxy_20d_change_pct": -0.791344006563339,
     "score": 33
   },
-  "cachedAt": "2026-09-06T14:02:42.216Z",
+  "cachedAt": "2026-09-07T16:19:56.465Z",
   "version": "1.0.0"
 }

@@ -1,9 +1,9 @@
 {
-  "updated_at": "2026-09-06T14:03:53.517Z",
-  "date": "2026-09-06",
-  "btc_close_usd": 79814.25,
-  "sats_per_usd": 1252.9090983126446,
-  "usd_per_sat": 0.0007981425,
+  "updated_at": "2026-09-07T16:21:09.477Z",
+  "date": "2026-09-07",
+  "btc_close_usd": 78876.02,
+  "sats_per_usd": 1267.8124479404512,
+  "usd_per_sat": 0.0007887602000000001,
   "provenance": [
     {
       "name": "BTC UTC snapshot (Coinbase)",
