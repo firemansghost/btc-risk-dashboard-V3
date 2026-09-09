@@ -44,8 +44,6 @@ export type FactorOverviewCardProps = {
   onOpenHistory: (factor: { key: string; label: string }) => void;
   onOpenEnhancedDetails: (factor: { key: string; label: string }) => void;
   onJumpToFactor: (factorKey: string) => void;
-  onOpenEtfBreakdown?: () => void;
-  onOpenEtfPerformance?: () => void;
   status?: any;
 };
 
@@ -70,8 +68,6 @@ export default function FactorOverviewCard({
   onOpenHistory,
   onOpenEnhancedDetails,
   onJumpToFactor,
-  onOpenEtfBreakdown,
-  onOpenEtfPerformance,
   status,
 }: FactorOverviewCardProps) {
   const riskDisplay = getFactorRiskScoreDisplay(factor.score);
@@ -407,37 +403,6 @@ export default function FactorOverviewCard({
               </div>
             )}
 
-            {factor.key === 'etf_flows' && (
-              <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs" onClick={stopCardClick}>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenEtfBreakdown?.();
-                  }}
-                  className="text-blue-600 hover:text-blue-800 hover:underline min-h-[32px]"
-                >
-                  By ETF
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenEtfPerformance?.();
-                  }}
-                  className="text-purple-600 hover:text-purple-800 hover:underline min-h-[32px]"
-                >
-                  Performance
-                </button>
-                <a
-                  href="/etf-predictions"
-                  className="text-gray-600 hover:text-gray-800 hover:underline min-h-[32px] inline-flex items-center"
-                >
-                  ETF context →
-                </a>
-              </div>
-            )}
-
             <div className="mt-auto pt-3 border-t border-gray-100">
               <div className="text-xs text-gray-500">
                 Last updated:{' '}
@@ -446,6 +411,17 @@ export default function FactorOverviewCard({
                   : 'Unknown'}
               </div>
             </div>
+          </div>
+        )}
+
+        {factor.key === 'etf_flows' && (
+          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs" onClick={stopCardClick}>
+            <a
+              href="/etf-predictions"
+              className="text-gray-600 hover:text-gray-800 hover:underline min-h-[32px] inline-flex items-center"
+            >
+              ETF context →
+            </a>
           </div>
         )}
       </div>

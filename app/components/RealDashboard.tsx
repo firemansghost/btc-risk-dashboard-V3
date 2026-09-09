@@ -20,9 +20,7 @@ import dynamic from 'next/dynamic';
 import WhatIfWeightsModal from './WhatIfWeightsModal';
 import ProvenanceModal from './ProvenanceModal';
 import FactorHistoryModal from './FactorHistoryModal';
-import EtfBreakdownModal from './EtfBreakdownModal';
 import EnhancedFactorDetails from './EnhancedFactorDetails';
-import EtfPerformanceAnalysis from './EtfPerformanceAnalysis';
 import BtcGoldCard from './BtcGoldCard';
 import SatoshisPerDollarCard from './SatoshisPerDollarCard';
 import ScoreInsightsCard from './ScoreInsightsCard';
@@ -146,8 +144,6 @@ export default function RealDashboard() {
   const [provenanceModalOpen, setProvenanceModalOpen] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [enhancedDetailsOpen, setEnhancedDetailsOpen] = useState(false);
-  const [etfBreakdownOpen, setEtfBreakdownOpen] = useState(false);
-  const [etfPerformanceOpen, setEtfPerformanceOpen] = useState(false);
   type FactorRef = { key: string; label: string; scrollToSection?: 'moreDetails' };
   const [drawerFactor, setDrawerFactor] = useState<FactorRef | null>(null);
   const [historyFactor, setHistoryFactor] = useState<FactorRef | null>(null);
@@ -304,14 +300,6 @@ export default function RealDashboard() {
   const openEnhancedDetails = (factor: { key: string; label: string }) => {
     setEnhancedFactor(factor);
     setEnhancedDetailsOpen(true);
-  };
-
-  const openEtfBreakdown = () => {
-    setEtfBreakdownOpen(true);
-  };
-
-  const openEtfPerformance = () => {
-    setEtfPerformanceOpen(true);
   };
 
   // Loading/error states with robust timeouts
@@ -903,8 +891,6 @@ export default function RealDashboard() {
                   onOpenHistory={openHistoryModal}
                   onOpenEnhancedDetails={openEnhancedDetails}
                   onJumpToFactor={jumpToFactor}
-                  onOpenEtfBreakdown={openEtfBreakdown}
-                  onOpenEtfPerformance={openEtfPerformance}
                   status={status}
                 />
               </LazyLoader>
@@ -983,20 +969,6 @@ export default function RealDashboard() {
           factorLabel={enhancedFactor.label}
           currentScore={latest?.factors?.find((f: any) => f.key === enhancedFactor.key)?.score || 0}
           factorWeight={latest?.factors?.find((f: any) => f.key === enhancedFactor.key)?.weight}
-        />
-      )}
-
-      {etfBreakdownOpen && (
-        <EtfBreakdownModal
-          isOpen={etfBreakdownOpen}
-          onClose={() => setEtfBreakdownOpen(false)}
-        />
-      )}
-
-      {etfPerformanceOpen && (
-        <EtfPerformanceAnalysis
-          isOpen={etfPerformanceOpen}
-          onClose={() => setEtfPerformanceOpen(false)}
         />
       )}
 
