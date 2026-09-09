@@ -433,7 +433,7 @@ export default function FactorOverviewCard({
                   href="/etf-predictions"
                   className="text-gray-600 hover:text-gray-800 hover:underline min-h-[32px] inline-flex items-center"
                 >
-                  ETF outlook →
+                  ETF context →
                 </a>
               </div>
             )}

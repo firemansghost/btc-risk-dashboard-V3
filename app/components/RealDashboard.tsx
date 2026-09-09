@@ -694,8 +694,8 @@ export default function RealDashboard() {
                       <span className="text-blue-500 ml-1">→ Historical performance</span>
                     </div>
                     <div>
-                      <a href="/etf-predictions" className="text-blue-600 hover:underline">ETF Flow Outlook</a>
-                      <span className="text-blue-500 ml-1">→ Reported flows and simple trend scenarios</span>
+                      <a href="/etf-predictions" className="text-blue-600 hover:underline">ETF Flow Context</a>
+                      <span className="text-blue-500 ml-1">→ Current aggregate ETF-flow diagnostics and source vintage</span>
                     </div>
                   </div>
                 </div>

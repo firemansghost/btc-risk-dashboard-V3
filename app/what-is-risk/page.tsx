@@ -66,11 +66,11 @@ export default function WhatIsRiskPage() {
     { term: 'Market Share', def: 'Percentage of total ETF flows captured by each fund. Shows dominance.' },
   ];
 
-  const glossaryOutlook = [
-    { term: 'Reported ETF Flow', def: 'Observed daily net money moving into or out of a Bitcoin ETF, as recorded in the published flow file. This is historical reporting, not a forecast.' },
-    { term: 'Trend Scenario', def: 'A mechanical continuation of recent reported flow direction. It is descriptive extrapolation, not a calibrated prediction or probability.' },
-    { term: 'Flat Run-Rate', def: 'Latest aggregate daily reported flow multiplied by 7. A scaling of the latest observation, not a calendar-week forecast.' },
-    { term: 'Heuristic', def: 'A simple rule of thumb. GhostGauge ETF Outlook uses recent-flow trend continuation; it is not a statistically validated model.' },
+  const glossaryEtfContext = [
+    { term: 'ETF Flow Diagnostic', def: 'An observed, current production reading of aggregate Bitcoin ETF flows used by the GhostGauge ETF factor. It describes the snapshot, not a forecast of future flows.' },
+    { term: 'Source Vintage', def: 'The ETF factor source timestamp (when the ETF input was as-of). This can differ from the dashboard snapshot timestamp.' },
+    { term: '21-Day Rolling Sum', def: 'The production factor’s 21-day aggregate flow total as already computed for the ETF factor. Descriptive context, not a prediction.' },
+    { term: 'Percentile', def: 'Where the current 21-day flow reading sits in the production factor’s historical distribution. A descriptive rank, not a probability or trading signal.' },
   ];
 
   const renderGlossaryGroup = (items: { term: string; def: string }[]) => (
@@ -390,8 +390,8 @@ export default function WhatIsRiskPage() {
                   {renderGlossaryGroup(glossaryDashboard)}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">ETF Flow Outlook Terms</h3>
-                  {renderGlossaryGroup(glossaryOutlook)}
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">ETF Flow Context Terms</h3>
+                  {renderGlossaryGroup(glossaryEtfContext)}
                 </div>
               </div>
             </section>

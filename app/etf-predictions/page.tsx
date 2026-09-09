@@ -1,73 +1,68 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { formatFriendlyTimestamp } from '@/lib/dateUtils';
 
-type Trend = 'up' | 'down' | 'stable';
-
-type FundOutlook = {
-  symbol: string;
-  name: string;
-  latestFlow: number;
-  scenarioFlow: number;
-  trend: Trend;
-  marketShare: number;
-  sum21: number;
-  cumulativeFlow: number;
+type FactorDetail = {
+  label?: string;
+  value?: string;
+  tooltip?: string;
 };
 
-type OutlookData = {
-  individual: FundOutlook[];
-  summary: {
-    latestAggregateFlow: number;
-    flatRunRate7d: number;
-    trendScenario7d: number;
-  };
+type FactorContext = {
+  label: string;
+  score: number | null;
+  weightPct: number | null;
+  status: string | null;
+  reason: string | null;
+  sourceAsOfUtc: string | null;
+  details: FactorDetail[];
+};
+
+type ContextData = {
+  snapshotDate: string | null;
+  snapshotAsOfUtc: string | null;
+  factor: FactorContext;
   methodology?: {
     type: string;
-    validated: boolean;
+    forwardLooking: boolean;
     description: string;
   };
-  notes?: string[];
-  lastUpdated?: string;
 };
 
-function formatMillions(value: number): string {
-  const sign = value < 0 ? '-' : '';
-  return `${sign}$${Math.abs(value).toFixed(1)}M`;
+function formatUtcDate(value: string | null): string | null {
+  if (!value) return null;
+  const iso = value.includes('T') ? value : `${value}T00:00:00.000Z`;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
 }
 
-function trendLabel(trend: Trend): string {
-  if (trend === 'up') return 'Positive';
-  if (trend === 'down') return 'Negative';
-  return 'Unchanged';
-}
-
-function trendClass(trend: Trend): string {
-  if (trend === 'up') return 'text-green-700';
-  if (trend === 'down') return 'text-red-700';
-  return 'text-slate-600';
-}
-
-function OutlookCard({
+function ContextCard({
   title,
   value,
   description,
 }: {
   title: string;
   value: string;
-  description: string;
+  description?: string;
 }) {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500">
       <h3 className="text-lg font-semibold text-gray-900 mb-3">{title}</h3>
       <div className="text-3xl font-bold text-gray-900 mb-3">{value}</div>
-      <p className="text-sm text-gray-600">{description}</p>
+      {description ? <p className="text-sm text-gray-600">{description}</p> : null}
     </div>
   );
 }
 
-export default function EtfFlowOutlookPage() {
-  const [data, setData] = useState<OutlookData | null>(null);
+export default function EtfFlowContextPage() {
+  const [data, setData] = useState<ContextData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -83,38 +78,36 @@ export default function EtfFlowOutlookPage() {
       try {
         setLoading(true);
         setError(null);
-        const timestamp = Date.now();
-        const response = await fetch(`/api/etf-predictions?t=${timestamp}`, {
+        const response = await fetch('/api/etf-predictions', {
           cache: 'no-store',
           headers: {
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             Pragma: 'no-cache',
-            Expires: '0',
           },
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        if (!result || typeof result !== 'object') {
-          throw new Error('Invalid API response format');
+        const result = await response.json().catch(() => null);
+        if (!response.ok || !result || typeof result !== 'object' || !result.factor) {
+          throw new Error(result?.error || 'ETF flow context unavailable');
         }
 
         setData({
-          individual: result.individual || [],
-          summary: result.summary || {
-            latestAggregateFlow: 0,
-            flatRunRate7d: 0,
-            trendScenario7d: 0,
+          snapshotDate: result.snapshotDate ?? null,
+          snapshotAsOfUtc: result.snapshotAsOfUtc ?? null,
+          factor: {
+            label: result.factor.label || 'ETF Flows',
+            score: typeof result.factor.score === 'number' ? result.factor.score : null,
+            weightPct: typeof result.factor.weightPct === 'number' ? result.factor.weightPct : null,
+            status: result.factor.status ?? null,
+            reason: result.factor.reason ?? null,
+            sourceAsOfUtc: result.factor.sourceAsOfUtc ?? null,
+            details: Array.isArray(result.factor.details) ? result.factor.details : [],
           },
           methodology: result.methodology,
-          notes: result.notes || [],
-          lastUpdated: result.lastUpdated,
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load ETF flow outlook');
+        setData(null);
+        setError(err instanceof Error ? err.message : 'ETF flow context unavailable');
       } finally {
         setLoading(false);
       }
@@ -128,44 +121,61 @@ export default function EtfFlowOutlookPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading ETF Flow Outlook...</p>
+          <p className="text-gray-600">Loading ETF Flow Context...</p>
         </div>
       </div>
     );
   }
 
-  const funds = data?.individual ?? [];
-  const summary = data?.summary;
+  const factor = data?.factor;
+  const sourceDate = formatUtcDate(factor?.sourceAsOfUtc ?? null);
+  const snapshotDate = formatUtcDate(data?.snapshotDate ?? data?.snapshotAsOfUtc ?? null);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-8 lg:py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-3xl lg:text-4xl font-bold mb-4">Bitcoin ETF Flow Outlook</h1>
+          <h1 className="text-3xl lg:text-4xl font-bold mb-4">Bitcoin ETF Flow Context</h1>
           <p className="text-lg lg:text-xl text-blue-100">
-            Recent reported Bitcoin ETF flows with simple trend-continuation scenarios. These
-            scenarios are descriptive heuristics—not calibrated forecasts, probabilities, or trading
-            signals.
+            Aggregate ETF-flow diagnostics from the current GhostGauge production snapshot. This page
+            explains the ETF factor inputs and their source vintage; it does not forecast future ETF
+            flows.
           </p>
           <p className="text-base lg:text-lg text-blue-200 mt-2">
-            They are not AI or machine-learning model outputs, and they are not part of the G-Score
-            methodology.
+            Descriptive context only. These values are not probabilities, AI/ML forecasts, trading
+            signals, or an independent per-fund forecast. They are part of the existing production
+            ETF factor context.
           </p>
-          {data?.lastUpdated && (
-            <p className="text-sm text-blue-300 mt-2">
-              Last updated: {new Date(data.lastUpdated).toLocaleString()}
-            </p>
-          )}
+          {data ? (
+            <div className="text-sm text-blue-100 mt-4 space-y-1">
+              <p>
+                ETF source as of {sourceDate || 'not present in snapshot'}
+                {factor?.sourceAsOfUtc ? (
+                  <span className="block text-blue-200">
+                    {formatFriendlyTimestamp(factor.sourceAsOfUtc)}
+                  </span>
+                ) : null}
+              </p>
+              <p>
+                Dashboard snapshot {snapshotDate || 'not present in snapshot'}
+                {data.snapshotAsOfUtc ? (
+                  <span className="block text-blue-200">
+                    {formatFriendlyTimestamp(data.snapshotAsOfUtc)}
+                  </span>
+                ) : null}
+              </p>
+            </div>
+          ) : null}
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {loading ? (
-          <p className="text-gray-600">Loading reported ETF flows…</p>
-        ) : error ? (
+          <p className="text-gray-600">Loading ETF flow context…</p>
+        ) : error || !factor ? (
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <h2 className="text-sm font-medium text-red-800">Unable to load ETF flow outlook</h2>
-            <p className="text-sm text-red-600 mt-1">{error}</p>
+            <h2 className="text-sm font-medium text-red-800">ETF flow context unavailable</h2>
+            <p className="text-sm text-red-600 mt-1">{error || 'ETF flow context unavailable'}</p>
             <button
               type="button"
               onClick={() => window.location.reload()}
@@ -174,88 +184,65 @@ export default function EtfFlowOutlookPage() {
               Try again
             </button>
           </div>
-        ) : summary && funds.length > 0 ? (
+        ) : (
           <>
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Reported flows and heuristic scenarios</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Production ETF factor</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-                <OutlookCard
-                  title="Latest Aggregate Flow"
-                  value={formatMillions(summary.latestAggregateFlow)}
-                  description="Sum of the latest reported daily flow across tracked Bitcoin ETFs."
+                <ContextCard
+                  title="ETF factor score"
+                  value={typeof factor.score === 'number' ? String(factor.score) : '—'}
+                  description="Aggregate ETF-flow factor score from the current production snapshot."
                 />
-                <OutlookCard
-                  title="7-Day Flat Run-Rate"
-                  value={formatMillions(summary.flatRunRate7d)}
-                  description="Latest aggregate daily flow multiplied by 7. This is not a calendar-week total."
+                <ContextCard
+                  title="ETF factor weight"
+                  value={typeof factor.weightPct === 'number' ? `${factor.weightPct}%` : '—'}
+                  description="Published weight of the ETF factor in the current G-Score mix."
                 />
-                <OutlookCard
-                  title="7-Day Trend Scenario"
-                  value={formatMillions(summary.trendScenario7d)}
-                  description="Mechanical continuation of recent flow direction. A heuristic scenario, not a forecast."
+                <ContextCard
+                  title="Source status"
+                  value={factor.status || '—'}
+                  description={factor.reason || 'Status from the production ETF factor artifact.'}
                 />
               </div>
             </div>
 
-            {data?.notes && data.notes.length > 0 && (
+            {factor.details.length > 0 ? (
               <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-                <h3 className="text-xl font-semibold mb-4">Descriptive notes</h3>
-                <div className="space-y-2">
-                  {data.notes.map((note) => (
-                    <p key={note} className="text-sm text-gray-700">
-                      {note}
-                    </p>
+                <h3 className="text-xl font-semibold mb-4">Aggregate ETF-flow diagnostics</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Values below are copied from the production factor details. Units are the
+                  snapshot&apos;s existing display values, not independently recalculated here.
+                </p>
+                <dl className="divide-y divide-gray-100">
+                  {factor.details.map((detail, index) => (
+                    <div
+                      key={`${detail.label || 'detail'}-${index}`}
+                      className="py-3 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1"
+                    >
+                      <dt className="text-sm font-medium text-gray-700">{detail.label || '—'}</dt>
+                      <dd className="text-sm text-gray-900 sm:text-right">
+                        <div className="font-mono">{detail.value || '—'}</div>
+                        {detail.tooltip ? (
+                          <div className="text-xs text-gray-500 mt-1">{detail.tooltip}</div>
+                        ) : null}
+                      </dd>
+                    </div>
                   ))}
-                </div>
+                </dl>
               </div>
-            )}
-
-            <div className="bg-white rounded-lg shadow-lg p-6 mb-8 overflow-x-auto">
-              <h3 className="text-xl font-semibold mb-4">Fund detail from reported ETF flows</h3>
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="text-left text-gray-600 border-b">
-                    <th className="py-2 pr-4 font-medium">Fund</th>
-                    <th className="py-2 pr-4 font-medium">Latest reported flow</th>
-                    <th className="py-2 pr-4 font-medium">21-day flow</th>
-                    <th className="py-2 pr-4 font-medium">Cumulative flow</th>
-                    <th className="py-2 pr-4 font-medium">Recent direction</th>
-                    <th className="py-2 font-medium">Heuristic scenario flow</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {funds.map((fund) => (
-                    <tr key={fund.symbol} className="border-b last:border-0">
-                      <td className="py-3 pr-4">
-                        <div className="font-medium text-gray-900">{fund.symbol}</div>
-                        <div className="text-xs text-gray-500">{fund.name}</div>
-                      </td>
-                      <td className="py-3 pr-4 font-mono">{formatMillions(fund.latestFlow)}</td>
-                      <td className="py-3 pr-4 font-mono">{formatMillions(fund.sum21)}</td>
-                      <td className="py-3 pr-4 font-mono">{formatMillions(fund.cumulativeFlow)}</td>
-                      <td className={`py-3 pr-4 font-medium ${trendClass(fund.trend)}`}>
-                        {trendLabel(fund.trend)}
-                      </td>
-                      <td className="py-3 font-mono">{formatMillions(fund.scenarioFlow)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            ) : null}
           </>
-        ) : (
-          <p className="text-gray-600">No reported ETF flow records are available.</p>
         )}
 
         <div className="mt-8 p-4 bg-blue-100 rounded-lg text-blue-800 text-sm">
           <p>
             <strong>Method:</strong>{' '}
             {data?.methodology?.description ||
-              'Recent-flow trend continuation. This is a descriptive heuristic, not a statistically validated forecast.'}
+              'This page mirrors the aggregate ETF-flow diagnostics used by the current GhostGauge production factor.'}
           </p>
           <p className="mt-2">
-            Source: reported Bitcoin ETF flows in <span className="font-mono">etf_by_fund.csv</span>.
-            Not financial advice. Not part of the G-Score.
+            Not financial advice. Per-fund series are not shown on this page.
           </p>
         </div>
       </div>

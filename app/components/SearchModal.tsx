@@ -47,8 +47,8 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     },
     {
       href: '/etf-predictions',
-      label: 'ETF Flow Outlook',
-      description: 'Reported Bitcoin ETF flows and simple trend scenarios',
+      label: 'ETF Flow Context',
+      description: 'Current aggregate ETF-flow diagnostics and source vintage',
       icon: '💰',
       category: 'Analysis'
     },
