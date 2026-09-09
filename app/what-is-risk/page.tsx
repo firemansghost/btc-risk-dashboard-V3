@@ -66,17 +66,11 @@ export default function WhatIsRiskPage() {
     { term: 'Market Share', def: 'Percentage of total ETF flows captured by each fund. Shows dominance.' },
   ];
 
-  const glossaryForecast = [
-    { term: 'Trend Analysis', def: 'Directional movement pattern (up/down/stable) based on recent data.' },
-    { term: 'ARIMA', def: 'AutoRegressive Integrated Moving Average — time series forecasting model.' },
-    { term: 'LSTM', def: 'Long Short-Term Memory neural network for pattern recognition.' },
-    { term: 'Ensemble Method', def: 'Combining multiple ML models for better accuracy than any single model.' },
-  ];
-
-  const glossaryError = [
-    { term: 'Confidence Interval', def: 'A statistical range showing uncertainty around an estimate or forecast.' },
-    { term: 'MAPE', def: 'Mean Absolute Percentage Error; a percentage-based measure of forecast error.' },
-    { term: 'RMSE', def: 'Measures average forecast error, with larger errors penalized more heavily.' },
+  const glossaryOutlook = [
+    { term: 'Reported ETF Flow', def: 'Observed daily net money moving into or out of a Bitcoin ETF, as recorded in the published flow file. This is historical reporting, not a forecast.' },
+    { term: 'Trend Scenario', def: 'A mechanical continuation of recent reported flow direction. It is descriptive extrapolation, not a calibrated prediction or probability.' },
+    { term: 'Flat Run-Rate', def: 'Latest aggregate daily reported flow multiplied by 7. A scaling of the latest observation, not a calendar-week forecast.' },
+    { term: 'Heuristic', def: 'A simple rule of thumb. GhostGauge ETF Outlook uses recent-flow trend continuation; it is not a statistically validated model.' },
   ];
 
   const renderGlossaryGroup = (items: { term: string; def: string }[]) => (
@@ -396,12 +390,8 @@ export default function WhatIsRiskPage() {
                   {renderGlossaryGroup(glossaryDashboard)}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Forecast / Model Terms</h3>
-                  {renderGlossaryGroup(glossaryForecast)}
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Error / Uncertainty Terms</h3>
-                  {renderGlossaryGroup(glossaryError)}
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">ETF Flow Outlook Terms</h3>
+                  {renderGlossaryGroup(glossaryOutlook)}
                 </div>
               </div>
             </section>
