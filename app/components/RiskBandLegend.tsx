@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { matchBandForScore } from '@/lib/riskBand';
 
 type Band = { key: string; label: string; range: [number, number]; color: string; recommendation: string };
 type ApiConfig = { ok: boolean; config?: { bands: Band[] }; digest?: string };
@@ -48,7 +49,7 @@ export default function RiskBandLegend({ score }: { score: number }) {
     );
   }
 
-  const active = bands.find(b => score >= b.range[0] && score < b.range[1]) ?? bands[bands.length - 1];
+  const active = matchBandForScore(score, bands) ?? bands[bands.length - 1];
 
   return (
     <div className="rounded-xl border border-slate-200/60 bg-white p-3 sm:p-4">
