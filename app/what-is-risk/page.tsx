@@ -66,17 +66,11 @@ export default function WhatIsRiskPage() {
     { term: 'Market Share', def: 'Percentage of total ETF flows captured by each fund. Shows dominance.' },
   ];
 
-  const glossaryForecast = [
-    { term: 'Trend Analysis', def: 'Directional movement pattern (up/down/stable) based on recent data.' },
-    { term: 'ARIMA', def: 'AutoRegressive Integrated Moving Average — time series forecasting model.' },
-    { term: 'LSTM', def: 'Long Short-Term Memory neural network for pattern recognition.' },
-    { term: 'Ensemble Method', def: 'Combining multiple ML models for better accuracy than any single model.' },
-  ];
-
-  const glossaryError = [
-    { term: 'Confidence Interval', def: 'A statistical range showing uncertainty around an estimate or forecast.' },
-    { term: 'MAPE', def: 'Mean Absolute Percentage Error; a percentage-based measure of forecast error.' },
-    { term: 'RMSE', def: 'Measures average forecast error, with larger errors penalized more heavily.' },
+  const glossaryEtfContext = [
+    { term: 'ETF Flow Diagnostic', def: 'An observed, current production reading of aggregate Bitcoin ETF flows used by the GhostGauge ETF factor. It describes the snapshot, not a forecast of future flows.' },
+    { term: 'Source Vintage', def: 'The ETF factor source timestamp (when the ETF input was as-of). This can differ from the dashboard snapshot timestamp.' },
+    { term: '21-Day Rolling Sum', def: 'The production factor’s 21-day aggregate flow total as already computed for the ETF factor. Descriptive context, not a prediction.' },
+    { term: 'Percentile', def: 'Where the current 21-day flow reading sits in the production factor’s historical distribution. A descriptive rank, not a probability or trading signal.' },
   ];
 
   const renderGlossaryGroup = (items: { term: string; def: string }[]) => (
@@ -396,12 +390,8 @@ export default function WhatIsRiskPage() {
                   {renderGlossaryGroup(glossaryDashboard)}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Forecast / Model Terms</h3>
-                  {renderGlossaryGroup(glossaryForecast)}
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Error / Uncertainty Terms</h3>
-                  {renderGlossaryGroup(glossaryError)}
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">ETF Flow Context Terms</h3>
+                  {renderGlossaryGroup(glossaryEtfContext)}
                 </div>
               </div>
             </section>

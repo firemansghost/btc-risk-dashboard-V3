@@ -47,10 +47,10 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     },
     {
       href: '/etf-predictions',
-      label: 'ETF Predictions',
-      description: 'Bitcoin ETF flow predictions and forecasts',
+      label: 'ETF Flow Context',
+      description: 'Current aggregate ETF-flow diagnostics and source vintage',
       icon: '💰',
-      category: 'Predictions'
+      category: 'Analysis'
     },
     {
       href: '/alerts',

@@ -42,7 +42,7 @@ export default function Navigation() {
     { href: '/assets', label: 'Assets', shortLabel: 'Assets', icon: '🏛️' },
     { href: '/methodology', label: 'Methodology', shortLabel: 'Method', icon: '📋' },
     { href: '/strategy-analysis', label: 'Strategy Analysis', shortLabel: 'Strategy', icon: '📈' },
-    { href: '/etf-predictions', label: 'ETF Predictions', shortLabel: 'ETF Pred.', icon: '💰' },
+    { href: '/etf-predictions', label: 'ETF Flow Context', shortLabel: 'ETF Context', icon: '💰' },
     { href: '/alerts', label: 'Alerts', shortLabel: 'Alerts', icon: '🔔' },
     { href: '/what-is-risk', label: 'What Is Risk?', shortLabel: 'Risk', icon: '❓' },
   ];
