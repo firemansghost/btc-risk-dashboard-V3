@@ -2,171 +2,100 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { formatFriendlyTimestamp } from '@/lib/dateUtils';
 
-interface Alert {
-  id: string;
-  type: string;
-  severity: 'critical' | 'high' | 'medium' | 'low';
-  timestamp: string;
-  title: string;
-  message: string;
-  data?: any;
-  actions?: string[];
-  // Enhanced context fields
-  context?: string;
-  trend?: string;
-  consecutiveDays?: number;
-  daysInCurrentBand?: number;
-  daysInPreviousBand?: number;
-  zeroCrosses?: number;
-  recommendations?: string[];
-  // Legacy fields for backward compatibility
-  direction?: string;
-  from?: any;
-  to?: any;
-  deadband?: number;
-  composite_from?: number;
-  composite_to?: number;
-  details?: {
-    adjustment_points?: number;
-    consecutive_weeks_below?: number;
-    [key: string]: any;
-  };
-}
-
-// Unified severity configuration
-const SEVERITY_CONFIG = {
-  critical: { color: 'red', icon: '🚨', priority: 1 },
-  high: { color: 'orange', icon: '⚠️', priority: 2 },
-  medium: { color: 'yellow', icon: '📊', priority: 3 },
-  low: { color: 'blue', icon: 'ℹ️', priority: 4 }
+type EtlEvent = {
+  type?: string;
+  direction?: unknown;
+  from?: unknown;
+  to?: unknown;
+  deadband?: unknown;
+  composite_from?: unknown;
+  composite_to?: unknown;
+  [key: string]: unknown;
 };
 
-interface LatestAlerts {
-  occurred_at: string;
-  alerts: Alert[];
+type LoadState = 'loading' | 'ok' | 'unavailable';
+
+function formatFact(value: unknown): string {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value.toLocaleString();
+  }
+  if (typeof value === 'string' && value.trim() !== '') {
+    return value;
+  }
+  return 'n/a';
+}
+
+function describeEtlEvent(event: EtlEvent): string {
+  const type = typeof event?.type === 'string' ? event.type : 'unknown';
+  if (type === 'etf_zero_cross') {
+    return `ETF 21-day flow measure crossed zero: ${formatFact(event.from)} → ${formatFact(event.to)}`;
+  }
+  if (type === 'band_change') {
+    return `Risk band changed: ${formatFact(event.from)} → ${formatFact(event.to)} (${formatFact(event.composite_from)} → ${formatFact(event.composite_to)})`;
+  }
+  return `ETL event: ${type}`;
+}
+
+function statusLabel(state: LoadState, count: number): string {
+  if (state === 'unavailable') return 'ETL events unavailable';
+  if (count === 0) return 'No current ETL events';
+  return count === 1 ? '1 current ETL event' : `${count} current ETL events`;
 }
 
 export default function AlertBell() {
-  const [alerts, setAlerts] = useState<LatestAlerts | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [events, setEvents] = useState<EtlEvent[]>([]);
+  const [occurredAt, setOccurredAt] = useState<string | null>(null);
+  const [loadState, setLoadState] = useState<LoadState>('loading');
   const [isHovered, setIsHovered] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isPageVisible, setIsPageVisible] = useState(true);
-  const [acknowledgedAlerts, setAcknowledgedAlerts] = useState<Set<string>>(new Set());
   const [isPopupHovered, setIsPopupHovered] = useState(false);
-  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [hoverTimeout, setHoverTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    async function fetchAlerts(isInitial = false) {
-      // Only show loading spinner on initial load, not on refreshes
-      if (isInitial) {
-        setLoading(true);
-      } else {
-        setIsRefreshing(true);
-      }
-      
+    async function fetchCurrentOutput() {
       try {
-        // Use same API endpoint as Alert History page for consistency
-        const response = await fetch('/api/alerts?limit=10', {
+        const response = await fetch('/api/alerts', {
           cache: 'no-store',
-          headers: { 'Cache-Control': 'no-cache' }
+          headers: { 'Cache-Control': 'no-cache' },
         });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || data.success !== true || !Array.isArray(data.alerts)) {
+          setLoadState('unavailable');
+          setEvents([]);
+          setOccurredAt(null);
+          return;
         }
-        
-        const data = await response.json();
-        
-        if (data.success && data.alerts) {
-          // Convert API response to AlertBell format
-          const latestAlerts = {
-            occurred_at: new Date().toISOString(),
-            alerts: data.alerts
-          };
-          setAlerts(latestAlerts);
-        } else {
-          setAlerts({ occurred_at: new Date().toISOString(), alerts: [] });
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load alerts');
-        // Set empty alerts on error to prevent crashes
-        setAlerts({ occurred_at: new Date().toISOString(), alerts: [] });
-      } finally {
-        setLoading(false);
-        setIsRefreshing(false);
+
+        setLoadState('ok');
+        setEvents(data.alerts);
+        setOccurredAt(typeof data.occurred_at === 'string' ? data.occurred_at : null);
+      } catch {
+        setLoadState('unavailable');
+        setEvents([]);
+        setOccurredAt(null);
       }
     }
 
-    // Initial fetch
-    fetchAlerts(true);
+    fetchCurrentOutput();
 
-    // Set up smart refresh strategy:
-    // - Listen for dashboard refresh events
-    // - Poll every 5 minutes (much less frequent)
-    // - Only when page is visible
-    const interval = setInterval(() => {
-      if (isPageVisible) {
-        fetchAlerts(false);
-      }
-    }, 5 * 60 * 1000); // 5 minutes instead of 30 seconds
-
-    // Listen for dashboard refresh events
     const handleDashboardRefresh = () => {
-      fetchAlerts(false);
+      fetchCurrentOutput();
     };
-
-    // Listen for workflow completion events
     const handleWorkflowComplete = () => {
-      fetchAlerts(false);
+      fetchCurrentOutput();
     };
 
-    // Add event listeners
     window.addEventListener('dashboard-refreshed', handleDashboardRefresh);
     window.addEventListener('workflow-completed', handleWorkflowComplete);
 
-    // Cleanup
     return () => {
-      clearInterval(interval);
       window.removeEventListener('dashboard-refreshed', handleDashboardRefresh);
       window.removeEventListener('workflow-completed', handleWorkflowComplete);
     };
-  }, [isPageVisible]);
-
-  // Page visibility detection
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      setIsPageVisible(!document.hidden);
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
-  // Load acknowledged alerts from localStorage
-  useEffect(() => {
-    const savedAcknowledged = localStorage.getItem('acknowledgedAlerts');
-    if (savedAcknowledged) {
-      try {
-        const parsed = JSON.parse(savedAcknowledged);
-        setAcknowledgedAlerts(new Set(parsed));
-      } catch (error) {
-        console.error('Failed to parse acknowledged alerts:', error);
-      }
-    }
-  }, []);
-
-  // Save acknowledged alerts to localStorage
-  const acknowledgeAlert = (alertId: string) => {
-    const newAcknowledged = new Set(acknowledgedAlerts);
-    newAcknowledged.add(alertId);
-    setAcknowledgedAlerts(newAcknowledged);
-    localStorage.setItem('acknowledgedAlerts', JSON.stringify([...newAcknowledged]));
-  };
-
-  // Handle hover with delay to prevent flickering
   const handleMouseEnter = () => {
     if (hoverTimeout) {
       clearTimeout(hoverTimeout);
@@ -180,7 +109,7 @@ export default function AlertBell() {
       if (!isPopupHovered) {
         setIsHovered(false);
       }
-    }, 150); // Small delay to allow mouse to move to popup
+    }, 150);
     setHoverTimeout(timeout);
   };
 
@@ -197,7 +126,6 @@ export default function AlertBell() {
     setIsHovered(false);
   };
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (hoverTimeout) {
@@ -206,77 +134,12 @@ export default function AlertBell() {
     };
   }, [hoverTimeout]);
 
-  // Get severity color classes
-  const getSeverityColorClasses = (severity: string) => {
-    const config = SEVERITY_CONFIG[severity as keyof typeof SEVERITY_CONFIG];
-    if (!config) return 'bg-gray-100 text-gray-800 border-gray-200';
-    
-    const colorMap = {
-      critical: 'bg-red-100 text-red-800 border-red-200',
-      high: 'bg-orange-100 text-orange-800 border-orange-200',
-      medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      low: 'bg-blue-100 text-blue-800 border-blue-200'
-    };
-    
-    return colorMap[config.color as keyof typeof colorMap] || 'bg-gray-100 text-gray-800 border-gray-200';
-  };
+  const label = statusLabel(loadState, events.length);
+  const showPopup = loadState !== 'loading' && (isHovered || isPopupHovered);
 
-  const formatAlertContext = (alert: Alert): string => {
-    if (alert.context) {
-      return alert.context;
-    }
-    return '';
-  };
-
-  const formatAlertRecommendations = (alert: Alert): string[] => {
-    if (alert.recommendations && Array.isArray(alert.recommendations)) {
-      return alert.recommendations;
-    }
-    return [];
-  };
-
-  const formatAlertText = (alert: Alert): string => {
-    // Use new API format if available (title/message)
-    if (alert.title && alert.message) {
-      return alert.message;
-    }
-    
-    // Fallback to legacy format for backward compatibility
-    switch (alert.type) {
-      case 'etf_zero_cross':
-        const direction = alert.direction === 'up' ? 'positive' : 'negative';
-        return `ETF flows crossed zero (${direction})`;
-      case 'band_change':
-        return `Risk band changed: ${alert.from} → ${alert.to}`;
-      case 'cycle_adjustment':
-        const cycleDir = (alert.details?.adjustment_points || 0) > 0 ? 'positive' : 'negative';
-        const cycleMag = Math.abs(alert.details?.adjustment_points || 0);
-        return `Cycle adjustment: ${cycleDir} ${cycleMag.toFixed(1)} pts`;
-      case 'spike_adjustment':
-        const spikeDir = (alert.details?.adjustment_points || 0) > 0 ? 'positive' : 'negative';
-        const spikeMag = Math.abs(alert.details?.adjustment_points || 0);
-        return `Spike adjustment: ${spikeDir} ${spikeMag.toFixed(1)} pts`;
-      case 'sma50w_warning':
-        return `50W SMA warning: ${alert.details?.consecutive_weeks_below || 0} weeks below`;
-      case 'factor_change':
-        const change = alert.details?.change_points || 0;
-        const changeDir = change > 0 ? '+' : '';
-        return `${alert.details?.factor || 'Factor'} changed: ${changeDir}${change.toFixed(1)} pts`;
-      default:
-        return `Alert: ${alert.type}`;
-    }
-  };
-
-  // Filter out acknowledged alerts
-  const unacknowledgedAlerts = alerts?.alerts.filter(alert => 
-    alert.id && !acknowledgedAlerts.has(alert.id)
-  ) || [];
-  
-  const hasAlerts = unacknowledgedAlerts.length > 0;
-
-  if (loading) {
+  if (loadState === 'loading') {
     return (
-      <div className="relative">
+      <div className="relative min-w-0">
         <div className="w-6 h-6 text-gray-400 animate-pulse">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM4 19h6v-6H4v6z" />
@@ -287,121 +150,88 @@ export default function AlertBell() {
   }
 
   return (
-    <div className="relative">
+    <div className="relative min-w-0 max-w-full">
       <Link
         href="/alerts"
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-        title={hasAlerts ? `${unacknowledgedAlerts.length} unread alert(s)` : 'No unread alerts'}
+        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors min-w-0 max-w-full"
+        title={label}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="relative">
-          <svg 
-            className={`w-6 h-6 ${hasAlerts ? 'text-orange-500' : 'text-gray-400'} ${isRefreshing ? 'animate-pulse' : ''}`} 
-            fill="none" 
-            stroke="currentColor" 
+        <div className="relative shrink-0">
+          <svg
+            className={`w-6 h-6 ${
+              loadState === 'unavailable'
+                ? 'text-amber-600'
+                : events.length > 0
+                  ? 'text-slate-700'
+                  : 'text-gray-400'
+            }`}
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M15 17h5l-5 5v-5zM4 19h6v-6H4v6zM12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" 
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 17h5l-5 5v-5zM4 19h6v-6H4v6zM12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
             />
           </svg>
-          {hasAlerts && (
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full flex items-center justify-center">
-              <span className="text-xs text-white font-bold">{unacknowledgedAlerts.length}</span>
+          {loadState === 'ok' && events.length > 0 && (
+            <div className="absolute -top-1 -right-1 min-w-[0.75rem] h-3 px-0.5 bg-slate-700 rounded-full flex items-center justify-center">
+              <span className="text-[10px] leading-none text-white font-bold">{events.length}</span>
             </div>
           )}
-          {isRefreshing && (
-            <div className="absolute -top-1 -left-1 w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
-          )}
         </div>
-        <span className="text-sm font-medium">
-          {hasAlerts ? `${unacknowledgedAlerts.length} unread` : 'No unread alerts'}
+        <span className="text-sm font-medium break-words min-w-0">
+          {label}
         </span>
       </Link>
-      
-      {/* Tooltip with alert details */}
-      {hasAlerts && (isHovered || isPopupHovered) && (
-        <div 
-          className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-3"
+
+      {showPopup && (
+        <div
+          className="absolute right-0 top-full mt-2 w-[min(20rem,calc(100vw-1.5rem))] max-w-[calc(100vw-1.5rem)] bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-3"
           onMouseEnter={handlePopupMouseEnter}
           onMouseLeave={handlePopupMouseLeave}
         >
-          <div className="text-xs text-gray-500 mb-2">Unread alerts:</div>
-          {unacknowledgedAlerts.slice(0, 5).map((alert, idx) => (
-            <div key={alert.id || idx} className="flex items-start justify-between text-sm text-gray-700 mb-2 p-2 bg-gray-50 rounded">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm">{SEVERITY_CONFIG[alert.severity as keyof typeof SEVERITY_CONFIG]?.icon || '📢'}</span>
-                  <div className="font-medium text-gray-900">{alert.title || `Alert: ${alert.type}`}</div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSeverityColorClasses(alert.severity)}`}>
-                    {alert.severity.toUpperCase()}
-                  </span>
-                </div>
-                <div className="text-xs text-gray-600 mt-1">{formatAlertText(alert)}</div>
-                {formatAlertContext(alert) && (
-                  <div className="text-xs text-blue-600 mt-1 italic">
-                    📊 {formatAlertContext(alert)}
-                  </div>
-                )}
-                {formatAlertRecommendations(alert).length > 0 && (
-                  <div className="text-xs text-green-600 mt-1">
-                    💡 {formatAlertRecommendations(alert)[0]}
-                    {formatAlertRecommendations(alert).length > 1 && (
-                      <span className="text-gray-500"> (+{formatAlertRecommendations(alert).length - 1} more)</span>
-                    )}
-                  </div>
-                )}
+          <div className="text-xs text-gray-500 mb-2 break-words">
+            {occurredAt
+              ? `ETL output as of ${formatFriendlyTimestamp(occurredAt)}`
+              : loadState === 'unavailable'
+                ? 'Current ETL event output unavailable.'
+                : 'ETL output timestamp not present on the current artifact.'}
+          </div>
+          <p className="text-xs text-gray-500 mb-2">
+            Current-run output only — not a complete alert history.
+          </p>
+          {loadState === 'unavailable' && (
+            <p className="text-sm text-gray-700">ETL events unavailable</p>
+          )}
+          {loadState === 'ok' && events.length === 0 && (
+            <p className="text-sm text-gray-700">No current ETL events</p>
+          )}
+          {loadState === 'ok' &&
+            events.slice(0, 5).map((event, idx) => (
+              <div key={`${event.type || 'event'}-${idx}`} className="text-sm text-gray-700 mb-2 p-2 bg-gray-50 rounded break-words">
+                {describeEtlEvent(event)}
               </div>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (alert.id) {
-                    acknowledgeAlert(alert.id);
-                  }
-                }}
-                className="ml-2 text-xs text-blue-600 hover:text-blue-800 underline"
-                title="Mark as read"
-              >
-                ✓
-              </button>
-            </div>
-          ))}
-          {unacknowledgedAlerts.length > 5 && (
+            ))}
+          {loadState === 'ok' && events.length > 5 && (
             <div className="text-xs text-gray-500 mb-2">
-              ... and {unacknowledgedAlerts.length - 5} more
+              … and {events.length - 5} more
             </div>
           )}
-          <div className="mt-2 pt-2 border-t border-gray-100 flex justify-between items-center">
-            <Link 
-              href="/alerts" 
+          <div className="mt-2 pt-2 border-t border-gray-100">
+            <Link
+              href="/alerts"
               className="text-xs text-blue-600 hover:text-blue-800 underline"
             >
-              View all alerts →
+              View current ETL events →
             </Link>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                // Acknowledge all visible alerts
-                unacknowledgedAlerts.forEach(alert => {
-                  if (alert.id) {
-                    acknowledgeAlert(alert.id);
-                  }
-                });
-              }}
-              className="text-xs text-gray-600 hover:text-gray-800 underline"
-            >
-              Mark all as read
-            </button>
           </div>
         </div>
       )}
     </div>
   );
 }
-

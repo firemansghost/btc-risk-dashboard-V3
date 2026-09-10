@@ -1,74 +1,117 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+const SOURCE = 'public/alerts/latest.json';
+const DEFAULT_LIMIT = 50;
+const MIN_LIMIT = 1;
+const MAX_LIMIT = 50;
+
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+  Pragma: 'no-cache',
+  Expires: '0',
+};
+
+const BASE_CONTRACT = {
+  mode: 'current_etl_output' as const,
+  source: SOURCE,
+  history_complete: false as const,
+  legacy_sources_excluded: true as const,
+};
+
+function clampLimit(raw: string | null): number {
+  if (raw == null || raw.trim() === '') return DEFAULT_LIMIT;
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed)) return DEFAULT_LIMIT;
+  return Math.min(MAX_LIMIT, Math.max(MIN_LIMIT, parsed));
+}
+
+function unavailableResponse(status = 503) {
+  return NextResponse.json(
+    {
+      success: false,
+      ...BASE_CONTRACT,
+      occurred_at: null,
+      alerts: [],
+      total: 0,
+      filtered: 0,
+      event_types: [] as string[],
+      note: 'Current ETL event output unavailable.',
+    },
+    { status, headers: NO_CACHE_HEADERS }
+  );
+}
+
 export async function GET(request: Request) {
+  let payload: unknown;
+
   try {
-    const alertTypes = [
-      'etf_zero_cross_alerts',
-      'risk_band_change_alerts', 
-      'factor_staleness_alerts',
-      'cycle_adjustment_alerts',
-      'spike_adjustment_alerts',
-      'sma50w_warning_alerts',
-      'factor_change_alerts'
-    ];
-
-    const allAlerts: any[] = [];
-
-    for (const alertType of alertTypes) {
-      const filePath = path.join(process.cwd(), 'public', 'data', `${alertType}.json`);
-      
-      if (fs.existsSync(filePath)) {
-        try {
-          const content = fs.readFileSync(filePath, 'utf8');
-          const alerts = JSON.parse(content);
-          
-          if (Array.isArray(alerts)) {
-            allAlerts.push(...alerts);
-          }
-        } catch (error) {
-          console.error(`Error reading ${alertType}:`, error);
-        }
-      }
-    }
-
-    // Sort by timestamp (newest first)
-    allAlerts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-
-    // Get query parameters for filtering
-    const url = new URL(request.url);
-    const severity = url.searchParams.get('severity');
-    const type = url.searchParams.get('type');
-    const limit = parseInt(url.searchParams.get('limit') || '50');
-
-    let filteredAlerts = allAlerts;
-
-    if (severity) {
-      filteredAlerts = filteredAlerts.filter(alert => alert.severity === severity);
-    }
-
-    if (type) {
-      filteredAlerts = filteredAlerts.filter(alert => alert.type === type);
-    }
-
-    // Limit results
-    filteredAlerts = filteredAlerts.slice(0, limit);
-
-    return NextResponse.json({
-      success: true,
-      alerts: filteredAlerts,
-      total: allAlerts.length,
-      filtered: filteredAlerts.length,
-      types: [...new Set(allAlerts.map(alert => alert.type))],
-      severities: [...new Set(allAlerts.map(alert => alert.severity))]
-    });
-
-  } catch (error) {
-    console.error('Error fetching alerts:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch alerts' },
-      { status: 500 }
-    );
+    const filePath = path.join(process.cwd(), SOURCE);
+    const content = await fs.readFile(filePath, 'utf8');
+    payload = JSON.parse(content);
+  } catch {
+    return unavailableResponse(503);
   }
+
+  if (
+    payload == null ||
+    typeof payload !== 'object' ||
+    Array.isArray(payload) ||
+    !Array.isArray((payload as { alerts?: unknown }).alerts)
+  ) {
+    return unavailableResponse(503);
+  }
+
+  const artifact = payload as { occurred_at?: unknown; alerts: unknown[] };
+  const currentEvents = artifact.alerts;
+  const occurredAt =
+    typeof artifact.occurred_at === 'string' && artifact.occurred_at.trim() !== ''
+      ? artifact.occurred_at
+      : null;
+
+  const url = new URL(request.url);
+  const typeFilter = url.searchParams.get('type');
+  const limit = clampLimit(url.searchParams.get('limit'));
+
+  const typedEvents =
+    typeFilter && typeFilter.trim() !== ''
+      ? currentEvents.filter(
+          (event) =>
+            event != null &&
+            typeof event === 'object' &&
+            (event as { type?: unknown }).type === typeFilter
+        )
+      : currentEvents;
+
+  const alerts = typedEvents.slice(0, limit);
+  const eventTypes = [
+    ...new Set(
+      currentEvents
+        .map((event) =>
+          event != null && typeof event === 'object'
+            ? (event as { type?: unknown }).type
+            : undefined
+        )
+        .filter((type): type is string => typeof type === 'string' && type.length > 0)
+    ),
+  ];
+
+  return NextResponse.json(
+    {
+      success: true,
+      ...BASE_CONTRACT,
+      occurred_at: occurredAt,
+      alerts,
+      total: currentEvents.length,
+      filtered: alerts.length,
+      event_types: eventTypes,
+      note: 'Current ETL output only; not a complete historical alert ledger.',
+    },
+    { headers: NO_CACHE_HEADERS }
+  );
 }
