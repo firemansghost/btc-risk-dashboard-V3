@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { formatFriendlyTimestamp } from '@/lib/dateUtils';
 
 interface FactorAnalysisData {
   volatility: {
@@ -16,6 +17,7 @@ interface FactorAnalysisData {
       stabilityLevel: string;
       riskScore: number;
       trend: number;
+      dataPoints?: number;
     };
   };
   correlation: {
@@ -33,6 +35,43 @@ interface FactorAnalysisData {
       contributionFrequency: string;
     };
   };
+  provenance: {
+    volatility: { timestamp: string | null; dataPoints: number | null };
+    correlation: { timestamp: string | null; dataPoints: number | null };
+    attribution: {
+      timestamp: string | null;
+      dataPoints: number | null;
+      attributionDays: number | null;
+    };
+  };
+}
+
+function formatUtcMonthYear(timestamp: string | null): string | null {
+  if (!timestamp) return null;
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+}
+
+function formatObservationCount(dataPoints: number | null | undefined): string {
+  return typeof dataPoints === 'number' && Number.isFinite(dataPoints)
+    ? `${dataPoints} observations`
+    : 'Sample size unavailable';
+}
+
+function formatSnapshotLine(timestamp: string | null | undefined, dataPoints: number | null | undefined): string {
+  const vintage = timestamp ? formatFriendlyTimestamp(timestamp) : 'Vintage unavailable';
+  return `${vintage} · ${formatObservationCount(dataPoints)}`;
+}
+
+function firstFactorDataPoints(factors: Record<string, { dataPoints?: number }> | undefined): number | null {
+  if (!factors) return null;
+  for (const metric of Object.values(factors)) {
+    if (typeof metric?.dataPoints === 'number' && Number.isFinite(metric.dataPoints)) {
+      return metric.dataPoints;
+    }
+  }
+  return null;
 }
 
 interface EnhancedFactorDetailsProps {
@@ -88,7 +127,26 @@ export default function EnhancedFactorDetails({
         setAnalysisData({
           volatility: volatility.factors,
           correlation: correlation.correlationMatrix,
-          attribution: attribution.factors || {} // Handle missing attribution data
+          attribution: attribution.factors || {}, // Handle missing attribution data
+          provenance: {
+            volatility: {
+              timestamp: volatility.timestamp ?? null,
+              dataPoints:
+                typeof volatility.dataPoints === 'number'
+                  ? volatility.dataPoints
+                  : firstFactorDataPoints(volatility.factors),
+            },
+            correlation: {
+              timestamp: correlation.timestamp ?? null,
+              dataPoints: typeof correlation.dataPoints === 'number' ? correlation.dataPoints : null,
+            },
+            attribution: {
+              timestamp: attribution.timestamp ?? null,
+              dataPoints: typeof attribution.dataPoints === 'number' ? attribution.dataPoints : null,
+              attributionDays:
+                typeof attribution.attributionDays === 'number' ? attribution.attributionDays : null,
+            },
+          },
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load analysis data');
@@ -194,7 +252,7 @@ export default function EnhancedFactorDetails({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-bold text-gray-900">Enhanced Factor Analysis</h2>
-              <p className="text-gray-600">{factorLabel} - Current Score: {currentScore}</p>
+              <p className="text-gray-600">{factorLabel} — Current Score: {currentScore}</p>
             </div>
             <button
               onClick={onClose}
@@ -207,6 +265,48 @@ export default function EnhancedFactorDetails({
 
         {/* Content */}
         <div className="p-6 space-y-8">
+          {analysisData?.provenance && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+              <p className="text-sm font-semibold text-amber-900">Legacy historical diagnostic snapshot</p>
+              <p className="mt-1 text-sm text-amber-800">
+                The current factor score above is live production context. The volatility, correlation,
+                trend, and attribution statistics below come from legacy diagnostic artifacts generated
+                in{' '}
+                {formatUtcMonthYear(analysisData.provenance.volatility.timestamp) ||
+                  formatUtcMonthYear(analysisData.provenance.correlation.timestamp) ||
+                  formatUtcMonthYear(analysisData.provenance.attribution.timestamp) ||
+                  'an earlier diagnostic run'}{' '}
+                and should not be read as current factor behavior or validation.
+              </p>
+              <div className="mt-3 space-y-1 text-xs text-amber-900">
+                <p>
+                  <span className="font-medium">Volatility:</span>{' '}
+                  {formatSnapshotLine(
+                    analysisData.provenance.volatility.timestamp,
+                    analysisData.provenance.volatility.dataPoints
+                  )}
+                </p>
+                <p>
+                  <span className="font-medium">Correlation:</span>{' '}
+                  {formatSnapshotLine(
+                    analysisData.provenance.correlation.timestamp,
+                    analysisData.provenance.correlation.dataPoints
+                  )}
+                </p>
+                <p>
+                  <span className="font-medium">Attribution:</span>{' '}
+                  {analysisData.provenance.attribution.timestamp
+                    ? formatFriendlyTimestamp(analysisData.provenance.attribution.timestamp)
+                    : 'Vintage unavailable'}
+                  {' · '}
+                  {formatObservationCount(analysisData.provenance.attribution.dataPoints)}
+                  {typeof analysisData.provenance.attribution.attributionDays === 'number'
+                    ? ` / ${analysisData.provenance.attribution.attributionDays} attribution intervals`
+                    : ''}
+                </p>
+              </div>
+            </div>
+          )}
           
           {/* Factor Weight */}
           {factorWeight !== undefined && (
@@ -241,7 +341,7 @@ export default function EnhancedFactorDetails({
           {factorData ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">📊 Volatility Analysis</h3>
+                <h3 className="text-lg font-semibold text-gray-900">📊 Historical Volatility Snapshot</h3>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className={`p-4 rounded-lg border ${getVolatilityColor(factorData.volatilityLevel)}`}>
@@ -272,10 +372,10 @@ export default function EnhancedFactorDetails({
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">📈 Trend Analysis</h3>
+                <h3 className="text-lg font-semibold text-gray-900">📈 Historical Trend Snapshot</h3>
                 
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-sm font-medium text-gray-700 mb-2">30-Day Trend</div>
+                  <div className="text-sm font-medium text-gray-700 mb-2">Historical Snapshot Trend</div>
                   <div className={`text-lg font-bold ${trendInfo?.color}`}>
                     {trendInfo?.direction}
                   </div>
@@ -295,8 +395,12 @@ export default function EnhancedFactorDetails({
                   
                   <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
                     <div className="text-sm font-medium text-purple-800">Data Points</div>
-                    <div className="text-lg font-bold text-purple-900">30 days</div>
-                    <div className="text-xs text-purple-700">Historical baseline</div>
+                    <div className="text-lg font-bold text-purple-900">
+                      {typeof factorData.dataPoints === 'number'
+                        ? `${factorData.dataPoints} observations`
+                        : formatObservationCount(analysisData?.provenance.volatility.dataPoints)}
+                    </div>
+                    <div className="text-xs text-purple-700">Legacy diagnostic sample</div>
                   </div>
                 </div>
               </div>
@@ -314,7 +418,7 @@ export default function EnhancedFactorDetails({
           {/* Correlation Analysis */}
           {topCorrelations.length > 0 && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔗 Factor Correlations</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">🔗 Historical Factor Correlations</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {topCorrelations.map((corr, index) => {
                   const strength = getCorrelationStrength(corr.correlation);
@@ -337,7 +441,10 @@ export default function EnhancedFactorDetails({
           {/* Performance Attribution */}
           {attributionData && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🎯 Performance Attribution</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">🎯 Legacy Performance Attribution</h3>
+              <p className="text-xs text-amber-800 mb-4">
+                Legacy attribution artifact; not a decomposition of the current production G-Score.
+              </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-green-50 rounded-lg p-4 border border-green-200">
                   <div className="text-sm font-medium text-green-800 mb-2">Total Contribution</div>
@@ -383,7 +490,7 @@ export default function EnhancedFactorDetails({
               {factorData && (
                 <>
                   <p>• <strong>Volatility:</strong> {factorData.volatilityLevel.toLowerCase()} with {factorData.stabilityLevel.toLowerCase()} behavior</p>
-                  <p>• <strong>Trend:</strong> {trendInfo?.direction} over the past 30 days</p>
+                  <p>• <strong>Trend:</strong> {trendInfo?.direction} in this historical snapshot</p>
                   <p>• <strong>Risk Level:</strong> {factorData.riskScore}/100 risk score based on historical volatility</p>
                 </>
               )}

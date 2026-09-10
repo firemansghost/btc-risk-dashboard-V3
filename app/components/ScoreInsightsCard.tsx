@@ -24,6 +24,34 @@ interface ScoreInsightsCardProps {
   className?: string;
 }
 
+function formatUtcMonthYear(timestamp: string | null): string | null {
+  if (!timestamp) return null;
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+}
+
+function formatObservationCount(dataPoints: number | null | undefined): string {
+  return typeof dataPoints === 'number' && Number.isFinite(dataPoints)
+    ? `${dataPoints} observations`
+    : 'Sample size unavailable';
+}
+
+function formatSnapshotLine(timestamp: string | null | undefined, dataPoints: number | null | undefined): string {
+  const vintage = timestamp ? formatFriendlyTimestamp(timestamp) : 'Vintage unavailable';
+  return `${vintage} · ${formatObservationCount(dataPoints)}`;
+}
+
+function firstFactorDataPoints(factors: Record<string, { dataPoints?: number }> | undefined): number | null {
+  if (!factors) return null;
+  for (const metric of Object.values(factors)) {
+    if (typeof metric?.dataPoints === 'number' && Number.isFinite(metric.dataPoints)) {
+      return metric.dataPoints;
+    }
+  }
+  return null;
+}
+
 interface FactorExplanation {
   key: string;
   label: string;
@@ -103,7 +131,20 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         
         setFactorAnalysisData({
           volatility: volatility.factors,
-          correlation: correlation.correlationMatrix
+          correlation: correlation.correlationMatrix,
+          provenance: {
+            volatility: {
+              timestamp: volatility.timestamp ?? null,
+              dataPoints:
+                typeof volatility.dataPoints === 'number'
+                  ? volatility.dataPoints
+                  : firstFactorDataPoints(volatility.factors),
+            },
+            correlation: {
+              timestamp: correlation.timestamp ?? null,
+              dataPoints: typeof correlation.dataPoints === 'number' ? correlation.dataPoints : null,
+            },
+          },
         });
       }
     } catch (error) {
@@ -1399,7 +1440,37 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
       <div className="mt-1 pt-4 border-t border-gray-200 mb-4">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Advanced diagnostics</p>
 
-      {/* Factor Volatility Analysis */}
+      {factorAnalysisData?.provenance && (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm font-semibold text-amber-900">Legacy historical diagnostics</p>
+          <p className="mt-1 text-xs text-amber-800">
+            These volatility and correlation statistics come from diagnostic artifacts generated in{' '}
+            {formatUtcMonthYear(factorAnalysisData.provenance.volatility?.timestamp) ||
+              formatUtcMonthYear(factorAnalysisData.provenance.correlation?.timestamp) ||
+              'an earlier diagnostic run'}
+            . They are retained for historical context and do not represent current G-Score inputs,
+            current factor behavior, or model validation.
+          </p>
+          <div className="mt-3 space-y-1 text-xs text-amber-900">
+            <p>
+              <span className="font-medium">Volatility snapshot:</span>{' '}
+              {formatSnapshotLine(
+                factorAnalysisData.provenance.volatility?.timestamp,
+                factorAnalysisData.provenance.volatility?.dataPoints
+              )}
+            </p>
+            <p>
+              <span className="font-medium">Correlation snapshot:</span>{' '}
+              {formatSnapshotLine(
+                factorAnalysisData.provenance.correlation?.timestamp,
+                factorAnalysisData.provenance.correlation?.dataPoints
+              )}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Historical Factor Volatility */}
       {getFactorVolatility() && (
         <div className="mb-4">
           <div 
@@ -1408,7 +1479,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
           >
             <div className="flex items-center gap-2">
               <span>📈</span>
-              <span>Factor Volatility ({getFactorVolatility()!.length})</span>
+              <span>Historical Factor Volatility ({getFactorVolatility()!.length})</span>
             </div>
             <span className="text-lg transition-transform duration-200">
               {expandedSections.factorVolatility ? '🔽' : '▶️'}
@@ -1416,9 +1487,6 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
           </div>
           {expandedSections.factorVolatility && (
           <div className="space-y-3">
-          <div className="text-xs text-gray-500 mb-3">
-            As of {new Date().toISOString().split('T')[0]} {new Date().toISOString().split('T')[1].split('.')[0]} UTC · 30-day stdev, 90-day correlations
-          </div>
             {getFactorVolatility()!.slice(0, expanded ? undefined : 3).map((factor, idx) => (
               <div key={idx} className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-2">
@@ -1527,7 +1595,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
           >
             <div className="flex items-center gap-2">
               <span>🔗</span>
-              <span>Factor Correlations ({getFactorCorrelations()!.length})</span>
+              <span>Historical Factor Correlations ({getFactorCorrelations()!.length})</span>
             </div>
             <span className="text-lg transition-transform duration-200">
               {expandedSections.factorCorrelations ? '🔽' : '▶️'}
