@@ -6,7 +6,8 @@ import {
   getFreshnessDisplay,
   formatSystemHealthCounts,
   formatSystemHealthSummary,
-  formatDataConfidenceFreshCopy,
+  formatInputStatusFreshCopy,
+  formatFactorStatusContext,
 } from '../freshnessDisplay';
 
 describe('formatFreshnessAge', () => {
@@ -112,11 +113,47 @@ describe('formatSystemHealthCounts', () => {
   });
 });
 
-describe('formatDataConfidenceFreshCopy', () => {
-  it('avoids overstating same-day precision', () => {
-    const copy = formatDataConfidenceFreshCopy(true);
+describe('formatInputStatusFreshCopy', () => {
+  it('avoids overstating same-day precision and data quality', () => {
+    const copy = formatInputStatusFreshCopy(true);
     expect(copy.insight).toContain('configured source cadence');
-    expect(copy.recommendation).toContain('no required factors are stale');
+    expect(copy.recommendation).toBe('No required factors are stale or excluded.');
+    expect(copy.recommendation).not.toContain('Data quality is high');
     expect(copy.footnote).toContain('slower public-data cadences');
+  });
+});
+
+describe('formatFactorStatusContext', () => {
+  const now = Date.parse('2026-06-09T13:46:00.000Z');
+
+  it('does not treat unknown recency as recently updated', () => {
+    const display = getFreshnessDisplay({ key: 'trend_valuation' }, now);
+    expect(display.recencyKind).toBe('unknown');
+    expect(formatFactorStatusContext(display)).not.toBe('Updated recently');
+  });
+
+  it('keeps fresh recent copy distinct from within-cadence copy', () => {
+    const recent = getFreshnessDisplay(
+      {
+        key: 'trend_valuation',
+        status: 'fresh',
+        last_utc: '2026-06-09T13:41:00.000Z',
+      },
+      now
+    );
+    expect(formatFactorStatusContext(recent)).toBe('Updated recently');
+
+    const withinCadence = getFreshnessDisplay(
+      {
+        key: 'net_liquidity',
+        status: 'fresh',
+        last_utc: '2026-06-02T13:46:00.000Z',
+      },
+      now
+    );
+    expect(withinCadence.recencyKind).toBe('withinCadence');
+    expect(formatFactorStatusContext(withinCadence)).toBe(
+      'Fresh under configured source cadence'
+    );
   });
 });
