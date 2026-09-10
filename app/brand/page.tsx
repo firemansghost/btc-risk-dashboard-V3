@@ -39,7 +39,7 @@ export default function BrandPage() {
         
         <ul>
           <li><strong>One-liner</strong>: GhostGauge turns market chaos into a single, transparent G-Score so you can calibrate risk at a glance.</li>
-          <li><strong>30-second pitch</strong>: GhostGauge blends liquidity, momentum, term structure, macro, and social/attention into a 0–100 G-Score (higher = higher risk). Every input is sourced, time-stamped, normalized, and blended with outlier control and EWMA smoothing. No black boxes—click through to see the drivers and download the history.</li>
+          <li><strong>30-second pitch</strong>: GhostGauge blends seven enabled factor scores across liquidity, momentum, term structure, macro, and social/attention into a 0–100 G-Score (higher = higher risk). Each factor follows its own production logic, with factor-level status and source/timing context exposed in the dashboard. Click through to inspect the drivers and available history.</li>
         </ul>
         
         <h2>Positioning & proof</h2>
@@ -49,11 +49,12 @@ export default function BrandPage() {
           <li><strong>Promise</strong>: Signals, not hype. Methods before marketing.</li>
           <li><strong>Proof points</strong>:
             <ul>
-              <li>Five-pillar model with published inputs & weights (35/25/20/10/10).</li>
-              <li>Winsorized z-scores → logistic 0–100; stale data auto-excluded with weight re-normalization.</li>
-              <li>Factor History CSVs updated daily; Provenance with source notes, schema tripwires, and fallbacks.</li>
-              <li>ETF Flows via robust parser (21-day sum) with staleness & outlier guards.</li>
-              <li>Optional small adjustments: cycle residual & spike detector—capped and disclosed.</li>
+              <li>Five-pillar model with published inputs & weights (30/30/20/10/10).</li>
+              <li>Seven enabled scoring factors; On-chain Activity is disabled at 0% in v1.1.1.</li>
+              <li>Factor-specific production logic produces 0–100 factor scores; included factor scores are combined using published versioned weights.</li>
+              <li>Factor History outputs are maintained by successful production ETL runs with documented provenance.</li>
+              <li>ETF Flows uses a 21-day aggregate-flow measure with source-freshness and data-quality guards.</li>
+              <li>Cycle and Spike adjustment mechanisms are disabled in production v1.1.1; reactivation would require a versioned methodology decision.</li>
               <li>Clear risk bands and plain-English playbook.</li>
             </ul>
           </li>
@@ -181,10 +182,12 @@ export default function BrandPage() {
         <h2>How the metric works (brief public summary)</h2>
         
         <ul>
-          <li><strong>Inputs → Pillars</strong>: Liquidity/Flows (35%), Momentum/Valuation (25%), Term Structure/Leverage (20%), Macro (10%), Social/Attention (10%).</li>
-          <li><strong>Normalization</strong>: Winsorize tails → z-score vs history → apply direction (invert where "more = less risk") → logistic 0–100.</li>
-          <li><strong>Smoothing</strong>: EWMA with configurable half-life; stale data excluded with weight re-normalization.</li>
-          <li><strong>Transparency</strong>: Every input sourced, timestamped, and downloadable as CSV.</li>
+          <li><strong>Inputs → Pillars</strong>: Liquidity/Flows (30%), Momentum/Valuation (30%), Term Structure/Leverage (20%), Macro (10%), Social/Attention (10%). Seven enabled scoring factors; On-chain Activity is disabled at 0%.</li>
+          <li><strong>Factor scoring</strong>: Each enabled factor uses factor-specific production logic to produce a 0–100 factor score.</li>
+          <li><strong>Aggregation</strong>: Only factors classified fresh in production contribute to the composite; versioned weights are normalized over the included set for that snapshot.</li>
+          <li><strong>Freshness</strong>: Input freshness is source-aware and is not a validation or accuracy claim.</li>
+          <li><strong>Adjustments</strong>: Cycle and Spike adjustment mechanisms are disabled in production v1.1.1; reactivation would require a versioned methodology decision.</li>
+          <li><strong>Transparency</strong>: Production snapshots expose factor-level status and source/timing context, with historical and downloadable artifacts available where provided.</li>
         </ul>
       </div>
     </div>

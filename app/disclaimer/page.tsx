@@ -46,6 +46,28 @@ export default function DisclaimerPage() {
           </div>
 
           <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">Research & Historical Evidence</h2>
+            <p className="mb-3">
+              GhostGauge&apos;s historical research should not be read as proof of predictive
+              accuracy. Historical H7 work is descriptive risk-discrimination/ranking
+              research, not forecasting or model validation. As of September 2026, H8 is
+              an ongoing prospective evaluation and no H8 performance conclusion is
+              authorized.
+            </p>
+            <p className="mb-3">
+              Historical G-Score artifacts have differing provenance, and diagnostic
+              statistics may use vintages that differ from the current dashboard
+              snapshot.
+            </p>
+            <p>
+              Source availability and freshness can affect whether a factor is included
+              or excluded from a production score. Freshness means the input satisfies
+              the configured source-cadence contract; it does not mean the input is
+              validated or correct.
+            </p>
+          </div>
+
+          <div>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">Methodology</h2>
             <p>
               For detailed information about our risk scoring methodology, data sources, and calculation 

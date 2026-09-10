@@ -12,5 +12,5 @@ export default function BitcoinPage() {
 
 export const metadata = {
   title: 'GhostGauge — Bitcoin G-Score',
-  description: 'Real-time Bitcoin risk assessment using a 0–100 G-Score. Five-pillar framework: Liquidity, Momentum, Leverage, Macro, Social.',
+  description: 'Daily Bitcoin market-risk context using a transparent 0–100 G-Score. Five-pillar framework: Liquidity, Momentum, Leverage, Macro, Social.',
 };

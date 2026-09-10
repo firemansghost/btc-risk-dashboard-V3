@@ -7,7 +7,7 @@ export default function AssetsPage() {
       name: 'Bitcoin',
       symbol: 'BTC',
       status: 'Live',
-      description: 'Real-time G-Score with full factor analysis',
+      description: 'Daily G-Score snapshot with factor-level context',
       href: '/',
       color: 'bg-orange-100 text-orange-800 border-orange-200',
       icon: '₿'
@@ -74,7 +74,7 @@ export default function AssetsPage() {
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Risk assessment frameworks adapted for different asset classes. 
-            Same proven methodology, tuned for each market's unique characteristics.
+            GhostGauge framework adapted for each asset's market structure.
           </p>
         </div>
 
@@ -124,7 +124,7 @@ export default function AssetsPage() {
                 <li>• Five-pillar framework (Liquidity, Momentum, Leverage, Macro, Social)</li>
                 <li>• Factor cards with weights and contributions</li>
                 <li>• Historical data and CSV exports</li>
-                <li>• Real-time freshness tracking</li>
+                <li>• Source freshness and input-status tracking</li>
               </ul>
             </div>
             <div>
@@ -133,7 +133,7 @@ export default function AssetsPage() {
                 <li>• Factor definitions tuned to each market</li>
                 <li>• Data sources optimized for asset class</li>
                 <li>• Weight adjustments based on market structure</li>
-                <li>• Cycle and spike adjustments as needed</li>
+                <li>• Cycle/spike-style adjustments would require a versioned methodology decision</li>
                 <li>• Custom risk band interpretations</li>
               </ul>
             </div>
@@ -146,7 +146,7 @@ export default function AssetsPage() {
 
 export const metadata = {
   title: 'GhostGauge Assets — Multi-Asset Risk Framework',
-  description: 'Risk assessment frameworks adapted for different asset classes. Same proven methodology, tuned for each market\'s unique characteristics.',
+  description: 'Risk assessment frameworks adapted for different asset classes. GhostGauge framework pattern, adapted to each asset\'s market structure.',
   alternates: {
     canonical: '/assets',
   },
