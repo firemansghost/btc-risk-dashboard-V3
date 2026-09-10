@@ -269,30 +269,33 @@ export function formatSystemHealthSummary(counts: SystemHealthCounts): string {
   return `All ${total} enabled factor${total > 1 ? 's' : ''} fresh`;
 }
 
-/** Data Confidence copy when all required factors are fresh. */
-export function formatDataConfidenceFreshCopy(hasSlowCadenceFresh: boolean): {
+/** Input Status copy when all required factors are fresh. */
+export function formatInputStatusFreshCopy(hasSlowCadenceFresh: boolean): {
   insight: string;
   recommendation: string;
   footnote: string | null;
 } {
   return {
     insight: 'All required factors are fresh under their configured source cadence.',
-    recommendation: 'Data quality is high; no required factors are stale or excluded.',
+    recommendation: 'No required factors are stale or excluded.',
     footnote: hasSlowCadenceFresh
       ? 'Some macro/liquidity sources update on slower public-data cadences.'
       : null,
   };
 }
 
-export function formatFactorConfidenceContext(display: FreshnessDisplay): string {
+export function formatFactorStatusContext(display: FreshnessDisplay): string {
   if (display.recencyKind === 'excluded') {
     return display.detailLine || 'Factor excluded from scoring';
   }
   if (display.recencyKind === 'stale') {
     return 'Past configured freshness window';
   }
-  if (display.recencyKind === 'withinCadence' && display.detailLine) {
+  if (display.recencyKind === 'withinCadence') {
     return 'Fresh under configured source cadence';
+  }
+  if (display.recencyKind === 'unknown') {
+    return display.detailLine || display.shortLine || 'Status details unavailable';
   }
   return 'Updated recently';
 }

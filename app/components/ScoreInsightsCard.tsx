@@ -10,10 +10,13 @@ import {
   buildWhatMattersLines,
 } from '@/lib/scoreInsights';
 import {
-  formatDataConfidenceFreshCopy,
-  formatFactorConfidenceContext,
+  formatFactorStatusContext,
+  formatInputStatusFreshCopy,
+  formatSystemHealthCounts,
+  formatSystemHealthSummary,
   getFreshnessDisplay,
   getSlowCadenceProfile,
+  type FreshnessRecencyKind,
 } from '@/lib/freshnessDisplay';
 import { getBandChipClasses } from '@/lib/band-colors';
 import MobileCollapsible from './MobileCollapsible';
@@ -85,7 +88,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     factorMomentum: false,
     factorCorrelations: false,
     riskConcentration: true,
-    dataConfidence: true,
+    inputStatus: true,
   });
 
   // Toggle individual section expansion
@@ -240,138 +243,139 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
     return factorMomentum.sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
   };
 
-  // Get data confidence analysis
-  const getDataConfidence = () => {
+  const statusPresentation = (recencyKind: FreshnessRecencyKind) => {
+    switch (recencyKind) {
+      case 'recent':
+      case 'withinCadence':
+        return { key: 'fresh' as const, label: 'Fresh', icon: '🟢', color: 'green' };
+      case 'stale':
+        return { key: 'stale' as const, label: 'Stale', icon: '🟡', color: 'yellow' };
+      case 'excluded':
+        return { key: 'excluded' as const, label: 'Excluded', icon: '🔴', color: 'red' };
+      case 'unknown':
+      default:
+        return { key: 'unknown' as const, label: 'Status unknown', icon: '⚪', color: 'gray' };
+    }
+  };
+
+  const getInputStatus = () => {
     if (!explanation || !explanation.factorsByContribution || explanation.factorsByContribution.length === 0) {
       return null;
     }
 
     const factors = explanation.factorsByContribution;
-    
-    const factorConfidences = factors.map(factor => {
+
+    const factorStatuses = factors.map((factor) => {
       const freshness = getFreshnessDisplay({
         key: factor.key,
         status: factor.status,
         reason: factor.reason,
         last_utc: factor.last_utc,
       });
-
-      let stalenessLevel = 'fresh';
-      let stalenessHours = 0;
-      let stalenessIcon = '🟢';
-      let stalenessColor = 'green';
-      let stalenessText = 'Fresh';
-      
-      if (factor.status === 'stale' || factor.status === 'stale_beyond_ttl') {
-        stalenessLevel = 'stale';
-        stalenessHours = 6;
-        stalenessIcon = '🟡';
-        stalenessColor = 'yellow';
-        stalenessText = 'Stale';
-      } else if (factor.status === 'excluded') {
-        stalenessLevel = 'excluded';
-        stalenessHours = 24;
-        stalenessIcon = '🔴';
-        stalenessColor = 'red';
-        stalenessText = 'Excluded';
-      }
-      
-      let confidenceLevel = 'high';
-      let confidenceIcon = '🟢';
-      let confidenceColor = 'green';
-      let confidenceText = 'High';
-      let confidenceScore = 90;
-      
-      if (stalenessLevel === 'stale') {
-        confidenceLevel = 'medium';
-        confidenceIcon = '🟡';
-        confidenceColor = 'yellow';
-        confidenceText = 'Medium';
-        confidenceScore = 70;
-      } else if (stalenessLevel === 'excluded') {
-        confidenceLevel = 'low';
-        confidenceIcon = '🔴';
-        confidenceColor = 'red';
-        confidenceText = 'Low';
-        confidenceScore = 40;
-      }
-      
-      const confidenceContext = formatFactorConfidenceContext(freshness);
-      
+      const presentation = statusPresentation(freshness.recencyKind);
       return {
         key: factor.key,
         label: factor.label,
-        stalenessLevel,
-        stalenessHours,
-        stalenessIcon,
-        stalenessColor,
-        stalenessText,
-        confidenceLevel,
-        confidenceIcon,
-        confidenceColor,
-        confidenceText,
-        confidenceScore,
-        confidenceContext,
+        statusKey: presentation.key,
+        statusLabel: presentation.label,
+        statusIcon: presentation.icon,
+        statusColor: presentation.color,
+        statusContext: formatFactorStatusContext(freshness),
         freshnessDetail: freshness.detailLine,
       };
     });
-    
-    // Calculate overall confidence
-    const totalConfidenceScore = factorConfidences.reduce((sum, factor) => sum + factor.confidenceScore, 0);
-    const averageConfidenceScore = totalConfidenceScore / factorConfidences.length;
-    
-    let overallConfidenceLevel = 'high';
-    let overallConfidenceIcon = '🟢';
-    let overallConfidenceColor = 'green';
-    let overallConfidenceText = 'High';
-    
-    if (averageConfidenceScore < 60) {
-      overallConfidenceLevel = 'low';
-      overallConfidenceIcon = '🔴';
-      overallConfidenceColor = 'red';
-      overallConfidenceText = 'Low';
-    } else if (averageConfidenceScore < 80) {
-      overallConfidenceLevel = 'medium';
-      overallConfidenceIcon = '🟡';
-      overallConfidenceColor = 'yellow';
-      overallConfidenceText = 'Medium';
+
+    const freshCount = factorStatuses.filter((f) => f.statusKey === 'fresh').length;
+    const staleCount = factorStatuses.filter((f) => f.statusKey === 'stale').length;
+    const excludedCount = factorStatuses.filter((f) => f.statusKey === 'excluded').length;
+    const unknownCount = factorStatuses.filter((f) => f.statusKey === 'unknown').length;
+    const staleFactors = factorStatuses.filter((f) => f.statusKey === 'stale');
+    const excludedFactors = factorStatuses.filter((f) => f.statusKey === 'excluded');
+    const unknownFactors = factorStatuses.filter((f) => f.statusKey === 'unknown');
+
+    let overallStatusSummary: string;
+    let overallStatusIcon = '🟢';
+    let overallStatusColor = 'green';
+
+    if (excludedCount > 0) {
+      overallStatusSummary = formatSystemHealthSummary({
+        fresh: freshCount,
+        stale: staleCount,
+        excluded: excludedCount,
+      });
+      overallStatusIcon = '🔴';
+      overallStatusColor = 'red';
+    } else if (staleCount > 0) {
+      overallStatusSummary = formatSystemHealthSummary({
+        fresh: freshCount,
+        stale: staleCount,
+        excluded: excludedCount,
+      });
+      overallStatusIcon = '🟡';
+      overallStatusColor = 'yellow';
+    } else if (unknownCount > 0) {
+      overallStatusSummary = `Status incomplete: ${unknownCount} factor${unknownCount > 1 ? 's' : ''} status unknown`;
+      overallStatusIcon = '⚪';
+      overallStatusColor = 'gray';
+    } else {
+      overallStatusSummary = formatSystemHealthSummary({
+        fresh: freshCount,
+        stale: staleCount,
+        excluded: excludedCount,
+      });
     }
-    
-    // Generate overall confidence insight
-    const staleFactors = factorConfidences.filter(f => f.stalenessLevel !== 'fresh');
-    const lowConfidenceFactors = factorConfidences.filter(f => f.confidenceLevel === 'low');
-    
+
+    const countsLine =
+      unknownCount > 0
+        ? `${formatSystemHealthCounts({ fresh: freshCount, stale: staleCount, excluded: excludedCount })} · ${unknownCount} unknown`
+        : formatSystemHealthCounts({ fresh: freshCount, stale: staleCount, excluded: excludedCount });
+
     let overallInsight = '';
     let overallRecommendation = '';
     let overallFootnote: string | null = null;
-    
-    if (staleFactors.length === 0) {
-      const hasSlowCadenceFresh = factors.some(
+
+    if (excludedCount === 0 && staleCount === 0 && unknownCount === 0) {
+      const hasSlowCadenceFresh = factorStatuses.some(
         (f) =>
-          (f.status === 'fresh' || f.status === 'success') &&
-          getSlowCadenceProfile(f.key) !== null
+          f.statusKey === 'fresh' && getSlowCadenceProfile(f.key) !== null
       );
-      const freshCopy = formatDataConfidenceFreshCopy(hasSlowCadenceFresh);
+      const freshCopy = formatInputStatusFreshCopy(hasSlowCadenceFresh);
       overallInsight = freshCopy.insight;
       overallRecommendation = freshCopy.recommendation;
       overallFootnote = freshCopy.footnote;
-    } else if (staleFactors.length === 1) {
-      overallInsight = `1 factor is stale or excluded: ${staleFactors[0].label}`;
-      overallRecommendation = `Monitor ${staleFactors[0].label} for updates`;
     } else {
-      overallInsight = `${staleFactors.length} factors are stale or excluded: ${staleFactors.map(f => f.label).join(', ')}`;
-      overallRecommendation = `Monitor ${staleFactors.map(f => f.label).join(', ')} for updates`;
+      const excludedLabels = excludedFactors.map((f) => f.label);
+      const staleLabels = staleFactors.map((f) => f.label);
+      const unknownLabels = unknownFactors.map((f) => f.label);
+      const parts: string[] = [];
+      if (excludedLabels.length > 0) {
+        parts.push(
+          `${excludedLabels.length} excluded: ${excludedLabels.join(', ')}`
+        );
+      }
+      if (staleLabels.length > 0) {
+        parts.push(`${staleLabels.length} stale: ${staleLabels.join(', ')}`);
+      }
+      if (unknownLabels.length > 0) {
+        parts.push(
+          `${unknownLabels.length} status unknown: ${unknownLabels.join(', ')}`
+        );
+      }
+      overallInsight = parts.join('. ');
+      const monitorLabels = [...excludedLabels, ...staleLabels];
+      overallRecommendation =
+        monitorLabels.length > 0
+          ? `Monitor ${monitorLabels.join(', ')} for updates`
+          : `Status unavailable for ${unknownLabels.join(', ')}`;
     }
-    
+
     return {
-      overallConfidenceLevel,
-      overallConfidenceIcon,
-      overallConfidenceColor,
-      overallConfidenceText,
-      averageConfidenceScore,
-      factorConfidences,
+      overallStatusSummary,
+      overallStatusIcon,
+      overallStatusColor,
+      countsLine,
+      factorStatuses,
       staleFactors,
-      lowConfidenceFactors,
       overallInsight,
       overallRecommendation,
       overallFootnote,
@@ -851,6 +855,7 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
   const volList = getFactorVolatility();
   const momList = getFactorMomentum();
   const corrList = getFactorCorrelations();
+  const inputStatus = getInputStatus();
   const maxDiagnosticListRows = Math.max(
     volList?.length ?? 0,
     momList?.length ?? 0,
@@ -1320,112 +1325,88 @@ export default function ScoreInsightsCard({ latest, className = '' }: ScoreInsig
         </div>
       )}
 
-      {/* Data Confidence */}
-      {getDataConfidence() && (
+      {/* Input Status */}
+      {inputStatus && (
         <div className="mb-3">
-          <div 
+          <div
             className="text-xs font-medium text-gray-700 mb-2 flex items-center justify-between cursor-pointer hover:text-gray-900"
-            onClick={() => toggleSection('dataConfidence')}
+            onClick={() => toggleSection('inputStatus')}
           >
             <div className="flex items-center gap-2">
               <span>📊</span>
-              <span>Data Confidence</span>
+              <span>Input Status</span>
             </div>
             <span className="text-lg transition-transform duration-200">
-              {expandedSections.dataConfidence ? '🔽' : '▶️'}
+              {expandedSections.inputStatus ? '🔽' : '▶️'}
             </span>
           </div>
-          {expandedSections.dataConfidence && (
+          {expandedSections.inputStatus && (
             <div className="space-y-3">
-              {/* Overall Confidence Indicator */}
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3.5 border border-green-100 shadow-sm">
-                <div className="flex items-center justify-between mb-2.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{getDataConfidence()!.overallConfidenceIcon}</span>
-                    <span className="text-sm font-medium text-gray-900">Overall Confidence</span>
-                  </div>
-                  <div className={`text-sm font-bold ${
-                    getDataConfidence()!.overallConfidenceColor === 'red' ? 'text-red-600' : 
-                    getDataConfidence()!.overallConfidenceColor === 'yellow' ? 'text-yellow-600' : 'text-green-600'
-                  }`}>
-                    {getDataConfidence()!.overallConfidenceText} ({getDataConfidence()!.averageConfidenceScore.toFixed(0)}%)
-                  </div>
+              <div
+                className={`rounded-lg p-3.5 border shadow-sm ${
+                  inputStatus.overallStatusColor === 'red'
+                    ? 'bg-red-50 border-red-100'
+                    : inputStatus.overallStatusColor === 'yellow'
+                      ? 'bg-amber-50 border-amber-100'
+                      : inputStatus.overallStatusColor === 'gray'
+                        ? 'bg-gray-50 border-gray-200'
+                        : 'bg-green-50 border-green-100'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-lg">{inputStatus.overallStatusIcon}</span>
+                  <span className="text-sm font-medium text-gray-900">Overall Input Status</span>
                 </div>
-                
-                {/* Confidence Bar */}
-                <div className="mb-2.5">
-                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                    <span>Data Quality Score</span>
-                    <span>{getDataConfidence()!.averageConfidenceScore.toFixed(0)}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full ${
-                        getDataConfidence()!.overallConfidenceColor === 'red' ? 'bg-red-500' : 
-                        getDataConfidence()!.overallConfidenceColor === 'yellow' ? 'bg-yellow-500' : 'bg-green-500'
-                      }`}
-                      style={{ width: `${Math.min(100, getDataConfidence()!.averageConfidenceScore)}%` }}
-                    ></div>
-                  </div>
+                <div
+                  className={`text-sm font-bold mb-1 ${
+                    inputStatus.overallStatusColor === 'red'
+                      ? 'text-red-600'
+                      : inputStatus.overallStatusColor === 'yellow'
+                        ? 'text-yellow-600'
+                        : inputStatus.overallStatusColor === 'gray'
+                          ? 'text-gray-600'
+                          : 'text-green-600'
+                  }`}
+                >
+                  {inputStatus.overallStatusSummary}
                 </div>
-                
-                <div className="text-xs text-gray-600 mb-1.5">
-                  {getDataConfidence()!.overallInsight}
-                </div>
-                {getDataConfidence()!.overallFootnote && (
-                  <div className="text-xs text-gray-500 mb-1.5">
-                    {getDataConfidence()!.overallFootnote}
-                  </div>
+                <div className="text-xs text-gray-500 mb-2">{inputStatus.countsLine}</div>
+                <p className="text-xs text-gray-600 mb-1.5">
+                  Input status reflects source freshness and scoring availability, not statistical
+                  confidence, predictive accuracy, or validation.
+                </p>
+                <div className="text-xs text-gray-600 mb-1.5">{inputStatus.overallInsight}</div>
+                {inputStatus.overallFootnote && (
+                  <div className="text-xs text-gray-500 mb-1.5">{inputStatus.overallFootnote}</div>
                 )}
-                <div className="text-xs text-green-600 italic">
-                  💡 {getDataConfidence()!.overallRecommendation}
-                </div>
+                <div className="text-xs text-gray-600 italic">💡 {inputStatus.overallRecommendation}</div>
               </div>
-              
-              {/* Factor Confidence Breakdown */}
+
               <div className="space-y-2">
-                <div className="text-xs font-medium text-gray-600 mb-1.5">Factor Data Quality</div>
-                {getDataConfidence()!.factorConfidences.map((factor, idx) => (
-                  <div key={idx} className="bg-gray-50 rounded-lg p-3">
-                    <div className="flex items-center justify-between mb-2">
+                <div className="text-xs font-medium text-gray-600 mb-1.5">Factor Input Status</div>
+                {inputStatus.factorStatuses.map((factor) => (
+                  <div key={factor.key} className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{getFactorIcon(factor.key)}</span>
                         <span className="text-sm font-medium text-gray-900">{factor.label}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-sm font-bold ${
-                          factor.confidenceColor === 'red' ? 'text-red-600' : 
-                          factor.confidenceColor === 'yellow' ? 'text-yellow-600' : 'text-green-600'
-                        }`}>
-                          {factor.confidenceIcon} {factor.confidenceText}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {factor.confidenceScore}%
-                        </span>
-                      </div>
+                      <span
+                        className={`text-sm font-bold ${
+                          factor.statusColor === 'red'
+                            ? 'text-red-600'
+                            : factor.statusColor === 'yellow'
+                              ? 'text-yellow-600'
+                              : factor.statusColor === 'gray'
+                                ? 'text-gray-600'
+                                : 'text-green-600'
+                        }`}
+                      >
+                        {factor.statusIcon} {factor.statusLabel}
+                      </span>
                     </div>
-                    
-                    {/* Confidence Bar */}
-                    <div className="mb-2">
-                      <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                        <span>Data Quality</span>
-                        <span>{factor.confidenceScore}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-1.5">
-                        <div 
-                          className={`h-1.5 rounded-full ${
-                            factor.confidenceColor === 'red' ? 'bg-red-500' : 
-                            factor.confidenceColor === 'yellow' ? 'bg-yellow-500' : 'bg-green-500'
-                          }`}
-                          style={{ width: `${Math.min(100, factor.confidenceScore)}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                    
-                    <div className="text-xs text-gray-600 mb-1">
-                      {factor.stalenessIcon} {factor.stalenessText} - {factor.confidenceContext}
-                    </div>
-                    {factor.stalenessLevel !== 'fresh' && (
+                    <div className="text-xs text-gray-600 mb-1">{factor.statusContext}</div>
+                    {(factor.statusKey === 'stale' || factor.statusKey === 'excluded') && (
                       <div className="text-xs text-orange-600 italic">
                         ⚠️ Data may not reflect current conditions
                       </div>
