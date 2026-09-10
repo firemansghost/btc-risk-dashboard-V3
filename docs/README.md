@@ -1,140 +1,71 @@
-# Bitcoin Risk Dashboard Documentation
+# GhostGauge Documentation
 
-## Overview
+This index distinguishes **current authority** from **historical / legacy
+reference**. Exact production configuration is
+[`config/dashboard-config.json`](../config/dashboard-config.json). Current
+implementation truth is production code. Do not treat dated research records,
+old weight-era notes, or archived roadmaps as live model contracts.
 
-This documentation provides comprehensive information about the Bitcoin Risk Dashboard's factor weighting system, implementation details, and maintenance procedures.
+## Current Production Authority
 
-## Documentation Structure
+Active production: **v1.1.1** / **integrity-2026-08** / SSOT **2.1.1**.
 
-### 📊 Factor Weights Documentation
-- **[Factor Weights Rationale](factor-weights-rationale.md)** - Comprehensive explanation of the weighting system
-- **[Weight Implementation Guide](weight-implementation-guide.md)** - Technical implementation details
-- **[Weight Change Log](weight-change-log.md)** - Version history and change rationale
-- **[Weight Quick Reference](weight-quick-reference.md)** - Quick reference guide
+Seven enabled scoring factors across five analytical pillars. On-chain
+Activity is disabled at 0%. Cycle and Spike adjustments are disabled in
+v1.1.1 and contribute zero points.
 
-### 📉 Strategy Analysis (GhostGauge)
-- **[Backtesting SSOT design spec](strategy-analysis/BACKTESTING_SSOT_SPEC.md)** — Target single methodology and official vs exploratory boundaries (**design only**; not implemented by that doc alone)
-- **[SSOT product decisions](strategy-analysis/SSOT_PRODUCT_DECISIONS.md)** — Recommended six-band multipliers + monthly execution rule (**decision-ready**; not ETL)
+| Document | Role |
+|----------|------|
+| [`config/dashboard-config.json`](../config/dashboard-config.json) | SSOT for weights, bands, enabled status, and version |
+| [Project Brief](PROJECT_BRIEF.md) | Current high-level project overview |
+| [Brand Card](BRAND_CARD.md) | Public narrative, naming, and current six-band taxonomy |
+| Live Methodology page (`/methodology`) | Public explanation of current production behavior |
+| [Model Eras](MODEL_ERAS.md) | Historical interpretation and provenance boundaries |
+| [v1.1.1 Transition Closeout](V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md) | Integrity-transition record |
 
-### 🔧 Technical Documentation
-- **[ETL Process](../scripts/etl/README.md)** - Extract, Transform, Load process
-- **[API Documentation](../app/api/README.md)** - API endpoints and usage
-- **[Configuration Guide](../config/README.md)** - Configuration management
-- **Deployment (Vercel / Next.js):** Production uses a **simplified `next.config.ts`** (no aggressive custom webpack bundling). See **[`docs/DECISIONS.md`](DECISIONS.md)** and the **Next.js config & Vercel deploy** subsection in **[`REPO_REONBOARD.md`](../REPO_REONBOARD.md)** for the current baseline and why it was chosen.
+## Research / Governance
 
-### 📈 Factor Documentation
-- **[Trend & Valuation Factor](../scripts/etl/factors/trendValuation.mjs)** - BMSB, Mayer Multiple, RSI
-- **[Stablecoins Factor](../scripts/etl/factors/stablecoins.mjs)** - 7-coin weighted average
-- **[ETF Flows Factor](../scripts/etl/factors/etfFlows.mjs)** - Institutional flow analysis
-- **[On-chain Factor](../scripts/etl/factors/onchain.mjs)** - Network metrics
+H8 is a live prospective evaluation. No interim performance conclusion or
+tuning is authorized. H7 historical work is descriptive
+risk-discrimination/ranking research, not predictive validation.
 
-## Current Weight Distribution (v2.1.0)
+- [H8 v2 preregistration](H8_V2_PROSPECTIVE_30D_RISK_DISCRIMINATION_PREREGISTRATION.md)
+- [H8 v2 capture implementation contract](H8_V2_CAPTURE_IMPLEMENTATION_CONTRACT.md)
+- [H7 exploratory reconstruction protocol](H7_EXPLORATORY_RECONSTRUCTION_PROTOCOL_2026-08-19.md)
+- [H7.2 outcome-analysis preregistration](H7_2_OUTCOME_ANALYSIS_PREREGISTRATION.md)
+- [H7.2 outcome-analysis implementation contract](H7_2_OUTCOME_ANALYSIS_IMPLEMENTATION_CONTRACT.md)
+- [Historical Evidence Inventory](HISTORICAL_EVIDENCE_INVENTORY_2026-08-18.md)
+- [Historical Data Eligibility](HISTORICAL_DATA_ELIGIBILITY_2026-08-18.md)
+- [Architecture Decisions](DECISIONS.md)
 
-| Factor | Weight | Pillar | Rationale |
-|--------|--------|--------|-----------|
-| **Trend & Valuation** | **25%** | Momentum | Most fundamental risk indicator |
-| **Stablecoins** | **18%** | Liquidity | Enhanced with 7-coin coverage |
-| **Term Leverage** | **18%** | Leverage | Derivatives market health |
-| **ETF Flows** | **10%** | Liquidity | Major institutional indicator |
-| **Net Liquidity** | **10%** | Liquidity | Fed balance sheet backdrop |
-| **On-chain** | **8%** | Momentum | Core Bitcoin metrics |
-| **Macro Overlay** | **6%** | Macro | External macroeconomic factors |
-| **Social Interest** | **5%** | Social | Least predictive factor |
+## Technical Documentation
 
-## Key Features
+These files are useful operational references. Some contain dated implementation
+notes or continuity banners; they are not a substitute for current production
+code and `config/dashboard-config.json`.
 
-### 🚀 Comprehensive Performance Optimizations
-- **Trend & Valuation**: 7ms calculation time with 24h cache and parallel BMSB/Mayer/RSI processing
-- **Stablecoins**: 7-coin coverage with 3-source fallback (CoinGecko → CoinMarketCap → CryptoCompare) and 365-day baseline
-- **ETF Flows**: Business-day logic with weekend/holiday exclusion and 24h cache
-- **Term Leverage**: Multi-exchange fallback (BitMEX → Binance → OKX) with 6h cache and parallel processing
-- **On-chain Activity**: 3-source fallback (Blockchain.info → Mempool.space → Mempool.observer) with 4h cache
-- **Net Liquidity**: Enhanced FRED fetching with retry logic and 24h cache
-- **Macro Overlay**: Parallel FRED data fetching with retry logic and 24h cache
-- **Social Interest**: Momentum analysis with 6h cache and trending data
+- [Artifact schemas](ARTIFACT_SCHEMAS.md)
+- [Runbook](RUNBOOK.md)
+- [Re-onboarding](../REPO_REONBOARD.md)
+- [Architecture Decisions](DECISIONS.md)
 
-### 📊 Enhanced Analytics
-- **Factor Volatility Analysis**: Show which factors are most volatile
-- **Correlation Insights**: Highlight factors that move together
-- **Risk Concentration**: Identify if risk is concentrated in specific factors
-- **Confidence Levels**: Show how reliable each factor's data is
+## Strategy Analysis
 
-### 🎯 Smart Context
-- **Market Phase Awareness**: Adapt explanations based on market conditions
-- **Historical Context**: Provide historical perspective on current scores
-- **Forward-looking Insights**: Anticipate potential risk changes
+The implemented official comparison is **monthly** Baseline DCA vs Risk-Based
+DCA. Historical results are descriptive and mixed-provenance; they are not
+validated as-published performance evidence.
 
-## Quick Start
+- [Backtesting SSOT design spec](strategy-analysis/BACKTESTING_SSOT_SPEC.md)
+- [SSOT product decisions](strategy-analysis/SSOT_PRODUCT_DECISIONS.md)
 
-### Test Weight System
-```bash
-cd scripts/etl
-node -e "import('./factors.mjs').then(m => m.computeAllFactors()).then(result => { console.log('G-Score:', result.composite); })"
-```
+## Historical / Legacy References
 
-### Validate Configuration
-```bash
-cd scripts/etl
-node -e "import('../../lib/config-loader.mjs').then(m => m.loadDashboardConfig()).then(config => { const total = Object.values(config.factors).reduce((sum, f) => sum + f.weight, 0); console.log('Total Weight:', total); console.log('Valid:', total === 1.0 ? '✅' : '❌'); })"
-```
+The following documents preserve earlier planning, weight-era notes, or
+pre-transition specifications. They are **not** current production SSOT.
 
-### Check Factor Status
-```bash
-cd scripts/etl
-node -e "import('./factors.mjs').then(m => m.computeAllFactors()).then(result => { result.factors.forEach(f => console.log(f.label + ':', f.status, f.reason)); })"
-```
-
-## Maintenance
-
-### Regular Tasks
-1. **Weight Review**: Quarterly review of factor weights
-2. **Performance Analysis**: Monthly analysis of factor performance
-3. **Staleness Optimization**: Adjust TTL based on data freshness
-4. **Cache Cleanup**: Regular cleanup of expired cache files
-
-### Monitoring Metrics
-- Factor correlation analysis
-- Weight contribution analysis
-- G-Score accuracy validation
-- Factor staleness impact
-
-## Version History
-
-### v2.1.0 (2025-10-05) - Major Rebalancing
-- **Trend & Valuation**: 20% → 25% (+5%)
-- **Stablecoins**: 21% → 18% (-3%)
-- **ETF Flows**: 9% → 10% (+1%)
-- **On-chain**: 5% → 8% (+3%)
-- **Term Leverage**: 20% → 18% (-2%)
-- **Social Interest**: 10% → 5% (-5%)
-- **Net Liquidity**: 5% → 10% (+5%)
-- **Macro Overlay**: 10% → 6% (-4%)
-
-### v2.0.0 (2025-01-20) - Initial Weight System
-- Established baseline weighting system
-- Initial factor weights and rationale
-
-## Support
-
-For questions or issues related to the factor weighting system:
-
-1. **Check Documentation**: Review relevant documentation files
-2. **Test Configuration**: Run validation commands
-3. **Check Logs**: Review ETL process logs
-4. **Monitor Performance**: Use monitoring metrics
-
-## Contributing
-
-When making changes to the factor weighting system:
-
-1. **Update Documentation**: Update relevant documentation files
-2. **Test Changes**: Run comprehensive tests
-3. **Validate Weights**: Ensure weights sum to 1.0
-4. **Update Version**: Increment version number
-5. **Document Changes**: Update change log
-
----
-
-*Last Updated: 2025-10-05*
-*Version: 2.1.0*
-*Bitcoin Risk Dashboard Documentation*
+- [Factor weights rationale](factor-weights-rationale.md) — historical / legacy weight-era reference — not current production SSOT
+- [Weight implementation guide](weight-implementation-guide.md) — historical / legacy weight-era reference — not current production SSOT
+- [Weight change log](weight-change-log.md) — historical / legacy weight-era reference — not current production SSOT
+- [Weight quick reference](weight-quick-reference.md) — historical / legacy weight-era reference — not current production SSOT
+- [Historical 2025 Roadmap Snapshot](ROADMAP.md) — archived 2025 planning snapshot
+- [Legacy Factor Specifications](FACTOR_SPECS.md) — pre-transition factor specification reference

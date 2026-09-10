@@ -1,122 +1,144 @@
-# Project Brief & Methodology
+# GhostGauge — Project Brief
 
-*See also: [Brand Card](/brand) (voice, naming, bands).*
+## Authority & Current Production
 
-> **2026-08-18 continuity note.** Active production is **v1.1.1 / integrity-2026-08**. That revision changed timing, provenance, and freshness implementation semantics. Some implementation prose in this document predates that transition and is **not** silently rewritten here. Current production authority for exact active weights, bands, subweights, and version is `config/dashboard-config.json`. Implementation truth is current production code. Model-era and historical interpretation is governed by [`docs/MODEL_ERAS.md`](MODEL_ERAS.md). Detailed transition semantics are recorded in [`docs/V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md`](V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md).
+Active production: **v1.1.1** / **integrity-2026-08** / SSOT **2.1.1**.
+
+Current configuration authority is
+[`config/dashboard-config.json`](../config/dashboard-config.json). Current
+implementation truth is production code. Historical interpretation is governed
+by [`MODEL_ERAS.md`](MODEL_ERAS.md). The integrity-transition record is
+[`V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md`](V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md).
+
+See also: [Brand Card](BRAND_CARD.md) for public narrative and band labels.
 
 ## Purpose
 
-The Bitcoin Risk Dashboard provides institutional-grade risk assessment for Bitcoin investments through a transparent, quantitative framework. It generates a 0-100 risk score where lower scores indicate better buying opportunities and higher scores suggest caution or selling pressure.
+GhostGauge provides transparent Bitcoin market-risk context through a
+0–100 G-Score. It is designed to frame current model-defined risk, not
+forecast price or issue investment commands.
 
-## Target Users
+## Current Model
 
-- **Institutional investors** seeking systematic Bitcoin allocation decisions
-- **Retail investors** wanting data-driven entry/exit timing
-- **Researchers** studying Bitcoin market dynamics and risk factors
-- **Portfolio managers** integrating Bitcoin into diversified portfolios
+Seven enabled scoring factors across five analytical pillars.
 
-## Five-Pillar Framework
+**Pillar weights (30/30/20/10/10):**
 
-### Current Weights (Single Source of Truth: `config/dashboard-config.json`)
-- **Liquidity/Flows (30%)**: Stablecoins (18%), ETF Flows (7.7%), Net Liquidity (4.3%)
-  - *Prioritizes crypto-native flows (stablecoins, ETF creations/redemptions) over laggy Fed liquidity*
-  - *Enhanced with 7-coin stablecoin coverage, business-day ETF logic, and multi-source fallbacks*
-- **Momentum/Valuation (30%)**: Trend & Valuation (30%)
-  - *Trend & Valuation leads with highest weight, enhanced with parallel processing and caching*
-  - *Internal split: BMSB 60%, Mayer Multiple 30%, Weekly RSI 10%*
-- **Term Structure/Leverage (20%)**: Term Structure & Leverage (20%)
-  - *Enhanced with multi-exchange fallback (BitMEX → Binance → OKX) and intelligent caching*
-- **Macro Overlay (10%)**: Macro Overlay (10%)
-  - *Enhanced with retry logic and parallel FRED fetching*
-- **Social/Attention (10%)**: Social Interest (10%)
-  - *Enhanced with momentum analysis and intelligent caching*
+- Liquidity / Flows — 30%
+- Momentum / Valuation — 30%
+- Term Structure / Leverage — 20%
+- Macro Overlay — 10%
+- Social / Attention — 10%
 
-**Configuration Architecture:**
-- All weights are dynamically loaded from `config/dashboard-config.json`
-- ETL and frontend use identical configuration (guaranteed consistency)
-- Comprehensive validation ensures weights sum to 100%
-- Sub-factor weights defined with Cycle-Anchored Trend (BMSB-led) approach
+**Enabled factor weights:**
 
-### Risk Calculation Pipeline
+- Trend & Valuation — 30%
+- Stablecoins — 18%
+- ETF Flows — 7.7%
+- Net Liquidity — 4.3%
+- Term Structure & Leverage — 20%
+- Macro Overlay — 10%
+- Social Interest — 10%
 
-1. **Data Collection**: Multi-source APIs with intelligent fallback chains
-2. **Caching Layer**: Factor-level caching with appropriate TTLs (4-24 hours)
-3. **Parallel Processing**: Concurrent data fetching and calculation optimization
-4. **Normalization**: Convert raw metrics to standardized values
-5. **Z-Score Calculation**: Statistical normalization using historical baselines
-6. **Logistic Mapping**: Transform z-scores to 0-100 risk scores using sigmoid function
-7. **EWMA Smoothing**: Apply exponential weighted moving average for stability
-8. **Weight Aggregation**: Combine pillar scores using configurable weights
+On-chain Activity remains defined in configuration but is **disabled at 0%**
+and does not contribute to the current score.
 
-### Comprehensive System Optimizations
+## Composite Behavior
 
-**Performance Enhancements:**
-- **Intelligent Caching**: All 8 factors use sophisticated caching with appropriate TTLs
-- **Parallel Processing**: Concurrent data fetching and calculation optimization
-- **Multi-source Fallbacks**: Enhanced reliability with fallback data sources
-- **Business-day Logic**: ETF Flows exclude weekends and holidays for accurate calculations
+Each enabled factor uses factor-specific production logic to produce a
+0–100 factor score. Only factors classified fresh under production
+source-cadence rules contribute; versioned weights are normalized over the
+included set.
 
-**Factor-specific Improvements:**
-- **Trend & Valuation**: 7ms calculation time with parallel BMSB/Mayer/RSI processing
-- **Stablecoins**: 7-coin coverage with 3-source fallback and 365-day historical baseline
-- **ETF Flows**: Business-day awareness with weekend/holiday exclusion
-- **Term Leverage**: Multi-exchange fallback (BitMEX → Binance → OKX) with 6h cache
-- **On-chain Activity**: 3-source fallback (Blockchain.info → Mempool.space → Mempool.observer)
-- **Net Liquidity**: Enhanced FRED fetching with retry logic and 24h cache
-- **Macro Overlay**: Parallel FRED data fetching with retry logic
-- **Social Interest**: Momentum analysis with 6h cache and trending data
+Cycle and Spike adjustment mechanisms remain implemented but are disabled in
+production v1.1.1 and contribute zero points. Reactivation would require a
+separate versioned methodology decision.
 
-### Staleness & Re-weighting
+## Snapshot / Freshness
 
-- **Fresh factors** (data < 24h old): Full weight in composite calculation
-- **Stale factors** (data > 24h old): Excluded from composite, marked as "stale"
-- **Dynamic re-normalization**: Weights automatically adjust when factors become stale
-- **Transparency**: All staleness status visible in UI with clear indicators
+GhostGauge publishes a **daily UTC intraday snapshot**. Completed daily BTC
+history is maintained separately where calculations require historical closes.
 
-### Optional Adjustments
+**Input Status** represents source freshness and scoring availability (Fresh,
+Stale, Excluded, Status unknown). Fresh means the input satisfies the
+configured source-cadence contract; it does not mean the input is validated
+or correct. Individual inputs can have different vintages and cadences.
+Inclusion is snapshot-specific; this brief does not assert that every factor
+is fresh on any given day.
 
-- **Cycle Adjustment**: Long-term market cycle corrections (currently disabled)
-- **Spike Adjustment**: Short-term volatility corrections (currently disabled)
-- **Manual Overrides**: Configurable factor weights via UI
+## Historical Evidence
 
-## Transparency Features
+`public/data/history.csv` contains mixed-provenance historical G-Score data
+(reconstructed regions, later observational tail, and coverage limitations).
+It is not a clean as-published validation sample.
 
-- **Factor Details**: Every calculation shows underlying data, formulas, and percentiles
-- **Provenance Tracking**: Complete audit trail of data sources and computation timing
-- **Historical Context**: 1-year percentile rankings for all metrics
-- **Methodology Documentation**: Detailed explanations of each factor's calculation
-- **Real-time Updates**: Live data refresh with source attribution
-- **Display-Only Context**: BTC⇄Gold and Satoshis per Dollar provide additional perspective without affecting risk scores
-- **Factor History**: Per-factor historical data persisted daily for transparency and trend analysis
-- **Alert System**: Real-time notifications for ETF zero-cross events and risk band changes (informational only)
+Historical H7 work is descriptive risk-discrimination/ranking research, not
+forecasting or model validation.
 
-## Deployment Architecture
+H8 v2 is an ongoing frozen prospective evaluation. No interim H8 performance
+conclusion is authorized. See
+[H8 v2 preregistration](H8_V2_PROSPECTIVE_30D_RISK_DISCRIMINATION_PREREGISTRATION.md)
+and
+[H8 v2 capture implementation contract](H8_V2_CAPTURE_IMPLEMENTATION_CONTRACT.md).
 
-- **Frontend**: Next.js 15 with TypeScript, deployed on Vercel
-- **ETL Pipeline**: Node.js scripts with GitHub Actions scheduling
-- **Configuration**: Single source of truth in `config/dashboard-config.json`
-  - Dynamic loading in both Node.js (ETL) and browser (frontend) environments
-  - Comprehensive validation with weight sum checks and tolerance controls
-  - Automatic cache clearing and consistency guarantees
-- **Data Storage**: JSON artifacts in public directory (read-only in production)
-  - `latest.json`: Computed G-Score results and factor outputs
-  - `status.json`: ETL execution status and timestamps
-- **APIs**: RESTful endpoints for data access and real-time refresh
-- **Caching**: Intelligent caching with staleness detection and fallback mechanisms
+## Strategy Analysis
+
+The official comparison is monthly Baseline DCA vs Risk-Based DCA. Both
+strategies use the first available eligible history row in each calendar
+month; months with no eligible row are skipped for both.
+
+Risk-Based DCA changes **new monthly contribution size** only. It does not
+automatically create a sell or trim instruction for Bitcoin already held.
+Band labels such as Reduce Risk describe general market-risk context; they
+are not an automatic liquidation rule in the official DCA framework.
+
+The historical strategy comparison is a descriptive mixed-provenance artifact,
+not validated as-published performance evidence. Separate weekly monitoring
+reports are supporting/descriptive and are not the official monthly
+comparison.
+
+## Architecture
+
+Durable high-level facts:
+
+- Next.js frontend
+- Node.js ETL
+- GitHub Actions scheduling (daily scheduled production pipeline)
+- Versioned JSON/CSV artifacts under `public/data/`
+- Configuration SSOT in `config/dashboard-config.json`
+
+Exact runtime details (caching, fallbacks, TTLs) are implementation-defined
+and can change by factor; see current production code.
 
 ## Data Sources
 
-- **FRED API**: Federal Reserve economic data (Net Liquidity, Macro indicators)
-- **CoinGecko**: Bitcoin price, market cap, and stablecoin data
-- **Farside Investors**: Bitcoin ETF flows with individual ETF breakdowns
-- **Alternative.me**: Fear & Greed Index for social sentiment
-- **Blockchain.info**: On-chain metrics (transaction fees, hash rate, transaction count)
+Exact current provider behavior is implementation-defined and can vary by
+factor; see current production code and factor-level provenance/status.
+
+Broad families currently used by production scoring include FRED public-data
+series, Coinbase/CoinGecko market data, and Farside ETF-flow source material.
+Disabled On-chain providers are not current scoring sources. Do not treat
+Alternative.me / Fear & Greed as current Social Interest authority.
+
+## Alerts
+
+Alert surfaces are operational/supporting features outside the G-Score
+scientific contract and are undergoing a separate runtime/provenance
+review. They should not be treated as the canonical record of current
+model behavior.
 
 ## Risk Bands
 
-- **0-14**: Aggressive Buying — Historically depressed/washed-out conditions.
-- **15-34**: Regular DCA Buying — Favorable long-term conditions; take your time.
-- **35-49**: Moderate Buying — Moderate buying opportunities.
-- **50-64**: Hold & Wait — Hold core; buy dips selectively.
-- **65-79**: Reduce Risk — Trim risk; tighten risk controls.
-- **80-100**: High Risk — Crowded tape; prone to disorderly moves.
+Current six-band taxonomy:
+
+- **0–14** Aggressive Buying
+- **15–34** Regular DCA Buying
+- **35–49** Moderate Buying
+- **50–64** Hold & Wait
+- **65–79** Reduce Risk
+- **80–100** High Risk
+
+Band labels and recommendation text describe general market-risk context.
+The official Risk-Based DCA framework is narrower: it changes only new
+monthly contribution size. It does not create an automatic sell or trim rule
+for Bitcoin already held.

@@ -1,6 +1,19 @@
-# Factor Specifications
+# Legacy Factor Specifications
 
-Mathematical contracts for all risk factors in the Bitcoin Risk Dashboard.
+This document preserves pre-v1.1.1 factor-specification and implementation
+notes. It is a historical/legacy reference, not the authoritative current
+mathematical contract.
+
+Current production authority for active weights, bands, subweights,
+enabled status, and version is `config/dashboard-config.json`. Current
+implementation truth is production code.
+
+Some sections below contain superseded weights, provider descriptions,
+TTL assumptions, and duplicated/legacy On-chain descriptions. They are
+intentionally preserved here rather than silently rewritten.
+
+Do not use this file to alter the live H8 v2 model or infer current
+provider semantics.
 
 > **2026-08-18 continuity note.** Active production is **v1.1.1 / integrity-2026-08**. That revision changed timing, provenance, and freshness implementation semantics. Some implementation prose in this document predates that transition and is **not** silently rewritten here. Current production authority for exact active weights, bands, subweights, and version is `config/dashboard-config.json`. Implementation truth is current production code. Model-era and historical interpretation is governed by [`docs/MODEL_ERAS.md`](MODEL_ERAS.md). Detailed transition semantics are recorded in [`docs/V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md`](V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md).
 
