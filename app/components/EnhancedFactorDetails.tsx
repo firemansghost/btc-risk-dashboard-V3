@@ -269,7 +269,7 @@ export default function EnhancedFactorDetails({
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
               <p className="text-sm font-semibold text-amber-900">Legacy historical diagnostic snapshot</p>
               <p className="mt-1 text-sm text-amber-800">
-                The current factor score above is live production context. The volatility, correlation,
+                The factor score above comes from the current production dashboard snapshot. The volatility, correlation,
                 trend, and attribution statistics below come from legacy diagnostic artifacts generated
                 in{' '}
                 {formatUtcMonthYear(analysisData.provenance.volatility.timestamp) ||
