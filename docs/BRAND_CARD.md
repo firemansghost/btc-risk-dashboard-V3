@@ -47,11 +47,12 @@ Headlines, UI chips, social posts, casual usage.
 • **Promise**: Signals, not hype. Methods before marketing.
 
 • **Proof points**:
-  - Five-pillar model with published inputs & weights (35/25/20/10/10).
+  - Five-pillar model with published inputs & weights (30/30/20/10/10).
+  - Seven enabled scoring factors; On-chain Activity is disabled at 0% in v1.1.1.
   - Winsorized z-scores → logistic 0–100; stale data auto-excluded with weight re-normalization.
   - Factor History CSVs updated daily; Provenance with source notes, schema tripwires, and fallbacks.
   - ETF Flows via robust parser (21-day sum) with staleness & outlier guards.
-  - Optional small adjustments: cycle residual & spike detector—capped and disclosed.
+  - Cycle and Spike adjustment mechanisms are disabled in production v1.1.1; reactivation would require a versioned methodology decision.
   - Clear risk bands and plain-English playbook.
 
 ## Audience & use cases
@@ -135,7 +136,7 @@ The GrayGhost Risk Score (GRS v3) blends five pillars into a transparent 0–100
 Drivers — Liquidity · Momentum · Term Structure · Macro · Social
 
 ### Band legend (match live config)
-0–15 Aggressive Buying · 15–35 Regular DCA Buying · 35–55 Hold/Neutral · 55–70 Begin Scaling Out · 70–85 Increase Selling · 85–100 Maximum Selling
+0–14 Aggressive Buying · 15–34 Regular DCA Buying · 35–49 Moderate Buying · 50–64 Hold & Wait · 65–79 Reduce Risk · 80–100 High Risk
 
 ### Methodology CTA
 Methodology (GRS v3) — inputs, normalization, weights, and staleness handling
@@ -157,22 +158,22 @@ W/W Δ: 58 → 66. Liquidity led; term structure cooled. Full breakdown in Drive
 ghostgauge.com
 
 ### Multi-asset tease (future)
-ETH G-Score: 48 (Hold/Neutral). Compare BTC/ETH drivers on GhostGauge.
+ETH G-Score: 48 (Hold & Wait). Compare BTC/ETH drivers on GhostGauge.
 
 ### Persona-seasoned alt (sparingly)
 "The street's loud. Signals aren't. BTC G-Score 72 — High."
 
 ## How the metric works (brief public summary)
 
-• **Inputs → Pillars**: Liquidity/Flows (30%), Momentum/Valuation (30%), Term Structure/Leverage (20%), Macro (10%), Social/Attention (10%).
+• **Inputs → Pillars**: Liquidity/Flows (30%), Momentum/Valuation (30%), Term Structure/Leverage (20%), Macro (10%), Social/Attention (10%). Seven enabled scoring factors; On-chain Activity is disabled at 0%.
 
 • **Normalization**: Winsorize tails → z-score vs history → apply direction (invert where "more = less risk") → logistic map to 0–100.
 
 • **Smoothing**: EWMA headline to reduce jitter.
 
-• **Freshness**: Stale inputs auto-excluded; pillar weights renormalized.
+• **Freshness**: Stale inputs auto-excluded; pillar weights renormalized. Freshness is source-aware; it is not a validation claim.
 
-• **Adjustments (optional)**: small cycle residual & spike detector (capped; disclosed).
+• **Adjustments**: Cycle and Spike adjustment mechanisms are disabled in production v1.1.1; reactivation would require a versioned methodology decision.
 
 • **Interpretation**: Higher G-Score = higher market risk (crowding, leverage, froth). Summary statistic, not a trade signal.
 

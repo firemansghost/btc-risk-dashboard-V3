@@ -123,8 +123,8 @@ export default function WhatIsRiskPage() {
                 </p>
                 <p className="text-lg leading-relaxed mt-4">
                   A lower G-Score does not mean guaranteed upside. A higher G-Score does not mean a crash tomorrow.{' '}
-                  Lower readings have historically been associated with more forgiving conditions. Higher readings
-                  suggest a more crowded or fragile tape where mistakes may cost more.
+                  Historical descriptive work has examined whether lower and higher readings separate more- and
+                  less-forgiving market conditions, but that work is not predictive validation.
                 </p>
                 <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mt-6 not-prose">
                   <p className="text-blue-800 font-medium">
@@ -183,7 +183,8 @@ export default function WhatIsRiskPage() {
               <div className="prose prose-lg text-gray-700 max-w-none">
                 <p className="text-lg leading-relaxed">
                   Five pillars normalized to history, winsorized, mapped to 0–100, combined by fixed weights.
-                  Small Cycle/Spike adjustments, shown as pills. No advice; just conditions.
+                  Cycle and Spike adjustments are disabled in production v1.1.1 and currently contribute zero points.
+                  No advice; just conditions.
                 </p>
                 <div className="mt-6 not-prose">
                   <Link
@@ -322,7 +323,7 @@ export default function WhatIsRiskPage() {
                     </li>
                     <li className="flex items-start">
                       <span className="text-green-500 mr-2 shrink-0">✓</span>
-                      Scan Cycle & Spike pills
+                      Check Input Status (source freshness)
                     </li>
                     <li className="flex items-start">
                       <span className="text-green-500 mr-2 shrink-0">✓</span>
@@ -369,7 +370,7 @@ export default function WhatIsRiskPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">What if inputs are stale?</h3>
-                  <p className="text-gray-700">We label Stale/Very Stale; treat the read with caution. Fresh data is more reliable.</p>
+                  <p className="text-gray-700">We label Stale/Very Stale; treat the read with caution. Fresh means the input satisfies the configured source cadence—not that it is validated or correct.</p>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Why can a high score still go higher?</h3>
@@ -421,8 +422,9 @@ export default function WhatIsRiskPage() {
                 <li><strong>Higher:</strong> crowded or fragile conditions</li>
               </ul>
               <p className="text-blue-700 text-sm">
-                Use it to understand context, not to chase trades. Check timestamps, Cycle/Spike pills, and factor
-                contributions before drawing conclusions.
+                Use it to understand context, not to chase trades. Check timestamps, Input Status, and factor
+                contributions before drawing conclusions. Cycle and Spike adjustments are disabled in production
+                v1.1.1 and currently contribute zero points.
               </p>
             </div>
 

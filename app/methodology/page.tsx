@@ -12,6 +12,9 @@ function formatOfficialDcaMultiplier(m: number): string {
   return `${m}×`;
 }
 
+const FACTOR_FRESHNESS_COPY =
+  'Freshness is source-aware and governed by the current production configuration; see the dashboard Input Status for the current factor state.';
+
 type Band = { key: string; label: string; range: [number, number]; color: string; recommendation: string };
 type Factor = { 
   key: string; 
@@ -75,7 +78,7 @@ export default function MethodologyPage() {
           A transparent, data-driven approach to Bitcoin risk assessment using five independent pillars.
         </p>
         <div className="mt-2 text-sm text-gray-500">
-          v1.1 — Pillars set to 30/30/20/10/10 (Oct 2025). Prior config (38/33/18/6/5) retired.
+          Current production: v1.1.1 / integrity-2026-08 · five pillars weighted 30/30/20/10/10.
         </div>
       </div>
 
@@ -95,12 +98,12 @@ export default function MethodologyPage() {
       <section id="overview" className="section-spacing">
         <h2 className="text-heading-2 mb-4">What the G-Score is</h2>
         <p className="text-body text-gray-600 mb-6">
-          The GhostGauge G-Score is a daily composite from 0–100 where higher = higher market risk (more crowding, leverage, froth). It's informational context—not advice. All inputs use UTC timestamps and finalized data.
+          The GhostGauge G-Score is a daily composite from 0–100 where higher = higher market risk (more crowding, leverage, froth). It's informational context—not advice. GhostGauge publishes a daily UTC intraday production snapshot. Individual inputs can have different source vintages and update cadences; their freshness and scoring availability are shown separately.
         </p>
         
         <h3 className="text-heading-3 mb-4">How it's made (in one breath)</h3>
         <p className="text-body text-gray-600 mb-6">
-          Each factor is normalized vs its own history, winsorized, mapped to 0–100, then combined by pillar weights. Two small adjustments can apply: Cycle (Power-Law) and Spike (Volatility). Price source for all price-based signals is the Coinbase daily close (UTC) for consistency.
+          Each enabled factor is normalized vs its own history, winsorized, mapped to 0–100, then combined by pillar weights from the current production configuration. Cycle and Spike adjustment mechanisms remain implemented but are disabled for production v1.1.1 and contribute zero points. Price source for price-based signals is the Coinbase daily close (UTC).
         </p>
         
         <h3 className="text-heading-3 mb-4">The Five Pillars (SSOT)</h3>
@@ -120,10 +123,13 @@ export default function MethodologyPage() {
           </div>
           
           <div className="card-elevated card-md">
-            <h3 className="text-heading-3 mb-3">Adjustments (small, additive)</h3>
+            <h3 className="text-heading-3 mb-3">Adjustments (disabled in v1.1.1)</h3>
+            <p className="text-body mb-4">
+              Cycle and Spike adjustment mechanisms remain implemented but are disabled for production v1.1.1. They contribute zero points to the current score. Reactivation would require a separate versioned methodology decision.
+            </p>
             <ul className="list-disc list-inside space-y-2 text-body">
-              <li><strong>Cycle (Power-Law):</strong> Activates only when price deviates &gt;30% from a long-term power-law trend; capped ±2.0 points.</li>
-              <li><strong>Spike (Volatility):</strong> Activates when the daily move &gt; 2× recent (20-day EWMA) volatility; capped ±1.5 points.</li>
+              <li><strong>Cycle (Power-Law):</strong> Disabled in v1.1.1 — contributes 0 points.</li>
+              <li><strong>Spike (Volatility):</strong> Disabled in v1.1.1 — contributes 0 points.</li>
             </ul>
           </div>
         </div>
@@ -156,6 +162,9 @@ export default function MethodologyPage() {
               <span className="text-body"><strong>80–100:</strong> High Risk — Crowded tape; prone to disorderly moves.</span>
             </div>
           </div>
+          <p className="text-body text-gray-600 mt-4">
+            Band labels and recommendation text describe general market-risk context. The official Risk-Based DCA framework below is narrower: it changes only new monthly contribution size. It does not create an automatic sell or trim rule for Bitcoin already held.
+          </p>
         </div>
       </section>
 
@@ -168,7 +177,7 @@ export default function MethodologyPage() {
             <div>
               <h4 className="text-heading-4 mb-3">Weighted Average</h4>
               <p className="text-body mb-4">
-                Each pillar contributes a weighted score to the final G-Score, with weights determined by historical performance and market relevance.
+                Each enabled factor contributes according to the weights defined in the current production configuration.
               </p>
               {config?.pillars ? (
                 <div className="space-y-2">
@@ -270,6 +279,9 @@ export default function MethodologyPage() {
             Risk bands provide context for interpreting G-Scores and help categorize market conditions.
           </p>
           <p className="text-body mb-6">
+            Band labels and recommendation text describe general market-risk context. The official Risk-Based DCA framework below is narrower: it changes only new monthly contribution size. It does not create an automatic sell or trim rule for Bitcoin already held.
+          </p>
+          <p className="text-body mb-6">
             To see how <strong className="font-semibold">today&apos;s</strong> score maps to the official{' '}
             <strong className="font-semibold">monthly</strong> Risk-Based DCA contribution scaling used in Strategy
             Analysis (not personalized advice), open{' '}
@@ -313,7 +325,7 @@ export default function MethodologyPage() {
                       </div>
                     ))}
                   </div>
-                  <div className="text-sm text-gray-500 mt-2">As of {new Date().toISOString().split('T')[0]} UTC</div>
+                  <div className="text-sm text-gray-500 mt-2">Showing last-known configuration.</div>
                 </>
               ) : (
                 <div className="text-caption text-gray-600">
@@ -383,7 +395,7 @@ export default function MethodologyPage() {
           </p>
 
           <p className="text-sm text-gray-500">
-            For <a href="/#risk-based-dca-stance" className="text-link link-hover link-focus">today&apos;s live band and stance</a>{' '}
+            For <a href="/#risk-based-dca-stance" className="text-link link-hover link-focus">the current production snapshot band and stance</a>{' '}
             on the dashboard, or{' '}
             <a href="/strategy-analysis" className="text-link link-hover link-focus">Strategy Analysis</a> for the full
             monthly comparison detail.
@@ -395,7 +407,7 @@ export default function MethodologyPage() {
       <section id="factors" className="section-spacing">
         <h2 className="text-heading-2 mb-4">Key Risk Factors</h2>
         <p className="text-body mb-6">
-          The G-Score is calculated using eight carefully selected risk factors across five pillars. Each factor is weighted based on their historical correlation with Bitcoin's price movements and market cycles.
+          The current production G-Score combines seven enabled scoring factors across five analytical pillars. Their weights are defined by the versioned production configuration. On-chain Activity remains defined in configuration but is disabled at 0% in v1.1.1 and does not contribute to the current score.
         </p>
         
         {/* Factor Overview */}
@@ -443,7 +455,7 @@ export default function MethodologyPage() {
                         );
                       })}
                   </div>
-                  <div className="text-sm text-gray-500 mt-2">As of {new Date().toISOString().split('T')[0]} UTC</div>
+                  <div className="text-sm text-gray-500 mt-2">Showing last-known configuration.</div>
                 </>
               ) : (
                 <div className="text-caption text-gray-600">
@@ -499,13 +511,13 @@ export default function MethodologyPage() {
               
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
-                <p className="text-sm text-gray-700">Daily; stale &gt;48h</p>
+                <p className="text-sm text-gray-700">{FACTOR_FRESHNESS_COPY}</p>
               </div>
               
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
                 <p className="text-sm text-gray-700">
-                  Coinbase daily close (UTC), Rolling SMAs/EMA
+                  Coinbase daily close (UTC); rolling SMAs/EMA computed from that series
                 </p>
               </div>
               
@@ -549,13 +561,13 @@ export default function MethodologyPage() {
               
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
-                <p className="text-sm text-gray-700">Daily; stale &gt;48h</p>
+                <p className="text-sm text-gray-700">{FACTOR_FRESHNESS_COPY}</p>
               </div>
               
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
                 <p className="text-sm text-gray-700">
-                  Coinbase daily close (UTC), Fear & Greed Index, Social sentiment analysis
+                  Stablecoin market data used by the current production factor.
                 </p>
               </div>
               
@@ -599,7 +611,9 @@ export default function MethodologyPage() {
               
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
-                <p className="text-sm text-gray-700">Weekly; stale &gt;8 days</p>
+                <p className="text-sm text-gray-700">
+                  Slower public-data/FRED cadence. {FACTOR_FRESHNESS_COPY}
+                </p>
               </div>
               
               <div>
@@ -649,7 +663,9 @@ export default function MethodologyPage() {
               
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
-                <p className="text-sm text-gray-700">Business days; stale &gt;72h</p>
+                <p className="text-sm text-gray-700">
+                  Business-day source. {FACTOR_FRESHNESS_COPY}
+                </p>
               </div>
               
               <div>
@@ -662,56 +678,6 @@ export default function MethodologyPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Caveats</h4>
                 <p className="text-sm text-gray-700">Holidays/reporting lags.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* On-chain Activity Factor Card */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">Momentum / Valuation</span>
-            </div>
-            <h3 className="text-xl font-semibold mb-4">On-chain Activity</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-2">What we look at</h4>
-                <ul className="text-sm text-gray-700 space-y-1">
-                  <li>• Network congestion (transaction fees vs historical)</li>
-                  <li>• Transaction activity (normalized daily count)</li>
-                  <li>• Hash rate security bonus/penalty (±5 points)</li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Why it matters</h4>
-                <p className="text-sm text-gray-700">
-                  Core Bitcoin network metrics. Network congestion and activity indicate usage pressure and potential stress.
-                </p>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-2">How it affects risk</h4>
-                <p className="text-sm text-gray-700">
-                  ↑ congestion + activity ↑ risk; ↑ security ↓ risk
-                </p>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
-                <p className="text-sm text-gray-700">Daily; stale &gt;24h</p>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
-                <p className="text-sm text-gray-700">
-                  <a href="https://blockchain.info" className="text-blue-600 hover:underline">Blockchain.info</a>, <a href="https://mempool.space" className="text-blue-600 hover:underline">Mempool.space</a>, <a href="https://mempool.observer" className="text-blue-600 hover:underline">Mempool.observer</a>
-                </p>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Caveats</h4>
-                <p className="text-sm text-gray-700">Network upgrades and fee market changes can affect metrics.</p>
               </div>
             </div>
           </div>
@@ -749,13 +715,13 @@ export default function MethodologyPage() {
               
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
-                <p className="text-sm text-gray-700">6-hour; stale &gt;12h</p>
+                <p className="text-sm text-gray-700">{FACTOR_FRESHNESS_COPY}</p>
               </div>
               
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
                 <p className="text-sm text-gray-700">
-                  <a href="https://bitmex.com" className="text-blue-600 hover:underline">BitMEX</a>, <a href="https://binance.com" className="text-blue-600 hover:underline">Binance</a>, <a href="https://okx.com" className="text-blue-600 hover:underline">OKX</a>
+                  Derivatives funding data used by the current production factor.
                 </p>
               </div>
               
@@ -786,7 +752,7 @@ export default function MethodologyPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Why it matters</h4>
                 <p className="text-sm text-gray-700">
-                  Sentiment indicator and attention proxy. Least predictive but useful for understanding market psychology.
+                  Social Interest is a supporting attention signal within the current five-pillar framework.
                 </p>
               </div>
               
@@ -799,19 +765,19 @@ export default function MethodologyPage() {
               
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
-                <p className="text-sm text-gray-700">6-hour; stale &gt;12h</p>
+                <p className="text-sm text-gray-700">{FACTOR_FRESHNESS_COPY}</p>
               </div>
               
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
                 <p className="text-sm text-gray-700">
-                  Coinbase daily close (UTC), Social sentiment analysis, Price momentum analysis
+                  CoinGecko trending attention/rank plus BTC price-momentum context.
                 </p>
               </div>
               
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Caveats</h4>
-                <p className="text-sm text-gray-700">Social sentiment can be manipulated and is least predictive.</p>
+                <p className="text-sm text-gray-700">Attention signals can be noisy and are a supporting input, not a standalone read.</p>
               </div>
             </div>
           </div>
@@ -849,7 +815,9 @@ export default function MethodologyPage() {
               
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
-                <p className="text-sm text-gray-700">Daily; stale &gt;48h</p>
+                <p className="text-sm text-gray-700">
+                  Slower public-data/FRED cadence. {FACTOR_FRESHNESS_COPY}
+                </p>
               </div>
               
               <div>
@@ -865,6 +833,18 @@ export default function MethodologyPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="mt-6 p-4 bg-gray-50 border border-dashed border-gray-300 rounded-lg">
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <h3 className="text-lg font-semibold text-gray-800">On-chain Activity</h3>
+            <span className="px-2 py-1 text-xs font-medium bg-gray-200 text-gray-700 rounded-full">
+              Disabled / 0% — not included in current G-Score
+            </span>
+          </div>
+          <p className="text-sm text-gray-700">
+            On-chain Activity remains defined in configuration but is disabled at 0% in v1.1.1 and does not contribute to the current score. It is not a current scoring source and is not part of the Momentum pillar contribution.
+          </p>
         </div>
 
         {/* Data Quality & Reliability */}
@@ -886,7 +866,7 @@ export default function MethodologyPage() {
                 <li>• Multi-source fallback chains</li>
                 <li>• Business-day aware calculations</li>
                 <li>• Historical baseline comparisons</li>
-                <li>• Real-time staleness detection</li>
+                <li>• Source freshness and input-status checks</li>
               </ul>
             </div>
           </div>
@@ -897,9 +877,9 @@ export default function MethodologyPage() {
       <section id="weights" className="section-spacing">
         <h2 className="text-heading-2 mb-4">Factor Weights</h2>
         <div className="card-elevated card-md">
-          <h3 className="text-heading-3 mb-4">Current Weights (v1.1)</h3>
+          <h3 className="text-heading-3 mb-4">Current Weights (v1.1.1)</h3>
           <p className="text-body mb-6">
-            Liquidity/Flows 30%, Momentum/Valuation 30%, Term Structure/Leverage 20%, Macro Overlay 10%, Social/Attention 10%. Weights are fixed; each factor is normalized vs its history.
+            Liquidity/Flows 30%, Momentum/Valuation 30%, Term Structure/Leverage 20%, Macro Overlay 10%, Social/Attention 10%. Seven enabled scoring factors. Weights are defined by the versioned production configuration; each enabled factor is normalized vs its history.
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -933,7 +913,7 @@ export default function MethodologyPage() {
                             </div>
                           ))}
                       </div>
-                      <div className="text-sm text-gray-500 mt-2">As of {new Date().toISOString().split('T')[0]} UTC</div>
+                      <div className="text-sm text-gray-500 mt-2">Showing last-known configuration.</div>
                     </>
                   ) : (
                     <div className="text-caption text-gray-600">
@@ -951,16 +931,10 @@ export default function MethodologyPage() {
             </div>
             
             <div>
-              <h4 className="text-heading-4 mb-3">Weight Adjustment</h4>
+              <h4 className="text-heading-4 mb-3">How weights are applied</h4>
               <p className="text-body mb-4">
-                Weights are recalculated based on:
+                Each enabled factor contributes according to the weights defined in the current production configuration. If a factor is excluded from a snapshot, remaining enabled weights renormalize for that snapshot. Weights are not recalculated from live performance, correlation studies, or claimed historical predictive power.
               </p>
-              <ul className="list-disc list-inside space-y-2 text-body">
-                <li>Historical performance</li>
-                <li>Market volatility</li>
-                <li>Correlation analysis</li>
-                <li>Regime changes</li>
-              </ul>
             </div>
           </div>
         </div>
@@ -977,19 +951,21 @@ export default function MethodologyPage() {
             <div>
               <h4 className="text-heading-4 mb-3">Data Sources</h4>
               <ul className="list-disc list-inside space-y-2 text-body">
-                <li>Coinbase daily close (UTC)</li>
-                <li>Blockchain.info</li>
-                <li>Federal Reserve Economic Data</li>
-                <li>Alternative.me Fear & Greed Index</li>
+                <li>Coinbase daily close (UTC) for price-based signals</li>
+                <li>Stablecoin market data used by the current production factor</li>
+                <li>Business-day ETF flow source</li>
+                <li>FRED public-data series for Net Liquidity and Macro Overlay</li>
+                <li>Derivatives funding data for Term Structure &amp; Leverage</li>
+                <li>CoinGecko trending attention/rank plus BTC price-momentum context</li>
               </ul>
             </div>
             <div>
               <h4 className="text-heading-4 mb-3">Update Frequency</h4>
               <ul className="list-disc list-inside space-y-2 text-body">
-                <li>Real-time price data</li>
-                <li>Daily on-chain metrics</li>
-                <li>Weekly macro indicators</li>
-                <li>Monthly regulatory updates</li>
+                <li>Daily UTC intraday production snapshot</li>
+                <li>Individual inputs can have different vintages and cadences</li>
+                <li>Current factor state is shown on dashboard Input Status</li>
+                <li>Not a continuously streaming real-time feed</li>
               </ul>
             </div>
           </div>
@@ -999,7 +975,7 @@ export default function MethodologyPage() {
       {/* Model Version Note */}
       <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
         <p className="text-sm text-gray-600">
-          <strong>Model version:</strong> v1.1 — Pillars set to 30/30/20/10/10 (Oct 2025). Prior config (38/33/18/6/5) retired.
+          <strong>Model version:</strong> Current production: v1.1.1 / integrity-2026-08 · five pillars weighted 30/30/20/10/10.
         </p>
       </div>
     </div>

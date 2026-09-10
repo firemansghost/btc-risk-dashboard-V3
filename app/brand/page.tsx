@@ -49,11 +49,12 @@ export default function BrandPage() {
           <li><strong>Promise</strong>: Signals, not hype. Methods before marketing.</li>
           <li><strong>Proof points</strong>:
             <ul>
-              <li>Five-pillar model with published inputs & weights (35/25/20/10/10).</li>
+              <li>Five-pillar model with published inputs & weights (30/30/20/10/10).</li>
+              <li>Seven enabled scoring factors; On-chain Activity is disabled at 0% in v1.1.1.</li>
               <li>Winsorized z-scores → logistic 0–100; stale data auto-excluded with weight re-normalization.</li>
               <li>Factor History CSVs updated daily; Provenance with source notes, schema tripwires, and fallbacks.</li>
               <li>ETF Flows via robust parser (21-day sum) with staleness & outlier guards.</li>
-              <li>Optional small adjustments: cycle residual & spike detector—capped and disclosed.</li>
+              <li>Cycle and Spike adjustment mechanisms are disabled in production v1.1.1; reactivation would require a versioned methodology decision.</li>
               <li>Clear risk bands and plain-English playbook.</li>
             </ul>
           </li>
@@ -181,9 +182,10 @@ export default function BrandPage() {
         <h2>How the metric works (brief public summary)</h2>
         
         <ul>
-          <li><strong>Inputs → Pillars</strong>: Liquidity/Flows (35%), Momentum/Valuation (25%), Term Structure/Leverage (20%), Macro (10%), Social/Attention (10%).</li>
+          <li><strong>Inputs → Pillars</strong>: Liquidity/Flows (30%), Momentum/Valuation (30%), Term Structure/Leverage (20%), Macro (10%), Social/Attention (10%). Seven enabled scoring factors; On-chain Activity is disabled at 0%.</li>
           <li><strong>Normalization</strong>: Winsorize tails → z-score vs history → apply direction (invert where "more = less risk") → logistic 0–100.</li>
           <li><strong>Smoothing</strong>: EWMA with configurable half-life; stale data excluded with weight re-normalization.</li>
+          <li><strong>Adjustments</strong>: Cycle and Spike adjustment mechanisms are disabled in production v1.1.1; reactivation would require a versioned methodology decision.</li>
           <li><strong>Transparency</strong>: Every input sourced, timestamped, and downloadable as CSV.</li>
         </ul>
       </div>

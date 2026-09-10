@@ -21,8 +21,6 @@ export default function ComingSoonPage({
   assetDisplay, 
   factorPreviews 
 }: ComingSoonPageProps) {
-  const currentTime = new Date().toISOString().replace('T', ' ').substring(0, 16) + ' UTC';
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -104,7 +102,7 @@ export default function ComingSoonPage({
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900">Same Framework</h3>
-                  <p className="text-sm text-gray-600">Proven methodology, adapted for {assetDisplay}</p>
+                  <p className="text-sm text-gray-600">Transparent framework, adapted for {assetDisplay}</p>
                 </div>
               </div>
             </div>
@@ -201,11 +199,6 @@ export default function ComingSoonPage({
             </Link>
           </div>
         </section>
-
-        {/* Footer */}
-        <footer className="text-center text-sm text-gray-500">
-          <p>As of {currentTime}</p>
-        </footer>
       </main>
     </div>
   );

@@ -33,19 +33,20 @@ export default function BacktestingDisclosures() {
                   <li>• <strong>No transaction costs</strong> - Real trading incurs fees</li>
                   <li>• <strong>Perfect liquidity</strong> - Assumes instant execution at quoted prices</li>
                   <li>• <strong>No slippage</strong> - Large orders may move prices</li>
-                  <li>• <strong>Daily rebalancing</strong> - Strategies execute on G-Score updates</li>
+                  <li>• <strong>Official monthly comparison:</strong> the Baseline DCA and Risk-Based DCA strategies use the first available history row in each calendar month. Months with no eligible history row are skipped for both strategies.</li>
                   <li>• <strong>No taxes</strong> - Tax implications not considered</li>
                 </ul>
               </div>
 
               {/* Time Period & Data */}
               <div>
-                <h4 className="font-semibold mb-2">📅 Analysis Period</h4>
+                <h4 className="font-semibold mb-2">📅 Official monthly strategy comparison (SSOT)</h4>
                 <ul className="space-y-1 ml-4">
-                  <li>• <strong>Period:</strong> August 2023 - September 2025 (731 days)</li>
-                  <li>• <strong>Market Conditions:</strong> Bull market with significant volatility</li>
-                  <li>• <strong>Data Source:</strong> Historical Bitcoin prices and G-Score data</li>
-                  <li>• <strong>Update Frequency:</strong> Weekly backtesting on Sundays</li>
+                  <li>• <strong>Canonical artifact:</strong> public/data/dca_vs_risk_comparison.json (strategy_comparison_monthly_ssot)</li>
+                  <li>• <strong>Official strategies:</strong> Baseline DCA and Risk-Based DCA</li>
+                  <li>• <strong>Schedule:</strong> first available history row in each calendar month; months with no row are skipped for both strategies</li>
+                  <li>• Separate weekly monitoring artifacts are supporting/descriptive reports; they are not the official monthly strategy comparison.</li>
+                  <li>• The comparison uses public/data/history.csv, which contains mixed-provenance historical G-Score data. These strategy results are descriptive historical artifacts, not validated as-published performance evidence.</li>
                 </ul>
               </div>
 
@@ -60,7 +61,7 @@ export default function BacktestingDisclosures() {
                     trades — <strong>not</strong> annualized textbook Sharpe. For rankings, treat as a rough risk-adjusted score.
                   </li>
                   <li>
-                    • <strong>Outperformance (weekly report field):</strong> Risk-based return minus DCA return inside the weekly pipeline artifact — not the official monthly SSOT headline metric.
+                    • <strong>Outperformance (weekly report field):</strong> Risk-based return minus DCA return inside the weekly pipeline artifact — a supporting/descriptive weekly monitoring field, not the official monthly SSOT headline metric.
                   </li>
                   <li>• <strong>Total Return:</strong> Cumulative percentage gain over entire period</li>
                 </ul>
@@ -70,10 +71,10 @@ export default function BacktestingDisclosures() {
               <div>
                 <h4 className="font-semibold mb-2">🎯 Strategy Definitions</h4>
                 <ul className="space-y-1 ml-4">
-                  <li>• <strong>Value Averaging:</strong> Invest only when portfolio value below target</li>
-                  <li>• <strong>Risk-Based DCA:</strong> Adjust allocation based on G-Score bands</li>
-                  <li>• <strong>Regular DCA:</strong> Fixed monthly investment regardless of conditions</li>
-                  <li>• <strong>Buy & Hold:</strong> Single lump sum investment at start</li>
+                  <li>• <strong>Official monthly comparison:</strong> Baseline DCA vs Risk-Based DCA (canonical SSOT)</li>
+                  <li>• <strong>Risk-Based DCA:</strong> Adjusts new monthly contribution size from official band multipliers</li>
+                  <li>• <strong>Baseline DCA:</strong> Fixed monthly contribution regardless of conditions</li>
+                  <li>• Other named strategies may appear in supporting weekly monitoring reports; they are not the official monthly comparison.</li>
                 </ul>
               </div>
 
@@ -82,7 +83,7 @@ export default function BacktestingDisclosures() {
                 <h4 className="font-semibold mb-2">⚠️ Limitations</h4>
                 <ul className="space-y-1 ml-4">
                   <li>• <strong>Survivorship Bias:</strong> Bitcoin has survived, other assets may not</li>
-                  <li>• <strong>Look-Ahead Bias:</strong> Uses historical G-Score data that wasn't available in real-time</li>
+                  <li>• <strong>Look-Ahead Bias:</strong> Uses historical G-Score data that was not a contemporaneous as-published print</li>
                   <li>• <strong>Market Regime:</strong> Results may not apply to different market conditions</li>
                   <li>• <strong>Implementation Risk:</strong> Real-world execution may differ from backtesting</li>
                   <li>• <strong>Data Quality:</strong> Assumes accurate historical data</li>
