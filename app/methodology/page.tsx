@@ -75,7 +75,7 @@ export default function MethodologyPage() {
       <div className="section-spacing">
         <h1 className="text-heading-1 mb-4">Methodology & Risk Factor Breakdown</h1>
         <p className="text-body text-gray-600">
-          A transparent, data-driven approach to Bitcoin risk assessment using five independent pillars.
+          A transparent, data-driven approach to Bitcoin risk assessment using five analytical pillars.
         </p>
         <div className="mt-2 text-sm text-gray-500">
           Current production: v1.1.1 / integrity-2026-08 · five pillars weighted 30/30/20/10/10.
@@ -103,7 +103,7 @@ export default function MethodologyPage() {
         
         <h3 className="text-heading-3 mb-4">How it's made (in one breath)</h3>
         <p className="text-body text-gray-600 mb-6">
-          Each enabled factor is normalized vs its own history, winsorized, mapped to 0–100, then combined by pillar weights from the current production configuration. Cycle and Spike adjustment mechanisms remain implemented but are disabled for production v1.1.1 and contribute zero points. Price source for price-based signals is the Coinbase daily close (UTC).
+          Each enabled factor uses its factor-specific production logic to produce a 0–100 score. Only factors classified fresh under the production source-cadence rules contribute to the composite; their versioned weights are normalized over the included set for that snapshot. Cycle and Spike adjustment mechanisms remain implemented but are disabled in production v1.1.1 and contribute zero points. The current BTC price observation is a UTC intraday snapshot. Completed daily price history is maintained separately for production calculations that require historical closes.
         </p>
         
         <h3 className="text-heading-3 mb-4">The Five Pillars (SSOT)</h3>
@@ -111,7 +111,7 @@ export default function MethodologyPage() {
           <div className="card-elevated card-md">
             <h3 className="text-heading-3 mb-3">Five Pillars of Risk</h3>
             <p className="text-body mb-4">
-              Our methodology evaluates Bitcoin risk across five independent pillars, each contributing to a composite G-Score.
+              Our methodology evaluates Bitcoin risk across five analytical pillars, each contributing to the composite G-Score.
             </p>
             <ul className="list-disc list-inside space-y-2 text-body">
               <li><strong>Liquidity/Flows — 30%:</strong> Stablecoins (18%), ETF Flows (7.7%), Net Liquidity (4.3%). Captures "is money coming in or out?" breadth and participation.</li>
@@ -498,7 +498,7 @@ export default function MethodologyPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Why it matters</h4>
                 <p className="text-sm text-gray-700">
-                  Captures overextension versus long-term trend; extended runs above trend often cool. Most fundamental risk indicator providing cycle positioning.
+                  Measures price extension relative to long-term trend and momentum within the GhostGauge model.
                 </p>
               </div>
               
@@ -548,7 +548,7 @@ export default function MethodologyPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Why it matters</h4>
                 <p className="text-sm text-gray-700">
-                  Stablecoin supply precedes on-exchange buying capacity. Crypto-native liquidity indicator with enhanced 7-coin coverage.
+                  Provides crypto-native liquidity context from stablecoin supply growth and composition.
                 </p>
               </div>
               
@@ -598,7 +598,7 @@ export default function MethodologyPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Why it matters</h4>
                 <p className="text-sm text-gray-700">
-                  Liquidity conditions shape risk appetite; shrinking liquidity pressures risk assets. Fed balance sheet backdrop for market conditions.
+                  Provides a broad macro-liquidity backdrop used as one input to the GhostGauge model.
                 </p>
               </div>
               
@@ -650,7 +650,7 @@ export default function MethodologyPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Why it matters</h4>
                 <p className="text-sm text-gray-700">
-                  Proxies institutional demand via regulated vehicles. Major institutional adoption indicator with business-day awareness.
+                  Provides a regulated-vehicle flow proxy for institutional participation.
                 </p>
               </div>
               
@@ -702,7 +702,7 @@ export default function MethodologyPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Why it matters</h4>
                 <p className="text-sm text-gray-700">
-                  Derivatives market health and leverage cycles. Critical for understanding market stress and funding conditions.
+                  Captures derivatives funding, realized-volatility, and leverage-stress conditions used by the model.
                 </p>
               </div>
               
@@ -847,9 +847,9 @@ export default function MethodologyPage() {
           </p>
         </div>
 
-        {/* Data Quality & Reliability */}
+        {/* Data Status & Source Handling */}
         <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <h3 className="text-lg font-semibold mb-3">Data Quality & Reliability</h3>
+          <h3 className="text-lg font-semibold mb-3">Data Status & Source Handling</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <h4 className="font-semibold mb-2">Quality Controls</h4>
@@ -861,7 +861,7 @@ export default function MethodologyPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-2">Reliability Features</h4>
+              <h4 className="font-semibold mb-2">Source-Handling Features</h4>
               <ul className="text-sm text-gray-700 space-y-1">
                 <li>• Multi-source fallback chains</li>
                 <li>• Business-day aware calculations</li>
@@ -879,7 +879,7 @@ export default function MethodologyPage() {
         <div className="card-elevated card-md">
           <h3 className="text-heading-3 mb-4">Current Weights (v1.1.1)</h3>
           <p className="text-body mb-6">
-            Liquidity/Flows 30%, Momentum/Valuation 30%, Term Structure/Leverage 20%, Macro Overlay 10%, Social/Attention 10%. Seven enabled scoring factors. Weights are defined by the versioned production configuration; each enabled factor is normalized vs its history.
+            Liquidity/Flows 30%, Momentum/Valuation 30%, Term Structure/Leverage 20%, Macro Overlay 10%, Social/Attention 10%. Seven enabled scoring factors contribute according to the versioned production configuration. Only factors included under the production freshness rules contribute to a snapshot, with weights normalized over the included set.
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -951,7 +951,7 @@ export default function MethodologyPage() {
             <div>
               <h4 className="text-heading-4 mb-3">Data Sources</h4>
               <ul className="list-disc list-inside space-y-2 text-body">
-                <li>Coinbase daily close (UTC) for price-based signals</li>
+                <li>UTC intraday BTC price snapshot, with completed daily closes maintained separately for historical calculations</li>
                 <li>Stablecoin market data used by the current production factor</li>
                 <li>Business-day ETF flow source</li>
                 <li>FRED public-data series for Net Liquidity and Macro Overlay</li>

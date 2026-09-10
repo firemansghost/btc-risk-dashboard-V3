@@ -182,7 +182,7 @@ export default function WhatIsRiskPage() {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">🔢 From Idea to Number: The Bitcoin G-Score</h2>
               <div className="prose prose-lg text-gray-700 max-w-none">
                 <p className="text-lg leading-relaxed">
-                  Five pillars normalized to history, winsorized, mapped to 0–100, combined by fixed weights.
+                  Seven enabled factor scores are produced by factor-specific production logic and combined across five analytical pillars using versioned weights. Only factors included under the production source-freshness rules contribute to that snapshot.
                   Cycle and Spike adjustments are disabled in production v1.1.1 and currently contribute zero points.
                   No advice; just conditions.
                 </p>
@@ -370,7 +370,7 @@ export default function WhatIsRiskPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">What if inputs are stale?</h3>
-                  <p className="text-gray-700">We label Stale/Very Stale; treat the read with caution. Fresh means the input satisfies the configured source cadence—not that it is validated or correct.</p>
+                  <p className="text-gray-700">Input Status distinguishes Fresh, Stale, Excluded, and Status unknown. Fresh means the input satisfies the configured source cadence—not that it is validated or correct.</p>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Why can a high score still go higher?</h3>

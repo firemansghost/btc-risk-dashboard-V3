@@ -83,10 +83,10 @@ export default function BacktestingDisclosures() {
                 <h4 className="font-semibold mb-2">⚠️ Limitations</h4>
                 <ul className="space-y-1 ml-4">
                   <li>• <strong>Survivorship Bias:</strong> Bitcoin has survived, other assets may not</li>
-                  <li>• <strong>Look-Ahead Bias:</strong> Uses historical G-Score data that was not a contemporaneous as-published print</li>
+                  <li>• <strong>Historical provenance:</strong> The comparison spans mixed-provenance G-Score history, including reconstructed rows that were not contemporaneous as-published observations.</li>
                   <li>• <strong>Market Regime:</strong> Results may not apply to different market conditions</li>
                   <li>• <strong>Implementation Risk:</strong> Real-world execution may differ from backtesting</li>
-                  <li>• <strong>Data Quality:</strong> Assumes accurate historical data</li>
+                  <li>• <strong>Data limitations:</strong> Historical G-Score rows have documented provenance and coverage limitations.</li>
                 </ul>
               </div>
 

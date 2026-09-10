@@ -38,7 +38,7 @@ Headlines, UI chips, social posts, casual usage.
 
 • **One-liner**: GhostGauge turns market chaos into a single, transparent G-Score so you can calibrate risk at a glance.
 
-• **30-second pitch**: GhostGauge blends liquidity, momentum, term structure, macro, and social/attention into a 0–100 G-Score (higher = higher risk). Every input is sourced, time-stamped, normalized, and blended with outlier control and EWMA smoothing. No black boxes—click through to see the drivers and download the history.
+• **30-second pitch**: GhostGauge blends seven enabled factor scores across liquidity, momentum, term structure, macro, and social/attention into a 0–100 G-Score (higher = higher risk). Each factor follows its own production logic, with factor-level status and source/timing context exposed in the dashboard. Click through to inspect the drivers and available history.
 
 ## Positioning & proof
 
@@ -49,9 +49,9 @@ Headlines, UI chips, social posts, casual usage.
 • **Proof points**:
   - Five-pillar model with published inputs & weights (30/30/20/10/10).
   - Seven enabled scoring factors; On-chain Activity is disabled at 0% in v1.1.1.
-  - Winsorized z-scores → logistic 0–100; stale data auto-excluded with weight re-normalization.
-  - Factor History CSVs updated daily; Provenance with source notes, schema tripwires, and fallbacks.
-  - ETF Flows via robust parser (21-day sum) with staleness & outlier guards.
+  - Factor-specific production logic produces 0–100 factor scores; included factor scores are combined using published versioned weights.
+  - Factor History outputs are maintained by successful production ETL runs with documented provenance.
+  - ETF Flows uses a 21-day aggregate-flow measure with source-freshness and data-quality guards.
   - Cycle and Spike adjustment mechanisms are disabled in production v1.1.1; reactivation would require a versioned methodology decision.
   - Clear risk bands and plain-English playbook.
 
@@ -167,13 +167,15 @@ ETH G-Score: 48 (Hold & Wait). Compare BTC/ETH drivers on GhostGauge.
 
 • **Inputs → Pillars**: Liquidity/Flows (30%), Momentum/Valuation (30%), Term Structure/Leverage (20%), Macro (10%), Social/Attention (10%). Seven enabled scoring factors; On-chain Activity is disabled at 0%.
 
-• **Normalization**: Winsorize tails → z-score vs history → apply direction (invert where "more = less risk") → logistic map to 0–100.
+• **Factor scoring**: Each enabled factor uses factor-specific production logic to produce a 0–100 factor score.
 
-• **Smoothing**: EWMA headline to reduce jitter.
+• **Aggregation**: Only factors classified fresh in production contribute to the composite; versioned weights are normalized over the included set for that snapshot.
 
-• **Freshness**: Stale inputs auto-excluded; pillar weights renormalized. Freshness is source-aware; it is not a validation claim.
+• **Freshness**: Input freshness is source-aware and is not a validation or accuracy claim.
 
 • **Adjustments**: Cycle and Spike adjustment mechanisms are disabled in production v1.1.1; reactivation would require a versioned methodology decision.
+
+• **Transparency**: Production snapshots expose factor-level status and source/timing context, with historical and downloadable artifacts available where provided.
 
 • **Interpretation**: Higher G-Score = higher market risk (crowding, leverage, froth). Summary statistic, not a trade signal.
 
