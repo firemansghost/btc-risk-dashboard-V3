@@ -1,4 +1,18 @@
-# Roadmap
+# Historical Roadmap Snapshot — 2025
+
+> **This file is an archived planning snapshot preserved for project history.
+> It is not the current GhostGauge roadmap or feature-status authority.
+> Items marked completed below reflect the state/plan at the time and may
+> later have been removed, replaced, deprecated, or superseded.**
+>
+> For current production behavior, see [`README.md`](../README.md),
+> [`docs/PROJECT_BRIEF.md`](PROJECT_BRIEF.md),
+> [`config/dashboard-config.json`](../config/dashboard-config.json), and current
+> production code.
+>
+> For current research governance, see the
+> [H8 v2 preregistration](H8_V2_PROSPECTIVE_30D_RISK_DISCRIMINATION_PREREGISTRATION.md)
+> and [model era documentation](MODEL_ERAS.md).
 
 Development timeline for the next 4-6 weeks.
 
