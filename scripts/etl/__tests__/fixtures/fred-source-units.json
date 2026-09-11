@@ -1,0 +1,24 @@
+{
+  "contract": "fred_source_units_v1",
+  "source": "Federal Reserve Economic Data (FRED)",
+  "series": [
+    {
+      "series_id": "WALCL",
+      "source_unit": "Millions of U.S. Dollars",
+      "usd_multiplier": 1000000,
+      "provenance_url": "https://fred.stlouisfed.org/series/WALCL"
+    },
+    {
+      "series_id": "WTREGEN",
+      "source_unit": "Millions of U.S. Dollars",
+      "usd_multiplier": 1000000,
+      "provenance_url": "https://fred.stlouisfed.org/series/WTREGEN"
+    },
+    {
+      "series_id": "RRPONTSYD",
+      "source_unit": "Billions of U.S. Dollars",
+      "usd_multiplier": 1000000000,
+      "provenance_url": "https://fred.stlouisfed.org/series/RRPONTSYD"
+    }
+  ]
+}
