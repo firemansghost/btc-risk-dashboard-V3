@@ -1,0 +1,23 @@
+{
+  "contract": "farside_etf_identity_v1",
+  "source": "Farside Investors Bitcoin ETF flow table",
+  "provenance_url": "https://farside.co.uk/btc/",
+  "headers": [
+    "Date",
+    "FBTC",
+    "BTC",
+    "Total"
+  ],
+  "identities": [
+    {
+      "symbol": "FBTC",
+      "header": "FBTC",
+      "expected_index": 1
+    },
+    {
+      "symbol": "BTC",
+      "header": "BTC",
+      "expected_index": 2
+    }
+  ]
+}
