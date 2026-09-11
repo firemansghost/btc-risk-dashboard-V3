@@ -35,10 +35,10 @@ jobs:
         run: npm run test:etl
 
       - name: Run typecheck
-        run: npm run typecheck
+        run: npm run typecheck -- --incremental false
 
-      - name: Run H8 v2 capture contract tests
-        run: node --test scripts/research/__tests__/h8-v2-prospective-capture.test.mjs
+      - name: Run H8 v2 activated contract check
+        run: node scripts/research/capture-h8-v2-prospective.mjs --contract-check
 
       - name: Run H8 completeness monitor tests
         run: node --test scripts/admin/__tests__/h8-completeness-monitor.test.mjs
@@ -47,6 +47,7 @@ jobs:
         run: node scripts/admin/h8-completeness-monitor.mjs
 
       - name: Verify tests leave checkout clean
+        if: ${{ always() }}
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             echo "CI tests modified the repository worktree:"
