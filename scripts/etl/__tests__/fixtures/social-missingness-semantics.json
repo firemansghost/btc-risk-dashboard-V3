@@ -1,0 +1,53 @@
+{
+  "contract": "social_missingness_semantics_v1",
+  "factor": "social_interest",
+  "invariant": "missing_or_error_is_not_observed_neutral",
+  "components": [
+    "coingecko_trending_rank",
+    "btc_price_momentum_7d"
+  ],
+  "cases": [
+    {
+      "id": "both_available",
+      "trending_state": "available",
+      "price_state": "available",
+      "may_be_treated_as_observed_neutral": null
+    },
+    {
+      "id": "trending_missing_price_available",
+      "trending_state": "missing",
+      "price_state": "available",
+      "may_be_treated_as_observed_neutral": false
+    },
+    {
+      "id": "trending_available_price_missing",
+      "trending_state": "available",
+      "price_state": "missing",
+      "may_be_treated_as_observed_neutral": false
+    },
+    {
+      "id": "both_missing",
+      "trending_state": "missing",
+      "price_state": "missing",
+      "may_be_treated_as_observed_neutral": false
+    },
+    {
+      "id": "trending_error_price_available",
+      "trending_state": "error",
+      "price_state": "available",
+      "may_be_treated_as_observed_neutral": false
+    },
+    {
+      "id": "trending_available_price_error",
+      "trending_state": "available",
+      "price_state": "error",
+      "may_be_treated_as_observed_neutral": false
+    },
+    {
+      "id": "both_error",
+      "trending_state": "error",
+      "price_state": "error",
+      "may_be_treated_as_observed_neutral": false
+    }
+  ]
+}
