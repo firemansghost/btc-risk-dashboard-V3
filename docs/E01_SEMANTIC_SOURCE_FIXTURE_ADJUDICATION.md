@@ -65,7 +65,7 @@ A support file under `scripts/etl/__tests__/fixtures/` would **not** be auto-run
 
 unless a later implementation proves otherwise.
 
-E03 and H8 capture tests are **not** in `npm test` / `npm run test:etl`; they are invoked only by the Tests workflow. Do not put E01 source semantics there.
+E03 tests are not part of `npm test` / `npm run test:etl`; the E03 suite is invoked explicitly by the Tests workflow. R14 does not invoke `scripts/research/__tests__/h8-v2-prospective-capture.test.mjs`; it runs the live H8 `--contract-check` CLI instead. Do not put E01 source semantics into E03 assurance or H8 capture/contract assurance.
 
 There is currently **no** `scripts/etl/__tests__/fixtures/` directory.
 
