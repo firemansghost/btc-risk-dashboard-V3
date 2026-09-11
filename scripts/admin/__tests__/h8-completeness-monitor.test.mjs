@@ -18,6 +18,7 @@ import {
   compareScientificFingerprint,
   identityStatus,
   runIdentityStatus,
+  frozenWorktreeDirtyPaths,
   buildMonitorReport,
   renderHumanReport,
   toSafeJson,
@@ -200,8 +201,18 @@ test('7. stored INTEGRITY_MISMATCH preserved', () => {
       '2026-09-04': { metadata: makeObservation('2026-09-04') },
     },
   });
-  assert.equal(report.observations.rows[0].axis_a_status, 'INTEGRITY_MISMATCH');
+  const row = report.observations.rows[0];
+  assert.equal(row.axis_a_status, 'INTEGRITY_MISMATCH');
   assert.equal(report.observations.axis_a_counts.INTEGRITY_MISMATCH, 1);
+  assert.equal(row.fingerprint_status, 'MATCH');
+  assert.equal(row.identity_status, 'MATCH');
+  assert.equal(row.run_identity_status, 'MATCH');
+  assert.equal(report.observations.missing_dates.length, 0);
+  assert.equal(report.btc_closes.missing, 0);
+  assert.equal(report.repository.scientific_fingerprint_status, 'MATCH');
+  assert.equal(report.repository.working_tree_clean, true);
+  assert.equal(report.repository.frozen_worktree_clean, true);
+  assert.equal(report.overall_status, 'INTEGRITY_ALERT');
 });
 
 test('8. invalid Axis A value fails closed', () => {
@@ -259,6 +270,7 @@ test('12. scientific fingerprint exact MATCH', () => {
   assert.deepEqual(result.mismatchedPaths, []);
   const report = reportWith();
   assert.equal(report.observations.rows[0].fingerprint_status, 'MATCH');
+  assert.deepEqual(toSafeJson(report).observations.rows[0].fingerprint_mismatched_paths, []);
 });
 
 test('13. scientific fingerprint MISMATCH', () => {
@@ -277,6 +289,19 @@ test('13. scientific fingerprint MISMATCH', () => {
   });
   assert.equal(report.observations.rows[0].fingerprint_status, 'MISMATCH');
   assert.equal(report.overall_status, 'INTEGRITY_ALERT');
+  const json = toSafeJson(report);
+  assert.deepEqual(json.observations.rows[0].fingerprint_mismatched_paths, [
+    'scripts/etl/compute.mjs',
+  ]);
+  assert.deepEqual(json.observations.rows[1].fingerprint_mismatched_paths, []);
+  const human = renderHumanReport(report);
+  assert.match(human, /Observation fingerprint mismatch:/);
+  assert.match(human, /2026-09-02/);
+  assert.match(human, /scripts\/etl\/compute\.mjs/);
+  for (const canary of CANARIES) {
+    assert.equal(JSON.stringify(json).includes(canary), false, canary);
+    assert.equal(human.includes(canary), false, canary);
+  }
 });
 
 test('14. schedule + attempt 1 run identity MATCH', () => {
@@ -444,4 +469,51 @@ test('28. no performance calculations are present', async () => {
   assert.equal(addUtcDays('2026-09-09', -1), '2026-09-08');
   assert.equal(previousUtcDate(new Date('2026-09-10T15:00:00Z')), '2026-09-09');
   assert.ok(!('performance' in toSafeJson(report)));
+});
+
+test('29. rename away from a frozen path is FROZEN WORKTREE DIRTY', () => {
+  const porcelain = 'R  config/dashboard-config.json -> scratch/dashboard-config.json\n';
+  const dirty = frozenWorktreeDirtyPaths(porcelain, FINGERPRINT);
+  assert.equal(dirty.includes('config/dashboard-config.json'), true);
+  const report = reportWith({
+    repository: { ...baseRepository(), porcelain },
+  });
+  assert.equal(report.repository.frozen_worktree_clean, false);
+  assert.equal(report.overall_status, 'INTEGRITY_ALERT');
+  assert.match(renderHumanReport(report), /FROZEN WORKTREE DIRTY/);
+});
+
+test('30. rename into a frozen path is FROZEN WORKTREE DIRTY', () => {
+  const porcelain = 'R  scratch/dashboard-config.json -> config/dashboard-config.json\n';
+  const dirty = frozenWorktreeDirtyPaths(porcelain, FINGERPRINT);
+  assert.equal(dirty.includes('config/dashboard-config.json'), true);
+  const report = reportWith({
+    repository: { ...baseRepository(), porcelain },
+  });
+  assert.equal(report.repository.frozen_worktree_clean, false);
+  assert.equal(report.overall_status, 'INTEGRITY_ALERT');
+});
+
+test('31. unrelated rename does not mark frozen worktree dirty', () => {
+  const porcelain = 'R  README.md -> README-old.md\n';
+  const dirty = frozenWorktreeDirtyPaths(porcelain, FINGERPRINT);
+  assert.deepEqual(dirty, []);
+  const report = reportWith({
+    repository: { ...baseRepository(), porcelain },
+  });
+  assert.equal(report.repository.working_tree_clean, false);
+  assert.equal(report.repository.frozen_worktree_clean, true);
+  assert.equal(report.overall_status, 'OK');
+});
+
+test('32. ordinary modified and deleted frozen paths remain dirty', () => {
+  const modified = frozenWorktreeDirtyPaths(' M scripts/etl/compute.mjs\n', FINGERPRINT);
+  assert.equal(modified.includes('scripts/etl/compute.mjs'), true);
+  const deleted = frozenWorktreeDirtyPaths(' D lib/config-loader.mjs\n', FINGERPRINT);
+  assert.equal(deleted.includes('lib/config-loader.mjs'), true);
+  const treeChild = frozenWorktreeDirtyPaths(
+    ' M scripts/etl/factors/trendValuation.mjs\n',
+    FINGERPRINT
+  );
+  assert.equal(treeChild.includes('scripts/etl/factors/trendValuation.mjs'), true);
 });

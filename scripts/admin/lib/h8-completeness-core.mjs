@@ -326,16 +326,23 @@ export function frozenScientificPaths(fingerprint) {
   return Object.keys(fingerprint || {}).map(gitPathForFingerprintKey);
 }
 
+function unquotePorcelainPath(value) {
+  const trimmed = String(value).trim();
+  return trimmed.replace(/^"(.*)"$/, '$1');
+}
+
 export function parsePorcelainPaths(porcelain) {
   if (!porcelain) return [];
   return String(porcelain)
     .split(/\r?\n/)
     .map((line) => line.trimEnd())
     .filter((line) => line.length >= 4)
-    .map((line) => {
+    .flatMap((line) => {
       const rest = line.slice(3);
-      const pathRest = rest.split(' -> ');
-      return pathRest[pathRest.length - 1].replace(/^"(.*)"$/, '$1');
+      return rest
+        .split(' -> ')
+        .map(unquotePorcelainPath)
+        .filter((entry) => entry.length > 0);
     });
 }
 
@@ -452,6 +459,7 @@ function deriveOverallStatus({
     structuralErrors.length > 0 ||
     observationRows.some(
       (row) =>
+        row.axis_a_status === 'INTEGRITY_MISMATCH' ||
         row.fingerprint_status === 'MISMATCH' ||
         row.identity_status === 'MISMATCH' ||
         row.run_identity_status === 'INVALID'
@@ -664,6 +672,7 @@ export function buildMonitorReport({
         github_run_id: row.github_run_id,
         github_event_name: row.github_event_name,
         github_run_attempt: row.github_run_attempt,
+        fingerprint_mismatched_paths: row.fingerprint_mismatched_paths || [],
       })),
     },
     btc_closes: {
@@ -704,6 +713,24 @@ function naStatus(value) {
 
 function joinDates(dates) {
   return dates.length ? dates.join('\n') : '(none)';
+}
+
+function observationFingerprintMismatchBlock(rows) {
+  const mismatched = (rows || []).filter(
+    (row) =>
+      row.fingerprint_status === 'MISMATCH' &&
+      Array.isArray(row.fingerprint_mismatched_paths) &&
+      row.fingerprint_mismatched_paths.length > 0
+  );
+  if (mismatched.length === 0) return '';
+  const lines = ['Observation fingerprint mismatch:'];
+  for (const row of mismatched) {
+    lines.push(row.date);
+    for (const pathName of row.fingerprint_mismatched_paths) {
+      lines.push(`  ${pathName}`);
+    }
+  }
+  return lines.join('\n');
 }
 
 export function renderHumanReport(report) {
@@ -809,6 +836,7 @@ export function renderHumanReport(report) {
     `Missing dates:`,
     joinDates(obs.missing_dates),
     observationTable,
+    observationFingerprintMismatchBlock(report.observation_detail_rows),
     MISSING_DATE_RUN_NOTE,
     '--------------------------------------------------',
     'BTC-CLOSE COMPLETENESS',
