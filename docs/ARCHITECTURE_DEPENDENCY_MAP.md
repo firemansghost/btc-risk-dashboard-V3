@@ -479,7 +479,7 @@ Verified from current code:
 - H8 research artifacts are intentionally **not** part of the production `git add` (explicit `research/` staging refusal).
 - `package.json` / lockfile / Node / action versions can affect scientific runtime even though they are outside the 13-path fingerprint, because Daily ETL runs `npm ci` then `etl:compute`.
 - `app/api/refresh/route.ts` still contains a separate real-time computation implementation (`buildLatest` + `lib/factors/**`) that is **not** called by current GET/POST handlers.
-- Weekly backtesting is an independent public-artifact writer with its own concurrency group and Node pin.
+- Weekly backtesting is an independent public-artifact writer with its own concurrency group and a Node 20 major-version request, rather than Daily ETL's exact 20.18.0 runtime request.
 - Alerts has a current-output contract (`public/alerts/latest.json`) and legacy artifact/generator families under `public/data/*_alerts.json`.
 - Public artifact commits (`[skip ci]`) can still trigger Vercel/build behavior because they are commits to `main`, even though the payload is data rather than application source. Exact Vercel skip rules for docs-only PRs are **UNRESOLVED** without deployment-config evidence (`vercel.json` is absent).
 - `compute.mjs` shells out to non-fingerprint scripts; frozen identity of `compute.mjs` does not freeze those callees.
