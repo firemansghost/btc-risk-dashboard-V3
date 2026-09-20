@@ -2,7 +2,7 @@
   "methodologyVersion": "2.0.0",
   "artifactType": "strategy_comparison_monthly_ssot",
   "metadata": {
-    "generatedAt": "2026-09-13T14:58:11.306Z",
+    "generatedAt": "2026-09-20T14:46:48.680Z",
     "dataSource": "public/data/history.csv",
     "schedule": "First row in each calendar month (sorted history ≈ first trading day on/after the 1st); months with no rows skipped for both strategies.",
     "bandDerivation": "Primary: numeric score → band via config/dashboard-config.json inclusive ranges. Fallback: CSV band column mapped to canonical six labels.",
