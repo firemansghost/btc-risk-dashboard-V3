@@ -448,13 +448,14 @@ function emptyAxisCounts() {
 
 function deriveOverallStatus({
   headFingerprintStatus,
+  enforceHeadFingerprint,
   frozenDirty,
   observationRows,
   closeRows,
   structuralErrors,
 }) {
   const integrity =
-    headFingerprintStatus === 'MISMATCH' ||
+    (enforceHeadFingerprint && headFingerprintStatus === 'MISMATCH') ||
     frozenDirty ||
     structuralErrors.length > 0 ||
     observationRows.some(
@@ -664,8 +665,10 @@ export function buildMonitorReport({
     .filter((row) => row.artifact_status === 'MISSING')
     .map((row) => row.date);
 
+  const scientificFingerprintEnforcement = stop ? 'HISTORICAL_ONLY' : 'ACTIVE';
   const overallStatus = deriveOverallStatus({
     headFingerprintStatus: headComparison.status,
+    enforceHeadFingerprint: scientificFingerprintEnforcement === 'ACTIVE',
     frozenDirty: dirtyFrozen.length > 0,
     observationRows,
     closeRows,
@@ -683,10 +686,12 @@ export function buildMonitorReport({
       working_tree_clean: parsePorcelainPaths(repository?.porcelain || '').length === 0,
       frozen_worktree_clean: dirtyFrozen.length === 0,
       scientific_fingerprint_status: headComparison.status,
+      scientific_fingerprint_enforcement: scientificFingerprintEnforcement,
       scientific_fingerprint_mismatched_paths: headComparison.mismatchedPaths,
       scientific_fingerprint_current: repository?.headFingerprint || {},
       frozen_dirty_paths: dirtyFrozen,
     },
+    scientific_fingerprint_enforcement: scientificFingerprintEnforcement,
     observations: {
       expected: expectedObservationDates.length,
       landed: observationRows.filter((row) => row.artifact_status === 'LANDED').length,
@@ -855,6 +860,8 @@ export function renderHumanReport(report) {
     report.through_mode,
     `HEAD scientific fingerprint:`,
     headLine,
+    `Scientific fingerprint enforcement:`,
+    report.scientific_fingerprint_enforcement,
     '--------------------------------------------------',
     'OBSERVATION COMPLETENESS',
     '--------------------------------------------------',
@@ -912,6 +919,7 @@ export function toSafeJson(report) {
       working_tree_clean: report.repository.working_tree_clean,
       frozen_worktree_clean: report.repository.frozen_worktree_clean,
       scientific_fingerprint_status: report.repository.scientific_fingerprint_status,
+      scientific_fingerprint_enforcement: report.scientific_fingerprint_enforcement,
       scientific_fingerprint_mismatched_paths:
         report.repository.scientific_fingerprint_mismatched_paths,
     },
@@ -920,6 +928,7 @@ export function toSafeJson(report) {
     overall_status: report.overall_status,
     structural_errors: report.structural_errors,
     study_status: report.stop ? report.stop.status : 'ACTIVE',
+    scientific_fingerprint_enforcement: report.scientific_fingerprint_enforcement,
     close_accounting: report.close_accounting,
   };
 }

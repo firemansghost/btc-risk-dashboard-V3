@@ -422,6 +422,7 @@ test('25. overall INTEGRITY_ALERT from fingerprint mismatch', () => {
     },
   });
   assert.equal(report.repository.scientific_fingerprint_status, 'MISMATCH');
+  assert.equal(report.scientific_fingerprint_enforcement, 'ACTIVE');
   assert.equal(report.overall_status, 'INTEGRITY_ALERT');
 });
 
@@ -618,6 +619,56 @@ test('35. closed E03 caps observations at 2026-09-21 and keeps 13 CAPTURE_MISSIN
       throughDateUtc
     );
     assert.equal(report.close_accounting, 'historical_incomplete_not_active_recovery');
+    assert.equal(report.scientific_fingerprint_enforcement, 'HISTORICAL_ONLY');
     assert.notEqual(report.overall_status, 'INTEGRITY_ALERT');
   }
+});
+
+test('36. closed study does not alert solely because current production HEAD diverges', () => {
+  const report = buildMonitorReport({
+    generatedAtUtc: '2026-09-30T00:00:00.000Z',
+    throughDateUtc: '2026-09-30',
+    throughMode: 'explicit',
+    start: makeStart(),
+    observationArtifacts: acceptedObservationArtifacts(),
+    closeArtifacts: {},
+    repository: {
+      ...baseRepository(),
+      headFingerprint: { ...FINGERPRINT, 'scripts/etl/factors.mjs': 'future-production-sha' },
+    },
+    stop: officialStop(),
+  });
+  assert.equal(report.stop.status, 'STOPPED_DURING_PROSPECTIVE_COLLECTION');
+  assert.equal(report.scientific_fingerprint_enforcement, 'HISTORICAL_ONLY');
+  assert.equal(report.repository.scientific_fingerprint_status, 'MISMATCH');
+  assert.equal(
+    report.repository.scientific_fingerprint_mismatched_paths.includes('scripts/etl/factors.mjs'),
+    true
+  );
+  assert.equal(report.observations.axis_a_counts.CAPTURE_MISSING, 13);
+  assert.equal(report.overall_status, 'ATTENTION');
+  assert.match(renderHumanReport(report), /HISTORICAL_ONLY/);
+  assert.match(renderHumanReport(report), /scripts\/etl\/factors\.mjs/);
+});
+
+test('37. an accepted observation fingerprint mismatch remains INTEGRITY_ALERT after closure', () => {
+  const artifacts = acceptedObservationArtifacts();
+  artifacts['2026-09-08'] = {
+    metadata: makeObservation('2026-09-08', {
+      scientific_fingerprint: { ...FINGERPRINT, 'scripts/etl/factors.mjs': 'altered-historical-sha' },
+    }),
+  };
+  const report = buildMonitorReport({
+    generatedAtUtc: '2026-09-30T00:00:00.000Z',
+    throughDateUtc: '2026-09-30',
+    throughMode: 'explicit',
+    start: makeStart(),
+    observationArtifacts: artifacts,
+    closeArtifacts: {},
+    repository: baseRepository(),
+    stop: officialStop(),
+  });
+  assert.equal(report.scientific_fingerprint_enforcement, 'HISTORICAL_ONLY');
+  assert.equal(report.repository.scientific_fingerprint_status, 'MATCH');
+  assert.equal(report.overall_status, 'INTEGRITY_ALERT');
 });

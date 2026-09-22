@@ -10,6 +10,8 @@ import { fileURLToPath } from 'node:url';
 import {
   parseH8V2StopArtifact,
   H8_V2_PROTOCOL_SHA,
+  H8_V2_CAPTURE_CONTRACT_SHA,
+  SCIENTIFIC_FINGERPRINT,
 } from '../lib/h8-v2-prospective-capture-core.mjs';
 import { runCapture, runContractCheck } from '../capture-h8-v2-prospective.mjs';
 
@@ -60,7 +62,7 @@ test('STOP artifact rejects an outcome field', () => {
   assert.throws(() => parseH8V2StopArtifact(raw), /outcome fields/);
 });
 
-test('historical sidecar blob remains 41 bytes and start fingerprint is still HEAD', () => {
+test('historical start identity matches the capture-core fingerprint, not current HEAD', () => {
   const sidecarSize = Number(
     git(['cat-file', '-s', 'HEAD:research/h8-v2-prospective/H8_V2_CAPTURE_SOURCE_SHA.txt'])
   );
@@ -70,9 +72,10 @@ test('historical sidecar blob remains 41 bytes and start fingerprint is still HE
   );
   assert.equal(start.start_date_utc, '2026-09-02');
   assert.equal(start.observation_end_date_utc, '2027-02-28');
-  for (const [filePath, sha] of Object.entries(start.scientific_fingerprint)) {
-    assert.equal(git(['rev-parse', `HEAD:${filePath}`]), sha, filePath);
-  }
+  assert.equal(start.protocol_sha, H8_V2_PROTOCOL_SHA);
+  assert.equal(start.capture_contract_sha, H8_V2_CAPTURE_CONTRACT_SHA);
+  assert.equal(start.capture_source_sha, '10a34be3e9a6955a972774a26b50377cb872e5bc');
+  assert.deepEqual(start.scientific_fingerprint, { ...SCIENTIFIC_FINGERPRINT });
 });
 
 test('accepted observation files are exactly the seven dates through 2026-09-08', () => {
