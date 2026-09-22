@@ -119,3 +119,82 @@ jobs:
             git status --porcelain
             exit 1
           fi
+
+  # TEMPORARY DIAGNOSTIC — close PR #54 without merging.
+  # Same frozen Farside request, from GitHub-hosted macOS egress only.
+  farside-macos-diagnostic:
+    name: TEMP DIAGNOSTIC — Farside macOS egress (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - macos-15-intel
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Use Node 20.18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.0'
+
+      - name: TEMP DIAGNOSTIC — probe Farside from macOS runner
+        run: |
+          node --input-type=module - "${{ matrix.os }}" <<'EOF'
+          const runnerLabel = process.argv[2];
+          const headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Cache-Control": "no-cache"
+          };
+          const urls = [
+            "https://farside.co.uk/bitcoin-etf-flow-all-data/",
+            "https://farside.co.uk/bitcoin-etf-flow/",
+            "https://farside.co.uk/etf-flows/",
+            "https://farside.co.uk/etf-flows/btc",
+            "https://farside.co.uk/btc/"
+          ];
+          for (const requestedUrl of urls) {
+            const record = { runnerLabel, requestedUrl };
+            try {
+              const res = await fetch(requestedUrl, { headers, redirect: "follow" });
+              const text = await res.text();
+              const titleMatch = text.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+              let title = titleMatch ? titleMatch[1].replace(/\s+/g, " ").trim() : null;
+              if (title && title.length > 160) title = title.slice(0, 160);
+              record.finalUrl = res.url;
+              record.status = res.status;
+              record.statusText = res.statusText;
+              record.contentType = res.headers.get("content-type");
+              record.server = res.headers.get("server");
+              record.cfMitigated = res.headers.get("cf-mitigated");
+              record.location = res.headers.get("location");
+              record.bodyChars = text.length;
+              record.bodyBytes = new TextEncoder().encode(text).length;
+              record.title = title;
+              record.hasTable = text.includes("<table");
+              record.hasDate = text.includes("Date");
+              record.hasTotal = text.includes("Total");
+              record.exception = null;
+            } catch (error) {
+              record.finalUrl = null;
+              record.status = null;
+              record.statusText = null;
+              record.contentType = null;
+              record.server = null;
+              record.cfMitigated = null;
+              record.location = null;
+              record.bodyChars = null;
+              record.bodyBytes = null;
+              record.title = null;
+              record.hasTable = null;
+              record.hasDate = null;
+              record.hasTotal = null;
+              record.exception = {
+                name: error && error.name ? error.name : "Error",
+                message: error && error.message ? String(error.message) : String(error)
+              };
+            }
+            console.log(JSON.stringify(record));
+          }
+          EOF
