@@ -304,9 +304,9 @@ async function main() {
 
   let lastAt = 0;
   const call = async (pathname, query) => {
-    const paced = await paced(lastAt, () => apiGetWait(apiKey, pathname, query));
-    lastAt = paced.at;
-    return paced.result;
+    const pacedCall = await paced(lastAt, () => apiGetWait(apiKey, pathname, query));
+    lastAt = pacedCall.at;
+    return pacedCall.result;
   };
 
   const list = await call('/etfs', { symbol: 'BTC', country_code: 'US' });
