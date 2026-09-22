@@ -111,4 +111,73 @@ test('selected funding observation is the provider timestamp, not as-of', () => 
   assert.equal(selected.provider, 'okx');
   assert.equal(selected.fundingObservationUtc, OKX_FRESH);
   assert.notEqual(selected.fundingObservationUtc, AS_OF);
+  assert.equal(
+    selected.rows.some((row) => row.fundingTime === selected.fundingObservationUtc),
+    true
+  );
+});
+
+test('fresh BitMEX timestamps with no finite fundingRate are invalid and OKX is selected', () => {
+  const selected = select({
+    bitmex: bitmexRows(BITMEX_FRESH).map((row) => ({ ...row, fundingRate: 'not-a-rate' })),
+    okx: exchangeRows(OKX_FRESH),
+  });
+  assert.equal(selected.candidates.find((row) => row.provider === 'bitmex').status, 'invalid');
+  assert.equal(selected.provider, 'okx');
+  assert.equal(selected.fundingObservationUtc, OKX_FRESH);
+});
+
+test('a malformed fresh BitMEX row cannot hide a stale usable observation', () => {
+  const selected = select({
+    bitmex: [
+      {
+        timestamp: BITMEX_FRESH,
+        fundingRate: 'not-a-rate',
+        fundingInterval: '2000-01-01T08:00:00.000Z',
+      },
+      ...bitmexRows(BITMEX_STALE),
+    ],
+    okx: exchangeRows(OKX_FRESH),
+  });
+  const bitmex = selected.candidates.find((row) => row.provider === 'bitmex');
+  assert.equal(bitmex.status, 'stale');
+  assert.equal(bitmex.fundingObservationUtc, BITMEX_STALE);
+  assert.notEqual(selected.provider, 'bitmex');
+  assert.equal(selected.provider, 'okx');
+  assert.equal(selected.fundingObservationUtc, OKX_FRESH);
+});
+
+test('raw rows with zero usable funding observations are invalid', () => {
+  const selected = select({
+    bitmex: [{ timestamp: BITMEX_FRESH, fundingRate: 'not-a-rate' }],
+  });
+  assert.equal(selected.candidates.find((row) => row.provider === 'bitmex').status, 'invalid');
+  assert.equal(selected.provider, null);
+});
+
+test('unavailable and invalid providers select nobody', () => {
+  const selected = select({
+    bitmex: [{ timestamp: BITMEX_FRESH, fundingRate: 'not-a-rate' }],
+    binance: null,
+    okx: [],
+  });
+  assert.equal(selected.provider, null);
+  assert.deepEqual(selected.rows, []);
+  assert.equal(selected.fundingObservationUtc, null);
+});
+
+test('selected timestamp belongs to a usable returned observation', () => {
+  const selected = select({
+    bitmex: [
+      { timestamp: BITMEX_FRESH, fundingRate: 'not-a-rate' },
+      ...bitmexRows(BITMEX_STALE),
+    ],
+    okx: exchangeRows(OKX_FRESH),
+  });
+  assert.equal(selected.fundingObservationUtc, OKX_FRESH);
+  assert.notEqual(selected.fundingObservationUtc, AS_OF);
+  assert.equal(
+    selected.rows.every((row) => Number.isFinite(Number(row.fundingRate))),
+    true
+  );
 });

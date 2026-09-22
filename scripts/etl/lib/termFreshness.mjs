@@ -307,30 +307,39 @@ export function selectFundingProvider(sources = {}) {
 
 const FRESH_FUNDING_PROVIDER_ORDER = ['bitmex', 'binance', 'okx'];
 
+function isUsableFundingRow(row, provider) {
+  if (!extractFundingObservationUtc(row, provider)) return false;
+  return Number.isFinite(Number(row?.fundingRate));
+}
+
 function assessFundingCandidate(provider, rows, asOfUtc) {
   if (!Array.isArray(rows) || rows.length === 0) {
     return {
       provider,
       status: 'unavailable',
+      rows: [],
       fundingObservationUtc: null,
       freshness: null,
     };
   }
-  const fundingObservationUtc = latestFundingObservationUtc(rows, provider);
-  if (!fundingObservationUtc) {
+  const usableRows = rows.filter((row) => isUsableFundingRow(row, provider));
+  if (usableRows.length === 0) {
     return {
       provider,
       status: 'invalid',
+      rows: [],
       fundingObservationUtc: null,
       freshness: null,
     };
   }
-  const cadence = resolveFundingCadence({ provider, rows });
+  const fundingObservationUtc = latestFundingObservationUtc(usableRows, provider);
+  const cadence = resolveFundingCadence({ provider, rows: usableRows });
   const expectedFundingUtc = expectedLatestSlotUtc(asOfUtc, cadence);
   const acceptable = isObservationAcceptable(fundingObservationUtc, expectedFundingUtc);
   return {
     provider,
     status: acceptable ? 'fresh' : 'stale',
+    rows: usableRows,
     fundingObservationUtc,
     freshness: {
       acceptable,
@@ -342,9 +351,9 @@ function assessFundingCandidate(provider, rows, asOfUtc) {
 }
 
 /**
- * Current-provider selection. Preference remains BitMEX, Binance, OKX, but a
- * candidate is eligible only when its latest observation is cadence-fresh.
- * Historical rows alone cannot win.
+ * Current-provider selection. Preference remains BitMEX, Binance, OKX.
+ * A candidate is eligible only when it has usable funding rows and the latest
+ * of those observations is cadence-fresh. Returned rows are that usable subset.
  */
 export function selectFreshFundingProvider({
   bitmex,
@@ -360,7 +369,7 @@ export function selectFreshFundingProvider({
   const selected = candidates.find((candidate) => candidate.status === 'fresh') || null;
   return {
     provider: selected ? selected.provider : null,
-    rows: selected ? sources[selected.provider] : [],
+    rows: selected ? selected.rows : [],
     fundingObservationUtc: selected ? selected.fundingObservationUtc : null,
     freshness: selected ? selected.freshness : null,
     candidates,
