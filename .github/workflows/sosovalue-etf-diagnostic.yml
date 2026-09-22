@@ -1,0 +1,44 @@
+name: SoSoValue ETF diagnostic
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  diagnose:
+    if: github.head_ref == 'research/sosovalue-etf-diagnostic'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 20.18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.0'
+
+      - name: Run SoSoValue ETF qualification diagnostic
+        env:
+          SOSOVALUE_API_KEY: ${{ secrets.SOSOVALUE_API_KEY }}
+        run: node scripts/diagnostics/sosovalue-etf-diagnostic.mjs
+
+      - name: Upload diagnostic report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sosovalue-etf-diagnostic
+          path: ${{ runner.temp }}/sosovalue-etf-diagnostic.json
+          if-no-files-found: warn
+
+      - name: Verify diagnostic leaves checkout clean
+        if: always()
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Diagnostic modified the repository worktree:"
+            git status --porcelain
+            exit 1
+          fi
