@@ -305,6 +305,68 @@ export function selectFundingProvider(sources = {}) {
   return { provider: null, rows: [] };
 }
 
+const FRESH_FUNDING_PROVIDER_ORDER = ['bitmex', 'binance', 'okx'];
+
+function assessFundingCandidate(provider, rows, asOfUtc) {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return {
+      provider,
+      status: 'unavailable',
+      fundingObservationUtc: null,
+      freshness: null,
+    };
+  }
+  const fundingObservationUtc = latestFundingObservationUtc(rows, provider);
+  if (!fundingObservationUtc) {
+    return {
+      provider,
+      status: 'invalid',
+      fundingObservationUtc: null,
+      freshness: null,
+    };
+  }
+  const cadence = resolveFundingCadence({ provider, rows });
+  const expectedFundingUtc = expectedLatestSlotUtc(asOfUtc, cadence);
+  const acceptable = isObservationAcceptable(fundingObservationUtc, expectedFundingUtc);
+  return {
+    provider,
+    status: acceptable ? 'fresh' : 'stale',
+    fundingObservationUtc,
+    freshness: {
+      acceptable,
+      expectedFundingUtc,
+      cadenceSource: cadence.cadenceSource,
+      intervalHours: cadence.intervalHours,
+    },
+  };
+}
+
+/**
+ * Current-provider selection. Preference remains BitMEX, Binance, OKX, but a
+ * candidate is eligible only when its latest observation is cadence-fresh.
+ * Historical rows alone cannot win.
+ */
+export function selectFreshFundingProvider({
+  bitmex,
+  binance,
+  okx,
+  asOfUtc,
+} = {}) {
+  const asOf = asOfUtc || new Date().toISOString();
+  const sources = { bitmex, binance, okx };
+  const candidates = FRESH_FUNDING_PROVIDER_ORDER.map((provider) =>
+    assessFundingCandidate(provider, sources[provider], asOf)
+  );
+  const selected = candidates.find((candidate) => candidate.status === 'fresh') || null;
+  return {
+    provider: selected ? selected.provider : null,
+    rows: selected ? sources[selected.provider] : [],
+    fundingObservationUtc: selected ? selected.fundingObservationUtc : null,
+    freshness: selected ? selected.freshness : null,
+    candidates,
+  };
+}
+
 export function isTermLeverageFreshForSourceCadence({
   fundingObservationUtc,
   spotObservationUtc,
