@@ -46,6 +46,71 @@ jobs:
       - name: Run H8 completeness integrity gate
         run: node scripts/admin/h8-completeness-monitor.mjs
 
+      # TEMPORARY DIAGNOSTIC — remove and close this PR without merging.
+      # Probes frozen Farside endpoints from a GitHub-hosted runner.
+      # Does not change production fetch behavior. Always exits 0.
+      - name: TEMP DIAGNOSTIC — probe Farside from GitHub runner
+        if: always()
+        run: |
+          node --input-type=module <<'EOF'
+          const headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Cache-Control": "no-cache"
+          };
+          const urls = [
+            "https://farside.co.uk/bitcoin-etf-flow-all-data/",
+            "https://farside.co.uk/bitcoin-etf-flow/",
+            "https://farside.co.uk/etf-flows/",
+            "https://farside.co.uk/etf-flows/btc",
+            "https://farside.co.uk/btc/"
+          ];
+          for (const requestedUrl of urls) {
+            const record = { requestedUrl };
+            try {
+              const res = await fetch(requestedUrl, { headers, redirect: "follow" });
+              const text = await res.text();
+              const titleMatch = text.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+              let title = titleMatch ? titleMatch[1].replace(/\s+/g, " ").trim() : null;
+              if (title && title.length > 160) title = title.slice(0, 160);
+              record.finalUrl = res.url;
+              record.status = res.status;
+              record.statusText = res.statusText;
+              record.contentType = res.headers.get("content-type");
+              record.server = res.headers.get("server");
+              record.cfMitigated = res.headers.get("cf-mitigated");
+              record.location = res.headers.get("location");
+              record.bodyChars = text.length;
+              record.bodyBytes = new TextEncoder().encode(text).length;
+              record.title = title;
+              record.hasTable = text.includes("<table");
+              record.hasDate = text.includes("Date");
+              record.hasTotal = text.includes("Total");
+              record.exception = null;
+            } catch (error) {
+              record.finalUrl = null;
+              record.status = null;
+              record.statusText = null;
+              record.contentType = null;
+              record.server = null;
+              record.cfMitigated = null;
+              record.location = null;
+              record.bodyChars = null;
+              record.bodyBytes = null;
+              record.title = null;
+              record.hasTable = null;
+              record.hasDate = null;
+              record.hasTotal = null;
+              record.exception = {
+                name: error && error.name ? error.name : "Error",
+                message: error && error.message ? String(error.message) : String(error)
+              };
+            }
+            console.log(JSON.stringify(record));
+          }
+          EOF
+
       - name: Verify tests leave checkout clean
         if: ${{ always() }}
         run: |
