@@ -1,0 +1,21 @@
+{
+  "schema_version": "h8-v2-stop-v1",
+  "study_id": "h8-v2-prospective",
+  "protocol_version": "h8-prospective-three-model-v2",
+  "protocol_sha": "a46e5cefe9b0d1215931f04296e1d8c5f0ae4fd3",
+  "capture_contract_version": "h8-v2-capture-implementation-contract-v1",
+  "capture_contract_sha": "b1adc9889e40efd94197f33e75ddb012ec486fa2",
+  "capture_source_sha": "10a34be3e9a6955a972774a26b50377cb872e5bc",
+  "start_date_utc": "2026-09-02",
+  "last_accepted_observation_date_utc": "2026-09-08",
+  "last_expected_observation_date_utc": "2026-09-21",
+  "closure_decision_date_utc": "2026-09-22",
+  "status": "STOPPED_DURING_PROSPECTIVE_COLLECTION",
+  "reason_code": "EXTERNAL_SOURCE_CAPTURE_AVAILABILITY_FAILURE",
+  "accepted_observation_count": 7,
+  "capture_missing_count_through_closure": 13,
+  "future_observation_capture_authorized": false,
+  "future_close_capture_authorized": false,
+  "missed_observation_reconstruction_authorized": false,
+  "successor_study_required_for_future_scientific_capture": true
+}

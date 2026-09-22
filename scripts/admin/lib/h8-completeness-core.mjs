@@ -475,6 +475,14 @@ function deriveOverallStatus({
   return attention ? 'ATTENTION' : 'OK';
 }
 
+function closureWindow(stop) {
+  if (!stop) return null;
+  return {
+    observationEndDateUtc: stop.last_expected_observation_date_utc,
+    closeEndDateUtc: addUtcDays(stop.last_expected_observation_date_utc, -1),
+  };
+}
+
 export function buildMonitorReport({
   generatedAtUtc,
   throughDateUtc,
@@ -483,20 +491,22 @@ export function buildMonitorReport({
   observationArtifacts = {},
   closeArtifacts = {},
   repository,
+  stop = null,
 }) {
   const startError = validateStart(start);
   if (startError) {
     throw new StructuralError(startError);
   }
 
+  const window = closureWindow(stop);
   const expectedObservationDates = observationExpectedDates({
     startDateUtc: start.start_date_utc,
-    observationEndDateUtc: start.observation_end_date_utc,
+    observationEndDateUtc: window ? window.observationEndDateUtc : start.observation_end_date_utc,
     throughDateUtc,
   });
   const expectedCloseDates = btcCloseExpectedDates({
     startDateUtc: start.start_date_utc,
-    requiredCloseEndDateUtc: start.required_close_end_date_utc,
+    requiredCloseEndDateUtc: window ? window.closeEndDateUtc : start.required_close_end_date_utc,
     throughDateUtc,
   });
 
@@ -509,6 +519,26 @@ export function buildMonitorReport({
     repository?.headFingerprint
   );
   const structuralErrors = [];
+  if (stop) {
+    for (const date of Object.keys(observationArtifacts)) {
+      if (date > stop.last_accepted_observation_date_utc) {
+        structuralErrors.push({
+          date,
+          kind: 'observation',
+          message: 'observation exists after the last accepted H8 v2 date',
+        });
+      }
+    }
+    for (const date of Object.keys(closeArtifacts)) {
+      if (window && date > window.closeEndDateUtc) {
+        structuralErrors.push({
+          date,
+          kind: 'close',
+          message: 'BTC close exists after the closed H8 v2 close boundary',
+        });
+      }
+    }
+  }
 
   const axisCounts = emptyAxisCounts();
   const observationRows = expectedObservationDates.map((date) => {
@@ -693,11 +723,13 @@ export function buildMonitorReport({
     overall_status: overallStatus,
     structural_errors: structuralErrors,
     start,
+    stop,
     observation_window: {
       start: start.start_date_utc,
-      end: start.observation_end_date_utc,
+      end: window ? window.observationEndDateUtc : start.observation_end_date_utc,
     },
-    required_close_end_date_utc: start.required_close_end_date_utc,
+    required_close_end_date_utc: window ? window.closeEndDateUtc : start.required_close_end_date_utc,
+    close_accounting: stop ? 'historical_incomplete_not_active_recovery' : 'active',
     observation_detail_rows: observationRows,
     close_detail_rows: closeRows,
   };
@@ -808,10 +840,15 @@ export function renderHumanReport(report) {
     repo.working_tree_clean ? 'CLEAN' : 'DIRTY',
     `Study:`,
     report.study_id,
+    `Study status:`,
+    report.stop ? report.stop.status : 'ACTIVE',
     `Observation window:`,
     `${report.observation_window.start} → ${report.observation_window.end}`,
     `Required BTC closes through:`,
     report.required_close_end_date_utc,
+    report.stop
+      ? 'BTC-close accounting: historical incomplete tape; not an active recovery obligation'
+      : '',
     `Through date:`,
     report.through_date_utc,
     `Through mode:`,
@@ -882,6 +919,8 @@ export function toSafeJson(report) {
     btc_closes: report.btc_closes,
     overall_status: report.overall_status,
     structural_errors: report.structural_errors,
+    study_status: report.stop ? report.stop.status : 'ACTIVE',
+    close_accounting: report.close_accounting,
   };
 }
 

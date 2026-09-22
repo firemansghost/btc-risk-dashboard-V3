@@ -24,6 +24,7 @@ import {
   toSafeJson,
   AXIS_A_STATES,
 } from '../lib/h8-completeness-core.mjs';
+import { parseH8V2StopArtifact } from '../../research/lib/h8-v2-prospective-capture-core.mjs';
 
 const FINGERPRINT = {
   'config/dashboard-config.json': 'aaa111',
@@ -516,4 +517,107 @@ test('32. ordinary modified and deleted frozen paths remain dirty', () => {
     FINGERPRINT
   );
   assert.equal(treeChild.includes('scripts/etl/factors/trendValuation.mjs'), true);
+});
+
+function officialStop() {
+  return parseH8V2StopArtifact({
+    schema_version: 'h8-v2-stop-v1',
+    study_id: 'h8-v2-prospective',
+    protocol_version: 'h8-prospective-three-model-v2',
+    protocol_sha: 'a46e5cefe9b0d1215931f04296e1d8c5f0ae4fd3',
+    capture_contract_version: 'h8-v2-capture-implementation-contract-v1',
+    capture_contract_sha: 'b1adc9889e40efd94197f33e75ddb012ec486fa2',
+    capture_source_sha: '10a34be3e9a6955a972774a26b50377cb872e5bc',
+    start_date_utc: '2026-09-02',
+    last_accepted_observation_date_utc: '2026-09-08',
+    last_expected_observation_date_utc: '2026-09-21',
+    closure_decision_date_utc: '2026-09-22',
+    status: 'STOPPED_DURING_PROSPECTIVE_COLLECTION',
+    reason_code: 'EXTERNAL_SOURCE_CAPTURE_AVAILABILITY_FAILURE',
+    accepted_observation_count: 7,
+    capture_missing_count_through_closure: 13,
+    future_observation_capture_authorized: false,
+    future_close_capture_authorized: false,
+    missed_observation_reconstruction_authorized: false,
+    successor_study_required_for_future_scientific_capture: true,
+  });
+}
+
+function acceptedObservationArtifacts() {
+  return artifactsFrom(
+    [
+      '2026-09-02',
+      '2026-09-03',
+      '2026-09-04',
+      '2026-09-05',
+      '2026-09-06',
+      '2026-09-07',
+      '2026-09-08',
+    ],
+    makeObservation
+  );
+}
+
+test('33. valid STOP artifact is accepted by the closure parser', () => {
+  const stop = officialStop();
+  assert.equal(stop.last_expected_observation_date_utc, '2026-09-21');
+  assert.equal(stop.future_observation_capture_authorized, false);
+});
+
+test('34. STOP artifact rejects a count that does not match the date window', () => {
+  assert.throws(
+    () =>
+      parseH8V2StopArtifact({
+        ...officialStop(),
+        capture_missing_count_through_closure: 12,
+      }),
+    /capture_missing_count_through_closure/
+  );
+});
+
+test('35. closed E03 caps observations at 2026-09-21 and keeps 13 CAPTURE_MISSING dates', () => {
+  const missing = [
+    '2026-09-09',
+    '2026-09-10',
+    '2026-09-11',
+    '2026-09-12',
+    '2026-09-13',
+    '2026-09-14',
+    '2026-09-15',
+    '2026-09-16',
+    '2026-09-17',
+    '2026-09-18',
+    '2026-09-19',
+    '2026-09-20',
+    '2026-09-21',
+  ];
+  for (const throughDateUtc of ['2026-09-21', '2026-09-22', '2026-09-30']) {
+    const report = buildMonitorReport({
+      generatedAtUtc: '2026-09-30T00:00:00.000Z',
+      throughDateUtc,
+      throughMode: 'explicit',
+      start: makeStart(),
+      observationArtifacts: acceptedObservationArtifacts(),
+      closeArtifacts: {},
+      repository: baseRepository(),
+      stop: officialStop(),
+    });
+    assert.equal(report.observations.expected, 20, throughDateUtc);
+    assert.equal(report.observations.landed, 7, throughDateUtc);
+    assert.equal(report.observations.axis_a_counts.CAPTURE_MISSING, 13, throughDateUtc);
+    assert.equal(report.observations.axis_a_counts.INTEGRITY_MISMATCH, 0, throughDateUtc);
+    assert.deepEqual(report.observations.missing_dates, missing, throughDateUtc);
+    assert.equal(
+      report.observations.rows.some((row) => row.date >= '2026-09-22'),
+      false,
+      throughDateUtc
+    );
+    assert.equal(
+      report.btc_closes.rows.some((row) => row.date > '2026-09-20'),
+      false,
+      throughDateUtc
+    );
+    assert.equal(report.close_accounting, 'historical_incomplete_not_active_recovery');
+    assert.notEqual(report.overall_status, 'INTEGRITY_ALERT');
+  }
 });
