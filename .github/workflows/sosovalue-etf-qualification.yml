@@ -1,0 +1,26 @@
+name: SoSoValue ETF qualification
+
+on:
+  push:
+    branches:
+      - probe/sosovalue-etf-qualification
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 20.18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.0'
+
+      - name: Qualify SoSoValue ETF transport against Farside cache
+        env:
+          SOSOVALUE_API_KEY: ${{ secrets.SOSOVALUE_API_KEY }}
+        run: node scripts/admin/sosovalue-etf-qualification.mjs
