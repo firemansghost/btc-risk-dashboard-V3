@@ -26,8 +26,10 @@ import {
   toSafeJson,
   exitCodeForReport,
 } from './lib/h8-completeness-core.mjs';
+import { parseH8V2StopArtifact } from '../research/lib/h8-v2-prospective-capture-core.mjs';
 
 const START_RELATIVE = path.join('research', 'h8-v2-prospective', 'H8_V2_START.json');
+const STOP_RELATIVE = path.join('research', 'h8-v2-prospective', 'H8_V2_STOP.json');
 const OBSERVATIONS_RELATIVE = path.join('research', 'h8-v2-prospective', 'observations');
 const CLOSES_RELATIVE = path.join('research', 'h8-v2-prospective', 'btc-closes');
 const DATE_FILE_RE = /^(\d{4}-\d{2}-\d{2})\.json$/;
@@ -106,6 +108,14 @@ export async function runMonitor({ argv = process.argv.slice(2), cwd, now = new 
     throw new StructuralError('Unable to read H8_V2_START.json');
   }
   const start = extractStartMetadata(startRaw);
+  let stop = null;
+  try {
+    stop = parseH8V2StopArtifact(await readJsonFile(path.join(root, STOP_RELATIVE)));
+  } catch (error) {
+    if (!(error && error.code === 'ENOENT')) {
+      throw new StructuralError(error instanceof Error ? error.message : String(error));
+    }
+  }
 
   const observationArtifacts = await loadDatedArtifacts(
     path.join(root, OBSERVATIONS_RELATIVE),
@@ -137,6 +147,7 @@ export async function runMonitor({ argv = process.argv.slice(2), cwd, now = new 
       porcelain,
       headFingerprint: readHeadFingerprint(cwd || root, start.scientific_fingerprint),
     },
+    stop,
   });
 
   return {

@@ -47,6 +47,11 @@ jobs:
           H8_V2_GITHUB_RUN_ID: ${{ github.run_id }}
           H8_V2_GITHUB_WORKFLOW_REF: ${{ github.workflow_ref }}
         run: |
+          if [ -f research/h8-v2-prospective/H8_V2_STOP.json ]; then
+            echo "H8_V2_CAPTURE_ALLOWED=false" >> "$GITHUB_ENV"
+            echo "H8 v2 CLOSED — prospective capture, escrow, and scientific commit are not authorized" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           set +e
           node scripts/research/capture-h8-v2-prospective.mjs --contract-check
           status=$?

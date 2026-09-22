@@ -18,6 +18,8 @@ export const H8_V2_CAPTURE_SOURCE_SIDECAR_PATH =
   'research/h8-v2-prospective/H8_V2_CAPTURE_SOURCE_SHA.txt';
 export const H8_V1_CAPTURE_SOURCE_SIDECAR_PATH = 'research/h8-prospective/H8_CAPTURE_SOURCE_SHA.txt';
 export const H8_V2_START_PATH = 'research/h8-v2-prospective/H8_V2_START.json';
+export const H8_V2_STOP_PATH = 'research/h8-v2-prospective/H8_V2_STOP.json';
+export const H8_V2_STOP_SCHEMA_VERSION = 'h8-v2-stop-v1';
 
 export const STAGE_A_RUNTIME_PATHS = Object.freeze([
   '.github/workflows/daily-etl.yml',
@@ -423,6 +425,159 @@ export function compareUtcDates(a, b) {
   if (left < right) return -1;
   if (left > right) return 1;
   return 0;
+}
+
+const H8_V2_STOP_KEYS = Object.freeze([
+  'schema_version',
+  'study_id',
+  'protocol_version',
+  'protocol_sha',
+  'capture_contract_version',
+  'capture_contract_sha',
+  'capture_source_sha',
+  'start_date_utc',
+  'last_accepted_observation_date_utc',
+  'last_expected_observation_date_utc',
+  'closure_decision_date_utc',
+  'status',
+  'reason_code',
+  'accepted_observation_count',
+  'capture_missing_count_through_closure',
+  'future_observation_capture_authorized',
+  'future_close_capture_authorized',
+  'missed_observation_reconstruction_authorized',
+  'successor_study_required_for_future_scientific_capture',
+]);
+
+function inclusiveUtcDayCount(startDateUtc, endDateUtc) {
+  let count = 0;
+  let cursor = parseStrictUtcCalendarDate(startDateUtc);
+  const end = parseStrictUtcCalendarDate(endDateUtc);
+  while (cursor <= end) {
+    count += 1;
+    if (count > 4000) throw new Error('STOP: H8 v2 closure date span is invalid');
+    cursor = addUtcDays(cursor, 1);
+  }
+  return count;
+}
+
+export function parseH8V2StopArtifact(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('STOP: H8_V2_STOP.json must be an object');
+  }
+  const keys = Object.keys(value);
+  for (const key of keys) {
+    const lower = key.toLowerCase();
+    if (
+      lower.includes('score') ||
+      lower.includes('mace') ||
+      lower.includes('return') ||
+      lower.includes('correlation') ||
+      lower.includes('spearman') ||
+      lower.includes('ranking')
+    ) {
+      throw new Error('STOP: H8 v2 closure must not contain outcome fields');
+    }
+  }
+  for (const key of H8_V2_STOP_KEYS) {
+    if (!Object.prototype.hasOwnProperty.call(value, key)) {
+      throw new Error(`STOP: H8_V2_STOP.json missing ${key}`);
+    }
+  }
+  if (value.schema_version !== H8_V2_STOP_SCHEMA_VERSION) {
+    throw new Error('STOP: H8_V2_STOP.json schema_version is not h8-v2-stop-v1');
+  }
+  if (value.study_id !== 'h8-v2-prospective') {
+    throw new Error('STOP: H8_V2_STOP.json study_id mismatch');
+  }
+  if (value.protocol_version !== H8_V2_PROTOCOL_VERSION || value.protocol_sha !== H8_V2_PROTOCOL_SHA) {
+    throw new Error('STOP: H8_V2_STOP.json protocol identity mismatch');
+  }
+  if (
+    value.capture_contract_version !== H8_V2_CAPTURE_CONTRACT_VERSION ||
+    value.capture_contract_sha !== H8_V2_CAPTURE_CONTRACT_SHA
+  ) {
+    throw new Error('STOP: H8_V2_STOP.json capture-contract identity mismatch');
+  }
+  if (value.capture_source_sha !== '10a34be3e9a6955a972774a26b50377cb872e5bc') {
+    throw new Error('STOP: H8_V2_STOP.json capture_source_sha mismatch');
+  }
+  const start = parseStrictUtcCalendarDate(value.start_date_utc, 'start_date_utc');
+  const lastAccepted = parseStrictUtcCalendarDate(
+    value.last_accepted_observation_date_utc,
+    'last_accepted_observation_date_utc'
+  );
+  const lastExpected = parseStrictUtcCalendarDate(
+    value.last_expected_observation_date_utc,
+    'last_expected_observation_date_utc'
+  );
+  const closureDecision = parseStrictUtcCalendarDate(
+    value.closure_decision_date_utc,
+    'closure_decision_date_utc'
+  );
+  if (!(start <= lastAccepted && lastAccepted < lastExpected && lastExpected < closureDecision)) {
+    throw new Error('STOP: H8 v2 closure dates are not an ordered boundary');
+  }
+  if (start !== '2026-09-02' || lastAccepted !== '2026-09-08') {
+    throw new Error('STOP: H8 v2 closure accepted window mismatch');
+  }
+  if (lastExpected !== '2026-09-21' || closureDecision !== '2026-09-22') {
+    throw new Error('STOP: H8 v2 closure boundary mismatch');
+  }
+  const acceptedSpan = inclusiveUtcDayCount(start, lastAccepted);
+  const missingSpan = inclusiveUtcDayCount(addUtcDays(lastAccepted, 1), lastExpected);
+  const fullSpan = inclusiveUtcDayCount(start, lastExpected);
+  if (value.accepted_observation_count !== acceptedSpan || value.accepted_observation_count !== 7) {
+    throw new Error('STOP: H8 v2 accepted_observation_count does not match the accepted window');
+  }
+  if (
+    value.capture_missing_count_through_closure !== missingSpan ||
+    value.capture_missing_count_through_closure !== 13
+  ) {
+    throw new Error('STOP: H8 v2 capture_missing_count_through_closure does not match the missing window');
+  }
+  if (value.accepted_observation_count + value.capture_missing_count_through_closure !== fullSpan) {
+    throw new Error('STOP: H8 v2 closure counts do not cover the observation window');
+  }
+  if (value.status !== 'STOPPED_DURING_PROSPECTIVE_COLLECTION') {
+    throw new Error('STOP: H8 v2 closure status mismatch');
+  }
+  if (value.reason_code !== 'EXTERNAL_SOURCE_CAPTURE_AVAILABILITY_FAILURE') {
+    throw new Error('STOP: H8 v2 closure reason_code mismatch');
+  }
+  if (
+    value.future_observation_capture_authorized !== false ||
+    value.future_close_capture_authorized !== false ||
+    value.missed_observation_reconstruction_authorized !== false ||
+    value.successor_study_required_for_future_scientific_capture !== true
+  ) {
+    throw new Error('STOP: H8 v2 closure authorization flags are not closed');
+  }
+  return {
+    schema_version: value.schema_version,
+    study_id: value.study_id,
+    protocol_version: value.protocol_version,
+    protocol_sha: value.protocol_sha,
+    capture_contract_version: value.capture_contract_version,
+    capture_contract_sha: value.capture_contract_sha,
+    capture_source_sha: value.capture_source_sha,
+    start_date_utc: start,
+    last_accepted_observation_date_utc: lastAccepted,
+    last_expected_observation_date_utc: lastExpected,
+    closure_decision_date_utc: closureDecision,
+    status: value.status,
+    reason_code: value.reason_code,
+    accepted_observation_count: value.accepted_observation_count,
+    capture_missing_count_through_closure: value.capture_missing_count_through_closure,
+    future_observation_capture_authorized: false,
+    future_close_capture_authorized: false,
+    missed_observation_reconstruction_authorized: false,
+    successor_study_required_for_future_scientific_capture: true,
+  };
+}
+
+export function closedStudyCaptureRefusalMessage(stop) {
+  return `STOP: H8 v2 is CLOSED (${stop.status}). Observation capture and BTC-close capture are forbidden.`;
 }
 
 export function enumerateUtcDates(start, end) {

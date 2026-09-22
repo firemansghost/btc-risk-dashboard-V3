@@ -28,6 +28,9 @@ import {
   parseStrictUtcTimestamp,
   parseStrictUtcCalendarDate,
   workflowStaticChecks,
+  H8_V2_STOP_PATH,
+  parseH8V2StopArtifact,
+  closedStudyCaptureRefusalMessage,
   resetCounters,
   snapshotCounters,
   incrementCounter,
@@ -104,6 +107,51 @@ function isObservationInputError(error) {
 
 function isCloseInputError(error) {
   return error instanceof CloseInputError || error?.name === 'CloseInputError';
+}
+
+function loadStopArtifact({ repoRoot, fsImpl }) {
+  const abs = repoPath(repoRoot, H8_V2_STOP_PATH);
+  if (!fsImpl.existsSync(abs)) return null;
+  let parsed;
+  try {
+    parsed = JSON.parse(fsImpl.readFileSync(abs, 'utf8'));
+  } catch {
+    throw new Error('STOP: H8_V2_STOP.json is not valid JSON');
+  }
+  return parseH8V2StopArtifact(parsed);
+}
+
+function closedStudyContractResult(stop) {
+  assertNoPerformanceOrNetwork();
+  const counters = snapshotCounters();
+  if (counters.filesWritten !== 0 || counters.networkRequests !== 0) {
+    throw new Error('STOP: closed-study contract check must not write or use the network');
+  }
+  return {
+    ok: true,
+    mode: 'closed-study',
+    studyStatus: stop.status,
+    reasonCode: stop.reason_code,
+    futureObservationCaptureAuthorized: false,
+    futureCloseCaptureAuthorized: false,
+    missedObservationReconstructionAuthorized: false,
+    successorStudyRequired: true,
+    protocolIdentity: 'HISTORICAL',
+    contractIdentity: 'HISTORICAL',
+    scientificFingerprint: 'HISTORICAL',
+    runtimeSourceIdentity: 'NOT_CHECKED',
+    workflowStructure: 'NOT_CHECKED',
+    candidateSourceSha: null,
+    captureSourceSha: stop.capture_source_sha,
+    protocolVersion: H8_V2_PROTOCOL_VERSION,
+    protocolSha: H8_V2_PROTOCOL_SHA,
+    captureContractVersion: H8_V2_CAPTURE_CONTRACT_VERSION,
+    captureContractSha: H8_V2_CAPTURE_CONTRACT_SHA,
+    lastAcceptedObservationDateUtc: stop.last_accepted_observation_date_utc,
+    lastExpectedObservationDateUtc: stop.last_expected_observation_date_utc,
+    closureDecisionDateUtc: stop.closure_decision_date_utc,
+    ...counters,
+  };
 }
 
 function sidecarPresent({ repoRoot, gitExec, fsImpl }) {
@@ -221,6 +269,8 @@ export function runContractCheck({
 } = {}) {
   resetCounters();
   const repoRoot = resolveRepoRoot(gitExec, cwd);
+  const stop = loadStopArtifact({ repoRoot, fsImpl });
+  if (stop) return closedStudyContractResult(stop);
   assertV1SidecarAbsent({ repoRoot, gitExec, fsImpl });
   const activated = sidecarPresent({ repoRoot, gitExec, fsImpl });
   if (candidateSourceSha && activated) {
@@ -293,6 +343,8 @@ export function runValidateStartCandidate({
 } = {}) {
   resetCounters();
   const repoRoot = resolveRepoRoot(gitExec, cwd);
+  const stop = loadStopArtifact({ repoRoot, fsImpl });
+  if (stop) throw new Error(closedStudyCaptureRefusalMessage(stop));
   assertV1SidecarAbsent({ repoRoot, gitExec, fsImpl });
   const nowUtc = parseStrictUtcTimestamp(now(), 'now');
   if (rehearsalCommitSha) {
@@ -619,11 +671,20 @@ export function runCapture({
   testHooks = {},
 } = {}) {
   resetCounters();
+  const repoRoot = resolveRepoRoot(gitExec, cwd);
+  const stop = loadStopArtifact({ repoRoot, fsImpl });
+  if (stop) {
+    assertNoPerformanceOrNetwork();
+    const counters = snapshotCounters();
+    if (counters.filesWritten !== 0 || counters.networkRequests !== 0) {
+      throw new Error('STOP: closed H8 v2 capture must not write or use the network');
+    }
+    throw new Error(closedStudyCaptureRefusalMessage(stop));
+  }
   assertCaptureEventGate(env);
   if (typeof env.RUNNER_TEMP !== 'string' || env.RUNNER_TEMP.trim() === '') {
     throw new Error('STOP: RUNNER_TEMP is required');
   }
-  const repoRoot = resolveRepoRoot(gitExec, cwd);
   const head = gitRevParse('HEAD', gitExec, repoRoot);
   const provenance = freezeProvenance(env, head);
   const activated = assertIdentityGates({ repoRoot, gitExec, fsImpl });
