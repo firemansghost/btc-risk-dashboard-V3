@@ -24,6 +24,7 @@ import {
   latestFundingObservationUtc,
   preserveTermSourceObservation,
   selectFundingProvider,
+  selectFreshFundingProvider,
   isTermLeverageFreshForSourceCadence,
 } from './lib/termFreshness.mjs';
 import {
@@ -2192,30 +2193,58 @@ async function computeTermLeverage() {
       coinGecko.getMarketChart(30, 'daily')
     ]);
 
-    const selected = selectFundingProvider({
+    const asOfUtc = new Date().toISOString();
+    const selected = selectFreshFundingProvider({
       bitmex: bitmexData,
       binance: binanceData,
       okx: okxData,
+      asOfUtc,
     });
     const fundingData = selected.rows;
     const dataSource = selected.provider
       ? selected.provider.charAt(0).toUpperCase() + selected.provider.slice(1)
       : null;
-    if (selected.provider === 'binance') {
-      logFallback('term', 'BitMEX', 'Binance');
-    } else if (selected.provider === 'okx') {
-      logFallback('term', 'BitMEX', 'OKX');
+    const candidateByProvider = Object.fromEntries(
+      (selected.candidates || []).map((candidate) => [candidate.provider, candidate])
+    );
+    const termProviderStatus = (name, rawRows) => {
+      const candidate = candidateByProvider[name];
+      if (candidate?.status === 'fresh') return 'ok';
+      if (candidate?.status === 'stale') return 'available_stale';
+      if (name === 'binance' && rawRows === null) return '451';
+      return 'failed';
+    };
+    for (const candidate of selected.candidates || []) {
+      if (candidate.status !== 'stale') continue;
+      const label = candidate.provider.charAt(0).toUpperCase() + candidate.provider.slice(1);
+      console.log(
+        `Term Leverage: ${label} rows rejected — stale funding observation ${candidate.fundingObservationUtc}`
+      );
+    }
+    if (selected.provider) {
+      console.log(
+        `Term Leverage: selected ${dataSource} funding source ${selected.fundingObservationUtc}`
+      );
+    }
+    if (selected.provider && selected.provider !== 'bitmex') {
+      const bitmexCandidate = candidateByProvider.bitmex;
+      if (bitmexCandidate?.status === 'unavailable' || bitmexCandidate?.status === 'invalid') {
+        logFallback('term', 'BitMEX', dataSource);
+      }
     }
 
     if (!fundingData || fundingData.length === 0) {
-      return { score: null, reason: "no_funding_data_any_source" };
+      const sawRows = (selected.candidates || []).some((candidate) => candidate.status === 'stale');
+      return {
+        score: null,
+        reason: sawRows ? 'no_fresh_funding_data_any_source' : 'no_funding_data_any_source',
+      };
     }
     
     if (!spotData.prices || !Array.isArray(spotData.prices)) {
       return { score: null, reason: "no_spot_data" };
     }
 
-    const asOfUtc = new Date().toISOString();
     const fundingObservationUtc = latestFundingObservationUtc(fundingData, selected.provider);
     const spotObservationUtc = extractSpotObservationUtc(spotData);
 
@@ -2232,9 +2261,9 @@ async function computeTermLeverage() {
       if (stillFresh.fresh) {
         console.log('Term Leverage: Using cached calculations (source observation still cadence-fresh)');
         const currentProviders = {
-          bitmex: bitmexData && bitmexData.length > 0 ? 'ok' : 'failed',
-          binance: binanceData && binanceData.length > 0 ? 'ok' : (binanceData === null ? '451' : 'failed'),
-          okx: okxData && okxData.length > 0 ? 'ok' : 'failed'
+          bitmex: termProviderStatus('bitmex', bitmexData),
+          binance: termProviderStatus('binance', binanceData),
+          okx: termProviderStatus('okx', okxData)
         };
         return {
           ...preserved,
@@ -2315,9 +2344,9 @@ async function computeTermLeverage() {
     
     // Track provider status
     const providers = {
-      bitmex: bitmexData && bitmexData.length > 0 ? 'ok' : 'failed',
-      binance: binanceData && binanceData.length > 0 ? 'ok' : (binanceData === null ? '451' : 'failed'),
-      okx: okxData && okxData.length > 0 ? 'ok' : 'failed'
+      bitmex: termProviderStatus('bitmex', bitmexData),
+      binance: termProviderStatus('binance', binanceData),
+      okx: termProviderStatus('okx', okxData)
     };
     
     const sourceObservationUtc = fundingObservationUtc;
