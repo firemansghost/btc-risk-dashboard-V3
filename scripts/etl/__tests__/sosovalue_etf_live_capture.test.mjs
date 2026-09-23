@@ -19,6 +19,7 @@ import {
   SOSOVALUE_ETF_COMMIT_CONFIRMATION,
   SOSOVALUE_ETF_FETCH_METADATA_SCHEMA,
   runSosoValueEtfCapture,
+  sanitizeCaptureFailureDetails,
 } from '../capture-sosovalue-etf-source.mjs';
 import {
   createEmptyEtfSourceHistory,
@@ -469,6 +470,7 @@ test('PREVIEW writes a failure report when the API key is missing', async () => 
     assert.equal(report.schema, SOSOVALUE_ETF_CAPTURE_REPORT_SCHEMA);
     assert.equal(report.mode, 'PREVIEW');
     assert.equal(report.repository_write_performed, false);
+    assert.equal(report.failure_details, null);
     assert.deepEqual(report.blockers, ['missing_api_key']);
     assert.equal(JSON.stringify(report).includes('x-soso-api-key'), false);
   } finally {
@@ -497,6 +499,7 @@ test('PREVIEW plans history without writing repository files', async () => {
     const report = JSON.parse(fs.readFileSync(paths.reportPath, 'utf8'));
     assert.equal(report.schema, SOSOVALUE_ETF_CAPTURE_REPORT_SCHEMA);
     assert.equal(report.repository_write_performed, false);
+    assert.equal(report.failure_details, null);
     assert.deepEqual(report.new_trading_dates, ['2026-09-22']);
     assert.deepEqual(report.revised_trading_dates, []);
     assert.equal(JSON.stringify(report).includes(SECRET), false);
@@ -542,6 +545,7 @@ test('COMMIT requires confirmation before fetch and then persists through S2A', 
     });
     assert.equal(first.ok, true);
     assert.equal(first.repository_write_performed, true);
+    assert.equal(first.report.failure_details, null);
     assert.equal(fs.existsSync(paths.historyPath), true);
     assert.equal(fs.existsSync(paths.auditPath), false);
     assert.equal(fs.existsSync(paths.fetchMetadataPath), true);
@@ -597,6 +601,129 @@ test('COMMIT requires confirmation before fetch and then persists through S2A', 
     assert.equal(JSON.stringify(report).includes(SECRET), false);
   } finally {
     fs.rmSync(paths.directory, { recursive: true, force: true });
+  }
+});
+
+test('PREVIEW retains sanitized rate-limit exhaustion evidence', async () => {
+  const paths = capturePaths();
+  const http = routeFetch([
+    {
+      match: '/etfs?',
+      queue: [
+        { status: 429, headers: { 'retry-after': '120' }, body: {} },
+        { status: 429, body: {} },
+      ],
+    },
+  ]);
+  try {
+    const result = await runSosoValueEtfCapture({
+      mode: 'PREVIEW',
+      apiKey: SECRET,
+      ...paths,
+      fetchImpl: http.impl,
+      sleep: http.sleep,
+      now: () => NOW,
+      repositorySha: 'abc123',
+    });
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'rate_limit_exhausted');
+    assert.equal(result.repository_write_performed, false);
+    assert.equal(fs.existsSync(paths.historyPath), false);
+    assert.equal(fs.existsSync(paths.auditPath), false);
+    assert.equal(fs.existsSync(paths.fetchMetadataPath), false);
+    const report = JSON.parse(fs.readFileSync(paths.reportPath, 'utf8'));
+    assert.deepEqual(report.blockers, ['rate_limit_exhausted']);
+    assert.equal(report.failure_details.endpoint, '/etfs');
+    assert.equal(report.failure_details.rateLimitEvents.length, 1);
+    assert.deepEqual(report.failure_details.rateLimitEvents[0], {
+      endpoint: '/etfs',
+      retryAfter: '120',
+      waitMs: 60000,
+      capped: true,
+      source: 'retry_after_seconds',
+    });
+    assert.equal(JSON.stringify(report).includes(SECRET), false);
+  } finally {
+    fs.rmSync(paths.directory, { recursive: true, force: true });
+  }
+});
+
+test('failure reports keep safe diagnostic fields and drop secrets', async () => {
+  const authPaths = capturePaths();
+  const authHttp = routeFetch([
+    { match: '/etfs?', queue: [{ status: 401, body: {} }] },
+  ]);
+  const universePaths = capturePaths();
+  const universeHttp = routeFetch([
+    {
+      match: '/etfs?',
+      queue: [{
+        body: envelope(APPROVED_ETF_SCORED_TICKERS.filter((ticker) => ticker !== 'MSBT').map((ticker) => ({ ticker }))),
+      }],
+    },
+  ]);
+  try {
+    const auth = await runSosoValueEtfCapture({
+      mode: 'PREVIEW',
+      apiKey: SECRET,
+      ...authPaths,
+      fetchImpl: authHttp.impl,
+      sleep: authHttp.sleep,
+      now: () => NOW,
+      repositorySha: 'abc123',
+    });
+    assert.equal(auth.reason, 'authentication_failed');
+    assert.equal(auth.report.failure_details.status, 401);
+    assert.equal(auth.report.failure_details.endpoint, '/etfs');
+
+    const mismatch = await runSosoValueEtfCapture({
+      mode: 'PREVIEW',
+      apiKey: SECRET,
+      ...universePaths,
+      fetchImpl: universeHttp.impl,
+      sleep: universeHttp.sleep,
+      now: () => NOW,
+      repositorySha: 'abc123',
+    });
+    assert.equal(mismatch.reason, 'provider_universe_contract_mismatch');
+    assert.deepEqual(mismatch.report.failure_details.added, []);
+    assert.deepEqual(mismatch.report.failure_details.removed, ['MSBT']);
+
+    const sanitized = sanitizeCaptureFailureDetails({
+      endpoint: '/etfs',
+      status: 401,
+      apiKey: SECRET,
+      headers: { 'x-soso-api-key': SECRET },
+      authorization: `Bearer ${SECRET}`,
+      secret: SECRET,
+      rawBody: '{"token":"hidden"}',
+      rateLimitEvents: [{
+        endpoint: '/etfs',
+        retryAfter: '120',
+        waitMs: 60000,
+        capped: true,
+        source: 'retry_after_seconds',
+        apiKey: SECRET,
+        headers: { Authorization: SECRET },
+      }],
+    });
+    const serialized = JSON.stringify(sanitized);
+    assert.equal(sanitized.endpoint, '/etfs');
+    assert.equal(sanitized.status, 401);
+    assert.deepEqual(Object.keys(sanitized.rateLimitEvents[0]).sort(), [
+      'capped',
+      'endpoint',
+      'retryAfter',
+      'source',
+      'waitMs',
+    ]);
+    assert.equal(serialized.includes(SECRET), false);
+    assert.equal(serialized.includes('x-soso-api-key'), false);
+    assert.equal(serialized.includes('Authorization'), false);
+    assert.equal(serialized.includes('rawBody'), false);
+  } finally {
+    fs.rmSync(authPaths.directory, { recursive: true, force: true });
+    fs.rmSync(universePaths.directory, { recursive: true, force: true });
   }
 });
 
