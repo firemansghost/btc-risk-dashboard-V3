@@ -149,6 +149,22 @@ test('malformed calibration documents fail closed', () => {
   expectFailure(document([{ date: '2024-02-16', sum: Infinity }]), 'invalid_rolling_sum:2024-02-16');
   expectFailure(document([row], { metadata: metadata({ source: 'https://example.invalid/other' }) }), 'unexpected_source_url');
   expectFailure(document([row], { metadata: metadata({ fetchedAt: '2025-09-17' }) }), 'invalid_fetched_at');
+  expectFailure(document([row], { metadata: metadata({ fetchedAt: '2025-99-99T99:99:99.999Z' }) }), 'invalid_fetched_at');
+  expectFailure(document([row], { metadata: metadata({ fetchedAt: '2026-01-01T00:00:00.000Z' }) }), 'unexpected_fetched_at');
+  expectFailure(
+    document([row], { metadata: metadata({ fetchedAt: '2025-09-17T07:24:18.385-04:00' }) }),
+    'unexpected_fetched_at'
+  );
+  expectFailure(
+    document([{ date: '2024-02-16', sum: Number.MAX_VALUE }]),
+    'normalized_rolling_sum_non_finite:2024-02-16'
+  );
+});
+
+test('only the exact frozen fetchedAt string is accepted', () => {
+  const normalized = normalizeFrozenEtfHistoricalCalibration(document([{ date: '2024-02-16', sum: 1 }]));
+  assert.equal(normalized.sourceFetchedAtUtc, '2025-09-17T11:24:18.385Z');
+  assert.equal(normalized.sourceFetchedAtUtc, ETF_FROZEN_HISTORICAL_FETCHED_AT_UTC);
 });
 
 test('the calibration module is not production scoring and does not merge SoSoValue history', () => {
