@@ -101,6 +101,47 @@ function buildMetadata({ snapshot, mode, repositorySha, beforeCount, afterCount,
   };
 }
 
+function stringList(value) {
+  if (!Array.isArray(value)) return undefined;
+  return value.filter((item) => typeof item === 'string');
+}
+
+function sanitizeRateLimitEvent(event) {
+  if (!event || typeof event !== 'object') return null;
+  const sanitized = {};
+  if (typeof event.endpoint === 'string') sanitized.endpoint = event.endpoint;
+  if (event.retryAfter == null || typeof event.retryAfter === 'string' || typeof event.retryAfter === 'number') {
+    sanitized.retryAfter = event.retryAfter ?? null;
+  }
+  if (typeof event.waitMs === 'number' && Number.isFinite(event.waitMs)) sanitized.waitMs = event.waitMs;
+  if (typeof event.capped === 'boolean') sanitized.capped = event.capped;
+  if (typeof event.source === 'string') sanitized.source = event.source;
+  return sanitized;
+}
+
+export function sanitizeCaptureFailureDetails(details) {
+  if (!details || typeof details !== 'object' || Array.isArray(details)) return null;
+  const sanitized = {};
+  if (typeof details.endpoint === 'string') sanitized.endpoint = details.endpoint;
+  if (typeof details.status === 'number' && Number.isFinite(details.status)) sanitized.status = details.status;
+  if (typeof details.code === 'number' || typeof details.code === 'string') sanitized.code = details.code;
+  const added = stringList(details.added);
+  if (added) sanitized.added = added;
+  const removed = stringList(details.removed);
+  if (removed) sanitized.removed = removed;
+  if (typeof details.duplicate === 'string') sanitized.duplicate = details.duplicate;
+  if (typeof details.reason === 'string') sanitized.reason = details.reason;
+  if (typeof details.tradingDate === 'string') sanitized.tradingDate = details.tradingDate;
+  const reasons = stringList(details.reasons);
+  if (reasons) sanitized.reasons = reasons;
+  if (Array.isArray(details.rateLimitEvents)) {
+    sanitized.rateLimitEvents = details.rateLimitEvents
+      .map((event) => sanitizeRateLimitEvent(event))
+      .filter((event) => event != null);
+  }
+  return Object.keys(sanitized).length > 0 ? sanitized : null;
+}
+
 function buildReport({
   mode,
   repositorySha,
@@ -111,6 +152,7 @@ function buildReport({
   repositoryWritePerformed,
   blockers,
   warnings,
+  failureDetails = null,
 }) {
   return {
     schema: SOSOVALUE_ETF_CAPTURE_REPORT_SCHEMA,
@@ -145,6 +187,7 @@ function buildReport({
     repository_write_performed: repositoryWritePerformed,
     blockers,
     warnings,
+    failure_details: failureDetails,
     first_live_run_policy: 'PREVIEW only. COMMIT requires a separately reviewed PREVIEW and the exact confirmation token.',
   };
 }
@@ -167,6 +210,7 @@ export async function runSosoValueEtfCapture(options) {
       repositoryWritePerformed: false,
       blockers: ['missing_api_key'],
       warnings: [],
+      failureDetails: null,
     });
     await writeJsonAtomic(options.reportPath, report);
     return fail('missing_api_key', { report });
@@ -183,6 +227,9 @@ export async function runSosoValueEtfCapture(options) {
     });
   } catch (error) {
     const reason = error instanceof SosoValueSourceError ? error.reason : 'acquisition_failed';
+    const failureDetails = error instanceof SosoValueSourceError
+      ? sanitizeCaptureFailureDetails(error.details)
+      : null;
     const report = buildReport({
       mode,
       repositorySha: options.repositorySha ?? null,
@@ -193,6 +240,7 @@ export async function runSosoValueEtfCapture(options) {
       repositoryWritePerformed: false,
       blockers: [reason],
       warnings: [],
+      failureDetails,
     });
     await writeJsonAtomic(options.reportPath, report);
     return fail(reason, { details: error instanceof SosoValueSourceError ? error.details : undefined, report });
@@ -210,6 +258,7 @@ export async function runSosoValueEtfCapture(options) {
       repositoryWritePerformed: false,
       blockers: plan.reasons,
       warnings: [],
+      failureDetails: null,
     });
     await writeJsonAtomic(options.reportPath, report);
     return fail('history_plan_rejected', { reasons: plan.reasons, report });
@@ -244,6 +293,7 @@ export async function runSosoValueEtfCapture(options) {
     repositoryWritePerformed,
     blockers: [],
     warnings,
+    failureDetails: null,
   });
   await writeJsonAtomic(options.reportPath, report);
   return {
@@ -286,6 +336,7 @@ async function main() {
     report_path: reportPath,
     first_live_run_policy: 'PREVIEW only until a PREVIEW artifact is independently reviewed.',
   };
+  if (!result.ok) summary.failure_details = result.report?.failure_details ?? null;
   console.log(JSON.stringify(summary));
   if (!result.ok) process.exitCode = 1;
 }
