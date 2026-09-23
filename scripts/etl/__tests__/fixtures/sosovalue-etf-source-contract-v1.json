@@ -1,0 +1,44 @@
+{
+  "contract": "sosovalue_etf_source_contract_v1",
+  "provider": "sosovalue",
+  "asset": "BTC",
+  "country": "US",
+  "canonical_monetary_unit": "USD",
+  "market_timezone": "America/New_York",
+  "finality_policy": "previous_completed_us_trading_session",
+  "qualified_endpoints": [
+    "/etfs?symbol=BTC&country_code=US",
+    "/etfs/summary-history?symbol=BTC&country_code=US&limit=300",
+    "/etfs/{ticker}/history?limit=300"
+  ],
+  "approved_scored_tickers": [
+    "IBIT",
+    "FBTC",
+    "ARKB",
+    "BTCO",
+    "BTCW",
+    "BRRR",
+    "BITB",
+    "EZBC",
+    "HODL",
+    "GBTC",
+    "BTC",
+    "MSBT"
+  ],
+  "historical_calibration": {
+    "provider": "farside_frozen_baseline",
+    "stored_unit": "USD_MILLIONS_DISPLAY",
+    "to_canonical_usd_multiplier": 1000000
+  },
+  "completeness": {
+    "summary_required": true,
+    "all_approved_scored_tickers_required": true,
+    "zero_is_observed": true,
+    "missing_is_zero": false,
+    "exact_summary_ticker_equality_required": false
+  },
+  "authentication_metadata": {
+    "header_name": "x-soso-api-key",
+    "secret_env": "SOSOVALUE_API_KEY"
+  }
+}
