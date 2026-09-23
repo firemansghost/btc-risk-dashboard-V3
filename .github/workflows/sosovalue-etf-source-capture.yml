@@ -69,12 +69,15 @@ jobs:
         run: node scripts/etl/capture-sosovalue-etf-source.mjs --mode PREVIEW
 
       - name: Upload preview report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: sosovalue-etf-source-capture-preview
           path: ${{ runner.temp }}/sosovalue-etf-source-capture-report.json
+          if-no-files-found: warn
 
       - name: Confirm repository worktree stayed clean
+        if: always()
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             git status --porcelain
@@ -105,10 +108,12 @@ jobs:
         run: node scripts/etl/capture-sosovalue-etf-source.mjs --mode COMMIT --confirm COMMIT_SOSOVALUE_ETF_HISTORY
 
       - name: Upload commit report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: sosovalue-etf-source-capture-commit
           path: ${{ runner.temp }}/sosovalue-etf-source-capture-report.json
+          if-no-files-found: warn
 
       - name: Reject unexpected repository paths
         run: |

@@ -48,15 +48,14 @@ async function writeJsonAtomic(target, value) {
   await fs.rename(temporaryPath, target);
 }
 
-function classifyPlan(history, plan) {
+function classifyPlan(history, plan, completeObservations) {
   const before = new Set(Object.keys(history.observations_by_date));
-  const revised = [...new Set(plan.revisionEvents.map((event) => event.trading_date))].sort();
-  const revisedSet = new Set(revised);
-  const after = Object.keys(plan.history.observations_by_date).sort();
+  const revisedSet = new Set(plan.revisionEvents.map((event) => event.trading_date));
+  const incoming = [...new Set(completeObservations.map((observation) => observation.tradingDate))].sort();
   return {
-    newTradingDates: after.filter((date) => !before.has(date)),
-    identicalReobservationDates: after.filter((date) => before.has(date) && !revisedSet.has(date)),
-    revisedTradingDates: revised,
+    newTradingDates: incoming.filter((date) => !before.has(date)),
+    identicalReobservationDates: incoming.filter((date) => before.has(date) && !revisedSet.has(date)),
+    revisedTradingDates: incoming.filter((date) => revisedSet.has(date)),
   };
 }
 
@@ -157,7 +156,21 @@ export async function runSosoValueEtfCapture(options) {
     return fail('commit_confirmation_required');
   }
   assertOutsideRepository(options.reportPath);
-  if (!options.apiKey) return fail('missing_api_key');
+  if (!options.apiKey) {
+    const report = buildReport({
+      mode,
+      repositorySha: options.repositorySha ?? null,
+      snapshot: null,
+      history: null,
+      plan: null,
+      classification: null,
+      repositoryWritePerformed: false,
+      blockers: ['missing_api_key'],
+      warnings: [],
+    });
+    await writeJsonAtomic(options.reportPath, report);
+    return fail('missing_api_key', { report });
+  }
 
   const history = await loadEtfSourceHistory(options.historyPath);
   let snapshot;
@@ -202,7 +215,7 @@ export async function runSosoValueEtfCapture(options) {
     return fail('history_plan_rejected', { reasons: plan.reasons, report });
   }
 
-  const classification = classifyPlan(history, plan);
+  const classification = classifyPlan(history, plan, snapshot.completeObservations);
   const warnings = snapshot.tickerOnlyDates.length > 0 ? ['ticker_only_dates_present'] : [];
   let repositoryWritePerformed = false;
   if (mode === 'COMMIT') {

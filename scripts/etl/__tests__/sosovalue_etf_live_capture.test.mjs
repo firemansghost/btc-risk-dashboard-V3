@@ -20,6 +20,11 @@ import {
   SOSOVALUE_ETF_FETCH_METADATA_SCHEMA,
   runSosoValueEtfCapture,
 } from '../capture-sosovalue-etf-source.mjs';
+import {
+  createEmptyEtfSourceHistory,
+  persistEtfSourceHistoryPlan,
+  planEtfSourceHistoryMerge,
+} from '../lib/etfSourceHistory.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const SCORED_FINGERPRINT = '354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e';
@@ -378,6 +383,99 @@ test('missing scored coverage fails and ticker-only dates stay unstored', async 
   assert.equal(source.includes('validateEtfProviderObservation('), true);
 });
 
+function storedObservation(tradingDate, summary = 100) {
+  const tickerFlowsUsd = {};
+  for (const ticker of APPROVED_ETF_SCORED_TICKERS) tickerFlowsUsd[ticker] = 1;
+  return {
+    tradingDate,
+    summaryTotalUsd: summary,
+    tickerFlowsUsd,
+    providerUniverse: [...APPROVED_ETF_SCORED_TICKERS],
+  };
+}
+
+test('classification uses only dates in the current snapshot', async () => {
+  const paths = capturePaths();
+  const seededAt = new Date(NOW - 60_000).toISOString();
+  try {
+    await persistEtfSourceHistoryPlan(
+      planEtfSourceHistoryMerge(
+        createEmptyEtfSourceHistory(),
+        [storedObservation('2026-09-21'), storedObservation('2026-09-22')],
+        seededAt
+      ),
+      paths
+    );
+    const current = routeFetch(happyRoutes({ dates: ['2026-09-22', '2026-09-23'] }));
+    const preview = await runSosoValueEtfCapture({
+      mode: 'PREVIEW',
+      apiKey: SECRET,
+      ...paths,
+      fetchImpl: current.impl,
+      sleep: current.sleep,
+      now: () => NOW,
+      repositorySha: 'abc123',
+    });
+    assert.equal(preview.ok, true);
+    assert.deepEqual(preview.classification.newTradingDates, ['2026-09-23']);
+    assert.deepEqual(preview.classification.identicalReobservationDates, ['2026-09-22']);
+    assert.deepEqual(preview.classification.revisedTradingDates, []);
+    assert.equal(preview.classification.identicalReobservationDates.includes('2026-09-21'), false);
+
+    const revisedHttp = routeFetch(happyRoutes({ dates: ['2026-09-22'], total: 180 }));
+    const revised = await runSosoValueEtfCapture({
+      mode: 'PREVIEW',
+      apiKey: SECRET,
+      ...paths,
+      fetchImpl: revisedHttp.impl,
+      sleep: revisedHttp.sleep,
+      now: () => NOW,
+      repositorySha: 'abc123',
+    });
+    assert.equal(revised.ok, true);
+    assert.deepEqual(revised.classification.newTradingDates, []);
+    assert.deepEqual(revised.classification.identicalReobservationDates, []);
+    assert.deepEqual(revised.classification.revisedTradingDates, ['2026-09-22']);
+    assert.equal(revised.report.identical_reobservation_dates.includes('2026-09-21'), false);
+  } finally {
+    fs.rmSync(paths.directory, { recursive: true, force: true });
+  }
+});
+
+test('PREVIEW writes a failure report when the API key is missing', async () => {
+  const paths = capturePaths();
+  let calls = 0;
+  try {
+    const result = await runSosoValueEtfCapture({
+      mode: 'PREVIEW',
+      apiKey: '',
+      ...paths,
+      fetchImpl: async () => {
+        calls += 1;
+        throw new Error('fetch should not run');
+      },
+      sleep: async () => {},
+      now: () => NOW,
+      repositorySha: 'abc123',
+    });
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'missing_api_key');
+    assert.equal(result.repository_write_performed, false);
+    assert.equal(calls, 0);
+    assert.equal(fs.existsSync(paths.historyPath), false);
+    assert.equal(fs.existsSync(paths.auditPath), false);
+    assert.equal(fs.existsSync(paths.fetchMetadataPath), false);
+    const report = JSON.parse(fs.readFileSync(paths.reportPath, 'utf8'));
+    assert.equal(report.schema, SOSOVALUE_ETF_CAPTURE_REPORT_SCHEMA);
+    assert.equal(report.mode, 'PREVIEW');
+    assert.equal(report.repository_write_performed, false);
+    assert.deepEqual(report.blockers, ['missing_api_key']);
+    assert.equal(JSON.stringify(report).includes('x-soso-api-key'), false);
+  } finally {
+    fs.rmSync(paths.directory, { recursive: true, force: true });
+  }
+});
+
 test('PREVIEW plans history without writing repository files', async () => {
   const paths = capturePaths();
   const http = routeFetch(happyRoutes());
@@ -508,6 +606,16 @@ test('the manual workflow cannot run from a pull request or replace Daily ETL', 
     'utf8'
   );
   const daily = fs.readFileSync(path.join(REPO_ROOT, '.github/workflows/daily-etl.yml'), 'utf8');
+  const previewJob = workflow.slice(workflow.indexOf('\n  preview:'), workflow.indexOf('\n  commit:'));
+  const commitJob = workflow.slice(workflow.indexOf('\n  commit:'));
+  assert.match(previewJob, /name: Upload preview report\r?\n\s+if: always\(\)/);
+  assert.match(previewJob, /if-no-files-found: warn/);
+  assert.match(previewJob, /name: Confirm repository worktree stayed clean\r?\n\s+if: always\(\)/);
+  assert.match(commitJob, /name: Upload commit report\r?\n\s+if: always\(\)/);
+  assert.match(commitJob, /if-no-files-found: warn/);
+  assert.equal(/name: Reject unexpected repository paths\r?\n\s+if: always\(\)/.test(commitJob), false);
+  assert.equal(/name: Refuse capture if origin\/main advanced\r?\n\s+if: always\(\)/.test(commitJob), false);
+  assert.equal(/name: Publish source-history artifacts\r?\n\s+if: always\(\)/.test(commitJob), false);
   assert.equal(workflow.includes('workflow_dispatch:'), true);
   assert.equal(/^\s*schedule:/m.test(workflow), false);
   assert.equal(workflow.includes('pull_request'), false);
