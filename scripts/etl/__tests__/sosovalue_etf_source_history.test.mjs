@@ -481,7 +481,6 @@ test('the history module is not production ETF acquisition', () => {
   assert.equal(moduleSrc.includes('getExpectedLatestUsTradingDay'), false);
   assert.equal(moduleSrc.includes('selectPublishedEtfFlowRows'), false);
   assert.equal(moduleSrc.includes('isEtfFlowsFreshForSourceCadence'), false);
-  assert.equal(fs.existsSync(path.join(REPO_ROOT, ETF_SOSOVALUE_HISTORY_PATH)), false);
 
   for (const relativePath of [
     'scripts/etl/factors.mjs',

@@ -482,6 +482,10 @@ test('PREVIEW writes a failure report when the API key is missing', async () => 
 test('PREVIEW plans history without writing repository files', async () => {
   const paths = capturePaths();
   const http = routeFetch(happyRoutes());
+  const durableHistoryPath = path.join(REPO_ROOT, 'public/data/cache/etf_sosovalue/history.json');
+  const durableMetadataPath = path.join(REPO_ROOT, 'public/data/cache/etf_sosovalue/fetch-metadata.json');
+  const durableHistoryBefore = fs.readFileSync(durableHistoryPath);
+  const durableMetadataBefore = fs.readFileSync(durableMetadataPath);
   try {
     const result = await runSosoValueEtfCapture({
       mode: 'PREVIEW',
@@ -504,7 +508,8 @@ test('PREVIEW plans history without writing repository files', async () => {
     assert.deepEqual(report.new_trading_dates, ['2026-09-22']);
     assert.deepEqual(report.revised_trading_dates, []);
     assert.equal(JSON.stringify(report).includes(SECRET), false);
-    assert.equal(fs.existsSync(path.join(REPO_ROOT, 'public/data/cache/etf_sosovalue/history.json')), false);
+    assert.deepEqual(fs.readFileSync(durableHistoryPath), durableHistoryBefore);
+    assert.deepEqual(fs.readFileSync(durableMetadataPath), durableMetadataBefore);
   } finally {
     fs.rmSync(paths.directory, { recursive: true, force: true });
   }
