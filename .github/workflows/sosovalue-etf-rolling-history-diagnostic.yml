@@ -1,0 +1,68 @@
+name: SoSoValue rolling-history diagnostic
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  diagnose:
+    if: github.head_ref == 'research/sosovalue-etf-rolling-history-diagnostic'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node 20.18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.0'
+
+      - name: Verify and download prior SoSoValue artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          meta=$(gh api "repos/${{ github.repository }}/actions/artifacts/10717398959")
+          id=$(echo "$meta" | jq -r '.id')
+          name=$(echo "$meta" | jq -r '.name')
+          expired=$(echo "$meta" | jq -r '.expired')
+          digest=$(echo "$meta" | jq -r '.digest')
+          if [ "$id" != "10717398959" ] || [ "$name" != "sosovalue-etf-diagnostic" ] || [ "$expired" != "false" ] || [ "$digest" != "sha256:dd516ab4392f6f1ccf7547504860d80800a4bc3ae5e79be7530c8c440ab780f4" ]; then
+            echo "Prior artifact metadata did not match the expected PR #57 evidence."
+            echo "id=$id name=$name expired=$expired digest=$digest"
+            exit 1
+          fi
+          curl -sS -L \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -o "$RUNNER_TEMP/prior-sosovalue.zip" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/10717398959/zip"
+          unzip -q -o "$RUNNER_TEMP/prior-sosovalue.zip" -d "$RUNNER_TEMP/prior-sosovalue"
+          test -f "$RUNNER_TEMP/prior-sosovalue/sosovalue-etf-diagnostic.json"
+
+      - name: Run SoSoValue rolling-history diagnostic
+        env:
+          SOSOVALUE_API_KEY: ${{ secrets.SOSOVALUE_API_KEY }}
+          PRIOR_DIAGNOSTIC_JSON: ${{ runner.temp }}/prior-sosovalue/sosovalue-etf-diagnostic.json
+        run: node scripts/diagnostics/sosovalue-etf-rolling-history-diagnostic.mjs
+
+      - name: Upload rolling-history diagnostic report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sosovalue-etf-rolling-history-diagnostic
+          path: ${{ runner.temp }}/sosovalue-etf-rolling-history-diagnostic.json
+          if-no-files-found: warn
+
+      - name: Verify diagnostic leaves checkout clean
+        if: always()
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Diagnostic modified the repository worktree:"
+            git status --porcelain
+            exit 1
+          fi
