@@ -1,0 +1,156 @@
+name: SoSoValue ETF source capture
+
+# Manual capture only. The first live run after merge must be PREVIEW.
+# Merging this workflow does not authorize COMMIT.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: PREVIEW is the only authorized first live run. COMMIT writes source history only after a reviewed PREVIEW.
+        type: choice
+        options:
+          - PREVIEW
+          - COMMIT
+        default: PREVIEW
+      confirm:
+        description: COMMIT requires the exact token COMMIT_SOSOVALUE_ETF_HISTORY. Leave blank for PREVIEW.
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: etl
+  cancel-in-progress: false
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate dispatch
+        env:
+          CAPTURE_MODE: ${{ inputs.mode }}
+          CAPTURE_CONFIRM: ${{ inputs.confirm }}
+          CAPTURE_REF: ${{ github.ref }}
+        run: |
+          if [ "$CAPTURE_REF" != "refs/heads/main" ]; then
+            echo "SoSoValue capture must be dispatched against refs/heads/main"
+            exit 1
+          fi
+          if [ "$CAPTURE_MODE" != "PREVIEW" ] && [ "$CAPTURE_MODE" != "COMMIT" ]; then
+            echo "mode must be PREVIEW or COMMIT"
+            exit 1
+          fi
+          if [ "$CAPTURE_MODE" = "COMMIT" ] && [ "$CAPTURE_CONFIRM" != "COMMIT_SOSOVALUE_ETF_HISTORY" ]; then
+            echo "COMMIT requires confirm=COMMIT_SOSOVALUE_ETF_HISTORY"
+            exit 1
+          fi
+
+  preview:
+    needs: guard
+    if: inputs.mode == 'PREVIEW'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Use Node 20
+        uses: actions/setup-node@v5
+        with:
+          node-version: "20.18.0"
+
+      - name: Preview SoSoValue ETF source
+        env:
+          SOSOVALUE_API_KEY: ${{ secrets.SOSOVALUE_API_KEY }}
+        run: node scripts/etl/capture-sosovalue-etf-source.mjs --mode PREVIEW
+
+      - name: Upload preview report
+        uses: actions/upload-artifact@v4
+        with:
+          name: sosovalue-etf-source-capture-preview
+          path: ${{ runner.temp }}/sosovalue-etf-source-capture-report.json
+
+      - name: Confirm repository worktree stayed clean
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --porcelain
+            exit 1
+          fi
+
+  commit:
+    needs: guard
+    if: inputs.mode == 'COMMIT'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Use Node 20
+        uses: actions/setup-node@v5
+        with:
+          node-version: "20.18.0"
+
+      - name: Commit SoSoValue ETF source history
+        env:
+          SOSOVALUE_API_KEY: ${{ secrets.SOSOVALUE_API_KEY }}
+        run: node scripts/etl/capture-sosovalue-etf-source.mjs --mode COMMIT --confirm COMMIT_SOSOVALUE_ETF_HISTORY
+
+      - name: Upload commit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: sosovalue-etf-source-capture-commit
+          path: ${{ runner.temp }}/sosovalue-etf-source-capture-report.json
+
+      - name: Reject unexpected repository paths
+        run: |
+          unexpected=0
+          while IFS= read -r line; do
+            [ -z "$line" ] && continue
+            path="${line:3}"
+            case "$path" in
+              public/data/cache/etf_sosovalue/history.json|\
+              public/data/cache/etf_sosovalue/revisions.jsonl|\
+              public/data/cache/etf_sosovalue/fetch-metadata.json)
+                ;;
+              *)
+                echo "unexpected path: $path"
+                unexpected=1
+                ;;
+            esac
+          done < <(git status --porcelain)
+          if [ "$unexpected" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Refuse capture if origin/main advanced
+        run: |
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$GITHUB_SHA" ]; then
+            echo "origin/main no longer equals GITHUB_SHA"
+            exit 1
+          fi
+
+      - name: Publish source-history artifacts
+        run: |
+          git config user.name "ghostgauge-bot"
+          git config user.email "bot@ghostgauge.local"
+          if [ -f public/data/cache/etf_sosovalue/history.json ]; then
+            git add -- public/data/cache/etf_sosovalue/history.json
+          fi
+          if [ -f public/data/cache/etf_sosovalue/revisions.jsonl ]; then
+            git add -- public/data/cache/etf_sosovalue/revisions.jsonl
+          fi
+          if [ -f public/data/cache/etf_sosovalue/fetch-metadata.json ]; then
+            git add -- public/data/cache/etf_sosovalue/fetch-metadata.json
+          fi
+          git commit -m "chore(etf): capture SoSoValue source history [skip ci]"
+          git push origin HEAD:main
