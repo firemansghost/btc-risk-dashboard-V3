@@ -261,6 +261,25 @@ test('summary and provider-universe failures are explicit', () => {
   assert.equal(unexpected.tickerSumUsd, 11);
 });
 
+test('an extra scored-flow key fails closed and stays out of the scored sum', () => {
+  const approvedFingerprint = fingerprintEtfUniverse(APPROVED_ETF_SCORED_TICKERS).fingerprint;
+  const withNewx = flows({ IBIT: 0 });
+  withNewx.NEWX = 50;
+  const extra = validateEtfProviderObservation(completeObservation({ tickerFlowsUsd: withNewx }));
+  assert.equal(extra.complete, false);
+  assert.deepEqual(extra.reasons, ['unexpected_ticker_flow:NEWX']);
+  assert.equal(extra.tickerSumUsd, 11);
+  assert.equal(extra.scoredUniverseFingerprint, approvedFingerprint);
+
+  const lower = flows({ IBIT: 0 });
+  lower.newx = 50;
+  const normalized = validateEtfProviderObservation(completeObservation({ tickerFlowsUsd: lower }));
+  assert.equal(normalized.complete, false);
+  assert.deepEqual(normalized.reasons, ['unexpected_ticker_flow:NEWX']);
+  assert.equal(normalized.tickerSumUsd, 11);
+  assert.equal(normalized.scoredUniverseFingerprint, approvedFingerprint);
+});
+
 test('America/New_York T+1 eligible dates ignore the Farside publication clock', () => {
   assert.equal(getMarketDateInTimeZone('2026-09-23T15:00:00Z'), '2026-09-23');
   assert.equal(
@@ -302,6 +321,39 @@ test('America/New_York T+1 eligible dates ignore the Farside publication clock',
     getExpectedEligibleEtfTradingDate('2026-09-23T20:00:00Z', isTradingDay),
     '2026-09-22'
   );
+});
+
+test('asOf instants require an explicit timezone and ignore the machine zone', () => {
+  assert.equal(getMarketDateInTimeZone('2026-09-22T03:30:00Z'), '2026-09-21');
+  assert.equal(getMarketDateInTimeZone('2026-09-22T03:30:00.000Z'), '2026-09-21');
+  assert.equal(
+    getExpectedEligibleEtfTradingDate('2026-09-22T03:30:00Z', isTradingDay),
+    '2026-09-18'
+  );
+
+  assert.equal(getMarketDateInTimeZone('2026-09-21T23:30:00-04:00'), '2026-09-21');
+  assert.equal(
+    getMarketDateInTimeZone('2026-09-22T03:30:00Z'),
+    getMarketDateInTimeZone('2026-09-21T23:30:00-04:00')
+  );
+  assert.equal(
+    getExpectedEligibleEtfTradingDate('2026-09-21T23:30:00-04:00', isTradingDay),
+    '2026-09-18'
+  );
+
+  assert.throws(
+    () => getMarketDateInTimeZone('2026-09-22T03:30:00'),
+    (error) => error instanceof Error && error.message === 'invalid_as_of_timezone'
+  );
+  assert.throws(
+    () => getMarketDateInTimeZone('2026-09-22'),
+    (error) => error instanceof Error && error.message === 'invalid_as_of_timezone'
+  );
+
+  const instant = new Date(Date.UTC(2026, 8, 22, 3, 30, 0));
+  assert.equal(instant.toISOString(), '2026-09-22T03:30:00.000Z');
+  assert.equal(getMarketDateInTimeZone(instant), '2026-09-21');
+  assert.equal(getExpectedEligibleEtfTradingDate(instant, isTradingDay), '2026-09-18');
 });
 
 test('the contract module is not a production ETF importer', () => {

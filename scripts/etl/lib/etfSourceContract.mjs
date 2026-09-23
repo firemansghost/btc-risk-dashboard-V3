@@ -39,6 +39,7 @@ export const ETF_HISTORICAL_CALIBRATION = Object.freeze({
 
 const TICKER_PATTERN = /^[A-Z0-9]+$/;
 const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+const EXPLICIT_INSTANT_PATTERN = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?)(Z|[+-]\d{2}:\d{2})$/i;
 
 /**
  * Trim and uppercase a ticker token.
@@ -90,6 +91,29 @@ export function fingerprintEtfUniverse(tickers) {
 }
 
 /**
+ * A Date is an absolute instant. A string is accepted only with an explicit Z or numeric offset.
+ * Timezone-less datetimes and date-only strings are rejected. They are not assumed to be UTC.
+ * @param {string|Date} asOfUtc
+ * @returns {Date}
+ */
+function parseExplicitInstant(asOfUtc) {
+  if (asOfUtc instanceof Date) {
+    if (Number.isNaN(asOfUtc.getTime())) {
+      throw new Error('invalid_as_of');
+    }
+    return asOfUtc;
+  }
+  if (typeof asOfUtc !== 'string' || !EXPLICIT_INSTANT_PATTERN.test(asOfUtc)) {
+    throw new Error('invalid_as_of_timezone');
+  }
+  const instant = new Date(asOfUtc);
+  if (Number.isNaN(instant.getTime())) {
+    throw new Error('invalid_as_of');
+  }
+  return instant;
+}
+
+/**
  * YYYY-MM-DD for `asOfUtc` in an IANA time zone. Defaults to America/New_York.
  * Uses Intl parts so DST is handled by the runtime. Does not read the machine local zone.
  * @param {string|Date} asOfUtc
@@ -97,10 +121,7 @@ export function fingerprintEtfUniverse(tickers) {
  * @returns {string}
  */
 export function getMarketDateInTimeZone(asOfUtc, timeZone = ETF_MARKET_TIME_ZONE) {
-  const instant = asOfUtc instanceof Date ? asOfUtc : new Date(asOfUtc);
-  if (Number.isNaN(instant.getTime())) {
-    throw new Error('invalid_as_of');
-  }
+  const instant = parseExplicitInstant(asOfUtc);
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone,
     year: 'numeric',
@@ -252,6 +273,7 @@ export function validateEtfProviderObservation(observation) {
       }
       flows.set(parsed.ticker, value);
     }
+    const approvedFlows = new Set(APPROVED_ETF_SCORED_TICKERS);
     for (const ticker of APPROVED_ETF_SCORED_TICKERS) {
       if (!flows.has(ticker)) {
         reasons.push(`missing_scored_ticker:${ticker}`);
@@ -260,6 +282,14 @@ export function validateEtfProviderObservation(observation) {
       const state = monetaryState(flows.get(ticker));
       if (state === 'missing') reasons.push(`missing_ticker_flow:${ticker}`);
       if (state === 'non_finite') reasons.push(`non_finite_ticker_flow:${ticker}`);
+    }
+    const unexpectedFlows = [];
+    for (const ticker of flows.keys()) {
+      if (!approvedFlows.has(ticker)) unexpectedFlows.push(ticker);
+    }
+    unexpectedFlows.sort();
+    for (const ticker of unexpectedFlows) {
+      reasons.push(`unexpected_ticker_flow:${ticker}`);
     }
   }
 
