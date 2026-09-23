@@ -275,19 +275,26 @@ test('a failed history replace retries without duplicating audit events', async 
     const unchanged = await loadEtfSourceHistory(paths.historyPath);
     assert.equal(unchanged.observations_by_date['2026-09-22'].summary_total_usd, 100);
     assert.equal(unchanged.observations_by_date['2026-09-22'].revision_number, 0);
+    const auditAfterFailureText = fs.readFileSync(paths.auditPath, 'utf8');
     const auditAfterFailure = await loadEtfRevisionAudit(paths.auditPath);
     assert.equal(auditAfterFailure.length, 1);
     assert.equal(auditAfterFailure[0].event_id, plan.revisionEvents[0].event_id);
+    assert.equal(auditAfterFailure[0].detected_at_utc, T1);
 
-    const replay = planEtfSourceHistoryMerge(unchanged, [observation('2026-09-22', { summary: 250 })], T1);
+    const replay = planEtfSourceHistoryMerge(unchanged, [observation('2026-09-22', { summary: 250 })], T2);
     assert.equal(replay.revisionEvents[0].event_id, plan.revisionEvents[0].event_id);
     assert.equal(replay.revisionEvents[0].revision_batch_id, plan.revisionEvents[0].revision_batch_id);
+    assert.equal(replay.revisionEvents[0].detected_at_utc, T2);
     const updated = await persistEtfSourceHistoryPlan(replay, paths);
+    assert.equal(fs.readFileSync(paths.auditPath, 'utf8'), auditAfterFailureText);
     const auditFinal = await loadEtfRevisionAudit(paths.auditPath);
     assert.equal(auditFinal.length, 1);
     assert.equal(auditFinal[0].event_id, plan.revisionEvents[0].event_id);
+    assert.equal(auditFinal[0].detected_at_utc, T1);
     assert.equal(updated.observations_by_date['2026-09-22'].summary_total_usd, 250);
     assert.equal(updated.observations_by_date['2026-09-22'].revision_number, 1);
+    assert.equal(updated.observations_by_date['2026-09-22'].last_seen_at_utc, T2);
+    assert.equal(updated.updated_at_utc, T2);
     assert.equal(fs.existsSync(`${paths.historyPath}.tmp`), false);
   } finally {
     cleanup(paths.directory);
@@ -363,18 +370,85 @@ test('malformed history, audit, duplicate dates, and backward seen-at fail close
     fs.writeFileSync(paths.auditPath, '');
     await persistEtfSourceHistoryPlan(validPlan, paths);
     const line = fs.readFileSync(paths.auditPath, 'utf8').split('\n').find((item) => item.length > 0);
+    fs.writeFileSync(paths.auditPath, `${line}\n${line}\n`);
+    const duplicateEvent = JSON.parse(line);
+    await assert.rejects(
+      loadEtfRevisionAudit(paths.auditPath),
+      (error) => error.message === `duplicate_revision_event:${duplicateEvent.event_id}`
+    );
     const conflict = JSON.parse(line);
-    conflict.new_value = 999;
+    conflict.provider_universe_fingerprint = 'a'.repeat(64);
     fs.writeFileSync(paths.auditPath, `${line}\n${JSON.stringify(conflict)}\n`);
     await assert.rejects(
       loadEtfRevisionAudit(paths.auditPath),
       (error) => error.message === `revision_audit_conflict:${conflict.event_id}`
     );
     fs.writeFileSync(paths.historyPath, original);
+    fs.writeFileSync(paths.auditPath, `${JSON.stringify(conflict)}\n`);
     await assert.rejects(persistEtfSourceHistoryPlan(validPlan, paths), (error) =>
       error.message === `revision_audit_conflict:${conflict.event_id}`
     );
     assert.equal(fs.readFileSync(paths.historyPath, 'utf8'), original);
+  } finally {
+    cleanup(paths.directory);
+  }
+});
+
+test('a stored audit event is rejected when one immutable field is tampered', async () => {
+  const paths = tempPaths();
+  try {
+    const history = await persistEtfSourceHistoryPlan(
+      planEtfSourceHistoryMerge(createEmptyEtfSourceHistory(), [observation('2026-09-22')], T0),
+      paths
+    );
+    await persistEtfSourceHistoryPlan(
+      planEtfSourceHistoryMerge(history, [observation('2026-09-22', { summary: 140 })], T1),
+      paths
+    );
+    const historyBefore = fs.readFileSync(paths.historyPath, 'utf8');
+    const auditBefore = fs.readFileSync(paths.auditPath, 'utf8');
+    const base = JSON.parse(auditBefore.trim());
+    assert.equal(base.field, 'summary_total_usd');
+    assert.equal(base.ticker, null);
+
+    async function rejectTamper(mutate, message) {
+      const event = structuredClone(base);
+      mutate(event);
+      const corrupted = `${JSON.stringify(event)}\n`;
+      fs.writeFileSync(paths.auditPath, corrupted);
+      await assert.rejects(loadEtfRevisionAudit(paths.auditPath), (error) => error.message === message);
+      assert.equal(fs.readFileSync(paths.historyPath, 'utf8'), historyBefore);
+      assert.equal(fs.readFileSync(paths.auditPath, 'utf8'), corrupted);
+    }
+
+    await rejectTamper((event) => {
+      event.new_value = 999;
+    }, 'invalid_revision_event_id');
+    await rejectTamper((event) => {
+      event.provider = 'farside';
+    }, 'unexpected_revision_provider');
+    await rejectTamper((event) => {
+      event.source_contract_version = 'other_contract';
+    }, 'unexpected_revision_source_contract');
+    await rejectTamper((event) => {
+      event.revision_number_to = event.revision_number_from + 2;
+    }, 'invalid_revision_transition');
+    await rejectTamper((event) => {
+      event.field = 'ticker_flow_usd';
+      event.ticker = 'NEWX';
+    }, 'invalid_revision_ticker');
+    await rejectTamper((event) => {
+      event.ticker = 'IBIT';
+    }, 'invalid_revision_summary_ticker');
+    await rejectTamper((event) => {
+      event.detected_at_utc = '2026-09-23T16:00:00';
+    }, 'invalid_revision_detected_at');
+    await rejectTamper((event) => {
+      event.detected_at_utc = '2026-09-23T16:00:00Z';
+    }, 'invalid_revision_detected_at');
+    await rejectTamper((event) => {
+      event.scored_universe_fingerprint = `${SCORED_FINGERPRINT.slice(0, -1)}0`;
+    }, 'invalid_revision_scored_fingerprint');
   } finally {
     cleanup(paths.directory);
   }

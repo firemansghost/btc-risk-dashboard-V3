@@ -67,6 +67,27 @@ const EVENT_FIELDS = [
   'scored_universe_fingerprint',
 ];
 
+const IMMUTABLE_EVENT_FIELDS = [
+  'schema_version',
+  'event_id',
+  'revision_batch_id',
+  'source_contract_version',
+  'provider',
+  'trading_date',
+  'revision_number_from',
+  'revision_number_to',
+  'field',
+  'ticker',
+  'prior_value',
+  'new_value',
+  'provider_universe_fingerprint',
+  'scored_universe_fingerprint',
+];
+
+const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+const SHA256_HEX_PATTERN = /^[0-9a-f]{64}$/;
+const APPROVED_SCORED_TICKER_SET = new Set(APPROVED_ETF_SCORED_TICKERS);
+
 function sha256Json(value) {
   return createHash('sha256').update(JSON.stringify(value), 'utf8').digest('hex');
 }
@@ -149,6 +170,97 @@ function eventJson(event) {
   return JSON.stringify(orderEvent(event));
 }
 
+function immutableEventIdentity(event) {
+  const identity = {};
+  for (const key of IMMUTABLE_EVENT_FIELDS) identity[key] = event[key];
+  return JSON.stringify(identity);
+}
+
+function revisionEventId({ revisionBatchId, field, ticker, priorValue, newValue }) {
+  return sha256Json({
+    revision_batch_id: revisionBatchId,
+    field,
+    ticker,
+    prior_value: priorValue,
+    new_value: newValue,
+  });
+}
+
+function isValidTradingDate(value) {
+  if (typeof value !== 'string') return false;
+  const match = ISO_DATE_PATTERN.exec(value);
+  if (!match) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  return parsed.getUTCFullYear() === year
+    && parsed.getUTCMonth() === month - 1
+    && parsed.getUTCDate() === day;
+}
+
+function assertCanonicalDetectedAt(value) {
+  if (typeof value !== 'string') throw new Error('invalid_revision_detected_at');
+  let canonical;
+  try {
+    canonical = canonicalUtcInstant(value);
+  } catch {
+    throw new Error('invalid_revision_detected_at');
+  }
+  if (canonical !== value) throw new Error('invalid_revision_detected_at');
+}
+
+function assertRevisionEvent(event) {
+  assertExactFields(event, EVENT_FIELDS, 'malformed_revision_audit');
+  if (event.schema_version !== ETF_REVISION_AUDIT_SCHEMA_VERSION) {
+    throw new Error('unexpected_revision_audit_schema_version');
+  }
+  if (event.source_contract_version !== ETF_SOURCE_CONTRACT_VERSION) {
+    throw new Error('unexpected_revision_source_contract');
+  }
+  if (event.provider !== ETF_SOURCE_PROVIDER) throw new Error('unexpected_revision_provider');
+  if (!isValidTradingDate(event.trading_date)) throw new Error('invalid_revision_trading_date');
+  if (!Number.isInteger(event.revision_number_from) || event.revision_number_from < 0) {
+    throw new Error('invalid_revision_transition');
+  }
+  if (!Number.isInteger(event.revision_number_to) || event.revision_number_to !== event.revision_number_from + 1) {
+    throw new Error('invalid_revision_transition');
+  }
+  if (event.field === 'summary_total_usd') {
+    if (event.ticker !== null) throw new Error('invalid_revision_summary_ticker');
+  } else if (event.field === 'ticker_flow_usd') {
+    if (!APPROVED_SCORED_TICKER_SET.has(event.ticker)) throw new Error('invalid_revision_ticker');
+  } else {
+    throw new Error('invalid_revision_field');
+  }
+  if (typeof event.prior_value !== 'number' || !Number.isFinite(event.prior_value)) {
+    throw new Error('invalid_revision_value');
+  }
+  if (typeof event.new_value !== 'number' || !Number.isFinite(event.new_value)) {
+    throw new Error('invalid_revision_value');
+  }
+  if (event.prior_value === event.new_value) throw new Error('invalid_revision_value');
+  assertCanonicalDetectedAt(event.detected_at_utc);
+  if (typeof event.provider_universe_fingerprint !== 'string' || !SHA256_HEX_PATTERN.test(event.provider_universe_fingerprint)) {
+    throw new Error('invalid_revision_provider_fingerprint');
+  }
+  const scoredFingerprint = fingerprintEtfUniverse(APPROVED_ETF_SCORED_TICKERS);
+  if (!scoredFingerprint.ok || event.scored_universe_fingerprint !== scoredFingerprint.fingerprint) {
+    throw new Error('invalid_revision_scored_fingerprint');
+  }
+  if (typeof event.revision_batch_id !== 'string' || !SHA256_HEX_PATTERN.test(event.revision_batch_id)) {
+    throw new Error('invalid_revision_batch_id');
+  }
+  const expectedEventId = revisionEventId({
+    revisionBatchId: event.revision_batch_id,
+    field: event.field,
+    ticker: event.ticker,
+    priorValue: event.prior_value,
+    newValue: event.new_value,
+  });
+  if (event.event_id !== expectedEventId) throw new Error('invalid_revision_event_id');
+}
+
 function makeRevisionEvent({
   batchId,
   tradingDate,
@@ -179,12 +291,12 @@ function makeRevisionEvent({
     provider_universe_fingerprint: providerFingerprint,
     scored_universe_fingerprint: scoredFingerprint,
   };
-  event.event_id = sha256Json({
-    revision_batch_id: batchId,
+  event.event_id = revisionEventId({
+    revisionBatchId: batchId,
     field,
     ticker,
-    prior_value: priorValue,
-    new_value: newValue,
+    priorValue,
+    newValue,
   });
   return orderEvent(event);
 }
@@ -305,21 +417,15 @@ export async function loadEtfRevisionAudit(auditPath) {
     } catch {
       throw new Error('malformed_revision_audit');
     }
-    assertExactFields(parsed, EVENT_FIELDS, 'malformed_revision_audit');
-    if (parsed.schema_version !== ETF_REVISION_AUDIT_SCHEMA_VERSION) {
-      throw new Error('unexpected_revision_audit_schema_version');
-    }
-    if (typeof parsed.event_id !== 'string' || parsed.event_id.length === 0) {
-      throw new Error('malformed_revision_audit');
-    }
-    const canonical = eventJson(parsed);
+    assertRevisionEvent(parsed);
+    const identity = immutableEventIdentity(parsed);
     if (seen.has(parsed.event_id)) {
-      if (seen.get(parsed.event_id) !== canonical) {
+      if (seen.get(parsed.event_id) !== identity) {
         throw new Error(`revision_audit_conflict:${parsed.event_id}`);
       }
       throw new Error(`duplicate_revision_event:${parsed.event_id}`);
     }
-    seen.set(parsed.event_id, canonical);
+    seen.set(parsed.event_id, identity);
     events.push(orderEvent(parsed));
   }
   return events;
@@ -521,16 +627,15 @@ function serializeHistory(history) {
 
 async function appendNewRevisionEvents(auditPath, revisionEvents) {
   const existing = await loadEtfRevisionAudit(auditPath);
-  const existingById = new Map(existing.map((event) => [event.event_id, eventJson(event)]));
+  const existingById = new Map(existing.map((event) => [event.event_id, immutableEventIdentity(event)]));
   const fresh = [];
   for (const event of revisionEvents) {
-    const canonical = eventJson(event);
     const prior = existingById.get(event.event_id);
     if (prior === undefined) {
       fresh.push(event);
       continue;
     }
-    if (prior !== canonical) throw new Error(`revision_audit_conflict:${event.event_id}`);
+    if (prior !== immutableEventIdentity(event)) throw new Error(`revision_audit_conflict:${event.event_id}`);
   }
   if (fresh.length === 0) return existing;
   await fs.mkdir(path.dirname(auditPath), { recursive: true });
