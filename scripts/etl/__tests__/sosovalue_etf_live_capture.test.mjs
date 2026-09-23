@@ -2,6 +2,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -727,6 +728,63 @@ test('failure reports keep safe diagnostic fields and drop secrets', async () =>
   }
 });
 
+const ALLOWED_COMMIT_PATHS = new Set([
+  'public/data/cache/etf_sosovalue/history.json',
+  'public/data/cache/etf_sosovalue/revisions.jsonl',
+  'public/data/cache/etf_sosovalue/fetch-metadata.json',
+]);
+
+function gitStatusPaths(repo, args) {
+  const output = execFileSync('git', args, { cwd: repo, encoding: 'utf8' });
+  return output.split(/\r?\n/).filter((line) => line.length > 0).map((line) => line.slice(3).replaceAll('\\', '/'));
+}
+
+test('untracked-files=all lists a new SoSoValue directory as individual files', () => {
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'etf-s2b-path-guard-'));
+  const cacheDir = path.join(repo, 'public', 'data', 'cache', 'etf_sosovalue');
+  const historyPath = 'public/data/cache/etf_sosovalue/history.json';
+  const metadataPath = 'public/data/cache/etf_sosovalue/fetch-metadata.json';
+  const revisionPath = 'public/data/cache/etf_sosovalue/revisions.jsonl';
+  const unexpectedPath = 'public/data/cache/etf_sosovalue/debug.json';
+  try {
+    execFileSync('git', ['init'], { cwd: repo, encoding: 'utf8' });
+    fs.mkdirSync(path.join(repo, 'public', 'data', 'cache'), { recursive: true });
+    fs.writeFileSync(path.join(repo, 'public', 'data', 'cache', '.gitkeep'), '');
+    execFileSync('git', ['add', '--', 'public/data/cache/.gitkeep'], { cwd: repo, encoding: 'utf8' });
+    execFileSync('git', ['commit', '-m', 'seed'], {
+      cwd: repo,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        GIT_AUTHOR_NAME: 'path-guard-test',
+        GIT_AUTHOR_EMAIL: 'path-guard-test@example.com',
+        GIT_COMMITTER_NAME: 'path-guard-test',
+        GIT_COMMITTER_EMAIL: 'path-guard-test@example.com',
+      },
+    });
+    fs.mkdirSync(cacheDir, { recursive: true });
+    fs.writeFileSync(path.join(repo, historyPath), '{}\n');
+    fs.writeFileSync(path.join(repo, metadataPath), '{}\n');
+
+    const collapsed = gitStatusPaths(repo, ['-c', 'status.showUntrackedFiles=normal', 'status', '--porcelain']);
+    assert.equal(collapsed.includes('public/data/cache/etf_sosovalue/'), true);
+    assert.equal(collapsed.includes(historyPath), false);
+
+    const enumerated = gitStatusPaths(repo, ['status', '--porcelain', '--untracked-files=all']);
+    assert.deepEqual(enumerated.sort(), [historyPath, metadataPath].sort());
+    assert.equal(enumerated.includes(revisionPath), false);
+    assert.equal(enumerated.every((entry) => ALLOWED_COMMIT_PATHS.has(entry)), true);
+
+    fs.writeFileSync(path.join(repo, unexpectedPath), '{}\n');
+    const withExtra = gitStatusPaths(repo, ['status', '--porcelain', '--untracked-files=all']);
+    assert.equal(withExtra.includes(unexpectedPath), true);
+    assert.equal(ALLOWED_COMMIT_PATHS.has(unexpectedPath), false);
+    assert.equal(withExtra.every((entry) => ALLOWED_COMMIT_PATHS.has(entry)), false);
+  } finally {
+    fs.rmSync(repo, { recursive: true, force: true });
+  }
+});
+
 test('the manual workflow cannot run from a pull request or replace Daily ETL', () => {
   const workflow = fs.readFileSync(
     path.join(REPO_ROOT, '.github/workflows/sosovalue-etf-source-capture.yml'),
@@ -760,6 +818,9 @@ test('the manual workflow cannot run from a pull request or replace Daily ETL', 
   assert.equal(workflow.includes('public/data/cache/etf_sosovalue/history.json'), true);
   assert.equal(workflow.includes('public/data/cache/etf_sosovalue/revisions.jsonl'), true);
   assert.equal(workflow.includes('public/data/cache/etf_sosovalue/fetch-metadata.json'), true);
+  assert.match(commitJob, /git status --porcelain --untracked-files=all/);
+  assert.equal(workflow.includes('public/data/cache/etf_sosovalue/**'), false);
+  assert.equal(workflow.includes('git commit -m "chore(etf): capture SoSoValue source history [skip ci]"'), true);
   assert.equal(workflow.includes('actions/upload-artifact@v4'), true);
   assert.equal(workflow.includes('sosovalue-etf-source-capture-preview'), true);
   assert.equal(daily.includes('sosovalueEtfSource'), false);
