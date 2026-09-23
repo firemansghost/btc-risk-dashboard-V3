@@ -1,0 +1,166 @@
+{
+  "schema_version": "sosovalue_etf_fetch_metadata_v1",
+  "source_contract_version": "sosovalue_etf_source_contract_v1",
+  "provider": "sosovalue",
+  "asset": "BTC",
+  "country": "US",
+  "fetched_at_utc": "2026-09-23T21:54:34.343Z",
+  "repository_sha": "cd3c6b3049ad7c3fb7ed6b3a969ffd0f5f1dbf30",
+  "capture_mode": "COMMIT",
+  "provider_universe": [
+    "IBIT",
+    "FBTC",
+    "ARKB",
+    "BTCO",
+    "BTCW",
+    "BRRR",
+    "BITB",
+    "EZBC",
+    "HODL",
+    "GBTC",
+    "BTC",
+    "MSBT"
+  ],
+  "provider_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
+  "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
+  "summary_row_count": 21,
+  "summary_distinct_dates": 21,
+  "summary_earliest": "2026-08-24",
+  "summary_latest": "2026-09-22",
+  "ticker_results": {
+    "IBIT": {
+      "http_status": 200,
+      "row_count": 21,
+      "distinct_date_count": 21,
+      "earliest": "2026-08-24",
+      "latest": "2026-09-22",
+      "retried": false
+    },
+    "FBTC": {
+      "http_status": 200,
+      "row_count": 21,
+      "distinct_date_count": 21,
+      "earliest": "2026-08-24",
+      "latest": "2026-09-22",
+      "retried": false
+    },
+    "ARKB": {
+      "http_status": 200,
+      "row_count": 21,
+      "distinct_date_count": 21,
+      "earliest": "2026-08-24",
+      "latest": "2026-09-22",
+      "retried": false
+    },
+    "BTCO": {
+      "http_status": 200,
+      "row_count": 21,
+      "distinct_date_count": 21,
+      "earliest": "2026-08-24",
+      "latest": "2026-09-22",
+      "retried": false
+    },
+    "BTCW": {
+      "http_status": 200,
+      "row_count": 21,
+      "distinct_date_count": 21,
+      "earliest": "2026-08-24",
+      "latest": "2026-09-22",
+      "retried": false
+    },
+    "BRRR": {
+      "http_status": 200,
+      "row_count": 21,
+      "distinct_date_count": 21,
+      "earliest": "2026-08-24",
+      "latest": "2026-09-22",
+      "retried": false
+    },
+    "BITB": {
+      "http_status": 200,
+      "row_count": 21,
+      "distinct_date_count": 21,
+      "earliest": "2026-08-24",
+      "latest": "2026-09-22",
+      "retried": false
+    },
+    "EZBC": {
+      "http_status": 200,
+      "row_count": 21,
+      "distinct_date_count": 21,
+      "earliest": "2026-08-24",
+      "latest": "2026-09-22",
+      "retried": false
+    },
+    "HODL": {
+      "http_status": 200,
+      "row_count": 21,
+      "distinct_date_count": 21,
+      "earliest": "2026-08-24",
+      "latest": "2026-09-22",
+      "retried": true
+    },
+    "GBTC": {
+      "http_status": 200,
+      "row_count": 21,
+      "distinct_date_count": 21,
+      "earliest": "2026-08-24",
+      "latest": "2026-09-22",
+      "retried": false
+    },
+    "BTC": {
+      "http_status": 200,
+      "row_count": 21,
+      "distinct_date_count": 21,
+      "earliest": "2026-08-24",
+      "latest": "2026-09-22",
+      "retried": false
+    },
+    "MSBT": {
+      "http_status": 200,
+      "row_count": 21,
+      "distinct_date_count": 21,
+      "earliest": "2026-08-24",
+      "latest": "2026-09-22",
+      "retried": false
+    }
+  },
+  "rate_limit_events": [
+    {
+      "endpoint": "/etfs/HODL/history",
+      "retryAfter": "20",
+      "waitMs": 20000,
+      "capped": false,
+      "source": "retry_after_seconds"
+    }
+  ],
+  "complete_observation_count": 21,
+  "complete_observation_dates": [
+    "2026-08-24",
+    "2026-08-25",
+    "2026-08-26",
+    "2026-08-27",
+    "2026-08-28",
+    "2026-08-31",
+    "2026-09-01",
+    "2026-09-02",
+    "2026-09-03",
+    "2026-09-04",
+    "2026-09-08",
+    "2026-09-09",
+    "2026-09-10",
+    "2026-09-11",
+    "2026-09-14",
+    "2026-09-15",
+    "2026-09-16",
+    "2026-09-17",
+    "2026-09-18",
+    "2026-09-21",
+    "2026-09-22"
+  ],
+  "ticker_only_dates": [],
+  "history_before_observation_count": 0,
+  "history_after_observation_count": 21,
+  "planned_revision_event_count": 0,
+  "outcome": "committed"
+}
