@@ -131,7 +131,7 @@ jobs:
                 unexpected=1
                 ;;
             esac
-          done < <(git status --porcelain)
+          done < <(git status --porcelain --untracked-files=all)
           if [ "$unexpected" -ne 0 ]; then
             exit 1
           fi
