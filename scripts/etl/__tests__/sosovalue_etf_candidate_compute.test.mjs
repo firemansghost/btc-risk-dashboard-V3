@@ -280,6 +280,57 @@ test('SoSoValue dollars are not scaled again against the USD calibration', () =>
   assert.equal(result.components.sum21Percentile, 0);
 });
 
+function corruptEarlierRow(mutate) {
+  const dates = tradingDaysEnding('2026-09-22', 21);
+  const history = historyFrom(dates.map((date) => observation(date, 1)));
+  const earlier = dates[5];
+  mutate(history.observations_by_date[earlier], earlier);
+  const result = candidate(history);
+  assert.equal(result.ok, false);
+  assert.equal(result.reason, 'invalid_candidate_history_row');
+  assert.equal(result.tradingDate, earlier);
+  assert.equal(result.score, undefined);
+  assert.equal(result.components, undefined);
+}
+
+test('a malformed earlier participating row fails before scoring', () => {
+  corruptEarlierRow((row) => {
+    row.trading_date = '2026-09-11';
+  });
+  corruptEarlierRow((row) => {
+    delete row.ticker_flows_usd.MSBT;
+  });
+  corruptEarlierRow((row) => {
+    row.ticker_flows_usd.NEWX = 5;
+  });
+  corruptEarlierRow((row) => {
+    row.provider_universe = row.provider_universe.filter((ticker) => ticker !== 'MSBT');
+  });
+  corruptEarlierRow((row) => {
+    row.provider_universe_fingerprint = `${row.provider_universe_fingerprint.slice(0, -1)}0`;
+  });
+  corruptEarlierRow((row) => {
+    row.scored_universe_fingerprint = `${row.scored_universe_fingerprint.slice(0, -1)}0`;
+  });
+});
+
+test('overflowing finite summaries and ticker flows fail closed', () => {
+  const dates = tradingDaysEnding('2026-09-22', 21);
+  const overflow = candidate(historyFrom(dates.map((date) => observation(date, Number.MAX_VALUE))));
+  assert.equal(overflow.ok, false);
+  assert.equal(overflow.reason, 'candidate_numeric_non_finite');
+  assert.equal(overflow.field, 'sum21Usd');
+  assert.equal(overflow.score, undefined);
+
+  const hugeFlows = flows(0, { IBIT: Number.MAX_VALUE, FBTC: Number.MAX_VALUE });
+  const concentration = candidate(historyFrom(dates.map((date, index) => (
+    observation(date, 1, index === dates.length - 1 ? hugeFlows : flows(1))
+  ))));
+  assert.equal(concentration.ok, false);
+  assert.equal(concentration.reason, 'candidate_numeric_non_finite');
+  assert.equal(concentration.field, 'totalAbsFlowUsd');
+});
+
 test('the candidate is not wired into production and has no legacy clock', () => {
   const source = fs.readFileSync(path.join(REPO_ROOT, 'scripts/etl/lib/etfCandidateCompute.mjs'), 'utf8');
   for (const token of [

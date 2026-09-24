@@ -5,6 +5,7 @@ import {
   APPROVED_ETF_SCORED_TICKERS,
   ETF_SOURCE_CONTRACT_VERSION,
   ETF_SOURCE_PROVIDER,
+  validateEtfProviderObservation,
 } from './etfSourceContract.mjs';
 import { selectEligibleEtfSourceObservation } from './etfSourceFinality.mjs';
 import { normalizeFrozenEtfHistoricalCalibration } from './etfHistoricalCalibration.mjs';
@@ -36,6 +37,52 @@ function sumSummaries(rows) {
   return rows.reduce((sum, row) => sum + row.summary_total_usd, 0);
 }
 
+function nonFinite(field) {
+  return { ok: false, reason: 'candidate_numeric_non_finite', field };
+}
+
+function finiteValue(value, field) {
+  return Number.isFinite(value) ? null : nonFinite(field);
+}
+
+function sameTickers(left, right) {
+  return Array.isArray(left)
+    && left.length === right.length
+    && left.every((ticker, index) => ticker === right[index]);
+}
+
+function invalidParticipatingRow(date, row) {
+  const reasons = [];
+  if (!row || typeof row !== 'object') reasons.push('row_missing');
+  if (row?.trading_date !== date) reasons.push('trading_date_mismatch');
+  if (row?.complete !== true) reasons.push('observation_not_complete');
+  if (!Number.isInteger(row?.revision_number) || row.revision_number < 0) {
+    reasons.push('invalid_revision_number');
+  } else if (row.revision_number === 0 && row.last_revision_batch_id !== null) {
+    reasons.push('revision_batch_id_mismatch');
+  } else if (row.revision_number > 0 && (typeof row.last_revision_batch_id !== 'string' || row.last_revision_batch_id.length === 0)) {
+    reasons.push('revision_batch_id_mismatch');
+  }
+  if (row?.scored_universe != null && !sameTickers(row.scored_universe, APPROVED_ETF_SCORED_TICKERS)) {
+    reasons.push('scored_universe_mismatch');
+  }
+  const validation = validateEtfProviderObservation({
+    tradingDate: row?.trading_date,
+    summaryTotalUsd: row?.summary_total_usd,
+    tickerFlowsUsd: row?.ticker_flows_usd,
+    providerUniverse: row?.provider_universe,
+  });
+  if (!validation.complete) reasons.push(...validation.reasons);
+  if (validation.complete && row?.provider_universe_fingerprint !== validation.providerUniverseFingerprint) {
+    reasons.push('provider_universe_fingerprint_mismatch');
+  }
+  if (validation.complete && row?.scored_universe_fingerprint !== validation.scoredUniverseFingerprint) {
+    reasons.push('scored_universe_fingerprint_mismatch');
+  }
+  if (reasons.length === 0) return null;
+  return { ok: false, reason: 'invalid_candidate_history_row', tradingDate: date, reasons };
+}
+
 function sourceRowsThrough(history, selectedTradingDate, isTradingDay) {
   const dates = Object.keys(history.observations_by_date)
     .filter((date) => date <= selectedTradingDate)
@@ -43,13 +90,11 @@ function sourceRowsThrough(history, selectedTradingDate, isTradingDay) {
   const rows = [];
   for (const date of dates) {
     if (isTradingDay(date) !== true) {
-      return { ok: false, reason: 'invalid_candidate_history_row', tradingDate: date };
+      return { ok: false, reason: 'invalid_candidate_history_row', tradingDate: date, reasons: ['non_trading_date'] };
     }
-    const row = history.observations_by_date[date];
-    if (!row || row.complete !== true || typeof row.summary_total_usd !== 'number' || !Number.isFinite(row.summary_total_usd)) {
-      return { ok: false, reason: 'invalid_candidate_history_row', tradingDate: date };
-    }
-    rows.push(row);
+    const failure = invalidParticipatingRow(date, history.observations_by_date[date]);
+    if (failure) return failure;
+    rows.push(history.observations_by_date[date]);
   }
   return { ok: true, rows };
 }
@@ -64,10 +109,12 @@ function diversification(observation) {
     absoluteFlows.push(Math.abs(flow));
   }
   const totalAbsFlowUsd = absoluteFlows.reduce((sum, flow) => sum + flow, 0);
+  if (!Number.isFinite(totalAbsFlowUsd)) return nonFinite('totalAbsFlowUsd');
   if (totalAbsFlowUsd === 0) {
     return { ok: true, totalAbsFlowUsd, hhi: null, diversificationScore: 50 };
   }
   const hhi = absoluteFlows.reduce((sum, flow) => sum + (flow / totalAbsFlowUsd) ** 2, 0);
+  if (!Number.isFinite(hhi)) return nonFinite('hhi');
   return { ok: true, totalAbsFlowUsd, hhi, diversificationScore: Math.min(hhi * 100, 100) };
 }
 
@@ -113,17 +160,22 @@ export function computeEtfCandidate({
 
   const window = source.rows.slice(-21);
   const sum21Usd = sumSummaries(window);
-  const recent7 = source.rows.slice(-7);
-  const prior7 = source.rows.slice(-14, -7);
-  const recent7Usd = sumSummaries(recent7);
-  const prior7Usd = sumSummaries(prior7);
+  const recent7Usd = sumSummaries(source.rows.slice(-7));
+  const prior7Usd = sumSummaries(source.rows.slice(-14, -7));
   const accelerationUsd = recent7Usd - prior7Usd;
   const accelerationSeries = [];
   for (let index = 14; index < source.rows.length - 7; index += 1) {
     const recent = sumSummaries(source.rows.slice(index, index + 7));
     const previous = sumSummaries(source.rows.slice(index - 7, index));
-    accelerationSeries.push(recent - previous);
+    const historicalAcceleration = recent - previous;
+    if (!Number.isFinite(historicalAcceleration)) return nonFinite('accelerationSeries');
+    accelerationSeries.push(historicalAcceleration);
   }
+  const nonFiniteField = finiteValue(sum21Usd, 'sum21Usd')
+    || finiteValue(recent7Usd, 'recent7Usd')
+    || finiteValue(prior7Usd, 'prior7Usd')
+    || finiteValue(accelerationUsd, 'accelerationUsd');
+  if (nonFiniteField) return nonFiniteField;
   const accelerationPercentile = accelerationSeries.length > 0
     ? percentileRank(accelerationSeries, accelerationUsd)
     : 0.5;
