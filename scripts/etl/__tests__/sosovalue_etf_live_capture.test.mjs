@@ -881,7 +881,7 @@ test('the manual workflow cannot run from a pull request or replace Daily ETL', 
   assert.equal(workflow.includes('actions/upload-artifact@v4'), true);
   assert.equal(workflow.includes('sosovalue-etf-source-capture-preview'), true);
   assert.equal(daily.includes('sosovalueEtfSource'), false);
-  assert.equal(daily.includes('sosovalue-etf-source-capture'), false);
+  assert.equal(daily.includes('capture-sosovalue-etf-source.mjs'), true);
 
   for (const relativePath of [
     'scripts/etl/lib/sosovalueEtfSource.mjs',

@@ -369,9 +369,7 @@ test('the contract module is not a production ETF importer', () => {
   assert.doesNotMatch(moduleSrc, /ETF_FLOW_PUBLISH_HOUR_UTC/);
 
   for (const relativePath of [
-    'scripts/etl/factors.mjs',
     'scripts/etl/marketCalendar.mjs',
-    'scripts/etl/stalenessUtils.mjs',
     'scripts/etl/fetch-helper.mjs',
     'scripts/etl/compute.mjs',
   ]) {

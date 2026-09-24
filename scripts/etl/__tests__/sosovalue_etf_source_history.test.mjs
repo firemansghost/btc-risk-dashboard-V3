@@ -483,7 +483,6 @@ test('the history module is not production ETF acquisition', () => {
   assert.equal(moduleSrc.includes('isEtfFlowsFreshForSourceCadence'), false);
 
   for (const relativePath of [
-    'scripts/etl/factors.mjs',
     'scripts/etl/compute.mjs',
     'scripts/etl/marketCalendar.mjs',
     'scripts/etl/stalenessUtils.mjs',

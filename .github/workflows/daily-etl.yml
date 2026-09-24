@@ -69,6 +69,89 @@ jobs:
         run: |
           echo "H8_V2_ETL_STARTED_UTC=$(node -e 'process.stdout.write(new Date().toISOString())')" >> "$GITHUB_ENV"
 
+      - name: Refresh SoSoValue ETF source history
+        id: sosovalue_capture
+        continue-on-error: true
+        env:
+          SOSOVALUE_API_KEY: ${{ secrets.SOSOVALUE_API_KEY }}
+        run: |
+          set +e
+          node scripts/etl/capture-sosovalue-etf-source.mjs \
+            --mode COMMIT \
+            --confirm COMMIT_SOSOVALUE_ETF_HISTORY
+          status=$?
+          set -e
+          echo "capture_status=$status" >> "$GITHUB_OUTPUT"
+          if [ "$status" -eq 0 ]; then
+            echo "ETF_SOSOVALUE_ACQUISITION_STATE=live_refresh" >> "$GITHUB_ENV"
+          else
+            echo "ETF_SOSOVALUE_ACQUISITION_STATE=durable_history_fallback" >> "$GITHUB_ENV"
+            echo "ETF_SOSOVALUE_ACQUISITION_FAILURE_REASON=capture_exit_${status}" >> "$GITHUB_ENV"
+          fi
+          exit "$status"
+
+      - name: Upload SoSoValue source capture report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-etl-sosovalue-source-capture
+          path: ${{ runner.temp }}/sosovalue-etf-source-capture-report.json
+          if-no-files-found: warn
+
+      - name: Persist successful SoSoValue source history
+        if: steps.sosovalue_capture.outputs.capture_status == '0'
+        run: |
+          unexpected=0
+          while IFS= read -r line; do
+            [ -z "$line" ] && continue
+            changed="${line:3}"
+            case "$changed" in
+              public/data/cache/etf_sosovalue/history.json|public/data/cache/etf_sosovalue/revisions.jsonl|public/data/cache/etf_sosovalue/fetch-metadata.json) ;;
+              *) echo "unexpected path: $changed"; unexpected=1 ;;
+            esac
+          done < <(git status --porcelain --untracked-files=all)
+          if [ "$unexpected" -ne 0 ]; then
+            exit 1
+          fi
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$GITHUB_SHA" ]; then
+            echo "origin/main advanced during source acquisition"
+            exit 1
+          fi
+          git config user.name "ghostgauge-bot"
+          git config user.email "bot@ghostgauge.local"
+          if [ -f public/data/cache/etf_sosovalue/history.json ]; then git add -- public/data/cache/etf_sosovalue/history.json; fi
+          if [ -f public/data/cache/etf_sosovalue/revisions.jsonl ]; then git add -- public/data/cache/etf_sosovalue/revisions.jsonl; fi
+          if [ -f public/data/cache/etf_sosovalue/fetch-metadata.json ]; then git add -- public/data/cache/etf_sosovalue/fetch-metadata.json; fi
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(etf): capture SoSoValue source history [skip ci]"
+            git push origin HEAD:main
+            echo "ETF_SOSOVALUE_SOURCE_HISTORY_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          fi
+
+      - name: Reject a dirty worktree after a failed SoSoValue capture
+        if: steps.sosovalue_capture.outputs.capture_status != '0'
+        run: |
+          status_output="$(git status --porcelain --untracked-files=all)"
+          if [ -n "$status_output" ]; then
+            echo "failed capture left repository modifications"
+            echo "$status_output"
+            exit 1
+          fi
+
+      - name: Require checkout to match origin/main before compute
+        run: |
+          git fetch origin main
+          git checkout -B main origin/main
+          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
+            echo "checkout is not origin/main"
+            exit 1
+          fi
+          if [ "$(git branch --show-current)" != "main" ]; then
+            echo "checkout is not branch main"
+            exit 1
+          fi
+
       - name: Run ETL compute (with self-check)
         run: npm run etl:compute
         env:

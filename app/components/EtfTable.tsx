@@ -23,7 +23,8 @@ const ETF_METADATA = {
   hodl: { name: 'VanEck Bitcoin Strategy ETF', symbol: 'HODL', color: 'text-yellow-600' },
   btcw: { name: 'WisdomTree Bitcoin Fund', symbol: 'BTCW', color: 'text-teal-600' },
   gbtc: { name: 'Grayscale Bitcoin Trust', symbol: 'GBTC', color: 'text-gray-600' },
-  btc: { name: 'Other Bitcoin ETFs', symbol: 'BTC', color: 'text-slate-600' }
+  btc: { name: 'Grayscale Bitcoin Mini Trust', symbol: 'BTC', color: 'text-slate-600' },
+  msbt: { name: 'X-Square Bitcoin Covered Call ETF', symbol: 'MSBT', color: 'text-cyan-700' },
 };
 
 export default function EtfTable({ individualEtfFlows, className = '' }: EtfTableProps) {
@@ -42,11 +43,12 @@ export default function EtfTable({ individualEtfFlows, className = '' }: EtfTabl
     .sort(([_, a], [__, b]) => Math.abs(b) - Math.abs(a));
 
   const formatFlow = (flow: number): string => {
-    if (flow === 0) return '$0';
-    if (Math.abs(flow) >= 1000) {
-      return `$${(flow / 1000).toFixed(1)}K`;
-    }
-    return `$${flow.toFixed(1)}`;
+    const abs = Math.abs(flow);
+    const sign = flow < 0 ? '-' : '';
+    if (abs >= 1_000_000_000) return `${sign}$${(abs / 1_000_000_000).toFixed(2)}B`;
+    if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(2)}M`;
+    if (abs >= 1_000) return `${sign}$${(abs / 1_000).toFixed(1)}K`;
+    return `${sign}$${abs.toFixed(0)}`;
   };
 
   const getFlowColor = (flow: number): string => {
@@ -73,7 +75,7 @@ export default function EtfTable({ individualEtfFlows, className = '' }: EtfTabl
       ) : (
         <div className="space-y-2">
           {sortedEtfs.map(([etfKey, flow]) => {
-            const metadata = ETF_METADATA[etfKey as keyof typeof ETF_METADATA];
+            const metadata = ETF_METADATA[etfKey.toLowerCase() as keyof typeof ETF_METADATA];
             if (!metadata) return null;
 
             return (
@@ -105,7 +107,7 @@ export default function EtfTable({ individualEtfFlows, className = '' }: EtfTabl
       <div className="mt-4 pt-3 border-t border-gray-100">
         <div className="flex justify-between text-xs text-gray-500">
           <span>Total Active ETFs: {sortedEtfs.length}</span>
-          <span>Data: Farside Investors</span>
+          <span>Live source: SoSoValue. Farside is the frozen calibration baseline.</span>
         </div>
       </div>
     </div>

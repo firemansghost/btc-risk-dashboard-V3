@@ -1023,7 +1023,7 @@ async function main() {
   await fs.writeFile("public/data/history.csv", historyCsv);
 
   // Load model_version from SSOT
-  let modelVersion = 'v1.1.1';
+  let modelVersion = 'v1.1.2';
   let implementationRevision = IMPLEMENTATION_REVISION;
   try {
     const dashboardConfigPath = path.join(process.cwd(), 'config', 'dashboard-config.json');
@@ -1038,6 +1038,36 @@ async function main() {
   } catch (error) {
     console.warn('Could not load model_version from SSOT, using default:', error.message);
   }
+
+function buildEtfProvenance(factors) {
+  const etf = factors?.find((factor) => factor.key === 'etf_flows');
+  if (!etf?.provider) return [];
+  return [{
+    factor: 'etf_flows',
+    live_provider: etf.provider,
+    source_contract_version: etf.sourceContractVersion ?? null,
+    source_trading_date: etf.sourceTradingDate ?? null,
+    expected_eligible_trading_date: etf.expectedEligibleTradingDate ?? null,
+    acquisition_state: etf.acquisitionState ?? null,
+    acquisition_failure_reason: etf.acquisitionFailureReason ?? null,
+    source_history_updated_at_utc: etf.sourceHistoryUpdatedAtUtc ?? null,
+    source_history_commit_sha: etf.sourceHistoryCommitSha ?? null,
+    provider_universe_fingerprint: etf.sourceProvenance?.providerUniverseFingerprint ?? null,
+    scored_universe_fingerprint: etf.sourceProvenance?.scoredUniverseFingerprint ?? null,
+    revision_number: etf.sourceProvenance?.revisionNumber ?? null,
+    last_revision_batch_id: etf.sourceProvenance?.lastRevisionBatchId ?? null,
+    selected_first_seen_at_utc: etf.sourceProvenance?.firstSeenAtUtc ?? null,
+    selected_last_seen_at_utc: etf.sourceProvenance?.lastSeenAtUtc ?? null,
+    historical_calibration: etf.historicalCalibration ? {
+      provider: etf.historicalCalibration.provider,
+      git_blob_sha: etf.historicalCalibration.sourceGitBlobSha,
+      stored_unit: etf.historicalCalibration.storedUnit,
+      canonical_unit: etf.historicalCalibration.canonicalUnit,
+      multiplier: etf.historicalCalibration.multiplier,
+      point_count: etf.historicalCalibration.calibrationPointCount,
+    } : null,
+  }];
+}
 
   const asOfUtc = new Date().toISOString();
   const snapshotFields = buildSnapshotArtifactFields({
@@ -1067,7 +1097,7 @@ async function main() {
       source: 'Coinbase',
       price_kind: PRICE_KIND_UTC_INTRADAY_SNAPSHOT,
     },
-    provenance: [],
+    provenance: buildEtfProvenance(factorResults.factors),
     transform: {},
     // Legacy nudges preserved for backward-compat clients
     adjustments: { cycle_nudge: 0.0, spike_nudge: 0.0 },
@@ -1157,9 +1187,31 @@ async function main() {
     };
   }
   
+  const etfFactor = factorResults.factors.find((factor) => factor.key === 'etf_flows');
+  const etfFlowsStatus = etfFactor ? {
+    status: etfFactor.status,
+    score: etfFactor.score,
+    reason: etfFactor.reason,
+    live_provider: etfFactor.provider ?? null,
+    source_contract_version: etfFactor.sourceContractVersion ?? null,
+    market_date: etfFactor.marketDate ?? null,
+    expected_eligible_trading_date: etfFactor.expectedEligibleTradingDate ?? null,
+    source_trading_date: etfFactor.sourceTradingDate ?? null,
+    acquisition_state: etfFactor.acquisitionState ?? null,
+    acquisition_failure_reason: etfFactor.acquisitionFailureReason ?? null,
+    source_history_updated_at_utc: etfFactor.sourceHistoryUpdatedAtUtc ?? null,
+    source_history_commit_sha: etfFactor.sourceHistoryCommitSha ?? null,
+    provider_universe_fingerprint: etfFactor.sourceProvenance?.providerUniverseFingerprint ?? null,
+    scored_universe_fingerprint: etfFactor.sourceProvenance?.scoredUniverseFingerprint ?? null,
+    revision_number: etfFactor.sourceProvenance?.revisionNumber ?? null,
+    historical_calibration_provider: etfFactor.historicalCalibration?.provider ?? null,
+    historical_calibration_git_blob: etfFactor.historicalCalibration?.sourceGitBlobSha ?? null,
+  } : null;
+
   const status = {
     ...existingStatus, // Preserve existing data like etf_schema_hash
     updated_at: new Date().toISOString(),
+    etf_flows: etfFlowsStatus,
     sources: [
       { name: "Coinbase daily candles", ok: true, ms: null, url: "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400" },
       { name: "CoinGecko market chart (fallback)", ok: true, ms: null, url: "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=2&interval=daily" },

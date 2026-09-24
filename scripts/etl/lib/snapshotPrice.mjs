@@ -2,7 +2,7 @@
 // GhostGauge uses the current UTC daily bucket (intraday snapshot), not a completed close.
 
 export const PRICE_KIND_UTC_INTRADAY_SNAPSHOT = 'utc_intraday_snapshot';
-export const IMPLEMENTATION_REVISION = 'integrity-2026-08';
+export const IMPLEMENTATION_REVISION = 'etf-sosovalue-2026-09';
 
 export function snapshotDateUtc(asOfUtc) {
   return new Date(asOfUtc).toISOString().slice(0, 10);

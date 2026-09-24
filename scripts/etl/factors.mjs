@@ -12,6 +12,9 @@ import { fileURLToPath } from 'url';
 import { fetchWithRetry, fetchJsonWithRetry, logFallback } from './fetch-helper.mjs';
 import { getStalenessStatus, getStalenessConfig, isBusinessDay, checkStaleness } from './stalenessUtils.mjs';
 import { getDashboardConfig } from '../../lib/config-loader.mjs';
+import { loadEtfSourceHistory, ETF_SOSOVALUE_FETCH_METADATA_PATH } from './lib/etfSourceHistory.mjs';
+import { ETF_FROZEN_HISTORICAL_BASELINE_PATH } from './lib/etfHistoricalCalibration.mjs';
+import { buildEtfProductionFactor } from './lib/etfProduction.mjs';
 import {
   assertOfficialSubweights,
   blendComponentScores,
@@ -33,7 +36,7 @@ import {
   preserveSourceObservation,
   socialSourceObservationUtc,
 } from './lib/sourceObservationTime.mjs';
-import { selectPublishedEtfFlowRows } from './marketCalendar.mjs';
+import { isUsTradingDay, selectPublishedEtfFlowRows } from './marketCalendar.mjs';
 import {
   hasMacroSourceVintagesChanged,
   preserveMacroOverlayWarmCache,
@@ -1364,8 +1367,40 @@ async function computeStablecoins() {
   }
 }
 
-// 5. ETF FLOWS (Farside Investors) - Enhanced implementation with caching
+function isEtfTradingDay(dateString) {
+  return isUsTradingDay(`${dateString}T00:00:00.000Z`);
+}
+
+async function readJsonIfPresent(filePath) {
+  try {
+    return JSON.parse(await fs.readFile(filePath, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+// 5. ETF FLOWS — SoSoValue durable history. Acquisition happens in Daily ETL, not here.
 async function computeEtfFlows() {
+  const history = await loadEtfSourceHistory('public/data/cache/etf_sosovalue/history.json');
+  const calibrationBytes = await fs.readFile(ETF_FROZEN_HISTORICAL_BASELINE_PATH);
+  const dashboardConfig = await getDashboardConfig();
+  const captureMetadata = await readJsonIfPresent(ETF_SOSOVALUE_FETCH_METADATA_PATH);
+  return buildEtfProductionFactor({
+    history,
+    historicalCalibrationDocument: JSON.parse(calibrationBytes.toString('utf8')),
+    historicalCalibrationBytes: calibrationBytes,
+    dashboardConfig,
+    asOfUtc: new Date().toISOString(),
+    isTradingDay: isEtfTradingDay,
+    acquisitionState: process.env.ETF_SOSOVALUE_ACQUISITION_STATE || 'durable_history_fallback',
+    acquisitionFailureReason: process.env.ETF_SOSOVALUE_ACQUISITION_FAILURE_REASON || null,
+    latestSuccessfulCaptureMetadata: captureMetadata,
+    sourceHistoryCommitSha: process.env.ETF_SOSOVALUE_SOURCE_HISTORY_SHA || null,
+  });
+}
+
+// Legacy Farside HTML path. Not called by production computeAllFactors.
+async function computeLegacyFarsideEtfFlows() {
   try {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     const cacheDir = 'public/data/cache/etf';
@@ -2856,6 +2891,18 @@ export async function computeAllFactors(dailyClose = null) {
       details: result.status === 'fulfilled' ? result.value.details : undefined,
       metrics: result.status === 'fulfilled' ? result.value.metrics : undefined,
       individualEtfFlows: result.status === 'fulfilled' && result.value.individualEtfFlows ? result.value.individualEtfFlows : undefined,
+      source: result.status === 'fulfilled' ? result.value.source : undefined,
+      provider: result.status === 'fulfilled' ? result.value.provider : undefined,
+      sourceContractVersion: result.status === 'fulfilled' ? result.value.sourceContractVersion : undefined,
+      marketDate: result.status === 'fulfilled' ? result.value.marketDate : undefined,
+      expectedEligibleTradingDate: result.status === 'fulfilled' ? result.value.expectedEligibleTradingDate : undefined,
+      sourceTradingDate: result.status === 'fulfilled' ? result.value.sourceTradingDate : undefined,
+      acquisitionState: result.status === 'fulfilled' ? result.value.acquisitionState : undefined,
+      acquisitionFailureReason: result.status === 'fulfilled' ? result.value.acquisitionFailureReason : undefined,
+      sourceHistoryUpdatedAtUtc: result.status === 'fulfilled' ? result.value.sourceHistoryUpdatedAtUtc : undefined,
+      sourceHistoryCommitSha: result.status === 'fulfilled' ? result.value.sourceHistoryCommitSha : undefined,
+      sourceProvenance: result.status === 'fulfilled' ? result.value.sourceProvenance : undefined,
+      historicalCalibration: result.status === 'fulfilled' ? result.value.historicalCalibration : undefined,
       sma50wDiagnostic: result.status === 'fulfilled' && result.value.sma50wDiagnostic ? result.value.sma50wDiagnostic : undefined,
       marketRegime: result.status === 'fulfilled' && result.value.marketRegime ? result.value.marketRegime : undefined
     });
