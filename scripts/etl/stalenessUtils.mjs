@@ -1,7 +1,8 @@
 // scripts/etl/stalenessUtils.mjs
 // Comprehensive staleness detection utilities for Bitcoin Risk Dashboard factors
 
-import { isEtfFlowsFreshForSourceCadence } from './marketCalendar.mjs';
+import { isEtfFlowsFreshForSourceCadence, isUsTradingDay } from './marketCalendar.mjs';
+import { getExpectedEligibleEtfTradingDate } from './lib/etfSourceContract.mjs';
 import { isTermLeverageFreshForSourceCadence } from './lib/termFreshness.mjs';
 import { isMacroOverlayFreshForSourceCadence } from './lib/macroFreshness.mjs';
 
@@ -237,6 +238,20 @@ export function getStalenessStatus(factorResult, ttlHours, options = {}) {
       status: 'excluded',
       reason: factorResult?.reason || 'computation_failed',
       lastUpdated: null
+    };
+  }
+
+  if (factorName === 'etf_flows') {
+    const asOfIso = asOf || new Date().toISOString();
+    const expected = getExpectedEligibleEtfTradingDate(asOfIso, (dateString) => isUsTradingDay(`${dateString}T00:00:00.000Z`));
+    if (factorResult.expectedEligibleTradingDate && factorResult.expectedEligibleTradingDate !== expected) {
+      return { status: 'stale', reason: 'etf_expected_eligible_date_mismatch', lastUpdated: null };
+    }
+    const fresh = factorResult.sourceTradingDate === expected;
+    return {
+      status: fresh ? 'fresh' : 'stale',
+      reason: fresh ? 'fresh_expected_eligible_trading_date' : 'stale_expected_eligible_trading_date',
+      lastUpdated: null,
     };
   }
 

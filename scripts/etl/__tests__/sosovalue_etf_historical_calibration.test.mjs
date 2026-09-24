@@ -184,7 +184,6 @@ test('the calibration module is not production scoring and does not merge SoSoVa
     assert.equal(source.includes(token), false, token);
   }
   for (const relativePath of [
-    'scripts/etl/factors.mjs',
     'scripts/etl/compute.mjs',
     'scripts/etl/marketCalendar.mjs',
     'scripts/etl/stalenessUtils.mjs',

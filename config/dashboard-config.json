@@ -1,8 +1,8 @@
 {
-  "model_version": "v1.1.1",
-  "implementation_revision": "integrity-2026-08",
+  "model_version": "v1.1.2",
+  "implementation_revision": "etf-sosovalue-2026-09",
   "ssot_version": "2.1.1",
-  "lastModified": "2026-08-16T00:00:00.000Z",
+  "lastModified": "2026-09-24T00:00:00.000Z",
   "description": "SINGLE SOURCE OF TRUTH for all dashboard configuration - pillars, factors, weights, bands, and sub-weights - Rebalanced to prioritize Trend & Valuation",
   
   "meta": {

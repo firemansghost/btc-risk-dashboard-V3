@@ -31,7 +31,7 @@ export default function FactorHistoryModal({ isOpen, onClose, factorKey, factorL
   // Factor metadata for provenance
   const factorMetadata: Record<string, { sources: string[], description: string }> = {
     'stablecoins': { sources: ['CoinGecko', 'Tether', 'Circle'], description: 'Stablecoin Supply & Market Share' },
-    'etf_flows': { sources: ['Farside', 'SEC Filings'], description: 'Bitcoin ETF Flow Data' },
+    'etf_flows': { sources: ['SoSoValue', 'Farside (frozen calibration)'], description: 'Bitcoin ETF Flow Data' },
     'net_liquidity': { sources: ['FRED (St. Louis Fed)', 'Federal Reserve'], description: 'Net Liquidity Indicators' },
     'trend_valuation': { sources: ['Coinbase', 'Bitcoin Historical Data'], description: 'Trend & Valuation Analysis' },
     'onchain': { sources: ['Mempool.space', 'Blockchain.com', 'Glassnode'], description: 'On-chain Activity Metrics' },

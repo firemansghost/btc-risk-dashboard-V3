@@ -2,7 +2,7 @@
 
 ## Authority & Current Production
 
-Active production: **v1.1.1** / **integrity-2026-08** / SSOT **2.1.1**.
+Active production: **v1.1.2** / **etf-sosovalue-2026-09** / SSOT **2.1.1**. Live ETF source: SoSoValue. Farside is the frozen historical calibration baseline.
 
 Current configuration authority is
 [`config/dashboard-config.json`](../config/dashboard-config.json). Current
@@ -116,7 +116,7 @@ Exact current provider behavior is implementation-defined and can vary by
 factor; see current production code and factor-level provenance/status.
 
 Broad families currently used by production scoring include FRED public-data
-series, Coinbase/CoinGecko market data, and Farside ETF-flow source material.
+series, Coinbase/CoinGecko market data, and SoSoValue ETF flows. Farside remains the frozen ETF calibration baseline.
 Disabled On-chain providers are not current scoring sources. Do not treat
 Alternative.me / Fear & Greed as current Social Interest authority.
 

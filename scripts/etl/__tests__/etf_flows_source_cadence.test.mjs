@@ -38,12 +38,12 @@ test('Juneteenth long weekend: Thu Jun 18 data fresh on Sun Jun 21', () => {
   assert.equal(check.reason, 'fresh_market_holiday_weekend');
 
   const status = getStalenessStatus(
-    { score: 68, lastUpdated },
+    { score: 68, lastUpdated, sourceTradingDate: '2026-06-18', expectedEligibleTradingDate: '2026-06-18' },
     24,
     { ...ETF_OPTS, asOf }
   );
   assert.equal(status.status, 'fresh');
-  assert.match(status.reason, /fresh_market_holiday_weekend/);
+  assert.equal(status.reason, 'fresh_expected_eligible_trading_date');
 });
 
 test('Several trading days later: Thu Jun 18 data stale on Tue Jun 23', () => {
@@ -123,12 +123,17 @@ test('August 17 13:49Z does not accept an official ETF timestamp of 16:00Z', () 
   assert.equal(check.isStale, true);
   assert.equal(check.reason, 'future_source_timestamp');
 
-  const status = getStalenessStatus({ score: 40, lastUpdated }, 24, {
+  const status = getStalenessStatus({
+    score: 40,
+    lastUpdated,
+    sourceTradingDate: '2026-08-17',
+    expectedEligibleTradingDate: '2026-08-14',
+  }, 24, {
     ...ETF_OPTS,
     asOf,
   });
   assert.equal(status.status, 'stale');
-  assert.equal(status.reason, 'future_source_timestamp');
+  assert.equal(status.reason, 'stale_expected_eligible_trading_date');
 });
 
 test('pre-publication cutoff selects previous eligible trading day, not current-day placeholder', () => {

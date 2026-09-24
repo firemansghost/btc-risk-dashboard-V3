@@ -78,7 +78,7 @@ export default function MethodologyPage() {
           A transparent, data-driven approach to Bitcoin risk assessment using five analytical pillars.
         </p>
         <div className="mt-2 text-sm text-gray-500">
-          Current production: v1.1.1 / integrity-2026-08 · five pillars weighted 30/30/20/10/10.
+          Current production: v1.1.2 / etf-sosovalue-2026-09 · five pillars weighted 30/30/20/10/10. Live ETF source: SoSoValue. Farside is the frozen calibration baseline.
         </div>
       </div>
 
@@ -877,7 +877,7 @@ export default function MethodologyPage() {
       <section id="weights" className="section-spacing">
         <h2 className="text-heading-2 mb-4">Factor Weights</h2>
         <div className="card-elevated card-md">
-          <h3 className="text-heading-3 mb-4">Current Weights (v1.1.1)</h3>
+          <h3 className="text-heading-3 mb-4">Current Weights (v1.1.2)</h3>
           <p className="text-body mb-6">
             Liquidity/Flows 30%, Momentum/Valuation 30%, Term Structure/Leverage 20%, Macro Overlay 10%, Social/Attention 10%. Seven enabled scoring factors contribute according to the versioned production configuration. Only factors included under the production freshness rules contribute to a snapshot, with weights normalized over the included set.
           </p>
@@ -975,7 +975,7 @@ export default function MethodologyPage() {
       {/* Model Version Note */}
       <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
         <p className="text-sm text-gray-600">
-          <strong>Model version:</strong> Current production: v1.1.1 / integrity-2026-08 · five pillars weighted 30/30/20/10/10.
+          <strong>Model version:</strong> Current production: v1.1.2 / etf-sosovalue-2026-09 · five pillars weighted 30/30/20/10/10. Live ETF source: SoSoValue. Farside is the frozen calibration baseline.
         </p>
       </div>
     </div>
