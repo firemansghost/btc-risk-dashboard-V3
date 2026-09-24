@@ -13,7 +13,7 @@ import {
 } from './etfSourceContract.mjs';
 
 export const SOSOVALUE_API_BASE = 'https://openapi.sosovalue.com/openapi/v1';
-export const SOSOVALUE_REQUEST_GAP_MS = 4000;
+export const SOSOVALUE_REQUEST_GAP_MS = 7000;
 export const SOSOVALUE_HTTP_TIMEOUT_MS = 30000;
 export const SOSOVALUE_RETRY_FALLBACK_MS = 20000;
 export const SOSOVALUE_RETRY_MAX_MS = 60000;
