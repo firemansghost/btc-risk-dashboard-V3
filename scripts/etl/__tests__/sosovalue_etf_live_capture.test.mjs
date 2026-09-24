@@ -9,6 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { APPROVED_ETF_SCORED_TICKERS, validateEtfProviderObservation } from '../lib/etfSourceContract.mjs';
 import {
+  SOSOVALUE_REQUEST_GAP_MS,
   SOSOVALUE_RETRY_FALLBACK_MS,
   SOSOVALUE_RETRY_MAX_MS,
   fetchSosoValueEtfSnapshot,
@@ -251,6 +252,22 @@ test('429 retries once, falls back, caps, and then fails closed', async () => {
   );
   assert.equal(exhausted.calls.length, 2);
 
+  const retryAfter20 = routeFetch([
+    { match: '/etfs?', queue: [{ status: 429, headers: { 'retry-after': '20' }, body: {} }, { status: 429, body: {} }] },
+  ]);
+  await expectSourceError(
+    () => fetchSosoValueEtfSnapshot({
+      apiKey: SECRET,
+      fetchImpl: retryAfter20.impl,
+      sleep: retryAfter20.sleep,
+      now: () => NOW,
+    }),
+    'rate_limit_exhausted'
+  );
+  assert.equal(retryAfter20.calls.length, 2);
+  assert.equal(retryAfter20.sleeps.includes(20000), true);
+  assert.equal(retryAfter20.sleeps.includes(SOSOVALUE_REQUEST_GAP_MS), false);
+
   const capped = routeFetch([
     { match: '/etfs?', queue: [{ status: 429, headers: { 'retry-after': '120' }, body: {} }, { body: envelope([]) }] },
   ]);
@@ -264,6 +281,41 @@ test('429 retries once, falls back, caps, and then fails closed', async () => {
     'provider_universe_contract_mismatch'
   );
   assert.equal(capped.sleeps.includes(SOSOVALUE_RETRY_MAX_MS), true);
+});
+
+test('successful sequential requests wait 7000 ms after the first request', async () => {
+  assert.equal(SOSOVALUE_REQUEST_GAP_MS, 7000);
+  let clock = 1_000_000;
+  const callTimes = [];
+  const sleeps = [];
+  const routes = happyRoutes();
+  const impl = async (url) => {
+    callTimes.push(clock);
+    const href = String(url);
+    const route = routes.find((item) => href.includes(item.match));
+    const next = route.queue.shift();
+    return {
+      status: 200,
+      headers: { get: () => null },
+      text: async () => JSON.stringify(next.body),
+    };
+  };
+  const snapshot = await fetchSosoValueEtfSnapshot({
+    apiKey: SECRET,
+    fetchImpl: impl,
+    sleep: async (ms) => {
+      sleeps.push(ms);
+      clock += ms;
+    },
+    now: () => clock,
+  });
+  assert.equal(snapshot.completeObservations.length, 1);
+  assert.equal(callTimes.length, 14);
+  assert.equal(sleeps.length, 13);
+  assert.deepEqual(sleeps, Array(13).fill(7000));
+  for (let index = 1; index < callTimes.length; index += 1) {
+    assert.ok(callTimes[index] - callTimes[index - 1] >= 7000);
+  }
 });
 
 test('provider membership failures do not mutate the approved contract', async () => {
