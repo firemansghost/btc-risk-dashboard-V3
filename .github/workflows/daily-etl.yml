@@ -88,6 +88,7 @@ jobs:
             echo "ETF_SOSOVALUE_ACQUISITION_STATE=durable_history_fallback" >> "$GITHUB_ENV"
             echo "ETF_SOSOVALUE_ACQUISITION_FAILURE_REASON=capture_exit_${status}" >> "$GITHUB_ENV"
           fi
+          exit "$status"
 
       - name: Upload SoSoValue source capture report
         if: always()
@@ -98,7 +99,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Persist successful SoSoValue source history
-        if: steps.sosovalue_capture.outcome == 'success'
+        if: steps.sosovalue_capture.outputs.capture_status == '0'
         run: |
           unexpected=0
           while IFS= read -r line; do
@@ -128,12 +129,26 @@ jobs:
             echo "ETF_SOSOVALUE_SOURCE_HISTORY_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
           fi
 
+      - name: Reject a dirty worktree after a failed SoSoValue capture
+        if: steps.sosovalue_capture.outputs.capture_status != '0'
+        run: |
+          status_output="$(git status --porcelain --untracked-files=all)"
+          if [ -n "$status_output" ]; then
+            echo "failed capture left repository modifications"
+            echo "$status_output"
+            exit 1
+          fi
+
       - name: Require checkout to match origin/main before compute
         run: |
           git fetch origin main
-          git checkout --detach origin/main
+          git checkout -B main origin/main
           if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
             echo "checkout is not origin/main"
+            exit 1
+          fi
+          if [ "$(git branch --show-current)" != "main" ]; then
+            echo "checkout is not branch main"
             exit 1
           fi
 

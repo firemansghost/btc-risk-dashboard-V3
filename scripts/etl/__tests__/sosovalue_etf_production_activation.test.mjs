@@ -145,10 +145,43 @@ test('production identity and workflow keep the activation contract', () => {
   assert.ok(daily.indexOf('capture-sosovalue-etf-source.mjs') < daily.indexOf('npm run etl:compute'));
   assert.equal(daily.includes('--mode COMMIT'), true);
   assert.equal(daily.includes('COMMIT_SOSOVALUE_ETF_HISTORY'), true);
-  assert.equal(daily.includes('continue-on-error: true'), true);
   assert.equal(daily.includes('if: always()'), true);
   assert.equal(daily.includes('origin/main advanced during source acquisition'), true);
-  assert.ok(daily.indexOf('Persist successful SoSoValue source history') < daily.lastIndexOf('npm run etl:compute'));
+  const capture = daily.slice(
+    daily.indexOf('name: Refresh SoSoValue ETF source history'),
+    daily.indexOf('name: Upload SoSoValue source capture report')
+  );
+  assert.match(capture, /continue-on-error:\s*true/);
+  assert.ok(capture.indexOf('ETF_SOSOVALUE_ACQUISITION_STATE=live_refresh') < capture.indexOf('exit "$status"'));
+  assert.ok(capture.indexOf('ETF_SOSOVALUE_ACQUISITION_FAILURE_REASON') < capture.indexOf('exit "$status"'));
+  const persist = daily.slice(
+    daily.indexOf('name: Persist successful SoSoValue source history'),
+    daily.indexOf('name: Reject a dirty worktree after a failed SoSoValue capture')
+  );
+  assert.match(persist, /if:\s*steps\.sosovalue_capture\.outputs\.capture_status == '0'/);
+  assert.equal(persist.includes('continue-on-error'), false);
+  assert.equal(persist.includes("outcome == 'success'"), false);
+  const dirty = daily.slice(
+    daily.indexOf('name: Reject a dirty worktree after a failed SoSoValue capture'),
+    daily.indexOf('name: Require checkout to match origin/main before compute')
+  );
+  assert.match(dirty, /steps\.sosovalue_capture\.outputs\.capture_status != '0'/);
+  assert.match(dirty, /git status --porcelain --untracked-files=all/);
+  assert.ok(dirty.indexOf('exit 1') > dirty.indexOf('failed capture left repository modifications'));
+  const handoff = daily.slice(
+    daily.indexOf('name: Require checkout to match origin/main before compute'),
+    daily.indexOf('name: Run ETL compute')
+  );
+  assert.equal(handoff.includes('git checkout --detach origin/main'), false);
+  assert.match(handoff, /git checkout -B main origin\/main/);
+  assert.match(handoff, /git rev-parse HEAD/);
+  assert.match(handoff, /git rev-parse origin\/main/);
+  assert.match(handoff, /git branch --show-current/);
+  assert.match(handoff, /checkout is not branch main/);
+  assert.ok(daily.indexOf('Persist successful SoSoValue source history') < daily.indexOf('npm run etl:compute'));
+  assert.ok(daily.indexOf('git checkout -B main origin/main') < daily.indexOf('npm run etl:compute'));
+  assert.ok(daily.indexOf('chore(etl): update artifacts [skip ci]') < daily.lastIndexOf('git push origin main'));
+  assert.equal(daily.includes('git checkout --detach origin/main'), false);
   const footer = fs.readFileSync(path.join(REPO_ROOT, 'app/components/EtfTable.tsx'), 'utf8');
   assert.equal(footer.includes('Data: Farside Investors'), false);
   assert.equal(footer.includes('SoSoValue'), true);
