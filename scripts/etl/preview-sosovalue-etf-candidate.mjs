@@ -72,30 +72,37 @@ export async function runEtfCandidatePreview({
   const calibrationBytes = await fs.readFile(calibrationPath);
   const actualGitBlobSha = gitBlobSha1(calibrationBytes);
   const blobMatches = actualGitBlobSha === ETF_FROZEN_HISTORICAL_BASELINE_GIT_BLOB;
-  const calibrationDocument = JSON.parse(calibrationBytes.toString('utf8'));
   const history = await loadEtfSourceHistory(historyPath);
   const dashboardConfig = JSON.parse(await fs.readFile(configPath, 'utf8'));
+  let calibrationDocument = null;
   let calibration = null;
-  if (blobMatches) {
+  if (!blobMatches) {
+    blockers.push('frozen_calibration_blob_mismatch');
+  } else {
+    calibrationDocument = JSON.parse(calibrationBytes.toString('utf8'));
     try {
       calibration = normalizeFrozenEtfHistoricalCalibration(calibrationDocument);
     } catch (error) {
       blockers.push(error.reason || 'invalid_historical_calibration');
     }
-  } else {
-    blockers.push('frozen_calibration_blob_mismatch');
   }
 
   let candidate = null;
   if (blockers.length === 0) {
-    candidate = computeEtfCandidate({
-      history,
-      historicalCalibrationDocument: calibrationDocument,
-      dashboardConfig,
-      asOfUtc,
-      isTradingDay,
-    });
-    if (!candidate.ok) blockers.push(candidate.reason);
+    try {
+      candidate = computeEtfCandidate({
+        history,
+        historicalCalibrationDocument: calibrationDocument,
+        dashboardConfig,
+        asOfUtc,
+        isTradingDay,
+      });
+      if (!candidate.ok) blockers.push(candidate.reason);
+    } catch (error) {
+      const reason = error.reason || error.code || error.message || 'candidate_preview_failed';
+      candidate = { ok: false, reason };
+      blockers.push(reason);
+    }
   }
 
   const selected = candidate?.ok ? history.observations_by_date[candidate.selectedTradingDate] : null;

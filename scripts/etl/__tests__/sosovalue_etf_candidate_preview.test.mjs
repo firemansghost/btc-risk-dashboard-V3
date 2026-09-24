@@ -118,6 +118,64 @@ test('a changed calibration file fails the frozen blob check', async () => {
   }
 });
 
+test('non-JSON calibration bytes fail the blob check before parsing', async () => {
+  const dates = tradingDaysEnding('2026-09-22', 22);
+  const paths = await writeHistory(dates.map((date) => observation(date)));
+  const calibrationPath = path.join(paths.directory, 'calibration.txt');
+  fs.writeFileSync(calibrationPath, 'not-json');
+  try {
+    const result = await runEtfCandidatePreview({
+      asOfUtc: AS_OF,
+      repositorySha: 'preview-sha',
+      historyPath: paths.historyPath,
+      calibrationPath,
+      configPath: CONFIG,
+      reportPath: paths.reportPath,
+    });
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'frozen_calibration_blob_mismatch');
+    assert.equal(fs.existsSync(paths.reportPath), true);
+    assert.deepEqual(result.report.blockers, ['frozen_calibration_blob_mismatch']);
+    assert.equal(result.report.frozen_calibration.blob_matches, false);
+    assert.equal(typeof result.report.frozen_calibration.actual_git_blob_sha, 'string');
+    assert.notEqual(result.report.frozen_calibration.actual_git_blob_sha, result.report.frozen_calibration.expected_git_blob_sha);
+    assert.equal(result.report.candidate, null);
+    assert.equal(result.report.activation_authorized, false);
+    assert.equal(result.report.provider_network_performed, false);
+    assert.equal(result.report.repository_write_performed, false);
+  } finally {
+    fs.rmSync(paths.directory, { recursive: true, force: true });
+  }
+});
+
+test('a timezone-less as-of writes an unsuccessful preview report', async () => {
+  const dates = tradingDaysEnding('2026-09-22', 22);
+  const paths = await writeHistory(dates.map((date) => observation(date)));
+  const asOfUtc = '2026-09-24T13:16:42.928';
+  try {
+    const result = await runEtfCandidatePreview({
+      asOfUtc,
+      repositorySha: 'preview-sha',
+      historyPath: paths.historyPath,
+      calibrationPath: CALIBRATION,
+      configPath: CONFIG,
+      reportPath: paths.reportPath,
+    });
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'invalid_as_of_timezone');
+    assert.equal(fs.existsSync(paths.reportPath), true);
+    assert.equal(result.report.as_of_utc, asOfUtc);
+    assert.deepEqual(result.report.blockers, ['invalid_as_of_timezone']);
+    assert.equal(result.report.candidate.ok, false);
+    assert.equal(result.report.candidate.reason, 'invalid_as_of_timezone');
+    assert.equal(result.report.activation_authorized, false);
+    assert.equal(result.report.provider_network_performed, false);
+    assert.equal(result.report.repository_write_performed, false);
+  } finally {
+    fs.rmSync(paths.directory, { recursive: true, force: true });
+  }
+});
+
 test('a repository report path is refused before any write', async () => {
   const reportPath = path.join(REPO_ROOT, 's7-preview-report.json');
   await assert.rejects(
