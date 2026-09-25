@@ -176,7 +176,8 @@ async function writeJsonAtomic(target, value) {
   await fs.rename(temporary, target);
 }
 
-async function fetchOnce(fetchImpl, url, headers) {
+async function fetchOnce(fetchImpl, url, headers, now) {
+  const fetchedAtUtc = new Date(now()).toISOString();
   let lastError = null;
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     try {
@@ -192,25 +193,26 @@ async function fetchOnce(fetchImpl, url, headers) {
         status,
         contentType: response.headers?.get?.('content-type') ?? null,
         bytes,
-        fetchedAtUtc: new Date().toISOString(),
+        fetchedAtUtc,
       };
     } catch (error) {
       lastError = error;
       if (attempt === 2) break;
     }
   }
-  return { ok: false, status: null, contentType: null, bytes: Buffer.alloc(0), error: lastError, fetchedAtUtc: new Date().toISOString() };
+  return { ok: false, status: null, contentType: null, bytes: Buffer.alloc(0), error: lastError, fetchedAtUtc };
 }
 
-function sourceMeta(role, url, transport) {
+function sourceMeta(role, url, transport, attempted) {
   return {
     source_role: role,
     url,
-    http_status: transport.status,
-    content_type: transport.contentType,
-    response_byte_length: transport.bytes.length,
-    response_sha256: sha256(transport.bytes),
-    fetched_at_utc: transport.fetchedAtUtc,
+    attempted,
+    http_status: attempted ? transport.status : null,
+    content_type: attempted ? transport.contentType : null,
+    response_byte_length: attempted ? transport.bytes.length : 0,
+    response_sha256: attempted ? sha256(transport.bytes) : null,
+    fetched_at_utc: attempted ? transport.fetchedAtUtc : null,
   };
 }
 
@@ -242,13 +244,13 @@ export async function runVixSourceQualification({
   const startedAt = new Date(now()).toISOString();
   assertOutsideRepository(reportPath);
   const blockers = [];
-  if (!fredApiKey) blockers.push('missing_fred_api_key');
   const asOfDate = utcDate(startedAt);
   const startDate = shiftUtcDate(asOfDate, -overlapCalendarDays);
   const expectedVixDate = getExpectedVixDate(startedAt);
 
-  let cboeTransport = { status: null, contentType: null, bytes: Buffer.alloc(0), fetchedAtUtc: startedAt };
-  let fredTransport = { status: null, contentType: null, bytes: Buffer.alloc(0), fetchedAtUtc: startedAt };
+  let cboeTransport = { status: null, contentType: null, bytes: Buffer.alloc(0), fetchedAtUtc: null };
+  let fredTransport = { status: null, contentType: null, bytes: Buffer.alloc(0), fetchedAtUtc: null };
+  let fredAttempted = false;
   let cboeParsed = null;
   let fredParsed = null;
   const fredUrl = new URL(FRED_VIXCLS_ENDPOINT);
@@ -261,22 +263,25 @@ export async function runVixSourceQualification({
   const sanitizedFredUrl = fredUrl.toString();
   if (fredApiKey) fredUrl.searchParams.set('api_key', fredApiKey);
 
-  if (!blockers.includes('missing_fred_api_key')) {
-    cboeTransport = await fetchOnce(fetchImpl, CBOE_VIX_HISTORY_URL, {
-      'User-Agent': 'GhostGauge research qualification',
-      Accept: 'text/csv',
-    });
-    if (!cboeTransport.ok) blockers.push('cboe_http_failure');
-    else if (cboeTransport.contentType && /json|html/i.test(cboeTransport.contentType)) blockers.push('cboe_invalid_content_type');
-    else {
-      cboeParsed = parseCboeVixCsv(cboeTransport.bytes.toString('utf8'));
-      if (!cboeParsed.ok) blockers.push(cboeParsed.reason);
-    }
+  cboeTransport = await fetchOnce(fetchImpl, CBOE_VIX_HISTORY_URL, {
+    'User-Agent': 'GhostGauge research qualification',
+    Accept: 'text/csv',
+  }, now);
+  if (!cboeTransport.ok) blockers.push('cboe_http_failure');
+  else if (cboeTransport.contentType && /json|html/i.test(cboeTransport.contentType)) blockers.push('cboe_invalid_content_type');
+  else {
+    cboeParsed = parseCboeVixCsv(cboeTransport.bytes.toString('utf8'));
+    if (!cboeParsed.ok) blockers.push(cboeParsed.reason);
+  }
 
+  if (!fredApiKey) {
+    blockers.push('missing_fred_api_key');
+  } else {
+    fredAttempted = true;
     fredTransport = await fetchOnce(fetchImpl, fredUrl.toString(), {
       'User-Agent': 'GhostGauge research qualification',
       Accept: 'application/json',
-    });
+    }, now);
     if (!fredTransport.ok) blockers.push('fred_http_failure');
     else {
       let payload;
@@ -301,12 +306,12 @@ export async function runVixSourceQualification({
   const report = emptyReport(startedAt, blockers, {
     sources: {
       cboe: {
-        ...sourceMeta('direct_official_vix_history', CBOE_VIX_HISTORY_URL, cboeTransport),
+        ...sourceMeta('direct_official_vix_history', CBOE_VIX_HISTORY_URL, cboeTransport, true),
         recent_rows: cboeWindow.slice(-10),
         nonfinite_observation_count: 0,
       },
       fred: {
-        ...sourceMeta('fred_relay_of_cboe_vixcls', sanitizedFredUrl, fredTransport),
+        ...sourceMeta('fred_relay_of_cboe_vixcls', sanitizedFredUrl, fredTransport, fredAttempted),
         provider_attribution: 'Chicago Board Options Exchange',
         recent_rows: fredWindow.slice(-10),
         nonfinite_observation_count: fredParsed?.nonfiniteCount ?? null,

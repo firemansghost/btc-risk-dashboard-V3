@@ -187,6 +187,65 @@ test('expected VIX date is diagnostic and does not authorize a source switch', a
   fs.rmSync(result.reportPath, { force: true });
 });
 
+test('injected clock stamps both fetch times and repeats identically', async () => {
+  const rows = weekdayDates(25).map((date, index) => ({ date, close: 10 + index }));
+  const input = {
+    fredApiKey: 'test-key',
+    now: () => new Date(AS_OF),
+    fetchImpl: fetchFor({ cboeBody: csvFrom(rows), fredBody: JSON.stringify(fredFrom(rows)) }),
+  };
+  const first = await qualify(input);
+  const second = await qualify(input);
+  assert.equal(first.report.qualification_started_at_utc, AS_OF);
+  assert.equal(first.report.sources.cboe.fetched_at_utc, AS_OF);
+  assert.equal(first.report.sources.fred.fetched_at_utc, AS_OF);
+  assert.deepEqual(first.report, second.report);
+  fs.rmSync(first.reportPath, { force: true });
+  fs.rmSync(second.reportPath, { force: true });
+});
+
+test('a missing FRED key still records Cboe evidence and does not request FRED', async () => {
+  const rows = weekdayDates(25).map((date, index) => ({ date, close: 10 + index }));
+  const requested = [];
+  const result = await qualify({
+    fredApiKey: '',
+    fetchImpl: async (url, options) => {
+      requested.push(url);
+      return fetchFor({ cboeBody: csvFrom(rows), fredBody: '{}' })(url, options);
+    },
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.report.blockers.includes('missing_fred_api_key'), true);
+  assert.equal(requested.some((url) => url === CBOE_VIX_HISTORY_URL), true);
+  assert.equal(requested.some((url) => String(url).startsWith(FRED_VIXCLS_ENDPOINT)), false);
+  assert.equal(result.report.sources.cboe.attempted, true);
+  assert.equal(result.report.sources.cboe.http_status, 200);
+  assert.equal(typeof result.report.sources.cboe.response_sha256, 'string');
+  assert.ok(result.report.sources.cboe.recent_rows.length > 0);
+  assert.equal(result.report.sources.fred.attempted, false);
+  assert.equal(result.report.sources.fred.http_status, null);
+  assert.equal(result.report.sources.fred.response_sha256, null);
+  assert.equal(result.report.sources.fred.fetched_at_utc, null);
+  assert.equal(result.report.comparison, null);
+  assert.equal(result.report.production_change_authorized, false);
+  assert.equal(result.report.repository_write_performed, false);
+  assert.equal(fs.existsSync(result.reportPath), true);
+  fs.rmSync(result.reportPath, { force: true });
+});
+
+test('a FRED fetch failure keeps the Cboe evidence', async () => {
+  const rows = weekdayDates(25).map((date, index) => ({ date, close: 10 + index }));
+  const result = await qualify({
+    fetchImpl: fetchFor({ cboeBody: csvFrom(rows), fredBody: '', fredStatus: 503 }),
+  });
+  assert.equal(result.report.blockers.includes('fred_http_failure'), true);
+  assert.equal(result.report.sources.cboe.attempted, true);
+  assert.ok(result.report.sources.cboe.recent_rows.length > 0);
+  assert.equal(result.report.comparison, null);
+  assert.equal(result.report.production_change_authorized, false);
+  fs.rmSync(result.reportPath, { force: true });
+});
+
 test('qualification stays outside production routing and the workflow is read-only', () => {
   const workflow = fs.readFileSync(path.join(REPO_ROOT, '.github/workflows/vix-source-qualification.yml'), 'utf8');
   assert.equal(workflow.includes('workflow_dispatch:'), true);
