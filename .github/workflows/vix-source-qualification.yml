@@ -1,0 +1,63 @@
+name: VIX source qualification
+
+# Read-only Cboe vs FRED evidence. This does not authorize a production source change.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require main
+        env:
+          QUALIFICATION_REF: ${{ github.ref }}
+        run: |
+          if [ "$QUALIFICATION_REF" != "refs/heads/main" ]; then
+            echo "VIX qualification must be dispatched against refs/heads/main"
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Use Node 20
+        uses: actions/setup-node@v5
+        with:
+          node-version: "20.18.0"
+
+      - name: Require origin/main before qualification
+        run: |
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$GITHUB_SHA" ]; then
+            echo "origin/main no longer equals GITHUB_SHA"
+            exit 1
+          fi
+
+      - name: Qualify Cboe and FRED VIX sources
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: |
+          node scripts/research/qualify-vix-source.mjs \
+            --report "$RUNNER_TEMP/vix-source-qualification-report.json"
+
+      - name: Upload VIX qualification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vix-source-qualification
+          path: ${{ runner.temp }}/vix-source-qualification-report.json
+          if-no-files-found: warn
+
+      - name: Confirm repository worktree stayed clean
+        if: always()
+        run: |
+          if [ -n "$(git status --porcelain --untracked-files=all)" ]; then
+            git status --porcelain --untracked-files=all
+            exit 1
+          fi
