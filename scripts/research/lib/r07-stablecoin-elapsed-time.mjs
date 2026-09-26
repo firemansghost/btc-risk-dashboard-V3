@@ -44,13 +44,21 @@ export function sha256Hex(bytes) {
   return createHash('sha256').update(bytes).digest('hex');
 }
 
+/**
+ * Strict original-type finite number check (no Number() / isFinite coercion).
+ * Matches production Number.isFinite(cap) semantics for raw values.
+ */
+export function isStrictFiniteNumber(value) {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
 export function toIso(ms) {
-  if (!Number.isFinite(ms)) return null;
+  if (!isStrictFiniteNumber(ms)) return null;
   return new Date(ms).toISOString();
 }
 
 export function hoursBetween(laterMs, earlierMs) {
-  if (!Number.isFinite(laterMs) || !Number.isFinite(earlierMs)) return null;
+  if (!isStrictFiniteNumber(laterMs) || !isStrictFiniteNumber(earlierMs)) return null;
   return (laterMs - earlierMs) / 3_600_000;
 }
 
@@ -125,12 +133,12 @@ export function inspectRawTimestamps(marketCaps) {
   let nonFiniteCaps = 0;
   let nonPositiveCaps = 0;
   for (const row of pairs) {
-    const ts = Array.isArray(row) ? Number(row[0]) : NaN;
-    const cap = Array.isArray(row) ? Number(row[1]) : NaN;
-    if (!Number.isFinite(ts)) invalidTimestamps += 1;
-    if (!Number.isFinite(cap)) nonFiniteCaps += 1;
+    const ts = Array.isArray(row) ? row[0] : undefined;
+    const cap = Array.isArray(row) ? row[1] : undefined;
+    if (!isStrictFiniteNumber(ts)) invalidTimestamps += 1;
+    if (!isStrictFiniteNumber(cap)) nonFiniteCaps += 1;
     else if (!(cap > 0)) nonPositiveCaps += 1;
-    if (Number.isFinite(ts)) timestamps.push(ts);
+    if (isStrictFiniteNumber(ts)) timestamps.push(ts);
   }
   let outOfOrder = 0;
   let duplicates = 0;
@@ -187,10 +195,15 @@ export function analyzePositionalCoin(symbol, marketCaps) {
   const finite = [];
   for (let i = 0; i < pairs.length; i += 1) {
     const row = pairs[i];
-    const ts = Array.isArray(row) ? Number(row[0]) : NaN;
-    const cap = Array.isArray(row) ? Number(row[1]) : NaN;
-    if (!Number.isFinite(cap)) continue;
-    finite.push({ originalIndex: i, timestampMs: ts, cap });
+    const rawTs = Array.isArray(row) ? row[0] : undefined;
+    const cap = Array.isArray(row) ? row[1] : undefined;
+    // Production filters with Number.isFinite(cap) on the original value — no coercion.
+    if (!isStrictFiniteNumber(cap)) continue;
+    finite.push({
+      originalIndex: i,
+      timestampMs: isStrictFiniteNumber(rawTs) ? rawTs : null,
+      cap,
+    });
   }
   const finiteCount = finite.length;
   if (finiteCount < 30) {
@@ -205,21 +218,21 @@ export function analyzePositionalCoin(symbol, marketCaps) {
   const endpoint = finite[finiteCount - 1];
   const prior7 = finite[finiteCount - 7];
   const prior30 = finite[finiteCount - 30];
-  if (!(endpoint.cap > 0) || !Number.isFinite(endpoint.cap)) {
+  if (!(endpoint.cap > 0) || !isStrictFiniteNumber(endpoint.cap)) {
     return { symbol, ok: false, reason: 'invalid_current_cap', raw_observation_count: rawCount, finite_cap_observation_count: finiteCount };
   }
-  if (!(prior30.cap > 0) || !Number.isFinite(prior30.cap)) {
+  if (!(prior30.cap > 0) || !isStrictFiniteNumber(prior30.cap)) {
     return { symbol, ok: false, reason: 'invalid_prior_30d_cap', raw_observation_count: rawCount, finite_cap_observation_count: finiteCount };
   }
-  if (!(prior7.cap > 0) || !Number.isFinite(prior7.cap)) {
+  if (!(prior7.cap > 0) || !isStrictFiniteNumber(prior7.cap)) {
     return { symbol, ok: false, reason: 'invalid_prior_7d_cap', raw_observation_count: rawCount, finite_cap_observation_count: finiteCount };
   }
   const change30d = (endpoint.cap - prior30.cap) / prior30.cap;
   const change7d = (endpoint.cap - prior7.cap) / prior7.cap;
-  if (!Number.isFinite(change30d)) {
+  if (!isStrictFiniteNumber(change30d)) {
     return { symbol, ok: false, reason: 'non_finite_change_30d', raw_observation_count: rawCount, finite_cap_observation_count: finiteCount };
   }
-  if (!Number.isFinite(change7d)) {
+  if (!isStrictFiniteNumber(change7d)) {
     return { symbol, ok: false, reason: 'non_finite_change_7d', raw_observation_count: rawCount, finite_cap_observation_count: finiteCount };
   }
   return {
@@ -271,15 +284,15 @@ export function analyzeElapsedCoin(symbol, marketCaps) {
   let previousTs = null;
   for (let i = 0; i < pairs.length; i += 1) {
     const row = pairs[i];
-    const ts = Array.isArray(row) ? Number(row[0]) : NaN;
-    const cap = Array.isArray(row) ? Number(row[1]) : NaN;
-    if (!Number.isFinite(ts)) {
+    const ts = Array.isArray(row) ? row[0] : undefined;
+    const cap = Array.isArray(row) ? row[1] : undefined;
+    if (!isStrictFiniteNumber(ts)) {
       diagnostics.invalid_timestamps += 1;
       continue;
     }
     if (previousTs != null && ts < previousTs) diagnostics.out_of_order_timestamps += 1;
     previousTs = ts;
-    if (!Number.isFinite(cap)) {
+    if (!isStrictFiniteNumber(cap)) {
       diagnostics.non_finite_caps += 1;
       continue;
     }
@@ -334,7 +347,7 @@ export function analyzeElapsedCoin(symbol, marketCaps) {
   };
   const h7 = horizon('7d', target7, prior7);
   const h30 = horizon('30d', target30, prior30);
-  const ok = Boolean(h7.available && h30.available && Number.isFinite(h7.change) && Number.isFinite(h30.change));
+  const ok = Boolean(h7.available && h30.available && isStrictFiniteNumber(h7.change) && isStrictFiniteNumber(h30.change));
   return {
     symbol,
     ok,
@@ -528,7 +541,26 @@ export function analyzeCacheFile({ filename, responses, bytes, changeSeries }) {
         positional.ok && elapsed.ok ? positional.change30d !== elapsed.change30d : null,
     });
   }
-  const current = buildValidStablecoinGrowthSnapshot(config, responses);
+  let current;
+  let currentHelperException = null;
+  try {
+    current = buildValidStablecoinGrowthSnapshot(config, responses);
+  } catch (error) {
+    currentHelperException = {
+      name: error?.name || 'Error',
+      message: String(error?.message || error).slice(0, 500),
+    };
+    current = {
+      ok: false,
+      reason: 'production_helper_exception',
+      valid: [],
+      excluded: [],
+      totalConfiguredWeight: config.reduce((sum, coin) => sum + coin.weight, 0),
+      includedWeightSum: 0,
+      weightCoverage: 0,
+    };
+    blockers.push('current_production_helper_exception');
+  }
   const elapsedAgg = buildElapsedStablecoinGrowthSnapshot(config, responses);
   const currentScore = current.ok
     ? scoreStablecoinFactor({
@@ -546,7 +578,9 @@ export function analyzeCacheFile({ filename, responses, bytes, changeSeries }) {
       changeSeries,
     })
     : { ok: false, reason: elapsedAgg.reason };
-  if (!current.ok) blockers.push(`current_${current.reason}`);
+  if (!current.ok && current.reason !== 'production_helper_exception') {
+    blockers.push(`current_${current.reason}`);
+  }
   if (!elapsedAgg.ok) blockers.push(`elapsed_${elapsedAgg.reason}`);
   return {
     cache_filename: filename,
@@ -559,11 +593,12 @@ export function analyzeCacheFile({ filename, responses, bytes, changeSeries }) {
     current_aggregate: {
       ok: current.ok,
       reason: current.reason ?? null,
-      aggregate_change: current.aggregateChange ?? null,
-      recent_momentum: current.recentMomentum ?? null,
+      aggregate_change: current.ok ? (current.aggregateChange ?? null) : null,
+      recent_momentum: current.ok ? (current.recentMomentum ?? null) : null,
       weight_coverage: current.weightCoverage,
       valid_count: current.valid?.length ?? 0,
       excluded: current.excluded,
+      production_helper_exception: currentHelperException,
     },
     elapsed_aggregate: {
       ok: elapsedAgg.ok,
@@ -574,8 +609,8 @@ export function analyzeCacheFile({ filename, responses, bytes, changeSeries }) {
       valid_count: elapsedAgg.valid?.length ?? 0,
       excluded: elapsedAgg.excluded,
     },
-    aggregate_change_difference: compareNumbers(elapsedAgg.aggregateChange, current.aggregateChange),
-    momentum_difference: compareNumbers(elapsedAgg.recentMomentum, current.recentMomentum),
+    aggregate_change_difference: compareNumbers(elapsedAgg.aggregateChange, current.ok ? current.aggregateChange : null),
+    momentum_difference: compareNumbers(elapsedAgg.recentMomentum, current.ok ? current.recentMomentum : null),
     current_common_calibration_scores: currentScore,
     elapsed_common_calibration_scores: elapsedScore,
     factor_score_difference:

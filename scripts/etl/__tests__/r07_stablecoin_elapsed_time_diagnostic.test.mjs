@@ -15,15 +15,19 @@ import {
   R07_COMPARATOR_ID,
   R07_SCORE_CALIBRATION_ID,
   R07_SCHEMA,
+  STABLECOIN_SUBWEIGHTS_SNAPSHOT,
   analyzeElapsedCoin,
   analyzePositionalCoin,
   buildElapsedStablecoinGrowthSnapshot,
   buildR07Report,
+  inspectRawTimestamps,
+  isStrictFiniteNumber,
   percentileRank,
   riskFromPercentile,
   scoreStablecoinFactor,
 } from '../../research/lib/r07-stablecoin-elapsed-time.mjs';
 import { runR07StablecoinElapsedTimeDiagnostic } from '../../research/diagnose-r07-stablecoin-elapsed-time.mjs';
+import { LOCKED_OFFICIAL_BLENDS } from '../lib/ssotSubweights.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const WORKFLOW_PATH = path.join(REPO_ROOT, '.github/workflows/r07-stablecoin-elapsed-time-diagnostic.yml');
@@ -402,4 +406,138 @@ test('diagnostic CLI smoke against temp fixtures stays deterministic for fixed i
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }
+});
+
+test('CURRENT positional cap semantics do not coerce string/null/boolean caps', () => {
+  const start = Date.parse('2026-01-01T00:00:00.000Z');
+  const caps = dailyCaps({ startMs: start, days: 32, startCap: 1000, delta: 1 });
+  // Replace three otherwise-valid caps with coercible non-numbers.
+  caps[5][1] = '100';
+  caps[6][1] = null;
+  caps[7][1] = true;
+  const positional = analyzePositionalCoin('USDT', caps);
+  // 32 raw rows minus 3 non-finite original caps => 29 finite => insufficient for production.
+  assert.equal(positional.ok, false);
+  assert.equal(positional.reason, 'insufficient_finite_caps');
+  assert.equal(positional.finite_cap_observation_count, 29);
+  assert.equal(isStrictFiniteNumber('100'), false);
+  assert.equal(isStrictFiniteNumber(null), false);
+  assert.equal(isStrictFiniteNumber(true), false);
+  // If Number() coercion were used, all 32 would remain finite and positional would succeed.
+  const coercedWouldKeep = caps
+    .map(([, cap]) => Number(cap))
+    .filter((cap) => Number.isFinite(cap)).length;
+  assert.equal(coercedWouldKeep, 32);
+});
+
+test('comparator timestamps do not coerce string/null/boolean values', () => {
+  const endpoint = Date.parse('2026-05-01T00:00:00.000Z');
+  const caps = [
+    [endpoint - 30 * DAY_MS, 100],
+    ['1780000000000', 110],
+    [null, 120],
+    [true, 130],
+    [endpoint - 7 * DAY_MS, 140],
+    [endpoint, 150],
+  ];
+  const elapsed = analyzeElapsedCoin('USDT', caps);
+  assert.equal(elapsed.diagnostics.invalid_timestamps, 3);
+  assert.equal(elapsed.ok, true);
+  assert.equal(elapsed.horizon_7d.selected_prior_timestamp_ms, endpoint - 7 * DAY_MS);
+  const raw = inspectRawTimestamps(caps);
+  assert.equal(raw.invalid_timestamps, 3);
+  assert.equal(raw.timestamps_iso.length, 3);
+  assert.deepEqual(raw.timestamps_iso, [
+    new Date(endpoint - 30 * DAY_MS).toISOString(),
+    new Date(endpoint - 7 * DAY_MS).toISOString(),
+    new Date(endpoint).toISOString(),
+  ]);
+});
+
+test('comparator caps do not coerce string/null/boolean values', () => {
+  const endpoint = Date.parse('2026-05-01T00:00:00.000Z');
+  const caps = [
+    [endpoint - 30 * DAY_MS, 100],
+    [endpoint - 20 * DAY_MS, '100'],
+    [endpoint - 15 * DAY_MS, null],
+    [endpoint - 10 * DAY_MS, true],
+    [endpoint - 7 * DAY_MS, 140],
+    [endpoint, 150],
+  ];
+  const elapsed = analyzeElapsedCoin('USDC', caps);
+  assert.equal(elapsed.diagnostics.non_finite_caps, 3);
+  assert.equal(elapsed.ok, true);
+  assert.equal(elapsed.horizon_30d.selected_prior_cap, 100);
+  assert.notEqual(elapsed.horizon_30d.selected_prior_cap, 100 + Number('100')); // no coerced contribution
+});
+
+test('positional keeps valid numeric cap when timestamp is invalid', () => {
+  const start = Date.parse('2026-01-01T00:00:00.000Z');
+  const caps = dailyCaps({ startMs: start, days: 40, startCap: 1000, delta: 10 });
+  caps[33][0] = 'not-a-timestamp';
+  caps[39][0] = null;
+  const positional = analyzePositionalCoin('DAI', caps);
+  assert.equal(positional.ok, true);
+  assert.equal(positional.finite_cap_observation_count, 40);
+  assert.equal(positional.positional_7d_prior_index, 33);
+  assert.equal(positional.endpoint_original_index, 39);
+  assert.equal(positional.positional_7d_prior_timestamp_ms, null);
+  assert.equal(positional.positional_7d_prior_timestamp_iso, null);
+  assert.equal(positional.endpoint_timestamp_ms, null);
+  assert.equal(positional.endpoint_timestamp_iso, null);
+  assert.equal(positional.positional_7d_elapsed_hours, null);
+  assert.equal(positional.change7d, (caps[39][1] - caps[33][1]) / caps[33][1]);
+});
+
+test('malformed production row is contained per cache and does not abort the report', () => {
+  const start = Date.parse('2026-01-01T00:00:00.000Z');
+  const good = sevenResponses((_coin, index) =>
+    dailyCaps({ startMs: start, days: 35, startCap: 1000 + index, delta: 1 })
+  );
+  const malformed = sevenResponses((_coin, index) => {
+    const caps = dailyCaps({ startMs: start, days: 35, startCap: 1000 + index, delta: 1 });
+    caps[10] = null; // production helper throws: null is not iterable
+    return caps;
+  });
+  assert.throws(
+    () => buildValidStablecoinGrowthSnapshot(PRODUCTION_STABLECOIN_CONFIG_SNAPSHOT, malformed),
+    (error) => error instanceof TypeError
+  );
+  const report = buildR07Report({
+    repositorySha: FIXED_SHA,
+    generatedAtUtc: FIXED_GENERATED_AT,
+    productionIdentity: {
+      model_version: 'v1.1.2',
+      implementation_revision: 'etf-sosovalue-vix-cboe-2026-09',
+      ssot_version: '2.1.1',
+    },
+    baselineDocument: { lastUpdated: FIXED_GENERATED_AT, dataPoints: 3, changeSeries: [0.01, 0.02, 0.03] },
+    baselineBytes: Buffer.from('{"changeSeries":[0.01,0.02,0.03]}'),
+    cacheEntries: [
+      { filename: '2026-01-01.json', responses: malformed, bytes: Buffer.from('malformed') },
+      { filename: '2026-01-02.json', responses: good, bytes: Buffer.from('good') },
+    ],
+  });
+  assert.equal(report.schema, R07_SCHEMA);
+  assert.equal(report.files.length, 2);
+  const bad = report.files[0];
+  const okFile = report.files[1];
+  assert.ok(bad.blockers.includes('current_production_helper_exception'));
+  assert.equal(bad.current_aggregate.ok, false);
+  assert.equal(bad.current_aggregate.reason, 'production_helper_exception');
+  assert.equal(bad.current_aggregate.aggregate_change, null);
+  assert.equal(bad.current_common_calibration_scores.ok, false);
+  assert.equal(bad.current_common_calibration_scores.compositeScore, undefined);
+  assert.equal(bad.current_aggregate.production_helper_exception.name, 'TypeError');
+  assert.equal(okFile.current_aggregate.ok, true);
+  assert.ok(Number.isFinite(okFile.current_aggregate.aggregate_change));
+  assert.equal(okFile.current_common_calibration_scores.ok, true);
+});
+
+test('diagnostic Stablecoin subweight snapshot matches locked SSOT blend', () => {
+  assert.deepEqual(STABLECOIN_SUBWEIGHTS_SNAPSHOT, LOCKED_OFFICIAL_BLENDS.stablecoins);
+  const config = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'config/dashboard-config.json'), 'utf8'));
+  assert.equal(STABLECOIN_SUBWEIGHTS_SNAPSHOT.supply_growth, config.subweights.stablecoins.supply_growth);
+  assert.equal(STABLECOIN_SUBWEIGHTS_SNAPSHOT.momentum, config.subweights.stablecoins.momentum);
+  assert.equal(STABLECOIN_SUBWEIGHTS_SNAPSHOT.concentration, config.subweights.stablecoins.concentration);
 });
