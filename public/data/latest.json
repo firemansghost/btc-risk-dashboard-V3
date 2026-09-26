@@ -1,13 +1,13 @@
 {
   "ok": true,
-  "as_of_utc": "2026-09-26T08:20:50.628Z",
+  "as_of_utc": "2026-09-26T14:57:28.597Z",
   "snapshot_date": "2026-09-26",
   "daily_close_date": "2026-09-26",
   "price_kind": "utc_intraday_snapshot",
   "model_version": "v1.1.2",
   "implementation_revision": "etf-sosovalue-vix-cboe-2026-09",
-  "composite_score": 54,
-  "composite_raw": 54,
+  "composite_score": 53,
+  "composite_raw": 53,
   "band": {
     "key": "hold___wait",
     "label": "Hold & Wait",
@@ -28,9 +28,9 @@
       "weight_pct": 30,
       "score": 52,
       "status": "fresh",
-      "reason": "fresh (1min)",
-      "last_utc": "2026-09-26T08:19:37.103Z",
-      "lastUpdated": "2026-09-26T08:19:37.103Z",
+      "reason": "fresh (2s)",
+      "last_utc": "2026-09-26T14:57:22.721Z",
+      "lastUpdated": "2026-09-26T14:57:22.721Z",
       "details": [
         {
           "label": "Price vs 200-day SMA (Mayer)",
@@ -46,7 +46,7 @@
         },
         {
           "label": "BTC Price (UTC snapshot)",
-          "value": "$84,033.91"
+          "value": "$84,028.79"
         },
         {
           "label": "200-day SMA",
@@ -66,7 +66,7 @@
         },
         {
           "label": "Calculation method",
-          "value": "Parallel processing (20ms)"
+          "value": "Parallel processing (15ms)"
         },
         {
           "label": "BMSB (20W SMA / 21W EMA)",
@@ -82,7 +82,7 @@
         }
       ],
       "metrics": {
-        "mayer": 1.1847467319602478,
+        "mayer": 1.1846745479661,
         "sma200": 70929.85169999998,
         "score": 52
       },
@@ -110,7 +110,7 @@
           "2026-09-13",
           "2026-09-20"
         ],
-        "priceForProximity": 84033.91,
+        "priceForProximity": 84028.79,
         "streakWeeks": 6,
         "streakLabel": "6 consecutive weeks in transition",
         "bmsbLower": 70204.96499999998,
@@ -130,9 +130,9 @@
       "weight_pct": 18,
       "score": 39,
       "status": "fresh",
-      "reason": "fresh (0s)",
-      "last_utc": "2026-09-26T08:20:48.511Z",
-      "lastUpdated": "2026-09-26T08:20:48.511Z",
+      "reason": "fresh (2s)",
+      "last_utc": "2026-09-26T14:57:22.735Z",
+      "lastUpdated": "2026-09-26T14:57:22.735Z",
       "details": [
         {
           "label": "Total Market Cap",
@@ -168,7 +168,7 @@
         },
         {
           "label": "Historical Baseline",
-          "value": "300 data points (weighted average of 7 stablecoins)"
+          "value": "301 data points (weighted average of 7 stablecoins)"
         },
         {
           "label": "Stablecoin Coverage",
@@ -675,15 +675,15 @@
       "sourceTradingDate": "2026-09-25",
       "acquisitionState": "live_refresh",
       "acquisitionFailureReason": null,
-      "sourceHistoryUpdatedAtUtc": "2026-09-26T08:19:31.391Z",
-      "sourceHistoryCommitSha": "f722ed3c86b120680e37330791565b5a87a32ffd",
+      "sourceHistoryUpdatedAtUtc": "2026-09-26T14:57:17.645Z",
+      "sourceHistoryCommitSha": "b82880f9d9604375029f048d1e96f549964071b8",
       "sourceProvenance": {
         "providerUniverseFingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
         "scoredUniverseFingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
         "revisionNumber": 0,
         "lastRevisionBatchId": null,
         "firstSeenAtUtc": "2026-09-26T08:19:31.391Z",
-        "lastSeenAtUtc": "2026-09-26T08:19:31.391Z"
+        "lastSeenAtUtc": "2026-09-26T14:57:17.645Z"
       },
       "historicalCalibration": {
         "provider": "farside_frozen_baseline",
@@ -704,7 +704,7 @@
       "weight_pct": 4.3,
       "score": 63,
       "status": "fresh",
-      "reason": "fresh (3d)",
+      "reason": "fresh (4d)",
       "last_utc": "2026-09-23T00:00:00.000Z",
       "lastUpdated": "2026-09-23T00:00:00.000Z",
       "details": [
@@ -744,12 +744,7 @@
           "label": "Data as of",
           "value": "2026-09-23"
         }
-      ],
-      "metrics": {
-        "net_liquidity_usd": 5770618331000,
-        "roc4w_pct": -0.16534858766068283,
-        "score": 63
-      }
+      ]
     },
     {
       "key": "term_leverage",
@@ -798,7 +793,7 @@
         },
         {
           "label": "Calculation Method",
-          "value": "Parallel processing (2ms)"
+          "value": "Parallel processing (1ms)"
         },
         {
           "label": "Component Scores",
@@ -851,7 +846,7 @@
         },
         {
           "label": "Fetch Time",
-          "value": "536ms"
+          "value": "279ms"
         },
         {
           "label": "Component Scores",
@@ -885,19 +880,19 @@
       "pillar": "social",
       "weight": 10,
       "weight_pct": 10,
-      "score": 66,
+      "score": 62,
       "status": "fresh",
-      "reason": "fresh (3min)",
-      "last_utc": "2026-09-26T08:17:40.000Z",
-      "lastUpdated": "2026-09-26T08:17:40.000Z",
+      "reason": "fresh (2min)",
+      "last_utc": "2026-09-26T14:55:40.000Z",
+      "lastUpdated": "2026-09-26T14:55:40.000Z",
       "details": [
         {
           "label": "Search Attention",
-          "value": "Moderate"
+          "value": "Low"
         },
         {
           "label": "Bitcoin Trending Rank",
-          "value": "#11"
+          "value": "N/A"
         },
         {
           "label": "Price Signal (7d)",
@@ -913,7 +908,7 @@
         },
         {
           "label": "Fetch Time",
-          "value": "1622ms"
+          "value": "1529ms"
         },
         {
           "label": "Data Sources",
@@ -921,7 +916,7 @@
         },
         {
           "label": "Component Scores",
-          "value": "Search: 55, Momentum: 91, Vol: 46"
+          "value": "Search: 50, Momentum: 91, Vol: 46"
         },
         {
           "label": "Fallback Attempts",
@@ -929,16 +924,16 @@
         }
       ],
       "metrics": {
-        "trending_rank": 11,
-        "momentum_7d_pct": 8.366726440627218,
-        "score": 66
+        "trending_rank": null,
+        "momentum_7d_pct": 8.363099661247391,
+        "score": 62
       },
       "provider": "CoinGecko • trending"
     }
   ],
   "btc": {
-    "spot_usd": 84033.91,
-    "as_of_utc": "2026-09-26T08:20:50.628Z",
+    "spot_usd": 84028.79,
+    "as_of_utc": "2026-09-26T14:57:28.597Z",
     "source": "Coinbase",
     "price_kind": "utc_intraday_snapshot"
   },
@@ -951,14 +946,14 @@
       "expected_eligible_trading_date": "2026-09-25",
       "acquisition_state": "live_refresh",
       "acquisition_failure_reason": null,
-      "source_history_updated_at_utc": "2026-09-26T08:19:31.391Z",
-      "source_history_commit_sha": "f722ed3c86b120680e37330791565b5a87a32ffd",
+      "source_history_updated_at_utc": "2026-09-26T14:57:17.645Z",
+      "source_history_commit_sha": "b82880f9d9604375029f048d1e96f549964071b8",
       "provider_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "revision_number": 0,
       "last_revision_batch_id": null,
       "selected_first_seen_at_utc": "2026-09-26T08:19:31.391Z",
-      "selected_last_seen_at_utc": "2026-09-26T08:19:31.391Z",
+      "selected_last_seen_at_utc": "2026-09-26T14:57:17.645Z",
       "historical_calibration": {
         "provider": "farside_frozen_baseline",
         "git_blob_sha": "2986a65e565516f374f57bf031a672c84647330c",
@@ -977,7 +972,7 @@
   "cycle_adjustment": {
     "adj_pts": 0,
     "residual_z": null,
-    "last_utc": "2026-09-26T08:20:50.625Z",
+    "last_utc": "2026-09-26T14:57:28.593Z",
     "source": "ETL disabled",
     "reason": "disabled"
   },
@@ -986,9 +981,9 @@
     "r_1d": 0,
     "sigma": 0,
     "z": 0,
-    "ref_close": 84033.91,
-    "spot": 84033.91,
-    "last_utc": "2026-09-26T08:20:50.625Z",
+    "ref_close": 84028.79,
+    "spot": 84028.79,
+    "last_utc": "2026-09-26T14:57:28.593Z",
     "source": "ETL disabled",
     "reason": "disabled"
   },
