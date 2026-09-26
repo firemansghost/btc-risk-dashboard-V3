@@ -6,15 +6,18 @@ export const CBOE_VIX_HISTORY_URL = 'https://cdn-api.cboe.com/api/global/us_indi
 export const FRED_VIXCLS_ENDPOINT = 'https://api.stlouisfed.org/fred/series/observations';
 export const MIN_VIX_OBSERVATIONS = 30;
 
+function canonicalDate(iso) {
+  const parsed = new Date(`${iso}T00:00:00.000Z`);
+  if (!Number.isFinite(parsed.getTime())) return null;
+  return parsed.toISOString().slice(0, 10) === iso ? iso : null;
+}
+
 function parseExplicitDate(value) {
   const text = String(value ?? '').trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
-    return new Date(`${text}T00:00:00.000Z`).toISOString().slice(0, 10) === text ? text : null;
-  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return canonicalDate(text);
   const us = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (!us) return null;
-  const iso = `${us[3]}-${us[1].padStart(2, '0')}-${us[2].padStart(2, '0')}`;
-  return new Date(`${iso}T00:00:00.000Z`).toISOString().slice(0, 10) === iso ? iso : null;
+  return canonicalDate(`${us[3]}-${us[1].padStart(2, '0')}-${us[2].padStart(2, '0')}`);
 }
 
 export function parseCboeVixHistory(text, startISO, endISO) {
@@ -51,7 +54,8 @@ export function parseFredVixObservations(payload, startISO, endISO) {
   const byDate = new Map();
   for (const row of payload.observations) {
     const date = parseExplicitDate(row?.date);
-    if (!date || date < startISO || date > endISO) continue;
+    if (!date) return { ok: false, reason: 'fred_invalid_observations', observations: [] };
+    if (date < startISO || date > endISO) continue;
     if (row?.value === '.') continue;
     const raw = String(row?.value ?? '').trim();
     const close = Number(raw);

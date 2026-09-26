@@ -14,6 +14,8 @@ import {
   CBOE_VIX_HISTORY_URL,
   FRED_VIXCLS_ENDPOINT,
   fetchProductionVix,
+  parseCboeVixHistory,
+  parseFredVixObservations,
   vixProviderCacheChanged,
 } from '../lib/vixSource.mjs';
 
@@ -219,6 +221,61 @@ test('a cached FRED VIX identity is not reused for a Cboe selection', () => {
   assert.equal(vixProviderCacheChanged({ vixProvider: 'cboe' }, 'cboe'), false);
   const factors = fs.readFileSync(path.join(REPO_ROOT, 'scripts/etl/factors.mjs'), 'utf8');
   assert.equal(factors.includes('vixProviderCacheChanged(cachedData, vixSelection.provider)'), true);
+});
+
+test('an impossible Cboe date falls back to the current FRED series', async () => {
+  const expected = getExpectedVixDate(AS_OF);
+  const fredRows = rowsThrough(expected);
+  const selected = await fetchProductionVix({
+    fredApiKey: 'test-key',
+    startISO: '2026-05-01',
+    endISO: '2026-09-25',
+    asOfUtc: AS_OF,
+    fetchImpl: fetchFor({
+      cboeBody: 'DATE,OPEN,HIGH,LOW,CLOSE\n13/40/2026,1,2,0.5,15\n',
+      fredBody: fred(fredRows),
+    }),
+  });
+  assert.equal(selected.provider, 'fred');
+  assert.equal(selected.fallbackUsed, true);
+  assert.equal(selected.fallbackReason, 'cboe_schema_invalid');
+  assert.equal(selected.sourceObservationDate, expected);
+  assert.deepEqual(selected.observations.map((row) => row.date), fredRows.map((row) => row.date));
+});
+
+test('an impossible FRED date fails closed and is not scored', async () => {
+  const selected = await fetchProductionVix({
+    fredApiKey: 'test-key',
+    startISO: '2026-05-01',
+    endISO: '2026-09-25',
+    asOfUtc: AS_OF,
+    fetchImpl: fetchFor({
+      cboeBody: 'DATE,OPEN,HIGH,LOW\n2026-09-24,1,2,0.5\n',
+      fredBody: JSON.stringify({
+        observations: [{ date: '2026-13-01', value: '15.67' }],
+      }),
+    }),
+  });
+  assert.equal(selected.usable, false);
+  assert.equal(selected.reason, 'vix_unavailable');
+  assert.equal(selected.provider, null);
+  assert.equal(selected.observations.some((row) => row.date === '2026-13-01'), false);
+  assert.equal(selected.observations.some((row) => Number(row.value) === 0), false);
+});
+
+test('impossible and overflow calendar dates are rejected without throwing', () => {
+  for (const badDate of ['2026-13-01', '2026-02-30']) {
+    const cboe = parseCboeVixHistory(`DATE,OPEN,HIGH,LOW,CLOSE\n${badDate},1,2,0.5,15\n`, '2026-05-01', '2026-09-25');
+    assert.equal(cboe.ok, false);
+    assert.equal(cboe.reason, 'cboe_schema_invalid');
+    assert.deepEqual(cboe.observations, []);
+    const fredParsed = parseFredVixObservations({
+      observations: [{ date: badDate, value: '15' }],
+    }, '2026-05-01', '2026-09-25');
+    assert.equal(fredParsed.ok, false);
+    assert.equal(fredParsed.reason, 'fred_invalid_observations');
+    assert.deepEqual(fredParsed.observations, []);
+  }
 });
 
 test('freshness constants and pending production identity stay in their own eras', () => {
