@@ -1,0 +1,71 @@
+name: R07 Stablecoin elapsed-time diagnostic
+
+# Read-only evidence only. This does not authorize a production Stablecoin change
+# and does not adjudicate NO_LOOKAHEAD_AT_OR_BEFORE_TARGET_V1 as a successor rule.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require main
+        env:
+          DIAGNOSTIC_REF: ${{ github.ref }}
+        run: |
+          if [ "$DIAGNOSTIC_REF" != "refs/heads/main" ]; then
+            echo "R07 Stablecoin diagnostic must be dispatched against refs/heads/main"
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Use Node 20
+        uses: actions/setup-node@v5
+        with:
+          node-version: "20.18.0"
+
+      - name: Require origin/main before diagnostic
+        run: |
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$GITHUB_SHA" ]; then
+            echo "origin/main no longer equals GITHUB_SHA"
+            exit 1
+          fi
+
+      - name: Run R07 Stablecoin elapsed-time diagnostic
+        run: |
+          node scripts/research/diagnose-r07-stablecoin-elapsed-time.mjs \
+            --repository-sha "$GITHUB_SHA" \
+            --report "$RUNNER_TEMP/r07-stablecoin-elapsed-time-diagnostic-report.json"
+
+      - name: Require origin/main after diagnostic
+        run: |
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$GITHUB_SHA" ]; then
+            echo "origin/main advanced during diagnostic"
+            exit 1
+          fi
+
+      - name: Upload R07 diagnostic report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r07-stablecoin-elapsed-time-diagnostic
+          path: ${{ runner.temp }}/r07-stablecoin-elapsed-time-diagnostic-report.json
+          if-no-files-found: warn
+
+      - name: Confirm repository worktree stayed clean
+        if: always()
+        run: |
+          if [ -n "$(git status --porcelain --untracked-files=all)" ]; then
+            git status --porcelain --untracked-files=all
+            exit 1
+          fi
