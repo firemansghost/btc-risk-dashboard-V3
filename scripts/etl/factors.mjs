@@ -36,6 +36,7 @@ import {
   preserveSourceObservation,
   socialSourceObservationUtc,
 } from './lib/sourceObservationTime.mjs';
+import { fetchProductionVix, vixProviderCacheChanged } from './lib/vixSource.mjs';
 import { isUsTradingDay, selectPublishedEtfFlowRows } from './marketCalendar.mjs';
 import {
   hasMacroSourceVintagesChanged,
@@ -2594,11 +2595,16 @@ async function computeMacroOverlay() {
     console.log('Macro Overlay: Fetching FRED macro data with retry logic...');
     const startTime = Date.now();
     
-    const [dxyData, dgs2Data, dgs10Data, vixData, tipData] = await Promise.all([
+    const [dxyData, dgs2Data, dgs10Data, vixSelection, tipData] = await Promise.all([
       fetchMacroFredDataWithRetry('DTWEXBGS', apiKey, startISO, endISO),
       fetchMacroFredDataWithRetry('DGS2', apiKey, startISO, endISO),
       fetchMacroFredDataWithRetry('DGS10', apiKey, startISO, endISO),
-      fetchMacroFredDataWithRetry('VIXCLS', apiKey, startISO, endISO),
+      fetchProductionVix({
+        fredApiKey: apiKey,
+        startISO,
+        endISO,
+        asOfUtc: end.toISOString(),
+      }),
       fetchMacroFredDataWithRetry('DFII10', apiKey, startISO, endISO).catch(() => null) // TIPS data is optional
     ]);
     
@@ -2606,14 +2612,27 @@ async function computeMacroOverlay() {
     console.log(`Macro Overlay: FRED data fetched in ${fetchTime}ms`);
 
     // Check if we can use cached data (incremental update)
+    if (!vixSelection.usable) {
+      return {
+        score: null,
+        reason: vixSelection.reason || 'vix_unavailable',
+        vixProvider: vixSelection.provider,
+        vixSourceUrl: vixSelection.sourceUrl,
+        vixFallbackUsed: vixSelection.fallbackUsed,
+        vixFallbackReason: vixSelection.fallbackReason,
+        latestVixDate: vixSelection.sourceObservationDate,
+      };
+    }
+    const vixData = { observations: vixSelection.observations };
+
     const latestDxyDate = latestFiniteFredDate(dxyData.observations);
     const latestDgs2Date = latestFiniteFredDate(dgs2Data.observations);
-    const latestVixDate = latestFiniteFredDate(vixData.observations);
+    const latestVixDate = vixSelection.sourceObservationDate;
     
     const dataChanged = hasMacroDataChanged(
       { latestDxyDate, latestDgs2Date, latestVixDate },
       cachedData
-    );
+    ) || vixProviderCacheChanged(cachedData, vixSelection.provider);
     
     if (cachedData && !dataChanged) {
       console.log('Macro Overlay: Using cached calculations (no FRED data changes)');
@@ -2752,6 +2771,18 @@ async function computeMacroOverlay() {
       lastUpdated,
       latestDgs2Date,
       latestVixDate,
+      vixProvider: vixSelection.provider,
+      vixSourceUrl: vixSelection.sourceUrl,
+      vixFallbackUsed: vixSelection.fallbackUsed,
+      vixFallbackReason: vixSelection.fallbackReason,
+      vixSourceProvenance: {
+        provider: vixSelection.provider,
+        sourceUrl: vixSelection.sourceUrl,
+        fallbackUsed: vixSelection.fallbackUsed,
+        fallbackReason: vixSelection.fallbackReason,
+        latestVixDate,
+      },
+      providers: { vix: vixSelection.provider },
       details: [
         { label: "Macro Regime", value: macroRegime },
         { label: "Dollar Trend (20d)", value: `${dollarTrend} (${dxy20dChange.toFixed(1)}%)` },
@@ -2904,7 +2935,13 @@ export async function computeAllFactors(dailyClose = null) {
       sourceProvenance: result.status === 'fulfilled' ? result.value.sourceProvenance : undefined,
       historicalCalibration: result.status === 'fulfilled' ? result.value.historicalCalibration : undefined,
       sma50wDiagnostic: result.status === 'fulfilled' && result.value.sma50wDiagnostic ? result.value.sma50wDiagnostic : undefined,
-      marketRegime: result.status === 'fulfilled' && result.value.marketRegime ? result.value.marketRegime : undefined
+      marketRegime: result.status === 'fulfilled' && result.value.marketRegime ? result.value.marketRegime : undefined,
+      vixProvider: result.status === 'fulfilled' ? result.value.vixProvider : undefined,
+      vixSourceUrl: result.status === 'fulfilled' ? result.value.vixSourceUrl : undefined,
+      vixFallbackUsed: result.status === 'fulfilled' ? result.value.vixFallbackUsed : undefined,
+      vixFallbackReason: result.status === 'fulfilled' ? result.value.vixFallbackReason : undefined,
+      latestVixDate: result.status === 'fulfilled' ? result.value.latestVixDate : undefined,
+      vixSourceProvenance: result.status === 'fulfilled' ? result.value.vixSourceProvenance : undefined,
     });
 
     console.log(`${factor.key}: ${score !== null ? score : 'null'} (${status}) - ${reason}`);

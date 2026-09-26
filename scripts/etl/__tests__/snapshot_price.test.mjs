@@ -72,10 +72,10 @@ test('SSOT stamps v1.1.2 and implementation_revision', async () => {
   clearConfigCache();
   const config = await getDashboardConfig();
   assert.equal(config.model_version, 'v1.1.2');
-  assert.equal(config.implementation_revision, 'etf-sosovalue-2026-09');
+  assert.equal(config.implementation_revision, 'etf-sosovalue-vix-cboe-2026-09');
   assert.equal(config.ssot_version, '2.1.1');
-  assert.equal(config.lastModified, '2026-09-24T00:00:00.000Z');
-  assert.equal(await getImplementationRevision(), 'etf-sosovalue-2026-09');
+  assert.equal(config.lastModified, '2026-09-26T00:17:00.000Z');
+  assert.equal(await getImplementationRevision(), 'etf-sosovalue-vix-cboe-2026-09');
   assert.match(config.factors.term_leverage.description, /funding/i);
   assert.match(config.factors.term_leverage.description, /realized volatility/i);
   assert.match(config.factors.term_leverage.description, /stress/i);

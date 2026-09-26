@@ -128,7 +128,7 @@ test('ETF freshness follows the New York expected trading date', () => {
 
 test('production identity and workflow keep the activation contract', () => {
   assert.equal(config.model_version, 'v1.1.2');
-  assert.equal(config.implementation_revision, 'etf-sosovalue-2026-09');
+  assert.equal(config.implementation_revision, 'etf-sosovalue-vix-cboe-2026-09');
   assert.equal(config.ssot_version, '2.1.1');
   assert.equal(config.factors.etf_flows.weight, 0.077);
   assert.deepEqual(config.subweights.etf_flows, { sum_21d: 0.3, acceleration: 0.3, diversification: 0.4 });

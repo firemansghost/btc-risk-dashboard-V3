@@ -8,7 +8,7 @@ old weight-era notes, or archived roadmaps as live model contracts.
 
 ## Current Production Authority
 
-Active production: **v1.1.2** / **etf-sosovalue-2026-09** / SSOT **2.1.1**. Live ETF source: SoSoValue. Farside is the frozen historical calibration baseline.
+Active production: **v1.1.2** / **etf-sosovalue-vix-cboe-2026-09** / SSOT **2.1.1**. Live ETF source: SoSoValue. Farside is the frozen historical calibration baseline. Macro uses FRED for dollar and rates, and direct Cboe official daily history for VIX, with a guarded FRED VIXCLS fallback.
 
 Seven enabled scoring factors across five analytical pillars. On-chain
 Activity is disabled at 0%. Cycle and Spike adjustments are disabled in

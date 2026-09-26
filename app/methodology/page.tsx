@@ -78,7 +78,7 @@ export default function MethodologyPage() {
           A transparent, data-driven approach to Bitcoin risk assessment using five analytical pillars.
         </p>
         <div className="mt-2 text-sm text-gray-500">
-          Current production: v1.1.2 / etf-sosovalue-2026-09 · five pillars weighted 30/30/20/10/10. Live ETF source: SoSoValue. Farside is the frozen calibration baseline.
+          Current production: v1.1.2 / etf-sosovalue-vix-cboe-2026-09 · five pillars weighted 30/30/20/10/10. Live ETF source: SoSoValue. Farside is the frozen calibration baseline. Macro uses FRED for dollar and rates, and direct Cboe official daily history for VIX, with a guarded FRED VIXCLS fallback.
         </div>
       </div>
 
@@ -975,7 +975,7 @@ export default function MethodologyPage() {
       {/* Model Version Note */}
       <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
         <p className="text-sm text-gray-600">
-          <strong>Model version:</strong> Current production: v1.1.2 / etf-sosovalue-2026-09 · five pillars weighted 30/30/20/10/10. Live ETF source: SoSoValue. Farside is the frozen calibration baseline.
+          <strong>Model version:</strong> Current production: v1.1.2 / etf-sosovalue-vix-cboe-2026-09 · five pillars weighted 30/30/20/10/10. Live ETF source: SoSoValue. Farside is the frozen calibration baseline. Macro uses FRED for dollar and rates, and direct Cboe official daily history for VIX, with a guarded FRED VIXCLS fallback.
         </p>
       </div>
     </div>
