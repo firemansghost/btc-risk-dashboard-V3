@@ -6,9 +6,9 @@ Canonical human-readable registry of GhostGauge model-era boundaries for histori
 
 `MODEL_ERAS` governs **verified model/implementation boundaries**. Historical analysis must also respect **DATA PROVENANCE**.
 
-This registry currently records the verified **v1.1 → v1.1.1** implementation boundary (final verified v1.1 observation on **2026-08-16**; first verified v1.1.1 observation on **2026-08-17**). It does **not** by itself prove that every row in `public/data/history.csv` is a contemporaneous publication, an official observation, or a frozen-input replay.
+This registry records the verified **v1.1 → v1.1.1** implementation boundary (final verified v1.1 observation on **2026-08-16**; first verified v1.1.1 observation on **2026-08-17**) and the verified **v1.1.1 → v1.1.2** source/implementation boundary (final verified v1.1.1 observation on **2026-09-08**; first official v1.1.2 observation on **2026-09-26**). It does **not** by itself prove that every row in `public/data/history.csv` is a contemporaneous publication, an official observation, or a frozen-input replay.
 
-Do not treat earlier historical rows as though they were computed under current `v1.1.1` / `integrity-2026-08` semantics.
+Do not treat earlier historical rows as though they were computed under current `v1.1.2` / `etf-sosovalue-vix-cboe-2026-09` semantics.
 
 ---
 
@@ -61,12 +61,14 @@ Do **not** extend this model-era registry backward merely because H1 identified 
 
 ## Current registry scope
 
-This registry currently establishes the **verified v1.1 → v1.1.1 boundary**.
+This registry establishes the **verified v1.1 → v1.1.1 boundary** and the **verified v1.1.1 → v1.1.2 boundary**.
 
 It establishes:
 
 - the final verified v1.1 observation on **2026-08-16**
 - the first verified v1.1.1 observation on **2026-08-17**
+- the final verified v1.1.1 observation on **2026-09-08**
+- the first official v1.1.2 observation on **2026-09-26**, and the same-day normal scheduled confirmation
 
 It does **not** yet establish:
 
@@ -107,7 +109,7 @@ Do **not** characterize all prior historical rows as though they were computed u
 
 ## Era: v1.1.1 / integrity-2026-08
 
-**Status:** Active
+**Status:** Closed
 
 **First official observation:**
 
@@ -139,9 +141,63 @@ This Aug 17 observation is valid and official. It was a **delayed manual recover
 
 v1.1.1 is primarily an **implementation-integrity revision**. It preserves the official 30/30 pillar architecture and factor weights while correcting time, provenance, source-cadence, and configuration-integrity behavior. It is not a wholesale new scoring methodology.
 
+**Final official observation:**
+
+- `snapshot_date`: `2026-09-08`
+- `as_of_utc`: `2026-09-08T15:01:38.324Z`
+- G-Score: `49`
+- Band: Moderate Buying
+- Artifact commit: `c21cccff0a794df58fec33137188db4c94fb485b`
+
+This is the **final verified official observation of the v1.1.1 era**.
+
 ### Era-boundary warning
 
 The Aug 16 G54 → Aug 17 G47 difference **crosses an implementation / model-era boundary** and must **not** automatically be interpreted as a seven-point change in underlying market risk.
+
+---
+
+## Era: v1.1.2 / etf-sosovalue-vix-cboe-2026-09
+
+**Status:** Active
+
+**First official observation:**
+
+- `snapshot_date`: `2026-09-26`
+- `as_of_utc`: `2026-09-26T08:20:50.628Z`
+- G-Score: `54`
+- Band: Hold & Wait
+- Trigger: controlled Daily ETL
+- Workflow run: `36229340204`
+- Artifact commit: `4881d2351dd09d27443ee34a8693d2e4ffc33dd0`
+
+This is the **first official v1.1.2 production observation**.
+
+**First normal scheduled observation:**
+
+- `snapshot_date`: `2026-09-26`
+- `as_of_utc`: `2026-09-26T14:57:28.597Z`
+- G-Score: `53`
+- Band: Hold & Wait
+- Trigger: `schedule`
+- Workflow run: `36250147504`
+- Artifact commit: `4a7e0878e5025edf3e4ef00202f7a800e0099bc6`
+
+This scheduled run is the required normal-production confirmation that closed the v1.1.2 transition.
+
+**Production code / config:**
+
+- `model_version`: `v1.1.2`
+- `implementation_revision`: `etf-sosovalue-vix-cboe-2026-09`
+- `ssot_version`: `2.1.1`
+
+### Same-day history.csv nuance
+
+Both official v1.1.2 observations use UTC snapshot date **2026-09-26**. The controlled observation was **G54**. The later normal scheduled observation was **G53**. `public/data/history.csv` retains the later **G53** daily row because that file keeps one row per snapshot date. The earlier **G54** observation remains official era-boundary evidence at artifact commit `4881d2351dd09d27443ee34a8693d2e4ffc33dd0`. Do not erase, collapse, or replace that evidence merely because `history.csv` retains one row for the date.
+
+### Era-boundary warning
+
+The Sep 8 G49 → Sep 26 G54 difference **crosses materially different production source and implementation semantics**. It must **not** automatically be interpreted as underlying market movement. Historical analysis crossing this boundary must mark or segment the model/source era transition.
 
 ---
 
@@ -159,15 +215,17 @@ The Aug 16 G54 → Aug 17 G47 difference **crosses an implementation / model-era
 10. Existing backtest artifacts built from the reconstructed headline series are not validated performance evidence.
 11. The v1.1 start remains **unverified**.
 12. The Aug 16 / Aug 17 boundary remains **frozen**.
-13. v1.1.1 forward observations beginning **Aug 17** remain the corrected forward implementation era.
-14. Do not fabricate or backdate observations.
-15. Trustworthy replay requires frozen point-in-time inputs.
+13. v1.1.1 is **closed**. Its official observations run from **2026-08-17** through the final verified observation on **2026-09-08**.
+14. v1.1.2 / `etf-sosovalue-vix-cboe-2026-09` is the **active** production era, beginning with the controlled **2026-09-26** observation.
+15. Historical work crossing **2026-09-08 → 2026-09-26** must recognize the v1.1.1 → v1.1.2 source/implementation boundary. Do not fabricate observations for **2026-09-09 through 2026-09-25** merely to create continuity.
+16. Do not fabricate or backdate observations.
+17. Trustworthy replay requires frozen point-in-time inputs.
 
 Additional operational rules:
 
 - Earlier rows are **not** to be retroactively relabeled as v1.1.1 observations.
 - Do **not** reconstruct past official scores by looping current live APIs over historical dates.
-- Historical analysis spanning Aug 16/17 must explicitly **segment or mark** the model-era boundary.
+- Historical analysis spanning Aug 16/17, and analysis spanning Sep 8 / Sep 26, must explicitly **segment or mark** the model-era boundary.
 - v1.1 and v1.1.1 results may be compared descriptively, but methodology / implementation-integrity changes must not be mistaken for market movement.
 - The first **normal scheduled** v1.1.1 observation is **2026-08-18**. The Aug 17 observation is valid and official, but was a delayed manual recovery print.
 - Failed Aug 17 runs produced **no official observations** and must not be inserted into history.
@@ -185,6 +243,7 @@ Signal v2 is the corrected **forward** signal-output contract. Do not claim that
 
 - Provenance forensic record: [`docs/HISTORICAL_EVIDENCE_INVENTORY_2026-08-18.md`](HISTORICAL_EVIDENCE_INVENTORY_2026-08-18.md)
 - Permissible analytical use: [`docs/HISTORICAL_DATA_ELIGIBILITY_2026-08-18.md`](HISTORICAL_DATA_ELIGIBILITY_2026-08-18.md)
-- Detailed transition closeout: [`docs/V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md`](V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md)
+- v1.1.1 transition closeout: [`docs/V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md`](V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md)
+- v1.1.2 transition closeout: [`docs/V1.1.2_TRANSITION_CLOSEOUT_2026-09-26.md`](V1.1.2_TRANSITION_CLOSEOUT_2026-09-26.md)
 - Architectural decision: [`docs/DECISIONS.md`](DECISIONS.md)
 - Continuity checkpoint: [`REPO_REONBOARD.md`](../REPO_REONBOARD.md)

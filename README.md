@@ -94,8 +94,9 @@ are not the official monthly comparison.
 H7 historical work is descriptive risk-discrimination/ranking research,
 not predictive validation.
 
-H8 v2 is the current frozen prospective evaluation. Its observation window
-is live, and no interim H8 performance conclusion is authorized.
+H8 v2 was stopped during prospective collection. It is historical-only.
+No further H8 observations are authorized. Future prospective work requires
+a successor protocol.
 
 - [H8 v2 preregistration](docs/H8_V2_PROSPECTIVE_30D_RISK_DISCRIMINATION_PREREGISTRATION.md)
 - [H8 v2 capture implementation contract](docs/H8_V2_CAPTURE_IMPLEMENTATION_CONTRACT.md)
@@ -112,6 +113,7 @@ is live, and no interim H8 performance conclusion is authorized.
 - [Model Eras](docs/MODEL_ERAS.md) — verified model-era boundaries and historical provenance rules
 - [Historical Evidence Inventory](docs/HISTORICAL_EVIDENCE_INVENTORY_2026-08-18.md) — provenance forensic record for historical artifacts
 - [Historical Data Eligibility](docs/HISTORICAL_DATA_ELIGIBILITY_2026-08-18.md) — rules for permissible analytical use of historical data
-- [v1.1.1 Transition Closeout](docs/V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md) — integrity-transition record
+- [v1.1.1 Transition Closeout](docs/V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md) — historical integrity-transition record
+- [v1.1.2 Transition Closeout](docs/V1.1.2_TRANSITION_CLOSEOUT_2026-09-26.md) — ETF/VIX source-transition and era-boundary record
 - [Documentation index](docs/README.md) — current vs historical/legacy documentation map
 - [Cursor Prompts](docs/PROMPTS/CURSOR_BASE.md) — AI agent guidelines and development rules

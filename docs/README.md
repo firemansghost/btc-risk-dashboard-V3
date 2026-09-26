@@ -21,12 +21,13 @@ v1.1.1 and contribute zero points.
 | [Brand Card](BRAND_CARD.md) | Public narrative, naming, and current six-band taxonomy |
 | Live Methodology page (`/methodology`) | Public explanation of current production behavior |
 | [Model Eras](MODEL_ERAS.md) | Historical interpretation and provenance boundaries |
-| [v1.1.1 Transition Closeout](V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md) | Integrity-transition record |
+| [v1.1.1 Transition Closeout](V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md) | Historical integrity-transition record |
+| [v1.1.2 Transition Closeout](V1.1.2_TRANSITION_CLOSEOUT_2026-09-26.md) | ETF/VIX source-transition and era-boundary record |
 
 ## Research / Governance
 
-H8 is a live prospective evaluation. No interim performance conclusion or
-tuning is authorized. H7 historical work is descriptive
+H8 v2 is stopped and historical-only. Successor scientific collection requires a
+separately versioned and preregistered successor study. H7 historical work is descriptive
 risk-discrimination/ranking research, not predictive validation.
 
 - [H8 v2 preregistration](H8_V2_PROSPECTIVE_30D_RISK_DISCRIMINATION_PREREGISTRATION.md)

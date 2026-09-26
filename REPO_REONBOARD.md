@@ -39,6 +39,7 @@ See:
 - [`docs/HISTORICAL_EVIDENCE_INVENTORY_2026-08-18.md`](docs/HISTORICAL_EVIDENCE_INVENTORY_2026-08-18.md)
 - [`docs/HISTORICAL_DATA_ELIGIBILITY_2026-08-18.md`](docs/HISTORICAL_DATA_ELIGIBILITY_2026-08-18.md)
 - [`docs/V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md`](docs/V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md)
+- [`docs/V1.1.2_TRANSITION_CLOSEOUT_2026-09-26.md`](docs/V1.1.2_TRANSITION_CLOSEOUT_2026-09-26.md)
 - [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
 The August 16 checkpoint below remains historical continuity evidence. Read its older "as-published" wording together with the 2026-08-18 H1 provenance note in section D.
