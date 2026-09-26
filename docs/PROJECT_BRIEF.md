@@ -75,8 +75,9 @@ It is not a clean as-published validation sample.
 Historical H7 work is descriptive risk-discrimination/ranking research, not
 forecasting or model validation.
 
-H8 v2 is an ongoing frozen prospective evaluation. No interim H8 performance
-conclusion is authorized. See
+H8 v2 was stopped during prospective collection and is historical-only. No
+further H8 observations are authorized. A successor study is required before
+future scientific collection. See
 [H8 v2 preregistration](H8_V2_PROSPECTIVE_30D_RISK_DISCRIMINATION_PREREGISTRATION.md)
 and
 [H8 v2 capture implementation contract](H8_V2_CAPTURE_IMPLEMENTATION_CONTRACT.md).
