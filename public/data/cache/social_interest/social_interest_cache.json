@@ -1,40 +1,40 @@
 {
-  "score": 44,
+  "score": 66,
   "reason": "success",
   "status": "fresh",
-  "lastUpdated": "2026-09-08T14:58:20.000Z",
-  "trending_fetched_at": "2026-09-08T15:00:30.529Z",
-  "price_observation_utc": "2026-09-08T14:58:20.000Z",
+  "lastUpdated": "2026-09-26T08:17:40.000Z",
+  "trending_fetched_at": "2026-09-26T08:19:38.668Z",
+  "price_observation_utc": "2026-09-26T08:17:40.000Z",
   "components": {
-    "searchScore": 50,
-    "momentumScore": 29,
-    "volatilityScore": 54
+    "searchScore": 55,
+    "momentumScore": 91,
+    "volatilityScore": 46
   },
   "provider": "CoinGecko • trending",
   "details": [
     {
       "label": "Search Attention",
-      "value": "Low"
-    },
-    {
-      "label": "Bitcoin Trending Rank",
-      "value": "N/A"
-    },
-    {
-      "label": "Price Signal (7d)",
-      "value": "Neutral"
-    },
-    {
-      "label": "Volatility Level (14d)",
       "value": "Moderate"
     },
     {
-      "label": "Social Risk Level",
+      "label": "Bitcoin Trending Rank",
+      "value": "#11"
+    },
+    {
+      "label": "Price Signal (7d)",
+      "value": "Bullish"
+    },
+    {
+      "label": "Volatility Level (14d)",
       "value": "Low"
     },
     {
+      "label": "Social Risk Level",
+      "value": "Moderate"
+    },
+    {
       "label": "Fetch Time",
-      "value": "1533ms"
+      "value": "1622ms"
     },
     {
       "label": "Data Sources",
@@ -42,21 +42,21 @@
     },
     {
       "label": "Component Scores",
-      "value": "Search: 50, Momentum: 29, Vol: 54"
+      "value": "Search: 55, Momentum: 91, Vol: 46"
     },
     {
       "label": "Fallback Attempts",
       "value": "0"
     }
   ],
-  "bitcoinRank": null,
-  "latestPrice": 78535.63955135769,
-  "fetchTime": 1533,
+  "bitcoinRank": 11,
+  "latestPrice": 84041.95807534148,
+  "fetchTime": 1622,
   "metrics": {
-    "trending_rank": null,
-    "momentum_7d_pct": 1.284880802260403,
-    "score": 44
+    "trending_rank": 11,
+    "momentum_7d_pct": 8.366726440627218,
+    "score": 66
   },
-  "cachedAt": "2026-09-08T15:00:30.529Z",
+  "cachedAt": "2026-09-26T08:19:38.669Z",
   "version": "1.0.0"
 }
