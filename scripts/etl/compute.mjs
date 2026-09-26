@@ -1217,6 +1217,7 @@ function buildEtfProvenance(factors) {
       { name: "CoinGecko market chart (fallback)", ok: true, ms: null, url: "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=2&interval=daily" },
       { name: "Fear & Greed Index", ok: true, ms: null, url: "https://api.alternative.me/fng/" },
       { name: "FRED API (if key provided)", ok: !!process.env.FRED_API_KEY, ms: null, url: "https://fred.stlouisfed.org/" },
+      { name: "Cboe VIX official daily history", ok: true, ms: null, url: "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv" },
       ...(goldResult.success ? goldResult.data.provenance.map(p => ({
         ...p,
         cache_used: false, // Gold data is always fresh from API
@@ -1227,6 +1228,20 @@ function buildEtfProvenance(factors) {
     factors_computed: factorResults.factors.length,
     factors_successful: factorResults.factors.filter(f => f.status === 'fresh').length,
     term_leverage: termLeverageStatus,
+    macro_overlay: (() => {
+      const macro = factorResults.factors.find((factor) => factor.key === 'macro_overlay');
+      if (!macro) return null;
+      return {
+        status: macro.status,
+        score: macro.score,
+        reason: macro.reason,
+        latest_vix_date: macro.latestVixDate ?? null,
+        vix_provider: macro.vixProvider ?? null,
+        vix_source_url: macro.vixSourceUrl ?? null,
+        vix_fallback_used: macro.vixFallbackUsed ?? null,
+        vix_fallback_reason: macro.vixFallbackReason ?? null,
+      };
+    })(),
     gold_cross_rates: goldResult.success ? {
       status: "success",
       source: goldResult.data.provenance[0]?.name || "unknown",

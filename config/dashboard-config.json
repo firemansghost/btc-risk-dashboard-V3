@@ -1,8 +1,8 @@
 {
   "model_version": "v1.1.2",
-  "implementation_revision": "etf-sosovalue-2026-09",
+  "implementation_revision": "etf-sosovalue-vix-cboe-2026-09",
   "ssot_version": "2.1.1",
-  "lastModified": "2026-09-24T00:00:00.000Z",
+  "lastModified": "2026-09-26T00:17:00.000Z",
   "description": "SINGLE SOURCE OF TRUTH for all dashboard configuration - pillars, factors, weights, bands, and sub-weights - Rebalanced to prioritize Trend & Valuation",
   
   "meta": {
