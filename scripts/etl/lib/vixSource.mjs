@@ -56,8 +56,9 @@ export function parseFredVixObservations(payload, startISO, endISO) {
     const date = parseExplicitDate(row?.date);
     if (!date) return { ok: false, reason: 'fred_invalid_observations', observations: [] };
     if (date < startISO || date > endISO) continue;
-    if (row?.value === '.') continue;
     const raw = String(row?.value ?? '').trim();
+    if (raw === '.') continue;
+    if (raw === '') return { ok: false, reason: 'fred_invalid_observations', observations: [] };
     const close = Number(raw);
     if (!Number.isFinite(close)) return { ok: false, reason: 'fred_invalid_observations', observations: [] };
     if (byDate.has(date)) return { ok: false, reason: 'fred_invalid_observations', observations: [] };

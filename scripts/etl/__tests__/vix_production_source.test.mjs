@@ -243,6 +243,66 @@ test('an impossible Cboe date falls back to the current FRED series', async () =
   assert.deepEqual(selected.observations.map((row) => row.date), fredRows.map((row) => row.date));
 });
 
+async function unavailableFred(observations) {
+  return fetchProductionVix({
+    fredApiKey: 'test-key',
+    startISO: '2026-05-01',
+    endISO: '2026-09-25',
+    asOfUtc: AS_OF,
+    fetchImpl: fetchFor({
+      cboeBody: 'DATE,OPEN,HIGH,LOW\n2026-09-24,1,2,0.5\n',
+      fredBody: JSON.stringify({ observations }),
+    }),
+  });
+}
+
+function assertMissingFredValueFailsClosed(selected) {
+  assert.equal(selected.usable, false);
+  assert.equal(selected.reason, 'vix_unavailable');
+  assert.equal(selected.provider, null);
+  assert.equal(selected.observations.some((row) => row.value === '0' || Number(row.value) === 0), false);
+}
+
+test('a blank FRED value fails closed and is not zero', async () => {
+  assertMissingFredValueFailsClosed(await unavailableFred([{ date: '2026-09-24', value: '' }]));
+});
+
+test('a null FRED value fails closed and is not zero', async () => {
+  assertMissingFredValueFailsClosed(await unavailableFred([{ date: '2026-09-24', value: null }]));
+});
+
+test('a missing FRED value property fails closed and is not zero', async () => {
+  assertMissingFredValueFailsClosed(await unavailableFred([{ date: '2026-09-24' }]));
+});
+
+test('the official FRED missing marker stays excluded and an explicit zero stays numeric', async () => {
+  const rows = rowsThrough('2026-09-24');
+  const withMarker = [...rows, { date: '2026-09-20', value: '.' }];
+  const selected = await fetchProductionVix({
+    fredApiKey: 'test-key',
+    startISO: '2026-05-01',
+    endISO: '2026-09-25',
+    asOfUtc: AS_OF,
+    fetchImpl: fetchFor({
+      cboeBody: 'DATE,OPEN,HIGH,LOW\n2026-09-24,1,2,0.5\n',
+      fredBody: JSON.stringify({ observations: withMarker }),
+    }),
+  });
+  assert.equal(selected.provider, 'fred');
+  assert.equal(selected.usable, true);
+  assert.equal(selected.observations.some((row) => row.date === '2026-09-20'), false);
+  assert.equal(selected.observations.some((row) => row.value === '0'), false);
+  const explicitZero = rows.map((row, index) => index === 0 ? { ...row, value: '0' } : row);
+  const parsed = parseFredVixObservations(
+    { observations: explicitZero },
+    '2026-05-01',
+    '2026-09-25'
+  );
+  assert.equal(parsed.ok, true);
+  assert.equal(parsed.observations[0].value, '0');
+  assert.equal(Number(parsed.observations[0].value), 0);
+});
+
 test('an impossible FRED date fails closed and is not scored', async () => {
   const selected = await fetchProductionVix({
     fredApiKey: 'test-key',
