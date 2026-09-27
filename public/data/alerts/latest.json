@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-26T14:57:28.686Z",
+  "timestamp": "2026-09-27T15:36:52.666Z",
   "total_alerts": 242,
   "alerts": [
     {
@@ -429,7 +429,7 @@
       "recommendations": [
         "Monitor situation for further developments"
       ],
-      "generated_at": "2026-09-26T14:57:28.641Z"
+      "generated_at": "2026-09-27T15:36:52.634Z"
     },
     {
       "id": "51f5f8fb94b32561",
@@ -450,7 +450,7 @@
       "recommendations": [
         "Monitor situation for further developments"
       ],
-      "generated_at": "2026-09-26T14:57:28.641Z"
+      "generated_at": "2026-09-27T15:36:52.634Z"
     },
     {
       "id": "1349dcd4e833d5e8",
@@ -471,7 +471,7 @@
       "recommendations": [
         "Monitor situation for further developments"
       ],
-      "generated_at": "2026-09-26T14:57:28.641Z"
+      "generated_at": "2026-09-27T15:36:52.634Z"
     },
     {
       "id": "0d22985d346eed77",
@@ -526,7 +526,7 @@
       "recommendations": [
         "Monitor situation for further developments"
       ],
-      "generated_at": "2026-09-26T14:57:28.641Z"
+      "generated_at": "2026-09-27T15:36:52.634Z"
     },
     {
       "id": "8ea69fc9f7d405a6",
@@ -718,7 +718,7 @@
       "recommendations": [
         "Monitor situation for further developments"
       ],
-      "generated_at": "2026-09-26T14:57:28.641Z"
+      "generated_at": "2026-09-27T15:36:52.634Z"
     },
     {
       "id": "feea54c9fb146d34",
@@ -773,7 +773,7 @@
       "recommendations": [
         "Monitor situation for further developments"
       ],
-      "generated_at": "2026-09-26T14:57:28.641Z"
+      "generated_at": "2026-09-27T15:36:52.634Z"
     },
     {
       "id": "9877280d9b34be81",
@@ -862,7 +862,7 @@
       "recommendations": [
         "Monitor situation for further developments"
       ],
-      "generated_at": "2026-09-26T14:57:28.641Z"
+      "generated_at": "2026-09-27T15:36:52.634Z"
     },
     {
       "id": "ffdce0fc2ce4e233",
@@ -1020,7 +1020,7 @@
       "recommendations": [
         "Monitor situation for further developments"
       ],
-      "generated_at": "2026-09-26T14:57:28.641Z"
+      "generated_at": "2026-09-27T15:36:52.634Z"
     },
     {
       "id": "61049a26963069be",
@@ -1075,7 +1075,7 @@
       "recommendations": [
         "Monitor situation for further developments"
       ],
-      "generated_at": "2026-09-26T14:57:28.641Z"
+      "generated_at": "2026-09-27T15:36:52.634Z"
     },
     {
       "id": "dc58e5616f1c5c61",
@@ -1232,7 +1232,7 @@
       "recommendations": [
         "Monitor situation for further developments"
       ],
-      "generated_at": "2026-09-26T14:57:28.641Z"
+      "generated_at": "2026-09-27T15:36:52.634Z"
     },
     {
       "id": "staleness_alert_etf_flows_1758903758398",

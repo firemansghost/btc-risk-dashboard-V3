@@ -1,5 +1,5 @@
 {
-  "score": 72,
+  "score": 73,
   "reason": "success",
   "lastUpdated": "2026-09-18T00:00:00.000Z",
   "latestDgs2Date": "2026-09-24",
@@ -45,11 +45,11 @@
     },
     {
       "label": "Fetch Time",
-      "value": "279ms"
+      "value": "755ms"
     },
     {
       "label": "Component Scores",
-      "value": "Dollar: 91, Rates: 95, VIX: 10, Real: 95"
+      "value": "Dollar: 93, Rates: 95, VIX: 10, Real: 95"
     },
     {
       "label": "Current Levels",
@@ -57,11 +57,11 @@
     }
   ],
   "latestDxyDate": "2026-09-18",
-  "fetchTime": 279,
+  "fetchTime": 755,
   "metrics": {
     "dxy_20d_change_pct": 1.2285834318684676,
-    "score": 72
+    "score": 73
   },
-  "cachedAt": "2026-09-26T14:57:22.956Z",
+  "cachedAt": "2026-09-27T15:35:44.875Z",
   "version": "1.0.0"
 }
