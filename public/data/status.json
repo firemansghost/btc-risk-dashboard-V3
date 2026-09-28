@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-27T15:36:54.119Z",
+  "updated_at": "2026-09-28T18:35:38.836Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -71,7 +71,7 @@
   "factors_successful": 7,
   "gold_cross_rates": {
     "status": "failed",
-    "reason": "no_gold_price"
+    "reason": "error: CoinGecko 429"
   },
   "satoshis_per_dollar": {
     "status": "success",
@@ -81,20 +81,20 @@
   "etf_schema_hash": "12cf3a62",
   "etf_schema_last_check": "2026-09-08T15:00:29.774Z",
   "price_history": {
-    "total_rows": 731,
+    "total_rows": 732,
     "oldest_date": "2024-09-26",
-    "newest_date": "2026-09-26",
+    "newest_date": "2026-09-27",
     "alpha_vantage_backfill": null,
     "coinbase_daily_update": {
       "status": "success",
       "rows_fetched": 15,
-      "ms": 219
+      "ms": 199
     },
     "drift_check": null
   },
   "term_leverage": {
     "status": "fresh",
-    "last_updated_utc": "2026-09-27T08:00:00.000Z",
+    "last_updated_utc": "2026-09-28T16:00:00.000Z",
     "providers": {
       "bitmex": "available_stale",
       "binance": "451",
@@ -102,7 +102,7 @@
     },
     "ttl_hours": 6,
     "stale_beyond_hours": 12,
-    "score": 52,
+    "score": 57,
     "reason": "fresh_source_cadence"
   },
   "etf_flows": {
@@ -111,13 +111,13 @@
     "reason": "fresh_expected_eligible_trading_date",
     "live_provider": "sosovalue",
     "source_contract_version": "sosovalue_etf_source_contract_v1",
-    "market_date": "2026-09-27",
+    "market_date": "2026-09-28",
     "expected_eligible_trading_date": "2026-09-25",
     "source_trading_date": "2026-09-25",
     "acquisition_state": "live_refresh",
     "acquisition_failure_reason": null,
-    "source_history_updated_at_utc": "2026-09-27T15:35:40.418Z",
-    "source_history_commit_sha": "6b3e05faf036ce89706de7a45e82ef7dbf06f0d7",
+    "source_history_updated_at_utc": "2026-09-28T18:34:08.543Z",
+    "source_history_commit_sha": "4e259bb0216e9de99291b5e4a7665b6e0893d820",
     "provider_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
     "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
     "revision_number": 0,

@@ -1,22 +1,22 @@
 {
-  "score": 52,
+  "score": 57,
   "reason": "success",
-  "lastUpdated": "2026-09-27T08:00:00.000Z",
-  "funding_observation_utc": "2026-09-27T08:00:00.000Z",
-  "spot_observation_utc": "2026-09-27T15:33:40.000Z",
+  "lastUpdated": "2026-09-28T16:00:00.000Z",
+  "funding_observation_utc": "2026-09-28T16:00:00.000Z",
+  "spot_observation_utc": "2026-09-28T18:32:20.000Z",
   "funding_provider": "okx",
   "details": [
     {
       "label": "Current Funding Rate",
-      "value": "-0.0018%"
+      "value": "0.0071%"
     },
     {
       "label": "30-day Average",
-      "value": "0.0055%"
+      "value": "0.0048%"
     },
     {
       "label": "Price Volatility (30d)",
-      "value": "2.18%"
+      "value": "2.19%"
     },
     {
       "label": "Leverage Regime",
@@ -36,14 +36,50 @@
     },
     {
       "label": "Calculation Method",
-      "value": "Parallel processing (0ms)"
+      "value": "Parallel processing (1ms)"
     },
     {
       "label": "Component Scores",
-      "value": "Funding: 45, Vol: 32, Stress: 91"
+      "value": "Funding: 55, Vol: 38, Stress: 87"
     }
   ],
   "fundingData": [
+    {
+      "formulaType": "withRate",
+      "fundingRate": "0.0000709507874477",
+      "fundingTime": "1790611200000",
+      "instId": "BTC-USDT-SWAP",
+      "instType": "SWAP",
+      "method": "current_period",
+      "realizedRate": "0.0000709507874477"
+    },
+    {
+      "formulaType": "withRate",
+      "fundingRate": "-0.0000076067766736",
+      "fundingTime": "1790582400000",
+      "instId": "BTC-USDT-SWAP",
+      "instType": "SWAP",
+      "method": "current_period",
+      "realizedRate": "-0.0000076067766736"
+    },
+    {
+      "formulaType": "withRate",
+      "fundingRate": "0.0000459235224734",
+      "fundingTime": "1790553600000",
+      "instId": "BTC-USDT-SWAP",
+      "instType": "SWAP",
+      "method": "current_period",
+      "realizedRate": "0.0000459235224734"
+    },
+    {
+      "formulaType": "withRate",
+      "fundingRate": "-0.0000107439144441",
+      "fundingTime": "1790524800000",
+      "instId": "BTC-USDT-SWAP",
+      "instType": "SWAP",
+      "method": "current_period",
+      "realizedRate": "-0.0000107439144441"
+    },
     {
       "formulaType": "withRate",
       "fundingRate": "-0.0000181443987004",
@@ -277,54 +313,18 @@
       "instType": "SWAP",
       "method": "current_period",
       "realizedRate": "0.0001"
-    },
-    {
-      "formulaType": "withRate",
-      "fundingRate": "0.0000898885586635",
-      "fundingTime": "1789747200000",
-      "instId": "BTC-USDT-SWAP",
-      "instType": "SWAP",
-      "method": "current_period",
-      "realizedRate": "0.0000898885586635"
-    },
-    {
-      "formulaType": "withRate",
-      "fundingRate": "0.000059534112371",
-      "fundingTime": "1789718400000",
-      "instId": "BTC-USDT-SWAP",
-      "instType": "SWAP",
-      "method": "current_period",
-      "realizedRate": "0.000059534112371"
-    },
-    {
-      "formulaType": "withRate",
-      "fundingRate": "0.000076118853958",
-      "fundingTime": "1789689600000",
-      "instId": "BTC-USDT-SWAP",
-      "instType": "SWAP",
-      "method": "current_period",
-      "realizedRate": "0.000076118853958"
-    },
-    {
-      "formulaType": "withRate",
-      "fundingRate": "0.0000888704148709",
-      "fundingTime": "1789660800000",
-      "instId": "BTC-USDT-SWAP",
-      "instType": "SWAP",
-      "method": "current_period",
-      "realizedRate": "0.0000888704148709"
     }
   ],
-  "parallelTime": 0,
+  "parallelTime": 1,
   "providers": {
     "bitmex": "available_stale",
     "binance": "451",
     "okx": "ok"
   },
   "metrics": {
-    "funding_30d_avg": 0.005503980424479332,
-    "score": 52
+    "funding_30d_avg": 0.004784352687612667,
+    "score": 57
   },
-  "cachedAt": "2026-09-27T15:35:46.090Z",
+  "cachedAt": "2026-09-28T18:34:15.569Z",
   "version": "1.0.0"
 }
