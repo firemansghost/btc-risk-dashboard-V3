@@ -258,8 +258,12 @@ export function selectHorizonObservation({
       `${coinSymbol}: selected vintage commit after analysis event ${analysisCommitSha}`
     );
   }
-  // Filename-date-after-analysis is counted by callers for evidence reporting.
-  // First-parent eventIndex (not filename date) is the hard no-lookahead gate.
+  // Independent no-lookahead gate: future-dated cache filename is never usable for an earlier analysis date.
+  if (selected.source_cache_filename_date > analysisDate) {
+    throw new FutureEvidenceViolationError(
+      `${coinSymbol}: selected source cache filename date ${selected.source_cache_filename_date} after analysis date ${analysisDate}`
+    );
+  }
   const firstKnown = knownByT[0];
   return {
     available: true,
@@ -281,8 +285,6 @@ export function selectHorizonObservation({
     selected_latest_known_cap_as_of_t: selected.raw_market_cap,
     first_to_selected_revision_delta:
       knownByT.length > 1 ? selected.raw_market_cap - firstKnown.raw_market_cap : 0,
-    source_filename_date_after_analysis_date:
-      selected.source_cache_filename_date > analysisDate,
   };
 }
 
@@ -739,8 +741,10 @@ export function reconstructDatedBaselineFromEvents({
           futureEvidenceViolations += 1;
           throw new FutureEvidenceViolationError(`${result.symbol}: 7d source after analysis`);
         }
-        if (result.horizon_7d.source_filename_date_after_analysis_date) {
+        if (result.horizon_7d.source_cache_filename_date > analysisEvent.filenameDate) {
           sourceFilenameDatesAfterAnalysis += 1;
+          futureEvidenceViolations += 1;
+          throw new FutureEvidenceViolationError(`${result.symbol}: 7d filename date after analysis`);
         }
       }
       if (result.horizon_30d?.available) {
@@ -753,8 +757,10 @@ export function reconstructDatedBaselineFromEvents({
           futureEvidenceViolations += 1;
           throw new FutureEvidenceViolationError(`${result.symbol}: 30d source after analysis`);
         }
-        if (result.horizon_30d.source_filename_date_after_analysis_date) {
+        if (result.horizon_30d.source_cache_filename_date > analysisEvent.filenameDate) {
           sourceFilenameDatesAfterAnalysis += 1;
+          futureEvidenceViolations += 1;
+          throw new FutureEvidenceViolationError(`${result.symbol}: 30d filename date after analysis`);
         }
       }
       if (result.ok) stats.available_both += 1;
@@ -1021,7 +1027,7 @@ export function reconstructDatedBaselineFromEvents({
         source_commits_after_analysis_event_count: sourceCommitsAfterAnalysis,
         source_cache_filename_dates_after_analysis_date_count: sourceFilenameDatesAfterAnalysis,
         source_filename_date_after_note:
-          'Counted when a selected observation source filename date is after the analysis filename date. First-parent eventIndex remains the hard no-lookahead gate; this count may be non-zero under legitimate older-filename backfills that reuse earlier-visible later-named vintages.',
+          'Hard integrity failure if a selected horizon source cache filename date is after the analysis date. Successful reports must keep this count at 0. Independent of first-parent event-order calibration availability.',
         candidate_percentile_future_observation_violation_count: percentileFutureViolations,
       },
     },

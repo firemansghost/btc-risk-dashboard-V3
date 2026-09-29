@@ -437,13 +437,14 @@ test('repository-local report path is rejected and no file is created', async ()
   assert.equal(fs.existsSync(reportPath), false);
 });
 
-test('future-evidence filename-date-after is counted but eventIndex remains the hard gate', () => {
+test('future-dated source cache is rejected even when eventIndex is already visible', () => {
   const endpoint = Date.parse('2026-09-01T00:00:00.000Z');
   const ledger = createEmptyLedger();
   const responses = sevenResponses(() => [
     [endpoint - 30 * DAY_MS, 100],
     [endpoint, 110],
   ]);
+  // Visible by eventIndex, but filename date is after the analysis date.
   ingestCacheVersionIntoLedger(ledger, {
     filename: '2026-09-10.json',
     filenameDate: '2026-09-10',
@@ -453,17 +454,17 @@ test('future-evidence filename-date-after is counted but eventIndex remains the 
     blobSha: 'e'.repeat(40),
     responses,
   });
-  const h30 = selectHorizonObservation({
-    ledger,
-    coinSymbol: 'USDT',
-    targetTimestampMs: endpoint - 30 * DAY_MS,
-    analysisEventIndex: 0,
-    analysisDate: '2026-09-01',
-    analysisCommitSha: 'a'.repeat(40),
-  });
-  assert.equal(h30.available, true);
-  assert.equal(h30.source_filename_date_after_analysis_date, true);
-  assert.equal(h30.source_event_index, 0);
+  assert.throws(
+    () => selectHorizonObservation({
+      ledger,
+      coinSymbol: 'USDT',
+      targetTimestampMs: endpoint - 30 * DAY_MS,
+      analysisEventIndex: 0,
+      analysisDate: '2026-09-01',
+      analysisCommitSha: 'a'.repeat(40),
+    }),
+    (error) => error.reason === 'future_evidence_violation'
+  );
 });
 
 test('workflow is manual read-only with full-history and main guards', () => {
@@ -716,11 +717,18 @@ test('loadFirstParentStablecoinCacheEvents parses real local first-parent histor
     const v2 = sevenResponses(() => [[1, 11], [2, 21], [3, 31]]);
     const body2 = writeCache('2026-01-01.json', v2);
     git(['add', 'public/data/cache/stablecoins/2026-01-01.json']);
-    git(['commit', '-m', 'modify 2026-01-01']);
-    const modifySha = git(['rev-parse', 'HEAD']).trim();
+    git(['commit', '-m', 'modify 2026-01-01 to V2']);
+    const modifyV2Sha = git(['rev-parse', 'HEAD']).trim();
+    const blobV2 = git(['rev-parse', `${modifyV2Sha}:public/data/cache/stablecoins/2026-01-01.json`]).trim();
+
+    const v3 = sevenResponses(() => [[1, 12], [2, 22], [3, 32], [4, 42]]);
+    const body3 = writeCache('2026-01-01.json', v3);
+    git(['add', 'public/data/cache/stablecoins/2026-01-01.json']);
+    git(['commit', '-m', 'modify 2026-01-01 to V3']);
+    const modifyV3Sha = git(['rev-parse', 'HEAD']).trim();
 
     const other = sevenResponses(() => [[10, 100]]);
-    const bodyOther = writeCache('2026-01-02.json', other);
+    writeCache('2026-01-02.json', other);
     git(['add', 'public/data/cache/stablecoins/2026-01-02.json']);
     git(['commit', '-m', 'add 2026-01-02']);
 
@@ -739,18 +747,27 @@ test('loadFirstParentStablecoinCacheEvents parses real local first-parent histor
     git(['merge', '--no-ff', '-m', 'merge side', 'side']);
     const mergeSha = git(['rev-parse', 'HEAD']).trim();
 
+    const headBytes = fs.readFileSync(
+      path.join(directory, 'public/data/cache/stablecoins/2026-01-01.json'),
+      'utf8'
+    );
+    assert.equal(headBytes, body3);
+
     const events = loadFirstParentStablecoinCacheEvents({
       repoRoot: directory,
       repositorySha: mergeSha,
     });
 
-    assert.ok(events.length >= 5);
+    assert.ok(events.length >= 6);
     for (let i = 1; i < events.length; i += 1) {
       assert.ok(events[i].eventIndex > events[i - 1].eventIndex);
     }
 
     const addEvent = events.find((e) => e.changeType === 'ADD' && e.filename === '2026-01-01.json');
-    const modifyEvent = events.find((e) => e.changeType === 'MODIFY' && e.filename === '2026-01-01.json');
+    const modifyV2Event = events.find((e) =>
+      e.changeType === 'MODIFY' && e.filename === '2026-01-01.json' && e.commitSha === modifyV2Sha);
+    const modifyV3Event = events.find((e) =>
+      e.changeType === 'MODIFY' && e.filename === '2026-01-01.json' && e.commitSha === modifyV3Sha);
     const deleteEvent = events.find((e) => e.changeType === 'DELETE' && e.filename === '2026-01-02.json');
     const sideVisible = events.find((e) => e.filename === '2026-01-03.json');
 
@@ -759,14 +776,16 @@ test('loadFirstParentStablecoinCacheEvents parses real local first-parent histor
     assert.ok(addEvent.blobSha);
     assert.equal(addEvent.bytes.toString('utf8'), body1);
 
-    assert.equal(modifyEvent.commitSha, modifySha);
-    assert.equal(modifyEvent.bytes.toString('utf8'), body2);
-    assert.notEqual(modifyEvent.bytes.toString('utf8'), body1);
-    // Historical MODIFY bytes are not HEAD if further changes happened — here HEAD still has v2 for 01-01.
-    assert.equal(modifyEvent.bytes.toString('utf8'), fs.readFileSync(
-      path.join(directory, 'public/data/cache/stablecoins/2026-01-01.json'),
-      'utf8'
-    ));
+    assert.ok(modifyV2Event);
+    assert.equal(modifyV2Event.bytes.toString('utf8'), body2);
+    assert.notEqual(modifyV2Event.bytes.toString('utf8'), body1);
+    assert.notEqual(modifyV2Event.bytes.toString('utf8'), headBytes);
+    assert.notEqual(modifyV2Event.bytes.toString('utf8'), body3);
+    assert.equal(modifyV2Event.blobSha, blobV2);
+
+    assert.ok(modifyV3Event);
+    assert.equal(modifyV3Event.bytes.toString('utf8'), body3);
+    assert.equal(modifyV3Event.bytes.toString('utf8'), headBytes);
 
     assert.equal(deleteEvent.blobSha, null);
     assert.equal(deleteEvent.bytes, null);
