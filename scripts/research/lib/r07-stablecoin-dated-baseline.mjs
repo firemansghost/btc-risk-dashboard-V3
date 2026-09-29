@@ -258,11 +258,8 @@ export function selectHorizonObservation({
       `${coinSymbol}: selected vintage commit after analysis event ${analysisCommitSha}`
     );
   }
-  if (selected.source_cache_filename_date > analysisDate) {
-    throw new FutureEvidenceViolationError(
-      `${coinSymbol}: selected source cache filename date ${selected.source_cache_filename_date} after analysis date ${analysisDate}`
-    );
-  }
+  // Filename-date-after-analysis is counted by callers for evidence reporting.
+  // First-parent eventIndex (not filename date) is the hard no-lookahead gate.
   const firstKnown = knownByT[0];
   return {
     available: true,
@@ -273,6 +270,7 @@ export function selectHorizonObservation({
     selected_observation_timestamp_iso: toIso(selectedTs),
     selected_cap: selected.raw_market_cap,
     source_cache_filename: selected.source_cache_filename,
+    source_cache_filename_date: selected.source_cache_filename_date,
     source_commit_sha: selected.source_commit_sha,
     source_blob_sha: selected.source_blob_sha,
     source_event_index: selected.source_event_index,
@@ -283,6 +281,8 @@ export function selectHorizonObservation({
     selected_latest_known_cap_as_of_t: selected.raw_market_cap,
     first_to_selected_revision_delta:
       knownByT.length > 1 ? selected.raw_market_cap - firstKnown.raw_market_cap : 0,
+    source_filename_date_after_analysis_date:
+      selected.source_cache_filename_date > analysisDate,
   };
 }
 
@@ -603,11 +603,7 @@ export function reconstructDatedBaselineFromEvents({
     if (!analysisEventsByPath.has(event.path) && event.changeType === 'ADD') {
       let initialResponses = event.initialResponses;
       if (initialResponses === undefined) {
-        try {
-          initialResponses = responses;
-        } catch {
-          initialResponses = null;
-        }
+        initialResponses = responses;
       }
       analysisEventsByPath.set(event.path, {
         path: event.path,
@@ -619,6 +615,7 @@ export function reconstructDatedBaselineFromEvents({
         blobSha: event.blobSha,
         initialBlobSha: event.initialBlobSha || event.blobSha,
         initialResponses,
+        initialParseError: parseError,
       });
     }
     // Later MODIFY updates materialized state for subsequent events only;
@@ -646,7 +643,7 @@ export function reconstructDatedBaselineFromEvents({
   }
 
   const analysisEvents = [...analysisEventsByPath.values()]
-    .sort((a, b) => a.filenameDate.localeCompare(b.filenameDate) || a.eventIndex - b.eventIndex);
+    .sort((a, b) => a.eventIndex - b.eventIndex || a.filenameDate.localeCompare(b.filenameDate));
 
   const candidateSeries = [];
   const lags7 = [];
@@ -663,18 +660,46 @@ export function reconstructDatedBaselineFromEvents({
   let sourceCommitsAfterAnalysis = 0;
   let sourceFilenameDatesAfterAnalysis = 0;
   let percentileFutureViolations = 0;
+  /** @type {Array<{ eventIndex: number, aggregateChange: number }>} */
   const priorAggregates = [];
   let previousPriorCount = -1;
 
+  // Inventory classification from FIRST-VISIBLE blobs only (immutable primary identity).
+  let dateBoundaryEligiblePaths = 0;
+  let actuallySevenSlotEligiblePaths = 0;
+  let malformedJsonFiles = 0;
+  let nonArrayFiles = 0;
+  let unexpectedSlotCountFiles = 0;
+  let nullSlotFiles = 0;
   for (const analysisEvent of analysisEvents) {
-    const current = materialized.get(analysisEvent.path);
-    const responses = current?.responses;
-    const identity = classifyCacheIdentity(analysisEvent.filenameDate, responses);
+    if (isSevenSlotEligibleDate(analysisEvent.filenameDate)) dateBoundaryEligiblePaths += 1;
+    const initial = analysisEvent.initialResponses;
+    if (analysisEvent.initialParseError) {
+      malformedJsonFiles += 1;
+    }
+    const identity = classifyCacheIdentity(analysisEvent.filenameDate, initial);
+    if (identity.eligible) {
+      actuallySevenSlotEligiblePaths += 1;
+      if (Array.isArray(initial) && initial.some((slot) => slot == null)) nullSlotFiles += 1;
+    } else if (identity.reason === 'cache_not_array' && initial !== null) {
+      nonArrayFiles += 1;
+    } else if (identity.reason === 'unexpected_response_slot_count') {
+      unexpectedSlotCountFiles += 1;
+      if (Array.isArray(initial) && initial.some((slot) => slot == null)) nullSlotFiles += 1;
+    }
+  }
+
+  for (const analysisEvent of analysisEvents) {
+    // Primary identity and endpoint use the immutable first-visible ADD blob only.
+    const endpointResponses = analysisEvent.initialResponses;
+    const identity = classifyCacheIdentity(analysisEvent.filenameDate, endpointResponses);
     if (!identity.eligible) {
       candidateSeries.push({
         analysis_date: analysisEvent.filenameDate,
         analysis_event_commit_sha: analysisEvent.commitSha,
         analysis_event_utc: analysisEvent.commitUtc,
+        analysis_event_index: analysisEvent.eventIndex,
+        initial_blob_sha: analysisEvent.initialBlobSha || analysisEvent.blobSha,
         eligible: false,
         identity,
         full_candidate_aggregate_ok: false,
@@ -682,23 +707,6 @@ export function reconstructDatedBaselineFromEvents({
       });
       continue;
     }
-
-    // Knowledge ledger for this event: rebuild from events with eventIndex <= analysisEvent.eventIndex
-    // Using the cumulative ledger is correct only if we ingested in order and never remove —
-    // but MODIFY after analysis of an earlier date shouldn't affect that earlier date's reconstruction.
-    // The cumulative ledger includes ALL events through end of timeline. That would leak future revisions!
-    //
-    // FIX: For each analysis event, select vintages with source_event_index <= analysisEvent.eventIndex.
-    // The selectHorizonObservation already filters by analysisEventIndex. The ledger contains all
-    // vintages including future ones, but selection filters them out. Good.
-    //
-    // Endpoint still comes from the INITIAL analysis-event blob, not a later MODIFY of same path.
-    // Use analysisEvent.initial blob — we need the bytes from first ADD, not later materialized.
-    // Reload from the ADD event bytes stored on analysisEventsByPath — we need to keep responses
-    // from the first-visible blob.
-
-    const endpointResponses = analysisEvent.initialResponses ?? responses;
-    // We'll attach initialResponses when creating analysis events below — handle via event bytes at ADD.
 
     let coinResults;
     try {
@@ -731,10 +739,8 @@ export function reconstructDatedBaselineFromEvents({
           futureEvidenceViolations += 1;
           throw new FutureEvidenceViolationError(`${result.symbol}: 7d source after analysis`);
         }
-        if (result.horizon_7d.source_cache_filename_date > analysisEvent.filenameDate) {
+        if (result.horizon_7d.source_filename_date_after_analysis_date) {
           sourceFilenameDatesAfterAnalysis += 1;
-          futureEvidenceViolations += 1;
-          throw new FutureEvidenceViolationError(`${result.symbol}: 7d filename date after analysis`);
         }
       }
       if (result.horizon_30d?.available) {
@@ -747,10 +753,8 @@ export function reconstructDatedBaselineFromEvents({
           futureEvidenceViolations += 1;
           throw new FutureEvidenceViolationError(`${result.symbol}: 30d source after analysis`);
         }
-        if (result.horizon_30d.source_cache_filename_date > analysisEvent.filenameDate) {
+        if (result.horizon_30d.source_filename_date_after_analysis_date) {
           sourceFilenameDatesAfterAnalysis += 1;
-          futureEvidenceViolations += 1;
-          throw new FutureEvidenceViolationError(`${result.symbol}: 30d filename date after analysis`);
         }
       }
       if (result.ok) stats.available_both += 1;
@@ -781,19 +785,27 @@ export function reconstructDatedBaselineFromEvents({
       };
     }
 
+    // Prior-only candidate percentile universe: strictly earlier analysis EVENT indices.
+    const priorForScoring = priorAggregates
+      .filter((row) => row.eventIndex < analysisEvent.eventIndex)
+      .map((row) => row.aggregateChange);
     const score = aggregate.ok
       ? scoreCandidateWithPriorOnlyBaseline({
         aggregateChange: aggregate.aggregateChange,
         recentMomentum: aggregate.recentMomentum,
         validCoins: aggregate.valid,
-        priorAggregateChanges: priorAggregates,
+        priorAggregateChanges: priorForScoring,
       })
-      : { ok: false, reason: aggregate.reason, prior_candidate_baseline_count: priorAggregates.length };
+      : { ok: false, reason: aggregate.reason, prior_candidate_baseline_count: priorForScoring.length };
 
-    // Integrity: priorAggregates must not include current or future.
-    if (score.ok && score.prior_candidate_baseline_count !== priorAggregates.length) {
+    if (score.ok && score.prior_candidate_baseline_count !== priorForScoring.length) {
       percentileFutureViolations += 1;
       throw new FutureEvidenceViolationError('percentile prior count mismatch');
+    }
+    // Current T must never be in its own prior universe.
+    if (priorForScoring.length !== priorAggregates.filter((r) => r.eventIndex < analysisEvent.eventIndex).length) {
+      percentileFutureViolations += 1;
+      throw new FutureEvidenceViolationError('percentile prior leaked current or future');
     }
 
     const maxSourceCommitEvent = Math.max(
@@ -811,6 +823,7 @@ export function reconstructDatedBaselineFromEvents({
       analysis_event_index: analysisEvent.eventIndex,
       initial_blob_sha: analysisEvent.initialBlobSha || analysisEvent.blobSha,
       eligible: true,
+      identity,
       endpoint_rule_identifier: R07D_ENDPOINT_RULE,
       cross_vintage_rule_identifier: R07D_CROSS_VINTAGE_RULE,
       full_candidate_aggregate_ok: aggregate.ok,
@@ -837,11 +850,14 @@ export function reconstructDatedBaselineFromEvents({
     if (isStrictFiniteNumber(previousPriorCount)
       && previousPriorCount >= 0
       && (score.prior_candidate_baseline_count || 0) < previousPriorCount) {
-      blockers.push(`${entry.analysis_date}:baseline_depth_not_monotonic`);
+      blockers.push(`event_${entry.analysis_event_index}:baseline_depth_not_monotonic_in_event_order`);
     }
     if (aggregate.ok) {
-      previousPriorCount = priorAggregates.length;
-      priorAggregates.push(aggregate.aggregateChange);
+      previousPriorCount = priorForScoring.length;
+      priorAggregates.push({
+        eventIndex: analysisEvent.eventIndex,
+        aggregateChange: aggregate.aggregateChange,
+      });
     }
 
     candidateSeries.push(entry);
@@ -849,10 +865,6 @@ export function reconstructDatedBaselineFromEvents({
 
   const fullCandidates = candidateSeries.filter((e) => e.full_candidate_aggregate_ok);
   const fullDates = fullCandidates.map((e) => e.analysis_date).sort();
-  const eligibleDates = analysisEvents
-    .map((e) => e.filenameDate)
-    .filter((d) => isSevenSlotEligibleDate(d))
-    .sort();
   const fullMissing = [];
   if (fullDates.length) {
     const present = new Set(fullDates);
@@ -881,20 +893,27 @@ export function reconstructDatedBaselineFromEvents({
   const names = [...inventoryNames].sort();
   const cacheInventory = {
     ...inventoryFilenames(names),
-    current_seven_slot_eligible_files: names.filter((n) => {
-      const d = parseFilenameDate(n);
-      return isSevenSlotEligibleDate(d);
-    }).length,
+    date_boundary_eligible_paths: dateBoundaryEligiblePaths,
+    actually_seven_slot_eligible_paths: actuallySevenSlotEligiblePaths,
+    // Alias retained for clarity: actual seven-slot eligibility from first-visible blob content.
+    current_seven_slot_eligible_files: actuallySevenSlotEligiblePaths,
     ineligible_unmapped_files: names.filter((n) => parseFilenameDate(n) === UNMAPPED_IDENTITY_CACHE_DATE).length,
+    malformed_json_files: malformedJsonFiles,
+    non_array_files: nonArrayFiles,
+    unexpected_slot_count_files: unexpectedSlotCountFiles,
+    null_slot_files: nullSlotFiles,
     first_eligible_date: EARLIEST_SEVEN_COIN_ELIGIBLE_DATE,
     last_eligible_date: names.map(parseFilenameDate).filter(isSevenSlotEligibleDate).sort().at(-1) ?? null,
   };
 
-  const attempted = analysisEvents.filter((e) => isSevenSlotEligibleDate(e.filenameDate)).length;
-  const with7 = candidateSeries.filter((e) =>
+  const attempted = actuallySevenSlotEligiblePaths;
+  const withAny7 = candidateSeries.filter((e) =>
     e.eligible && e.coins?.some((c) => c.horizon_7d?.available)).length;
-  const with30 = candidateSeries.filter((e) =>
+  const withAny30 = candidateSeries.filter((e) =>
     e.eligible && e.coins?.some((c) => c.horizon_30d?.available)).length;
+  // Aggregate-level horizon coverage uses production min-coin / 70% weight rules via aggregateCandidateCoins.
+  // A coin-level any-horizon availability is reported separately and is NOT a valid reconstructed aggregate.
+  const withAggregateEligible = fullCandidates.length;
 
   const perCoinHorizon = {};
   for (const [symbol, stats] of Object.entries(perCoinStats)) {
@@ -948,10 +967,15 @@ export function reconstructDatedBaselineFromEvents({
     git_evidence_method: {
       walk: 'git rev-list --first-parent --reverse <repositorySha>',
       path_filter: `${STABLECOIN_CACHE_PREFIX}*.json`,
-      knowledge_rule: 'cache evidence visible on first-parent main at or before analysis event T only',
+      knowledge_rule:
+        'FIRST-PARENT VISIBILITY ORDER (analysis eventIndex), not filename-date order, controls candidate calibration availability and evidence selection.',
+      candidate_percentile_ordering:
+        'priorAggregates contain only valid candidate aggregates whose primary analysis eventIndex is strictly less than current analysis eventIndex',
       cross_vintage_rule: R07D_CROSS_VINTAGE_RULE,
       endpoint_rule: R07D_ENDPOINT_RULE,
       endpoint_rule_authorized_for_production: false,
+      primary_identity_rule:
+        'primary analysis-event identity and endpoint use the immutable first-visible ADD blob only; later MODIFY/DELETE must not rewrite original eligibility',
     },
     legacy_baseline: {
       label: 'LEGACY_UNDATED_POSITIONAL_CALIBRATION',
@@ -978,8 +1002,12 @@ export function reconstructDatedBaselineFromEvents({
     },
     reconstruction_summary: {
       analysis_events_attempted: attempted,
-      events_with_valid_reconstructed_7d_observation: with7,
-      events_with_valid_reconstructed_30d_observation: with30,
+      events_with_any_coin_7d_observation: withAny7,
+      events_with_any_coin_30d_observation: withAny30,
+      events_with_full_both_horizon_candidate_aggregate: withAggregateEligible,
+      // Explicit: any-coin horizon availability is NOT a valid reconstructed aggregate.
+      note_any_coin_vs_aggregate:
+        'events_with_any_coin_* count at least one coin with that horizon available; full candidate aggregate still requires min coins, 70% weight, both horizons, and growth guard.',
       events_with_full_candidate_aggregate: fullCandidates.length,
       full_aggregate_coverage_percentage:
         attempted > 0 ? (100 * fullCandidates.length) / attempted : null,
@@ -992,6 +1020,8 @@ export function reconstructDatedBaselineFromEvents({
         future_evidence_violation_count: futureEvidenceViolations,
         source_commits_after_analysis_event_count: sourceCommitsAfterAnalysis,
         source_cache_filename_dates_after_analysis_date_count: sourceFilenameDatesAfterAnalysis,
+        source_filename_date_after_note:
+          'Counted when a selected observation source filename date is after the analysis filename date. First-parent eventIndex remains the hard no-lookahead gate; this count may be non-zero under legitimate older-filename backfills that reuse earlier-visible later-named vintages.',
         candidate_percentile_future_observation_violation_count: percentileFutureViolations,
       },
     },

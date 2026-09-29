@@ -25,12 +25,14 @@ import {
   computeCrossVintageRevisionSummary,
   createEmptyLedger,
   ingestCacheVersionIntoLedger,
+  loadFirstParentStablecoinCacheEvents,
   reconstructCoinAtAnalysisEvent,
   scoreCandidateWithPriorOnlyBaseline,
   selectHorizonObservation,
   selectLatestValidEndpoint,
 } from '../../research/lib/r07-stablecoin-dated-baseline.mjs';
 import { runR07DDatedBaselineDiagnostic } from '../../research/diagnose-r07-stablecoin-dated-baseline.mjs';
+import { execFileSync } from 'node:child_process';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const WORKFLOW_PATH = path.join(REPO_ROOT, '.github/workflows/r07-stablecoin-dated-baseline-diagnostic.yml');
@@ -435,14 +437,13 @@ test('repository-local report path is rejected and no file is created', async ()
   assert.equal(fs.existsSync(reportPath), false);
 });
 
-test('future-evidence filename-date violation fails the diagnostic hard', () => {
+test('future-evidence filename-date-after is counted but eventIndex remains the hard gate', () => {
   const endpoint = Date.parse('2026-09-01T00:00:00.000Z');
   const ledger = createEmptyLedger();
   const responses = sevenResponses(() => [
     [endpoint - 30 * DAY_MS, 100],
     [endpoint, 110],
   ]);
-  // Pathological: evidence committed with a filename date after the analysis date.
   ingestCacheVersionIntoLedger(ledger, {
     filename: '2026-09-10.json',
     filenameDate: '2026-09-10',
@@ -452,17 +453,17 @@ test('future-evidence filename-date violation fails the diagnostic hard', () => 
     blobSha: 'e'.repeat(40),
     responses,
   });
-  assert.throws(
-    () => selectHorizonObservation({
-      ledger,
-      coinSymbol: 'USDT',
-      targetTimestampMs: endpoint - 30 * DAY_MS,
-      analysisEventIndex: 0,
-      analysisDate: '2026-09-01',
-      analysisCommitSha: 'a'.repeat(40),
-    }),
-    (error) => error.reason === 'future_evidence_violation'
-  );
+  const h30 = selectHorizonObservation({
+    ledger,
+    coinSymbol: 'USDT',
+    targetTimestampMs: endpoint - 30 * DAY_MS,
+    analysisEventIndex: 0,
+    analysisDate: '2026-09-01',
+    analysisCommitSha: 'a'.repeat(40),
+  });
+  assert.equal(h30.available, true);
+  assert.equal(h30.source_filename_date_after_analysis_date, true);
+  assert.equal(h30.source_event_index, 0);
 });
 
 test('workflow is manual read-only with full-history and main guards', () => {
@@ -541,4 +542,241 @@ test('no interpolation: missing at-or-before target stays unavailable', () => {
   });
   assert.equal(h30.available, false);
   assert.equal(h30.reason, 'missing_at_or_before_target');
+});
+
+function longHistoryResponses(endpoint, startCap = 1000) {
+  return sevenResponses((_c, i) => {
+    const caps = [];
+    for (let d = 0; d <= 35; d += 1) {
+      caps.push([endpoint - (35 - d) * DAY_MS, startCap + i + d]);
+    }
+    return caps;
+  });
+}
+
+test('candidate percentile baseline follows first-parent event order, not filename order', () => {
+  const febEndpoint = Date.parse('2026-02-10T00:00:00.000Z');
+  const janEndpoint = Date.parse('2026-01-10T00:00:00.000Z');
+  const events = [
+    event({
+      eventIndex: 0,
+      filenameDate: '2026-02-10',
+      responses: longHistoryResponses(febEndpoint, 2000),
+    }),
+    event({
+      eventIndex: 1,
+      filenameDate: '2026-01-10',
+      responses: longHistoryResponses(janEndpoint, 1000),
+    }),
+  ];
+  const report = buildR07DReport({
+    repositorySha: FIXED_SHA,
+    generatedAtUtc: FIXED_GENERATED_AT,
+    events,
+  });
+  assert.equal(report.candidate_series[0].analysis_date, '2026-02-10');
+  assert.equal(report.candidate_series[0].analysis_event_index, 0);
+  assert.equal(report.candidate_series[1].analysis_date, '2026-01-10');
+  assert.equal(report.candidate_series[1].analysis_event_index, 1);
+  assert.equal(report.candidate_series[0].full_candidate_aggregate_ok, true);
+  assert.equal(report.candidate_series[1].full_candidate_aggregate_ok, true);
+  // February (earlier event) must not see later-added January-dated backfill in prior universe.
+  assert.equal(report.candidate_series[0].score.prior_candidate_baseline_count, 0);
+  assert.equal(report.candidate_series[0].score.ok, false);
+  // January (later event) may use February because February's analysis EVENT is prior.
+  assert.equal(report.candidate_series[1].score.prior_candidate_baseline_count, 1);
+  assert.equal(report.candidate_series[1].score.ok, true);
+  assert.match(
+    report.git_evidence_method.knowledge_rule,
+    /FIRST-PARENT VISIBILITY ORDER/
+  );
+});
+
+test('later MODIFY cannot retroactively change primary eligibility or endpoint blob', () => {
+  const endpoint = Date.parse('2026-03-01T00:00:00.000Z');
+  const good = longHistoryResponses(endpoint, 1000);
+  const malformed = [{ market_caps: [] }, { market_caps: [] }]; // non-seven-slot
+  const events = [
+    event({ eventIndex: 0, filenameDate: '2026-03-01', responses: good, blobSha: 'initialblob'.padEnd(40, '0') }),
+    event({
+      eventIndex: 1,
+      filenameDate: '2026-03-01',
+      changeType: 'MODIFY',
+      responses: malformed,
+      blobSha: 'laterblob'.padEnd(40, '1'),
+      commitSha: 'commit01'.padEnd(40, 'c'),
+      commitUtc: '2026-03-02T12:00:00.000Z',
+    }),
+  ];
+  const report = buildR07DReport({
+    repositorySha: FIXED_SHA,
+    generatedAtUtc: FIXED_GENERATED_AT,
+    events,
+  });
+  const primary = report.candidate_series.find((e) => e.analysis_date === '2026-03-01');
+  assert.equal(primary.eligible, true);
+  assert.equal(primary.full_candidate_aggregate_ok, true);
+  assert.equal(primary.initial_blob_sha, 'initialblob'.padEnd(40, '0'));
+  assert.equal(primary.coins[0].endpoint_timestamp_ms, endpoint);
+  assert.equal(report.cache_inventory.actually_seven_slot_eligible_paths, 1);
+});
+
+test('later DELETE cannot retroactively erase primary eligibility', () => {
+  const endpoint = Date.parse('2026-03-15T00:00:00.000Z');
+  const good = longHistoryResponses(endpoint, 1500);
+  const events = [
+    event({ eventIndex: 0, filenameDate: '2026-03-15', responses: good, blobSha: 'addblob'.padEnd(40, 'a') }),
+    {
+      commitSha: 'commit01'.padEnd(40, 'd'),
+      commitUtc: '2026-03-16T12:00:00.000Z',
+      eventIndex: 1,
+      path: 'public/data/cache/stablecoins/2026-03-15.json',
+      filename: '2026-03-15.json',
+      filenameDate: '2026-03-15',
+      changeType: 'DELETE',
+      blobSha: null,
+      bytes: null,
+    },
+  ];
+  const report = buildR07DReport({
+    repositorySha: FIXED_SHA,
+    generatedAtUtc: FIXED_GENERATED_AT,
+    events,
+  });
+  const primary = report.candidate_series.find((e) => e.analysis_date === '2026-03-15');
+  assert.equal(primary.eligible, true);
+  assert.equal(primary.full_candidate_aggregate_ok, true);
+  assert.equal(primary.initial_blob_sha, 'addblob'.padEnd(40, 'a'));
+  assert.equal(primary.analysis_event_index, 0);
+});
+
+test('inventory separates date-boundary eligibility from actual seven-slot content', () => {
+  const endpoint = Date.parse('2026-04-01T00:00:00.000Z');
+  const events = [
+    event({
+      eventIndex: 0,
+      filenameDate: UNMAPPED_IDENTITY_CACHE_DATE,
+      responses: longHistoryResponses(endpoint, 1000),
+    }),
+    event({
+      eventIndex: 1,
+      filenameDate: '2026-04-01',
+      responses: longHistoryResponses(endpoint, 1000),
+    }),
+    event({
+      eventIndex: 2,
+      filenameDate: '2026-04-02',
+      responses: [{}, {}], // post-boundary but wrong slot count
+    }),
+  ];
+  const report = buildR07DReport({
+    repositorySha: FIXED_SHA,
+    generatedAtUtc: FIXED_GENERATED_AT,
+    events,
+  });
+  assert.equal(report.cache_inventory.date_boundary_eligible_paths, 2);
+  assert.equal(report.cache_inventory.actually_seven_slot_eligible_paths, 1);
+  assert.equal(report.cache_inventory.current_seven_slot_eligible_files, 1);
+  assert.equal(report.cache_inventory.unexpected_slot_count_files, 1);
+  assert.equal(report.cache_inventory.ineligible_unmapped_files, 1);
+  assert.equal(
+    report.reconstruction_summary.events_with_any_coin_7d_observation != null,
+    true
+  );
+  assert.equal(
+    report.reconstruction_summary.events_with_full_both_horizon_candidate_aggregate,
+    report.reconstruction_summary.events_with_full_candidate_aggregate
+  );
+});
+
+test('loadFirstParentStablecoinCacheEvents parses real local first-parent history', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'r07d-git-'));
+  const git = (args, opts = {}) => execFileSync('git', args, {
+    cwd: directory,
+    encoding: opts.encoding === 'buffer' ? undefined : 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  const writeCache = (filename, payload) => {
+    const relative = path.join('public', 'data', 'cache', 'stablecoins', filename);
+    fs.mkdirSync(path.dirname(path.join(directory, relative)), { recursive: true });
+    const body = `${JSON.stringify(payload)}\n`;
+    fs.writeFileSync(path.join(directory, relative), body);
+    return body;
+  };
+  try {
+    git(['init', '-b', 'main']);
+    git(['config', 'user.email', 'r07d@example.com']);
+    git(['config', 'user.name', 'R07D Test']);
+    const v1 = sevenResponses(() => [[1, 10], [2, 20]]);
+    const body1 = writeCache('2026-01-01.json', v1);
+    git(['add', 'public/data/cache/stablecoins/2026-01-01.json']);
+    git(['commit', '-m', 'add 2026-01-01']);
+    const addSha = git(['rev-parse', 'HEAD']).trim();
+
+    const v2 = sevenResponses(() => [[1, 11], [2, 21], [3, 31]]);
+    const body2 = writeCache('2026-01-01.json', v2);
+    git(['add', 'public/data/cache/stablecoins/2026-01-01.json']);
+    git(['commit', '-m', 'modify 2026-01-01']);
+    const modifySha = git(['rev-parse', 'HEAD']).trim();
+
+    const other = sevenResponses(() => [[10, 100]]);
+    const bodyOther = writeCache('2026-01-02.json', other);
+    git(['add', 'public/data/cache/stablecoins/2026-01-02.json']);
+    git(['commit', '-m', 'add 2026-01-02']);
+
+    fs.unlinkSync(path.join(directory, 'public/data/cache/stablecoins/2026-01-02.json'));
+    git(['add', '-A', 'public/data/cache/stablecoins/2026-01-02.json']);
+    git(['commit', '-m', 'delete 2026-01-02']);
+
+    // Side branch add + no-ff merge: first-parent visibility at merge.
+    git(['checkout', '-b', 'side']);
+    const sidePayload = sevenResponses(() => [[5, 50]]);
+    const bodySide = writeCache('2026-01-03.json', sidePayload);
+    git(['add', 'public/data/cache/stablecoins/2026-01-03.json']);
+    git(['commit', '-m', 'side add 2026-01-03']);
+    const sideSha = git(['rev-parse', 'HEAD']).trim();
+    git(['checkout', 'main']);
+    git(['merge', '--no-ff', '-m', 'merge side', 'side']);
+    const mergeSha = git(['rev-parse', 'HEAD']).trim();
+
+    const events = loadFirstParentStablecoinCacheEvents({
+      repoRoot: directory,
+      repositorySha: mergeSha,
+    });
+
+    assert.ok(events.length >= 5);
+    for (let i = 1; i < events.length; i += 1) {
+      assert.ok(events[i].eventIndex > events[i - 1].eventIndex);
+    }
+
+    const addEvent = events.find((e) => e.changeType === 'ADD' && e.filename === '2026-01-01.json');
+    const modifyEvent = events.find((e) => e.changeType === 'MODIFY' && e.filename === '2026-01-01.json');
+    const deleteEvent = events.find((e) => e.changeType === 'DELETE' && e.filename === '2026-01-02.json');
+    const sideVisible = events.find((e) => e.filename === '2026-01-03.json');
+
+    assert.equal(addEvent.commitSha, addSha);
+    assert.ok(addEvent.commitUtc);
+    assert.ok(addEvent.blobSha);
+    assert.equal(addEvent.bytes.toString('utf8'), body1);
+
+    assert.equal(modifyEvent.commitSha, modifySha);
+    assert.equal(modifyEvent.bytes.toString('utf8'), body2);
+    assert.notEqual(modifyEvent.bytes.toString('utf8'), body1);
+    // Historical MODIFY bytes are not HEAD if further changes happened — here HEAD still has v2 for 01-01.
+    assert.equal(modifyEvent.bytes.toString('utf8'), fs.readFileSync(
+      path.join(directory, 'public/data/cache/stablecoins/2026-01-01.json'),
+      'utf8'
+    ));
+
+    assert.equal(deleteEvent.blobSha, null);
+    assert.equal(deleteEvent.bytes, null);
+
+    // Side-branch-only commit must not appear as an independent first-parent event.
+    assert.equal(events.some((e) => e.commitSha === sideSha), false);
+    assert.equal(sideVisible.changeType, 'ADD');
+    assert.equal(sideVisible.commitSha, mergeSha);
+    assert.equal(sideVisible.bytes.toString('utf8'), bodySide);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
 });
