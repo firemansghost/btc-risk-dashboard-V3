@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-28T18:35:38.836Z",
+  "updated_at": "2026-09-29T16:53:34.175Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -81,20 +81,20 @@
   "etf_schema_hash": "12cf3a62",
   "etf_schema_last_check": "2026-09-08T15:00:29.774Z",
   "price_history": {
-    "total_rows": 732,
+    "total_rows": 733,
     "oldest_date": "2024-09-26",
-    "newest_date": "2026-09-27",
+    "newest_date": "2026-09-28",
     "alpha_vantage_backfill": null,
     "coinbase_daily_update": {
       "status": "success",
       "rows_fetched": 15,
-      "ms": 199
+      "ms": 160
     },
     "drift_check": null
   },
   "term_leverage": {
     "status": "fresh",
-    "last_updated_utc": "2026-09-28T16:00:00.000Z",
+    "last_updated_utc": "2026-09-29T16:00:00.000Z",
     "providers": {
       "bitmex": "available_stale",
       "binance": "451",
@@ -102,22 +102,22 @@
     },
     "ttl_hours": 6,
     "stale_beyond_hours": 12,
-    "score": 57,
+    "score": 59,
     "reason": "fresh_source_cadence"
   },
   "etf_flows": {
     "status": "fresh",
-    "score": 48,
+    "score": 49,
     "reason": "fresh_expected_eligible_trading_date",
     "live_provider": "sosovalue",
     "source_contract_version": "sosovalue_etf_source_contract_v1",
-    "market_date": "2026-09-28",
-    "expected_eligible_trading_date": "2026-09-25",
-    "source_trading_date": "2026-09-25",
+    "market_date": "2026-09-29",
+    "expected_eligible_trading_date": "2026-09-28",
+    "source_trading_date": "2026-09-28",
     "acquisition_state": "live_refresh",
     "acquisition_failure_reason": null,
-    "source_history_updated_at_utc": "2026-09-28T18:34:08.543Z",
-    "source_history_commit_sha": "4e259bb0216e9de99291b5e4a7665b6e0893d820",
+    "source_history_updated_at_utc": "2026-09-29T16:52:08.151Z",
+    "source_history_commit_sha": "8cdb5e663af3d7137f50806782cb4622510ef728",
     "provider_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
     "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
     "revision_number": 0,
@@ -126,9 +126,9 @@
   },
   "macro_overlay": {
     "status": "fresh",
-    "score": 73,
+    "score": 84,
     "reason": "fresh_source_cadence",
-    "latest_vix_date": "2026-09-25",
+    "latest_vix_date": "2026-09-28",
     "vix_provider": "cboe",
     "vix_source_url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
     "vix_fallback_used": false,
