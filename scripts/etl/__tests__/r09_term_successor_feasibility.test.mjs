@@ -1380,3 +1380,157 @@ test('100. skipped invalid endpoints can extend score-relevant history', () => {
   assert.ok(selected[selected.length - 1] < consecutiveEarliest || union.earliest_spot_date <= selected[selected.length - 1]);
   assert.ok(union.earliest_spot_date <= selected[selected.length - 1]);
 });
+
+test('101. 31-price Volatility window fingerprints exactly 31 prices', () => {
+  const D = '2026-09-30';
+  const completed = Array.from({ length: 40 }, (_, i) => {
+    const utc_date = addUtcDays(addUtcDays(D, -39), i);
+    return {
+      utc_date,
+      price: 100000 + i,
+      source_timestamp_utc: `${utc_date}T00:00:00.000Z`,
+    };
+  });
+  const union = buildScoreRelevantEvidenceUnion({
+    eligibleFundingRows: [],
+    completedSpot: completed,
+    fundingDailyByDate: {},
+    dailyDays: [],
+    currentFundingWindowRows: [],
+    fundingCurrentEndpoint: null,
+    fundingReferenceEndpoints: [],
+    volatilityCurrentEndpoint: D,
+    volatilityReferenceEndpoints: [],
+    stressCurrentEndpoint: null,
+    stressReferenceEndpoints: [],
+  });
+  assert.equal(union.spot_row_count, 31);
+  assert.equal(union.earliest_spot_date, addUtcDays(D, -30));
+  assert.equal(union.latest_spot_date, D);
+  assert.ok(!union.spot_rows.some((r) => r.utc_date === addUtcDays(D, -31)));
+});
+
+test('102. Stress endpoint D fingerprints exactly D-30…D (not D-31)', () => {
+  const D = '2026-09-30';
+  const completed = Array.from({ length: 40 }, (_, i) => {
+    const utc_date = addUtcDays(addUtcDays(D, -39), i);
+    return {
+      utc_date,
+      price: 50000 + i,
+      source_timestamp_utc: `${utc_date}T00:00:00.000Z`,
+    };
+  });
+  const union = buildScoreRelevantEvidenceUnion({
+    eligibleFundingRows: [],
+    completedSpot: completed,
+    fundingDailyByDate: {},
+    dailyDays: [],
+    currentFundingWindowRows: [],
+    fundingCurrentEndpoint: null,
+    fundingReferenceEndpoints: [],
+    volatilityCurrentEndpoint: null,
+    volatilityReferenceEndpoints: [],
+    stressCurrentEndpoint: D,
+    stressReferenceEndpoints: [],
+  });
+  const expected = Array.from({ length: 31 }, (_, i) => addUtcDays(D, -30 + i));
+  assert.equal(union.spot_row_count, 31);
+  assert.deepEqual(union.spot_rows.map((r) => r.utc_date), expected);
+  assert.ok(!union.spot_rows.some((r) => r.utc_date === addUtcDays(D, -31)));
+});
+
+test('103. D-31 mutation does not change fingerprint when outside all windows', () => {
+  const D = '2026-09-30';
+  const d31 = addUtcDays(D, -31);
+  const baseSpot = Array.from({ length: 40 }, (_, i) => {
+    const utc_date = addUtcDays(addUtcDays(D, -39), i);
+    return {
+      utc_date,
+      price: 60000 + i,
+      source_timestamp_utc: `${utc_date}T00:00:00.000Z`,
+    };
+  });
+  const mutatedSpot = baseSpot.map((r) =>
+    r.utc_date === d31 ? { ...r, price: r.price + 99999 } : r
+  );
+  const mkUnion = (completedSpot) => buildScoreRelevantEvidenceUnion({
+    eligibleFundingRows: [],
+    completedSpot,
+    fundingDailyByDate: {},
+    dailyDays: [],
+    currentFundingWindowRows: [],
+    fundingCurrentEndpoint: null,
+    fundingReferenceEndpoints: [],
+    volatilityCurrentEndpoint: D,
+    volatilityReferenceEndpoints: [],
+    stressCurrentEndpoint: D,
+    stressReferenceEndpoints: [],
+  });
+  const base = mkUnion(baseSpot);
+  const mutated = mkUnion(mutatedSpot);
+  assert.ok(!base.spot_rows.some((r) => r.utc_date === d31));
+  assert.ok(!mutated.spot_rows.some((r) => r.utc_date === d31));
+  const h1 = hashFingerprintInput(buildSuccessorFingerprintInput({
+    selectedProvider: 'binance',
+    fundingRows: base.funding_rows,
+    spotRows: base.spot_rows,
+    semanticIds: {},
+    referenceDepth: 60,
+  }));
+  const h2 = hashFingerprintInput(buildSuccessorFingerprintInput({
+    selectedProvider: 'binance',
+    fundingRows: mutated.funding_rows,
+    spotRows: mutated.spot_rows,
+    semanticIds: {},
+    referenceDepth: 60,
+  }));
+  assert.equal(h1, h2);
+});
+
+test('104. D-30 mutation changes fingerprint when required for first Stress return', () => {
+  const D = '2026-09-30';
+  const d30 = addUtcDays(D, -30);
+  const baseSpot = Array.from({ length: 40 }, (_, i) => {
+    const utc_date = addUtcDays(addUtcDays(D, -39), i);
+    return {
+      utc_date,
+      price: 70000 + i,
+      source_timestamp_utc: `${utc_date}T00:00:00.000Z`,
+    };
+  });
+  const mutatedSpot = baseSpot.map((r) =>
+    r.utc_date === d30 ? { ...r, price: r.price + 12345 } : r
+  );
+  const mkUnion = (completedSpot) => buildScoreRelevantEvidenceUnion({
+    eligibleFundingRows: [],
+    completedSpot,
+    fundingDailyByDate: {},
+    dailyDays: [],
+    currentFundingWindowRows: [],
+    fundingCurrentEndpoint: null,
+    fundingReferenceEndpoints: [],
+    volatilityCurrentEndpoint: null,
+    volatilityReferenceEndpoints: [],
+    stressCurrentEndpoint: D,
+    stressReferenceEndpoints: [],
+  });
+  const base = mkUnion(baseSpot);
+  const mutated = mkUnion(mutatedSpot);
+  assert.ok(base.spot_rows.some((r) => r.utc_date === d30));
+  assert.equal(base.earliest_spot_date, d30);
+  const h1 = hashFingerprintInput(buildSuccessorFingerprintInput({
+    selectedProvider: 'binance',
+    fundingRows: base.funding_rows,
+    spotRows: base.spot_rows,
+    semanticIds: {},
+    referenceDepth: 60,
+  }));
+  const h2 = hashFingerprintInput(buildSuccessorFingerprintInput({
+    selectedProvider: 'binance',
+    fundingRows: mutated.funding_rows,
+    spotRows: mutated.spot_rows,
+    semanticIds: {},
+    referenceDepth: 60,
+  }));
+  assert.notEqual(h1, h2);
+});

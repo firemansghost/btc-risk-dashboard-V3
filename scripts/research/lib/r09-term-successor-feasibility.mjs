@@ -1996,23 +1996,28 @@ export function buildScoreRelevantEvidenceUnion({
   }
 
   const spotNeeded = new Map();
-  function addSpotWindow(endpointDate, priceCount) {
-    if (!endpointDate) return;
+  /**
+   * Include exactly requiredPriceCount completed daily prices ending at endpointDate.
+   * For V30_30_RETURNS / Stress D-29…D, requiredPriceCount=31 means prices D-30…D
+   * (the prior needed for the first return is already inside that count — do not add
+   * an extra generic prior row beyond requiredPriceCount).
+   */
+  function addSpotPriceWindow(endpointDate, requiredPriceCount) {
+    if (!endpointDate || !(requiredPriceCount > 0)) return;
     const sorted = [...(completedSpot || [])].sort((a, b) => a.utc_date.localeCompare(b.utc_date));
     const endIdx = sorted.findIndex((r) => r.utc_date === endpointDate);
     if (endIdx < 0) return;
-    // Need prior day for returns on first date of window when computing stress returns
-    const startIdx = Math.max(0, endIdx - (priceCount - 1));
-    const withPrior = Math.max(0, startIdx - 1);
-    for (let i = withPrior; i <= endIdx; i += 1) {
+    const startIdx = endIdx - (requiredPriceCount - 1);
+    if (startIdx < 0) return; // insufficient rows — do not manufacture earlier evidence
+    for (let i = startIdx; i <= endIdx; i += 1) {
       const row = sorted[i];
       spotNeeded.set(row.utc_date, row);
     }
   }
-  addSpotWindow(volatilityCurrentEndpoint, 31);
-  for (const ep of volatilityReferenceEndpoints || []) addSpotWindow(ep, 31);
-  addSpotWindow(stressCurrentEndpoint, 31);
-  for (const ep of stressReferenceEndpoints || []) addSpotWindow(ep, 31);
+  addSpotPriceWindow(volatilityCurrentEndpoint, 31);
+  for (const ep of volatilityReferenceEndpoints || []) addSpotPriceWindow(ep, 31);
+  addSpotPriceWindow(stressCurrentEndpoint, 31);
+  for (const ep of stressReferenceEndpoints || []) addSpotPriceWindow(ep, 31);
 
   const fundingRows = [...fundingNeeded.values()].sort((a, b) =>
     a.source_timestamp_utc.localeCompare(b.source_timestamp_utc)
