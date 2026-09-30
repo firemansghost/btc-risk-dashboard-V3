@@ -1100,8 +1100,35 @@ export function characterizeLastUpdatedSemantics({
 }
 
 /**
+ * True when JS array-destructuring would accept the value as iterable.
+ * Does not attempt to iterate/destructure.
+ */
+export function isJsDestructurableIterable(value) {
+  return value != null && typeof value[Symbol.iterator] === 'function';
+}
+
+/**
+ * Mirror production `([timestamp, price]) => …` for a proven-iterable value.
+ * Consumes at most two iterator results.
+ */
+export function extractArrayDestructuringPair(iterable) {
+  const iterator = iterable[Symbol.iterator]();
+  const first = iterator.next();
+  const second = iterator.next();
+  return {
+    timestamp: first.done ? undefined : first.value,
+    price: second.done ? undefined : second.value,
+  };
+}
+
+/**
  * Inspect CoinGecko prices[] exactly as current production destructures them.
  * Aligns diagnostic timestamps 1:1 with Number.isFinite-filtered numeric prices.
+ *
+ * Classification:
+ * - ARRAY: expected shape; indexing [0]/[1]
+ * - NON_ARRAY_ITERABLE: e.g. string "12"; destructuring succeeds; may fail Number.isFinite
+ * - NON_ITERABLE: null/{} /number/boolean; production destructuring throws
  */
 export function inspectCoingeckoPricesForProductionScoring(prices) {
   const raw = Array.isArray(prices) ? prices : null;
@@ -1120,8 +1147,9 @@ export function inspectCoingeckoPricesForProductionScoring(prices) {
       aligned_diagnostic_timestamps: [],
       row_quality: {
         raw_price_rows: null,
-        array_iterable_rows: 0,
-        non_array_rows: 0,
+        array_rows: 0,
+        non_array_iterable_rows: 0,
+        non_iterable_rows: 0,
         finite_price_rows: 0,
         non_finite_price_rows: 0,
         finite_price_rows_with_valid_timestamp: 0,
@@ -1133,32 +1161,59 @@ export function inspectCoingeckoPricesForProductionScoring(prices) {
 
   for (let i = 0; i < raw.length; i += 1) {
     const row = raw[i];
-    if (!Array.isArray(row)) {
-      offendingNonIterableIndices.push(i);
+
+    if (Array.isArray(row)) {
+      const timestamp = row[0];
+      const price = row[1];
+      const finite = Number.isFinite(price);
+      const diagnosticTs = safeIsoFromTimestamp(timestamp);
       rowInspections.push({
         raw_index: i,
-        row_kind: 'NON_ITERABLE',
-        current_production_destructuring: 'WOULD_THROW',
-        raw_timestamp: null,
-        numeric_price: null,
-        diagnostic_timestamp_utc: null,
-        enters_production_numeric_scoring: false,
+        row_kind: 'ARRAY',
+        current_production_destructuring: 'SUCCEEDS',
+        raw_timestamp: timestamp,
+        extracted_first_iterable_value: timestamp,
+        extracted_second_iterable_value: price,
+        numeric_price: price,
+        price_is_finite: finite,
+        diagnostic_timestamp_utc: diagnosticTs,
+        enters_production_numeric_scoring: finite,
       });
       continue;
     }
-    const timestamp = row[0];
-    const price = row[1];
-    const finite = Number.isFinite(price);
-    const diagnosticTs = safeIsoFromTimestamp(timestamp);
+
+    if (isJsDestructurableIterable(row)) {
+      const pair = extractArrayDestructuringPair(row);
+      const timestamp = pair.timestamp;
+      const price = pair.price;
+      const finite = Number.isFinite(price);
+      const diagnosticTs = safeIsoFromTimestamp(timestamp);
+      rowInspections.push({
+        raw_index: i,
+        row_kind: 'NON_ARRAY_ITERABLE',
+        current_production_destructuring: 'SUCCEEDS',
+        raw_timestamp: timestamp,
+        extracted_first_iterable_value: timestamp,
+        extracted_second_iterable_value: price,
+        numeric_price: price,
+        price_is_finite: finite,
+        diagnostic_timestamp_utc: diagnosticTs,
+        enters_production_numeric_scoring: finite,
+      });
+      continue;
+    }
+
+    offendingNonIterableIndices.push(i);
     rowInspections.push({
       raw_index: i,
-      row_kind: 'ARRAY',
-      current_production_destructuring: 'SUCCEEDS',
-      raw_timestamp: timestamp,
-      numeric_price: finite ? price : price,
-      price_is_finite: finite,
-      diagnostic_timestamp_utc: diagnosticTs,
-      enters_production_numeric_scoring: finite,
+      row_kind: 'NON_ITERABLE',
+      current_production_destructuring: 'WOULD_THROW',
+      raw_timestamp: null,
+      extracted_first_iterable_value: null,
+      extracted_second_iterable_value: null,
+      numeric_price: null,
+      diagnostic_timestamp_utc: null,
+      enters_production_numeric_scoring: false,
     });
   }
 
@@ -1209,13 +1264,19 @@ export function inspectCoingeckoPricesForProductionScoring(prices) {
 
 function summarizeSpotRowQuality(rowInspections, rawCount) {
   const arrayRows = rowInspections.filter((row) => row.row_kind === 'ARRAY');
-  const finite = arrayRows.filter((row) => row.enters_production_numeric_scoring);
+  const nonArrayIterable = rowInspections.filter((row) => row.row_kind === 'NON_ARRAY_ITERABLE');
+  const nonIterable = rowInspections.filter((row) => row.row_kind === 'NON_ITERABLE');
+  const succeeded = rowInspections.filter(
+    (row) => row.current_production_destructuring === 'SUCCEEDS'
+  );
+  const finite = succeeded.filter((row) => row.enters_production_numeric_scoring);
   return {
     raw_price_rows: rawCount,
-    array_iterable_rows: arrayRows.length,
-    non_array_rows: rowInspections.length - arrayRows.length,
+    array_rows: arrayRows.length,
+    non_array_iterable_rows: nonArrayIterable.length,
+    non_iterable_rows: nonIterable.length,
     finite_price_rows: finite.length,
-    non_finite_price_rows: arrayRows.length - finite.length,
+    non_finite_price_rows: succeeded.length - finite.length,
     finite_price_rows_with_valid_timestamp: finite.filter((row) => row.diagnostic_timestamp_utc).length,
     finite_price_rows_with_invalid_timestamp: finite.filter((row) => !row.diagnostic_timestamp_utc).length,
   };

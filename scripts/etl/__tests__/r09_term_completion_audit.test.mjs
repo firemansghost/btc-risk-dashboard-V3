@@ -31,8 +31,10 @@ import {
   evaluateSpotValidityVsFreshnessCases,
   extractFundingObservationUtc,
   extractSpotObservationUtc,
+  extractArrayDestructuringPair,
   hasFundingDataChanged,
   inspectCoingeckoPricesForProductionScoring,
+  isJsDestructurableIterable,
   loadDashboardTermContract,
   normalizeCoingeckoSource,
   normalizeFundingSource,
@@ -1153,4 +1155,142 @@ test('83. offline deterministic reference remains present in live mode', () => {
     'OFFLINE_DETERMINISTIC_REFERENCE'
   );
   assert.ok(report.offline_deterministic_reference.funding_component);
+});
+
+test('84. null spot row is NON_ITERABLE and WOULD_THROW', () => {
+  assert.equal(isJsDestructurableIterable(null), false);
+  const inspection = inspectCoingeckoPricesForProductionScoring([
+    [Date.UTC(2026, 8, 20), 100],
+    null,
+    [Date.UTC(2026, 8, 22), 102],
+  ]);
+  assert.equal(inspection.row_inspections[1].row_kind, 'NON_ITERABLE');
+  assert.equal(inspection.row_inspections[1].current_production_destructuring, 'WOULD_THROW');
+  assert.equal(inspection.current_production_spot_extraction_would_throw, true);
+  assert.equal(inspection.current_production_outcome, 'WHOLE_TERM_OUTER_CATCH_NULL');
+  assert.deepEqual(inspection.offending_raw_indices, [1]);
+  assert.equal(inspection.row_quality.non_iterable_rows, 1);
+  assert.equal(inspection.row_quality.non_array_iterable_rows, 0);
+});
+
+test('85. object spot row is NON_ITERABLE and WOULD_THROW', () => {
+  assert.equal(isJsDestructurableIterable({}), false);
+  const inspection = inspectCoingeckoPricesForProductionScoring([
+    [Date.UTC(2026, 8, 20), 100],
+    {},
+    [Date.UTC(2026, 8, 22), 102],
+  ]);
+  assert.equal(inspection.row_inspections[1].row_kind, 'NON_ITERABLE');
+  assert.equal(inspection.row_inspections[1].current_production_destructuring, 'WOULD_THROW');
+  assert.equal(inspection.current_production_spot_extraction_would_throw, true);
+  assert.equal(inspection.current_production_outcome, 'WHOLE_TERM_OUTER_CATCH_NULL');
+  assert.equal(inspection.row_quality.non_iterable_rows, 1);
+});
+
+test('86. numeric spot row 123 is NON_ITERABLE and WOULD_THROW', () => {
+  assert.equal(isJsDestructurableIterable(123), false);
+  const inspection = inspectCoingeckoPricesForProductionScoring([
+    [Date.UTC(2026, 8, 20), 100],
+    123,
+    [Date.UTC(2026, 8, 22), 102],
+  ]);
+  assert.equal(inspection.row_inspections[1].row_kind, 'NON_ITERABLE');
+  assert.equal(inspection.row_inspections[1].current_production_destructuring, 'WOULD_THROW');
+  assert.equal(inspection.current_production_spot_extraction_would_throw, true);
+  assert.equal(inspection.current_production_outcome, 'WHOLE_TERM_OUTER_CATCH_NULL');
+  assert.equal(inspection.row_quality.non_iterable_rows, 1);
+});
+
+test('87. string spot row "12" destructures successfully but is excluded from numeric scoring', () => {
+  assert.equal(isJsDestructurableIterable('12'), true);
+  const pair = extractArrayDestructuringPair('12');
+  assert.equal(pair.timestamp, '1');
+  assert.equal(pair.price, '2');
+  assert.equal(Number.isFinite(pair.price), false);
+
+  const inspection = inspectCoingeckoPricesForProductionScoring([
+    [Date.UTC(2026, 8, 20), 100],
+    '12',
+    [Date.UTC(2026, 8, 22), 102],
+  ]);
+  const stringRow = inspection.row_inspections[1];
+  assert.equal(stringRow.row_kind, 'NON_ARRAY_ITERABLE');
+  assert.equal(stringRow.current_production_destructuring, 'SUCCEEDS');
+  assert.equal(stringRow.extracted_first_iterable_value, '1');
+  assert.equal(stringRow.extracted_second_iterable_value, '2');
+  assert.equal(stringRow.price_is_finite, false);
+  assert.equal(stringRow.enters_production_numeric_scoring, false);
+  assert.equal(inspection.current_production_spot_extraction_would_throw, false);
+  assert.notEqual(inspection.current_production_outcome, 'WHOLE_TERM_OUTER_CATCH_NULL');
+  assert.deepEqual(inspection.numeric_prices, [100, 102]);
+  assert.equal(inspection.row_quality.array_rows, 2);
+  assert.equal(inspection.row_quality.non_array_iterable_rows, 1);
+  assert.equal(inspection.row_quality.non_iterable_rows, 0);
+  assert.equal(inspection.row_quality.finite_price_rows, 2);
+  assert.equal(inspection.row_quality.non_finite_price_rows, 1);
+
+  assert.doesNotThrow(() => {
+    const report = buildOfflineR09Report({
+      repositorySha: '1'.repeat(40),
+      generatedAtUtc: '2026-09-22T11:00:00.000Z',
+      live: makeLiveBundle({
+        prices: [
+          ...Array.from({ length: 8 }, (_, i) => [Date.UTC(2026, 8, 20 + i), 100000 + i]),
+          '12',
+        ],
+      }),
+    });
+    assert.ok(
+      !report.blockers.some((b) => b.type === 'live_spot_extraction_would_throw_in_current_production')
+    );
+  });
+});
+
+test('88. mixed Array rows + string row keep score-row timestamp alignment', () => {
+  const ts1 = Date.UTC(2026, 8, 20);
+  const ts2 = Date.UTC(2026, 8, 21);
+  const ts3 = Date.UTC(2026, 8, 22);
+  const prices = [
+    [ts1, 100],
+    '12',
+    [ts2, 101],
+    [ts3, 102],
+  ];
+  assert.doesNotThrow(() => {
+    const inspection = inspectCoingeckoPricesForProductionScoring(prices);
+    assert.equal(inspection.current_production_spot_extraction_would_throw, false);
+    assert.deepEqual(inspection.numeric_prices, [100, 101, 102]);
+    assert.deepEqual(inspection.aligned_diagnostic_timestamps, [
+      new Date(ts1).toISOString(),
+      new Date(ts2).toISOString(),
+      new Date(ts3).toISOString(),
+    ]);
+    assert.equal(inspection.live_spot_scoring_rows[0].raw_index, 0);
+    assert.equal(inspection.live_spot_scoring_rows[1].raw_index, 2);
+    assert.equal(inspection.live_spot_scoring_rows[2].raw_index, 3);
+    assert.equal(inspection.row_inspections[1].row_kind, 'NON_ARRAY_ITERABLE');
+    assert.equal(inspection.row_quality.non_array_iterable_rows, 1);
+    assert.equal(inspection.row_quality.non_iterable_rows, 0);
+  });
+
+  const report = buildOfflineR09Report({
+    repositorySha: '2'.repeat(40),
+    generatedAtUtc: '2026-09-22T11:00:00.000Z',
+    live: makeLiveBundle({
+      prices: [
+        ...Array.from({ length: 10 }, (_, i) => [Date.UTC(2026, 8, 20 + i), 100000 + i]),
+        '12',
+        [Date.UTC(2026, 8, 30, 12), 101000],
+      ],
+    }),
+  });
+  assert.equal(report.section_5_volatility_horizon.evidence_origin, 'LIVE_PROVIDER_PAYLOAD');
+  assert.ok(Number.isFinite(report.section_5_volatility_horizon.score));
+  assert.ok(
+    !report.blockers.some((b) => b.type === 'live_spot_extraction_would_throw_in_current_production')
+  );
+  assert.equal(
+    report.section_13_factor_lastUpdated_semantics.latest_score_eligible_spot_timestamp,
+    new Date(Date.UTC(2026, 8, 30, 12)).toISOString()
+  );
 });
