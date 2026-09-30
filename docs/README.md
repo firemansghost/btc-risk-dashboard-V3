@@ -10,6 +10,12 @@ old weight-era notes, or archived roadmaps as live model contracts.
 
 Active production: **v1.1.2** / **etf-sosovalue-vix-cboe-2026-09** / SSOT **2.1.1**. Live ETF source: SoSoValue. Farside is the frozen historical calibration baseline. Macro uses FRED for dollar and rates, and direct Cboe official daily history for VIX, with a guarded FRED VIXCLS fallback.
 
+Frozen successor target (**NOT ACTIVE**): **v1.2.0** /
+**semantic-correctness-2026-09** / SSOT **2.1.1**. Corrected architecture freeze
+consolidates R07 / R01-R08 / R03 / R09 successor contracts. Implementation as
+inactive candidate slices, then coordinated structural regression, are required
+before any production activation. Do not treat v1.2.0 as live.
+
 Seven enabled scoring factors across five analytical pillars. On-chain
 Activity is disabled at 0%. Cycle and Spike adjustments are disabled in
 v1.1.1 and contribute zero points.
@@ -23,6 +29,7 @@ v1.1.1 and contribute zero points.
 | [Model Eras](MODEL_ERAS.md) | Historical interpretation and provenance boundaries |
 | [v1.1.1 Transition Closeout](V1.1.1_TRANSITION_CLOSEOUT_2026-08-18.md) | Historical integrity-transition record |
 | [v1.1.2 Transition Closeout](V1.1.2_TRANSITION_CLOSEOUT_2026-09-26.md) | ETF/VIX source-transition and era-boundary record |
+| [v1.2.0 Corrected Architecture Freeze](V1.2.0_CORRECTED_ARCHITECTURE_FREEZE_2026-09-30.md) | Frozen successor identity / contracts — **NOT ACTIVE** |
 
 ## Research / Governance
 
@@ -54,6 +61,13 @@ COMPLETE-day / duplicate / CoinGecko / Stress / fingerprint / lastUpdated /
 fail-closed rules). R09 overall: DESIGN COMPLETE / PRODUCTION REPAIR NOT
 ACTIVATED. Production Term scoring remains unchanged / NOT ACTIVATED.
 
+Corrected architecture / version freeze (v1.2.0 /
+semantic-correctness-2026-09 / SSOT 2.1.1) consolidates the four frozen
+successor contracts under one atomic activation rule. Successor production is
+**NOT ACTIVE**. Current production remains v1.1.2. Next lane: implement inactive
+candidate slices, then `V1_2_STRUCTURAL_REGRESSION`, before any activation.
+
+- [v1.2.0 Corrected Architecture Freeze](V1.2.0_CORRECTED_ARCHITECTURE_FREEZE_2026-09-30.md)
 - [R01/R08 Net Liquidity successor-semantics adjudication](R01_R08_NET_LIQUIDITY_ADJUDICATION_2026-09-30.md)
 - [R03 Social missingness successor-semantics adjudication](R03_SOCIAL_MISSINGNESS_ADJUDICATION_2026-09-30.md)
 - [R07 Stablecoin successor-semantics adjudication](R07_STABLECOIN_ADJUDICATION_2026-09-30.md)
