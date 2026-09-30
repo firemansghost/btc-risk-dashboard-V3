@@ -47,13 +47,18 @@ R09 Term Structure & Leverage completion adjudication (R09-B) is complete as a
 documentation freeze only. R09-A LIVE audit PASS; PR #56 provider freshness
 preserved; material remainders confirmed (row-order, 30-day elapsed horizon,
 same-horizon Funding/Volatility references, calendar Stress alignment, source
-fingerprint). Exact implementation contract pending R09-C. Production Term
-scoring remains unchanged / NOT ACTIVATED.
+fingerprint). R09-C-A LIVE feasibility diagnostic PASS; R09-C-B successor
+contract adjudicated/frozen (F30_HALF_OPEN, daily-mean aggregation,
+V30_30_RETURNS, TERM_COMMON_CUTOFF_DATE_V1, TERM_REFERENCE_60_V1, Gate 2,
+COMPLETE-day / duplicate / CoinGecko / Stress / fingerprint / lastUpdated /
+fail-closed rules). R09 overall: DESIGN COMPLETE / PRODUCTION REPAIR NOT
+ACTIVATED. Production Term scoring remains unchanged / NOT ACTIVATED.
 
 - [R01/R08 Net Liquidity successor-semantics adjudication](R01_R08_NET_LIQUIDITY_ADJUDICATION_2026-09-30.md)
 - [R03 Social missingness successor-semantics adjudication](R03_SOCIAL_MISSINGNESS_ADJUDICATION_2026-09-30.md)
 - [R07 Stablecoin successor-semantics adjudication](R07_STABLECOIN_ADJUDICATION_2026-09-30.md)
 - [R09 Term completion successor-semantics adjudication](R09_TERM_COMPLETION_ADJUDICATION_2026-09-30.md)
+- [R09-C Term successor contract adjudication](R09_TERM_SUCCESSOR_CONTRACT_ADJUDICATION_2026-09-30.md)
 - [H8 v2 preregistration](H8_V2_PROSPECTIVE_30D_RISK_DISCRIMINATION_PREREGISTRATION.md)
 - [H8 v2 capture implementation contract](H8_V2_CAPTURE_IMPLEMENTATION_CONTRACT.md)
 - [H7 exploratory reconstruction protocol](H7_EXPLORATORY_RECONSTRUCTION_PROTOCOL_2026-08-19.md)
