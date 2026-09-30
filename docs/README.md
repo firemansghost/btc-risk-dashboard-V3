@@ -30,6 +30,11 @@ H8 v2 is stopped and historical-only. Successor scientific collection requires a
 separately versioned and preregistered successor study. H7 historical work is descriptive
 risk-discrimination/ranking research, not predictive validation.
 
+R07 Stablecoin elapsed-time / dated-calibration adjudication is complete as a
+documentation freeze only. Production Stablecoin scoring remains unchanged until
+a later authorized activation creates a new model/implementation era.
+
+- [R07 Stablecoin successor-semantics adjudication](R07_STABLECOIN_ADJUDICATION_2026-09-30.md)
 - [H8 v2 preregistration](H8_V2_PROSPECTIVE_30D_RISK_DISCRIMINATION_PREREGISTRATION.md)
 - [H8 v2 capture implementation contract](H8_V2_CAPTURE_IMPLEMENTATION_CONTRACT.md)
 - [H7 exploratory reconstruction protocol](H7_EXPLORATORY_RECONSTRUCTION_PROTOCOL_2026-08-19.md)
