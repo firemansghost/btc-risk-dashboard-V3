@@ -16,12 +16,16 @@ import {
   STABLECOIN_DATED_CALIBRATION_ID,
   STABLECOIN_DATED_CALIBRATION_SCHEMA,
   STABLECOIN_RECONSTRUCTION_LABEL,
+  V12_FROZEN_CONFIGURED_WEIGHT_TOTAL,
   V12_STABLECOIN_CONFIG,
   analyzeV12StablecoinCoin,
   computeV12StablecoinCandidate,
   configuredStablecoinWeightSum,
   extractStrictValidObservations,
+  observationDateFromAsOfMs,
   selectPriorDatedCalibrationObservations,
+  stablecoinCoverageEligible,
+  validateStablecoinDatedCalibration,
 } from '../candidates/v1_2/stablecoins.mjs';
 import {
   DAY_MS,
@@ -161,6 +165,7 @@ test('8-12. exact seven-coin config and SSOT blend', () => {
   ]);
   // Frozen production weights (exact membership) sum to 0.93; coverage uses this denominator.
   assert.ok(Math.abs(configuredStablecoinWeightSum() - 0.93) < 1e-12);
+  assert.equal(V12_FROZEN_CONFIGURED_WEIGHT_TOTAL, configuredStablecoinWeightSum());
   const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
   assert.deepEqual(LOCKED_OFFICIAL_BLENDS.stablecoins, config.subweights.stablecoins);
   const result = computeV12StablecoinCandidate({
@@ -253,30 +258,49 @@ test('23-27. <24h lag guard and missing priors', () => {
   assert.match(missing7.reason, /7d/);
 });
 
-test('30b. exactly 70% configured-weight coverage passes', () => {
+test('30b. generic coverage helper treats exactly 70% as eligible', () => {
+  const exact = stablecoinCoverageEligible({
+    validCoinCount: 3,
+    includedWeightSum: 0.7,
+    totalConfiguredWeight: 1,
+  });
+  assert.equal(exact.eligible, true);
+  assert.equal(exact.configured_weight_coverage, 0.7);
+  const under = stablecoinCoverageEligible({
+    validCoinCount: 3,
+    includedWeightSum: 0.699,
+    totalConfiguredWeight: 1,
+  });
+  assert.equal(under.eligible, false);
+});
+
+test('76-78. top-level candidate config is frozen / non-overridable; denominator 0.93', () => {
   const calibration = loadCalibration();
   const asOfUtc = '2026-09-29T23:59:59.000Z';
-  const fullConfig = [
-    { id: 'tether', symbol: 'USDT', weight: 0.30 },
-    { id: 'usd-coin', symbol: 'USDC', weight: 0.20 },
-    { id: 'dai', symbol: 'DAI', weight: 0.20 },
-    { id: 'binance-usd', symbol: 'BUSD', weight: 0.30 },
-  ];
-  const fullResponses = [
-    { market_caps: syntheticCaps({ startCap: 1e11 }) },
-    { market_caps: syntheticCaps({ startCap: 5e10 }) },
-    { market_caps: syntheticCaps({ startCap: 2e10 }) },
-    { market_caps: [] },
-  ];
-  const result = computeV12StablecoinCandidate({
-    responses: fullResponses,
+  const baseline = computeV12StablecoinCandidate({
+    responses: mergeCacheResponsesThrough('2026-09-29'),
     calibration,
     asOfUtc,
-    config: fullConfig,
   });
-  assert.equal(result.valid_coin_count, 3);
-  assert.equal(result.configured_weight_coverage, 0.7);
-  assert.notEqual(result.reason, 'insufficient_valid_stablecoin_growth_inputs');
+  const poisoned = computeV12StablecoinCandidate({
+    responses: mergeCacheResponsesThrough('2026-09-29'),
+    calibration,
+    asOfUtc,
+    // Extraneous override must be ignored by top-level contract.
+    config: [
+      { id: 'only-usdt', symbol: 'USDT', weight: 1 },
+    ],
+  });
+  assert.equal(baseline.coins.length, 7);
+  assert.equal(poisoned.coins.length, 7);
+  assert.deepEqual(
+    poisoned.coins.map((c) => [c.symbol, c.configured_weight]),
+    V12_STABLECOIN_CONFIG.map((c) => [c.symbol, c.weight])
+  );
+  assert.equal(poisoned.frozen_configured_weight_total, V12_FROZEN_CONFIGURED_WEIGHT_TOTAL);
+  assert.equal(baseline.score, poisoned.score);
+  assert.equal(baseline.aggregate_elapsed_30d_growth, poisoned.aggregate_elapsed_30d_growth);
+  assert.ok(Math.abs(V12_FROZEN_CONFIGURED_WEIGHT_TOTAL - 0.93) < 1e-12);
 });
 
 test('28-34. aggregation thresholds, renormalization, growth guard', () => {
@@ -438,10 +462,11 @@ test('59-66. no-lookahead percentile universe and transform parity', () => {
     calibration: { ...calibration, observations: [] },
     asOfUtc: '2026-09-29T23:59:59.000Z',
   });
-  assert.equal(empty.reason, 'no_prior_dated_calibration');
+  // Empty observations violate the versioned calibration contract (fail closed).
+  assert.equal(empty.reason, 'invalid_dated_calibration_contract');
   assert.equal(empty.score, null);
 
-  // Self-rank excluded: scoring at earliest date has zero priors.
+  // Self-rank excluded: scoring at earliest date has zero priors under a valid contract.
   const earliest = computeV12StablecoinCandidate({
     responses: mergeCacheResponsesThrough('2025-10-06'),
     calibration,
@@ -503,4 +528,139 @@ test('73-75. Sep 29 R07-D descriptive parity', () => {
   assert.ok(Math.abs(result.component_scores.concentration - 56.60244611511435) < 1e-9);
   assert.equal(result.score, 47);
   assert.equal(result.calibration_prior_count, 326);
+});
+
+function mutateCalibration(mutator) {
+  const clone = structuredClone(loadCalibration());
+  mutator(clone);
+  return clone;
+}
+
+test('79. committed calibration passes validation', () => {
+  const calibration = loadCalibration();
+  const v = validateStablecoinDatedCalibration(calibration);
+  assert.equal(v.ok, true);
+  assert.equal(v.reason, null);
+  assert.equal(v.errors.length, 0);
+});
+
+test('80-88. wrong calibration contracts fail closed', () => {
+  const responses = sevenResponsesFromCaps({});
+  const asOfUtc = '2026-09-29T23:59:59.000Z';
+  const cases = [
+    ['schema', (c) => { c.schema = 'wrong'; }, 'schema_mismatch'],
+    ['calibration_id', (c) => { c.calibration_id = 'WRONG'; }, 'calibration_id_mismatch'],
+    ['model_version_target', (c) => { c.model_version_target = 'v1.1.2'; }, 'model_version_target_mismatch'],
+    ['implementation_revision_target', (c) => { c.implementation_revision_target = 'other'; }, 'implementation_revision_target_mismatch'],
+    ['reconstruction_label', (c) => { c.reconstruction_label = 'OTHER'; }, 'reconstruction_label_mismatch'],
+    ['future_evidence', (c) => { c.integrity.future_evidence_violation_count = 1; }, 'future_evidence_violation_count_nonzero'],
+    ['r07d_blockers', (c) => { c.integrity.r07d_blocker_count = 2; }, 'r07d_blocker_count_nonzero'],
+    ['duplicate_date', (c) => {
+      c.observations.push({ ...c.observations[0], observation_date: c.observations[0].observation_date });
+      c.observations.sort((a, b) => a.observation_date.localeCompare(b.observation_date));
+    }, 'observation_dates_not_unique'],
+    ['non_ascending', (c) => {
+      c.observations = [
+        { ...c.observations[1], observation_date: '2026-01-02' },
+        { ...c.observations[0], observation_date: '2026-01-01' },
+      ];
+    }, 'observation_dates_not_strictly_ascending'],
+    ['non_finite_aggregate', (c) => {
+      c.observations[0].aggregate_elapsed_30d_growth = Number.NaN;
+    }, 'aggregate_elapsed_30d_growth_non_finite_at_0'],
+  ];
+  for (const [label, mutator, errorCode] of cases) {
+    const calibration = mutateCalibration(mutator);
+    const validation = validateStablecoinDatedCalibration(calibration);
+    assert.equal(validation.ok, false, label);
+    assert.ok(validation.errors.includes(errorCode), `${label} missing ${errorCode}: ${validation.errors}`);
+    const scored = computeV12StablecoinCandidate({ responses, calibration, asOfUtc });
+    assert.equal(scored.score, null, label);
+    assert.equal(scored.reason, 'invalid_dated_calibration_contract', label);
+    assert.equal(scored.calibration_validation.ok, false, label);
+    // Must not silently relabel wrong identity as the frozen ID when supplied wrong.
+    if (label === 'calibration_id') {
+      assert.equal(scored.calibration_id, 'WRONG');
+    }
+  }
+});
+
+test('89. missing calibration fails closed', () => {
+  const scored = computeV12StablecoinCandidate({
+    responses: sevenResponsesFromCaps({}),
+    calibration: null,
+    asOfUtc: '2026-09-29T23:59:59.000Z',
+  });
+  assert.equal(scored.score, null);
+  assert.equal(scored.reason, 'invalid_dated_calibration_contract');
+  assert.equal(scored.calibration_id, null);
+});
+
+test('90-91. missing/invalid asOfUtc fail closed', () => {
+  const calibration = loadCalibration();
+  const responses = sevenResponsesFromCaps({});
+  const missing = computeV12StablecoinCandidate({ responses, calibration });
+  assert.equal(missing.score, null);
+  assert.equal(missing.reason, 'invalid_or_missing_as_of_utc');
+
+  const invalid = computeV12StablecoinCandidate({
+    responses,
+    calibration,
+    asOfUtc: '2026-09-29-not-a-valid-time',
+  });
+  assert.equal(invalid.score, null);
+  assert.equal(invalid.reason, 'invalid_or_missing_as_of_utc');
+  assert.equal(invalid.observation_date, null);
+});
+
+test('92. timezone-offset asOf crossing UTC midnight derives UTC date', () => {
+  // 2026-09-29T23:30:00-05:00 == 2026-09-30T04:30:00.000Z
+  const asOfUtc = '2026-09-29T23:30:00-05:00';
+  const ms = Date.parse(asOfUtc);
+  assert.equal(observationDateFromAsOfMs(ms), '2026-09-30');
+  const result = computeV12StablecoinCandidate({
+    responses: mergeCacheResponsesThrough('2026-09-29'),
+    calibration: loadCalibration(),
+    asOfUtc,
+  });
+  assert.equal(result.observation_date, '2026-09-30');
+  assert.notEqual(result.reason, 'invalid_or_missing_as_of_utc');
+});
+
+test('93. ordinary Zulu Sep 29 asOf remains Sep 29', () => {
+  const result = computeV12StablecoinCandidate({
+    responses: mergeCacheResponsesThrough('2026-09-29'),
+    calibration: loadCalibration(),
+    asOfUtc: '2026-09-29T23:59:59.000Z',
+  });
+  assert.equal(result.observation_date, '2026-09-29');
+  assert.equal(result.score, 47);
+});
+
+test('94. malformed YYYY-MM-DD-prefixed asOf does not disable source cutoff / fails closed', () => {
+  const bad = '2026-09-29-not-a-valid-time';
+  assert.equal(Number.isNaN(Date.parse(bad)), true);
+  const result = computeV12StablecoinCandidate({
+    responses: sevenResponsesFromCaps({}),
+    calibration: loadCalibration(),
+    asOfUtc: bad,
+  });
+  assert.equal(result.reason, 'invalid_or_missing_as_of_utc');
+  assert.equal(result.as_of_ms, null);
+  assert.equal(result.observation_date, null);
+  // Must not have derived 2026-09-29 from the string prefix.
+  assert.notEqual(result.observation_date, '2026-09-29');
+});
+
+test('95. observations after parsed asOfMs remain excluded', () => {
+  const asOfMs = Date.parse('2026-09-20T00:00:00.000Z');
+  const future = asOfMs + DAY_MS;
+  const { sortedValid, diagnostics } = extractStrictValidObservations([
+    [asOfMs - DAY_MS, 100],
+    [asOfMs, 110],
+    [future, 999],
+  ], { asOfMs });
+  assert.equal(sortedValid.length, 2);
+  assert.ok(diagnostics.after_as_of >= 1);
+  assert.ok(!sortedValid.some((o) => o.timestampMs > asOfMs));
 });

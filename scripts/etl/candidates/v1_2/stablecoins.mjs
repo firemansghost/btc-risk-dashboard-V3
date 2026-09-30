@@ -55,19 +55,120 @@ export function configuredStablecoinWeightSum(config = V12_STABLECOIN_CONFIG) {
   return config.reduce((sum, coin) => sum + coin.weight, 0);
 }
 
+export const V12_FROZEN_CONFIGURED_WEIGHT_TOTAL = configuredStablecoinWeightSum(V12_STABLECOIN_CONFIG);
+
+/**
+ * Generic coverage eligibility helper (unit-testable with artificial values).
+ * Top-level candidate always passes frozen totals; never an alternate basket.
+ */
+export function stablecoinCoverageEligible({
+  validCoinCount,
+  includedWeightSum,
+  totalConfiguredWeight,
+  minValidCoins = MIN_VALID_STABLECOIN_GROWTH_COINS,
+  minWeightCoverage = MIN_STABLECOIN_WEIGHT_COVERAGE,
+} = {}) {
+  const coverage = totalConfiguredWeight > 0 ? includedWeightSum / totalConfiguredWeight : 0;
+  return {
+    eligible: validCoinCount >= minValidCoins && coverage >= minWeightCoverage,
+    configured_weight_coverage: coverage,
+  };
+}
+
 function parseAsOfMs(asOfUtc) {
-  if (asOfUtc == null) return null;
+  if (asOfUtc == null || asOfUtc === '') return null;
   if (typeof asOfUtc === 'number' && Number.isFinite(asOfUtc)) return asOfUtc;
   const ms = Date.parse(String(asOfUtc));
   return Number.isFinite(ms) ? ms : null;
 }
 
-function observationDateFromAsOf(asOfUtc, asOfMs) {
-  if (typeof asOfUtc === 'string' && /^\d{4}-\d{2}-\d{2}/.test(asOfUtc)) {
-    return asOfUtc.slice(0, 10);
+/** Observation date is always derived from the parsed UTC instant — never the raw string prefix. */
+export function observationDateFromAsOfMs(asOfMs) {
+  if (!Number.isFinite(asOfMs)) return null;
+  return new Date(asOfMs).toISOString().slice(0, 10);
+}
+
+export function validateStablecoinDatedCalibration(calibration) {
+  const errors = [];
+  if (calibration == null || typeof calibration !== 'object') {
+    return {
+      ok: false,
+      reason: 'invalid_dated_calibration_contract',
+      errors: ['calibration_missing'],
+      calibration_id: null,
+      schema: null,
+    };
   }
-  if (asOfMs != null) return new Date(asOfMs).toISOString().slice(0, 10);
-  return null;
+
+  const push = (code) => errors.push(code);
+  if (calibration.schema !== STABLECOIN_DATED_CALIBRATION_SCHEMA) push('schema_mismatch');
+  if (calibration.calibration_id !== STABLECOIN_DATED_CALIBRATION_ID) push('calibration_id_mismatch');
+  if (calibration.model_version_target !== V12_MODEL_VERSION_TARGET) push('model_version_target_mismatch');
+  if (calibration.implementation_revision_target !== V12_IMPLEMENTATION_REVISION_TARGET) {
+    push('implementation_revision_target_mismatch');
+  }
+  if (calibration.ssot_version !== V12_SSOT_VERSION) push('ssot_version_mismatch');
+  if (calibration.reconstruction_label !== STABLECOIN_RECONSTRUCTION_LABEL) {
+    push('reconstruction_label_mismatch');
+  }
+  if (calibration.source_reconstruction_schema !== 'ghostgauge_r07_d_dated_baseline_feasibility_v1') {
+    push('source_reconstruction_schema_mismatch');
+  }
+  if (calibration.source_candidate_series_id !== 'R07_D_CANDIDATE_DATED_BASELINE_SERIES_V1') {
+    push('source_candidate_series_id_mismatch');
+  }
+  if (calibration.legacy_baseline?.used_in_successor_calibration !== false) {
+    push('legacy_baseline_used_flag_invalid');
+  }
+  if (calibration.legacy_baseline?.synthetic_dates_assigned !== false) {
+    push('legacy_baseline_synthetic_dates_flag_invalid');
+  }
+  if (calibration.integrity?.future_evidence_violation_count !== 0) {
+    push('future_evidence_violation_count_nonzero');
+  }
+  if (calibration.integrity?.r07d_blocker_count !== 0) {
+    push('r07d_blocker_count_nonzero');
+  }
+
+  const observations = calibration.observations;
+  if (!Array.isArray(observations)) {
+    push('observations_not_array');
+  } else if (observations.length === 0) {
+    push('observations_empty');
+  } else {
+    const seen = new Set();
+    let previous = null;
+    for (let i = 0; i < observations.length; i += 1) {
+      const row = observations[i];
+      const date = row?.observation_date;
+      if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        push(`observation_date_invalid_at_${i}`);
+        break;
+      }
+      if (seen.has(date)) {
+        push('observation_dates_not_unique');
+        break;
+      }
+      seen.add(date);
+      if (previous != null && date <= previous) {
+        push('observation_dates_not_strictly_ascending');
+        break;
+      }
+      previous = date;
+      if (!Number.isFinite(row.aggregate_elapsed_30d_growth)) {
+        push(`aggregate_elapsed_30d_growth_non_finite_at_${i}`);
+        break;
+      }
+    }
+  }
+
+  return {
+    ok: errors.length === 0,
+    reason: errors.length === 0 ? null : 'invalid_dated_calibration_contract',
+    errors,
+    calibration_id: calibration.calibration_id ?? null,
+    schema: calibration.schema ?? null,
+  };
 }
 
 /**
@@ -320,16 +421,18 @@ function normalizeProvenance(sourceProvenanceBySymbol, symbol) {
 /**
  * Pure inactive v1.2 Stablecoin candidate scorer.
  * Caller supplies responses + calibration. No network. No filesystem writes.
+ * Always uses frozen V12_STABLECOIN_CONFIG — no caller basket/weight override.
  */
 export function computeV12StablecoinCandidate({
   responses,
   calibration,
   asOfUtc,
   sourceProvenanceBySymbol = null,
-  config = V12_STABLECOIN_CONFIG,
 } = {}) {
+  const config = V12_STABLECOIN_CONFIG;
   const asOfMs = parseAsOfMs(asOfUtc);
-  const observationDate = observationDateFromAsOf(asOfUtc, asOfMs);
+  const observationDate = observationDateFromAsOfMs(asOfMs);
+  const calibrationValidation = validateStablecoinDatedCalibration(calibration);
   const base = {
     candidate_only: true,
     production_active: false,
@@ -339,15 +442,58 @@ export function computeV12StablecoinCandidate({
     factor_key: V12_FACTOR_KEY,
     endpoint_rule: STABLECOIN_ENDPOINT_RULE,
     cross_vintage_rule: STABLECOIN_CROSS_VINTAGE_RULE,
-    calibration_id: calibration?.calibration_id || STABLECOIN_DATED_CALIBRATION_ID,
+    // Report supplied identity only — never silently relabel a missing/wrong contract.
+    calibration_id: calibration?.calibration_id ?? null,
+    calibration_schema: calibration?.schema ?? null,
+    calibration_validation: {
+      ok: calibrationValidation.ok,
+      reason: calibrationValidation.reason,
+      errors: calibrationValidation.errors,
+    },
     as_of_utc: asOfUtc ?? null,
+    as_of_ms: asOfMs,
     observation_date: observationDate,
+    frozen_configured_weight_total: V12_FROZEN_CONFIGURED_WEIGHT_TOTAL,
     component_blend: { ...LOCKED_OFFICIAL_BLENDS.stablecoins },
   };
 
+  if (asOfMs == null || observationDate == null) {
+    return {
+      ...base,
+      score: null,
+      reason: 'invalid_or_missing_as_of_utc',
+      aggregate_elapsed_30d_growth: null,
+      recent_elapsed_momentum: null,
+      concentration: null,
+      supply_percentile: null,
+      component_scores: null,
+      valid_coin_count: 0,
+      configured_weight_coverage: 0,
+      calibration_prior_count: 0,
+      coins: [],
+    };
+  }
+
+  if (!calibrationValidation.ok) {
+    return {
+      ...base,
+      score: null,
+      reason: 'invalid_dated_calibration_contract',
+      aggregate_elapsed_30d_growth: null,
+      recent_elapsed_momentum: null,
+      concentration: null,
+      supply_percentile: null,
+      component_scores: null,
+      valid_coin_count: 0,
+      configured_weight_coverage: 0,
+      calibration_prior_count: 0,
+      coins: [],
+    };
+  }
+
   const perCoin = [];
   const valid = [];
-  const totalConfiguredWeight = configuredStablecoinWeightSum(config);
+  const totalConfiguredWeight = V12_FROZEN_CONFIGURED_WEIGHT_TOTAL;
 
   for (let i = 0; i < config.length; i += 1) {
     const coin = config[i];
@@ -374,9 +520,13 @@ export function computeV12StablecoinCandidate({
   }
 
   const includedWeightSum = valid.reduce((sum, coin) => sum + coin.weight, 0);
-  const weightCoverage = totalConfiguredWeight > 0 ? includedWeightSum / totalConfiguredWeight : 0;
+  const coverage = stablecoinCoverageEligible({
+    validCoinCount: valid.length,
+    includedWeightSum,
+    totalConfiguredWeight,
+  });
 
-  if (valid.length < MIN_VALID_STABLECOIN_GROWTH_COINS || weightCoverage < MIN_STABLECOIN_WEIGHT_COVERAGE) {
+  if (!coverage.eligible) {
     return {
       ...base,
       score: null,
@@ -387,7 +537,7 @@ export function computeV12StablecoinCandidate({
       supply_percentile: null,
       component_scores: null,
       valid_coin_count: valid.length,
-      configured_weight_coverage: weightCoverage,
+      configured_weight_coverage: coverage.configured_weight_coverage,
       calibration_prior_count: 0,
       coins: perCoin,
     };
@@ -408,7 +558,7 @@ export function computeV12StablecoinCandidate({
       supply_percentile: null,
       component_scores: null,
       valid_coin_count: valid.length,
-      configured_weight_coverage: weightCoverage,
+      configured_weight_coverage: coverage.configured_weight_coverage,
       calibration_prior_count: 0,
       coins: perCoin,
     };
@@ -432,7 +582,7 @@ export function computeV12StablecoinCandidate({
       supply_percentile: null,
       component_scores: null,
       valid_coin_count: valid.length,
-      configured_weight_coverage: weightCoverage,
+      configured_weight_coverage: coverage.configured_weight_coverage,
       calibration_prior_count: 0,
       coins: perCoin,
     };
@@ -466,7 +616,7 @@ export function computeV12StablecoinCandidate({
       concentration: concentrationScore,
     },
     valid_coin_count: valid.length,
-    configured_weight_coverage: weightCoverage,
+    configured_weight_coverage: coverage.configured_weight_coverage,
     calibration_prior_count: priorCalibration.length,
     coins: perCoin,
   };
