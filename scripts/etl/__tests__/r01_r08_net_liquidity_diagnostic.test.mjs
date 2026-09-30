@@ -19,6 +19,9 @@ import {
   buildPositionalAlignmentMap,
   buildSeriesFromExactDateIntersection,
   buildUnitOnlyPositionalSeries,
+  buildWednesdayAlignedDiagnostic,
+  compareOverlappingSeries,
+  crossCheckRrpWednesdayConstructions,
   describeNoncanonicalAppHelper,
   evaluateCacheDetectorScenarios,
   extractFiniteDatedRows,
@@ -158,6 +161,23 @@ test('6. independent finite filtering demonstrates positional shift risk', () =>
   assert.equal(alignment.rows[0].rrp_source_date, '2026-09-09');
   assert.equal(alignment.rows[0].any_dates_differ, true);
   assert.ok(alignment.count_any_dates_differ >= 1);
+  assert.equal(alignment.rows[0].rrp_original_source_index, 1);
+  assert.equal(alignment.rows[0].rrp_finite_array_index, 0);
+  assert.equal(alignment.rows[0].finite_filter_shift, true);
+  assert.deepEqual(alignment.rows[0].finite_filter_shifted_sources, ['RRPONTSYD']);
+  assert.equal(
+    alignment.finite_filter_shift.count_positional_rows_with_any_source_index_shift,
+    2
+  );
+  assert.equal(
+    alignment.finite_filter_shift.missing_non_finite_rows_removed_per_source.RRPONTSYD,
+    1
+  );
+  assert.equal(
+    alignment.finite_filter_shift.missing_non_finite_rows_removed_per_source.WALCL,
+    0
+  );
+  assert.equal(alignment.finite_filter_shift.separate_from_cadence_date_mismatch, true);
 });
 
 test('7. RRP empty -> P0 zero substitution', () => {
@@ -380,4 +400,203 @@ test('fixture file on disk is not rewritten by diagnostic imports', () => {
     'utf8'
   );
   assert.equal(before, after);
+});
+
+test('P3 uses native WALCL/WTREGEN Wednesdays, not production-query weekly dates', () => {
+  const nativeWalcl = [obs('2026-09-02', 6700000), obs('2026-09-09', 6710000)];
+  const nativeTga = [obs('2026-09-02', 900000), obs('2026-09-09', 901000)];
+  // Deliberately different dates from native Wednesdays
+  const weeklyWalcl = [obs('2026-09-04', 9999999), obs('2026-09-11', 9999998)];
+  const weeklyTga = [obs('2026-09-04', 111111), obs('2026-09-11', 111112)];
+  const rrpWed = [obs('2026-09-02', 50), obs('2026-09-09', 51)];
+
+  const p3 = buildWednesdayAlignedDiagnostic({
+    walclNative: nativeWalcl,
+    wtregenNative: nativeTga,
+    rrpWednesdayObservations: rrpWed,
+  });
+  assert.equal(p3.available, true);
+  assert.equal(p3.walcl_source, 'native');
+  assert.equal(p3.wtregen_source, 'native');
+  assert.deepEqual(
+    p3.series.map((r) => r.date),
+    ['2026-09-02', '2026-09-09']
+  );
+  assert.equal(p3.series[0].walcl_usd, 6700000 * 1e6);
+  assert.ok(!p3.series.some((r) => r.date === '2026-09-04'));
+
+  const report = buildOfflineDiagnosticReport({
+    repositorySha: 'c'.repeat(40),
+    generatedAtUtc: '2026-09-26T12:00:00.000Z',
+    queryWindow: { observation_start: '2025-09-26', observation_end: '2026-09-26' },
+    walclWeekly: weeklyWalcl,
+    rrpWeekly: rrpWed,
+    wtregenWeekly: weeklyTga,
+    walclNative: nativeWalcl,
+    wtregenNative: nativeTga,
+    rrpNative: [
+      obs('2026-08-31', 40),
+      obs('2026-09-01', 45),
+      obs('2026-09-02', 50),
+      obs('2026-09-07', 48),
+      obs('2026-09-08', 49),
+      obs('2026-09-09', 51),
+    ],
+    rrpWednesdayFred: rrpWed,
+  });
+  assert.equal(report.wednesday_aligned_diagnostic.available, true);
+  assert.deepEqual(
+    report.wednesday_aligned_diagnostic.series.map((r) => r.date),
+    ['2026-09-02', '2026-09-09']
+  );
+  assert.equal(report.wednesday_aligned_diagnostic.series[0].walcl_usd, 6700000 * 1e6);
+});
+
+test('P3 unavailable when native WALCL/WTREGEN missing — no weekly fallback', () => {
+  const weekly = makeAlignedWeeklyFixture();
+  const report = buildOfflineDiagnosticReport({
+    repositorySha: 'd'.repeat(40),
+    generatedAtUtc: '2026-09-26T12:00:00.000Z',
+    queryWindow: { observation_start: '2025-09-26', observation_end: '2026-09-26' },
+    walclWeekly: weekly.walcl,
+    rrpWeekly: weekly.rrp,
+    wtregenWeekly: weekly.tga,
+    walclNative: null,
+    wtregenNative: null,
+    rrpWednesdayFred: weekly.rrp,
+  });
+  assert.equal(report.wednesday_aligned_diagnostic.available, false);
+  assert.equal(report.wednesday_aligned_diagnostic.reason, 'native_walcl_unavailable');
+  assert.equal(
+    report.comparators.P3_SOURCE_CORRECT_WEDNESDAY_ALIGNED_DIAGNOSTIC.construction.available,
+    false
+  );
+});
+
+test('rrp_wednesday_crosscheck reports both FRED WEW and native aggregation', () => {
+  const fredWew = [obs('2026-09-16', 25), obs('2026-09-23', 55)];
+  const nativeDaily = [
+    obs('2026-09-14', 10),
+    obs('2026-09-15', 20),
+    obs('2026-09-16', 30),
+    obs('2026-09-17', 40),
+    obs('2026-09-18', 50),
+    obs('2026-09-23', 60),
+  ];
+  const cross = crossCheckRrpWednesdayConstructions({
+    fredWewObservations: fredWew,
+    nativeDailyObservations: nativeDaily,
+  });
+  assert.equal(cross.available, true);
+  assert.equal(cross.fred_wew.observation_count, 2);
+  assert.equal(cross.rrp_native_daily_to_wednesday_avg_diagnostic.observation_count, 2);
+  assert.equal(cross.shared_date_count, 2);
+  assert.equal(cross.winner, null);
+  assert.equal(cross.successor_contract, false);
+  assert.equal(cross.automatic_acceptance_threshold, null);
+  const wed16 = cross.per_shared_date.find((r) => r.date === '2026-09-16');
+  assert.ok(wed16);
+  assert.equal(wed16.fred_normalized_usd, 25 * 1e9);
+  assert.equal(wed16.independent_normalized_usd, ((10 + 20 + 30) / 3) * 1e9);
+  assert.equal(wed16.independent_member_count, 3);
+  assert.equal(wed16.exact_match, false);
+  assert.ok(cross.differing_count >= 1);
+
+  const unavailable = crossCheckRrpWednesdayConstructions({
+    fredWewObservations: null,
+    nativeDailyObservations: null,
+  });
+  assert.equal(unavailable.available, false);
+});
+
+test('full overlapping-series: identical series -> zero differences', () => {
+  const series = [10, 11, 12, 13, 14, 15, 16, 17, 18];
+  const cmp = compareOverlappingSeries({
+    alignmentMode: 'positional_index',
+    p0Values: series,
+    otherValues: [...series],
+  });
+  assert.equal(cmp.available, true);
+  assert.equal(cmp.overlapping_observation_count, 9);
+  assert.equal(cmp.nonzero_net_liquidity_difference_count, 0);
+  assert.equal(cmp.absolute_net_liquidity_difference.max, 0);
+  assert.equal(cmp.roc4w_overlap.sign_direction_change_count, 0);
+});
+
+test('full overlapping-series: P1 unit-only produces expected nonzero deltas', () => {
+  const { walcl, rrp, tga } = makeAlignedWeeklyFixture();
+  const p0 = buildCurrentProductionPositionalSeries({
+    walclObservations: walcl,
+    rrpObservations: rrp,
+    wtregenObservations: tga,
+  });
+  const p1 = buildUnitOnlyPositionalSeries({
+    walclObservations: walcl,
+    rrpObservations: rrp,
+    wtregenObservations: tga,
+  });
+  const cmp = compareOverlappingSeries({
+    alignmentMode: 'positional_index',
+    p0Values: p0.series,
+    otherValues: p1.series,
+  });
+  assert.equal(cmp.available, true);
+  assert.equal(cmp.overlapping_observation_count, p0.series.length);
+  assert.equal(cmp.nonzero_net_liquidity_difference_count, p0.series.length);
+  const expectedAbs0 = Math.abs(Number(rrp[0].value) * 1e9 - Number(rrp[0].value) * 1e6);
+  assert.equal(cmp.absolute_net_liquidity_difference.min, expectedAbs0);
+});
+
+test('full overlapping-series: mismatched dates excluded rather than silently paired', () => {
+  const cmp = compareOverlappingSeries({
+    alignmentMode: 'date_identity',
+    p0Dated: [
+      { date: '2026-09-02', nl: 100 },
+      { date: '2026-09-09', nl: 200 },
+    ],
+    otherDated: [
+      { date: '2026-09-03', nl: 100 },
+      { date: '2026-09-10', nl: 200 },
+    ],
+  });
+  assert.equal(cmp.available, true);
+  assert.equal(cmp.overlapping_observation_count, 0);
+  assert.equal(cmp.excluded_unmatched_count, 4);
+  assert.equal(cmp.nonzero_net_liquidity_difference_count, 0);
+});
+
+test('full overlapping-series: RoC sign-change count on synthetic fixture', () => {
+  // P0 rising; other falls after index 4 → opposite RoC signs on overlapping windows
+  const p0 = [100, 101, 102, 103, 104, 110, 116, 122, 128];
+  const other = [100, 101, 102, 103, 104, 90, 80, 70, 60];
+  const cmp = compareOverlappingSeries({
+    alignmentMode: 'positional_index',
+    p0Values: p0,
+    otherValues: other,
+  });
+  assert.ok(cmp.roc4w_overlap.overlapping_roc_count >= 1);
+  assert.ok(cmp.roc4w_overlap.sign_direction_change_count >= 1);
+  // Spot-check index 5: p0 roc > 0, other roc < 0
+  const roc0 = ((110 - 100) / 100) * 100;
+  const roc1 = ((90 - 100) / 100) * 100;
+  assert.ok(Math.sign(roc0) !== Math.sign(roc1));
+});
+
+test('artifact upload step is not if: always()', () => {
+  const yml = fs.readFileSync(
+    path.join(REPO_ROOT, '.github/workflows/r01-r08-net-liquidity-diagnostic.yml'),
+    'utf8'
+  );
+  const uploadIdx = yml.indexOf('Upload R01/R08 diagnostic report');
+  assert.ok(uploadIdx >= 0);
+  const uploadSection = yml.slice(uploadIdx, uploadIdx + 280);
+  assert.ok(!/if:\s*always\(\)/.test(uploadSection));
+  const cleanIdx = yml.indexOf('Confirm repository worktree stayed clean');
+  assert.ok(cleanIdx > uploadIdx);
+  const cleanSection = yml.slice(cleanIdx, cleanIdx + 120);
+  assert.ok(/if:\s*always\(\)/.test(cleanSection));
+  // Post-run SHA guard must precede upload
+  const postGuardIdx = yml.indexOf('Require origin/main after diagnostic');
+  assert.ok(postGuardIdx >= 0);
+  assert.ok(postGuardIdx < uploadIdx);
 });

@@ -67,7 +67,6 @@ jobs:
           fi
 
       - name: Upload R01/R08 diagnostic report
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: r01-r08-net-liquidity-diagnostic
