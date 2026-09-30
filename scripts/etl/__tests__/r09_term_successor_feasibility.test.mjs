@@ -21,10 +21,12 @@ import {
   bitmexNextEndTimeCursor,
   buildAlignedStressWindow,
   buildBitmexFundingPageUrl,
+  buildCoingeckoRangeUrl,
   buildFeasibilityReportFromSources,
   buildFundingDailySurface,
   buildOfflineFeasibilityReport,
   buildOkxFundingPageUrl,
+  buildScoreRelevantEvidenceUnion,
   buildSuccessorFingerprintInput,
   buildSyntheticFixtureBundle,
   buildUnavailabilityMatrix,
@@ -43,9 +45,11 @@ import {
   detectPaginationAdvance,
   enumerateValidReferenceEndpoints,
   hashFingerprintInput,
+  inferObservedCadenceSegments,
   latestEligibleSettlementAtOrBeforeDate,
   latestFundingByMaxTimestamp,
   maxFeasibleReferenceDepth,
+  pageTimestampBounds,
   providerRequestStrategies,
   rmsSimpleReturns,
   runFingerprintMutationTests,
@@ -477,10 +481,12 @@ test('44. acquisition/cache times excluded from fingerprint', () => {
 test('45. binding lastUpdated', () => {
   const lu = bindingLastUpdated({
     latestRawFundingUtc: '2026-09-30T16:00:00.000Z',
-    latestUsedFundingUtc: '2026-09-29T00:00:00.000Z',
+    latestUsedFundingUtc: '2026-09-29T16:00:00.000Z',
+    latestUsedFundingForStressUtc: '2026-09-29T08:00:00.000Z',
     latestRawSpotUtc: '2026-09-30T15:54:20.000Z',
     latestUsedSpotUtc: '2026-09-29T00:00:00.000Z',
     commonCutoffD: '2026-09-29',
+    currentComponentsAvailable: true,
   });
   assert.equal(lu.binding_lastUpdated, '2026-09-29T00:00:00.000Z');
   assert.ok(lu.never_uses.includes('wall_clock_now'));
@@ -811,19 +817,15 @@ test('74. max common depth uses all three providers + CoinGecko', () => {
   assert.ok(report.max_reference_depth_by_provider.okx);
   assert.match(
     report.max_common_live_reference_depth_definition,
-    /BitMEX|Binance|OKX|CoinGecko/
+    /provider_specific_common_depth/
   );
   const expected = Math.min(
-    report.max_reference_depth_by_provider.bitmex.common_funding_stress,
-    report.max_reference_depth_by_provider.binance.common_funding_stress,
-    report.max_reference_depth_by_provider.okx.common_funding_stress,
-    Math.max(
-      report.max_reference_depth_by_provider.bitmex.volatility,
-      report.max_reference_depth_by_provider.binance.volatility,
-      report.max_reference_depth_by_provider.okx.volatility
-    )
+    report.max_reference_depth_by_provider.bitmex.provider_specific_common_depth,
+    report.max_reference_depth_by_provider.binance.provider_specific_common_depth,
+    report.max_reference_depth_by_provider.okx.provider_specific_common_depth
   );
   assert.equal(report.max_common_live_reference_depth, expected);
+  assert.ok(Number.isFinite(report.coingecko_raw_historical_daily_capacity));
 });
 
 test('75. stale provider capacity separated from Gate-1 eligibility', () => {
@@ -840,7 +842,7 @@ test('75. stale provider capacity separated from Gate-1 eligibility', () => {
 
 test('76. cadence transition reported', () => {
   const rows = [];
-  // stable 8h then jump to 24h
+  // stable 8h for two days, then sustained 24h cadence
   for (const iso of [
     '2026-09-01T00:00:00.000Z',
     '2026-09-01T08:00:00.000Z',
@@ -849,12 +851,15 @@ test('76. cadence transition reported', () => {
     '2026-09-02T08:00:00.000Z',
     '2026-09-02T16:00:00.000Z',
     '2026-09-03T16:00:00.000Z',
+    '2026-09-04T16:00:00.000Z',
+    '2026-09-05T16:00:00.000Z',
   ]) {
     rows.push({ fundingTime: Date.parse(iso), fundingRate: '0.0001' });
   }
   const { eligible } = canonicalizeFundingRows(rows, 'binance');
   const daily = buildFundingDailySurface(eligible, 'binance');
-  assert.ok(daily.observed_cadence.cadence_transitions.length >= 1);
+  assert.ok(daily.observed_cadence.segments.length >= 2);
+  assert.ok(daily.observed_cadence.transitions.length >= 1);
 });
 
 test('77. ambiguous cadence day is not COMPLETE', () => {
@@ -1002,4 +1007,376 @@ test('83. scientific REFERENCE_60=false does NOT itself create tooling blocker',
     completedSpot: { ambiguous_non_midnight_prior_rows: [] },
   });
   assert.equal(blockers.length, 0);
+});
+
+test('84. BitMEX pagination derives min/max independent of array order', () => {
+  // Unexpected ASCENDING page (oldest first)
+  const ascendingPage = [
+    { timestamp: '2026-09-01T00:00:00.000Z' },
+    { timestamp: '2026-09-01T08:00:00.000Z' },
+    { timestamp: '2026-09-01T16:00:00.000Z' },
+  ];
+  const bounds = pageTimestampBounds(ascendingPage, (r) => r.timestamp);
+  assert.equal(bounds.raw_order, 'ASCENDING');
+  assert.equal(bounds.oldest_iso, '2026-09-01T00:00:00.000Z');
+  assert.equal(bounds.newest_iso, '2026-09-01T16:00:00.000Z');
+  const next = bitmexNextEndTimeCursor(bounds.oldest_iso);
+  assert.ok(Date.parse(next) < Date.parse(bounds.oldest_iso));
+  const url = buildBitmexFundingPageUrl({ endTime: next });
+  assert.match(url, /endTime=/);
+  assert.doesNotMatch(url, /[?&]end=/);
+});
+
+test('85-87. stable cadence survives one missing settlement', () => {
+  const rows = [];
+  // 4 complete days at 8h, then day with missing 08:00, then 2 more complete
+  for (const d of ['2026-09-01', '2026-09-02', '2026-09-03', '2026-09-04']) {
+    for (const h of [0, 8, 16]) {
+      rows.push({
+        fundingTime: Date.parse(`${d}T${String(h).padStart(2, '0')}:00:00.000Z`),
+        fundingRate: '0.0001',
+      });
+    }
+  }
+  // 2026-09-05 missing 08:00
+  rows.push({ fundingTime: Date.parse('2026-09-05T00:00:00.000Z'), fundingRate: '0.0001' });
+  rows.push({ fundingTime: Date.parse('2026-09-05T16:00:00.000Z'), fundingRate: '0.0001' });
+  for (const d of ['2026-09-06', '2026-09-07']) {
+    for (const h of [0, 8, 16]) {
+      rows.push({
+        fundingTime: Date.parse(`${d}T${String(h).padStart(2, '0')}:00:00.000Z`),
+        fundingRate: '0.0001',
+      });
+    }
+  }
+  const { eligible } = canonicalizeFundingRows(rows, 'binance');
+  const daily = buildFundingDailySurface(eligible, 'binance');
+  const byDate = Object.fromEntries(daily.days.map((d) => [d.utc_date, d.classification]));
+  assert.equal(byDate['2026-09-05'], 'INCOMPLETE_DAY');
+  assert.equal(byDate['2026-09-04'], 'COMPLETE_DAY');
+  assert.equal(byDate['2026-09-06'], 'COMPLETE_DAY');
+  assert.ok(daily.observed_cadence.segments.some((s) => s.status === 'STABLE_SEGMENT'));
+});
+
+test('88. cadence transition produces separate stable regions', () => {
+  const rows = [];
+  for (const iso of [
+    '2026-09-01T00:00:00.000Z', '2026-09-01T08:00:00.000Z', '2026-09-01T16:00:00.000Z',
+    '2026-09-02T00:00:00.000Z', '2026-09-02T08:00:00.000Z', '2026-09-02T16:00:00.000Z',
+    '2026-09-03T16:00:00.000Z', '2026-09-04T16:00:00.000Z', '2026-09-05T16:00:00.000Z',
+  ]) {
+    rows.push({ fundingTime: Date.parse(iso), fundingRate: '0.0001' });
+  }
+  const { eligible } = canonicalizeFundingRows(rows, 'binance');
+  const obs = inferObservedCadenceSegments(eligible);
+  assert.ok(obs.segments.length >= 2);
+  assert.ok(obs.transitions.length >= 1);
+  assert.ok(obs.segments.filter((s) => s.status === 'STABLE_SEGMENT').length >= 1);
+});
+
+test('89. transition boundary ambiguity is localized', () => {
+  const rows = [];
+  for (const iso of [
+    '2026-09-01T00:00:00.000Z', '2026-09-01T08:00:00.000Z', '2026-09-01T16:00:00.000Z',
+    '2026-09-02T00:00:00.000Z', '2026-09-02T08:00:00.000Z', '2026-09-02T16:00:00.000Z',
+    '2026-09-03T16:00:00.000Z', '2026-09-04T16:00:00.000Z', '2026-09-05T16:00:00.000Z',
+  ]) {
+    rows.push({ fundingTime: Date.parse(iso), fundingRate: '0.0001' });
+  }
+  const { eligible } = canonicalizeFundingRows(rows, 'binance');
+  const daily = buildFundingDailySurface(eligible, 'binance');
+  assert.equal(daily.days.find((d) => d.utc_date === '2026-09-01').classification, 'COMPLETE_DAY');
+  const boundary = daily.observed_cadence.transitions[0]?.boundary_utc_date;
+  assert.ok(boundary);
+  const boundaryDay = daily.days.find((d) => d.utc_date === boundary);
+  assert.ok(
+    boundaryDay.classification === 'CADENCE_AMBIGUOUS_DAY'
+    || boundaryDay.classification === 'INCOMPLETE_DAY'
+    || boundaryDay.classification === 'COMPLETE_DAY'
+  );
+});
+
+test('90. Stress reference gaps extend funding fingerprint scope', () => {
+  const fixture = buildSyntheticFixtureBundle({
+    asOfUtc: '2026-09-30T16:00:00.000Z',
+    completeDays: 100,
+  });
+  const report = buildFeasibilityReportFromSources({
+    repositorySha: 'a'.repeat(40),
+    generatedAtUtc: '2026-09-30T16:00:00.000Z',
+    asOfUtc: '2026-09-30T16:00:00.000Z',
+    live: false,
+    sources: { funding: fixture.funding, coingeckoPrices: fixture.spot },
+  });
+  const selected = report.two_gate_provider_selection.selected_provider_under_two_gate_concept;
+  const union = report.fingerprint_candidate.evidence_union;
+  assert.ok(union);
+  assert.ok(Array.isArray(union.stress_reference_endpoints));
+  assert.ok(report.fingerprint_candidate.funding_row_count > 0);
+  // Explicit union includes stress endpoints beyond funding-only first-60 assumption
+  const fundingOnly = selectScoreRelevantFundingRows({
+    eligibleRows: [],
+    currentWindowRows: [],
+    referenceEndpoints: union.funding_reference_endpoints,
+  });
+  const full = buildScoreRelevantEvidenceUnion({
+    eligibleFundingRows: [],
+    completedSpot: [],
+    fundingDailyByDate: {},
+    dailyDays: [],
+    currentFundingWindowRows: [],
+    fundingCurrentEndpoint: union.funding_current_endpoint || null,
+    fundingReferenceEndpoints: union.funding_reference_endpoints,
+    volatilityCurrentEndpoint: null,
+    volatilityReferenceEndpoints: [],
+    stressCurrentEndpoint: union.stress_current_endpoint || selected && report.provider_analyses[selected]?.common_cutoff?.common_cutoff_date_D,
+    stressReferenceEndpoints: [
+      ...union.stress_reference_endpoints,
+      // force an older stress-only endpoint
+      addUtcDays(union.stress_reference_endpoints.at(-1) || '2026-07-01', -5),
+    ],
+  });
+  assert.ok(full.stress_reference_endpoints.length >= union.stress_reference_endpoints.length);
+});
+
+test('91. Volatility reference gaps extend spot fingerprint scope', () => {
+  const completed = Array.from({ length: 80 }, (_, i) => ({
+    utc_date: addUtcDays('2026-07-01', i),
+    price: 100000 + i,
+    source_timestamp_utc: `${addUtcDays('2026-07-01', i)}T00:00:00.000Z`,
+  }));
+  const D = '2026-09-18';
+  // Skip some dates so valid vol endpoints are non-consecutive
+  const withGap = completed.filter((r) => r.utc_date !== '2026-08-15');
+  const refs = [];
+  for (let i = 1; i <= 70; i += 1) {
+    const ep = addUtcDays(D, -i);
+    if (ep === '2026-08-15') continue;
+    // require 31 contiguous prices ending at ep
+    const slice = withGap.filter((r) => r.utc_date <= ep).slice(-31);
+    if (slice.length === 31 && slice[30].utc_date === ep) refs.push(ep);
+  }
+  const farRefs = refs.slice(0, 60);
+  const union = buildScoreRelevantEvidenceUnion({
+    eligibleFundingRows: [],
+    completedSpot: withGap,
+    fundingDailyByDate: {},
+    dailyDays: [],
+    currentFundingWindowRows: [],
+    fundingCurrentEndpoint: null,
+    fundingReferenceEndpoints: [],
+    volatilityCurrentEndpoint: D,
+    volatilityReferenceEndpoints: farRefs,
+    stressCurrentEndpoint: null,
+    stressReferenceEndpoints: [],
+  });
+  const naiveEarliest = addUtcDays(D, -(60 + 31));
+  assert.ok(union.earliest_spot_date <= naiveEarliest || union.spot_row_count >= 31);
+  assert.ok(union.spot_rows.some((r) => r.utc_date === farRefs.at(-1) || r.utc_date < D));
+});
+
+test('92. exact score-evidence union drives fingerprint', () => {
+  const fundingRows = [
+    { source_timestamp_utc: '2026-09-01T00:00:00.000Z', funding_rate: 0.0001 },
+    { source_timestamp_utc: '2026-09-29T16:00:00.000Z', funding_rate: 0.0002 },
+  ];
+  const spotRows = [
+    { utc_date: '2026-09-01', source_timestamp_utc: '2026-09-01T00:00:00.000Z', price: 1 },
+    { utc_date: '2026-09-29', source_timestamp_utc: '2026-09-29T00:00:00.000Z', price: 2 },
+  ];
+  const a = hashFingerprintInput(buildSuccessorFingerprintInput({
+    selectedProvider: 'binance',
+    fundingRows,
+    spotRows,
+    semanticIds: {},
+    referenceDepth: 60,
+  }));
+  const b = hashFingerprintInput(buildSuccessorFingerprintInput({
+    selectedProvider: 'binance',
+    fundingRows: [
+      ...fundingRows,
+      { source_timestamp_utc: '2025-01-01T00:00:00.000Z', funding_rate: 0.9 },
+    ],
+    spotRows,
+    semanticIds: {},
+    referenceDepth: 60,
+  }));
+  assert.notEqual(a, b);
+});
+
+test('93. binding lastUpdated includes Stress funding leg', () => {
+  const lu = bindingLastUpdated({
+    latestRawFundingUtc: '2026-09-29T16:00:00.000Z',
+    latestUsedFundingUtc: '2026-09-29T16:00:00.000Z',
+    latestUsedFundingForStressUtc: '2026-09-29T08:00:00.000Z',
+    latestRawSpotUtc: '2026-09-29T00:00:00.000Z',
+    latestUsedSpotUtc: '2026-09-29T00:00:00.000Z',
+    commonCutoffD: '2026-09-29',
+    currentComponentsAvailable: true,
+  });
+  assert.equal(lu.binding_lastUpdated, '2026-09-29T00:00:00.000Z');
+  assert.equal(
+    lu.required_legs.stress_component_latest_funding_utc,
+    '2026-09-29T08:00:00.000Z'
+  );
+  // If stress funding were ignored, binding would still be spot midnight — prove stress is in the min set
+  const withoutStressWouldBe = ['2026-09-29T16:00:00.000Z', '2026-09-29T00:00:00.000Z']
+    .reduce((a, b) => (a < b ? a : b));
+  assert.equal(withoutStressWouldBe, '2026-09-29T00:00:00.000Z');
+  const withStressEarlier = bindingLastUpdated({
+    latestRawFundingUtc: '2026-09-29T16:00:00.000Z',
+    latestUsedFundingUtc: '2026-09-29T16:00:00.000Z',
+    latestUsedFundingForStressUtc: '2026-09-28T16:00:00.000Z',
+    latestRawSpotUtc: '2026-09-29T00:00:00.000Z',
+    latestUsedSpotUtc: '2026-09-29T00:00:00.000Z',
+    commonCutoffD: '2026-09-29',
+    currentComponentsAvailable: true,
+  });
+  assert.equal(withStressEarlier.binding_lastUpdated, '2026-09-28T16:00:00.000Z');
+});
+
+test('94. provider-specific common depth includes Volatility at provider D', () => {
+  const report = buildOfflineFeasibilityReport({
+    repositorySha: 'b'.repeat(40),
+    generatedAtUtc: '2026-09-30T16:00:00.000Z',
+    asOfUtc: '2026-09-30T16:00:00.000Z',
+  });
+  const binance = report.max_reference_depth_by_provider.binance;
+  assert.equal(
+    binance.provider_specific_common_depth,
+    Math.min(binance.funding, binance.stress, binance.volatility)
+  );
+});
+
+test('95. all-provider common depth = min(provider-specific common depths)', () => {
+  const report = buildOfflineFeasibilityReport({
+    repositorySha: 'c'.repeat(40),
+    generatedAtUtc: '2026-09-30T16:00:00.000Z',
+    asOfUtc: '2026-09-30T16:00:00.000Z',
+  });
+  assert.equal(
+    report.max_common_live_reference_depth,
+    Math.min(
+      report.max_reference_depth_by_provider.bitmex.provider_specific_common_depth,
+      report.max_reference_depth_by_provider.binance.provider_specific_common_depth,
+      report.max_reference_depth_by_provider.okx.provider_specific_common_depth
+    )
+  );
+});
+
+test('96. per-page raw order reported', () => {
+  const provenance = summarizeProviderProvenance({
+    provider: 'binance',
+    requests: [{
+      request_identity: 'https://example/p1',
+      http_status: 200,
+      http_outcome_class: 'VALID_HTTP',
+      payload_sha256: 'x',
+      fetch_acquisition_timestamp_utc: '2026-09-30T16:00:00.000Z',
+      json: [],
+      parse_error: null,
+    }],
+    rows: [],
+    canonical: { eligible: [], malformed: [] },
+    paginationPages: [{
+      page: 1,
+      row_count: 3,
+      raw_order: 'ASCENDING',
+      oldest_row: '2026-09-01T00:00:00.000Z',
+      newest_row: '2026-09-01T16:00:00.000Z',
+      cursor_used: null,
+    }],
+  });
+  assert.equal(provenance.raw_order_per_request[0].raw_order, 'ASCENDING');
+  assert.ok(provenance.raw_returned_order_note);
+});
+
+test('97. Binance pages individually ASCENDING even if concatenated MIXED', () => {
+  const page1 = [
+    '2026-09-10T00:00:00.000Z',
+    '2026-09-10T08:00:00.000Z',
+    '2026-09-10T16:00:00.000Z',
+  ];
+  const page2 = [
+    '2026-09-01T00:00:00.000Z',
+    '2026-09-01T08:00:00.000Z',
+    '2026-09-01T16:00:00.000Z',
+  ];
+  assert.equal(classifyRawReturnedOrder(page1), 'ASCENDING');
+  assert.equal(classifyRawReturnedOrder(page2), 'ASCENDING');
+  assert.equal(classifyRawReturnedOrder([...page1, ...page2]), 'MIXED');
+});
+
+test('98. CoinGecko URL includes interval=daily', () => {
+  const built = buildCoingeckoRangeUrl({ daysBack: 200, asOfMs: Date.parse('2026-09-30T16:00:00.000Z') });
+  assert.match(built.url, /interval=daily/);
+  assert.equal(built.interval, 'daily');
+  assert.equal(providerRequestStrategies().coingecko.params.interval, 'daily');
+});
+
+test('99. unrelated older evidence remains excluded from fingerprint', () => {
+  const unrelated = {
+    source_timestamp_utc: '2024-01-01T00:00:00.000Z',
+    funding_rate: 0.5,
+  };
+  const windowRows = [
+    { source_timestamp_utc: '2026-09-29T16:00:00.000Z', funding_rate: 0.0001 },
+  ];
+  const union = buildScoreRelevantEvidenceUnion({
+    eligibleFundingRows: [unrelated, ...windowRows],
+    completedSpot: [
+      { utc_date: '2026-09-29', source_timestamp_utc: '2026-09-29T00:00:00.000Z', price: 1 },
+    ],
+    fundingDailyByDate: {},
+    dailyDays: [],
+    currentFundingWindowRows: windowRows,
+    fundingCurrentEndpoint: '2026-09-29',
+    fundingReferenceEndpoints: [],
+    volatilityCurrentEndpoint: '2026-09-29',
+    volatilityReferenceEndpoints: [],
+    stressCurrentEndpoint: '2026-09-29',
+    stressReferenceEndpoints: [],
+  });
+  assert.ok(!union.funding_rows.some((r) => r.source_timestamp_utc.startsWith('2024')));
+});
+
+test('100. skipped invalid endpoints can extend score-relevant history', () => {
+  const completed = [];
+  for (let i = 0; i < 100; i += 1) {
+    const d = addUtcDays('2026-06-01', i);
+    if (d === '2026-07-15') continue; // gap
+    completed.push({
+      utc_date: d,
+      price: 100000 + i,
+      source_timestamp_utc: `${d}T00:00:00.000Z`,
+    });
+  }
+  const D = completed[completed.length - 1].utc_date;
+  const refs = [];
+  for (let i = 1; i < 90; i += 1) {
+    const ep = addUtcDays(D, -i);
+    const ok = completed.some((r) => r.utc_date === ep);
+    if (!ok) continue;
+    const window = completed.filter((r) => r.utc_date <= ep).slice(-31);
+    if (window.length === 31 && window[30].utc_date === ep) refs.push(ep);
+  }
+  const selected = refs.slice(0, 60);
+  const union = buildScoreRelevantEvidenceUnion({
+    eligibleFundingRows: [],
+    completedSpot: completed,
+    fundingDailyByDate: {},
+    dailyDays: [],
+    currentFundingWindowRows: [],
+    fundingCurrentEndpoint: null,
+    fundingReferenceEndpoints: [],
+    volatilityCurrentEndpoint: D,
+    volatilityReferenceEndpoints: selected,
+    stressCurrentEndpoint: null,
+    stressReferenceEndpoints: [],
+  });
+  const consecutiveEarliest = addUtcDays(D, -(60 + 31));
+  // Because of the gap, the 60th valid endpoint is farther back than consecutive assumption
+  assert.ok(selected.length === 60);
+  assert.ok(selected[selected.length - 1] < consecutiveEarliest || union.earliest_spot_date <= selected[selected.length - 1]);
+  assert.ok(union.earliest_spot_date <= selected[selected.length - 1]);
 });

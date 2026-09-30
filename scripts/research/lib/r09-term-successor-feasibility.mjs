@@ -228,69 +228,229 @@ export function analyzeFundingCadence(canonicalAscending, provider) {
   };
 }
 
+const CANONICAL_CADENCE_HOURS = [1, 2, 4, 8, 24];
+
+function roundGapHours(gap) {
+  return Math.round(gap * 1000) / 1000;
+}
+
+function matchCanonicalInterval(gapHours, preferredInterval = null) {
+  // Exact k=1 matches; try larger canonical intervals first so 8h ≠ 1h×8.
+  let exact = null;
+  for (const interval of [...CANONICAL_CADENCE_HOURS].reverse()) {
+    if (Math.abs(gapHours - interval) <= 0.05) {
+      exact = { interval, missing_multiples: 1 };
+      break;
+    }
+  }
+  if (preferredInterval != null) {
+    const k = Math.round(gapHours / preferredInterval);
+    // Same-segment continuation: exact preferred OR a single missing settlement (k=2).
+    // k>=3 is treated as a potential different cadence (e.g. 24h vs 8h).
+    if (k === 1 && Math.abs(gapHours - preferredInterval) <= 0.05) {
+      return { interval: preferredInterval, missing_multiples: 1 };
+    }
+    if (k === 2 && Math.abs(gapHours - 2 * preferredInterval) <= 0.05) {
+      // Prefer an exact different-interval match when present (true cadence change).
+      if (exact && exact.interval !== preferredInterval) return exact;
+      return { interval: preferredInterval, missing_multiples: 2 };
+    }
+  }
+  return exact;
+}
+
 /**
- * Infer observed cadence/phase segments from canonical ascending timestamps.
- * Production fallback is a comparator only — not the silent historical contract.
+ * Deterministic local cadence/phase regions.
+ * A single missing settlement (gap ≈ k*interval) stays inside the same STABLE segment.
+ * Sustained different interval (>=2 consecutive gaps) opens a new stable region.
  */
 export function inferObservedCadenceSegments(canonicalAscending) {
-  const gapsHours = [];
-  for (let i = 1; i < canonicalAscending.length; i += 1) {
-    const a = parseUtcMs(canonicalAscending[i - 1].source_timestamp_utc);
-    const b = parseUtcMs(canonicalAscending[i].source_timestamp_utc);
-    if (a != null && b != null) gapsHours.push((b - a) / MS_HOUR);
+  const rows = canonicalAscending || [];
+  if (rows.length < 2) {
+    return {
+      segments: [],
+      transitions: [],
+      modal_interval_hours: null,
+      observed_phase_set_utc_hours: [],
+      cadence_transitions: [],
+      stable_observed_contract: null,
+      ambiguous: true,
+      date_segment_index: {},
+    };
   }
-  const rounded = gapsHours.map((g) => Math.round(g * 1000) / 1000);
-  const freq = new Map();
-  for (const g of rounded) freq.set(g, (freq.get(g) || 0) + 1);
-  let modal = null;
-  let modalCount = 0;
-  for (const [g, c] of freq) {
-    if (c > modalCount) {
-      modal = g;
-      modalCount = c;
+
+  const gaps = [];
+  for (let i = 1; i < rows.length; i += 1) {
+    const a = parseUtcMs(rows[i - 1].source_timestamp_utc);
+    const b = parseUtcMs(rows[i].source_timestamp_utc);
+    const gap = a != null && b != null ? (b - a) / MS_HOUR : null;
+    gaps.push({
+      index: i - 1,
+      gap_hours: gap == null ? null : roundGapHours(gap),
+      match: null, // filled after modal known / while walking
+      from_ts: rows[i - 1].source_timestamp_utc,
+      to_ts: rows[i].source_timestamp_utc,
+    });
+  }
+
+  // Exact k=1 matches for modal detection
+  const intervalCounts = new Map();
+  for (const g of gaps) {
+    const exact = g.gap_hours == null ? null : matchCanonicalInterval(g.gap_hours);
+    g.exact_match = exact;
+    if (exact && exact.missing_multiples === 1) {
+      intervalCounts.set(exact.interval, (intervalCounts.get(exact.interval) || 0) + 1);
     }
   }
-  const phases = [...new Set(
-    canonicalAscending.map((r) => new Date(r.source_timestamp_utc).getUTCHours())
+  let globalModal = null;
+  let globalModalCount = 0;
+  for (const [interval, count] of intervalCounts) {
+    if (count > globalModalCount) {
+      globalModal = interval;
+      globalModalCount = count;
+    }
+  }
+
+  // Build segments by walking gaps
+  const segments = [];
+  let segStartIdx = 0;
+  let currentInterval = gaps[0]?.exact_match?.interval ?? globalModal;
+  let pendingNewInterval = null;
+  let pendingCount = 0;
+
+  function closeSegment(endIdxExclusive, status, interval) {
+    if (endIdxExclusive <= segStartIdx) return;
+    const segRows = rows.slice(segStartIdx, endIdxExclusive);
+    const phases = [...new Set(
+      segRows.map((r) => new Date(r.source_timestamp_utc).getUTCHours())
+    )].sort((a, b) => a - b);
+    const inferredInterval = interval
+      || (phases.length ? 24 / phases.length : null);
+    const expected = inferredInterval ? Math.round(24 / inferredInterval) : null;
+    const intervalOk = inferredInterval != null
+      && CANONICAL_CADENCE_HOURS.includes(inferredInterval);
+    const stable = status === 'STABLE_SEGMENT'
+      && intervalOk
+      && expected != null
+      && phases.length === expected;
+    segments.push({
+      start_timestamp_utc: segRows[0].source_timestamp_utc,
+      end_timestamp_utc: segRows[segRows.length - 1].source_timestamp_utc,
+      start_utc_date: utcDateString(segRows[0].source_timestamp_utc),
+      end_utc_date: utcDateString(segRows[segRows.length - 1].source_timestamp_utc),
+      inferred_interval_hours: inferredInterval,
+      inferred_utc_phase_slot_set: phases,
+      observation_count: segRows.length,
+      status: stable ? 'STABLE_SEGMENT' : 'AMBIGUOUS_SEGMENT',
+      expected_settlements_per_day: stable ? expected : null,
+      row_start_index: segStartIdx,
+      row_end_index_exclusive: endIdxExclusive,
+    });
+  }
+
+  for (let i = 0; i < gaps.length; i += 1) {
+    const g = gaps[i];
+    const match = g.gap_hours == null
+      ? null
+      : matchCanonicalInterval(g.gap_hours, currentInterval)
+        || matchCanonicalInterval(g.gap_hours);
+    g.match = match;
+    if (!match) {
+      closeSegment(i + 1, currentInterval != null ? 'STABLE_SEGMENT' : 'AMBIGUOUS_SEGMENT', currentInterval);
+      segStartIdx = i + 1;
+      currentInterval = null;
+      pendingNewInterval = null;
+      pendingCount = 0;
+      continue;
+    }
+    if (currentInterval != null && match.interval === currentInterval) {
+      pendingNewInterval = null;
+      pendingCount = 0;
+      continue;
+    }
+    if (currentInterval == null) {
+      currentInterval = match.interval;
+      pendingNewInterval = null;
+      pendingCount = 0;
+      continue;
+    }
+    if (pendingNewInterval === match.interval) {
+      pendingCount += 1;
+    } else {
+      pendingNewInterval = match.interval;
+      pendingCount = 1;
+    }
+    if (pendingCount >= 2) {
+      const transitionAt = i - 1;
+      closeSegment(transitionAt + 1, 'STABLE_SEGMENT', currentInterval);
+      segStartIdx = transitionAt + 1;
+      currentInterval = match.interval;
+      pendingNewInterval = null;
+      pendingCount = 0;
+    }
+  }
+  closeSegment(rows.length, currentInterval != null ? 'STABLE_SEGMENT' : 'AMBIGUOUS_SEGMENT', currentInterval);
+
+  // If no segments produced (edge), mark all ambiguous
+  if (!segments.length) {
+    closeSegment(rows.length, 'AMBIGUOUS_SEGMENT', null);
+  }
+
+  const transitions = [];
+  for (let i = 1; i < segments.length; i += 1) {
+    transitions.push({
+      from_segment_index: i - 1,
+      to_segment_index: i,
+      at_timestamp_utc: segments[i].start_timestamp_utc,
+      from_interval_hours: segments[i - 1].inferred_interval_hours,
+      to_interval_hours: segments[i].inferred_interval_hours,
+      boundary_utc_date: segments[i].start_utc_date,
+    });
+  }
+
+  // Map each UTC date to segment index (prefer covering STABLE)
+  const dateSegmentIndex = {};
+  const transitionDates = new Set(transitions.map((t) => t.boundary_utc_date).filter(Boolean));
+  for (const [si, seg] of segments.entries()) {
+    for (let i = seg.row_start_index; i < seg.row_end_index_exclusive; i += 1) {
+      const d = utcDateString(rows[i].source_timestamp_utc);
+      if (!d) continue;
+      if (dateSegmentIndex[d] == null || seg.status === 'STABLE_SEGMENT') {
+        dateSegmentIndex[d] = si;
+      }
+    }
+  }
+
+  const allPhases = [...new Set(
+    rows.map((r) => new Date(r.source_timestamp_utc).getUTCHours())
   )].sort((a, b) => a - b);
-  const cadenceTransitions = [];
-  for (let i = 1; i < rounded.length; i += 1) {
-    if (modal != null && Math.abs(rounded[i] - modal) > 0.05 && Math.abs(rounded[i - 1] - modal) <= 0.05) {
-      cadenceTransitions.push({
-        at_index: i,
-        from_gap_hours: rounded[i - 1],
-        to_gap_hours: rounded[i],
-        timestamp_utc: canonicalAscending[i + 1]?.source_timestamp_utc ?? null,
-      });
-    }
-  }
-  const stable = modal != null
-    && phases.length > 0
-    && Math.round(24 / modal) === phases.length
-    && cadenceTransitions.length === 0;
+  const anyStable = segments.some((s) => s.status === 'STABLE_SEGMENT');
+
   return {
-    modal_interval_hours: modal,
-    observed_phase_set_utc_hours: phases,
-    cadence_transitions: cadenceTransitions,
-    stable_observed_contract: stable
+    segments,
+    transitions,
+    transition_boundary_dates: [...transitionDates],
+    modal_interval_hours: globalModal,
+    observed_phase_set_utc_hours: allPhases,
+    cadence_transitions: transitions,
+    stable_observed_contract: anyStable
       ? {
-        interval_hours: modal,
-        slot_hours_utc: phases,
-        expected_settlements_per_day: phases.length,
+        note: 'See segments[]; local stable contracts used for COMPLETE_DAY',
+        modal_interval_hours: globalModal,
       }
       : null,
-    ambiguous: !stable,
+    ambiguous: !anyStable,
+    date_segment_index: dateSegmentIndex,
   };
 }
 
 /**
  * funding_daily[UTC date] = mean(all eligible settlements that UTC date).
- * COMPLETE_DAY only when day matches established observed cadence/phase.
+ * COMPLETE_DAY when date belongs to a local STABLE cadence/phase segment.
  */
 export function buildFundingDailySurface(canonicalAscending, provider) {
   const fallback = DOCUMENTED_FUNDING_FALLBACK[provider] || DOCUMENTED_FUNDING_FALLBACK.binance;
   const observed = inferObservedCadenceSegments(canonicalAscending);
-  const contract = observed.stable_observed_contract;
   const byDate = new Map();
   for (const row of canonicalAscending) {
     const d = utcDateString(row.source_timestamp_utc);
@@ -299,34 +459,42 @@ export function buildFundingDailySurface(canonicalAscending, provider) {
     list.push(row);
     byDate.set(d, list);
   }
+  const transitionDates = new Set(observed.transition_boundary_dates || []);
   const days = [];
-  for (const [date, rows] of [...byDate.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
-    const duplicates = classifyFundingDuplicates(rows);
+  for (const [date, dayRows] of [...byDate.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+    const duplicates = classifyFundingDuplicates(dayRows);
+    const hours = dayRows.map((r) => new Date(r.source_timestamp_utc).getUTCHours());
+    const segIdx = observed.date_segment_index[date];
+    const seg = segIdx != null ? observed.segments[segIdx] : null;
     let classification = 'INCOMPLETE_DAY';
-    const hours = rows.map((r) => new Date(r.source_timestamp_utc).getUTCHours());
+    let expectedCount = null;
     if (duplicates.conflicting_duplicates.length) {
       classification = 'CONFLICTING_DAY';
-    } else if (!contract) {
+    } else if (transitionDates.has(date) || !seg || seg.status !== 'STABLE_SEGMENT') {
       classification = 'CADENCE_AMBIGUOUS_DAY';
-    } else if (rows.length === contract.expected_settlements_per_day) {
-      const expectedSlots = new Set(contract.slot_hours_utc);
-      const slotsOk = hours.every((h) => expectedSlots.has(h))
-        && new Set(hours).size === contract.expected_settlements_per_day;
-      classification = slotsOk ? 'COMPLETE_DAY' : 'INCOMPLETE_DAY';
-    } else if (rows.length === 0) {
-      classification = 'NO_DATA';
+    } else {
+      expectedCount = seg.expected_settlements_per_day;
+      const expectedSlots = new Set(seg.inferred_utc_phase_slot_set);
+      if (dayRows.length === expectedCount
+        && hours.every((h) => expectedSlots.has(h))
+        && new Set(hours).size === expectedCount) {
+        classification = 'COMPLETE_DAY';
+      } else {
+        classification = 'INCOMPLETE_DAY';
+      }
     }
-    const mean = rows.length
-      ? rows.reduce((s, r) => s + r.funding_rate, 0) / rows.length
+    const mean = dayRows.length
+      ? dayRows.reduce((s, r) => s + r.funding_rate, 0) / dayRows.length
       : null;
     days.push({
       utc_date: date,
       classification,
-      settlement_count: rows.length,
-      expected_settlement_count: contract?.expected_settlements_per_day ?? null,
+      settlement_count: dayRows.length,
+      expected_settlement_count: expectedCount,
       observed_slot_hours: hours,
+      segment_index: segIdx ?? null,
       funding_daily_mean: mean,
-      rows,
+      rows: dayRows,
     });
   }
   const complete = days.filter((d) => d.classification === 'COMPLETE_DAY');
@@ -943,11 +1111,40 @@ export function bindingLastUpdated({
   latestRawSpotUtc,
   latestUsedSpotUtc,
   commonCutoffD,
+  currentComponentsAvailable = true,
 }) {
-  const required = [latestUsedFundingUtc, latestUsedSpotUtc].filter(Boolean);
-  const binding = required.length
-    ? required.reduce((a, b) => (a < b ? a : b))
-    : null;
+  const requiredLegs = {
+    funding_component_latest_funding_utc: latestUsedFundingUtc,
+    stress_component_latest_funding_utc: latestUsedFundingForStressUtc,
+    volatility_or_stress_latest_spot_utc: latestUsedSpotUtc,
+  };
+  const required = Object.values(requiredLegs).filter(Boolean);
+  if (!currentComponentsAvailable || required.length < 3) {
+    return {
+      latest_raw_funding_observation_utc: latestRawFundingUtc,
+      latest_funding_observation_used_by_funding_current_window_utc: latestUsedFundingUtc,
+      latest_funding_observation_used_by_stress_current_window_utc:
+        latestUsedFundingForStressUtc,
+      latest_funding_observation_used_by_score_utc: latestUsedFundingUtc,
+      latest_raw_coingecko_observation_utc: latestRawSpotUtc,
+      latest_spot_observation_used_by_score_utc: latestUsedSpotUtc,
+      common_cutoff_date_D: commonCutoffD,
+      funding_observation_utc: latestUsedFundingUtc,
+      spot_observation_utc: latestUsedSpotUtc,
+      required_legs: requiredLegs,
+      binding_lastUpdated: null,
+      binding_incomplete_reason: !currentComponentsAvailable
+        ? 'required_current_component_unavailable'
+        : 'missing_one_or_more_required_score_legs',
+      funding_vs_stress_latest_funding_differ:
+        latestUsedFundingForStressUtc != null
+        && latestUsedFundingUtc != null
+        && latestUsedFundingForStressUtc !== latestUsedFundingUtc,
+      rule: 'minimum/oldest of latest REQUIRED score-eligible source observations',
+      never_uses: ['acquisition_timestamp', 'cache_timestamp', 'wall_clock_now', 'synthetic_midnight'],
+    };
+  }
+  const binding = required.reduce((a, b) => (a < b ? a : b));
   return {
     latest_raw_funding_observation_utc: latestRawFundingUtc,
     latest_funding_observation_used_by_funding_current_window_utc: latestUsedFundingUtc,
@@ -959,11 +1156,11 @@ export function bindingLastUpdated({
     common_cutoff_date_D: commonCutoffD,
     funding_observation_utc: latestUsedFundingUtc,
     spot_observation_utc: latestUsedSpotUtc,
+    required_legs: requiredLegs,
     binding_lastUpdated: binding,
+    binding_incomplete_reason: null,
     funding_vs_stress_latest_funding_differ:
-      latestUsedFundingForStressUtc != null
-      && latestUsedFundingUtc != null
-      && latestUsedFundingForStressUtc !== latestUsedFundingUtc,
+      latestUsedFundingForStressUtc !== latestUsedFundingUtc,
     rule: 'minimum/oldest of latest REQUIRED score-eligible source observations',
     never_uses: ['acquisition_timestamp', 'cache_timestamp', 'wall_clock_now', 'synthetic_midnight'],
   };
@@ -1075,9 +1272,9 @@ export function providerRequestStrategies() {
     },
     coingecko: {
       endpoint: 'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range',
-      params: { vs_currency: 'usd' },
-      interval: 'daily implied by range sampling',
-      notes: 'CG_COMPLETED_UTC_DAILY_V1 requires exact 00:00:00.000Z prior-date rows.',
+      params: { vs_currency: 'usd', interval: 'daily' },
+      interval: 'daily',
+      notes: 'Explicit interval=daily. CG_COMPLETED_UTC_DAILY_V1 requires exact 00:00:00.000Z prior-date rows.',
     },
   };
 }
@@ -1160,6 +1357,40 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+/** Derive min/max timestamps from parsed values — never raw array position. */
+export function pageTimestampBounds(rows, getRawTs) {
+  const parsed = [];
+  for (const row of rows || []) {
+    const raw = getRawTs(row);
+    const ms = parseUtcMs(raw);
+    if (ms != null) parsed.push({ raw, ms, iso: new Date(ms).toISOString() });
+  }
+  if (!parsed.length) {
+    return {
+      newest_ms: null,
+      oldest_ms: null,
+      newest_iso: null,
+      oldest_iso: null,
+      raw_order: 'INSUFFICIENT',
+      raw_timestamps: [],
+    };
+  }
+  let newest = parsed[0];
+  let oldest = parsed[0];
+  for (const p of parsed) {
+    if (p.ms > newest.ms) newest = p;
+    if (p.ms < oldest.ms) oldest = p;
+  }
+  return {
+    newest_ms: newest.ms,
+    oldest_ms: oldest.ms,
+    newest_iso: newest.iso,
+    oldest_iso: oldest.iso,
+    raw_order: classifyRawReturnedOrder(parsed.map((p) => p.iso)),
+    raw_timestamps: parsed.map((p) => p.iso),
+  };
+}
+
 export async function fetchBitmexFundingHistory({ pages = 3 } = {}) {
   const all = [];
   const requests = [];
@@ -1171,22 +1402,25 @@ export async function fetchBitmexFundingHistory({ pages = 3 } = {}) {
     const result = await fetchJson(url);
     requests.push(result);
     const rows = Array.isArray(result.json) ? result.json : [];
-    const newest = rows[0]?.timestamp ?? null;
-    const oldest = rows[rows.length - 1]?.timestamp ?? null;
-    const oldestMs = parseUtcMs(oldest);
-    const prevOldestMs = pageMeta.length
-      ? parseUtcMs(pageMeta[pageMeta.length - 1].oldest_row)
-      : null;
+    const bounds = pageTimestampBounds(rows, (row) => row?.timestamp);
+    const prevOldestMs = pageMeta.length ? pageMeta[pageMeta.length - 1].oldest_ms : null;
     const advance = p === 0
       ? { advanced: true, stalled: false, reason: null }
-      : detectPaginationAdvance({ previousOldestMs: prevOldestMs, nextOldestMs: oldestMs });
+      : detectPaginationAdvance({
+        previousOldestMs: prevOldestMs,
+        nextOldestMs: bounds.oldest_ms,
+      });
     pageMeta.push({
       page: p + 1,
       cursor_endTime: endTime,
+      cursor_used: endTime,
       request_identity: url,
-      newest_row: newest,
-      oldest_row: oldest,
+      newest_row: bounds.newest_iso,
+      oldest_row: bounds.oldest_iso,
+      newest_ms: bounds.newest_ms,
+      oldest_ms: bounds.oldest_ms,
       row_count: rows.length,
+      raw_order: bounds.raw_order,
       cursor_advanced: advance.advanced,
       stalled: advance.stalled,
       stall_reason: advance.reason,
@@ -1197,8 +1431,8 @@ export async function fetchBitmexFundingHistory({ pages = 3 } = {}) {
       break;
     }
     all.push(...rows);
-    if (!oldest) break;
-    endTime = bitmexNextEndTimeCursor(oldest);
+    if (bounds.oldest_iso == null) break;
+    endTime = bitmexNextEndTimeCursor(bounds.oldest_iso);
     await sleep(200);
   }
   return {
@@ -1207,6 +1441,17 @@ export async function fetchBitmexFundingHistory({ pages = 3 } = {}) {
     request_count: requests.length,
     pagination_pages: pageMeta,
     pagination_stalled: stalled,
+    raw_order_per_request: pageMeta.map((p) => ({
+      page: p.page,
+      raw_row_count: p.row_count,
+      raw_order: p.raw_order,
+      oldest_timestamp: p.oldest_row,
+      newest_timestamp: p.newest_row,
+      cursor_used: p.cursor_used,
+    })),
+    concatenated_fetch_order: classifyRawReturnedOrder(
+      all.map((r) => extractFundingObservationUtc(r, 'bitmex')).filter(Boolean)
+    ),
   };
 }
 
@@ -1227,20 +1472,25 @@ export async function fetchBinanceFundingHistory({
     const result = await fetchJson(url.toString());
     requests.push(result);
     const rows = Array.isArray(result.json) ? result.json : [];
-    const times = rows.map((r) => Number(r.fundingTime)).filter(Number.isFinite);
-    const newest = times.length ? Math.max(...times) : null;
-    const oldest = times.length ? Math.min(...times) : null;
+    const bounds = pageTimestampBounds(rows, (row) => row?.fundingTime);
     const prevOldest = pageMeta.length ? pageMeta[pageMeta.length - 1].oldest_ms : null;
     const advance = p === 0
       ? { advanced: true, stalled: false, reason: null }
-      : detectPaginationAdvance({ previousOldestMs: prevOldest, nextOldestMs: oldest });
+      : detectPaginationAdvance({
+        previousOldestMs: prevOldest,
+        nextOldestMs: bounds.oldest_ms,
+      });
     pageMeta.push({
       page: p + 1,
       cursor_endTime: cursorEnd,
+      cursor_used: cursorEnd,
       request_identity: url.toString(),
-      newest_ms: newest,
-      oldest_ms: oldest,
+      newest_ms: bounds.newest_ms,
+      oldest_ms: bounds.oldest_ms,
+      newest_row: bounds.newest_iso,
+      oldest_row: bounds.oldest_iso,
       row_count: rows.length,
+      raw_order: bounds.raw_order,
       cursor_advanced: advance.advanced,
       stalled: advance.stalled,
     });
@@ -1250,8 +1500,8 @@ export async function fetchBinanceFundingHistory({
       break;
     }
     all.push(...rows);
-    if (!Number.isFinite(oldest)) break;
-    cursorEnd = oldest - 1;
+    if (!Number.isFinite(bounds.oldest_ms)) break;
+    cursorEnd = bounds.oldest_ms - 1;
     await sleep(150);
   }
   return {
@@ -1260,6 +1510,17 @@ export async function fetchBinanceFundingHistory({
     request_count: requests.length,
     pagination_pages: pageMeta,
     pagination_stalled: stalled,
+    raw_order_per_request: pageMeta.map((p) => ({
+      page: p.page,
+      raw_row_count: p.row_count,
+      raw_order: p.raw_order,
+      oldest_timestamp: p.oldest_row,
+      newest_timestamp: p.newest_row,
+      cursor_used: p.cursor_used,
+    })),
+    concatenated_fetch_order: classifyRawReturnedOrder(
+      all.map((r) => extractFundingObservationUtc(r, 'binance')).filter(Boolean)
+    ),
   };
 }
 
@@ -1274,20 +1535,25 @@ export async function fetchOkxFundingHistory({ pages = 10 } = {}) {
     const result = await fetchJson(url);
     requests.push(result);
     const rows = Array.isArray(result.json?.data) ? result.json.data : [];
-    const times = rows.map((r) => Number(r.fundingTime)).filter(Number.isFinite);
-    const newest = times.length ? Math.max(...times) : null;
-    const oldest = times.length ? Math.min(...times) : null;
+    const bounds = pageTimestampBounds(rows, (row) => row?.fundingTime);
     const prevOldest = pageMeta.length ? pageMeta[pageMeta.length - 1].oldest_ms : null;
     const advance = p === 0
       ? { advanced: true, stalled: false, reason: null }
-      : detectPaginationAdvance({ previousOldestMs: prevOldest, nextOldestMs: oldest });
+      : detectPaginationAdvance({
+        previousOldestMs: prevOldest,
+        nextOldestMs: bounds.oldest_ms,
+      });
     pageMeta.push({
       page: p + 1,
       cursor_after: after,
+      cursor_used: after,
       request_identity: url,
-      newest_ms: newest,
-      oldest_ms: oldest,
+      newest_ms: bounds.newest_ms,
+      oldest_ms: bounds.oldest_ms,
+      newest_row: bounds.newest_iso,
+      oldest_row: bounds.oldest_iso,
       row_count: rows.length,
+      raw_order: bounds.raw_order,
       cursor_advanced: advance.advanced,
       stalled: advance.stalled,
       stall_reason: advance.reason,
@@ -1300,8 +1566,8 @@ export async function fetchOkxFundingHistory({ pages = 10 } = {}) {
       break;
     }
     all.push(...rows);
-    if (!Number.isFinite(oldest)) break;
-    after = String(oldest);
+    if (!Number.isFinite(bounds.oldest_ms)) break;
+    after = String(bounds.oldest_ms);
     await sleep(150);
   }
   return {
@@ -1310,10 +1576,21 @@ export async function fetchOkxFundingHistory({ pages = 10 } = {}) {
     request_count: requests.length,
     pagination_pages: pageMeta,
     pagination_stalled: stalled,
+    raw_order_per_request: pageMeta.map((p) => ({
+      page: p.page,
+      raw_row_count: p.row_count,
+      raw_order: p.raw_order,
+      oldest_timestamp: p.oldest_row,
+      newest_timestamp: p.newest_row,
+      cursor_used: p.cursor_used,
+    })),
+    concatenated_fetch_order: classifyRawReturnedOrder(
+      all.map((r) => extractFundingObservationUtc(r, 'okx')).filter(Boolean)
+    ),
   };
 }
 
-export async function fetchCoingeckoRange({ daysBack = 200, asOfMs = Date.now() } = {}) {
+export function buildCoingeckoRangeUrl({ daysBack = 200, asOfMs = Date.now() } = {}) {
   const to = Math.floor(asOfMs / 1000);
   const from = to - daysBack * 86400;
   const url = new URL(
@@ -1322,12 +1599,23 @@ export async function fetchCoingeckoRange({ daysBack = 200, asOfMs = Date.now() 
   url.searchParams.set('vs_currency', 'usd');
   url.searchParams.set('from', String(from));
   url.searchParams.set('to', String(to));
-  const result = await fetchJson(url.toString());
+  url.searchParams.set('interval', 'daily');
+  return { url: url.toString(), from, to, days_back: daysBack, interval: 'daily' };
+}
+
+export async function fetchCoingeckoRange({ daysBack = 200, asOfMs = Date.now() } = {}) {
+  const built = buildCoingeckoRangeUrl({ daysBack, asOfMs });
+  const result = await fetchJson(built.url);
   return {
     requests: [result],
     request_count: 1,
     prices: Array.isArray(result.json?.prices) ? result.json.prices : [],
-    requested_range: { from, to, days_back: daysBack },
+    requested_range: {
+      from: built.from,
+      to: built.to,
+      days_back: built.days_back,
+      interval: 'daily',
+    },
   };
 }
 
@@ -1411,6 +1699,17 @@ export function summarizeProviderProvenance({
       ts.length >= 2
         ? (parseUtcMs(ts[ts.length - 1]) - parseUtcMs(ts[0])) / MS_DAY
         : null,
+    raw_returned_order_note:
+      'Prefer raw_order_per_request; concatenated_fetch_order may be MIXED due to page assembly',
+    raw_order_per_request: paginationPages.map((p) => ({
+      page: p.page,
+      raw_row_count: p.row_count,
+      raw_order: p.raw_order ?? null,
+      oldest_timestamp: p.oldest_row ?? p.oldest_iso ?? null,
+      newest_timestamp: p.newest_row ?? p.newest_iso ?? null,
+      cursor_used: p.cursor_used ?? p.cursor_endTime ?? p.cursor_after ?? null,
+    })),
+    concatenated_fetch_order: classifyRawReturnedOrder(rawTimestamps),
     raw_returned_order: classifyRawReturnedOrder(rawTimestamps),
     canonicalized_order: usable.length >= 2 ? 'ASCENDING' : 'INSUFFICIENT',
     exact_duplicates: duplicates.exact_duplicates,
@@ -1549,6 +1848,10 @@ export function analyzeProviderFeasibility({
     currentEndpointD: D,
   }) : [];
 
+  const fundingRef60 = fundingRefs.slice(0, REFERENCE_DEPTH_CANDIDATE);
+  const stressRef60 = stressRefs.slice(0, REFERENCE_DEPTH_CANDIDATE);
+  const volRef60 = volRefs.slice(0, REFERENCE_DEPTH_CANDIDATE);
+
   const earliest = canonical.eligible[0]?.source_timestamp_utc;
   const latest = canonical.eligible.at(-1)?.source_timestamp_utc;
   const availableDays = earliest && latest
@@ -1594,17 +1897,18 @@ export function analyzeProviderFeasibility({
     paginationStalled,
   });
 
-  const scoreRelevantFunding = selectScoreRelevantFundingRows({
-    eligibleRows: canonical.eligible,
-    currentWindowRows: windowRows,
-    referenceEndpoints: fundingRefs.slice(0, REFERENCE_DEPTH_CANDIDATE),
-    cutoffDateD: D,
-  });
-  const scoreRelevantSpot = selectScoreRelevantSpotRows({
-    completedDaily: completedSpot.eligible_completed_dates,
-    endpointDateD: D,
-    referenceDepth: REFERENCE_DEPTH_CANDIDATE,
-    priceCountForReturnsWindow: 31,
+  const scoreRelevant = buildScoreRelevantEvidenceUnion({
+    eligibleFundingRows: canonical.eligible,
+    completedSpot: completedSpot.eligible_completed_dates,
+    fundingDailyByDate: daily.funding_daily,
+    dailyDays: daily.days,
+    currentFundingWindowRows: windowRows,
+    fundingCurrentEndpoint: D,
+    fundingReferenceEndpoints: fundingRef60,
+    volatilityCurrentEndpoint: D,
+    volatilityReferenceEndpoints: volRef60,
+    stressCurrentEndpoint: D,
+    stressReferenceEndpoints: stressRef60,
   });
 
   return {
@@ -1623,6 +1927,14 @@ export function analyzeProviderFeasibility({
         stressFundingTimestamps.at(-1) || null,
     },
     reference_60: { funding: funding60, volatility: vol60, stress: stress60 },
+    endpoint_sets: {
+      funding_current: D,
+      funding_reference: fundingRef60,
+      volatility_current: D,
+      volatility_reference: volRef60,
+      stress_current: D,
+      stress_reference: stressRef60,
+    },
     max_reference_depth: {
       funding: maxFeasibleReferenceDepth(fundingRefs),
       volatility: maxFeasibleReferenceDepth(volRefs),
@@ -1636,57 +1948,138 @@ export function analyzeProviderFeasibility({
     latest_funding_by_timestamp: latestFundingByMaxTimestamp(canonical.eligible),
     latest_funding_T_for_F30: boundaries?.actual_T || null,
     eligible_rows: canonical.eligible,
-    score_relevant_funding_rows: scoreRelevantFunding,
-    score_relevant_spot_rows: scoreRelevantSpot,
+    score_relevant_funding_rows: scoreRelevant.funding_rows,
+    score_relevant_spot_rows: scoreRelevant.spot_rows,
+    score_relevant_union: scoreRelevant,
     provenance,
   };
 }
 
-/** Funding rows needed for current + REFERENCE_DEPTH prior windows ending at D. */
+/** Union of exact Funding + Volatility + Stress current/reference window evidence. */
+export function buildScoreRelevantEvidenceUnion({
+  eligibleFundingRows,
+  completedSpot,
+  fundingDailyByDate,
+  dailyDays,
+  currentFundingWindowRows,
+  fundingCurrentEndpoint,
+  fundingReferenceEndpoints,
+  volatilityCurrentEndpoint,
+  volatilityReferenceEndpoints,
+  stressCurrentEndpoint,
+  stressReferenceEndpoints,
+}) {
+  const fundingNeeded = new Map();
+  function addFundingRows(rows) {
+    for (const row of rows || []) {
+      fundingNeeded.set(`${row.source_timestamp_utc}|${row.funding_rate}`, row);
+    }
+  }
+  function addFundingSettlementsForEndpoint(endpointDate) {
+    if (!endpointDate) return;
+    for (let i = 29; i >= 0; i -= 1) {
+      const d = addUtcDays(endpointDate, -i);
+      const day = (dailyDays || []).find((x) => x.utc_date === d);
+      addFundingRows(day?.rows || []);
+    }
+  }
+
+  addFundingRows(currentFundingWindowRows);
+  for (const ep of fundingReferenceEndpoints || []) {
+    const cmp = compareFunding30DayBoundariesAtCutoff(eligibleFundingRows, ep);
+    addFundingRows(cmp.F30_HALF_OPEN?.rows || []);
+  }
+  // Stress windows use UTC-date means — include contributing settlements
+  addFundingSettlementsForEndpoint(stressCurrentEndpoint);
+  for (const ep of stressReferenceEndpoints || []) {
+    addFundingSettlementsForEndpoint(ep);
+  }
+
+  const spotNeeded = new Map();
+  function addSpotWindow(endpointDate, priceCount) {
+    if (!endpointDate) return;
+    const sorted = [...(completedSpot || [])].sort((a, b) => a.utc_date.localeCompare(b.utc_date));
+    const endIdx = sorted.findIndex((r) => r.utc_date === endpointDate);
+    if (endIdx < 0) return;
+    // Need prior day for returns on first date of window when computing stress returns
+    const startIdx = Math.max(0, endIdx - (priceCount - 1));
+    const withPrior = Math.max(0, startIdx - 1);
+    for (let i = withPrior; i <= endIdx; i += 1) {
+      const row = sorted[i];
+      spotNeeded.set(row.utc_date, row);
+    }
+  }
+  addSpotWindow(volatilityCurrentEndpoint, 31);
+  for (const ep of volatilityReferenceEndpoints || []) addSpotWindow(ep, 31);
+  addSpotWindow(stressCurrentEndpoint, 31);
+  for (const ep of stressReferenceEndpoints || []) addSpotWindow(ep, 31);
+
+  const fundingRows = [...fundingNeeded.values()].sort((a, b) =>
+    a.source_timestamp_utc.localeCompare(b.source_timestamp_utc)
+  );
+  const spotRows = [...spotNeeded.values()].sort((a, b) => a.utc_date.localeCompare(b.utc_date));
+  return {
+    funding_current_endpoint: fundingCurrentEndpoint,
+    funding_reference_endpoints: [...(fundingReferenceEndpoints || [])],
+    volatility_current_endpoint: volatilityCurrentEndpoint,
+    volatility_reference_endpoints: [...(volatilityReferenceEndpoints || [])],
+    stress_current_endpoint: stressCurrentEndpoint,
+    stress_reference_endpoints: [...(stressReferenceEndpoints || [])],
+    funding_rows: fundingRows,
+    spot_rows: spotRows,
+    funding_row_count: fundingRows.length,
+    spot_row_count: spotRows.length,
+    earliest_funding_timestamp: fundingRows[0]?.source_timestamp_utc ?? null,
+    latest_funding_timestamp: fundingRows.at(-1)?.source_timestamp_utc ?? null,
+    earliest_spot_date: spotRows[0]?.utc_date ?? null,
+    latest_spot_date: spotRows.at(-1)?.utc_date ?? null,
+  };
+}
+
+/** @deprecated Prefer buildScoreRelevantEvidenceUnion */
 export function selectScoreRelevantFundingRows({
   eligibleRows,
   currentWindowRows,
   referenceEndpoints,
-  cutoffDateD,
+  stressReferenceEndpoints = [],
+  stressCurrentEndpoint = null,
+  dailyDays = [],
 }) {
-  const needed = new Map();
-  for (const row of currentWindowRows || []) {
-    needed.set(row.source_timestamp_utc + '|' + row.funding_rate, row);
-  }
-  for (const ep of referenceEndpoints || []) {
-    const cmp = compareFunding30DayBoundariesAtCutoff(eligibleRows, ep);
-    for (const row of cmp.F30_HALF_OPEN?.rows || []) {
-      needed.set(row.source_timestamp_utc + '|' + row.funding_rate, row);
-    }
-  }
-  // Also include settlements contributing to daily means on windows when present
-  if (cutoffDateD) {
-    for (const row of eligibleRows || []) {
-      const d = utcDateString(row.source_timestamp_utc);
-      if (!d || d > cutoffDateD) continue;
-      // keep only if already selected via windows — no, endpoints cover windows
-    }
-  }
-  return [...needed.values()].sort((a, b) =>
-    a.source_timestamp_utc.localeCompare(b.source_timestamp_utc)
-  );
+  return buildScoreRelevantEvidenceUnion({
+    eligibleFundingRows: eligibleRows,
+    completedSpot: [],
+    fundingDailyByDate: {},
+    dailyDays,
+    currentFundingWindowRows: currentWindowRows,
+    fundingCurrentEndpoint: null,
+    fundingReferenceEndpoints: referenceEndpoints,
+    volatilityCurrentEndpoint: null,
+    volatilityReferenceEndpoints: [],
+    stressCurrentEndpoint,
+    stressReferenceEndpoints,
+  }).funding_rows;
 }
 
 export function selectScoreRelevantSpotRows({
   completedDaily,
   endpointDateD,
-  referenceDepth,
+  referenceEndpoints = [],
+  stressReferenceEndpoints = [],
   priceCountForReturnsWindow = 31,
 }) {
-  if (!endpointDateD) return [];
-  const sorted = [...completedDaily].sort((a, b) => a.utc_date.localeCompare(b.utc_date));
-  const endIdx = sorted.findIndex((r) => r.utc_date === endpointDateD);
-  if (endIdx < 0) return [];
-  const earliestNeeded = addUtcDays(
-    endpointDateD,
-    -(referenceDepth + priceCountForReturnsWindow)
-  );
-  return sorted.filter((r) => r.utc_date >= earliestNeeded && r.utc_date <= endpointDateD);
+  return buildScoreRelevantEvidenceUnion({
+    eligibleFundingRows: [],
+    completedSpot: completedDaily,
+    fundingDailyByDate: {},
+    dailyDays: [],
+    currentFundingWindowRows: [],
+    fundingCurrentEndpoint: null,
+    fundingReferenceEndpoints: [],
+    volatilityCurrentEndpoint: endpointDateD,
+    volatilityReferenceEndpoints: referenceEndpoints,
+    stressCurrentEndpoint: endpointDateD,
+    stressReferenceEndpoints,
+  }).spot_rows;
 }
 
 export function buildSyntheticFixtureBundle({
@@ -1805,34 +2198,33 @@ export function buildFeasibilityReportFromSources({
   const selectedAnalysis = selected ? providerAnalyses[selected] : null;
 
   const maxByProvider = Object.fromEntries(
-    PROVIDER_PREFERENCE_ORDER.map((p) => [
-      p,
-      {
-        funding: providerAnalyses[p].max_reference_depth.funding,
-        volatility: providerAnalyses[p].max_reference_depth.volatility,
-        stress: providerAnalyses[p].max_reference_depth.stress,
-        common_funding_stress: Math.min(
-          providerAnalyses[p].max_reference_depth.funding,
-          providerAnalyses[p].max_reference_depth.stress
-        ),
+    PROVIDER_PREFERENCE_ORDER.map((p) => {
+      const depths = providerAnalyses[p].max_reference_depth;
+      const providerSpecificCommon = Math.min(
+        depths.funding,
+        depths.stress,
+        depths.volatility
+      );
+      return [p, {
+        funding: depths.funding,
+        volatility: depths.volatility,
+        stress: depths.stress,
+        provider_specific_common_depth: providerSpecificCommon,
+        common_funding_stress: Math.min(depths.funding, depths.stress),
         gate1_status:
           (freshnessSelection.candidates || []).find((c) => c.provider === p)?.status
           || 'unavailable',
-      },
-    ])
+        note:
+          'provider_specific_common_depth = min(Funding, Stress, Volatility-at-that-provider-D)',
+      }];
+    })
   );
 
-  // True cross-provider mechanical minimum across BitMEX/Binance/OKX funding+stress
-  // and CoinGecko volatility capacity (volatility shared; use max across providers' vol depth).
-  const cgVolDepth = Math.max(
-    ...PROVIDER_PREFERENCE_ORDER.map((p) => providerAnalyses[p].max_reference_depth.volatility),
-    0
-  );
+  const coingeckoRawDailyCapacity = completedSpot.eligible_completed_dates.length;
   const maxCommonLive = Math.min(
-    maxByProvider.bitmex.common_funding_stress,
-    maxByProvider.binance.common_funding_stress,
-    maxByProvider.okx.common_funding_stress,
-    cgVolDepth
+    maxByProvider.bitmex.provider_specific_common_depth,
+    maxByProvider.binance.provider_specific_common_depth,
+    maxByProvider.okx.provider_specific_common_depth
   );
 
   const fingerprintFunding = selectedAnalysis?.score_relevant_funding_rows || [];
@@ -1871,6 +2263,13 @@ export function buildFeasibilityReportFromSources({
     ? (completedSpot.eligible_completed_dates.find((r) => r.utc_date === D)
       ?.source_timestamp_utc || null)
     : null;
+  const componentsAvailable = Boolean(
+    selectedAnalysis?.stress_window?.available
+    && selectedAnalysis?.volatility_candidates?.V30_30_RETURNS
+    && latestUsedFunding
+    && latestUsedFundingStress
+    && latestUsedSpot
+  );
 
   const lastUpdated = bindingLastUpdated({
     latestRawFundingUtc: latestRawFunding,
@@ -1879,6 +2278,7 @@ export function buildFeasibilityReportFromSources({
     latestRawSpotUtc: latestRawSpot,
     latestUsedSpotUtc: latestUsedSpot,
     commonCutoffD: D,
+    currentComponentsAvailable: componentsAvailable,
   });
 
   const { blockers, warnings } = collectFeasibilityBlockersAndWarnings({
@@ -2028,11 +2428,22 @@ export function buildFeasibilityReportFromSources({
     max_reference_depth_by_provider: maxByProvider,
     max_common_live_reference_depth: maxCommonLive,
     max_common_live_reference_depth_definition:
-      'min(BitMEX funding+stress, Binance funding+stress, OKX funding+stress, CoinGecko vol capacity)',
+      'min(provider_specific_common_depth across BitMEX, Binance, OKX); each provider_specific_common_depth = min(Funding, Stress, Volatility-at-that-provider-D)',
+    coingecko_raw_historical_daily_capacity: coingeckoRawDailyCapacity,
     fingerprint_candidate: {
       contract_id: FINGERPRINT_CONTRACT_ID,
       hash: hashFingerprintInput(fingerprintInput),
       score_relevant_only: true,
+      evidence_union: selectedAnalysis?.score_relevant_union
+        ? {
+          funding_reference_endpoints:
+            selectedAnalysis.score_relevant_union.funding_reference_endpoints,
+          volatility_reference_endpoints:
+            selectedAnalysis.score_relevant_union.volatility_reference_endpoints,
+          stress_reference_endpoints:
+            selectedAnalysis.score_relevant_union.stress_reference_endpoints,
+        }
+        : null,
       funding_row_count: fingerprintFunding.length,
       earliest_fingerprinted_funding_timestamp:
         fingerprintFunding[0]?.source_timestamp_utc ?? null,
