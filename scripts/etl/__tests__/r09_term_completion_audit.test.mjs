@@ -13,6 +13,8 @@ import {
   R09_SCHEMA,
   TERM_CACHE_PATH,
   analyzeFundingProviderRows,
+  analyzeSpotRows,
+  buildLiveScoringEvidence,
   buildOfflineR09Report,
   buildUtcDateFundingFeasibility,
   calculateFundingComponentSync,
@@ -22,6 +24,7 @@ import {
   characterizeCachedProviderSwitchReuse,
   characterizeCachePreservation,
   characterizeLastUpdatedSemantics,
+  classifyProviderPayload,
   classifyReturnedOrder,
   elapsedSpanForRowCount,
   evaluateCacheDetectorScenarios,
@@ -29,7 +32,10 @@ import {
   extractFundingObservationUtc,
   hasFundingDataChanged,
   loadDashboardTermContract,
+  normalizeCoingeckoSource,
+  normalizeFundingSource,
   readTermCacheSnapshot,
+  safeIsoFromTimestamp,
   termProviderStatus,
 } from '../../research/lib/r09-term-completion-audit.mjs';
 import {
@@ -543,4 +549,361 @@ test('50. automatic completion/repair verdicts remain null', () => {
 test('outside-repo report path accepted', () => {
   const target = path.join(os.tmpdir(), `r09-report-${Date.now()}.json`);
   assert.doesNotThrow(() => assertOutsideRepository(target));
+});
+
+function makeFreshOkxRows(latestIso = '2026-09-22T08:00:00.000Z', rate = '0.0001') {
+  return Array.from({ length: 30 }, (_, i) => ({
+    fundingTime: hoursBefore(latestIso, i * 8),
+    fundingRate: i === 0 ? rate : '0.00008',
+  }));
+}
+
+function makeLiveSpot(finalHour = 0, priceScale = 1) {
+  return Array.from({ length: 31 }, (_, i) => [
+    Date.UTC(2026, 8, 1 + i, i === 30 ? finalHour : 0),
+    (100000 + i * 250) * priceScale,
+  ]);
+}
+
+function makeLiveBundle({
+  okxRows = makeFreshOkxRows(),
+  prices = makeLiveSpot(),
+  bitmexRows = null,
+  binanceRows = null,
+} = {}) {
+  return {
+    bitmex: {
+      rows: bitmexRows,
+      usable_row_count: bitmexRows?.length || 0,
+      usability_class: bitmexRows ? 'VALID' : 'EMPTY',
+      provider_semantic_status: bitmexRows ? 'VALID' : 'EMPTY',
+      http_outcome_class: 'VALID_HTTP',
+      request_identity: 'bitmex',
+    },
+    binance: {
+      rows: binanceRows,
+      usable_row_count: binanceRows?.length || 0,
+      usability_class: binanceRows ? 'VALID' : 'EMPTY',
+      provider_semantic_status: binanceRows ? 'VALID' : 'EMPTY',
+      http_outcome_class: 'VALID_HTTP',
+      request_identity: 'binance',
+    },
+    okx: {
+      rows: okxRows,
+      usable_row_count: okxRows?.length || 0,
+      usability_class: okxRows?.length ? 'VALID' : 'EMPTY',
+      provider_semantic_status: okxRows?.length ? 'VALID' : 'VALID',
+      http_outcome_class: 'VALID_HTTP',
+      request_identity: 'okx',
+      provider_returned_status: '0',
+      payload_shape_status: 'EXPECTED_ARRAY',
+    },
+    coingecko: {
+      prices,
+      usable_row_count: prices?.length || 0,
+      usability_class: prices?.length ? 'VALID' : 'EMPTY',
+      provider_semantic_status: prices?.length ? 'VALID' : 'EMPTY',
+      payload_shape_status: prices ? 'EXPECTED_PRICES_ARRAY' : 'MISSING_PRICES',
+      http_outcome_class: 'VALID_HTTP',
+      request_identity: 'coingecko',
+    },
+  };
+}
+
+test('51. LIVE sections 5-8 use supplied live provider/spot data', () => {
+  const live = makeLiveBundle({ okxRows: makeFreshOkxRows('2026-09-22T08:00:00.000Z', '0.0005') });
+  const report = buildOfflineR09Report({
+    repositorySha: 'e'.repeat(40),
+    generatedAtUtc: '2026-09-22T11:00:00.000Z',
+    live,
+  });
+  assert.equal(report.section_5_volatility_horizon.evidence_origin, 'LIVE_PROVIDER_PAYLOAD');
+  assert.equal(report.section_6_funding_component_horizon.evidence_origin, 'LIVE_PROVIDER_PAYLOAD');
+  assert.equal(report.section_7_stress_alignment_audit.evidence_origin, 'LIVE_PROVIDER_PAYLOAD');
+  assert.equal(
+    report.section_8_alignment_feasibility_diagnostic_only.evidence_origin,
+    'LIVE_PROVIDER_PAYLOAD'
+  );
+  assert.equal(report.section_6_funding_component_horizon.selected_provider, 'okx');
+  assert.notEqual(
+    report.section_6_funding_component_horizon.data.latestFunding,
+    report.offline_deterministic_reference.funding_component?.data?.latestFunding
+  );
+});
+
+test('52. OFFLINE sections 5-8 still use deterministic reference evidence', () => {
+  const report = buildOfflineR09Report({
+    repositorySha: 'f'.repeat(40),
+    generatedAtUtc: '2026-09-30T12:00:00.000Z',
+  });
+  assert.equal(
+    report.section_5_volatility_horizon.evidence_origin,
+    'OFFLINE_DETERMINISTIC_REFERENCE'
+  );
+  assert.equal(
+    report.offline_deterministic_reference.evidence_origin,
+    'OFFLINE_DETERMINISTIC_REFERENCE'
+  );
+});
+
+test('53. LIVE selected provider identity carried into funding/stress sections', () => {
+  const live = makeLiveBundle();
+  const report = buildOfflineR09Report({
+    repositorySha: '1'.repeat(40),
+    generatedAtUtc: '2026-09-22T11:00:00.000Z',
+    live,
+  });
+  assert.equal(report.section_6_funding_component_horizon.selected_provider, 'okx');
+  assert.equal(report.section_7_stress_alignment_audit.selected_provider, 'okx');
+  assert.equal(report.live_provider_selection.provider, 'okx');
+});
+
+test('54. changing live CoinGecko prices changes live volatility/stress evidence', () => {
+  const flat = makeLiveSpot(0, 1);
+  const spiked = makeLiveSpot(0, 1).map((row, i) => [row[0], i > 20 ? row[1] * 2 : row[1]]);
+  const a = buildLiveScoringEvidence(
+    makeLiveBundle({ prices: flat }),
+    '2026-09-22T11:00:00.000Z'
+  );
+  const b = buildLiveScoringEvidence(
+    makeLiveBundle({ prices: spiked }),
+    '2026-09-22T11:00:00.000Z'
+  );
+  assert.notEqual(
+    a.volatility_component.data.priceVolatility,
+    b.volatility_component.data.priceVolatility
+  );
+  assert.notEqual(
+    a.stress_alignment.data.stressIndicator,
+    b.stress_alignment.data.stressIndicator
+  );
+});
+
+test('55. changing live funding rows changes live funding/stress evidence', () => {
+  const a = buildLiveScoringEvidence(
+    makeLiveBundle({ okxRows: makeFreshOkxRows('2026-09-22T08:00:00.000Z', '0.0001') }),
+    '2026-09-22T11:00:00.000Z'
+  );
+  const b = buildLiveScoringEvidence(
+    makeLiveBundle({ okxRows: makeFreshOkxRows('2026-09-22T08:00:00.000Z', '0.001') }),
+    '2026-09-22T11:00:00.000Z'
+  );
+  assert.notEqual(
+    a.funding_component.data.latestFunding,
+    b.funding_component.data.latestFunding
+  );
+  assert.notEqual(
+    a.stress_alignment.data.stressIndicator,
+    b.stress_alignment.data.stressIndicator
+  );
+});
+
+test('56. live alignment feasibility uses live observation dates', () => {
+  const live = makeLiveBundle();
+  const report = buildOfflineR09Report({
+    repositorySha: '2'.repeat(40),
+    generatedAtUtc: '2026-09-22T11:00:00.000Z',
+    live,
+  });
+  const dates = report.section_8_alignment_feasibility_diagnostic_only
+    .A_utc_date_daily_funding_mean.daily_funding_dates;
+  assert.ok(dates.some((row) => row.utc_date === '2026-09-22'));
+});
+
+test('57. no fresh live funding provider creates blocker without cache substitution', () => {
+  const live = makeLiveBundle({
+    okxRows: [
+      { fundingTime: '2026-09-01T08:00:00.000Z', fundingRate: '0.0001' },
+    ],
+  });
+  const report = buildOfflineR09Report({
+    repositorySha: '3'.repeat(40),
+    generatedAtUtc: '2026-09-22T11:00:00.000Z',
+    live,
+  });
+  assert.ok(
+    report.blockers.some((b) => b.type === 'no_fresh_funding_provider_for_live_scoring_audit')
+  );
+  assert.equal(report.section_6_funding_component_horizon.available, false);
+  assert.equal(report.section_6_funding_component_horizon.evidence_origin, 'LIVE_PROVIDER_PAYLOAD');
+  assert.ok(report.offline_deterministic_reference.funding_component);
+});
+
+test('58. missing live CoinGecko creates blocker without synthetic substitution', () => {
+  const live = makeLiveBundle({ prices: null });
+  live.coingecko = {
+    prices: null,
+    usable_row_count: 0,
+    usability_class: 'PROVIDER_ERROR',
+    provider_semantic_status: 'PROVIDER_ERROR',
+    payload_shape_status: 'MISSING_PRICES',
+    http_outcome_class: 'VALID_HTTP',
+    request_identity: 'coingecko',
+  };
+  const report = buildOfflineR09Report({
+    repositorySha: '4'.repeat(40),
+    generatedAtUtc: '2026-09-22T11:00:00.000Z',
+    live,
+  });
+  assert.ok(
+    report.blockers.some((b) =>
+      b.type === 'coingecko_spot_unavailable_or_unscoreable_for_live_scoring_audit'
+      || b.type === 'coingecko_live_payload_not_valid'
+    )
+  );
+  assert.equal(report.section_5_volatility_horizon.available, false);
+  assert.equal(report.section_5_volatility_horizon.evidence_origin, 'LIVE_PROVIDER_PAYLOAD');
+});
+
+test('59. OKX HTTP 200 + nonzero code is PROVIDER_ERROR not VALID', () => {
+  const classified = classifyProviderPayload(
+    'okx',
+    'VALID_HTTP',
+    { code: '51000', msg: 'Instrument ID does not exist', data: [] },
+    null
+  );
+  assert.equal(classified.provider_semantic_status, 'PROVIDER_ERROR');
+  assert.equal(classified.rows, null);
+  const normalized = normalizeFundingSource(
+    {
+      http_outcome_class: 'VALID_HTTP',
+      http_status: 200,
+      json: { code: '51000', msg: 'Instrument ID does not exist', data: [] },
+      parse_error: null,
+      request_identity: 'okx',
+    },
+    'okx'
+  );
+  assert.equal(normalized.usability_class, 'PROVIDER_ERROR');
+  assert.equal(normalized.rows, null);
+});
+
+test('60. OKX code/message retained in source provenance', () => {
+  const normalized = normalizeFundingSource(
+    {
+      http_outcome_class: 'VALID_HTTP',
+      http_status: 200,
+      json: { code: '51000', msg: 'Instrument ID does not exist', data: [] },
+      parse_error: null,
+      request_identity: 'okx',
+      payload_sha256: 'abc',
+      fetch_acquisition_timestamp_utc: '2026-09-22T11:00:00.000Z',
+      error_class: null,
+    },
+    'okx'
+  );
+  assert.equal(normalized.provider_returned_status, '51000');
+  assert.equal(normalized.provider_message, 'Instrument ID does not exist');
+});
+
+test('61. Binance successful HTTP provider-error object is not valid funding rows', () => {
+  const normalized = normalizeFundingSource(
+    {
+      http_outcome_class: 'VALID_HTTP',
+      http_status: 200,
+      json: { code: -1003, msg: 'Too many requests' },
+      parse_error: null,
+    },
+    'binance'
+  );
+  assert.equal(normalized.provider_semantic_status, 'PROVIDER_ERROR');
+  assert.equal(normalized.rows, null);
+  assert.equal(normalized.usability_class, 'PROVIDER_ERROR');
+});
+
+test('62. BitMEX successful HTTP unexpected-object payload is not valid funding rows', () => {
+  const normalized = normalizeFundingSource(
+    {
+      http_outcome_class: 'VALID_HTTP',
+      http_status: 200,
+      json: { error: { message: 'Forbidden' } },
+      parse_error: null,
+    },
+    'bitmex'
+  );
+  assert.equal(normalized.provider_semantic_status, 'PROVIDER_ERROR');
+  assert.equal(normalized.rows, null);
+});
+
+test('63. invalid spot timestamp does not throw from analyzeSpotRows', () => {
+  assert.equal(safeIsoFromTimestamp('not-a-ts'), null);
+  assert.equal(safeIsoFromTimestamp(Number.NaN), null);
+  assert.equal(safeIsoFromTimestamp(null), null);
+  assert.doesNotThrow(() => {
+    const result = analyzeSpotRows({
+      prices: [
+        [Date.UTC(2026, 8, 20), 100],
+        ['not-a-ts', 101],
+        [Number.NaN, 102],
+        [null, 103],
+      ],
+    });
+    assert.equal(result.usable_numeric_row_count, 1);
+  });
+});
+
+test('64. malformed final spot row with earlier valid rows produces bounded report', () => {
+  const prices = Array.from({ length: 10 }, (_, i) => [Date.UTC(2026, 8, 20 + i), 100000 + i]);
+  prices.push(['not-a-ts', 'x']);
+  assert.doesNotThrow(() => {
+    const report = buildOfflineR09Report({
+      repositorySha: '5'.repeat(40),
+      generatedAtUtc: '2026-09-22T11:00:00.000Z',
+      live: makeLiveBundle({ prices }),
+    });
+    assert.ok(report.section_4_spot_window_finality);
+    assert.equal(report.section_4_spot_window_finality.finality_label, 'INVALID_FINAL_TIMESTAMP');
+  });
+});
+
+test('65. provider_changes_row0_rate_identical reports scored funding changed', () => {
+  const scenario = evaluateCacheDetectorScenarios().find(
+    (row) => row.id === 'provider_changes_row0_rate_identical'
+  );
+  assert.equal(scenario.scored_funding_evidence_changed, true);
+  assert.equal(scenario.provider_identity_changed, true);
+});
+
+test('66. provider_changes_identical_row0_values reports scored funding changed', () => {
+  const scenario = evaluateCacheDetectorScenarios().find(
+    (row) => row.id === 'provider_changes_identical_row0_values'
+  );
+  assert.equal(scenario.scored_funding_evidence_changed, true);
+});
+
+test('67. live section 3 exposes selected-provider elapsed-window evidence', () => {
+  const report = buildOfflineR09Report({
+    repositorySha: '6'.repeat(40),
+    generatedAtUtc: '2026-09-22T11:00:00.000Z',
+    live: makeLiveBundle(),
+  });
+  assert.equal(report.section_3_cadence_window_semantics.live_selected.selected_provider, 'okx');
+  assert.equal(report.section_3_cadence_window_semantics.live_selected.selected_live_row_count, 30);
+  assert.ok(
+    report.section_3_cadence_window_semantics.live_selected.live_elapsed_coverage_days != null
+  );
+});
+
+test('68. live mode authorization flags remain false', () => {
+  const report = buildOfflineR09Report({
+    repositorySha: '7'.repeat(40),
+    generatedAtUtc: '2026-09-22T11:00:00.000Z',
+    live: makeLiveBundle(),
+  });
+  assert.equal(report.production_change_authorized, false);
+  assert.equal(report.term_repair_authorized_for_production, false);
+  assert.equal(report.automatic_completion_verdict, null);
+  assert.equal(report.automatic_repair_verdict, null);
+});
+
+test('69. normalizeCoingecko missing prices is not VALID', () => {
+  const normalized = normalizeCoingeckoSource({
+    http_outcome_class: 'VALID_HTTP',
+    http_status: 200,
+    json: { market_caps: [] },
+    parse_error: null,
+  });
+  assert.equal(normalized.provider_semantic_status, 'PROVIDER_ERROR');
+  assert.equal(normalized.payload_shape_status, 'MISSING_PRICES');
+  assert.equal(normalized.prices, null);
 });

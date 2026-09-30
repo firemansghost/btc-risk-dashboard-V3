@@ -297,6 +297,15 @@ export function analyzeFundingProviderRows(rows, providerId) {
   };
 }
 
+export function safeIsoFromTimestamp(ts) {
+  if (ts == null) return null;
+  const n = Number(ts);
+  if (!Number.isFinite(n)) return null;
+  const date = new Date(n);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
+}
+
 export function analyzeSpotRows(priceData) {
   const prices = priceData?.prices;
   const rawCount = Array.isArray(prices) ? prices.length : 0;
@@ -305,9 +314,9 @@ export function analyzeSpotRows(priceData) {
   for (const row of prices || []) {
     const ts = Array.isArray(row) ? row[0] : row?.timestamp;
     const price = Array.isArray(row) ? row[1] : row?.price;
-    const iso = ts == null ? null : new Date(Number(ts)).toISOString();
-    timestamps.push(Number.isNaN(Date.parse(iso)) ? null : iso);
-    if (Number.isFinite(Number(price)) && iso && !Number.isNaN(Date.parse(iso))) {
+    const iso = safeIsoFromTimestamp(ts);
+    timestamps.push(iso);
+    if (Number.isFinite(Number(price)) && iso) {
       usable.push({ ts: Number(ts), price: Number(price), iso });
     }
   }
@@ -319,10 +328,10 @@ export function analyzeSpotRows(priceData) {
   const latestUsable = usable[usable.length - 1] || null;
   const finalRaw = Array.isArray(prices) && prices.length ? prices[prices.length - 1] : null;
   const finalTs = Array.isArray(finalRaw) ? finalRaw[0] : finalRaw?.timestamp;
-  const finalDate = finalTs == null ? null : new Date(Number(finalTs));
+  const finalIso = safeIsoFromTimestamp(finalTs);
+  const finalDate = finalIso ? new Date(finalIso) : null;
   const finalIsUtcMidnight = Boolean(
     finalDate
-    && !Number.isNaN(finalDate.getTime())
     && finalDate.getUTCHours() === 0
     && finalDate.getUTCMinutes() === 0
     && finalDate.getUTCSeconds() === 0
@@ -332,7 +341,7 @@ export function analyzeSpotRows(priceData) {
     ? [...gapsHours].sort((a, b) => a - b)[Math.floor(gapsHours.length / 2)]
     : null;
   const finalGap = gapsHours.length ? gapsHours[gapsHours.length - 1] : null;
-  const finalityLabel = !finalDate || Number.isNaN(finalDate.getTime())
+  const finalityLabel = !finalIso
     ? 'INVALID_FINAL_TIMESTAMP'
     : finalIsUtcMidnight
       ? 'REGULAR_DAILY_TIMESTAMP'
@@ -649,6 +658,19 @@ export function buildUtcDateFundingFeasibility(rows, providerId, spotPriceRows) 
   };
 }
 
+/** Canonical scoring-input fingerprint for diagnostic cache-matrix comparison only. */
+export function canonicalScoringFundingInput(rows, providerId) {
+  return (rows || []).map((row) => ({
+    rate: Number(row?.fundingRate),
+    observation_utc: extractFundingObservationUtc(row, providerId),
+  }));
+}
+
+export function scoredFundingEvidenceChanged(currentRows, cachedRows, currentProvider, cachedProvider) {
+  return JSON.stringify(canonicalScoringFundingInput(currentRows, currentProvider))
+    !== JSON.stringify(canonicalScoringFundingInput(cachedRows, cachedProvider));
+}
+
 export function evaluateCacheDetectorScenarios() {
   const bitmexBase = [
     { timestamp: '2026-09-22T04:00:00.000Z', fundingRate: 0.0001 },
@@ -667,8 +689,8 @@ export function evaluateCacheDetectorScenarios() {
     {
       id: 'identical_funding_rows',
       current: bitmexBase,
+      current_provider: 'bitmex',
       cached: { fundingData: bitmexBase, funding_provider: 'bitmex' },
-      scored_funding_changed: false,
       scored_spot_changed: false,
       provider_identity_changed: false,
     },
@@ -678,8 +700,8 @@ export function evaluateCacheDetectorScenarios() {
         { timestamp: '2026-09-22T04:00:00.000Z', fundingRate: 0.0002 },
         bitmexBase[1],
       ],
+      current_provider: 'bitmex',
       cached: { fundingData: bitmexBase, funding_provider: 'bitmex' },
-      scored_funding_changed: true,
       scored_spot_changed: false,
       provider_identity_changed: false,
     },
@@ -689,8 +711,8 @@ export function evaluateCacheDetectorScenarios() {
         { timestamp: '2026-09-22T12:00:00.000Z', fundingRate: 0.0001 },
         bitmexBase[1],
       ],
+      current_provider: 'bitmex',
       cached: { fundingData: bitmexBase, funding_provider: 'bitmex' },
-      scored_funding_changed: true,
       scored_spot_changed: false,
       provider_identity_changed: false,
     },
@@ -700,8 +722,8 @@ export function evaluateCacheDetectorScenarios() {
         { fundingTime: '2026-09-22T16:00:00.000Z', fundingRate: '0.0001' },
         binanceBase[1],
       ],
+      current_provider: 'binance',
       cached: { fundingData: binanceBase, funding_provider: 'binance' },
-      scored_funding_changed: true,
       scored_spot_changed: false,
       provider_identity_changed: false,
       note:
@@ -713,8 +735,8 @@ export function evaluateCacheDetectorScenarios() {
         { fundingTime: '2026-09-22T16:00:00.000Z', fundingRate: '0.0001' },
         okxBase[1],
       ],
+      current_provider: 'okx',
       cached: { fundingData: okxBase, funding_provider: 'okx' },
-      scored_funding_changed: true,
       scored_spot_changed: false,
       provider_identity_changed: false,
       note:
@@ -726,8 +748,8 @@ export function evaluateCacheDetectorScenarios() {
         bitmexBase[0],
         { timestamp: '2026-09-21T20:00:00.000Z', fundingRate: 0.00005 },
       ],
+      current_provider: 'bitmex',
       cached: { fundingData: bitmexBase, funding_provider: 'bitmex' },
-      scored_funding_changed: true,
       scored_spot_changed: false,
       provider_identity_changed: false,
     },
@@ -737,8 +759,8 @@ export function evaluateCacheDetectorScenarios() {
         { fundingTime: '2026-09-22T08:00:00.000Z', fundingRate: '0.0001' },
         { fundingTime: '2026-09-22T00:00:00.000Z', fundingRate: '0.00009' },
       ],
+      current_provider: 'okx',
       cached: { fundingData: bitmexBase, funding_provider: 'bitmex' },
-      scored_funding_changed: false,
       scored_spot_changed: false,
       provider_identity_changed: true,
     },
@@ -747,16 +769,16 @@ export function evaluateCacheDetectorScenarios() {
       current: [
         { fundingTime: bitmexBase[0].timestamp, fundingRate: bitmexBase[0].fundingRate },
       ],
+      current_provider: 'okx',
       cached: { fundingData: bitmexBase, funding_provider: 'bitmex' },
-      scored_funding_changed: false,
       scored_spot_changed: false,
       provider_identity_changed: true,
     },
     {
       id: 'spot_price_values_change_funding_unchanged',
       current: bitmexBase,
+      current_provider: 'bitmex',
       cached: { fundingData: bitmexBase, funding_provider: 'bitmex' },
-      scored_funding_changed: false,
       scored_spot_changed: true,
       provider_identity_changed: false,
       note: 'Detector ignores spot; spot-only changes cannot invalidate via hasFundingDataChanged.',
@@ -764,35 +786,36 @@ export function evaluateCacheDetectorScenarios() {
     {
       id: 'spot_latest_timestamp_changes_funding_unchanged',
       current: bitmexBase,
+      current_provider: 'bitmex',
       cached: { fundingData: bitmexBase, funding_provider: 'bitmex' },
-      scored_funding_changed: false,
       scored_spot_changed: true,
       provider_identity_changed: false,
     },
     {
       id: 'spot_history_and_observation_advance_funding_unchanged',
       current: bitmexBase,
+      current_provider: 'bitmex',
       cached: { fundingData: bitmexBase, funding_provider: 'bitmex' },
-      scored_funding_changed: false,
       scored_spot_changed: true,
       provider_identity_changed: false,
     },
     {
       id: 'current_provider_changes_cached_provider_still_cadence_fresh',
       current: okxBase,
+      current_provider: 'okx',
       cached: {
         fundingData: bitmexBase,
         funding_provider: 'bitmex',
         funding_observation_utc: '2026-09-22T04:00:00.000Z',
         spot_observation_utc: '2026-09-22T00:00:00.000Z',
       },
-      scored_funding_changed: false,
       scored_spot_changed: false,
       provider_identity_changed: true,
     },
     {
       id: 'current_provider_changes_cached_provider_becomes_cadence_stale',
       current: okxBase,
+      current_provider: 'okx',
       cached: {
         fundingData: [
           { timestamp: '2026-09-10T04:00:00.000Z', fundingRate: 0.0001 },
@@ -801,27 +824,26 @@ export function evaluateCacheDetectorScenarios() {
         funding_observation_utc: '2026-09-10T04:00:00.000Z',
         spot_observation_utc: '2026-09-10T00:00:00.000Z',
       },
-      scored_funding_changed: false,
       scored_spot_changed: false,
       provider_identity_changed: true,
     },
     {
       id: 'cache_absent',
       current: bitmexBase,
+      current_provider: 'bitmex',
       cached: null,
-      scored_funding_changed: true,
       scored_spot_changed: false,
       provider_identity_changed: false,
     },
     {
       id: 'cache_expired_by_6h_file_ttl',
       current: bitmexBase,
+      current_provider: 'bitmex',
       cached: {
         fundingData: bitmexBase,
         funding_provider: 'bitmex',
         cachedAt: '2020-01-01T00:00:00.000Z',
       },
-      scored_funding_changed: false,
       scored_spot_changed: false,
       provider_identity_changed: false,
       file_ttl_expired: true,
@@ -834,15 +856,24 @@ export function evaluateCacheDetectorScenarios() {
     const changed = hasFundingDataChanged(scenario.current, scenario.cached);
     const fileTtlExpired = Boolean(scenario.file_ttl_expired);
     const cacheReusePossible = !fileTtlExpired && scenario.cached != null && !changed;
+    const cachedProvider = scenario.cached?.funding_provider || null;
+    const scoredFundingChanged = scenario.cached == null
+      ? true
+      : scoredFundingEvidenceChanged(
+        scenario.current,
+        scenario.cached.fundingData,
+        scenario.current_provider,
+        cachedProvider
+      );
     const falseNegative = cacheReusePossible
-      && (scenario.scored_funding_changed
+      && (scoredFundingChanged
         || scenario.scored_spot_changed
         || scenario.provider_identity_changed);
     return {
       id: scenario.id,
       detector_says_changed: changed,
       cache_reuse_remains_possible: cacheReusePossible,
-      scored_funding_evidence_changed: scenario.scored_funding_changed,
+      scored_funding_evidence_changed: scoredFundingChanged,
       scored_spot_evidence_changed: scenario.scored_spot_changed,
       provider_identity_changed: scenario.provider_identity_changed,
       false_negative_present: falseNegative,
@@ -1124,6 +1155,137 @@ function classifyHttpOutcome(status, error) {
   return 'HTTP_OTHER';
 }
 
+/**
+ * Provider-specific semantic classification. HTTP success alone is not VALID.
+ */
+export function classifyProviderPayload(provider, httpOutcomeClass, json, parseError) {
+  if (parseError) {
+    return {
+      provider_returned_status: null,
+      provider_message: null,
+      payload_shape_status: 'MALFORMED_JSON',
+      provider_semantic_status: 'MALFORMED_RESPONSE',
+      rows: null,
+    };
+  }
+  if (httpOutcomeClass === 'HTTP_451') {
+    return {
+      provider_returned_status: null,
+      provider_message: null,
+      payload_shape_status: 'UNAVAILABLE',
+      provider_semantic_status: 'HTTP_451',
+      rows: null,
+    };
+  }
+  if (httpOutcomeClass === 'NETWORK_ERROR' || httpOutcomeClass === 'HTTP_OTHER') {
+    return {
+      provider_returned_status: null,
+      provider_message: null,
+      payload_shape_status: 'UNAVAILABLE',
+      provider_semantic_status: httpOutcomeClass,
+      rows: null,
+    };
+  }
+
+  if (provider === 'okx') {
+    const code = json && typeof json === 'object' ? json.code : null;
+    const msg = json && typeof json === 'object' ? (json.msg ?? json.message ?? null) : null;
+    const dataIsArray = Array.isArray(json?.data);
+    if (String(code) !== '0') {
+      return {
+        provider_returned_status: code == null ? null : String(code),
+        provider_message: msg == null ? null : String(msg),
+        payload_shape_status: dataIsArray ? 'DATA_ARRAY_WITH_PROVIDER_ERROR' : 'UNEXPECTED_OBJECT',
+        provider_semantic_status: 'PROVIDER_ERROR',
+        rows: null,
+        okx_code_is_zero: false,
+        okx_data_is_array: dataIsArray,
+      };
+    }
+    if (!dataIsArray) {
+      return {
+        provider_returned_status: String(code),
+        provider_message: msg == null ? null : String(msg),
+        payload_shape_status: 'UNEXPECTED_OBJECT',
+        provider_semantic_status: 'PROVIDER_ERROR',
+        rows: null,
+        okx_code_is_zero: true,
+        okx_data_is_array: false,
+      };
+    }
+    if (json.data.length === 0) {
+      return {
+        provider_returned_status: String(code),
+        provider_message: msg == null ? null : String(msg),
+        payload_shape_status: 'EXPECTED_ARRAY_EMPTY',
+        provider_semantic_status: 'EMPTY',
+        rows: [],
+        okx_code_is_zero: true,
+        okx_data_is_array: true,
+      };
+    }
+    return {
+      provider_returned_status: String(code),
+      provider_message: msg == null ? null : String(msg),
+      payload_shape_status: 'EXPECTED_ARRAY',
+      provider_semantic_status: 'VALID',
+      rows: json.data,
+      okx_code_is_zero: true,
+      okx_data_is_array: true,
+    };
+  }
+
+  // BitMEX and Binance: expected shape is a funding-rate Array.
+  if (Array.isArray(json)) {
+    if (json.length === 0) {
+      return {
+        provider_returned_status: null,
+        provider_message: null,
+        payload_shape_status: 'EXPECTED_ARRAY_EMPTY',
+        provider_semantic_status: 'EMPTY',
+        rows: [],
+      };
+    }
+    return {
+      provider_returned_status: null,
+      provider_message: null,
+      payload_shape_status: 'EXPECTED_ARRAY',
+      provider_semantic_status: 'VALID',
+      rows: json,
+    };
+  }
+
+  const code = json && typeof json === 'object'
+    ? (json.code ?? json.msg ?? json.message ?? null)
+    : null;
+  const msg = json && typeof json === 'object'
+    ? (json.msg ?? json.message ?? null)
+    : null;
+  return {
+    provider_returned_status: code == null ? null : String(code),
+    provider_message: msg == null ? null : String(msg),
+    payload_shape_status: json && typeof json === 'object' ? 'UNEXPECTED_OBJECT' : 'UNEXPECTED_PAYLOAD',
+    provider_semantic_status: 'PROVIDER_ERROR',
+    rows: null,
+  };
+}
+
+export function deriveUsabilityClass({
+  httpOutcomeClass,
+  providerSemanticStatus,
+  usableRowCount,
+}) {
+  if (httpOutcomeClass === 'HTTP_451') return 'HTTP_451';
+  if (httpOutcomeClass === 'NETWORK_ERROR') return 'NETWORK_ERROR';
+  if (httpOutcomeClass === 'HTTP_OTHER') return 'HTTP_OTHER';
+  if (providerSemanticStatus === 'MALFORMED_RESPONSE') return 'MALFORMED_RESPONSE';
+  if (providerSemanticStatus === 'PROVIDER_ERROR') return 'PROVIDER_ERROR';
+  if (providerSemanticStatus === 'EMPTY') return 'EMPTY';
+  if (providerSemanticStatus === 'VALID' && usableRowCount > 0) return 'VALID';
+  if (providerSemanticStatus === 'VALID' && usableRowCount === 0) return 'EMPTY';
+  return providerSemanticStatus || 'UNAVAILABLE';
+}
+
 export async function fetchReadOnlyJson(url, { timeoutMs = 20000 } = {}) {
   const acquiredAt = new Date().toISOString();
   try {
@@ -1140,33 +1302,16 @@ export async function fetchReadOnlyJson(url, { timeoutMs = 20000 } = {}) {
       parseError = String(error?.message || error);
     }
     const httpClass = classifyHttpOutcome(response.status, null);
-    let usability = 'VALID';
-    if (httpClass === 'HTTP_451') usability = 'HTTP_451';
-    else if (httpClass === 'HTTP_OTHER') usability = 'HTTP_OTHER';
-    else if (parseError) usability = 'MALFORMED_RESPONSE';
-    else if (
-      json == null
-      || (Array.isArray(json) && json.length === 0)
-      || (json && typeof json === 'object' && Array.isArray(json.data) && json.data.length === 0)
-    ) {
-      usability = 'EMPTY';
-    }
     return {
       request_identity: url,
       http_status: response.status,
       http_outcome_class: httpClass,
-      usability_class: usability,
-      row_count: Array.isArray(json)
-        ? json.length
-        : Array.isArray(json?.data)
-          ? json.data.length
-          : Array.isArray(json?.prices)
-            ? json.prices.length
-            : null,
       payload_sha256: sha256Hex(text),
       fetch_acquisition_timestamp_utc: acquiredAt,
       error_class: parseError ? 'MALFORMED_RESPONSE' : null,
+      error_message: parseError,
       json,
+      parse_error: parseError,
       text_length: text.length,
     };
   } catch (error) {
@@ -1176,15 +1321,96 @@ export async function fetchReadOnlyJson(url, { timeoutMs = 20000 } = {}) {
       request_identity: url,
       http_status: null,
       http_outcome_class: http451 ? 'HTTP_451' : 'NETWORK_ERROR',
-      usability_class: http451 ? 'HTTP_451' : 'NETWORK_ERROR',
-      row_count: null,
       payload_sha256: null,
       fetch_acquisition_timestamp_utc: acquiredAt,
       error_class: http451 ? 'HTTP_451' : 'NETWORK_ERROR',
       error_message: msg,
       json: null,
+      parse_error: null,
     };
   }
+}
+
+export function normalizeFundingSource(result, provider) {
+  const classified = classifyProviderPayload(
+    provider,
+    result.http_outcome_class,
+    result.json,
+    result.parse_error
+  );
+  const rowsForSelection = classified.provider_semantic_status === 'VALID'
+    && Array.isArray(classified.rows)
+    ? classified.rows
+    : null;
+  const usable = (rowsForSelection || []).filter((row) => {
+    const iso = extractFundingObservationUtc(row, provider);
+    return iso && Number.isFinite(Number(row?.fundingRate));
+  });
+  const usability = deriveUsabilityClass({
+    httpOutcomeClass: result.http_outcome_class,
+    providerSemanticStatus: classified.provider_semantic_status,
+    usableRowCount: usable.length,
+  });
+  return {
+    ...result,
+    provider,
+    provider_returned_status: classified.provider_returned_status,
+    provider_message: classified.provider_message,
+    payload_shape_status: classified.payload_shape_status,
+    provider_semantic_status: classified.provider_semantic_status,
+    okx_code_is_zero: classified.okx_code_is_zero,
+    okx_data_is_array: classified.okx_data_is_array,
+    usability_class: usability,
+    rows: rowsForSelection,
+    usable_rows: usable,
+    usable_row_count: usable.length,
+    row_count: Array.isArray(classified.rows) ? classified.rows.length : null,
+  };
+}
+
+export function normalizeCoingeckoSource(result) {
+  const prices = Array.isArray(result.json?.prices) ? result.json.prices : null;
+  let payloadShape = 'UNEXPECTED_OBJECT';
+  let semantic = 'PROVIDER_ERROR';
+  if (result.parse_error) {
+    payloadShape = 'MALFORMED_JSON';
+    semantic = 'MALFORMED_RESPONSE';
+  } else if (result.http_outcome_class !== 'VALID_HTTP') {
+    payloadShape = 'UNAVAILABLE';
+    semantic = result.http_outcome_class;
+  } else if (!result.json || typeof result.json !== 'object') {
+    payloadShape = 'UNEXPECTED_PAYLOAD';
+    semantic = 'PROVIDER_ERROR';
+  } else if (!Object.prototype.hasOwnProperty.call(result.json, 'prices')) {
+    payloadShape = 'MISSING_PRICES';
+    semantic = 'PROVIDER_ERROR';
+  } else if (!Array.isArray(result.json.prices)) {
+    payloadShape = 'PRICES_NOT_ARRAY';
+    semantic = 'PROVIDER_ERROR';
+  } else if (result.json.prices.length === 0) {
+    payloadShape = 'EXPECTED_ARRAY_EMPTY';
+    semantic = 'EMPTY';
+  } else {
+    payloadShape = 'EXPECTED_PRICES_ARRAY';
+    semantic = 'VALID';
+  }
+  const usability = deriveUsabilityClass({
+    httpOutcomeClass: result.http_outcome_class,
+    providerSemanticStatus: semantic,
+    usableRowCount: prices?.length || 0,
+  });
+  return {
+    ...result,
+    provider: 'coingecko',
+    provider_returned_status: null,
+    provider_message: null,
+    payload_shape_status: payloadShape,
+    provider_semantic_status: semantic,
+    usability_class: usability,
+    prices,
+    row_count: prices ? prices.length : null,
+    usable_row_count: prices ? prices.length : 0,
+  };
 }
 
 export async function fetchLiveTermSources() {
@@ -1194,44 +1420,11 @@ export async function fetchLiveTermSources() {
     fetchReadOnlyJson(SOURCE_ENDPOINTS.okx),
     fetchReadOnlyJson(SOURCE_ENDPOINTS.coingecko),
   ]);
-
-  const normalizeFunding = (result, provider) => {
-    if (!result?.json) {
-      return { ...result, usable_rows: [], usable_row_count: 0, provider };
-    }
-    let rows = null;
-    if (provider === 'okx') {
-      rows = result.json?.code === '0' && Array.isArray(result.json.data)
-        ? result.json.data
-        : null;
-    } else if (Array.isArray(result.json)) {
-      rows = result.json;
-    } else {
-      rows = null;
-    }
-    const usable = (rows || []).filter((row) => {
-      const iso = extractFundingObservationUtc(row, provider);
-      return iso && Number.isFinite(Number(row?.fundingRate));
-    });
-    return {
-      ...result,
-      provider,
-      rows,
-      usable_rows: usable,
-      usable_row_count: usable.length,
-      row_count: Array.isArray(rows) ? rows.length : result.row_count,
-    };
-  };
-
   return {
-    bitmex: normalizeFunding(bitmex, 'bitmex'),
-    binance: normalizeFunding(binance, 'binance'),
-    okx: normalizeFunding(okx, 'okx'),
-    coingecko: {
-      ...coingecko,
-      prices: Array.isArray(coingecko.json?.prices) ? coingecko.json.prices : null,
-      row_count: Array.isArray(coingecko.json?.prices) ? coingecko.json.prices.length : null,
-    },
+    bitmex: normalizeFundingSource(bitmex, 'bitmex'),
+    binance: normalizeFundingSource(binance, 'binance'),
+    okx: normalizeFundingSource(okx, 'okx'),
+    coingecko: normalizeCoingeckoSource(coingecko),
   };
 }
 
@@ -1288,6 +1481,30 @@ function buildImplementationInventory() {
   };
 }
 
+function enrichFundingComponent(fundingComponent, fundingRates, fundingRows, provider) {
+  if (!fundingComponent) return null;
+  const latestByTs = fundingRates.length
+    ? fundingRates.reduce((best, row) => {
+      const ms = row.timestamp instanceof Date ? row.timestamp.getTime() : Date.parse(row.timestamp);
+      if (!best || ms > best.ms) return { rate: row.rate, ms };
+      return best;
+    }, null)
+    : null;
+  return {
+    ...fundingComponent,
+    number_of_funding_rows: fundingRates.length,
+    elapsed_funding_span_days: analyzeFundingProviderRows(fundingRows, provider)
+      .full_usable_elapsed_span_days,
+    latestFunding_rates_0: fundingComponent.data.latestFunding,
+    actual_latest_by_timestamp_funding_rate: latestByTs?.rate ?? null,
+    rates0_matches_latest_by_timestamp:
+      latestByTs != null
+      && fundingComponent.data.latestFunding === latestByTs.rate,
+    percentile_compares_average_of_all_rows_against_individual_settlement_distribution: true,
+    selected_provider: provider,
+  };
+}
+
 function buildOfflineDeterministicEvidence(cacheSnapshot) {
   const provider = cacheSnapshot.funding_provider || 'okx';
   const fundingRows = cacheSnapshot.exists
@@ -1300,16 +1517,8 @@ function buildOfflineDeterministicEvidence(cacheSnapshot) {
   }));
   const spotPrices = syntheticSpot.map((row) => row.price);
   const spotTimestamps = syntheticSpot.map((row) => row.timestamp);
-
   const fundingComponent = fundingRates.length
     ? calculateFundingComponentSync(fundingRates)
-    : null;
-  const latestByTs = fundingRates.length
-    ? fundingRates.reduce((best, row) => {
-      const ms = row.timestamp instanceof Date ? row.timestamp.getTime() : Date.parse(row.timestamp);
-      if (!best || ms > best.ms) return { rate: row.rate, ms };
-      return best;
-    }, null)
     : null;
   const volatility = calculateVolatilityComponentSync(spotPrices);
   const stress = calculateStressComponentWithAlignment(
@@ -1320,35 +1529,146 @@ function buildOfflineDeterministicEvidence(cacheSnapshot) {
   const spotChart = {
     prices: syntheticSpot.map((row) => [Date.parse(row.timestamp), row.price]),
   };
+  const spotAnalysis = analyzeSpotRows(spotChart);
 
   return {
-    funding_component: fundingComponent
-      ? {
-        ...fundingComponent,
-        number_of_funding_rows: fundingRates.length,
-        elapsed_funding_span_days: analyzeFundingProviderRows(fundingRows, provider)
-          .full_usable_elapsed_span_days,
-        latestFunding_rates_0: fundingComponent.data.latestFunding,
-        actual_latest_by_timestamp_funding_rate: latestByTs?.rate ?? null,
-        rates0_matches_latest_by_timestamp:
-          latestByTs != null
-          && fundingComponent.data.latestFunding === latestByTs.rate,
-        percentile_compares_average_of_all_rows_against_individual_settlement_distribution: true,
-      }
-      : null,
+    evidence_origin: 'OFFLINE_DETERMINISTIC_REFERENCE',
+    funding_component: enrichFundingComponent(
+      fundingComponent,
+      fundingRates,
+      fundingRows,
+      provider
+    ),
     volatility_component: {
       ...volatility,
-      full_window_elapsed_span_days: analyzeSpotRows(spotChart).full_elapsed_span_days,
-      historical_subset_elapsed_spans: analyzeSpotRows(spotChart).seven_row_elapsed_span_days,
+      evidence_origin: 'OFFLINE_DETERMINISTIC_REFERENCE',
+      full_window_elapsed_span_days: spotAnalysis.full_elapsed_span_days,
+      historical_subset_elapsed_spans: spotAnalysis.seven_row_elapsed_span_days,
     },
-    stress_alignment: stress,
-    utc_date_feasibility: buildUtcDateFundingFeasibility(
-      fundingRows,
-      provider,
-      spotChart.prices
-    ),
+    stress_alignment: {
+      ...stress,
+      evidence_origin: 'OFFLINE_DETERMINISTIC_REFERENCE',
+    },
+    utc_date_feasibility: {
+      ...buildUtcDateFundingFeasibility(fundingRows, provider, spotChart.prices),
+      evidence_origin: 'OFFLINE_DETERMINISTIC_REFERENCE',
+    },
+    funding_window_analysis: analyzeFundingProviderRows(fundingRows, provider),
     synthetic_spot_used_for_offline_vol_stress: true,
     checked_in_funding_used_for_offline_funding_stress: Boolean(fundingRows.length),
+  };
+}
+
+/**
+ * Live scoring evidence using exact production selection + current mechanics.
+ * Never reorders arrays; never substitutes checked-in cache.
+ */
+export function buildLiveScoringEvidence(live, generatedAtUtc) {
+  const selected = selectFreshFundingProvider({
+    bitmex: live?.bitmex?.rows,
+    binance: live?.binance?.rows,
+    okx: live?.okx?.rows,
+    asOfUtc: generatedAtUtc,
+  });
+  const prices = live?.coingecko?.prices;
+  const blockers = [];
+  if (!selected.provider || !selected.rows?.length) {
+    blockers.push({
+      type: 'no_fresh_funding_provider_for_live_scoring_audit',
+      action: 'do_not_substitute_checked_in_cache_into_live_scoring_sections',
+    });
+  }
+  const numericPrices = Array.isArray(prices)
+    ? prices.map((row) => (Array.isArray(row) ? row[1] : null)).filter(Number.isFinite)
+    : [];
+  if (!Array.isArray(prices) || numericPrices.length === 0) {
+    blockers.push({
+      type: 'coingecko_spot_unavailable_or_unscoreable_for_live_scoring_audit',
+      action: 'do_not_substitute_synthetic_spot_into_live_scoring_sections',
+    });
+  }
+
+  if (blockers.length) {
+    return {
+      evidence_origin: 'LIVE_PROVIDER_PAYLOAD',
+      available: false,
+      blockers,
+      selected,
+      funding_component: null,
+      volatility_component: null,
+      stress_alignment: null,
+      utc_date_feasibility: null,
+      funding_window_analysis: null,
+      spot_analysis: Array.isArray(prices) ? analyzeSpotRows({ prices }) : null,
+      finding_labels: [],
+    };
+  }
+
+  const fundingRates = buildFundingRatesForScoring(selected.rows, selected.provider);
+  const spotTimestamps = prices.map((row) => safeIsoFromTimestamp(Array.isArray(row) ? row[0] : null));
+  const fundingComponent = calculateFundingComponentSync(fundingRates);
+  const volatility = calculateVolatilityComponentSync(numericPrices);
+  const stress = calculateStressComponentWithAlignment(
+    fundingRates,
+    numericPrices,
+    spotTimestamps
+  );
+  const fundingWindow = analyzeFundingProviderRows(selected.rows, selected.provider);
+  const spotAnalysis = analyzeSpotRows({ prices });
+  const findingLabels = [];
+  if (fundingWindow.finding_labels?.includes('FUNDING_30_ROWS_NOT_NECESSARILY_30_ELAPSED_DAYS')) {
+    findingLabels.push('LIVE_FUNDING_WINDOW_NOT_30_ELAPSED_DAYS');
+  }
+  if (volatility.current_observation_horizon_matches_historical_subsets === false) {
+    findingLabels.push('LIVE_VOLATILITY_HORIZON_MISMATCH');
+  }
+  if (
+    stress.summary?.returned_array_directions_differ
+    || stress.summary?.cadence_mismatched_subset_durations_exposed
+    || (stress.summary?.overlapping_percentage != null
+      && stress.summary.overlapping_percentage < 50)
+  ) {
+    findingLabels.push('LIVE_STRESS_POSITIONAL_ALIGNMENT_MISMATCH');
+  }
+
+  return {
+    evidence_origin: 'LIVE_PROVIDER_PAYLOAD',
+    available: true,
+    blockers: [],
+    selected: {
+      provider: selected.provider,
+      fundingObservationUtc: selected.fundingObservationUtc,
+      freshness: selected.freshness,
+      candidates: selected.candidates,
+      row_count: selected.rows.length,
+    },
+    funding_component: {
+      ...enrichFundingComponent(
+        fundingComponent,
+        fundingRates,
+        selected.rows,
+        selected.provider
+      ),
+      evidence_origin: 'LIVE_PROVIDER_PAYLOAD',
+    },
+    volatility_component: {
+      ...volatility,
+      evidence_origin: 'LIVE_PROVIDER_PAYLOAD',
+      full_window_elapsed_span_days: spotAnalysis.full_elapsed_span_days,
+      historical_subset_elapsed_spans: spotAnalysis.seven_row_elapsed_span_days,
+    },
+    stress_alignment: {
+      ...stress,
+      evidence_origin: 'LIVE_PROVIDER_PAYLOAD',
+      selected_provider: selected.provider,
+    },
+    utc_date_feasibility: {
+      ...buildUtcDateFundingFeasibility(selected.rows, selected.provider, prices),
+      evidence_origin: 'LIVE_PROVIDER_PAYLOAD',
+    },
+    funding_window_analysis: fundingWindow,
+    spot_analysis: spotAnalysis,
+    finding_labels: findingLabels,
   };
 }
 
@@ -1366,6 +1686,7 @@ export function buildOfflineR09Report({
   const providerSwitch = characterizeCachedProviderSwitchReuse();
   const preservation = characterizeCachePreservation();
   const offlineEvidence = buildOfflineDeterministicEvidence(cacheSnapshot);
+  const liveEvidence = live ? buildLiveScoringEvidence(live, generatedAtUtc) : null;
   const lastUpdated = characterizeLastUpdatedSemantics({
     fundingObservationUtc: cacheSnapshot.funding_observation_utc,
     spotObservationUtc: cacheSnapshot.spot_observation_utc,
@@ -1373,19 +1694,24 @@ export function buildOfflineR09Report({
 
   const blockers = [...dashboardTermContract.blockers];
   if (live) {
-    const anyFunding = ['bitmex', 'binance', 'okx'].some(
+    const anyUsableFunding = ['bitmex', 'binance', 'okx'].some(
       (name) => (live[name]?.usable_row_count || 0) > 0
     );
-    if (!anyFunding) {
+    if (!anyUsableFunding) {
       blockers.push({
         type: 'no_funding_provider_usable_live_evidence',
         action: 'r09_b_cannot_rely_on_live_funding_coverage',
       });
     }
-    if (!live.coingecko?.prices?.length) {
+    if (liveEvidence?.blockers?.length) {
+      blockers.push(...liveEvidence.blockers);
+    }
+    if (live.coingecko?.provider_semantic_status && live.coingecko.provider_semantic_status !== 'VALID') {
       blockers.push({
-        type: 'coingecko_spot_unavailable',
-        action: 'r09_b_cannot_rely_on_live_spot_coverage',
+        type: 'coingecko_live_payload_not_valid',
+        payload_shape_status: live.coingecko.payload_shape_status,
+        provider_semantic_status: live.coingecko.provider_semantic_status,
+        action: 'do_not_substitute_synthetic_spot_into_live_scoring_sections',
       });
     }
   }
@@ -1405,6 +1731,22 @@ export function buildOfflineR09Report({
   if (providerSwitch.CACHED_PROVIDER_CALCULATION_CAN_SURVIVE_CURRENT_PROVIDER_SWITCH) {
     findings.push('CACHED_PROVIDER_CALCULATION_CAN_SURVIVE_CURRENT_PROVIDER_SWITCH');
   }
+  if (liveEvidence?.finding_labels?.length) {
+    findings.push(...liveEvidence.finding_labels);
+  }
+
+  const scoringEvidence = live
+    ? (liveEvidence?.available ? liveEvidence : {
+      evidence_origin: 'LIVE_PROVIDER_PAYLOAD',
+      available: false,
+      funding_component: null,
+      volatility_component: null,
+      stress_alignment: null,
+      utc_date_feasibility: null,
+      funding_window_analysis: null,
+      blockers: liveEvidence?.blockers || [],
+    })
+    : offlineEvidence;
 
   return {
     schema: R09_SCHEMA,
@@ -1442,21 +1784,85 @@ export function buildOfflineR09Report({
     },
     section_3_cadence_window_semantics: {
       checked_in_cache: cacheSnapshot.funding_analysis || null,
+      live_selected: liveEvidence?.funding_window_analysis
+        ? {
+          selected_provider: liveEvidence.selected?.provider ?? null,
+          selected_live_row_count: liveEvidence.selected?.row_count ?? null,
+          live_cadence: liveEvidence.funding_window_analysis.cadence,
+          live_elapsed_coverage_days:
+            liveEvidence.funding_window_analysis.full_usable_elapsed_span_days,
+          live_7_row_span_hours:
+            liveEvidence.funding_window_analysis.seven_row_elapsed_span_hours,
+          rows_required_for_approx_30_elapsed_days:
+            liveEvidence.funding_window_analysis
+              .rows_required_for_approx_30_elapsed_days_at_current_cadence,
+          ui_detail_label: '30-day Average',
+          comparison_to_30_day_average_label:
+            liveEvidence.funding_window_analysis.finding_labels,
+        }
+        : null,
       ui_detail_label: '30-day Average',
-      finding_labels: findings.filter((x) => x === 'FUNDING_30_ROWS_NOT_NECESSARILY_30_ELAPSED_DAYS'),
+      finding_labels: findings.filter((x) =>
+        x === 'FUNDING_30_ROWS_NOT_NECESSARILY_30_ELAPSED_DAYS'
+        || x === 'LIVE_FUNDING_WINDOW_NOT_30_ELAPSED_DAYS'
+      ),
     },
-    section_4_spot_window_finality: live?.coingecko?.prices
-      ? analyzeSpotRows({ prices: live.coingecko.prices })
+    section_4_spot_window_finality: live
+      ? (liveEvidence?.spot_analysis
+        || (Array.isArray(live.coingecko?.prices)
+          ? analyzeSpotRows({ prices: live.coingecko.prices })
+          : {
+            evidence_origin: 'LIVE_PROVIDER_PAYLOAD',
+            available: false,
+            reason: live.coingecko?.payload_shape_status || 'coingecko_unavailable',
+          }))
       : analyzeSpotRows({
         prices: Array.from({ length: 31 }, (_, i) => [
           Date.UTC(2026, 8, 1 + i, i === 30 ? 16 : 0),
           100000 + i * 250,
         ]),
       }),
-    section_5_volatility_horizon: offlineEvidence.volatility_component,
-    section_6_funding_component_horizon: offlineEvidence.funding_component,
-    section_7_stress_alignment_audit: offlineEvidence.stress_alignment,
-    section_8_alignment_feasibility_diagnostic_only: offlineEvidence.utc_date_feasibility,
+    section_5_volatility_horizon: scoringEvidence.volatility_component
+      ? {
+        ...scoringEvidence.volatility_component,
+        evidence_origin: scoringEvidence.evidence_origin,
+      }
+      : {
+        evidence_origin: scoringEvidence.evidence_origin,
+        available: false,
+        blockers: scoringEvidence.blockers || blockers,
+      },
+    section_6_funding_component_horizon: scoringEvidence.funding_component
+      ? {
+        ...scoringEvidence.funding_component,
+        evidence_origin: scoringEvidence.evidence_origin,
+      }
+      : {
+        evidence_origin: scoringEvidence.evidence_origin,
+        available: false,
+        blockers: scoringEvidence.blockers || blockers,
+      },
+    section_7_stress_alignment_audit: scoringEvidence.stress_alignment
+      ? {
+        ...scoringEvidence.stress_alignment,
+        evidence_origin: scoringEvidence.evidence_origin,
+      }
+      : {
+        evidence_origin: scoringEvidence.evidence_origin,
+        available: false,
+        blockers: scoringEvidence.blockers || blockers,
+      },
+    section_8_alignment_feasibility_diagnostic_only: scoringEvidence.utc_date_feasibility
+      ? {
+        ...scoringEvidence.utc_date_feasibility,
+        evidence_origin: scoringEvidence.evidence_origin,
+      }
+      : {
+        evidence_origin: scoringEvidence.evidence_origin,
+        available: false,
+        blockers: scoringEvidence.blockers || blockers,
+      },
+    offline_deterministic_reference: offlineEvidence,
     section_9_cache_change_detector_audit: cacheDetector,
     section_10_cache_preservation_freshness: preservation,
     section_11_cache_reuse_vs_current_live_provider: providerSwitch,
@@ -1492,14 +1898,7 @@ export function buildOfflineR09Report({
         coingecko: summarizeLiveSource(live.coingecko),
       }
       : null,
-    live_provider_selection: live
-      ? selectFreshFundingProvider({
-        bitmex: live.bitmex?.rows,
-        binance: live.binance?.rows,
-        okx: live.okx?.rows,
-        asOfUtc: generatedAtUtc,
-      })
-      : null,
+    live_provider_selection: liveEvidence?.selected || null,
     finding_labels: findings,
     blockers,
     warnings: [],
@@ -1507,18 +1906,23 @@ export function buildOfflineR09Report({
       'Diagnostic only. No automatic completion or repair verdict.',
       'PR #56 provider-freshness architecture is inventory/verification scope only.',
       'Offline mode uses checked-in Term cache funding rows plus synthetic spot for vol/stress mechanics.',
+      'Live mode sections 5–8 use selected live funding + live CoinGecko only; offline_deterministic_reference is preserved separately.',
       'Live mode uses independent read-only fetches; does not write coinGeckoCache transport files.',
       'Score/alignment feasibility surfaces are non-authoritative.',
     ],
   };
 }
 
-function summarizeLiveSource(source) {
+export function summarizeLiveSource(source) {
   if (!source) return null;
   return {
     request_identity: source.request_identity,
     http_status: source.http_status,
     http_outcome_class: source.http_outcome_class,
+    provider_returned_status: source.provider_returned_status ?? null,
+    provider_message: source.provider_message ?? null,
+    payload_shape_status: source.payload_shape_status ?? null,
+    provider_semantic_status: source.provider_semantic_status ?? null,
     usability_class: source.usability_class,
     row_count: source.row_count,
     usable_row_count: source.usable_row_count ?? null,
@@ -1526,6 +1930,8 @@ function summarizeLiveSource(source) {
     fetch_acquisition_timestamp_utc: source.fetch_acquisition_timestamp_utc,
     error_class: source.error_class,
     error_message: source.error_message || null,
+    okx_code_is_zero: source.okx_code_is_zero,
+    okx_data_is_array: source.okx_data_is_array,
   };
 }
 
