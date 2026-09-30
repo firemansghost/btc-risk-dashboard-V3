@@ -1,0 +1,72 @@
+name: R09 Term successor feasibility diagnostic
+
+# Read-only live/public design-feasibility evidence.
+# Does not authorize production Term repair, provider routing, cache, scoring,
+# weight, or model-version changes. No automatic adjudication.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require main
+        env:
+          DIAGNOSTIC_REF: ${{ github.ref }}
+        run: |
+          if [ "$DIAGNOSTIC_REF" != "refs/heads/main" ]; then
+            echo "R09-C Term successor feasibility must be dispatched against refs/heads/main"
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Use Node 20
+        uses: actions/setup-node@v5
+        with:
+          node-version: "20.18.0"
+
+      - name: Require origin/main before diagnostic
+        run: |
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$GITHUB_SHA" ]; then
+            echo "origin/main no longer equals GITHUB_SHA"
+            exit 1
+          fi
+
+      - name: Run R09-C Term successor feasibility diagnostic
+        run: |
+          node scripts/research/diagnose-r09-term-successor-feasibility.mjs \
+            --repository-sha "$GITHUB_SHA" \
+            --report "$RUNNER_TEMP/r09-term-successor-feasibility-report.json" \
+            --live
+
+      - name: Require origin/main after diagnostic
+        run: |
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$GITHUB_SHA" ]; then
+            echo "origin/main advanced during diagnostic"
+            exit 1
+          fi
+
+      - name: Upload R09-C feasibility report
+        uses: actions/upload-artifact@v4
+        with:
+          name: r09-term-successor-feasibility
+          path: ${{ runner.temp }}/r09-term-successor-feasibility-report.json
+          if-no-files-found: warn
+
+      - name: Confirm repository worktree stayed clean
+        if: always()
+        run: |
+          if [ -n "$(git status --porcelain --untracked-files=all)" ]; then
+            git status --porcelain --untracked-files=all
+            exit 1
+          fi
