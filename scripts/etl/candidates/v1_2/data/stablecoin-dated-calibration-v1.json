@@ -1,0 +1,2972 @@
+{
+  "schema": "ghostgauge_v1_2_stablecoin_dated_calibration_v1",
+  "calibration_id": "STABLECOIN_DATED_CALIBRATION_V1",
+  "model_version_target": "v1.2.0",
+  "implementation_revision_target": "semantic-correctness-2026-09",
+  "ssot_version": "2.1.1",
+  "reconstruction_label": "CURRENT_CONFIG_RETROSPECTIVE_INPUT_RECONSTRUCTION",
+  "evidence_through_sha": "64f2ea06fbd810e2800fd9ae8c72c0eb50c72d2b",
+  "source_reconstruction_schema": "ghostgauge_r07_d_dated_baseline_feasibility_v1",
+  "source_candidate_series_id": "R07_D_CANDIDATE_DATED_BASELINE_SERIES_V1",
+  "source_config_label": "CURRENT_CONFIG_RETROSPECTIVE_INPUT_RECONSTRUCTION",
+  "legacy_baseline": {
+    "path": "public/data/stablecoins-historical.json",
+    "classification": "LEGACY_UNDATED_POSITIONAL_CALIBRATION",
+    "used_in_successor_calibration": false,
+    "synthetic_dates_assigned": false
+  },
+  "integrity": {
+    "future_evidence_violation_count": 0,
+    "r07d_blocker_count": 0,
+    "r07d_blockers": [],
+    "max_prior_candidate_baseline_depth": 326,
+    "observation_count": 327,
+    "earliest_observation_date": "2025-10-06",
+    "latest_observation_date": "2026-09-29"
+  },
+  "observations": [
+    {
+      "observation_date": "2025-10-06",
+      "aggregate_elapsed_30d_growth": 0.04133177590086651,
+      "analysis_event_commit_sha": "79932814193d7e655f5594076095f4da10b400ee",
+      "analysis_event_utc": "2025-10-06T06:49:58-05:00",
+      "initial_blob_sha": "1dfb9c76d6b01c8c84c4a9e05c3f3c884d4f81a5",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-08",
+      "aggregate_elapsed_30d_growth": 0.04621774614612399,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "4f41d9a7fac11944438bdab904646fb06de28456",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-09",
+      "aggregate_elapsed_30d_growth": 0.04812176907810934,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "669f44f66c3e82e2426b5b293e29f753c7e7ea03",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-10",
+      "aggregate_elapsed_30d_growth": 0.04728728057159383,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "88175d273b44430225580be84a21377cce7cf629",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-11",
+      "aggregate_elapsed_30d_growth": 0.05117730659167848,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "b93a161b9aa0acdcb1c38cfdaf130f8c89b254b2",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-12",
+      "aggregate_elapsed_30d_growth": 0.051677866101806774,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "153a3e6c180a90878e6892f520f610c3712112c6",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-13",
+      "aggregate_elapsed_30d_growth": 0.048630205334683214,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "ee90a6905aa3231efdf7ca291f35f5e58d7e9797",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-14",
+      "aggregate_elapsed_30d_growth": 0.04487728420446612,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "3e0fcaed525fd13c1af115ee76893a18bdbccff9",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-15",
+      "aggregate_elapsed_30d_growth": 0.04919025332440456,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "58954b6b9229bff53625f4a78a75e01481d9ecf8",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-16",
+      "aggregate_elapsed_30d_growth": 0.05094135416235483,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "9f6e784dd40aac95420542da9c2b0a0f7d7af6c5",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-17",
+      "aggregate_elapsed_30d_growth": 0.0468296339141581,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "608b0fc6721514aa07e6b6b2c495d2c0a9bfef4a",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-18",
+      "aggregate_elapsed_30d_growth": 0.04771243273535689,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "f119ebcf358a2b53c794ca95554c7ec9d12f5bab",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-19",
+      "aggregate_elapsed_30d_growth": 0.04520521922596896,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "9459d791faad8452dfe5afe35feadfabfad5885d",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-20",
+      "aggregate_elapsed_30d_growth": 0.044330221751179566,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "acf1a9b224ad38f2d2b88fc5bb330a70e0f34cb6",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-21",
+      "aggregate_elapsed_30d_growth": 0.045149358953885145,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "fb239fd3dc88f4b83d631ae058a231692f7c9381",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-10-22",
+      "aggregate_elapsed_30d_growth": 0.04648491282478446,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "217ffcff59e217e0b883e51539e24e6009dcbb9b",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-23",
+      "aggregate_elapsed_30d_growth": 0.04542258059605434,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "a753170c4b2fc40beaea05112b22c38c55e6db8e",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-24",
+      "aggregate_elapsed_30d_growth": 0.04294903873837877,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "98bb3b50b1752f99c53de3a951c6507f2d061028",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-25",
+      "aggregate_elapsed_30d_growth": 0.0423946050998632,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "558bbd361eab4b82fae90b7543ae1871a867798f",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-26",
+      "aggregate_elapsed_30d_growth": 0.03904312770516061,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "988633109f9b7602ec352fcdf98fa371a77c2bac",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-10-27",
+      "aggregate_elapsed_30d_growth": 0.04383464952261798,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "89fe19af774b5fe3ac70da112760c721be289ccc",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-28",
+      "aggregate_elapsed_30d_growth": 0.037470775741629055,
+      "analysis_event_commit_sha": "1e27313f01dede3c758efcec0bb4615561c03706",
+      "analysis_event_utc": "2025-10-29T10:55:18-05:00",
+      "initial_blob_sha": "b0ef34b002ffdc78827e49888b70eb57caa0a5e0",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-10-29",
+      "aggregate_elapsed_30d_growth": 0.04160465409197232,
+      "analysis_event_commit_sha": "54d054b110ac779f45b073a27dac799d8a5b85a5",
+      "analysis_event_utc": "2025-10-29T10:54:41-05:00",
+      "initial_blob_sha": "6628a900576d67ac3ffee659e8c58840ac952bed",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-30",
+      "aggregate_elapsed_30d_growth": 0.04292758546732245,
+      "analysis_event_commit_sha": "8324833c96638abd460fd7c8cbfd146b8787d2d7",
+      "analysis_event_utc": "2025-10-30T11:20:39Z",
+      "initial_blob_sha": "a8eb9477486eadb87ab05f0035a9303d3aafc577",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-10-31",
+      "aggregate_elapsed_30d_growth": 0.04195089665740525,
+      "analysis_event_commit_sha": "3345c26f51ffcfc64021fde450d8f5d3324108d0",
+      "analysis_event_utc": "2025-10-31T11:20:04Z",
+      "initial_blob_sha": "454fe63c92711134f58056634d67795ea222814f",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-01",
+      "aggregate_elapsed_30d_growth": 0.03496652351419397,
+      "analysis_event_commit_sha": "3780db7a62fc96d2e4b044c502f72851887d1ac9",
+      "analysis_event_utc": "2025-11-01T11:18:22Z",
+      "initial_blob_sha": "6a26769c298821eb3067dd11efdd5f80f7dfc628",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-02",
+      "aggregate_elapsed_30d_growth": 0.031183402278230982,
+      "analysis_event_commit_sha": "56a3f38b9a09086304696e007eca2dd2b87d7519",
+      "analysis_event_utc": "2025-11-02T11:17:45Z",
+      "initial_blob_sha": "49fe001ffe310b03133cd9eb4e8b4938a8c62b35",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-03",
+      "aggregate_elapsed_30d_growth": 0.024872874159684796,
+      "analysis_event_commit_sha": "bfd413c5f17c0bf238cd7380d26f30ceed80d090",
+      "analysis_event_utc": "2025-11-03T11:21:09Z",
+      "initial_blob_sha": "02350f0f5a02dac5a8995a2691aeebf745de9296",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-11-04",
+      "aggregate_elapsed_30d_growth": 0.02688306974957541,
+      "analysis_event_commit_sha": "ecbae65daf2ed679bb6b0fb8f76628eed27b96ae",
+      "analysis_event_utc": "2025-11-04T11:22:53Z",
+      "initial_blob_sha": "5cf5e5124c7dc2653f482c16ffc4ba8b4d92e459",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-05",
+      "aggregate_elapsed_30d_growth": 0.02285189865576494,
+      "analysis_event_commit_sha": "bdbfcb23fc8af1cfb1023520ccd8a62c26355c57",
+      "analysis_event_utc": "2025-11-05T11:22:26Z",
+      "initial_blob_sha": "f646bcde9beca4fe2c07e2936ff5ac8005e8b53e",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-06",
+      "aggregate_elapsed_30d_growth": 0.020848560198185154,
+      "analysis_event_commit_sha": "65562b230f19720d20ebd255843a88a11f266b3a",
+      "analysis_event_utc": "2025-11-06T11:22:10Z",
+      "initial_blob_sha": "4a9fea1edf11d55f5d68d1c1c8f12cac0948f2e6",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-11-07",
+      "aggregate_elapsed_30d_growth": 0.017638495187827077,
+      "analysis_event_commit_sha": "6b7a32f4ff599938ba137b541b8df8dab0400e3e",
+      "analysis_event_utc": "2025-11-07T11:20:27Z",
+      "initial_blob_sha": "523eb91019bff4a8fdb57553f76d973c52f574a9",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-08",
+      "aggregate_elapsed_30d_growth": 0.019066630448214394,
+      "analysis_event_commit_sha": "7ef96abdf52cd33c24de2a5f62be46379932bef5",
+      "analysis_event_utc": "2025-11-08T11:18:21Z",
+      "initial_blob_sha": "020998d21b9b69a7e1189f9e8851f70fcab3d1c3",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-09",
+      "aggregate_elapsed_30d_growth": 0.016922893612427034,
+      "analysis_event_commit_sha": "78292aa17faef521754aebe76eac5216e728d4e4",
+      "analysis_event_utc": "2025-11-09T11:18:22Z",
+      "initial_blob_sha": "17ae6d8c5e72496d3717a17d4a1596172017f5c1",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-10",
+      "aggregate_elapsed_30d_growth": 0.014531635310546994,
+      "analysis_event_commit_sha": "25c86965a194d007451dea58230d3cf2fad8e70e",
+      "analysis_event_utc": "2025-11-10T11:21:46Z",
+      "initial_blob_sha": "47975a43b51fe7052c3144524d75e69bc1fc96bf",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-11",
+      "aggregate_elapsed_30d_growth": 0.013049451677654979,
+      "analysis_event_commit_sha": "9cd640c50daf45460d328203fd92f97fa1ac4d28",
+      "analysis_event_utc": "2025-11-11T11:22:07Z",
+      "initial_blob_sha": "230b42e032ceade539a91757210af2569fd955e8",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-11-12",
+      "aggregate_elapsed_30d_growth": 0.011634263663025612,
+      "analysis_event_commit_sha": "fe28d5c09ad51798b652d4d3e3c4dd91355c2a53",
+      "analysis_event_utc": "2025-11-12T11:22:12Z",
+      "initial_blob_sha": "b7dd252f14a2ac8727b588d91d0af36070145bfa",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-11-13",
+      "aggregate_elapsed_30d_growth": 0.014969108033029983,
+      "analysis_event_commit_sha": "38c8f20bd5af4d5068821693411d452e8f9e0422",
+      "analysis_event_utc": "2025-11-13T11:22:43Z",
+      "initial_blob_sha": "50b8b2ecd384a6ee76728faf1532cb05dbdd37e3",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-14",
+      "aggregate_elapsed_30d_growth": 0.008212388152178734,
+      "analysis_event_commit_sha": "30fd33250cd27eda8ee3e298b50504aaf396b399",
+      "analysis_event_utc": "2025-11-14T11:21:37Z",
+      "initial_blob_sha": "7e32a57dc322b5dbfb36f355b96a70b2481620c7",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-15",
+      "aggregate_elapsed_30d_growth": 0.006147265634315812,
+      "analysis_event_commit_sha": "f24bbd4056163dad6493ceb011c1af81cfd7b9b7",
+      "analysis_event_utc": "2025-11-15T11:18:37Z",
+      "initial_blob_sha": "8510daf7316ea235e6a0e8b23e2c43b78ba7bdda",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-16",
+      "aggregate_elapsed_30d_growth": 0.004188838183077934,
+      "analysis_event_commit_sha": "0f23d5a084e934f115f55e77c4650af4fc374716",
+      "analysis_event_utc": "2025-11-16T11:18:58Z",
+      "initial_blob_sha": "b49522d28f03fcb0c96f68584111f88a243c1301",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-17",
+      "aggregate_elapsed_30d_growth": 0.0020441712327586205,
+      "analysis_event_commit_sha": "c0212b33910a26f9d2aa54cb0cd95cf982889941",
+      "analysis_event_utc": "2025-11-17T11:22:03Z",
+      "initial_blob_sha": "4b3e49db37d2425f332345202937249c66817023",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-18",
+      "aggregate_elapsed_30d_growth": 0.0005269551585748891,
+      "analysis_event_commit_sha": "f26cd377cc923fdb936655300c6af2ec6be05fec",
+      "analysis_event_utc": "2025-11-18T11:23:29Z",
+      "initial_blob_sha": "15f651bb64f988cfec13cf5bd4dafbf78c9b9996",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-19",
+      "aggregate_elapsed_30d_growth": -0.00007446671726342921,
+      "analysis_event_commit_sha": "28cb76736ab7e0c3a4636db9d154e7a196a31447",
+      "analysis_event_utc": "2025-11-19T11:22:03Z",
+      "initial_blob_sha": "5e6d21c86cf7bf13d33ff688eee6c198089699be",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-20",
+      "aggregate_elapsed_30d_growth": -0.0032158830733690267,
+      "analysis_event_commit_sha": "26ff7f131362bc33b18f02cde3398457d6800ca7",
+      "analysis_event_utc": "2025-11-20T11:22:01Z",
+      "initial_blob_sha": "4e0f970da941d83c6b9faf4a37f2edf4899dab4a",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-21",
+      "aggregate_elapsed_30d_growth": -0.0052842975760555655,
+      "analysis_event_commit_sha": "b10a24d6349ab5abdc78042e6ec3e3fb5095acea",
+      "analysis_event_utc": "2025-11-21T11:21:08Z",
+      "initial_blob_sha": "2da207322c5bdf21cfb9604b587aaf399ab2540f",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-11-22",
+      "aggregate_elapsed_30d_growth": -0.0050680169421608605,
+      "analysis_event_commit_sha": "52e2ccb167c7fece33d4318ebe1d90d2c1ce4453",
+      "analysis_event_utc": "2025-11-22T11:18:20Z",
+      "initial_blob_sha": "b9917dcb1b4adb27fcf0882632b1a93a847236a7",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-23",
+      "aggregate_elapsed_30d_growth": -0.006297589204636136,
+      "analysis_event_commit_sha": "4a6e1296d709b5629d04d83d405573502da6a49e",
+      "analysis_event_utc": "2025-11-23T11:19:25Z",
+      "initial_blob_sha": "5582599eaccb8070af7e6b162c9c9a6a339a064e",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-24",
+      "aggregate_elapsed_30d_growth": -0.006842349819516312,
+      "analysis_event_commit_sha": "9217d1eea9d0269e49a68901bde02f5c68042436",
+      "analysis_event_utc": "2025-11-24T11:22:49Z",
+      "initial_blob_sha": "1dcd2a7e467c5fe6418ff9bcb0b04e77d4be55ba",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-25",
+      "aggregate_elapsed_30d_growth": -0.004106542524887169,
+      "analysis_event_commit_sha": "3897c1e0bdb52dc4593c143cc2d3b2e9c0b616b6",
+      "analysis_event_utc": "2025-11-25T11:23:18Z",
+      "initial_blob_sha": "c43491a1ef650ac65dfd6a5a8b8f676c2e153892",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-26",
+      "aggregate_elapsed_30d_growth": -0.0020360798914174742,
+      "analysis_event_commit_sha": "e8f6ddde2039e0767ca94a0bc75e81f141b8dae2",
+      "analysis_event_utc": "2025-11-26T11:22:50Z",
+      "initial_blob_sha": "c69a4f26c7179d45353e564175e7a4a4a4e98230",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-27",
+      "aggregate_elapsed_30d_growth": 0.0010690509525707365,
+      "analysis_event_commit_sha": "f2331c6513b3be6a89bafbf6c4a87bf2ed348fb5",
+      "analysis_event_utc": "2025-11-27T11:23:06Z",
+      "initial_blob_sha": "58964be3ded7b90f838886144652b14548379757",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-28",
+      "aggregate_elapsed_30d_growth": 0.0011419355616367247,
+      "analysis_event_commit_sha": "80c1c7839c14fc098aed7ca0f50e5fe26c0987f1",
+      "analysis_event_utc": "2025-11-28T11:22:33Z",
+      "initial_blob_sha": "39f11a7e4f27b2b2d59390ab833389ff6f63aad1",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-29",
+      "aggregate_elapsed_30d_growth": -0.0008327481272886426,
+      "analysis_event_commit_sha": "fde1777dc71c606eefc735911403f3a815e9a6e8",
+      "analysis_event_utc": "2025-11-29T11:19:31Z",
+      "initial_blob_sha": "3eb8068062cab0c369caf6e9f85e2d849d5c3a7b",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-11-30",
+      "aggregate_elapsed_30d_growth": 0.0033737071654813297,
+      "analysis_event_commit_sha": "63ff6cc462f1c17cdf0d7c914e7a26993469d4b9",
+      "analysis_event_utc": "2025-11-30T11:19:36Z",
+      "initial_blob_sha": "f957815d2399294fa96b19da5c447125d528daa9",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-12-01",
+      "aggregate_elapsed_30d_growth": 0.003953958581796144,
+      "analysis_event_commit_sha": "bd9adb09acc29a8fea7e55e595e0b0ed180cc479",
+      "analysis_event_utc": "2025-12-01T11:23:27Z",
+      "initial_blob_sha": "9c443a0aa9f9853502b426978fdbdd05b84c706c",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-12-02",
+      "aggregate_elapsed_30d_growth": 0.00712230334036337,
+      "analysis_event_commit_sha": "803d21a09c06837319377ab44d419a3299f45325",
+      "analysis_event_utc": "2025-12-02T11:24:50Z",
+      "initial_blob_sha": "cf3a18046cd4f435ea20a424d03872df54497866",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-12-03",
+      "aggregate_elapsed_30d_growth": 0.008518114624029509,
+      "analysis_event_commit_sha": "25e249f55aeb0d8fe613b16565a18ec0fdc7171f",
+      "analysis_event_utc": "2025-12-03T11:24:14Z",
+      "initial_blob_sha": "e4cc52753938de79b0ee8c1628909bfc4ffc290c",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-12-04",
+      "aggregate_elapsed_30d_growth": 0.01145967434153327,
+      "analysis_event_commit_sha": "df3264f386972fcb9dbad83710b411b682b62fd8",
+      "analysis_event_utc": "2025-12-04T11:24:47Z",
+      "initial_blob_sha": "86ffba130af5336ec06869d3c35267976e07bc83",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-12-05",
+      "aggregate_elapsed_30d_growth": 0.014640607687336108,
+      "analysis_event_commit_sha": "6bf0e7d54c9172a07f078ee9469879d4247a165e",
+      "analysis_event_utc": "2025-12-05T11:23:49Z",
+      "initial_blob_sha": "1b4b4d5cd9fb75002fca461e92b4afe1180b3936",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-12-06",
+      "aggregate_elapsed_30d_growth": 0.014475295996157376,
+      "analysis_event_commit_sha": "7e6227aec44dcec53db43ad0b632a19bea00a2f9",
+      "analysis_event_utc": "2025-12-06T11:19:46Z",
+      "initial_blob_sha": "7e0ba50d859011d87c9be07b640abcbe8f08b4d9",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-12-07",
+      "aggregate_elapsed_30d_growth": 0.014830623486993221,
+      "analysis_event_commit_sha": "602e416a9b2f3aac85ab5c779f1a2677ada08119",
+      "analysis_event_utc": "2025-12-07T11:19:45Z",
+      "initial_blob_sha": "dfa97f9b36772c0bf467d0588eb7b838c57c0ccd",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-12-08",
+      "aggregate_elapsed_30d_growth": 0.013241899552475967,
+      "analysis_event_commit_sha": "ae00f992df88ac62b32c530642848c2bed62b072",
+      "analysis_event_utc": "2025-12-08T11:24:15Z",
+      "initial_blob_sha": "33378ba5d22d718fd690f204f79fc7733fbe7c08",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-12-09",
+      "aggregate_elapsed_30d_growth": 0.014015673105962426,
+      "analysis_event_commit_sha": "55dca7aa546b2ea01105708e5c6a010262d50d14",
+      "analysis_event_utc": "2025-12-09T11:24:40Z",
+      "initial_blob_sha": "ab0edba847f9d98bdccda64206e68be57296d5b8",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-12-10",
+      "aggregate_elapsed_30d_growth": 0.014326121781977876,
+      "analysis_event_commit_sha": "ec1b931b8dcc6612f59eb07b7423108732418061",
+      "analysis_event_utc": "2025-12-10T11:24:16Z",
+      "initial_blob_sha": "1a75aa0426644e7647f37058169465ab1c684af1",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-12-11",
+      "aggregate_elapsed_30d_growth": 0.013270197386686639,
+      "analysis_event_commit_sha": "6082a0f7b5a684f58aef79b220d8339f41b632d3",
+      "analysis_event_utc": "2025-12-11T16:24:42Z",
+      "initial_blob_sha": "4a6eb7987ad3e020153efe5331f4f6611feba900",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-12-12",
+      "aggregate_elapsed_30d_growth": 0.014948827264859835,
+      "analysis_event_commit_sha": "ebdd6a50e365f9a378f0c201c14c14110f555f21",
+      "analysis_event_utc": "2025-12-12T11:26:37Z",
+      "initial_blob_sha": "37a2a1b48db231476b245b195af9a70ab292f693",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2025-12-13",
+      "aggregate_elapsed_30d_growth": 0.012646550761174099,
+      "analysis_event_commit_sha": "a62231b65d7f5b969c99a4b1f0fcdc31f4309783",
+      "analysis_event_utc": "2025-12-13T11:21:24Z",
+      "initial_blob_sha": "7c6c93c424168e48be7d0d1b467b6ea1255cc511",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-12-14",
+      "aggregate_elapsed_30d_growth": 0.015218751593075348,
+      "analysis_event_commit_sha": "7b927e3db9fe8af0e59cb34143867730938964d0",
+      "analysis_event_utc": "2025-12-14T11:22:03Z",
+      "initial_blob_sha": "4e6be07768d76f7cda6dc13470a27bfb6bf4c76f",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-12-15",
+      "aggregate_elapsed_30d_growth": 0.01764526225327008,
+      "analysis_event_commit_sha": "1ea7692daecd80608b8580ba492de5d23ed311c7",
+      "analysis_event_utc": "2025-12-15T03:38:55Z",
+      "initial_blob_sha": "4718aacb4d21ca30c57b9a02829ab0b413cb3ae1",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-12-16",
+      "aggregate_elapsed_30d_growth": 0.018140776109677657,
+      "analysis_event_commit_sha": "9a60cfc4ccdea8d94b78fc686d8ff52852f5f40a",
+      "analysis_event_utc": "2025-12-16T11:26:28Z",
+      "initial_blob_sha": "f298fe3239efca77491706539e421e7916fd87ae",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2025-12-17",
+      "aggregate_elapsed_30d_growth": 0.017293188695325756,
+      "analysis_event_commit_sha": "e88d209a115b8ed38d9418b26ce780939578a990",
+      "analysis_event_utc": "2025-12-17T11:27:01Z",
+      "initial_blob_sha": "e93927748289b87ffcc300f66de8b548db4c83bc",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-12-18",
+      "aggregate_elapsed_30d_growth": 0.016519780838674007,
+      "analysis_event_commit_sha": "3618d104026fa3de08d5238911a83ee4e52b79c5",
+      "analysis_event_utc": "2025-12-18T11:25:10Z",
+      "initial_blob_sha": "fd0fc08ade69f84cc2397446ead7aeefbe2ea29a",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2025-12-19",
+      "aggregate_elapsed_30d_growth": 0.013855143594298897,
+      "analysis_event_commit_sha": "0610156e3bcdc2989c6621e4eae662091d175e5a",
+      "analysis_event_utc": "2025-12-19T11:24:39Z",
+      "initial_blob_sha": "c83677c69a723b97a7dd56dfc3612d2edec94eea",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2025-12-20",
+      "aggregate_elapsed_30d_growth": 0.013910551823729012,
+      "analysis_event_commit_sha": "dba4c18a43bd55f6b1faebfb93f2c8a05fc3e538",
+      "analysis_event_utc": "2025-12-20T11:21:21Z",
+      "initial_blob_sha": "6f0b04c98aaf4c92ae91a87c3652bc0c05305321",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-12-21",
+      "aggregate_elapsed_30d_growth": 0.015385797466277473,
+      "analysis_event_commit_sha": "ad5f14ce8b3628bab9ed89699ba1f6a02fbd16f0",
+      "analysis_event_utc": "2025-12-21T11:22:04Z",
+      "initial_blob_sha": "fbff9b7081ef803cf7214a06ffce1a33a447cf05",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-12-22",
+      "aggregate_elapsed_30d_growth": 0.015569525076608437,
+      "analysis_event_commit_sha": "d81dbe7a5185f9fe28981b24f2b609f8e15fcc55",
+      "analysis_event_utc": "2025-12-22T11:24:53Z",
+      "initial_blob_sha": "be77188ee1a7a9d5eb719400a1b3911c93e4f138",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2025-12-23",
+      "aggregate_elapsed_30d_growth": 0.016840454105426683,
+      "analysis_event_commit_sha": "bfe6a2b2ec702e93fe776d4a30b9783d3ae87920",
+      "analysis_event_utc": "2025-12-23T11:25:43Z",
+      "initial_blob_sha": "d0c8a1df2c643592475ddb8915518e3090838943",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-12-24",
+      "aggregate_elapsed_30d_growth": 0.015701222049197442,
+      "analysis_event_commit_sha": "5378f2876dbc2dc48fa9d92511bd1ba2e0508ca5",
+      "analysis_event_utc": "2025-12-24T14:55:59Z",
+      "initial_blob_sha": "ee4991829f27802bc1f642f409abe7666e22516d",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-12-25",
+      "aggregate_elapsed_30d_growth": 0.013849951760464755,
+      "analysis_event_commit_sha": "7b2b08b00d45d6470c256e862a12adf56eb4b252",
+      "analysis_event_utc": "2025-12-25T11:23:45Z",
+      "initial_blob_sha": "f0f8203e1972f00153b9ae906c6413e10c47e2c8",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2025-12-26",
+      "aggregate_elapsed_30d_growth": 0.008973317019383467,
+      "analysis_event_commit_sha": "f819ab969f618f7c514f9b1d185b8a1be6b51e7c",
+      "analysis_event_utc": "2025-12-26T11:24:40Z",
+      "initial_blob_sha": "f5237a040d238a55831330d8f36927b06d3f1d72",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2025-12-27",
+      "aggregate_elapsed_30d_growth": 0.0071858214390900085,
+      "analysis_event_commit_sha": "46e2b22c95d3bc594f7f4acead93a6d1b1ccce43",
+      "analysis_event_utc": "2025-12-27T11:21:53Z",
+      "initial_blob_sha": "6d3cd3c235fab7824c7bf0a07ca3c2532e907c05",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2025-12-28",
+      "aggregate_elapsed_30d_growth": 0.005964776680435204,
+      "analysis_event_commit_sha": "3a5fe74deb5e41722e83c88a3b1661aed7bc21ac",
+      "analysis_event_utc": "2025-12-28T11:22:46Z",
+      "initial_blob_sha": "fe8ae22a22a695af787641a9624d04625c255836",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2025-12-29",
+      "aggregate_elapsed_30d_growth": 0.0027746392032351984,
+      "analysis_event_commit_sha": "701b29e5d5f201f27ca734e3678977197892b506",
+      "analysis_event_utc": "2025-12-29T11:26:06Z",
+      "initial_blob_sha": "52163a5ceff9e615ac2bcf7e90029358457ff004",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2025-12-30",
+      "aggregate_elapsed_30d_growth": 0.003150767729411971,
+      "analysis_event_commit_sha": "d15d79d8160a88d9f5b30e087082d9f877eac0ea",
+      "analysis_event_utc": "2025-12-30T11:26:03Z",
+      "initial_blob_sha": "9442608f76742b6cb1d8f7feb9b1f2f2ef2b5000",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2025-12-31",
+      "aggregate_elapsed_30d_growth": 0.0023586090781912653,
+      "analysis_event_commit_sha": "42cf77e5b9c25ef0ecc5a913dffd8448d4eb8ae3",
+      "analysis_event_utc": "2025-12-31T11:25:08Z",
+      "initial_blob_sha": "fe8b7e28508bf358fd409425dd7e56b700037114",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-01-01",
+      "aggregate_elapsed_30d_growth": -0.0036575245787345005,
+      "analysis_event_commit_sha": "692b31c764932018185d8fbf41f878ede5ed9a97",
+      "analysis_event_utc": "2026-01-01T11:24:39Z",
+      "initial_blob_sha": "f32ce2cc346cd873e5230c3479d01888cbf1c340",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-01-02",
+      "aggregate_elapsed_30d_growth": -0.0027800889963453582,
+      "analysis_event_commit_sha": "e1d6edfcdeb45d48921c7aa8029a6385351c80e6",
+      "analysis_event_utc": "2026-01-02T11:24:35Z",
+      "initial_blob_sha": "0180408d9a55c8a2f3c5040c5904def93d8a86ef",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-01-03",
+      "aggregate_elapsed_30d_growth": -0.0054283054547457086,
+      "analysis_event_commit_sha": "6cf7cf1d898b8e64bd0cb5bbbd1ef07bdf534f05",
+      "analysis_event_utc": "2026-01-03T11:22:39Z",
+      "initial_blob_sha": "449819ecfa026562c9ac37ec70907d422fa3aead",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-01-04",
+      "aggregate_elapsed_30d_growth": -0.006175061973963164,
+      "analysis_event_commit_sha": "b2d7d609d43a2efe867e7514bb3280cfac3bd963",
+      "analysis_event_utc": "2026-01-04T11:22:22Z",
+      "initial_blob_sha": "315abfc7e70705d3d18eb5827a34fb5552aa37ad",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-01-05",
+      "aggregate_elapsed_30d_growth": -0.007344748296508649,
+      "analysis_event_commit_sha": "751dda55b8339cf53fe83406d5dfcc2bdf9926f8",
+      "analysis_event_utc": "2026-01-05T11:26:36Z",
+      "initial_blob_sha": "f15d2996bdcfde5f505b854416ba6de7fdd3f137",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-01-06",
+      "aggregate_elapsed_30d_growth": -0.004875581619952463,
+      "analysis_event_commit_sha": "d86556fe6c70a34f0e92782a6628d06e645d6559",
+      "analysis_event_utc": "2026-01-06T11:26:03Z",
+      "initial_blob_sha": "975c11617133faa249942f40ddba1aaa548dfb2c",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-01-07",
+      "aggregate_elapsed_30d_growth": -0.006957199969407464,
+      "analysis_event_commit_sha": "0906494f3069465748eb067aaa6ef23f9ada62b8",
+      "analysis_event_utc": "2026-01-07T11:27:20Z",
+      "initial_blob_sha": "f59a9997f6defdb22728f8a0fa2d5b5923fdd068",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-01-08",
+      "aggregate_elapsed_30d_growth": -0.009381536012239199,
+      "analysis_event_commit_sha": "f16a8554c9cd48bb4468ab34c580a8eb30102f41",
+      "analysis_event_utc": "2026-01-08T11:27:24Z",
+      "initial_blob_sha": "2e357212cf364af61b98688b3fdceb9dfa0bd38e",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-01-09",
+      "aggregate_elapsed_30d_growth": -0.011827092519283556,
+      "analysis_event_commit_sha": "537238dd54cc9c2272843c881020a2b79a4edd82",
+      "analysis_event_utc": "2026-01-09T11:25:58Z",
+      "initial_blob_sha": "0fa393f517fc11cdd9411aa18188c31fe9a674dd",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-01-10",
+      "aggregate_elapsed_30d_growth": -0.011574041749372379,
+      "analysis_event_commit_sha": "14a40597f571835a4769fa372bbd6554dfc50486",
+      "analysis_event_utc": "2026-01-10T11:23:10Z",
+      "initial_blob_sha": "bd37a40e497802023205ea2927e21ea83894411a",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-01-11",
+      "aggregate_elapsed_30d_growth": -0.011856535836844345,
+      "analysis_event_commit_sha": "bc1ec0748677c567814e4e396002a20d7cf8555e",
+      "analysis_event_utc": "2026-01-11T11:23:17Z",
+      "initial_blob_sha": "8b46811874f1b5b2b807e583c989eadb7749f812",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-01-12",
+      "aggregate_elapsed_30d_growth": -0.01307585161403515,
+      "analysis_event_commit_sha": "54e1e31e26f5f19e5b08e6c787761fc4970a92ac",
+      "analysis_event_utc": "2026-01-12T11:27:35Z",
+      "initial_blob_sha": "62789eca2ee7923cf5e61c7dbb0b8ff814ac14a6",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2026-01-13",
+      "aggregate_elapsed_30d_growth": -0.015010156475824956,
+      "analysis_event_commit_sha": "7715f6099edc4cd84f9622aa093f9529da0596cc",
+      "analysis_event_utc": "2026-01-13T11:27:50Z",
+      "initial_blob_sha": "c7fdb8123371f250e87f0451596f6ca9cd93cdef",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-01-15",
+      "aggregate_elapsed_30d_growth": -0.007141501800535039,
+      "analysis_event_commit_sha": "011d3c990e9370bfde78ad1b5ad1de6b2207b58a",
+      "analysis_event_utc": "2026-01-15T11:27:18Z",
+      "initial_blob_sha": "52fef3aac9c7d4232f24a674e20e8895b0e54ede",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-01-16",
+      "aggregate_elapsed_30d_growth": -0.007013299888559888,
+      "analysis_event_commit_sha": "54ddb244c1498578e705992dbf7e917fbf6db603",
+      "analysis_event_utc": "2026-01-16T11:26:31Z",
+      "initial_blob_sha": "cbd9946b99ee918e195004222447795aa8f7feb5",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-01-17",
+      "aggregate_elapsed_30d_growth": -0.00547681166659972,
+      "analysis_event_commit_sha": "b2f7d9e54339f7f3c186ed446155ad40cc853aab",
+      "analysis_event_utc": "2026-01-17T11:22:49Z",
+      "initial_blob_sha": "39ddbebbeda1d0a089730ce6ff082fd52d4bc9a8",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-01-18",
+      "aggregate_elapsed_30d_growth": -0.0025139464356262816,
+      "analysis_event_commit_sha": "84b0075c8431464d9ef644c01993c2fa80663c23",
+      "analysis_event_utc": "2026-01-18T11:22:15Z",
+      "initial_blob_sha": "bac05ba2e7d6aa2b3b89a79ab7ad9bb753c21073",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-01-19",
+      "aggregate_elapsed_30d_growth": -0.001506179989678748,
+      "analysis_event_commit_sha": "093636cff4dc4e418805499809f5279b4eb914be",
+      "analysis_event_utc": "2026-01-19T11:28:17Z",
+      "initial_blob_sha": "beddfe13437deab7b6ea983af30f93bef22d6b22",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-01-20",
+      "aggregate_elapsed_30d_growth": -0.004073978369772999,
+      "analysis_event_commit_sha": "fdc22623bf743ae8f1283490fab87c1278796f39",
+      "analysis_event_utc": "2026-01-20T11:29:47Z",
+      "initial_blob_sha": "018b06696f62acb8731aa8ba70b609e646ec3100",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-01-21",
+      "aggregate_elapsed_30d_growth": -0.007981748473921007,
+      "analysis_event_commit_sha": "b298d4e77648cfe4b2fda8f5c2dd34ea0691804e",
+      "analysis_event_utc": "2026-01-21T11:30:58Z",
+      "initial_blob_sha": "c550a2d35397dc836c951f678f93ee08d010b6b7",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-01-22",
+      "aggregate_elapsed_30d_growth": -0.00879226708299107,
+      "analysis_event_commit_sha": "717ac03cc62437c52a0e4cff309fccf23f3e4fb4",
+      "analysis_event_utc": "2026-01-22T11:29:30Z",
+      "initial_blob_sha": "d6d2679962f0c2a379371a38ccef5c94de8b6976",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-01-23",
+      "aggregate_elapsed_30d_growth": -0.011843542388247367,
+      "analysis_event_commit_sha": "2d3cdc886f061bcfc4881f4f81a6a316e7a4f96a",
+      "analysis_event_utc": "2026-01-23T11:27:55Z",
+      "initial_blob_sha": "b53287216dc06ec26ff587b0863ff5356b61cce4",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-01-24",
+      "aggregate_elapsed_30d_growth": -0.013858422457214305,
+      "analysis_event_commit_sha": "f0f06e6fc72e7c65588ee8772f67c159ab32a3e6",
+      "analysis_event_utc": "2026-01-24T11:23:57Z",
+      "initial_blob_sha": "809420456234f1a78c2e43fdd13610c6954bcf67",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-01-25",
+      "aggregate_elapsed_30d_growth": -0.014341713494252187,
+      "analysis_event_commit_sha": "7770c655c6b3095710546b797d3af7b1beb7b69c",
+      "analysis_event_utc": "2026-01-25T11:24:03Z",
+      "initial_blob_sha": "afff69a71ee27aa5d8723cec1b33f5cfca9e49e4",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-01-26",
+      "aggregate_elapsed_30d_growth": -0.014136920342104592,
+      "analysis_event_commit_sha": "83b1a2b5b2d2a99594353434d2d082ace7fba46d",
+      "analysis_event_utc": "2026-01-26T11:27:40Z",
+      "initial_blob_sha": "fcb3bb29914516900a83aa541085e349ca5b6fb3",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-01-27",
+      "aggregate_elapsed_30d_growth": -0.016556141460424837,
+      "analysis_event_commit_sha": "a675e8fe36a73f893bbd02d07abea367446e9747",
+      "analysis_event_utc": "2026-01-27T11:29:36Z",
+      "initial_blob_sha": "67a5edca211794af7a2b2785f9124ad2cba91ac2",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-01-28",
+      "aggregate_elapsed_30d_growth": -0.017656954194005012,
+      "analysis_event_commit_sha": "a12f0b51c9369809c07e503a3e23d547cc7a462f",
+      "analysis_event_utc": "2026-01-28T11:29:38Z",
+      "initial_blob_sha": "dff566e9eb8098513ed3174f38d81861ce2e4a5d",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-01-29",
+      "aggregate_elapsed_30d_growth": -0.019673838089364272,
+      "analysis_event_commit_sha": "6be09b5806bf162cdd7bc92300e4692c1f2b0de4",
+      "analysis_event_utc": "2026-01-29T11:37:10Z",
+      "initial_blob_sha": "1efb5bf97046c5927b3eddd24da4bd914745557f",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-01-30",
+      "aggregate_elapsed_30d_growth": -0.024851631663197433,
+      "analysis_event_commit_sha": "74c8623d313bf0c26074013fa3d4d2347ff60519",
+      "analysis_event_utc": "2026-01-30T11:35:18Z",
+      "initial_blob_sha": "691a1c29bd23236ab3138c44029909f27fd306a2",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-01-31",
+      "aggregate_elapsed_30d_growth": -0.030779623957200936,
+      "analysis_event_commit_sha": "607eb45145353af93318bfc5e5f865db093ac268",
+      "analysis_event_utc": "2026-01-31T11:27:10Z",
+      "initial_blob_sha": "b13a5f2840a80779ef6342d8d1dfb027bd4a2ce7",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-02-01",
+      "aggregate_elapsed_30d_growth": -0.031518879546365,
+      "analysis_event_commit_sha": "75385da293ece79a812974ed56b16c137b3b61df",
+      "analysis_event_utc": "2026-02-01T11:28:18Z",
+      "initial_blob_sha": "e421903c76be76927a12a2957cbfe69299ac589c",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-02-02",
+      "aggregate_elapsed_30d_growth": -0.032754061464157595,
+      "analysis_event_commit_sha": "c288e50df6742df4d718db61d2f9c363a29ad12e",
+      "analysis_event_utc": "2026-02-02T11:40:32Z",
+      "initial_blob_sha": "de3aa093ea04d393a043ad5840a1cc86be46860b",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-02-03",
+      "aggregate_elapsed_30d_growth": -0.03093782943500461,
+      "analysis_event_commit_sha": "4a93c795be27931f4cfccd8ce577d06cf407cdf9",
+      "analysis_event_utc": "2026-02-03T11:40:04Z",
+      "initial_blob_sha": "50a69ec648c8c8bff02fc0b322f47dbd92387e04",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-02-04",
+      "aggregate_elapsed_30d_growth": -0.03024434742392637,
+      "analysis_event_commit_sha": "370084e7a66cecd7267402d3fd87a4aeff536b55",
+      "analysis_event_utc": "2026-02-04T11:39:15Z",
+      "initial_blob_sha": "0034051901de370838512c93c88b3f453af84b42",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-02-05",
+      "aggregate_elapsed_30d_growth": -0.03242880140303527,
+      "analysis_event_commit_sha": "9b2b0d7b5056b26bf4767b506c94232932f239d3",
+      "analysis_event_utc": "2026-02-05T11:40:37Z",
+      "initial_blob_sha": "5cebb030d0e82e00cdc8859bd1408c34ce1c4f85",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-02-06",
+      "aggregate_elapsed_30d_growth": -0.031736698098614353,
+      "analysis_event_commit_sha": "2dbbe9af968f83f0529762afea872bbaf8ac5a97",
+      "analysis_event_utc": "2026-02-06T11:39:41Z",
+      "initial_blob_sha": "25c7ee446f835ec3f10c6ab361048ca1aa6dcaa5",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-02-07",
+      "aggregate_elapsed_30d_growth": -0.023431337235524898,
+      "analysis_event_commit_sha": "3962d4981135e89f4b3f5cce04f3c4c46a0ecd4e",
+      "analysis_event_utc": "2026-02-07T11:28:51Z",
+      "initial_blob_sha": "b4d8875b655c81a795cabacb902f163a428d363a",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-02-08",
+      "aggregate_elapsed_30d_growth": -0.021459192848942328,
+      "analysis_event_commit_sha": "686e1c07452726e29c3fafc7e8f6e01de576c781",
+      "analysis_event_utc": "2026-02-08T11:29:36Z",
+      "initial_blob_sha": "7b4a7b1f8251b777bf3ba067b14a8b04ef8a1d21",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-02-09",
+      "aggregate_elapsed_30d_growth": -0.02488836698184041,
+      "analysis_event_commit_sha": "65b19b5070c4d3087d679f8cde640b2f2d684404",
+      "analysis_event_utc": "2026-02-09T11:52:38Z",
+      "initial_blob_sha": "d6f9c7d225403b23b9bc329276d8876483e8934f",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-02-10",
+      "aggregate_elapsed_30d_growth": -0.023225284642602224,
+      "analysis_event_commit_sha": "72dc35ef302c6e2e3bc53d4d9931d6ba391a576d",
+      "analysis_event_utc": "2026-02-10T11:55:13Z",
+      "initial_blob_sha": "08f397c46f91ac3865e8951fea0176d6f13398c2",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-02-11",
+      "aggregate_elapsed_30d_growth": -0.023798978982446185,
+      "analysis_event_commit_sha": "34d808b764de2f9be3421769ca106b756018070f",
+      "analysis_event_utc": "2026-02-11T11:50:39Z",
+      "initial_blob_sha": "65dacf847a7c34808e571990b968066edefea612",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-02-12",
+      "aggregate_elapsed_30d_growth": -0.023596413998632285,
+      "analysis_event_commit_sha": "4ed1350bd2ca8deb5703b7c3e3b3dfff5bc20276",
+      "analysis_event_utc": "2026-02-12T11:45:20Z",
+      "initial_blob_sha": "d2a5f62118bd2a10ad9c11f705a5a7a09e1528cb",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-02-13",
+      "aggregate_elapsed_30d_growth": -0.027890123243603446,
+      "analysis_event_commit_sha": "d3d920775cc089973f379effc3be1fe1ff3e14df",
+      "analysis_event_utc": "2026-02-13T11:37:14Z",
+      "initial_blob_sha": "f628af2a3f47e03575d08a05d54de741c8074ad8",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-02-14",
+      "aggregate_elapsed_30d_growth": -0.029597209598976302,
+      "analysis_event_commit_sha": "8a0472c60c3322cd4198cef0bb4bab27c8afdc1b",
+      "analysis_event_utc": "2026-02-14T11:29:04Z",
+      "initial_blob_sha": "49f262d3b65a688e74754a48560c61789a67b354",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-02-15",
+      "aggregate_elapsed_30d_growth": -0.03065685130159755,
+      "analysis_event_commit_sha": "a229052ac0d76d9fdd807b3415be7a0ca78e4650",
+      "analysis_event_utc": "2026-02-15T11:29:46Z",
+      "initial_blob_sha": "3aea66a516c57d779ca72d0e1211897bce53ecf6",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-02-16",
+      "aggregate_elapsed_30d_growth": -0.03172520493569437,
+      "analysis_event_commit_sha": "56a50ab08717dfaf1061bf9602036cce8bfae35c",
+      "analysis_event_utc": "2026-02-16T11:44:26Z",
+      "initial_blob_sha": "e814f8eb3269e4062fef4f109d258d2880833601",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-02-17",
+      "aggregate_elapsed_30d_growth": -0.031434857057013765,
+      "analysis_event_commit_sha": "14ed61d02b9beca9a9a409ed095228634faea27d",
+      "analysis_event_utc": "2026-02-17T11:44:24Z",
+      "initial_blob_sha": "a84b634a55987e95b26769eb192556b35b35c921",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-02-18",
+      "aggregate_elapsed_30d_growth": -0.030159729813003695,
+      "analysis_event_commit_sha": "180e7ebbe2578402949b82bbfd5206232d88cf85",
+      "analysis_event_utc": "2026-02-18T11:43:47Z",
+      "initial_blob_sha": "1edf6f9dc754383c4d29c4c16f9054c1201a6a51",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-02-19",
+      "aggregate_elapsed_30d_growth": -0.028322859422580924,
+      "analysis_event_commit_sha": "2555a478e9f86b9a4b4b7a36aeaf0e5622e25426",
+      "analysis_event_utc": "2026-02-19T11:43:18Z",
+      "initial_blob_sha": "370158ee49f9dc1504ee023b496ca6780d9ba022",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-02-20",
+      "aggregate_elapsed_30d_growth": -0.024832555189750378,
+      "analysis_event_commit_sha": "4d5b1e018b0060a47a5b0fccde1f63e07eb36224",
+      "analysis_event_utc": "2026-02-20T11:38:29Z",
+      "initial_blob_sha": "bce0e9dc3cdddc438b9a59255855d812326be887",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-02-21",
+      "aggregate_elapsed_30d_growth": -0.021786311812081852,
+      "analysis_event_commit_sha": "bdca20607609fe890b16f7472ed0448b03ec7138",
+      "analysis_event_utc": "2026-02-21T11:28:39Z",
+      "initial_blob_sha": "cebc1df8670aa0da4736b707d2d064e673e8e4f2",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-02-22",
+      "aggregate_elapsed_30d_growth": -0.01803311941939013,
+      "analysis_event_commit_sha": "38905ae9aefa42256740537f259d5408b0f66e74",
+      "analysis_event_utc": "2026-02-22T11:28:32Z",
+      "initial_blob_sha": "128298e231372d16fa6a01bca05ae4d9a7fef3ef",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-02-23",
+      "aggregate_elapsed_30d_growth": -0.014768766809500367,
+      "analysis_event_commit_sha": "d156d5ce6da98cc230d38bc6ce547efc952cc357",
+      "analysis_event_utc": "2026-02-23T11:43:53Z",
+      "initial_blob_sha": "f6c749738e7d7e62139162f9f015f65050a7a94c",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-02-24",
+      "aggregate_elapsed_30d_growth": -0.012655575406478825,
+      "analysis_event_commit_sha": "afb5140d1f1e75ff4a159f17a7aa8cf464e3d86a",
+      "analysis_event_utc": "2026-02-24T11:44:56Z",
+      "initial_blob_sha": "125674d91769a36270edfda2a1a21d86544d2d3d",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-02-25",
+      "aggregate_elapsed_30d_growth": -0.012183095359736908,
+      "analysis_event_commit_sha": "9c4ba8d508a8e84af08b8e340a83657dfaf3ac0f",
+      "analysis_event_utc": "2026-02-25T11:44:16Z",
+      "initial_blob_sha": "b89625635e62f7b03568c7e821faa49e0024667e",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-02-26",
+      "aggregate_elapsed_30d_growth": -0.00587075389994367,
+      "analysis_event_commit_sha": "665acecb6195da03cb24b662f41c2c1292e0b130",
+      "analysis_event_utc": "2026-02-26T11:44:22Z",
+      "initial_blob_sha": "f715162712ffba136c64e30e0e3166af9160f578",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-02-27",
+      "aggregate_elapsed_30d_growth": -0.005469971388156,
+      "analysis_event_commit_sha": "4a865529bc22e65d99456d956e9d1636be08f5eb",
+      "analysis_event_utc": "2026-02-27T11:38:32Z",
+      "initial_blob_sha": "cb3af4bf35914a3524344413377e1a88ed49fd26",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-02-28",
+      "aggregate_elapsed_30d_growth": -0.004335290030164904,
+      "analysis_event_commit_sha": "b6a882fa96dfc2ea97eab1505846a7ad9cfb4209",
+      "analysis_event_utc": "2026-02-28T11:26:26Z",
+      "initial_blob_sha": "cece04d6eb31e3b23d2c4509aa710856cf85ae3f",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-03-01",
+      "aggregate_elapsed_30d_growth": 0.0009127660942835168,
+      "analysis_event_commit_sha": "73f38037872f41a8fd1c666718fda0d1f2bf110d",
+      "analysis_event_utc": "2026-03-01T11:27:27Z",
+      "initial_blob_sha": "f28ed32d770e04880074532d5d01a587068a6ed2",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-03-02",
+      "aggregate_elapsed_30d_growth": 0.011877629233443982,
+      "analysis_event_commit_sha": "92a8f45ca10aefc38169fa36f7cc048a897df92c",
+      "analysis_event_utc": "2026-03-02T11:36:00Z",
+      "initial_blob_sha": "8e0800da37cd1a525d3866a9c5b47500adb9df62",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-03-03",
+      "aggregate_elapsed_30d_growth": 0.015902175234254436,
+      "analysis_event_commit_sha": "5e2b20edcb82e4923ab9ebb5b874b4e73b9facfe",
+      "analysis_event_utc": "2026-03-03T11:39:20Z",
+      "initial_blob_sha": "431055ae8e9028e605ace41708b27a4bc37f959f",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-03-04",
+      "aggregate_elapsed_30d_growth": 0.017167826540538094,
+      "analysis_event_commit_sha": "b2d2c3e39bcb406f916cbe12e010438b0ab2f361",
+      "analysis_event_utc": "2026-03-04T11:37:19Z",
+      "initial_blob_sha": "9fed239f220856de29c36b19324e7dd0c554adc7",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-03-05",
+      "aggregate_elapsed_30d_growth": 0.018461531259050017,
+      "analysis_event_commit_sha": "4ee21e69bb7a0a1495f3121b1bbf8c988afca967",
+      "analysis_event_utc": "2026-03-05T11:39:50Z",
+      "initial_blob_sha": "7d657744febe83efc02435f960fdcfcfdd30a279",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-03-07",
+      "aggregate_elapsed_30d_growth": 0.02000876070576562,
+      "analysis_event_commit_sha": "27d42dab7fe1cd146fc43a23e6e01f07ded27ca7",
+      "analysis_event_utc": "2026-03-07T11:27:11Z",
+      "initial_blob_sha": "205df9e56efec7c8eb052eb3dc2a766fb6350ad5",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-03-08",
+      "aggregate_elapsed_30d_growth": 0.021528358939456673,
+      "analysis_event_commit_sha": "09ff567b16373ded95cd1742f559abe13b9988c3",
+      "analysis_event_utc": "2026-03-08T11:28:11Z",
+      "initial_blob_sha": "78bcfaa878105d16b4f55bf6ed195828bf444c44",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-03-09",
+      "aggregate_elapsed_30d_growth": 0.012509771373572101,
+      "analysis_event_commit_sha": "1e3fcd6d1e51d4a8d7b2f0fd52d8e98f15b0143e",
+      "analysis_event_utc": "2026-03-09T11:38:55Z",
+      "initial_blob_sha": "70e2ed7d7e85311c962a8b1452b0e50c1b6e138f",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-03-10",
+      "aggregate_elapsed_30d_growth": 0.015811157014641503,
+      "analysis_event_commit_sha": "665eb1a5ce926e454675ee8aafcd873fe70e248a",
+      "analysis_event_utc": "2026-03-10T11:38:46Z",
+      "initial_blob_sha": "38d880310c1018204349db53b9f5c410fd7b4a87",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-03-11",
+      "aggregate_elapsed_30d_growth": 0.02073771030160846,
+      "analysis_event_commit_sha": "db9e38b49fcf26ca1b9024dfe366627f2fc9d294",
+      "analysis_event_utc": "2026-03-11T11:39:19Z",
+      "initial_blob_sha": "32c746cb36176145a2b00ad90b9f9ad06dd8f677",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-03-12",
+      "aggregate_elapsed_30d_growth": 0.021323806978072034,
+      "analysis_event_commit_sha": "8f93f0641d630dc680bb51743ba9a92442801fa3",
+      "analysis_event_utc": "2026-03-12T11:36:54Z",
+      "initial_blob_sha": "df8cf9a88896982474f2b87f2d4b174dff8bb2b9",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-03-13",
+      "aggregate_elapsed_30d_growth": 0.0203858780864427,
+      "analysis_event_commit_sha": "157360a40935a036bbf76590ba12a811f6004d82",
+      "analysis_event_utc": "2026-03-13T11:37:23Z",
+      "initial_blob_sha": "ed715b5f364ddaeea2e047e6897e49cb4e6e351b",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-03-14",
+      "aggregate_elapsed_30d_growth": 0.02367836730139082,
+      "analysis_event_commit_sha": "54b042fa410d43eed02d6243c44ab0925e1b1073",
+      "analysis_event_utc": "2026-03-14T11:30:40Z",
+      "initial_blob_sha": "11277f7eb05cfbc301360b579740c94f873ffdcf",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-03-15",
+      "aggregate_elapsed_30d_growth": 0.02482580068748619,
+      "analysis_event_commit_sha": "e7169b772bd5a514c1657bd881eeee2af9656b69",
+      "analysis_event_utc": "2026-03-15T11:33:19Z",
+      "initial_blob_sha": "152d60aa339881e50f6d5854d8db2f39994db6e4",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-03-16",
+      "aggregate_elapsed_30d_growth": 0.023955190640100498,
+      "analysis_event_commit_sha": "9f51d8f4f6c8c6c887d672c98f3a050755449587",
+      "analysis_event_utc": "2026-03-16T11:52:48Z",
+      "initial_blob_sha": "51cf60c4b6cd6ea4fa53fcdd02e97292985018db",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-03-17",
+      "aggregate_elapsed_30d_growth": 0.024515550788536233,
+      "analysis_event_commit_sha": "1145685a9a6ad535317f9187abcc418323c02144",
+      "analysis_event_utc": "2026-03-17T11:48:24Z",
+      "initial_blob_sha": "08a3044577cd3e330a1e7c73db549ae1bf29505a",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-03-18",
+      "aggregate_elapsed_30d_growth": 0.024745003213569115,
+      "analysis_event_commit_sha": "fa732908d4f707097e3e952809375830d5a791b2",
+      "analysis_event_utc": "2026-03-18T11:51:34Z",
+      "initial_blob_sha": "a9bbda07245cb2a1403b9a3901c59c23c48cf008",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-03-19",
+      "aggregate_elapsed_30d_growth": 0.024429628762425725,
+      "analysis_event_commit_sha": "f171f9f541933389b28c2b12d1b68b67ff4000a0",
+      "analysis_event_utc": "2026-03-19T11:41:28Z",
+      "initial_blob_sha": "b6063e1c02a6aed093cc40bb2c5291d34e7f7931",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-03-20",
+      "aggregate_elapsed_30d_growth": 0.025241902532098088,
+      "analysis_event_commit_sha": "3fc7926748d733039eecf765549e0db8b2dfcfa7",
+      "analysis_event_utc": "2026-03-20T11:37:36Z",
+      "initial_blob_sha": "8806cd5595b3aaada7ad92dd22acb00d93503ddf",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-03-21",
+      "aggregate_elapsed_30d_growth": 0.02358690904330631,
+      "analysis_event_commit_sha": "d733c0fb830ce07a7e906904b8a288b73dabc8fd",
+      "analysis_event_utc": "2026-03-21T11:29:52Z",
+      "initial_blob_sha": "be427cf6b74a54875e86925fac7e2d010aaae40d",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-03-22",
+      "aggregate_elapsed_30d_growth": 0.022263916602694646,
+      "analysis_event_commit_sha": "b9605f343e2c4ebb0ef790c0f80fca0f105013f6",
+      "analysis_event_utc": "2026-03-22T11:30:27Z",
+      "initial_blob_sha": "8cb415dc1290671a83ec7209471f5d71563f91e2",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-03-23",
+      "aggregate_elapsed_30d_growth": 0.019474646386062323,
+      "analysis_event_commit_sha": "6ffce9f46e1f726dd9385d4c34779191ab3affcc",
+      "analysis_event_utc": "2026-03-23T11:49:55Z",
+      "initial_blob_sha": "7954ce61b7c5b3ba64e79af68f5f6b8a7deb5fbc",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-03-24",
+      "aggregate_elapsed_30d_growth": 0.018415483406345242,
+      "analysis_event_commit_sha": "9884815c488d9af090a0004279342320f225c91e",
+      "analysis_event_utc": "2026-03-24T11:50:16Z",
+      "initial_blob_sha": "241cee009b72c645e304868d520e0dd7b4d53cea",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-03-25",
+      "aggregate_elapsed_30d_growth": 0.018977934135958618,
+      "analysis_event_commit_sha": "2e480e6398c427c1fe9f32a017e21c89530d80bd",
+      "analysis_event_utc": "2026-03-25T11:47:57Z",
+      "initial_blob_sha": "6be7a12d125b29369bc6e96c5e24b3e2cd4159fc",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-03-26",
+      "aggregate_elapsed_30d_growth": 0.016989403888580657,
+      "analysis_event_commit_sha": "81035753b22df3f9c087bcc259e6be9b435b4866",
+      "analysis_event_utc": "2026-03-26T11:54:57Z",
+      "initial_blob_sha": "4be5d987b401c6e2176cfe33882d432d4d52edd6",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-03-27",
+      "aggregate_elapsed_30d_growth": 0.014607672638749071,
+      "analysis_event_commit_sha": "2a7c695bf2438ed16423ee6ca778492ccef20669",
+      "analysis_event_utc": "2026-03-27T11:47:17Z",
+      "initial_blob_sha": "e141c5d7685ccd581464442288176d71160a1c48",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-03-28",
+      "aggregate_elapsed_30d_growth": 0.010893071551518066,
+      "analysis_event_commit_sha": "8f23ae8312b6085fc96df52818395d77e7952be8",
+      "analysis_event_utc": "2026-03-28T11:35:16Z",
+      "initial_blob_sha": "27990d64154a10472bd949695625894031afe088",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-03-31",
+      "aggregate_elapsed_30d_growth": 0.011349453524505507,
+      "analysis_event_commit_sha": "4fea4aec349e6313ac7dc8a0ef26bb2d5d3f1109",
+      "analysis_event_utc": "2026-03-31T11:54:41Z",
+      "initial_blob_sha": "6cd55e1259feb60680dc110a2d7ac045753262fa",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-04-01",
+      "aggregate_elapsed_30d_growth": 0.012026411106469882,
+      "analysis_event_commit_sha": "ffe5945b8197ee49be9a9fded26680528b26571a",
+      "analysis_event_utc": "2026-04-01T11:56:38Z",
+      "initial_blob_sha": "4c494e3be90f7250176f4eaa2a9f384bd3ceddcb",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-04-02",
+      "aggregate_elapsed_30d_growth": 0.007687224880364431,
+      "analysis_event_commit_sha": "5c5e38826e21223c988a74de0e80ecce02976c24",
+      "analysis_event_utc": "2026-04-02T11:52:09Z",
+      "initial_blob_sha": "c01a63db6a1a8a87ccefc104f7f7699860e78b51",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-04-03",
+      "aggregate_elapsed_30d_growth": 0.006805809170885249,
+      "analysis_event_commit_sha": "b80747b670a170d63a5e2d79bb53796fd5163347",
+      "analysis_event_utc": "2026-04-03T11:42:14Z",
+      "initial_blob_sha": "4992b6bdd2715e05a1aaa10818fc2c9200b7a91b",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-04-07",
+      "aggregate_elapsed_30d_growth": 0.004314574842044402,
+      "analysis_event_commit_sha": "2c9741f344c97f5e97286ab69b485a6d96ed0cf7",
+      "analysis_event_utc": "2026-04-07T11:57:07Z",
+      "initial_blob_sha": "f3caf83faf63c5b6446b104efae1e84ce7ccd6c2",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-04-08",
+      "aggregate_elapsed_30d_growth": 0.005994382640627003,
+      "analysis_event_commit_sha": "45d9581c8cca3644fee85641639eab9e04450e27",
+      "analysis_event_utc": "2026-04-08T11:58:43Z",
+      "initial_blob_sha": "dc5cc30e06839432a1ccc81d68a8a167e051e10e",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-04-09",
+      "aggregate_elapsed_30d_growth": 0.002123874393816949,
+      "analysis_event_commit_sha": "b8b8c3997e71b81bde4a7c0f835e2b38f7e3f72c",
+      "analysis_event_utc": "2026-04-09T11:58:32Z",
+      "initial_blob_sha": "54ba67ec7aec5c40cb2764708be8c5545dc94d4d",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-04-10",
+      "aggregate_elapsed_30d_growth": 0.0012696194651618125,
+      "analysis_event_commit_sha": "1eb47357f003049bb6bd91e89600669bdec772eb",
+      "analysis_event_utc": "2026-04-10T11:53:45Z",
+      "initial_blob_sha": "e12e315d02efc74de2c05e247f30f0cfdcd56813",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-04-11",
+      "aggregate_elapsed_30d_growth": 0.0025605768863091512,
+      "analysis_event_commit_sha": "8c277f773b4df9a53e2cfeb056cec10ec4bfe7b0",
+      "analysis_event_utc": "2026-04-11T11:37:13Z",
+      "initial_blob_sha": "2f3f0eb6d813b3cfa1388d4d59526e7910cd9bc1",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-04-13",
+      "aggregate_elapsed_30d_growth": 0.00022628974013778595,
+      "analysis_event_commit_sha": "06d454acc445520d473cf151bf69358aefb2cfb9",
+      "analysis_event_utc": "2026-04-13T12:07:54Z",
+      "initial_blob_sha": "af28e6e7241209c4cdb4d61bb0f38e001bbfe4dc",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-04-14",
+      "aggregate_elapsed_30d_growth": 0.0007767233516229453,
+      "analysis_event_commit_sha": "5818b3b948b422e2a9f614db9943a8b89582a08c",
+      "analysis_event_utc": "2026-04-14T12:39:14Z",
+      "initial_blob_sha": "8bcb23daa174ecf5f060e5e0e06ca1de25fc07b2",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-04-15",
+      "aggregate_elapsed_30d_growth": 0.003546246508517799,
+      "analysis_event_commit_sha": "2236de110dfbc8e03eaf44a491f08ace89d8bfb7",
+      "analysis_event_utc": "2026-04-15T11:59:43Z",
+      "initial_blob_sha": "03858a367ce705206c8ed71726d8232460c1db5f",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-04-16",
+      "aggregate_elapsed_30d_growth": 0.0026809552005532464,
+      "analysis_event_commit_sha": "ef6ca3dc4a3b13db8169fba3be09561dac05ec23",
+      "analysis_event_utc": "2026-04-16T12:02:47Z",
+      "initial_blob_sha": "94c8e1f645f519591580c1a4f4c89c43586488b7",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-04-17",
+      "aggregate_elapsed_30d_growth": 0.0033405322666071498,
+      "analysis_event_commit_sha": "e4b6819ae8ce3952d299c85ba3a524ceb0fe0df3",
+      "analysis_event_utc": "2026-04-17T11:56:37Z",
+      "initial_blob_sha": "1f5f6135a211bd09bc905af00b52da4936ab3329",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-04-18",
+      "aggregate_elapsed_30d_growth": 0.005437877587863555,
+      "analysis_event_commit_sha": "7ce988a7b7eab69e109701c382ad5fcf5dff7ba1",
+      "analysis_event_utc": "2026-04-18T11:40:30Z",
+      "initial_blob_sha": "c2c8142f09e3d67198de17bb8cefff131e07ba9f",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-04-19",
+      "aggregate_elapsed_30d_growth": 0.005964603047231996,
+      "analysis_event_commit_sha": "6d7afdf61b52f3c5f9b924801919e9fdab271695",
+      "analysis_event_utc": "2026-04-19T18:04:34Z",
+      "initial_blob_sha": "32088fbfacd5da331f8441d9a73fd2147a542bd5",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-04-20",
+      "aggregate_elapsed_30d_growth": 0.007733373591417179,
+      "analysis_event_commit_sha": "660ccfdb16911871367f041c0fef8df18456122a",
+      "analysis_event_utc": "2026-04-20T12:08:55Z",
+      "initial_blob_sha": "e21c913f8b6aa208548d6e6c9cd90542b2d7a399",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2026-04-21",
+      "aggregate_elapsed_30d_growth": 0.0098834487031758,
+      "analysis_event_commit_sha": "635bd0910dccb5ad91253acfb3b8fc8aab9c367f",
+      "analysis_event_utc": "2026-04-21T12:03:14Z",
+      "initial_blob_sha": "f42ac7135497a4e0eb05ec8c93f8bfe3c8d8b3fe",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-04-22",
+      "aggregate_elapsed_30d_growth": 0.012364242151699685,
+      "analysis_event_commit_sha": "0d66c0b828622ffebf94bc2d51d383b5cd2e6df7",
+      "analysis_event_utc": "2026-04-22T12:02:45Z",
+      "initial_blob_sha": "3837b44941636c3deab2829deae4c635f0d7f244",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-04-23",
+      "aggregate_elapsed_30d_growth": 0.014560794119065378,
+      "analysis_event_commit_sha": "ad7be3246b9829609041d58f463f40bdd52e01c2",
+      "analysis_event_utc": "2026-04-23T12:02:47Z",
+      "initial_blob_sha": "52f39b362cc36e1fe5f3f28ea6e2753be6866464",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-04-24",
+      "aggregate_elapsed_30d_growth": 0.01672691629840869,
+      "analysis_event_commit_sha": "790fd9c3aa5b4013ab626244c036907a5440c5c4",
+      "analysis_event_utc": "2026-04-24T12:01:50Z",
+      "initial_blob_sha": "7fe51691cfaeb2463bf946f6c49d074ddd5b3aff",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-04-25",
+      "aggregate_elapsed_30d_growth": 0.015655270476451717,
+      "analysis_event_commit_sha": "1095549297b6289acd1a71e1c08f43340df7cd4d",
+      "analysis_event_utc": "2026-04-25T11:43:19Z",
+      "initial_blob_sha": "d3ee71fc9e37cd570b9f49afbf5e1d174c8f24da",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-04-26",
+      "aggregate_elapsed_30d_growth": 0.014987963888205837,
+      "analysis_event_commit_sha": "55178238f6ed9e5735d954cc525499ecd8aaf437",
+      "analysis_event_utc": "2026-04-26T11:44:33Z",
+      "initial_blob_sha": "4abfabd7ad3326e4ef2523166963392e9957101e",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-04-27",
+      "aggregate_elapsed_30d_growth": 0.019704632589304,
+      "analysis_event_commit_sha": "4e21b0b0a90c66d125fabf902d1c7133fb6818e7",
+      "analysis_event_utc": "2026-04-27T12:22:40Z",
+      "initial_blob_sha": "c895813800373e3afef664dce7c1c345958905c3",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-04-28",
+      "aggregate_elapsed_30d_growth": 0.018117973615347054,
+      "analysis_event_commit_sha": "ef117d32322e7a6dd9d2efe43eaf642ed7e009f2",
+      "analysis_event_utc": "2026-04-28T12:26:23Z",
+      "initial_blob_sha": "c44dc617518b292333aebe85268389df375fbb2b",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-04-29",
+      "aggregate_elapsed_30d_growth": 0.018223547896084016,
+      "analysis_event_commit_sha": "cd858b50c5d4e667a0e26d988801108e5d7d46cb",
+      "analysis_event_utc": "2026-04-29T12:20:36Z",
+      "initial_blob_sha": "c420fa42c52a2e454ba9932ae074da96467ad9f3",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-04-30",
+      "aggregate_elapsed_30d_growth": 0.016474778661127617,
+      "analysis_event_commit_sha": "b27ccb7682fb328c406394b1b6ec58b2fd23d4a3",
+      "analysis_event_utc": "2026-04-30T12:18:26Z",
+      "initial_blob_sha": "b760ab48a9ea21fd2ec60039e63092ad6fcbedf0",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-05-01",
+      "aggregate_elapsed_30d_growth": 0.01722833179171548,
+      "analysis_event_commit_sha": "f8c4222248b0a937e5573dc89658a9e1a140eadc",
+      "analysis_event_utc": "2026-05-01T12:03:22Z",
+      "initial_blob_sha": "828f0a86fe837fdaccc23b4902029065ddc162c1",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-05-02",
+      "aggregate_elapsed_30d_growth": 0.017449013790345216,
+      "analysis_event_commit_sha": "e5c3a15a0a7d1bd5d610624df03c7474b5b1eda8",
+      "analysis_event_utc": "2026-05-02T11:52:01Z",
+      "initial_blob_sha": "bbacce6f2dc1d32c28707adcd76e43b2da56c8de",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-05-03",
+      "aggregate_elapsed_30d_growth": 0.016251974043933932,
+      "analysis_event_commit_sha": "8b0e47adb60c10ef690948153d7f2a984d26f630",
+      "analysis_event_utc": "2026-05-03T11:50:56Z",
+      "initial_blob_sha": "08a95ab1cf192a2cbd2154b073e87a6d761c965c",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-05-04",
+      "aggregate_elapsed_30d_growth": 0.015919250632939527,
+      "analysis_event_commit_sha": "2fd494f8a85ac873292d6a22b13ad29e0db5bf44",
+      "analysis_event_utc": "2026-05-04T12:23:14Z",
+      "initial_blob_sha": "77913503629722e82b27b3ec62f5b8cacf310c2a",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-05-05",
+      "aggregate_elapsed_30d_growth": 0.017227482232894623,
+      "analysis_event_commit_sha": "db1d9921e0fe5b1c2f8d64c5f548883ed67f302c",
+      "analysis_event_utc": "2026-05-05T12:07:38Z",
+      "initial_blob_sha": "7a6b23209fd514b1498c3afb8d0a4cac47f91a70",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-05-06",
+      "aggregate_elapsed_30d_growth": 0.018656190310211082,
+      "analysis_event_commit_sha": "8fac5ed70775af0a7d96d689d30f5672c4525c57",
+      "analysis_event_utc": "2026-05-06T12:58:38Z",
+      "initial_blob_sha": "c76116f02cd3db18e9319155bb212c38ff6ae31b",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-05-07",
+      "aggregate_elapsed_30d_growth": 0.017765476968270577,
+      "analysis_event_commit_sha": "da4616f39d3ccbeb2ec05b1f96c99db7204da395",
+      "analysis_event_utc": "2026-05-07T13:00:17Z",
+      "initial_blob_sha": "8648237aebfa4f1043cb05e29cfd977ff0011e5e",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-05-08",
+      "aggregate_elapsed_30d_growth": 0.017880799333165664,
+      "analysis_event_commit_sha": "1c2e8bc570523135c2c1d08ff673625554658258",
+      "analysis_event_utc": "2026-05-08T15:47:58Z",
+      "initial_blob_sha": "b2640014cc35f1a84c0a49bc86870c22f33511d8",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-05-09",
+      "aggregate_elapsed_30d_growth": 0.030713309780319803,
+      "analysis_event_commit_sha": "cbe9a4fa77d50b88a4870131cebae7cb3e457ec7",
+      "analysis_event_utc": "2026-05-09T11:55:40Z",
+      "initial_blob_sha": "502896026143ba3cff3616cbf361e6d7fce75135",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-05-10",
+      "aggregate_elapsed_30d_growth": 0.0160567729660203,
+      "analysis_event_commit_sha": "2bca48bd80f2766d0c0e0c3726d29a53dd6ea614",
+      "analysis_event_utc": "2026-05-10T11:58:04Z",
+      "initial_blob_sha": "b88d916aa593b63ca049a3c716297be68c42db77",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-05-11",
+      "aggregate_elapsed_30d_growth": 0.013783651953369657,
+      "analysis_event_commit_sha": "80619cf7f5ecd1a53dd99d8f40e87f28292b1db8",
+      "analysis_event_utc": "2026-05-11T13:50:28Z",
+      "initial_blob_sha": "4ac7d3ede5acdabd40d19423dba0402db0f743c8",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-05-12",
+      "aggregate_elapsed_30d_growth": 0.012590945331535994,
+      "analysis_event_commit_sha": "f47621e34ed4a139b6b441ce38067f528dced44a",
+      "analysis_event_utc": "2026-05-12T13:08:50Z",
+      "initial_blob_sha": "a9f14f17da69eedc0a4367af7ed127803ee97a00",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-05-13",
+      "aggregate_elapsed_30d_growth": 0.011102821871121108,
+      "analysis_event_commit_sha": "42b38dec08670bc5a1a4165908d9b0a8f0384bf7",
+      "analysis_event_utc": "2026-05-13T13:21:34Z",
+      "initial_blob_sha": "7c03098cb67eadd45392703055c9909e0396040e",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-05-14",
+      "aggregate_elapsed_30d_growth": 0.009141229613898709,
+      "analysis_event_commit_sha": "559e1c9dbf94fbc8719ad40d25fb80dcf04abe81",
+      "analysis_event_utc": "2026-05-14T12:57:46Z",
+      "initial_blob_sha": "77d3ddd24e3555553f0b2a24c9fc7c777cbd53b6",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-05-15",
+      "aggregate_elapsed_30d_growth": 0.005289765513536062,
+      "analysis_event_commit_sha": "c904b8a475706ae9847a2329aebc08b0aca1ffe4",
+      "analysis_event_utc": "2026-05-15T12:59:13Z",
+      "initial_blob_sha": "31f38fd83765c76283360cb11d10011dcd551994",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-05-16",
+      "aggregate_elapsed_30d_growth": 0.006745048212051649,
+      "analysis_event_commit_sha": "168052e455e156fbfa14599a1a1c6b6dd71e37d7",
+      "analysis_event_utc": "2026-05-16T11:56:33Z",
+      "initial_blob_sha": "59ab0a59fceeead7dea292b1d5fcc7e8f49af5d9",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-05-17",
+      "aggregate_elapsed_30d_growth": 0.005148179843600263,
+      "analysis_event_commit_sha": "655abbceaaa82c9dfaba348648d0a4f270a4318b",
+      "analysis_event_utc": "2026-05-17T12:02:43Z",
+      "initial_blob_sha": "3eed3578f1133817a21b55362fb25bdd3ccd2f59",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-05-18",
+      "aggregate_elapsed_30d_growth": 0.003119514468929516,
+      "analysis_event_commit_sha": "8819d7917aa575765346beff793deb4624b31691",
+      "analysis_event_utc": "2026-05-18T14:34:17Z",
+      "initial_blob_sha": "4a0b7867693487453bbc45d7dbc5729cc6c2587a",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-05-19",
+      "aggregate_elapsed_30d_growth": 0.002531535361586675,
+      "analysis_event_commit_sha": "191b93cc77b34d97ad9337e1e59a76760e4e40bf",
+      "analysis_event_utc": "2026-05-19T13:57:12Z",
+      "initial_blob_sha": "62b26422e7a083fc5870d3c75973a3330f12e760",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-05-20",
+      "aggregate_elapsed_30d_growth": 0.000387288401287093,
+      "analysis_event_commit_sha": "fae4b4fe9622ca3b25103476a69bb4decb937388",
+      "analysis_event_utc": "2026-05-20T13:44:22Z",
+      "initial_blob_sha": "0c98130ac10f91e869e204abdfcd58860c2df347",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-05-21",
+      "aggregate_elapsed_30d_growth": -0.0037891273596717986,
+      "analysis_event_commit_sha": "3161ef9e407ccf0acc80a4a16b08b2239a1ad73b",
+      "analysis_event_utc": "2026-05-21T14:16:19Z",
+      "initial_blob_sha": "584f3d14ac748e3d530f805cd57d22f8b03340af",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-05-22",
+      "aggregate_elapsed_30d_growth": -0.003310463680767002,
+      "analysis_event_commit_sha": "dd6af4ac0ea508e7074e6f390039232ae34f573a",
+      "analysis_event_utc": "2026-05-22T13:34:19Z",
+      "initial_blob_sha": "97ce1912fd23e8f08fc32ef073fffd6bca66d1bf",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-05-23",
+      "aggregate_elapsed_30d_growth": -0.006528469433600233,
+      "analysis_event_commit_sha": "040a5f0c2b5823989f1332a3bfb922c9d8a02815",
+      "analysis_event_utc": "2026-05-23T12:03:17Z",
+      "initial_blob_sha": "6e257da5a7cb97ca0ffff33cd547981cef86a42d",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-05-24",
+      "aggregate_elapsed_30d_growth": -0.008407821545513406,
+      "analysis_event_commit_sha": "f7c4f67cf233aaffd44802ecd2c6295ace1c8ad4",
+      "analysis_event_utc": "2026-05-24T12:04:42Z",
+      "initial_blob_sha": "a66b0c30bf0d56c40b6cb7de9736c0090739d097",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-05-26",
+      "aggregate_elapsed_30d_growth": -0.008919868120152167,
+      "analysis_event_commit_sha": "b333e3221c872d1835058d5c6ce793c366dd6a74",
+      "analysis_event_utc": "2026-05-26T13:57:26Z",
+      "initial_blob_sha": "b265da5f6dc63027e8a364ffeb4041a45db3dd90",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-05-27",
+      "aggregate_elapsed_30d_growth": -0.00874433610833513,
+      "analysis_event_commit_sha": "7b88b7fb82cdf7c9df96efc2db209b2c00f84d9a",
+      "analysis_event_utc": "2026-05-27T14:30:49Z",
+      "initial_blob_sha": "3c45ba43d3b51c2abe2fce9739874e6c7718ba0d",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-05-28",
+      "aggregate_elapsed_30d_growth": -0.008928571383812225,
+      "analysis_event_commit_sha": "fb6df29dab40f1ce6102135e50d18d8b501977cf",
+      "analysis_event_utc": "2026-05-28T14:40:44Z",
+      "initial_blob_sha": "1c0cde31a8b652c19217459d8311e73c7a18e294",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-05-29",
+      "aggregate_elapsed_30d_growth": -0.008292061843953057,
+      "analysis_event_commit_sha": "6b02b3b5c89afe73f223758aa64fa4750ce8bc1d",
+      "analysis_event_utc": "2026-05-29T14:12:00Z",
+      "initial_blob_sha": "d93d10e815dec64a5993237af880e32587e72f14",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-05-30",
+      "aggregate_elapsed_30d_growth": -0.012120945826397889,
+      "analysis_event_commit_sha": "a39ebe027954166bd5a27f6804101de6052c3f1a",
+      "analysis_event_utc": "2026-05-30T12:07:32Z",
+      "initial_blob_sha": "25d19d48786ccd665f505efa112bc9af7a615751",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-05-31",
+      "aggregate_elapsed_30d_growth": -0.012421268951757172,
+      "analysis_event_commit_sha": "5ffe778a07caa16f78bea957ac108d18e5584793",
+      "analysis_event_utc": "2026-05-31T12:15:13Z",
+      "initial_blob_sha": "52134c68fd10ce2dd5fca2184d2274bfac8b6597",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-06-02",
+      "aggregate_elapsed_30d_growth": -0.011554906823998054,
+      "analysis_event_commit_sha": "7eab77b851618173441b941460427aecc4b33791",
+      "analysis_event_utc": "2026-06-02T16:14:50Z",
+      "initial_blob_sha": "cef38c33f7889c6c8971fe70b87b025d58c8d371",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-06-03",
+      "aggregate_elapsed_30d_growth": -0.012517231164041354,
+      "analysis_event_commit_sha": "89ea64de84500ccb81fa285e132bbf836a47aeb8",
+      "analysis_event_utc": "2026-06-03T15:49:56Z",
+      "initial_blob_sha": "807b5c64e969193007e00d2b024199bfdb458874",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-06-04",
+      "aggregate_elapsed_30d_growth": -0.01583355317863137,
+      "analysis_event_commit_sha": "9652d2599d6e890754a98502534ff348a0b293a6",
+      "analysis_event_utc": "2026-06-04T14:07:21Z",
+      "initial_blob_sha": "3a207a7dc00604116a49ef8abc58b2e35abaf790",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-06-05",
+      "aggregate_elapsed_30d_growth": -0.018189015534097505,
+      "analysis_event_commit_sha": "3da679bb5bc36b1b4a0eb9fa47bc58706d8e240f",
+      "analysis_event_utc": "2026-06-05T13:55:06Z",
+      "initial_blob_sha": "4286c794e0e878df0752a903f6628594158cd156",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-06-06",
+      "aggregate_elapsed_30d_growth": -0.020307601521786577,
+      "analysis_event_commit_sha": "192e5161c4d9547bd23cc08d9e60394e66e5ad64",
+      "analysis_event_utc": "2026-06-06T12:10:31Z",
+      "initial_blob_sha": "557c7e5ddecf9a9980dd81bae88b08ef127ab7b4",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-06-07",
+      "aggregate_elapsed_30d_growth": -0.021871860999966377,
+      "analysis_event_commit_sha": "728d27d742b19aab6a4a22386ca18e133a534a12",
+      "analysis_event_utc": "2026-06-07T12:24:28Z",
+      "initial_blob_sha": "1f123480709a52efe5526c9be7567e56e50a290d",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-06-08",
+      "aggregate_elapsed_30d_growth": -0.027782009322342736,
+      "analysis_event_commit_sha": "61c120879725de6d1bc914259ce30201b0717e36",
+      "analysis_event_utc": "2026-06-08T14:51:13Z",
+      "initial_blob_sha": "43c207a4a60469fe93ece1ad410b3c35ba6ddd22",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-06-09",
+      "aggregate_elapsed_30d_growth": -0.02046677094669051,
+      "analysis_event_commit_sha": "9934fc9aca43f10397c2673493c833a680b99671",
+      "analysis_event_utc": "2026-06-09T13:46:45Z",
+      "initial_blob_sha": "9ff78b810d744dae66784a90d71084c39885421c",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-06-10",
+      "aggregate_elapsed_30d_growth": -0.04894803414659418,
+      "analysis_event_commit_sha": "48c8ca17c10569c9d301d77bd660e4827c601c05",
+      "analysis_event_utc": "2026-06-10T14:04:51Z",
+      "initial_blob_sha": "c0182494ca25574d778cde1c8b0b164879cd14c5",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-06-11",
+      "aggregate_elapsed_30d_growth": -0.049657404195619835,
+      "analysis_event_commit_sha": "ea442d9e9f3d1c1589b618fab645d1ecc801f853",
+      "analysis_event_utc": "2026-06-11T14:43:47Z",
+      "initial_blob_sha": "5e0189a576e4148e4b3ef11c9f9c58dfca4a3fda",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-06-12",
+      "aggregate_elapsed_30d_growth": -0.05096009259650656,
+      "analysis_event_commit_sha": "1dba207eb360b3df353901752a60866df3ebdff1",
+      "analysis_event_utc": "2026-06-12T14:12:27Z",
+      "initial_blob_sha": "93c51aee6ca6cb4c9aff6df7fb2aa7660c8d1c9d",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-06-13",
+      "aggregate_elapsed_30d_growth": -0.05005086649475734,
+      "analysis_event_commit_sha": "02787e6f8b399eddd43a3bd16acc9ce410da1b28",
+      "analysis_event_utc": "2026-06-13T12:54:07Z",
+      "initial_blob_sha": "71778350e0a1b27fb070ccc66483aa3869c9232f",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-06-14",
+      "aggregate_elapsed_30d_growth": -0.049791615934764,
+      "analysis_event_commit_sha": "013be594022ce0a20ba9e3cdc58ba34e258ede77",
+      "analysis_event_utc": "2026-06-14T13:01:54Z",
+      "initial_blob_sha": "80a2ef953ff3cc8090380d8c4666a5628a5f1a44",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-06-15",
+      "aggregate_elapsed_30d_growth": -0.022097000053730873,
+      "analysis_event_commit_sha": "e699a4ed89ecd7fa8d645764d738dd3678b2bcb2",
+      "analysis_event_utc": "2026-06-15T16:20:17Z",
+      "initial_blob_sha": "a339941167cbba81125f37bb3770b067a9abc330",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-06-16",
+      "aggregate_elapsed_30d_growth": -0.022901377612912055,
+      "analysis_event_commit_sha": "e10d7083a7efa6befec202680fb736f30c02327a",
+      "analysis_event_utc": "2026-06-16T16:01:26Z",
+      "initial_blob_sha": "9e5d613c8f31fd20bda9c3366bd7176e2a200966",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-06-17",
+      "aggregate_elapsed_30d_growth": -0.02196037945223339,
+      "analysis_event_commit_sha": "113e97ec7d417a00a4c2631a9f7486a96b832a47",
+      "analysis_event_utc": "2026-06-17T14:28:15Z",
+      "initial_blob_sha": "4ffd98bed418559ef4f42c6607fb23ee96741bcf",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-06-18",
+      "aggregate_elapsed_30d_growth": -0.02406011557676261,
+      "analysis_event_commit_sha": "8078c9af7079e2d12418cef83528df9e2f06d160",
+      "analysis_event_utc": "2026-06-18T14:14:51Z",
+      "initial_blob_sha": "b33bb8acfd07cc2787ffc37534e6375ca2608fe7",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-06-19",
+      "aggregate_elapsed_30d_growth": -0.021925892186285614,
+      "analysis_event_commit_sha": "2ec5b24cb09f1a168a1ab87e127d716af612e314",
+      "analysis_event_utc": "2026-06-19T14:15:17Z",
+      "initial_blob_sha": "d2bd00f860f51da34a16fea98ecd593b2b373665",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-06-21",
+      "aggregate_elapsed_30d_growth": -0.021610776968081488,
+      "analysis_event_commit_sha": "9a0bb189ec6d1a8f88afec38f346b4fb0ec87c9e",
+      "analysis_event_utc": "2026-06-21T14:55:28Z",
+      "initial_blob_sha": "968a599c830187c56197e34c1819ccdc0bb5223b",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-06-22",
+      "aggregate_elapsed_30d_growth": -0.015765894132776806,
+      "analysis_event_commit_sha": "d76f8a6b1c82eea4475aea2ff595c708589ecffa",
+      "analysis_event_utc": "2026-06-22T15:58:07Z",
+      "initial_blob_sha": "1b84223057f0d5c4d1eb7275c9db8f8df12f9f55",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-06-23",
+      "aggregate_elapsed_30d_growth": -0.017370835503649033,
+      "analysis_event_commit_sha": "d733a4f7fb7955d1f858d800a2be9e5941076603",
+      "analysis_event_utc": "2026-06-23T13:45:00Z",
+      "initial_blob_sha": "5fda72408d0a58a3c3993716fe9d2e04bf8bc660",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-06-24",
+      "aggregate_elapsed_30d_growth": -0.018504045932404907,
+      "analysis_event_commit_sha": "1a10f316b607d2e0cdf09110cf6c70c157a54145",
+      "analysis_event_utc": "2026-06-24T13:26:22Z",
+      "initial_blob_sha": "975108332240fe65d49129bde1865faf7fd13be6",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-06-25",
+      "aggregate_elapsed_30d_growth": -0.017329086595242946,
+      "analysis_event_commit_sha": "211195448b2187ffdccbd2c94c65801376777465",
+      "analysis_event_utc": "2026-06-25T13:23:27Z",
+      "initial_blob_sha": "8468f9d166709a12a405ebfab72a9b14893ec318",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-06-26",
+      "aggregate_elapsed_30d_growth": -0.017922513161233628,
+      "analysis_event_commit_sha": "fd8a21350374dfdab2a4be01ceacdd8cb110ecad",
+      "analysis_event_utc": "2026-06-26T13:15:40Z",
+      "initial_blob_sha": "ec561f3949c3a0dc04626755573af2fc2637278b",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-06-27",
+      "aggregate_elapsed_30d_growth": -0.019222390507900942,
+      "analysis_event_commit_sha": "7d3eb669195c4515ab74d99a9ac568c8e79446f5",
+      "analysis_event_utc": "2026-06-27T12:12:03Z",
+      "initial_blob_sha": "8e636266208338feeb5f03fccd1f1f5d43cb431a",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-06-28",
+      "aggregate_elapsed_30d_growth": -0.016320981539383734,
+      "analysis_event_commit_sha": "4729fa5fb6f4607ee953daac956fb6331fae966b",
+      "analysis_event_utc": "2026-06-28T12:19:23Z",
+      "initial_blob_sha": "bcb05689d58ef4696982f783cf232a86c65441b3",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-06-29",
+      "aggregate_elapsed_30d_growth": -0.011405540818890713,
+      "analysis_event_commit_sha": "7bb844553077614bfd85e16bd344abd61fcd0587",
+      "analysis_event_utc": "2026-06-29T14:50:28Z",
+      "initial_blob_sha": "32a7276b789c8f9cc348baee562030301e8370a1",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-06-30",
+      "aggregate_elapsed_30d_growth": -0.017289382955671426,
+      "analysis_event_commit_sha": "62759c967cfae90992a6064ffab42cd7762a4f0d",
+      "analysis_event_utc": "2026-06-30T13:11:18Z",
+      "initial_blob_sha": "bc95b6748a55a917fbae50945e0b0d44f989f098",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-07-01",
+      "aggregate_elapsed_30d_growth": -0.020572400298571922,
+      "analysis_event_commit_sha": "ab88441c175765e019807a5fbce9c640b7b45dc8",
+      "analysis_event_utc": "2026-07-01T13:36:08Z",
+      "initial_blob_sha": "c600823e8fce71ef1f9f8b6b88a3860a0c483af0",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-07-02",
+      "aggregate_elapsed_30d_growth": -0.02067958795177625,
+      "analysis_event_commit_sha": "77bde051b80fa0ef18eb47c1905494b2a016150f",
+      "analysis_event_utc": "2026-07-02T13:01:37Z",
+      "initial_blob_sha": "21025517255dc0ce2b0a3181d80079717cfc918d",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-07-03",
+      "aggregate_elapsed_30d_growth": -0.019689404440159545,
+      "analysis_event_commit_sha": "439843d25e5aa746cb48040b960643d9f153223c",
+      "analysis_event_utc": "2026-07-03T13:01:07Z",
+      "initial_blob_sha": "ea8e5a5e6f1f77bbe97462a2ba36e844d56ef386",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-07-04",
+      "aggregate_elapsed_30d_growth": -0.021771268045142008,
+      "analysis_event_commit_sha": "ff4f34c294f4b6e0d8a2be67542b186bfcf93e8e",
+      "analysis_event_utc": "2026-07-04T12:10:31Z",
+      "initial_blob_sha": "b91b443332014f678858f3e7c851bcde43818bd6",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-07-05",
+      "aggregate_elapsed_30d_growth": -0.01916289932895448,
+      "analysis_event_commit_sha": "37221b653533789493e8eedfad291fb741aa5c81",
+      "analysis_event_utc": "2026-07-05T12:21:31Z",
+      "initial_blob_sha": "54001c45ac218881838ccb4624e39f7a72b4e9a2",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-07-06",
+      "aggregate_elapsed_30d_growth": -0.016708568045808572,
+      "analysis_event_commit_sha": "3e87d3bc9a9e2890d5925438bde00a20ced21d4a",
+      "analysis_event_utc": "2026-07-06T14:31:25Z",
+      "initial_blob_sha": "45893c707dfac70a421e2d2891a0506482b7138d",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-07-07",
+      "aggregate_elapsed_30d_growth": -0.01562759688175882,
+      "analysis_event_commit_sha": "6b90c64eeef4e48341ab40e33e71d4305f4b7f04",
+      "analysis_event_utc": "2026-07-07T13:23:58Z",
+      "initial_blob_sha": "5c0dd754e0143194503bb889408fe0ddced2e170",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-07-08",
+      "aggregate_elapsed_30d_growth": -0.012910924862108215,
+      "analysis_event_commit_sha": "b157ca7ef6f3d7ea5fcf507ec9cfcacff245c3d1",
+      "analysis_event_utc": "2026-07-08T12:25:17Z",
+      "initial_blob_sha": "75aeb5db6e6cec51b24f294744206edf3522614c",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-07-09",
+      "aggregate_elapsed_30d_growth": -0.012912423727300927,
+      "analysis_event_commit_sha": "3c5aaf7b3df4497ee005501a81773feb4b841bd9",
+      "analysis_event_utc": "2026-07-09T13:52:22Z",
+      "initial_blob_sha": "52f7f5bdd76e7629668703fee84e744498fd0d11",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-07-10",
+      "aggregate_elapsed_30d_growth": -0.009789204364339431,
+      "analysis_event_commit_sha": "d061cf748b0caf1a1b1b2aaeb9ce213841985305",
+      "analysis_event_utc": "2026-07-10T13:16:20Z",
+      "initial_blob_sha": "bb25a7757e7489f6af0b06ad77b68f7543075737",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-07-11",
+      "aggregate_elapsed_30d_growth": -0.008040710222783602,
+      "analysis_event_commit_sha": "9b795a67ddec05290d0deb12e41e4823d90f2b5c",
+      "analysis_event_utc": "2026-07-11T11:56:56Z",
+      "initial_blob_sha": "92b29a81b909dd38807bcfef4f01c2551aa41a6f",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-07-12",
+      "aggregate_elapsed_30d_growth": 0.1926261933331132,
+      "analysis_event_commit_sha": "72fdd054e6653eca806eaf83d31510f6999ccb81",
+      "analysis_event_utc": "2026-07-12T12:04:07Z",
+      "initial_blob_sha": "fffe7f7582e9b7b2c70aba0c92a2e5573b25a2a6",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-07-13",
+      "aggregate_elapsed_30d_growth": 0.19378843691612957,
+      "analysis_event_commit_sha": "b5e3274e24f59011dce2d41df7b017e9852abf3a",
+      "analysis_event_utc": "2026-07-13T13:28:24Z",
+      "initial_blob_sha": "c97c70b57517ab322c790826ef5246bcef2c96d5",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-07-14",
+      "aggregate_elapsed_30d_growth": 0.19673401517258282,
+      "analysis_event_commit_sha": "2d15e76100e36a793db47b46c83c0524c22454b6",
+      "analysis_event_utc": "2026-07-14T12:19:16Z",
+      "initial_blob_sha": "9d6fe95a89f1fc6b506cdb72699d9ec5966872db",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-07-15",
+      "aggregate_elapsed_30d_growth": 0.19573212770144474,
+      "analysis_event_commit_sha": "29ce3800d215e741238abdc486e8bf0b0d662013",
+      "analysis_event_utc": "2026-07-15T12:20:29Z",
+      "initial_blob_sha": "223ef5c41310d3a2579e928328b34a57a942d4f9",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-07-16",
+      "aggregate_elapsed_30d_growth": -0.008109717431056688,
+      "analysis_event_commit_sha": "0d670d3d14dd441554cebad637568a366d39b13a",
+      "analysis_event_utc": "2026-07-16T12:24:31Z",
+      "initial_blob_sha": "7417a09bc4abe7e149f9d515faa0e21541374a04",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-07-17",
+      "aggregate_elapsed_30d_growth": -0.00803648696971238,
+      "analysis_event_commit_sha": "3a8bbc141d9b477e6d40ad0ed9a83615bda9f09a",
+      "analysis_event_utc": "2026-07-17T12:14:49Z",
+      "initial_blob_sha": "1656e98ee0083a3c3bcd62c4ba8fd809a4d07e9e",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-07-18",
+      "aggregate_elapsed_30d_growth": -0.006712918095276123,
+      "analysis_event_commit_sha": "8a76c0331fe563fc075ce9dc847511f7d1e2d0de",
+      "analysis_event_utc": "2026-07-18T11:57:34Z",
+      "initial_blob_sha": "b59ecc31f73f46411d6c3741dad1274bb70679ed",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-07-19",
+      "aggregate_elapsed_30d_growth": -0.006289433406508377,
+      "analysis_event_commit_sha": "75afbe138d47af4c5ebda4c2df11301db4486c79",
+      "analysis_event_utc": "2026-07-19T12:03:00Z",
+      "initial_blob_sha": "7bf4ddf1a0c839c6902b38cc1767c93a628e610c",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-07-20",
+      "aggregate_elapsed_30d_growth": -0.007633854174119356,
+      "analysis_event_commit_sha": "0979f592ba185574bd8d9e519acc7ce55c47d79b",
+      "analysis_event_utc": "2026-07-20T13:11:52Z",
+      "initial_blob_sha": "c2be821a5b44732e8c735011ba5c12a369cbdd96",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-07-21",
+      "aggregate_elapsed_30d_growth": -0.008322287938104243,
+      "analysis_event_commit_sha": "7f47e31a37da864f6afac717aa380d31b118250e",
+      "analysis_event_utc": "2026-07-21T12:26:22Z",
+      "initial_blob_sha": "7335e432c5a08ce96d0eadd200e1cc60d94cf480",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-07-22",
+      "aggregate_elapsed_30d_growth": -0.008749425915047354,
+      "analysis_event_commit_sha": "4f9a9fce296bb742985af389fe9a72bdca6f467e",
+      "analysis_event_utc": "2026-07-22T12:43:47Z",
+      "initial_blob_sha": "6df516dac718228738189d901157e2bf0487e486",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-07-23",
+      "aggregate_elapsed_30d_growth": -0.01213205571006051,
+      "analysis_event_commit_sha": "b094190e2fa16bb374b46fcc211bb5e4d50e7850",
+      "analysis_event_utc": "2026-07-23T12:27:17Z",
+      "initial_blob_sha": "6f90c8aecb147bcb89e5598edb4f68b273cf162f",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-07-24",
+      "aggregate_elapsed_30d_growth": 0.05538026325998397,
+      "analysis_event_commit_sha": "eb7d2aa3952c6d55d52e935ca1b7823f1a88f2bc",
+      "analysis_event_utc": "2026-07-24T12:23:52Z",
+      "initial_blob_sha": "1646261d97b50b07cd90e20ee6ab0520847b49f3",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-07-25",
+      "aggregate_elapsed_30d_growth": -0.011707310056756142,
+      "analysis_event_commit_sha": "f0bafe1fd0b028797925f85dc8614179534ae66d",
+      "analysis_event_utc": "2026-07-25T12:06:01Z",
+      "initial_blob_sha": "a60d6fabfe3b7dc0191212d744676231e8ca22f8",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-07-26",
+      "aggregate_elapsed_30d_growth": -0.01244131495125316,
+      "analysis_event_commit_sha": "1990046dfb78cf68407ffbb1eeb15e0c24391e19",
+      "analysis_event_utc": "2026-07-26T12:09:15Z",
+      "initial_blob_sha": "30db9c51aead8a00ae1ff831d753eea86c2e6631",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-07-27",
+      "aggregate_elapsed_30d_growth": -0.012305395045975272,
+      "analysis_event_commit_sha": "740e87ecef7021afd7a431784901374cb0c905d3",
+      "analysis_event_utc": "2026-07-27T13:42:23Z",
+      "initial_blob_sha": "2ab634e506c6334f7ebb0e9957bab0a58c195f75",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-07-28",
+      "aggregate_elapsed_30d_growth": -0.01373709347946595,
+      "analysis_event_commit_sha": "4743ac76861ff94abf4754c1848553b89cad4918",
+      "analysis_event_utc": "2026-07-28T12:58:17Z",
+      "initial_blob_sha": "a36f252fa5ce0241a79e90de55bca9f6466f4a1a",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-07-29",
+      "aggregate_elapsed_30d_growth": -0.014984797465895537,
+      "analysis_event_commit_sha": "d16ab59d08dd39cf3ae08a31b43cc061c98148a1",
+      "analysis_event_utc": "2026-07-29T13:05:03Z",
+      "initial_blob_sha": "ddcae164c8c5b2cfa9f6e78418cebda2839b43fb",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-07-30",
+      "aggregate_elapsed_30d_growth": -0.016236790556389304,
+      "analysis_event_commit_sha": "ff7ee5cb637e6c78732448d5e3bf6491dbe40d75",
+      "analysis_event_utc": "2026-07-30T12:49:29Z",
+      "initial_blob_sha": "fe122cf9b41334be5573aa965653c77fa6a4e8fc",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-07-31",
+      "aggregate_elapsed_30d_growth": -0.01270902938388189,
+      "analysis_event_commit_sha": "466c53cb343bdc80e452ad036b1e88a9f29b68af",
+      "analysis_event_utc": "2026-07-31T13:00:54Z",
+      "initial_blob_sha": "59664ccd8f3cc677bf8c3c49c2318a0a64bf24ca",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-08-01",
+      "aggregate_elapsed_30d_growth": -0.014281162495809295,
+      "analysis_event_commit_sha": "4d76f9c2ed00827cf9f9c8c48dff513a0138b043",
+      "analysis_event_utc": "2026-08-01T12:05:40Z",
+      "initial_blob_sha": "e4a0fb84b0ae8ab702daec334c4a302f64b90725",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-08-02",
+      "aggregate_elapsed_30d_growth": -0.01257373854533448,
+      "analysis_event_commit_sha": "2d9dc161d187647a1bd9d47221195c80d77ebe1b",
+      "analysis_event_utc": "2026-08-02T12:07:50Z",
+      "initial_blob_sha": "883d05ed5fbd55ccb2be6e3b6fd6224a50ab0522",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-08-03",
+      "aggregate_elapsed_30d_growth": -0.010849357121518001,
+      "analysis_event_commit_sha": "eb8bd2b5458dbf7ef35faed5a20d9ddc9c8861fb",
+      "analysis_event_utc": "2026-08-03T13:44:56Z",
+      "initial_blob_sha": "a1c6b029bc4e9d89de6a885ae4033c8232ce4de7",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-08-04",
+      "aggregate_elapsed_30d_growth": -0.01215663960013532,
+      "analysis_event_commit_sha": "271429374844d8a6aef744907fb625ea63919796",
+      "analysis_event_utc": "2026-08-04T13:06:13Z",
+      "initial_blob_sha": "4b6d869440cbfc171059afb304218ba3f6c55d6d",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-08-05",
+      "aggregate_elapsed_30d_growth": -0.010248876503303443,
+      "analysis_event_commit_sha": "96849281f9a2fddba318394d5b23725e02b3560d",
+      "analysis_event_utc": "2026-08-05T12:59:05Z",
+      "initial_blob_sha": "046b8f9dd117f5cc6fda65ddbbfb9a27bff67813",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-08-06",
+      "aggregate_elapsed_30d_growth": -0.012871287562503182,
+      "analysis_event_commit_sha": "647bfd16fff03734e15ddf28bf5adab90a52164e",
+      "analysis_event_utc": "2026-08-06T13:00:31Z",
+      "initial_blob_sha": "dd0b2004c7440212908e4e2bff5ed49e57f31298",
+      "valid_coin_count": 5,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2026-08-07",
+      "aggregate_elapsed_30d_growth": -0.011826347593468598,
+      "analysis_event_commit_sha": "2a6805f39b35cad3b78365329301d3b7e054715c",
+      "analysis_event_utc": "2026-08-07T11:50:37Z",
+      "initial_blob_sha": "986cbea374f42fc8007bfa9551758cd7cff1239d",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-08-08",
+      "aggregate_elapsed_30d_growth": -0.011829524438935325,
+      "analysis_event_commit_sha": "c6acf252fbd1649f1e950802ae78ae1405cd1bf7",
+      "analysis_event_utc": "2026-08-08T11:34:42Z",
+      "initial_blob_sha": "f95ed0a64f70e4f817451ec6a5bf939728e8c5a5",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-08-09",
+      "aggregate_elapsed_30d_growth": -0.01301008525526525,
+      "analysis_event_commit_sha": "6a716e14b6b5b8c4b815e95f5988f2f05f46a4e8",
+      "analysis_event_utc": "2026-08-09T11:35:41Z",
+      "initial_blob_sha": "efc05817b217febf944a327eddf9d2875d0c8d43",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-08-10",
+      "aggregate_elapsed_30d_growth": -0.013196278820282665,
+      "analysis_event_commit_sha": "5f4bec7af4814e72d16ce267d5401e8212a25beb",
+      "analysis_event_utc": "2026-08-10T11:52:54Z",
+      "initial_blob_sha": "a4cc441d7b5df45b2553022b1a797b60ac397cee",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-08-11",
+      "aggregate_elapsed_30d_growth": -0.011709443750358517,
+      "analysis_event_commit_sha": "e25a506e35fa6fcad2418c72426a28c0588990b5",
+      "analysis_event_utc": "2026-08-11T11:49:42Z",
+      "initial_blob_sha": "b5796fb30ed3453abd6993dee984b0186c1b1883",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-08-12",
+      "aggregate_elapsed_30d_growth": -0.014084431352793048,
+      "analysis_event_commit_sha": "e2c83f2e839d834e49f949b555b68420258daf3f",
+      "analysis_event_utc": "2026-08-12T11:52:45Z",
+      "initial_blob_sha": "6cdd31e9ccfd570fc93b6e70277e426fd16c657e",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-08-13",
+      "aggregate_elapsed_30d_growth": -0.012906913145163233,
+      "analysis_event_commit_sha": "f2ff4615da2b7fccf49fa512c0bbf17e335715b1",
+      "analysis_event_utc": "2026-08-13T11:53:08Z",
+      "initial_blob_sha": "1c18d24ecf675361e73defe46c12d96018e2b055",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-08-14",
+      "aggregate_elapsed_30d_growth": -0.014306501541761005,
+      "analysis_event_commit_sha": "56ec0993797f35768f6faac8a66031ab16308e94",
+      "analysis_event_utc": "2026-08-14T11:49:57Z",
+      "initial_blob_sha": "2bfa11eff7f308c6da01c2cb0e1156e61d2fa26b",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-08-15",
+      "aggregate_elapsed_30d_growth": -0.012447746371909464,
+      "analysis_event_commit_sha": "723eaac39923baabc35e4ad5e934f2efdd14945b",
+      "analysis_event_utc": "2026-08-15T11:25:40Z",
+      "initial_blob_sha": "4f34e2f868db73ab0284860e0100a8873b5fbc9f",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-08-16",
+      "aggregate_elapsed_30d_growth": -0.012278195664316177,
+      "analysis_event_commit_sha": "0032a72942f70cf26a5dc7ca66a8161bfc0db909",
+      "analysis_event_utc": "2026-08-16T11:25:59Z",
+      "initial_blob_sha": "685209a9e54c9dd00980178d82c7d1e4bf3561bb",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-08-17",
+      "aggregate_elapsed_30d_growth": -0.014484170009175694,
+      "analysis_event_commit_sha": "db789cd9c59b474044d428bfdccbe07312798236",
+      "analysis_event_utc": "2026-08-17T15:44:34Z",
+      "initial_blob_sha": "436be8a71785dd9a041bb54728517f4df8885938",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-08-18",
+      "aggregate_elapsed_30d_growth": -0.013098492693918698,
+      "analysis_event_commit_sha": "3e0c07ff08a236e59ad60e12373ff02eb138c7fb",
+      "analysis_event_utc": "2026-08-18T11:30:50Z",
+      "initial_blob_sha": "470e53510a49aedb6c7dc6b45bce4aa3a9123961",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-08-19",
+      "aggregate_elapsed_30d_growth": -0.014888259999851022,
+      "analysis_event_commit_sha": "ad6be423dc5222c0844e1a367742984d1e69c2d7",
+      "analysis_event_utc": "2026-08-19T11:31:04Z",
+      "initial_blob_sha": "8c5ca3ea255b0bb160d24eeba6f7cc536c6a1a44",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-08-20",
+      "aggregate_elapsed_30d_growth": -0.01270159312645444,
+      "analysis_event_commit_sha": "21820f19d4b7941e1f1b149b5b3e2e42463d3a44",
+      "analysis_event_utc": "2026-08-20T11:32:27Z",
+      "initial_blob_sha": "68b76c25a7c2eb4674132514ab1cb19fbdebaa6a",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-08-21",
+      "aggregate_elapsed_30d_growth": -0.010752355295720878,
+      "analysis_event_commit_sha": "17fc7506680e0d494ccc003a52b01b15376c8914",
+      "analysis_event_utc": "2026-08-21T11:32:00Z",
+      "initial_blob_sha": "30647b2beb2bc87235874d620cc8f7f0b50b40b0",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-08-22",
+      "aggregate_elapsed_30d_growth": -0.0050501864431100555,
+      "analysis_event_commit_sha": "749d3ab412238c441bdee7c1595cb19fbf220a7e",
+      "analysis_event_utc": "2026-08-22T11:25:58Z",
+      "initial_blob_sha": "1fe899a25aea7c24b5013599933019034d7e3281",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2026-08-23",
+      "aggregate_elapsed_30d_growth": -0.00602507115111649,
+      "analysis_event_commit_sha": "76468b1cad18c69d43a0c13f98da87642df4c206",
+      "analysis_event_utc": "2026-08-23T11:26:35Z",
+      "initial_blob_sha": "80f2de2eba6db51864aa2de91bd81ca530dd8008",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-08-24",
+      "aggregate_elapsed_30d_growth": -0.0035939999119140808,
+      "analysis_event_commit_sha": "f4a8cee87d47027d1d6d5eacf36f31e973c516d9",
+      "analysis_event_utc": "2026-08-24T11:35:00Z",
+      "initial_blob_sha": "4a96b1dbf512a237dbaab7f6fd49e04851399dd1",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-08-25",
+      "aggregate_elapsed_30d_growth": -0.002682253669603941,
+      "analysis_event_commit_sha": "b5762e8a612cde305769cba5e53a3ab5b35201f8",
+      "analysis_event_utc": "2026-08-25T11:33:57Z",
+      "initial_blob_sha": "2dcd958ca1726a01142411d3ac42622ab61bb7b4",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-08-26",
+      "aggregate_elapsed_30d_growth": -0.0032814019232516103,
+      "analysis_event_commit_sha": "0abdc70a006cbab5b8f04a658a070812334b33b6",
+      "analysis_event_utc": "2026-08-26T11:35:06Z",
+      "initial_blob_sha": "1f48aa51f0d2115638b56d4c480d54bb4db93708",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-08-29",
+      "aggregate_elapsed_30d_growth": 0.004308620372479766,
+      "analysis_event_commit_sha": "6ddbf76ca2f96a6185804bb14ed085543e2af55b",
+      "analysis_event_utc": "2026-08-29T15:24:58Z",
+      "initial_blob_sha": "bef2fa9b50bfe5088ef89589bdc1a687140f4595",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-08-30",
+      "aggregate_elapsed_30d_growth": 0.003593446336513708,
+      "analysis_event_commit_sha": "a5ba42d1735ae7a6447d9e0a87b2b1c7140401d3",
+      "analysis_event_utc": "2026-08-30T15:17:54Z",
+      "initial_blob_sha": "cde399e31f4d765e27a0638f9c22d0e761232759",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-09-01",
+      "aggregate_elapsed_30d_growth": 0.0049941691335264,
+      "analysis_event_commit_sha": "9c2f07011610238f2bd8b49fda9013e3de59e317",
+      "analysis_event_utc": "2026-09-01T15:27:25Z",
+      "initial_blob_sha": "03e22118b5fa7287e4104c9b8436887121b797a6",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-09-02",
+      "aggregate_elapsed_30d_growth": 0.006597506940658691,
+      "analysis_event_commit_sha": "44e5bea73b57f25a72747a6c7d2b257149a04f5a",
+      "analysis_event_utc": "2026-09-02T15:02:56Z",
+      "initial_blob_sha": "1d0c98878ddb752dca4a986187a9255d116d7a9e",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-09-03",
+      "aggregate_elapsed_30d_growth": 0.006496675684332954,
+      "analysis_event_commit_sha": "b88b4a527ffb91b02a8433c7034b57dda631f3a1",
+      "analysis_event_utc": "2026-09-03T14:56:50Z",
+      "initial_blob_sha": "bbedb1900f97c124fda6c8d2d17df3b38cf10565",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2026-09-04",
+      "aggregate_elapsed_30d_growth": 0.00855699666399002,
+      "analysis_event_commit_sha": "2e4a68f79df1a45b4fbd57a29ebfe53327c0001f",
+      "analysis_event_utc": "2026-09-04T14:53:44Z",
+      "initial_blob_sha": "b6d9f55404102fd3d56206cea6ad750c19d3fdf5",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-09-05",
+      "aggregate_elapsed_30d_growth": 0.011008854722776077,
+      "analysis_event_commit_sha": "fb4fa007efc35dc14ccccdaed1c6c06583bdd965",
+      "analysis_event_utc": "2026-09-05T13:48:39Z",
+      "initial_blob_sha": "9ed270c7a767bff24015660f9abfb2a26c9a5af1",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-09-06",
+      "aggregate_elapsed_30d_growth": 0.010240660288797812,
+      "analysis_event_commit_sha": "4538dc7bfabc5957c5ee1df2f3c9717c54eca63c",
+      "analysis_event_utc": "2026-09-06T14:03:54Z",
+      "initial_blob_sha": "7c14d883d2a26a108923449b3ee34b51a30a7a23",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-09-07",
+      "aggregate_elapsed_30d_growth": 0.009755739743749195,
+      "analysis_event_commit_sha": "92379a020d3e15e1de2d4d44aca1f3b320573af0",
+      "analysis_event_utc": "2026-09-07T16:21:10Z",
+      "initial_blob_sha": "b3579ca0ec256ba1c698db944d62dc7c2a2a80df",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.989247311827957
+    },
+    {
+      "observation_date": "2026-09-08",
+      "aggregate_elapsed_30d_growth": 0.008335942122342834,
+      "analysis_event_commit_sha": "c21cccff0a794df58fec33137188db4c94fb485b",
+      "analysis_event_utc": "2026-09-08T15:01:40Z",
+      "initial_blob_sha": "ca3c346490471d1f1b5305c42c90f67a5ee436fa",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-09-26",
+      "aggregate_elapsed_30d_growth": 0.007597928973155747,
+      "analysis_event_commit_sha": "4881d2351dd09d27443ee34a8693d2e4ffc33dd0",
+      "analysis_event_utc": "2026-09-26T08:20:52Z",
+      "initial_blob_sha": "63d07c404bd63425cd4c308b8b5860bec5ecc317",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.967741935483871
+    },
+    {
+      "observation_date": "2026-09-27",
+      "aggregate_elapsed_30d_growth": 0.006378653720239027,
+      "analysis_event_commit_sha": "373b5e026b9de75e4dfd3cfcfb6fde5e43e306bf",
+      "analysis_event_utc": "2026-09-27T15:36:54Z",
+      "initial_blob_sha": "cb8bd3eea9ae1d01485e356a3ef95558b12e9d33",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    },
+    {
+      "observation_date": "2026-09-28",
+      "aggregate_elapsed_30d_growth": 0.0033519435629072096,
+      "analysis_event_commit_sha": "bb731c4acaf5a302908b2d9f58ddf2aa2cad9d81",
+      "analysis_event_utc": "2026-09-28T18:35:38Z",
+      "initial_blob_sha": "657bb5d189706bf9421ddd9567d150472819b661",
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.978494623655914
+    },
+    {
+      "observation_date": "2026-09-29",
+      "aggregate_elapsed_30d_growth": 0.003568945456436303,
+      "analysis_event_commit_sha": "e0c0922fdcb12df324db4a5cf27a232f44cd7940",
+      "analysis_event_utc": "2026-09-29T16:53:34Z",
+      "initial_blob_sha": "3c88bee9da6cb57086ae278609dc4bb5a6556b11",
+      "valid_coin_count": 7,
+      "configured_weight_coverage": 1
+    }
+  ]
+}
