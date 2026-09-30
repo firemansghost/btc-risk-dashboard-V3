@@ -22,6 +22,7 @@ import {
   buildWednesdayAlignedDiagnostic,
   compareOverlappingSeries,
   crossCheckRrpWednesdayConstructions,
+  attachFredReleaseAndSources,
   describeNoncanonicalAppHelper,
   evaluateCacheDetectorScenarios,
   extractFiniteDatedRows,
@@ -488,8 +489,11 @@ test('rrp_wednesday_crosscheck reports both FRED WEW and native aggregation', ()
     nativeDailyObservations: nativeDaily,
   });
   assert.equal(cross.available, true);
+  assert.equal(cross.reason, null);
   assert.equal(cross.fred_wew.observation_count, 2);
+  assert.equal(cross.fred_wew.available, true);
   assert.equal(cross.rrp_native_daily_to_wednesday_avg_diagnostic.observation_count, 2);
+  assert.equal(cross.rrp_native_daily_to_wednesday_avg_diagnostic.available, true);
   assert.equal(cross.shared_date_count, 2);
   assert.equal(cross.winner, null);
   assert.equal(cross.successor_contract, false);
@@ -501,12 +505,115 @@ test('rrp_wednesday_crosscheck reports both FRED WEW and native aggregation', ()
   assert.equal(wed16.independent_member_count, 3);
   assert.equal(wed16.exact_match, false);
   assert.ok(cross.differing_count >= 1);
+});
 
-  const unavailable = crossCheckRrpWednesdayConstructions({
+test('rrp_wednesday_crosscheck empty-array truthfulness', () => {
+  const nativeDaily = [
+    obs('2026-09-14', 10),
+    obs('2026-09-15', 20),
+    obs('2026-09-16', 30),
+  ];
+  const fredWew = [obs('2026-09-16', 25)];
+
+  const nullNull = crossCheckRrpWednesdayConstructions({
     fredWewObservations: null,
     nativeDailyObservations: null,
   });
-  assert.equal(unavailable.available, false);
+  assert.equal(nullNull.available, false);
+  assert.equal(nullNull.reason, 'both_wednesday_rrp_constructions_unavailable');
+  assert.equal(nullNull.fred_wew.status, 'unavailable_null');
+  assert.equal(nullNull.rrp_native_daily_to_wednesday_avg_diagnostic.status, 'unavailable_null');
+
+  const emptyFred = crossCheckRrpWednesdayConstructions({
+    fredWewObservations: [],
+    nativeDailyObservations: nativeDaily,
+  });
+  assert.equal(emptyFred.available, false);
+  assert.equal(emptyFred.reason, 'fred_wew_empty');
+  assert.equal(emptyFred.fred_wew.status, 'returned_zero_valid_rows');
+  assert.equal(emptyFred.rrp_native_daily_to_wednesday_avg_diagnostic.available, true);
+
+  const emptyNative = crossCheckRrpWednesdayConstructions({
+    fredWewObservations: fredWew,
+    nativeDailyObservations: [],
+  });
+  assert.equal(emptyNative.available, false);
+  assert.equal(emptyNative.reason, 'native_wednesday_aggregation_empty');
+  assert.equal(emptyNative.fred_wew.available, true);
+  assert.equal(
+    emptyNative.rrp_native_daily_to_wednesday_avg_diagnostic.status,
+    'returned_zero_valid_wednesday_rows'
+  );
+
+  const bothValid = crossCheckRrpWednesdayConstructions({
+    fredWewObservations: fredWew,
+    nativeDailyObservations: nativeDaily,
+  });
+  assert.equal(bothValid.available, true);
+  assert.equal(bothValid.reason, null);
+});
+
+test('attachFredReleaseAndSources reports release/source identity without invention', () => {
+  const withIdentity = attachFredReleaseAndSources({
+    seriesId: 'WALCL',
+    seriesMetadata: {
+      series_id: 'WALCL',
+      title: 'Assets: Total Assets',
+      units: 'Millions of U.S. Dollars',
+      frequency: 'Weekly, As of Wednesday',
+      seasonal_adjustment: 'Not Seasonally Adjusted',
+      last_updated: '2026-09-25 16:00:00-05',
+    },
+    releaseDocument: {
+      releases: [
+        {
+          id: 20,
+          name: 'H.4.1 Factors Affecting Reserve Balances',
+          press_release: true,
+          link: 'https://example.test/h41',
+          notes: 'note-a',
+        },
+      ],
+    },
+    sourcesDocument: {
+      sources: [
+        {
+          id: 18,
+          name: 'Board of Governors of the Federal Reserve System',
+          link: 'https://example.test/bog',
+          notes: 'note-b',
+        },
+      ],
+    },
+  });
+  assert.equal(withIdentity.metadata.release.available, true);
+  assert.equal(withIdentity.metadata.release.id, 20);
+  assert.equal(withIdentity.metadata.release.name, 'H.4.1 Factors Affecting Reserve Balances');
+  assert.equal(withIdentity.metadata.sources.available, true);
+  assert.equal(withIdentity.metadata.sources.rows.length, 1);
+  assert.equal(withIdentity.metadata.sources.rows[0].id, 18);
+  assert.equal(withIdentity.blockers.length, 0);
+
+  const emptyRelease = attachFredReleaseAndSources({
+    seriesId: 'RRPONTSYD',
+    seriesMetadata: { series_id: 'RRPONTSYD', units: 'Billions of U.S. Dollars' },
+    releaseDocument: { releases: [] },
+    sourcesDocument: null,
+  });
+  assert.equal(emptyRelease.metadata.release.available, false);
+  assert.equal(emptyRelease.metadata.release.fetch_status, 'empty');
+  assert.equal(emptyRelease.metadata.release.id, null);
+  assert.equal(emptyRelease.metadata.sources.fetch_status, 'skipped_no_release');
+
+  const releaseFailed = attachFredReleaseAndSources({
+    seriesId: 'WTREGEN',
+    seriesMetadata: { series_id: 'WTREGEN' },
+    releaseDocument: null,
+    releaseError: new Error('fred_http_500_/fred/series/release'),
+  });
+  assert.equal(releaseFailed.metadata.release.available, false);
+  assert.equal(releaseFailed.metadata.release.fetch_status, 'error');
+  assert.ok(releaseFailed.blockers.some((b) => b.type === 'fred_series_release_fetch_failed'));
 });
 
 test('full overlapping-series: identical series -> zero differences', () => {

@@ -11,6 +11,7 @@ import {
   FROZEN_SOURCE_UNITS_CONTRACT,
   PRODUCTION_USD_MULTIPLIERS,
   assertFrozenSourceUnitsFixture,
+  attachFredReleaseAndSources,
   buildOfflineDiagnosticReport,
   loadFrozenSourceUnitsFixture,
   sha256Hex,
@@ -131,6 +132,68 @@ async function fetchFredSeriesMetadata(seriesId, apiKey) {
   };
 }
 
+async function fetchFredSeriesRelease(seriesId, apiKey) {
+  return fredGet('/fred/series/release', { series_id: seriesId }, apiKey);
+}
+
+async function fetchFredReleaseSources(releaseId, apiKey) {
+  return fredGet('/fred/release/sources', { release_id: releaseId }, apiKey);
+}
+
+/**
+ * Official FRED-only series + release + source identity for one series.
+ * Failed release/source fetches become explicit blockers (not silent omission).
+ */
+async function fetchFredSeriesMetadataBundle(seriesId, apiKey) {
+  let seriesMetadata = null;
+  let seriesError = null;
+  try {
+    seriesMetadata = await fetchFredSeriesMetadata(seriesId, apiKey);
+  } catch (error) {
+    seriesError = error;
+  }
+
+  let releaseDocument = null;
+  let releaseError = seriesError;
+  if (!seriesError) {
+    try {
+      releaseDocument = await fetchFredSeriesRelease(seriesId, apiKey);
+    } catch (error) {
+      releaseError = error;
+    }
+  }
+
+  let sourcesDocument = null;
+  let sourcesError = null;
+  const releaseRow = Array.isArray(releaseDocument?.releases) ? releaseDocument.releases[0] : null;
+  const releaseId = releaseRow?.id;
+  if (releaseId != null && !releaseError) {
+    try {
+      sourcesDocument = await fetchFredReleaseSources(releaseId, apiKey);
+    } catch (error) {
+      sourcesError = error;
+    }
+  }
+
+  const attached = attachFredReleaseAndSources({
+    seriesId,
+    seriesMetadata,
+    releaseDocument,
+    sourcesDocument,
+    releaseError,
+    sourcesError,
+  });
+  if (seriesError) {
+    attached.blockers.unshift({
+      type: 'fred_series_metadata_fetch_failed',
+      series_id: seriesId,
+      error: String(seriesError.message || seriesError),
+      action: 'do_not_adjudicate_without_series_metadata',
+    });
+  }
+  return attached;
+}
+
 function compareMetadataToFixture(liveMetadata, fixtureDocument) {
   const blockers = [];
   const byId = Object.fromEntries(fixtureDocument.series.map((row) => [row.series_id, row]));
@@ -216,9 +279,9 @@ export async function runR01R08NetLiquidityDiagnostic({
     rrpNative,
     wtregenNative,
     rrpWednesdayFred,
-    metaWalcl,
-    metaRrp,
-    metaTga,
+    bundleWalcl,
+    bundleRrp,
+    bundleTga,
   ] = await Promise.all([
     fetchObservations('WALCL', { frequency: 'w', aggregationMethod: 'avg' }),
     fetchObservations('RRPONTSYD', { frequency: 'w', aggregationMethod: 'avg' }),
@@ -227,9 +290,9 @@ export async function runR01R08NetLiquidityDiagnostic({
     fetchObservations('RRPONTSYD', {}),
     fetchObservations('WTREGEN', {}),
     fetchObservations('RRPONTSYD', { frequency: 'wew', aggregationMethod: 'avg' }),
-    fetchFredSeriesMetadata('WALCL', apiKey),
-    fetchFredSeriesMetadata('RRPONTSYD', apiKey),
-    fetchFredSeriesMetadata('WTREGEN', apiKey),
+    fetchFredSeriesMetadataBundle('WALCL', apiKey),
+    fetchFredSeriesMetadataBundle('RRPONTSYD', apiKey),
+    fetchFredSeriesMetadataBundle('WTREGEN', apiKey),
   ]);
 
   const fixture = loadFrozenSourceUnitsFixture(
@@ -237,14 +300,19 @@ export async function runR01R08NetLiquidityDiagnostic({
   );
   assertFrozenSourceUnitsFixture(fixture);
   const fredMetadata = {
-    WALCL: metaWalcl,
-    RRPONTSYD: metaRrp,
-    WTREGEN: metaTga,
+    WALCL: bundleWalcl.metadata,
+    RRPONTSYD: bundleRrp.metadata,
+    WTREGEN: bundleTga.metadata,
   };
-  const metadataFixtureBlockers = compareMetadataToFixture(
-    [metaWalcl, metaRrp, metaTga],
-    fixture
-  );
+  const metadataFixtureBlockers = [
+    ...compareMetadataToFixture(
+      [bundleWalcl.metadata, bundleRrp.metadata, bundleTga.metadata],
+      fixture
+    ),
+    ...bundleWalcl.blockers,
+    ...bundleRrp.blockers,
+    ...bundleTga.blockers,
+  ];
 
   const implementationInventory = {
     canonical_production: 'scripts/etl/factors.mjs',

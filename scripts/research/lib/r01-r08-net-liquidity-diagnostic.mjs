@@ -376,12 +376,16 @@ export function aggregateRrpToWednesdayEnding(nativeDailyObservations, usdMultip
 /**
  * Cross-check FRED WEW RRP vs independent Thu→Wed native daily aggregation.
  * Diagnostic only — no winner / no acceptance threshold.
+ * available=true only when BOTH constructions contain at least one usable Wednesday row.
  */
 export function crossCheckRrpWednesdayConstructions({
   fredWewObservations = null,
   nativeDailyObservations = null,
   usdMultiplier = CORRECT_USD_MULTIPLIERS.RRPONTSYD,
 } = {}) {
+  const fredInputProvided = fredWewObservations != null;
+  const nativeInputProvided = nativeDailyObservations != null;
+
   const fredRows = Array.isArray(fredWewObservations)
     ? extractFiniteDatedRows(fredWewObservations, usdMultiplier)
     : null;
@@ -389,17 +393,26 @@ export function crossCheckRrpWednesdayConstructions({
     ? aggregateRrpToWednesdayEnding(nativeDailyObservations, usdMultiplier)
     : null;
 
-  if (!fredRows && !nativeAgg) {
-    return {
-      available: false,
-      reason: 'both_wednesday_rrp_constructions_unavailable',
-      fred_wew: null,
-      rrp_native_daily_to_wednesday_avg_diagnostic: null,
-    };
+  const fredUsable = Array.isArray(fredRows) && fredRows.length > 0;
+  const nativeUsable = Array.isArray(nativeAgg) && nativeAgg.length > 0;
+
+  let reason = null;
+  if (!fredInputProvided && !nativeInputProvided) {
+    reason = 'both_wednesday_rrp_constructions_unavailable';
+  } else if (!fredInputProvided) {
+    reason = 'fred_wew_unavailable';
+  } else if (!nativeInputProvided) {
+    reason = 'native_daily_unavailable';
+  } else if (!fredUsable && !nativeUsable) {
+    reason = 'both_wednesday_rrp_constructions_empty';
+  } else if (!fredUsable) {
+    reason = 'fred_wew_empty';
+  } else if (!nativeUsable) {
+    reason = 'native_wednesday_aggregation_empty';
   }
 
-  const fredMap = new Map((fredRows || []).map((r) => [r.date, r]));
-  const nativeMap = new Map((nativeAgg || []).map((r) => [r.date, r]));
+  const fredMap = new Map((fredUsable ? fredRows : []).map((r) => [r.date, r]));
+  const nativeMap = new Map((nativeUsable ? nativeAgg : []).map((r) => [r.date, r]));
   const fredDates = new Set(fredMap.keys());
   const nativeDates = new Set(nativeMap.keys());
   const shared = [...fredDates].filter((d) => nativeDates.has(d)).sort();
@@ -423,31 +436,77 @@ export function crossCheckRrpWednesdayConstructions({
     };
   });
   const absDiffs = perShared.map((r) => r.absolute_difference);
-  return {
-    available: Boolean(fredRows) && Boolean(nativeAgg),
-    reason:
-      !fredRows
-        ? 'fred_wew_unavailable'
-        : !nativeAgg
-          ? 'native_daily_aggregation_unavailable'
-          : null,
-    fred_wew: fredRows
-      ? {
+
+  const describeFred = () => {
+    if (!fredInputProvided) {
+      return {
         label: 'FRED_RRP_FREQUENCY_WEW_AVG',
-        observation_count: fredRows.length,
-        first_date: fredRows[0]?.date ?? null,
-        last_date: fredRows.at(-1)?.date ?? null,
-      }
-      : null,
-    rrp_native_daily_to_wednesday_avg_diagnostic: nativeAgg
-      ? {
+        available: false,
+        status: 'unavailable_null',
+        observation_count: 0,
+        first_date: null,
+        last_date: null,
+      };
+    }
+    if (!fredUsable) {
+      return {
+        label: 'FRED_RRP_FREQUENCY_WEW_AVG',
+        available: false,
+        status: 'returned_zero_valid_rows',
+        observation_count: 0,
+        first_date: null,
+        last_date: null,
+      };
+    }
+    return {
+      label: 'FRED_RRP_FREQUENCY_WEW_AVG',
+      available: true,
+      status: 'usable_rows',
+      observation_count: fredRows.length,
+      first_date: fredRows[0]?.date ?? null,
+      last_date: fredRows.at(-1)?.date ?? null,
+    };
+  };
+
+  const describeNative = () => {
+    if (!nativeInputProvided) {
+      return {
         label: 'RRP_NATIVE_DAILY_TO_WEDNESDAY_AVG_DIAGNOSTIC',
-        observation_count: nativeAgg.length,
-        first_date: nativeAgg[0]?.date ?? null,
-        last_date: nativeAgg.at(-1)?.date ?? null,
-        rows: nativeAgg,
-      }
-      : null,
+        available: false,
+        status: 'unavailable_null',
+        observation_count: 0,
+        first_date: null,
+        last_date: null,
+        rows: [],
+      };
+    }
+    if (!nativeUsable) {
+      return {
+        label: 'RRP_NATIVE_DAILY_TO_WEDNESDAY_AVG_DIAGNOSTIC',
+        available: false,
+        status: 'returned_zero_valid_wednesday_rows',
+        observation_count: 0,
+        first_date: null,
+        last_date: null,
+        rows: [],
+      };
+    }
+    return {
+      label: 'RRP_NATIVE_DAILY_TO_WEDNESDAY_AVG_DIAGNOSTIC',
+      available: true,
+      status: 'usable_rows',
+      observation_count: nativeAgg.length,
+      first_date: nativeAgg[0]?.date ?? null,
+      last_date: nativeAgg.at(-1)?.date ?? null,
+      rows: nativeAgg,
+    };
+  };
+
+  return {
+    available: fredUsable && nativeUsable,
+    reason,
+    fred_wew: describeFred(),
+    rrp_native_daily_to_wednesday_avg_diagnostic: describeNative(),
     shared_date_count: shared.length,
     first_shared_date: shared[0] ?? null,
     last_shared_date: shared.at(-1) ?? null,
@@ -461,6 +520,120 @@ export function crossCheckRrpWednesdayConstructions({
     automatic_acceptance_threshold: null,
     winner: null,
     successor_contract: false,
+  };
+}
+
+/**
+ * Attach official FRED release + release-sources identity onto series metadata.
+ * Pure/deterministic: reports what was returned; does not invent values.
+ */
+export function attachFredReleaseAndSources({
+  seriesId,
+  seriesMetadata = null,
+  releaseDocument = null,
+  sourcesDocument = null,
+  releaseError = null,
+  sourcesError = null,
+} = {}) {
+  const blockers = [];
+  if (!seriesMetadata) {
+    blockers.push({
+      type: 'fred_series_metadata_unavailable',
+      series_id: seriesId,
+      action: 'do_not_adjudicate_without_series_metadata',
+    });
+  }
+  if (releaseError) {
+    blockers.push({
+      type: 'fred_series_release_fetch_failed',
+      series_id: seriesId,
+      error: String(releaseError.message || releaseError),
+      action: 'do_not_adjudicate_without_release_identity',
+    });
+  }
+  if (sourcesError) {
+    blockers.push({
+      type: 'fred_release_sources_fetch_failed',
+      series_id: seriesId,
+      error: String(sourcesError.message || sourcesError),
+      action: 'do_not_adjudicate_without_source_identity',
+    });
+  }
+
+  let release = {
+    available: false,
+    id: null,
+    name: null,
+    press_release: null,
+    link: null,
+    notes: null,
+    fetch_status: releaseError ? 'error' : 'unavailable',
+    fetch_error: releaseError ? String(releaseError.message || releaseError) : null,
+  };
+
+  if (!releaseError && releaseDocument) {
+    const row = Array.isArray(releaseDocument.releases) ? releaseDocument.releases[0] : null;
+    if (row) {
+      release = {
+        available: true,
+        id: row.id ?? null,
+        name: row.name ?? null,
+        press_release: row.press_release ?? null,
+        link: row.link ?? null,
+        notes: row.notes ?? null,
+        fetch_status: 'ok',
+        fetch_error: null,
+      };
+    } else {
+      release = {
+        available: false,
+        id: null,
+        name: null,
+        press_release: null,
+        link: null,
+        notes: null,
+        fetch_status: 'empty',
+        fetch_error: null,
+      };
+    }
+  }
+
+  let sources = {
+    available: false,
+    rows: [],
+    fetch_status: sourcesError
+      ? 'error'
+      : release.available
+        ? 'unavailable'
+        : 'skipped_no_release',
+    fetch_error: sourcesError ? String(sourcesError.message || sourcesError) : null,
+  };
+
+  if (!sourcesError && sourcesDocument) {
+    const rows = Array.isArray(sourcesDocument.sources)
+      ? sourcesDocument.sources.map((row) => ({
+        id: row.id ?? null,
+        name: row.name ?? null,
+        link: row.link ?? null,
+        notes: row.notes ?? null,
+      }))
+      : [];
+    sources = {
+      available: rows.length > 0,
+      rows,
+      fetch_status: rows.length > 0 ? 'ok' : 'empty',
+      fetch_error: null,
+    };
+  }
+
+  return {
+    metadata: {
+      ...(seriesMetadata || { series_id: seriesId }),
+      series_id: seriesMetadata?.series_id ?? seriesId,
+      release,
+      sources,
+    },
+    blockers,
   };
 }
 
