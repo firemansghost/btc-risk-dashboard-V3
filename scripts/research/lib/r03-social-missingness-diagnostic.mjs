@@ -21,7 +21,8 @@ export const OFFICIAL_SOCIAL_WEIGHTS = Object.freeze({
   btc_price_momentum_7d: 0.3,
 });
 
-export const SOCIAL_FACTOR_WEIGHT = 0.1;
+/** Fallback only when config cannot be read; prefer live dashboard-config weight. */
+export const SOCIAL_FACTOR_WEIGHT_FALLBACK = 0.1;
 export const SOCIAL_FACTOR_CACHE_TTL_HOURS = 6;
 export const COINGECKO_WRAPPER_CACHE_TTL_MINUTES = 30;
 export const CURRENT_NEUTRAL_DEFAULT = 50;
@@ -34,6 +35,7 @@ export const DIAGNOSTIC_STATE = Object.freeze({
   INSUFFICIENT_HISTORY: 'INSUFFICIENT_HISTORY',
   ELIGIBLE_CACHED_OBSERVATION: 'ELIGIBLE_CACHED_OBSERVATION',
   INELIGIBLE_OR_UNKNOWN_CACHE: 'INELIGIBLE_OR_UNKNOWN_CACHE',
+  THROWS_BEFORE_COMPONENT_SCORING: 'THROWS_BEFORE_COMPONENT_SCORING',
 });
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -45,6 +47,7 @@ export const SOCIAL_CACHE_PATH = path.join(
   REPO_ROOT,
   'public/data/cache/social_interest/social_interest_cache.json'
 );
+export const DASHBOARD_CONFIG_PATH = path.join(REPO_ROOT, 'config/dashboard-config.json');
 
 export function loadFrozenSocialMissingnessFixture(fixturePath = SOCIAL_MISSINGNESS_FIXTURE_PATH) {
   return JSON.parse(fs.readFileSync(fixturePath, 'utf8'));
@@ -74,7 +77,68 @@ export function assertFrozenSocialMissingnessFixture(document = loadFrozenSocial
   return document;
 }
 
-export function assertOfficialSocialBlend() {
+/** Mirror production percentileRank from factors.mjs. */
+export function percentileRank(arr, value) {
+  const sorted = arr.filter(Number.isFinite).sort((a, b) => a - b);
+  if (sorted.length === 0) return NaN;
+  let count = 0;
+  for (const v of sorted) {
+    if (v <= value) count += 1;
+    else break;
+  }
+  return count / sorted.length;
+}
+
+/** Mirror production riskFromPercentile from factors.mjs. */
+export function riskFromPercentile(percentile, options = {}) {
+  const { invert = false, k = 3 } = options;
+  if (!Number.isFinite(percentile)) return null;
+  let p = percentile;
+  if (invert) p = 1 - p;
+  const x = k * (2 * p - 1);
+  const logistic = 1 / (1 + Math.exp(-x));
+  return Math.round(logistic * 100);
+}
+
+export function loadDashboardSocialContract(configPath = DASHBOARD_CONFIG_PATH) {
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  const factor = config?.factors?.social_interest ?? null;
+  const subweights = config?.subweights?.social_interest ?? null;
+  const locked = LOCKED_OFFICIAL_BLENDS.social_interest;
+  const blockers = [];
+  if (!factor || !Number.isFinite(factor.weight)) {
+    blockers.push({
+      type: 'dashboard_social_factor_weight_unavailable',
+      action: 'do_not_adjudicate_without_dashboard_weight',
+    });
+  }
+  if (
+    !subweights
+    || subweights.coingecko_trending_rank !== locked.coingecko_trending_rank
+    || subweights.btc_price_momentum_7d !== locked.btc_price_momentum_7d
+  ) {
+    blockers.push({
+      type: 'dashboard_social_subweights_disagree_with_locked_blend',
+      dashboard_subweights: subweights,
+      locked_blend: { ...locked },
+      action: 'do_not_silently_choose_one',
+    });
+  }
+  return {
+    factor_weight: Number.isFinite(factor?.weight) ? factor.weight : SOCIAL_FACTOR_WEIGHT_FALLBACK,
+    subweights: subweights
+      ? {
+        coingecko_trending_rank: subweights.coingecko_trending_rank,
+        btc_price_momentum_7d: subweights.btc_price_momentum_7d,
+      }
+      : null,
+    locked_blend: { ...locked },
+    staleness: factor?.staleness ?? null,
+    blockers,
+  };
+}
+
+export function assertOfficialSocialBlend(dashboardContract = loadDashboardSocialContract()) {
   const locked = LOCKED_OFFICIAL_BLENDS.social_interest;
   if (
     locked.coingecko_trending_rank !== OFFICIAL_SOCIAL_WEIGHTS.coingecko_trending_rank
@@ -84,7 +148,40 @@ export function assertOfficialSocialBlend() {
       reason: 'official_social_blend_mismatch',
     });
   }
-  return { ...OFFICIAL_SOCIAL_WEIGHTS };
+  return {
+    weights: { ...OFFICIAL_SOCIAL_WEIGHTS },
+    factor_weight: dashboardContract.factor_weight,
+    dashboard_blockers: dashboardContract.blockers,
+  };
+}
+
+function outcomeFields({
+  throwsBeforeComponentScoring = false,
+  usesNeutralDefault = false,
+  factorScore = null,
+  factorReasonClass = null,
+  canEnterGscore = null,
+  productionOutcome = null,
+} = {}) {
+  const score = throwsBeforeComponentScoring ? null : factorScore;
+  return {
+    current_production_outcome:
+      productionOutcome
+      || (throwsBeforeComponentScoring
+        ? 'WHOLE_FACTOR_OUTER_CATCH_NULL'
+        : usesNeutralDefault
+          ? 'NEUTRAL_DEFAULT_BLEND_PATH'
+          : 'OBSERVED_OR_COMPUTED_BLEND_PATH'),
+    current_throws_before_component_scoring: throwsBeforeComponentScoring,
+    current_factor_score: score,
+    current_factor_reason_class:
+      factorReasonClass
+      || (throwsBeforeComponentScoring ? 'error' : 'success'),
+    current_can_enter_gscore:
+      canEnterGscore == null ? Number.isFinite(score) : canEnterGscore,
+    current_uses_neutral_default: Boolean(usesNeutralDefault) && !throwsBeforeComponentScoring,
+    applicable_to_c0_neutral_default_matrix: Boolean(usesNeutralDefault) && !throwsBeforeComponentScoring,
+  };
 }
 
 /** Exact current production trending-rank → search score mapping. */
@@ -97,8 +194,35 @@ export function searchScoreFromRank(rank) {
 }
 
 /**
+ * Mirror production currentBitcoinRank extraction (runs before Array.isArray scoring guard).
+ */
+export function extractCurrentBitcoinRank(trendsData) {
+  try {
+    const found = trendsData?.coins?.find(
+      (coin) => coin.item?.id === 'bitcoin' || coin.item?.symbol?.toLowerCase() === 'btc'
+    );
+    const currentBitcoinRank = found
+      ? trendsData.coins.indexOf(
+        trendsData.coins.find(
+          (coin) => coin.item?.id === 'bitcoin' || coin.item?.symbol?.toLowerCase() === 'btc'
+        )
+      ) + 1
+      : null;
+    return { currentBitcoinRank, threw: false, error: null };
+  } catch (error) {
+    return {
+      currentBitcoinRank: null,
+      threw: true,
+      error: {
+        name: error?.name ?? 'Error',
+        message: String(error?.message ?? error),
+      },
+    };
+  }
+}
+
+/**
  * Characterize CoinGecko trending payload exactly as current computeSocialInterest reads it.
- * Does not invent observed scores for missing Bitcoin.
  */
 export function characterizeTrendingEvidence(trendsData, { fetchError = false } = {}) {
   if (fetchError || trendsData == null) {
@@ -109,9 +233,42 @@ export function characterizeTrendingEvidence(trendsData, { fetchError = false } 
       rank: null,
       observed_search_score: null,
       current_production_search_score: CURRENT_NEUTRAL_DEFAULT,
-      current_uses_neutral_default: true,
+      detail: 'trendsData_null_or_fetch_error',
+      ...outcomeFields({
+        throwsBeforeComponentScoring: false,
+        usesNeutralDefault: true,
+        factorScore: CURRENT_NEUTRAL_DEFAULT, // Search component alone; factor continues with defaults
+        factorReasonClass: 'success',
+      }),
     };
   }
+
+  const rankExtraction = extractCurrentBitcoinRank(trendsData);
+  if (rankExtraction.threw) {
+    const coins = trendsData?.coins;
+    const detail = Array.isArray(coins)
+      ? 'array_element_throws_inside_find_callback'
+      : 'coins_truthy_without_find';
+    return {
+      diagnostic_state: DIAGNOSTIC_STATE.THROWS_BEFORE_COMPONENT_SCORING,
+      provider_request_failed: false,
+      bitcoin_present: false,
+      rank: null,
+      observed_search_score: null,
+      current_production_search_score: null,
+      detail,
+      extraction_error: rankExtraction.error,
+      ...outcomeFields({
+        throwsBeforeComponentScoring: true,
+        usesNeutralDefault: false,
+        factorScore: null,
+        factorReasonClass: 'error',
+        canEnterGscore: false,
+        productionOutcome: 'WHOLE_FACTOR_OUTER_CATCH_NULL',
+      }),
+    };
+  }
+
   if (!Object.prototype.hasOwnProperty.call(trendsData, 'coins')) {
     return {
       diagnostic_state: DIAGNOSTIC_STATE.MALFORMED,
@@ -120,11 +277,19 @@ export function characterizeTrendingEvidence(trendsData, { fetchError = false } 
       rank: null,
       observed_search_score: null,
       current_production_search_score: CURRENT_NEUTRAL_DEFAULT,
-      current_uses_neutral_default: true,
       detail: 'trendsData_missing_coins',
+      ...outcomeFields({
+        throwsBeforeComponentScoring: false,
+        usesNeutralDefault: true,
+        factorScore: CURRENT_NEUTRAL_DEFAULT,
+        factorReasonClass: 'success',
+      }),
     };
   }
+
   if (!Array.isArray(trendsData.coins)) {
+    // Optional-chain find already succeeded only if coins was nullish; truthy non-array throws above.
+    // Falsy non-array (unlikely) would skip find; Array.isArray scoring guard then retains 50.
     return {
       diagnostic_state: DIAGNOSTIC_STATE.MALFORMED,
       provider_request_failed: false,
@@ -132,14 +297,17 @@ export function characterizeTrendingEvidence(trendsData, { fetchError = false } 
       rank: null,
       observed_search_score: null,
       current_production_search_score: CURRENT_NEUTRAL_DEFAULT,
-      current_uses_neutral_default: true,
-      detail: 'coins_not_array',
+      detail: 'coins_not_array_but_did_not_throw_on_find',
+      ...outcomeFields({
+        throwsBeforeComponentScoring: false,
+        usesNeutralDefault: true,
+        factorScore: CURRENT_NEUTRAL_DEFAULT,
+        factorReasonClass: 'success',
+      }),
     };
   }
-  const bitcoinTrending = trendsData.coins.find(
-    (coin) => coin.item?.id === 'bitcoin' || coin.item?.symbol?.toLowerCase() === 'btc'
-  );
-  if (!bitcoinTrending) {
+
+  if (rankExtraction.currentBitcoinRank == null) {
     return {
       diagnostic_state: DIAGNOSTIC_STATE.MISSING,
       provider_request_failed: false,
@@ -147,11 +315,17 @@ export function characterizeTrendingEvidence(trendsData, { fetchError = false } 
       rank: null,
       observed_search_score: null,
       current_production_search_score: CURRENT_NEUTRAL_DEFAULT,
-      current_uses_neutral_default: true,
       detail: 'bitcoin_absent_from_trending_coins',
+      ...outcomeFields({
+        throwsBeforeComponentScoring: false,
+        usesNeutralDefault: true,
+        factorScore: CURRENT_NEUTRAL_DEFAULT,
+        factorReasonClass: 'success',
+      }),
     };
   }
-  const rank = trendsData.coins.indexOf(bitcoinTrending) + 1;
+
+  const rank = rankExtraction.currentBitcoinRank;
   const score = searchScoreFromRank(rank);
   return {
     diagnostic_state: DIAGNOSTIC_STATE.OBSERVED,
@@ -160,125 +334,344 @@ export function characterizeTrendingEvidence(trendsData, { fetchError = false } 
     rank,
     observed_search_score: score,
     current_production_search_score: score,
-    current_uses_neutral_default: false,
+    detail: 'bitcoin_present_with_valid_rank',
+    ...outcomeFields({
+      throwsBeforeComponentScoring: false,
+      usesNeutralDefault: false,
+      factorScore: score,
+      factorReasonClass: 'success',
+    }),
   };
 }
 
 /**
+ * Mirror production latestPrice extraction used for hasSocialDataChanged.
+ */
+export function extractCurrentLatestPrice(priceData) {
+  try {
+    const latestPrice = priceData?.prices?.length > 0
+      ? priceData.prices[priceData.prices.length - 1][1]
+      : null;
+    return { latestPrice, threw: false, error: null };
+  } catch (error) {
+    return {
+      latestPrice: null,
+      threw: true,
+      error: {
+        name: error?.name ?? 'Error',
+        message: String(error?.message ?? error),
+      },
+    };
+  }
+}
+
+/**
+ * Mirror production momentum scoring after Array.isArray && length>=14 gate.
+ */
+export function reproduceCurrentMomentumComputation(priceRows) {
+  try {
+    const prices = priceRows.map(([timestamp, price]) => price).filter(Number.isFinite);
+    if (prices.length < 14) {
+      return {
+        threw: false,
+        finite_price_count: prices.length,
+        change_series_length: 0,
+        priceChange: null,
+        priceChange_is_finite: false,
+        momentum7dPct: null,
+        changePercentile: null,
+        momentumScore: CURRENT_NEUTRAL_DEFAULT,
+        used_neutral_default: true,
+        numeric_score_from_nonfinite_latest_input: false,
+      };
+    }
+    const recent7d = prices.slice(-7);
+    const previous7d = prices.slice(-14, -7);
+    const recentAvg = recent7d.reduce((sum, price) => sum + price, 0) / recent7d.length;
+    const previousAvg = previous7d.reduce((sum, price) => sum + price, 0) / previous7d.length;
+    const priceChange = ((recentAvg - previousAvg) / previousAvg) * 100;
+    const momentum7dPct = Number.isFinite(priceChange) ? priceChange : null;
+    const changeSeries = [];
+    for (let i = 14; i < prices.length; i += 1) {
+      const recent = prices.slice(i - 7, i);
+      const previous = prices.slice(i - 14, i - 7);
+      const rAvg = recent.reduce((sum, p) => sum + p, 0) / recent.length;
+      const pAvg = previous.reduce((sum, p) => sum + p, 0) / previous.length;
+      const change = ((rAvg - pAvg) / pAvg) * 100;
+      if (Number.isFinite(change)) changeSeries.push(change);
+    }
+    let momentumScore = CURRENT_NEUTRAL_DEFAULT;
+    let changePercentile = null;
+    let usedNeutral = true;
+    if (changeSeries.length > 0) {
+      changePercentile = percentileRank(changeSeries, priceChange);
+      momentumScore = riskFromPercentile(changePercentile, { invert: false, k: 3 });
+      usedNeutral = false;
+    }
+    return {
+      threw: false,
+      finite_price_count: prices.length,
+      change_series_length: changeSeries.length,
+      changeSeries: [...changeSeries],
+      priceChange,
+      priceChange_is_finite: Number.isFinite(priceChange),
+      momentum7dPct,
+      changePercentile,
+      momentumScore,
+      used_neutral_default: usedNeutral,
+      numeric_score_from_nonfinite_latest_input:
+        !Number.isFinite(priceChange) && !usedNeutral && Number.isFinite(momentumScore),
+    };
+  } catch (error) {
+    return {
+      threw: true,
+      error: {
+        name: error?.name ?? 'Error',
+        message: String(error?.message ?? error),
+      },
+      finite_price_count: null,
+      change_series_length: 0,
+      priceChange: null,
+      priceChange_is_finite: false,
+      momentum7dPct: null,
+      changePercentile: null,
+      momentumScore: null,
+      used_neutral_default: false,
+      numeric_score_from_nonfinite_latest_input: false,
+    };
+  }
+}
+
+/**
+ * Build a deterministic price fixture where latest priceChange is +Infinity and
+ * changeSeries contains at least one earlier finite observation.
+ */
+export function buildNonFiniteMomentumFixture() {
+  // length 22: changeSeries i=14 uses prev[0..6]=100, recent[7..13]=0 → -100
+  // latest previous7d indices 8..14 = 0; recent7d 15..21 = 10 → Infinity
+  const prices = [];
+  for (let i = 0; i < 22; i += 1) {
+    let value;
+    if (i <= 6) value = 100;
+    else if (i <= 14) value = 0;
+    else value = 10;
+    prices.push([i * 86_400_000, value]);
+  }
+  return { prices };
+}
+
+/**
  * Characterize price-momentum evidence under current production gating.
- * With exactly 14 finite prices, priceChange may be computed but changeSeries is empty,
- * so production retains neutral momentum default 50.
  */
 export function characterizePriceMomentumEvidence(priceData, { fetchError = false } = {}) {
+  const latestExtraction = extractCurrentLatestPrice(priceData);
+
   if (fetchError || priceData == null) {
     return {
       diagnostic_state: DIAGNOSTIC_STATE.ERROR,
       provider_request_failed: true,
       observed_momentum_score: null,
       current_production_momentum_score: CURRENT_NEUTRAL_DEFAULT,
-      current_uses_neutral_default: true,
+      detail: 'priceData_null_or_fetch_error',
+      latestPrice_extraction: latestExtraction,
       finite_price_count: 0,
       raw_price_row_count: 0,
       change_series_length: 0,
+      ...outcomeFields({
+        throwsBeforeComponentScoring: false,
+        usesNeutralDefault: true,
+        factorScore: CURRENT_NEUTRAL_DEFAULT,
+        factorReasonClass: 'success',
+      }),
     };
   }
+
   if (!Object.prototype.hasOwnProperty.call(priceData, 'prices')) {
     return {
       diagnostic_state: DIAGNOSTIC_STATE.MALFORMED,
       provider_request_failed: false,
       observed_momentum_score: null,
       current_production_momentum_score: CURRENT_NEUTRAL_DEFAULT,
-      current_uses_neutral_default: true,
       detail: 'priceData_missing_prices',
+      latestPrice_extraction: latestExtraction,
       finite_price_count: 0,
       raw_price_row_count: 0,
       change_series_length: 0,
+      ...outcomeFields({
+        throwsBeforeComponentScoring: false,
+        usesNeutralDefault: true,
+        factorScore: CURRENT_NEUTRAL_DEFAULT,
+        factorReasonClass: 'success',
+      }),
     };
   }
+
   if (!Array.isArray(priceData.prices)) {
     return {
       diagnostic_state: DIAGNOSTIC_STATE.MALFORMED,
       provider_request_failed: false,
       observed_momentum_score: null,
       current_production_momentum_score: CURRENT_NEUTRAL_DEFAULT,
-      current_uses_neutral_default: true,
-      detail: 'prices_not_array',
+      detail: 'prices_not_array_arrayisarray_guard_retains_neutral',
+      latestPrice_extraction: latestExtraction,
+      note:
+        'Scoring Array.isArray(prices) fails so Momentum remains 50. latestPrice extraction uses prices.length/index and may yield non-null/undefined values without throwing for some non-array shapes.',
       finite_price_count: 0,
-      raw_price_row_count: 0,
+      raw_price_row_count: null,
       change_series_length: 0,
+      ...outcomeFields({
+        throwsBeforeComponentScoring: false,
+        usesNeutralDefault: true,
+        factorScore: CURRENT_NEUTRAL_DEFAULT,
+        factorReasonClass: 'success',
+      }),
     };
   }
+
   const rawCount = priceData.prices.length;
+
+  // latestPrice extraction throw (e.g. last row null) occurs before scoring in production
+  // only when length>0; if it throws, the outer catch nulls the whole factor.
+  if (latestExtraction.threw) {
+    return {
+      diagnostic_state: DIAGNOSTIC_STATE.THROWS_BEFORE_COMPONENT_SCORING,
+      provider_request_failed: false,
+      observed_momentum_score: null,
+      current_production_momentum_score: null,
+      detail: 'latestPrice_extraction_throws_on_noniterable_row',
+      latestPrice_extraction: latestExtraction,
+      finite_price_count: null,
+      raw_price_row_count: rawCount,
+      change_series_length: 0,
+      ...outcomeFields({
+        throwsBeforeComponentScoring: true,
+        usesNeutralDefault: false,
+        factorScore: null,
+        factorReasonClass: 'error',
+        canEnterGscore: false,
+      }),
+    };
+  }
+
   if (rawCount < 14) {
     return {
       diagnostic_state: DIAGNOSTIC_STATE.INSUFFICIENT_HISTORY,
       provider_request_failed: false,
       observed_momentum_score: null,
       current_production_momentum_score: CURRENT_NEUTRAL_DEFAULT,
-      current_uses_neutral_default: true,
       detail: 'fewer_than_14_source_rows',
-      finite_price_count: priceData.prices.map((row) => row?.[1]).filter(Number.isFinite).length,
+      latestPrice_extraction: latestExtraction,
+      finite_price_count: priceData.prices
+        .map((row) => (Array.isArray(row) ? row[1] : undefined))
+        .filter(Number.isFinite).length,
       raw_price_row_count: rawCount,
       change_series_length: 0,
+      ...outcomeFields({
+        throwsBeforeComponentScoring: false,
+        usesNeutralDefault: true,
+        factorScore: CURRENT_NEUTRAL_DEFAULT,
+        factorReasonClass: 'success',
+      }),
     };
   }
-  const prices = priceData.prices.map((row) => row?.[1]).filter(Number.isFinite);
-  if (prices.length < 14) {
+
+  // Production map destructuring: priceData.prices.map(([timestamp, price]) => price)
+  const mapped = reproduceCurrentMomentumComputation(priceData.prices);
+  if (mapped.threw) {
+    return {
+      diagnostic_state: DIAGNOSTIC_STATE.THROWS_BEFORE_COMPONENT_SCORING,
+      provider_request_failed: false,
+      observed_momentum_score: null,
+      current_production_momentum_score: null,
+      detail: 'prices_map_destructuring_throws_on_noniterable_row',
+      latestPrice_extraction: latestExtraction,
+      computation: mapped,
+      finite_price_count: null,
+      raw_price_row_count: rawCount,
+      change_series_length: 0,
+      ...outcomeFields({
+        throwsBeforeComponentScoring: true,
+        usesNeutralDefault: false,
+        factorScore: null,
+        factorReasonClass: 'error',
+        canEnterGscore: false,
+      }),
+    };
+  }
+
+  if (mapped.finite_price_count < 14) {
     return {
       diagnostic_state: DIAGNOSTIC_STATE.INSUFFICIENT_HISTORY,
       provider_request_failed: false,
       observed_momentum_score: null,
       current_production_momentum_score: CURRENT_NEUTRAL_DEFAULT,
-      current_uses_neutral_default: true,
       detail: 'fewer_than_14_finite_prices_after_filter',
-      finite_price_count: prices.length,
+      latestPrice_extraction: latestExtraction,
+      computation: mapped,
+      finite_price_count: mapped.finite_price_count,
       raw_price_row_count: rawCount,
       change_series_length: 0,
+      ...outcomeFields({
+        throwsBeforeComponentScoring: false,
+        usesNeutralDefault: true,
+        factorScore: CURRENT_NEUTRAL_DEFAULT,
+        factorReasonClass: 'success',
+      }),
     };
   }
 
-  const changeSeries = [];
-  for (let i = 14; i < prices.length; i += 1) {
-    const recent = prices.slice(i - 7, i);
-    const previous = prices.slice(i - 14, i - 7);
-    const rAvg = recent.reduce((sum, p) => sum + p, 0) / recent.length;
-    const pAvg = previous.reduce((sum, p) => sum + p, 0) / previous.length;
-    const change = ((rAvg - pAvg) / pAvg) * 100;
-    if (Number.isFinite(change)) changeSeries.push(change);
-  }
-
-  if (changeSeries.length === 0) {
+  if (mapped.change_series_length === 0) {
     return {
       diagnostic_state: DIAGNOSTIC_STATE.INSUFFICIENT_HISTORY,
       provider_request_failed: false,
       observed_momentum_score: null,
       current_production_momentum_score: CURRENT_NEUTRAL_DEFAULT,
-      current_uses_neutral_default: true,
       detail: 'exactly_14_or_no_usable_percentile_change_series',
-      finite_price_count: prices.length,
+      latestPrice_extraction: latestExtraction,
+      computation: mapped,
+      finite_price_count: mapped.finite_price_count,
       raw_price_row_count: rawCount,
       change_series_length: 0,
-      note:
-        'Current production computes a 7d priceChange for display when prices.length>=14, but percentile ranking requires changeSeries from i=14..n-1; with exactly 14 finite prices the series is empty and momentumScore stays 50.',
+      priceChange: mapped.priceChange,
+      priceChange_is_finite: mapped.priceChange_is_finite,
+      momentum7dPct: mapped.momentum7dPct,
+      ...outcomeFields({
+        throwsBeforeComponentScoring: false,
+        usesNeutralDefault: true,
+        factorScore: CURRENT_NEUTRAL_DEFAULT,
+        factorReasonClass: 'success',
+      }),
     };
   }
 
-  // Deterministic synthetic observed score for diagnostic: map latest change percentile roughly
-  // is not needed for matrix — callers supply observed scores. Mark OBSERVED when production would
-  // replace the default via changeSeries.
   return {
     diagnostic_state: DIAGNOSTIC_STATE.OBSERVED,
     provider_request_failed: false,
-    observed_momentum_score: 'REQUIRES_PERCENTILE_SERIES', // production computes dynamically
-    current_production_momentum_score: 'COMPUTED_FROM_PERCENTILE',
-    current_uses_neutral_default: false,
-    finite_price_count: prices.length,
+    observed_momentum_score: mapped.momentumScore,
+    current_production_momentum_score: mapped.momentumScore,
+    detail: mapped.numeric_score_from_nonfinite_latest_input
+      ? 'percentile_computed_with_nonfinite_latest_priceChange'
+      : 'sufficient_history_percentile_momentum',
+    latestPrice_extraction: latestExtraction,
+    computation: mapped,
+    finite_price_count: mapped.finite_price_count,
     raw_price_row_count: rawCount,
-    change_series_length: changeSeries.length,
+    change_series_length: mapped.change_series_length,
+    priceChange: mapped.priceChange,
+    priceChange_is_finite: mapped.priceChange_is_finite,
+    momentum7dPct: mapped.momentum7dPct,
+    changePercentile: mapped.changePercentile,
+    numeric_score_from_nonfinite_latest_input: mapped.numeric_score_from_nonfinite_latest_input,
+    ...outcomeFields({
+      throwsBeforeComponentScoring: false,
+      usesNeutralDefault: mapped.used_neutral_default,
+      factorScore: mapped.momentumScore,
+      factorReasonClass: 'success',
+    }),
   };
 }
 
-/** Exact current hasSocialDataChanged() semantics. */
+/** Exact current hasSocialDataChanged() semantics — including JS coercion quirks. */
 export function hasSocialDataChanged(currentData, cachedData) {
   if (!cachedData || !cachedData.bitcoinRank || !cachedData.latestPrice) {
     return true;
@@ -303,28 +696,53 @@ export function evaluateSocialCacheDecisionScenarios() {
       cached: { ...validCache },
     },
     {
-      id: 'price_changes_lt_1000',
+      id: 'rank_unchanged_price_delta_lt_1000',
       current: { bitcoinRank: 11, latestPrice: 83500 },
       cached: { ...validCache },
     },
     {
-      id: 'price_changes_gt_1000',
+      id: 'rank_unchanged_price_delta_gt_1000',
       current: { bitcoinRank: 11, latestPrice: 85000 },
       cached: { ...validCache },
     },
     {
-      id: 'current_rank_null_cached_rank_valid',
-      current: { bitcoinRank: null, latestPrice: 83000 },
+      id: 'rank_unchanged_current_latestPrice_null',
+      current: { bitcoinRank: 11, latestPrice: null },
       cached: { ...validCache },
     },
     {
-      id: 'current_price_null_cached_price_valid',
-      current: { bitcoinRank: 11, latestPrice: null },
+      id: 'rank_unchanged_current_latestPrice_undefined',
+      current: { bitcoinRank: 11, latestPrice: undefined },
+      cached: { ...validCache },
+    },
+    {
+      id: 'rank_unchanged_current_latestPrice_NaN',
+      current: { bitcoinRank: 11, latestPrice: Number.NaN },
+      cached: { ...validCache },
+    },
+    {
+      id: 'rank_unchanged_current_latestPrice_nonnumeric_string',
+      current: { bitcoinRank: 11, latestPrice: 'not-a-number' },
+      cached: { ...validCache },
+    },
+    {
+      id: 'rank_changed_malformed_current_price_undefined',
+      current: { bitcoinRank: 5, latestPrice: undefined },
       cached: { ...validCache },
     },
     {
       id: 'both_current_null_cached_valid',
       current: { bitcoinRank: null, latestPrice: null },
+      cached: { ...validCache },
+    },
+    {
+      id: 'current_rank_undefined_price_valid',
+      current: { bitcoinRank: undefined, latestPrice: 83000 },
+      cached: { ...validCache },
+    },
+    {
+      id: 'current_rank_null_cached_rank_valid',
+      current: { bitcoinRank: null, latestPrice: 83000 },
       cached: { ...validCache },
     },
     {
@@ -346,15 +764,37 @@ export function evaluateSocialCacheDecisionScenarios() {
 
   return scenarios.map((scenario) => {
     const changed = hasSocialDataChanged(scenario.current, scenario.cached);
+    const absDelta = scenario.cached
+      ? Math.abs(scenario.current.latestPrice - scenario.cached.latestPrice)
+      : null;
+    const malformedCurrentPrice =
+      scenario.current.latestPrice == null
+      || Number.isNaN(scenario.current.latestPrice)
+      || (typeof scenario.current.latestPrice === 'string'
+        && !Number.isFinite(Number(scenario.current.latestPrice)));
     return {
       id: scenario.id,
       current: scenario.current,
       cached: scenario.cached,
       hasSocialDataChanged: changed,
+      abs_latestPrice_delta: absDelta,
+      abs_latestPrice_delta_is_NaN: Number.isNaN(absDelta),
       action: changed ? 'recompute_fresh_calculation' : 'reuse_cached_factor_calculation',
+      malformed_current_evidence_can_reuse_factor_cache:
+        Boolean(scenario.cached)
+        && malformedCurrentPrice
+        && !changed,
       would_expose_neutral_default_missingness_on_recompute:
         changed
         && (scenario.current.bitcoinRank == null || scenario.current.latestPrice == null),
+      js_coercion_note:
+        scenario.current.latestPrice === undefined
+          ? 'Math.abs(undefined - cachedPrice) => NaN; NaN > 1000 => false'
+          : Number.isNaN(scenario.current.latestPrice)
+            ? 'Math.abs(NaN - cachedPrice) => NaN; NaN > 1000 => false'
+            : typeof scenario.current.latestPrice === 'string'
+              ? 'Math.abs(nonnumericString - cachedPrice) => NaN; NaN > 1000 => false'
+              : null,
     };
   });
 }
@@ -497,10 +937,12 @@ export function evaluateC3EligiblePriorObservation(cacheSnapshot) {
   const hasTrendingFetchedAt = typeof cacheSnapshot?.trending_fetched_at === 'string';
   const hasPriceObservationUtc = typeof cacheSnapshot?.price_observation_utc === 'string';
   const hasProvider = typeof cacheSnapshot?.provider === 'string';
-  const hasIndependentSearchObservationTimestamp = false; // only wall-clock trending_fetched_at exists
+  const hasIndependentSearchObservationTimestamp = false;
   const hasIndependentMomentumObservationTimestamp = hasPriceObservationUtc;
+  const hasExplicitPerComponentEvidenceState = false;
   const hasPerComponentProvenance = false;
   const hasPerComponentFreshnessEligibility = false;
+  const distinguishesObservedVsDefaultedMissingError = false;
 
   const sufficient =
     hasComponentScores
@@ -510,8 +952,10 @@ export function evaluateC3EligiblePriorObservation(cacheSnapshot) {
     && hasProvider
     && hasIndependentSearchObservationTimestamp
     && hasIndependentMomentumObservationTimestamp
+    && hasExplicitPerComponentEvidenceState
     && hasPerComponentProvenance
-    && hasPerComponentFreshnessEligibility;
+    && hasPerComponentFreshnessEligibility
+    && distinguishesObservedVsDefaultedMissingError;
 
   return {
     label: 'C3_ELIGIBLE_PRIOR_OBSERVATION',
@@ -529,10 +973,14 @@ export function evaluateC3EligiblePriorObservation(cacheSnapshot) {
       has_provider_string: hasProvider,
       independent_search_observation_timestamp: hasIndependentSearchObservationTimestamp,
       independent_momentum_observation_timestamp: hasIndependentMomentumObservationTimestamp,
+      explicit_per_component_evidence_state_observed_vs_defaulted_missing_error:
+        distinguishesObservedVsDefaultedMissingError,
       per_component_source_provenance: hasPerComponentProvenance,
       per_component_freshness_eligibility: hasPerComponentFreshnessEligibility,
-      note:
-        'trending_fetched_at is wall-clock fetch/computation time, not an independent CoinGecko observation timestamp. Factor lastUpdated is min(trending_fetched_at, price_observation_utc). Cache stores blended factor fields, not component-level eligibility records.',
+      primary_deficiency:
+        'Current Social cache does not carry a durable explicit per-component evidence-state / eligibility contract. Cached numeric component scores alone cannot distinguish OBSERVED vs defaulted/missing/error, and there is no independently adjudicated per-component freshness eligibility suitable for partial reuse.',
+      secondary_note:
+        'trending_fetched_at is wall-clock fetch/computation time, not an independent CoinGecko observation timestamp. Factor lastUpdated is min(trending_fetched_at, price_observation_utc).',
     },
   };
 }
@@ -627,9 +1075,9 @@ export function buildScoreExamples() {
  * Characterize computeAllFactors participation for Social under current semantics.
  * Fresh finite scores enter totalWeight; null/stale/rejected do not.
  */
-export function characterizeWholeFactorCompositeBehavior() {
+export function characterizeWholeFactorCompositeBehavior(socialFactorWeight = SOCIAL_FACTOR_WEIGHT_FALLBACK) {
   return {
-    social_factor_weight: SOCIAL_FACTOR_WEIGHT,
+    social_factor_weight: socialFactorWeight,
     behaviors: [
       {
         social_return: 'finite_score_fresh',
@@ -637,7 +1085,7 @@ export function characterizeWholeFactorCompositeBehavior() {
         weight_enters_totalWeight: true,
         remaining_fresh_weights_renormalized: true,
         meaning:
-          'Social contributes weight*score to weightedSum and its 10% weight to totalWeight; composite = weightedSum/totalWeight over fresh factors only.',
+          'Social contributes weight*score to weightedSum and its factor weight to totalWeight; composite = weightedSum/totalWeight over fresh factors only.',
       },
       {
         social_return: 'finite_score_stale',
@@ -653,7 +1101,7 @@ export function characterizeWholeFactorCompositeBehavior() {
         weight_enters_totalWeight: false,
         remaining_fresh_weights_renormalized: true,
         meaning:
-          'score=null → status=excluded; Social 10% does not enter totalWeight; remaining fresh weights renormalize.',
+          'score=null → status=excluded; Social weight does not enter totalWeight; remaining fresh weights renormalize.',
       },
       {
         social_return: 'rejected_promise',
@@ -666,8 +1114,8 @@ export function characterizeWholeFactorCompositeBehavior() {
     ],
     example_renormalization: {
       description:
-        'If Social null/excluded and all other enabled fresh factors remain, their weights sum to 0.90 and each weight/0.90 renormalizes in the composite.',
-      social_excluded_total_weight_if_others_all_fresh: 0.9,
+        'If Social null/excluded and all other enabled fresh factors remain, their weights sum to (1 - social_weight) and each weight/(1-social_weight) renormalizes in the composite.',
+      social_excluded_total_weight_if_others_all_fresh: Number((1 - socialFactorWeight).toFixed(10)),
       social_included_total_weight_if_all_fresh: 1.0,
     },
   };
@@ -741,17 +1189,50 @@ export function describeTimestampFindings() {
 }
 
 export function buildDescriptiveFailureSubcases() {
+  const nonFiniteFixture = buildNonFiniteMomentumFixture();
+  const nonFinite = characterizePriceMomentumEvidence(nonFiniteFixture);
   return [
     {
       id: 'provider_request_succeeded_bitcoin_absent',
       trending: characterizeTrendingEvidence({
         coins: [{ item: { id: 'ethereum', symbol: 'eth' } }],
       }),
+      c0_applicable: true,
       distinguished_from_provider_error: true,
     },
     {
-      id: 'provider_response_structurally_malformed_trending',
+      id: 'trendsData_missing_coins_optional_chain_safe',
+      trending: characterizeTrendingEvidence({}),
+      c0_applicable: true,
+      distinguished_from_provider_error: true,
+    },
+    {
+      id: 'coins_truthy_non_array_throws_before_scoring',
       trending: characterizeTrendingEvidence({ coins: 'not-an-array' }),
+      c0_applicable: false,
+      note: 'C0 does not apply; whole-factor outer catch returns score null.',
+      distinguished_from_provider_error: true,
+    },
+    {
+      id: 'coins_array_null_element_throws_inside_find_callback',
+      trending: characterizeTrendingEvidence({ coins: [null] }),
+      c0_applicable: false,
+      note: 'C0 does not apply; coin.item?.id throws when coin is null.',
+      distinguished_from_provider_error: true,
+    },
+    {
+      id: 'prices_not_array_arrayisarray_guard_retains_neutral',
+      price: characterizePriceMomentumEvidence({ prices: 'not-an-array' }),
+      c0_applicable: true,
+      distinguished_from_provider_error: true,
+    },
+    {
+      id: 'prices_map_destructuring_throws_on_null_row',
+      price: characterizePriceMomentumEvidence({
+        prices: Array.from({ length: 14 }, (_, i) => (i === 0 ? null : [i, 100 + i])),
+      }),
+      c0_applicable: false,
+      note: 'C0 does not apply; production map(([timestamp, price])) throws on null row.',
       distinguished_from_provider_error: true,
     },
     {
@@ -759,6 +1240,7 @@ export function buildDescriptiveFailureSubcases() {
       price: characterizePriceMomentumEvidence({
         prices: Array.from({ length: 10 }, (_, i) => [i, 100 + i]),
       }),
+      c0_applicable: true,
       distinguished_from_provider_error: true,
     },
     {
@@ -766,20 +1248,16 @@ export function buildDescriptiveFailureSubcases() {
       price: characterizePriceMomentumEvidence({
         prices: Array.from({ length: 14 }, (_, i) => [i, 100 + i]),
       }),
+      c0_applicable: true,
       distinguished_from_provider_error: true,
     },
     {
-      id: 'raw_rows_ge_14_but_finite_lt_14',
-      price: characterizePriceMomentumEvidence({
-        prices: [
-          ...Array.from({ length: 10 }, (_, i) => [i, 100 + i]),
-          [10, null],
-          [11, '.'],
-          [12, undefined],
-          [13, Number.NaN],
-        ],
-      }),
+      id: 'nonfinite_latest_priceChange_still_yields_numeric_percentile_score',
+      price: nonFinite,
+      c0_applicable: false,
       distinguished_from_provider_error: true,
+      note:
+        'Current production stores momentum7dPct=null for non-finite priceChange but still passes priceChange into percentileRank when changeSeries is non-empty.',
     },
   ];
 }
@@ -788,11 +1266,13 @@ export function buildOfflineR03Report({
   repositorySha,
   generatedAtUtc,
   ssotSocialStaleness,
+  dashboardSocialContract = loadDashboardSocialContract(),
   cacheSnapshot = readSocialCacheSnapshot(),
 } = {}) {
   const fixture = assertFrozenSocialMissingnessFixture();
-  const officialWeights = assertOfficialSocialBlend();
+  const official = assertOfficialSocialBlend(dashboardSocialContract);
   const c3 = evaluateC3EligiblePriorObservation(cacheSnapshot);
+  const socialWeight = dashboardSocialContract.factor_weight;
 
   return {
     schema: R03_SCHEMA,
@@ -816,10 +1296,12 @@ export function buildOfflineR03Report({
     official_component_contract: {
       factor: 'social_interest',
       scored_keys: [...OFFICIAL_SOCIAL_COMPONENT_KEYS],
-      weights: officialWeights,
+      weights: official.weights,
+      dashboard_subweights: dashboardSocialContract.subweights,
+      locked_blend: dashboardSocialContract.locked_blend,
       volatility_is_official_scored_component: false,
       volatility_inventory_only: true,
-      factor_weight: SOCIAL_FACTOR_WEIGHT,
+      factor_weight: socialWeight,
       stale_commentary_weights_not_authority: '40/35/25_not_authority',
     },
     frozen_missingness_fixture_identity: {
@@ -839,8 +1321,12 @@ export function buildOfflineR03Report({
       writes_social_factor_cache: true,
       can_enter_official_blend_with_neutral_defaults: true,
       violates_frozen_invariant_when_any_component_unavailable: true,
+      malformed_paths_that_throw_are_not_neutral_default_paths: true,
+      c0_applies_only_to_paths_that_reach_neutral_default_blend: true,
     },
-    cache_layers: describeCacheLayers(ssotSocialStaleness),
+    cache_layers: describeCacheLayers(
+      ssotSocialStaleness ?? dashboardSocialContract.staleness
+    ),
     current_cache_decision_matrix: evaluateSocialCacheDecisionScenarios(),
     current_live_repository_snapshot: cacheSnapshot,
     seven_case_matrix: buildSevenCaseMatrix(),
@@ -852,6 +1338,7 @@ export function buildOfflineR03Report({
         authorized_for_production: false,
         characterization_only: true,
         known_to_violate_successor_invariant: true,
+        applies_only_when_path_reaches_component_blend_with_retained_numeric_50: true,
       },
       C1_AVAILABLE_COMPONENT_RENORMALIZATION: {
         diagnostic_only: true,
@@ -865,7 +1352,7 @@ export function buildOfflineR03Report({
       },
       C3_ELIGIBLE_PRIOR_OBSERVATION: c3,
     },
-    whole_factor_composite_behavior: characterizeWholeFactorCompositeBehavior(),
+    whole_factor_composite_behavior: characterizeWholeFactorCompositeBehavior(socialWeight),
     provenance_and_timestamp_findings: describeTimestampFindings(),
     questions_for_r03_b_adjudication: [
       'Should Social remain scoreable when exactly one of its two official components is unavailable?',
@@ -876,14 +1363,15 @@ export function buildOfflineR03Report({
       'Should factor-level cache reuse remain separate from component-level evidence eligibility?',
       'Is the R03 repair scientifically material enough to join the forthcoming new model/implementation era already required by R07 and R01/R08?',
     ],
-    blockers: [],
+    blockers: [...dashboardSocialContract.blockers],
     warnings: [],
     limitations: [
       'Diagnostic only. No candidate treatment is authorized for production.',
       'Volatility remains descriptive inventory only and is not an official scored Social component.',
       'No live CoinGecko network calls were performed.',
       'Score examples are mathematical illustrations only — not historical replay, backtest, or predictive validation.',
-      'C3 is a structural contract surface only; current provenance is insufficient for safe component-level prior-observation reuse.',
+      'C0 applies only to paths that actually reach component blending with a retained numeric default 50; throwing malformed paths are whole-factor null.',
+      'C3 is a structural contract surface only; current provenance is insufficient for safe component-level prior-observation reuse because cache lacks durable per-component evidence-state/eligibility.',
     ],
   };
 }

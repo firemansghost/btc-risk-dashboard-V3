@@ -13,6 +13,7 @@ import {
   OFFICIAL_SOCIAL_WEIGHTS,
   R03_SCHEMA,
   assertFrozenSocialMissingnessFixture,
+  buildNonFiniteMomentumFixture,
   buildOfflineR03Report,
   characterizePriceMomentumEvidence,
   characterizeTrendingEvidence,
@@ -205,11 +206,17 @@ test('15. no candidate treats unavailable as observed numeric 50', () => {
 });
 
 test('16. malformed trending is distinguished from provider error', () => {
-  const malformed = characterizeTrendingEvidence({ coins: 'x' });
+  const missingCoins = characterizeTrendingEvidence({});
+  const nonArrayThrows = characterizeTrendingEvidence({ coins: 'x' });
   const errored = characterizeTrendingEvidence(null, { fetchError: true });
-  assert.equal(malformed.diagnostic_state, 'MALFORMED');
+  assert.equal(missingCoins.diagnostic_state, 'MALFORMED');
+  assert.equal(missingCoins.current_uses_neutral_default, true);
+  assert.equal(nonArrayThrows.diagnostic_state, 'THROWS_BEFORE_COMPONENT_SCORING');
+  assert.equal(nonArrayThrows.current_throws_before_component_scoring, true);
+  assert.equal(nonArrayThrows.current_factor_score, null);
+  assert.equal(nonArrayThrows.applicable_to_c0_neutral_default_matrix, false);
   assert.equal(errored.diagnostic_state, 'ERROR');
-  assert.notEqual(malformed.diagnostic_state, errored.diagnostic_state);
+  assert.notEqual(nonArrayThrows.diagnostic_state, errored.diagnostic_state);
 });
 
 test('17. Bitcoin-absent trending response is distinguished from provider error', () => {
@@ -219,6 +226,7 @@ test('17. Bitcoin-absent trending response is distinguished from provider error'
   const errored = characterizeTrendingEvidence(null, { fetchError: true });
   assert.equal(absent.diagnostic_state, 'MISSING');
   assert.equal(absent.detail, 'bitcoin_absent_from_trending_coins');
+  assert.equal(absent.current_uses_neutral_default, true);
   assert.equal(errored.diagnostic_state, 'ERROR');
 });
 
@@ -324,6 +332,11 @@ test('26. current cache lacks sufficient independent component provenance', () =
   );
   assert.equal(c3.findings.independent_search_observation_timestamp, false);
   assert.equal(c3.findings.per_component_freshness_eligibility, false);
+  assert.equal(
+    c3.findings.explicit_per_component_evidence_state_observed_vs_defaulted_missing_error,
+    false
+  );
+  assert.match(c3.findings.primary_deficiency, /per-component evidence-state/i);
 });
 
 test('27. no network use', () => {
@@ -406,4 +419,103 @@ test('checked-in Social cache remains unchanged by diagnostic imports', () => {
   });
   const after = fs.readFileSync(SOCIAL_CACHE_PATH, 'utf8');
   assert.equal(before, after);
+});
+
+test('non-array coins trending payload throws before scoring (not C0=50)', () => {
+  const result = characterizeTrendingEvidence({ coins: 'not-an-array' });
+  assert.equal(result.current_throws_before_component_scoring, true);
+  assert.equal(result.current_factor_score, null);
+  assert.equal(result.current_factor_reason_class, 'error');
+  assert.equal(result.current_can_enter_gscore, false);
+  assert.equal(result.applicable_to_c0_neutral_default_matrix, false);
+});
+
+test('null-element trending array throws inside find callback', () => {
+  const result = characterizeTrendingEvidence({ coins: [null] });
+  assert.equal(result.diagnostic_state, 'THROWS_BEFORE_COMPONENT_SCORING');
+  assert.equal(result.detail, 'array_element_throws_inside_find_callback');
+  assert.equal(result.current_factor_score, null);
+});
+
+test('malformed price null-row throws during map destructuring', () => {
+  const result = characterizePriceMomentumEvidence({
+    prices: Array.from({ length: 14 }, (_, i) => (i === 3 ? null : [i, 100 + i])),
+  });
+  assert.equal(result.current_throws_before_component_scoring, true);
+  assert.equal(result.current_factor_score, null);
+  assert.equal(result.applicable_to_c0_neutral_default_matrix, false);
+  assert.match(result.detail, /map_destructuring_throws/);
+});
+
+test('non-finite latest priceChange still yields numeric percentile Momentum score', () => {
+  const result = characterizePriceMomentumEvidence(buildNonFiniteMomentumFixture());
+  assert.equal(result.priceChange, Number.POSITIVE_INFINITY);
+  assert.equal(result.priceChange_is_finite, false);
+  assert.equal(result.momentum7dPct ?? result.computation.momentum7dPct, null);
+  assert.ok(result.change_series_length > 0);
+  assert.equal(result.changePercentile, 1);
+  assert.equal(result.current_production_momentum_score, 95);
+  assert.equal(result.numeric_score_from_nonfinite_latest_input, true);
+  assert.equal(result.current_uses_neutral_default, false);
+});
+
+test('cache matrix includes undefined/NaN current-price coercion reuse behavior', () => {
+  const scenarios = evaluateSocialCacheDecisionScenarios();
+  const undef = scenarios.find((s) => s.id === 'rank_unchanged_current_latestPrice_undefined');
+  const nan = scenarios.find((s) => s.id === 'rank_unchanged_current_latestPrice_NaN');
+  const str = scenarios.find((s) => s.id === 'rank_unchanged_current_latestPrice_nonnumeric_string');
+  assert.equal(undef.hasSocialDataChanged, false);
+  assert.equal(undef.malformed_current_evidence_can_reuse_factor_cache, true);
+  assert.equal(nan.hasSocialDataChanged, false);
+  assert.equal(nan.malformed_current_evidence_can_reuse_factor_cache, true);
+  assert.equal(str.hasSocialDataChanged, false);
+  assert.equal(str.malformed_current_evidence_can_reuse_factor_cache, true);
+  assert.equal(
+    hasSocialDataChanged(
+      { bitcoinRank: 11, latestPrice: undefined },
+      { bitcoinRank: 11, latestPrice: 83000 }
+    ),
+    false
+  );
+});
+
+test('C0 is not applied to throwing descriptive subcases', () => {
+  const report = buildOfflineR03Report({
+    repositorySha: '2'.repeat(40),
+    generatedAtUtc: '2026-09-30T12:00:00.000Z',
+    ssotSocialStaleness: { ttl_hours: 24, market_dependent: false, business_days_only: false },
+  });
+  const throwing = report.descriptive_failure_subcases.filter((row) => {
+    const evidence = row.trending || row.price;
+    return evidence?.current_throws_before_component_scoring === true;
+  });
+  assert.ok(throwing.length >= 2);
+  for (const row of throwing) {
+    const evidence = row.trending || row.price;
+    assert.equal(row.c0_applicable, false);
+    assert.equal(evidence.applicable_to_c0_neutral_default_matrix, false);
+    assert.equal(evidence.current_factor_score, null);
+  }
+  assert.equal(
+    report.candidate_treatments.C0_CURRENT_NEUTRAL_DEFAULT
+      .applies_only_when_path_reaches_component_blend_with_retained_numeric_50,
+    true
+  );
+  assert.equal(report.candidate_treatments.C1_AVAILABLE_COMPONENT_RENORMALIZATION.selected, false);
+  assert.equal(report.candidate_treatments.C2_REQUIRE_BOTH_COMPONENTS.selected, false);
+  assert.equal(report.candidate_treatments.C3_ELIGIBLE_PRIOR_OBSERVATION.selected, false);
+});
+
+test('dashboard config Social weight/subweights agree with locked blend', () => {
+  const report = buildOfflineR03Report({
+    repositorySha: '3'.repeat(40),
+    generatedAtUtc: '2026-09-30T12:00:00.000Z',
+    ssotSocialStaleness: { ttl_hours: 24, market_dependent: false, business_days_only: false },
+  });
+  assert.equal(report.official_component_contract.factor_weight, 0.1);
+  assert.deepEqual(report.official_component_contract.dashboard_subweights, {
+    coingecko_trending_rank: 0.7,
+    btc_price_momentum_7d: 0.3,
+  });
+  assert.equal(report.blockers.length, 0);
 });

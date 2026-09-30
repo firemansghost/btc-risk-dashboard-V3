@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import fsPromises from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildOfflineR03Report } from './lib/r03-social-missingness-diagnostic.mjs';
+import { buildOfflineR03Report, loadDashboardSocialContract } from './lib/r03-social-missingness-diagnostic.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const DASHBOARD_CONFIG_PATH = path.join(REPO_ROOT, 'config/dashboard-config.json');
@@ -57,14 +57,16 @@ export async function runR03SocialMissingnessDiagnostic({
 }) {
   assertOutsideRepository(reportPath, repoRoot);
   const sha = requireRepositorySha(repositorySha);
-  const ssotSocialStaleness = loadSsotSocialStaleness(
-    path.join(repoRoot, 'config/dashboard-config.json')
-  );
+  const configPath = path.join(repoRoot, 'config/dashboard-config.json');
+  const dashboardSocialContract = loadDashboardSocialContract(configPath);
+  const ssotSocialStaleness =
+    loadSsotSocialStaleness(configPath) ?? dashboardSocialContract.staleness;
 
   const report = buildOfflineR03Report({
     repositorySha: sha,
     generatedAtUtc: asOfUtc,
     ssotSocialStaleness,
+    dashboardSocialContract,
   });
 
   report.provider_network_performed = false;
