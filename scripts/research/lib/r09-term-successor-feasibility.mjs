@@ -229,13 +229,68 @@ export function analyzeFundingCadence(canonicalAscending, provider) {
 }
 
 /**
+ * Infer observed cadence/phase segments from canonical ascending timestamps.
+ * Production fallback is a comparator only — not the silent historical contract.
+ */
+export function inferObservedCadenceSegments(canonicalAscending) {
+  const gapsHours = [];
+  for (let i = 1; i < canonicalAscending.length; i += 1) {
+    const a = parseUtcMs(canonicalAscending[i - 1].source_timestamp_utc);
+    const b = parseUtcMs(canonicalAscending[i].source_timestamp_utc);
+    if (a != null && b != null) gapsHours.push((b - a) / MS_HOUR);
+  }
+  const rounded = gapsHours.map((g) => Math.round(g * 1000) / 1000);
+  const freq = new Map();
+  for (const g of rounded) freq.set(g, (freq.get(g) || 0) + 1);
+  let modal = null;
+  let modalCount = 0;
+  for (const [g, c] of freq) {
+    if (c > modalCount) {
+      modal = g;
+      modalCount = c;
+    }
+  }
+  const phases = [...new Set(
+    canonicalAscending.map((r) => new Date(r.source_timestamp_utc).getUTCHours())
+  )].sort((a, b) => a - b);
+  const cadenceTransitions = [];
+  for (let i = 1; i < rounded.length; i += 1) {
+    if (modal != null && Math.abs(rounded[i] - modal) > 0.05 && Math.abs(rounded[i - 1] - modal) <= 0.05) {
+      cadenceTransitions.push({
+        at_index: i,
+        from_gap_hours: rounded[i - 1],
+        to_gap_hours: rounded[i],
+        timestamp_utc: canonicalAscending[i + 1]?.source_timestamp_utc ?? null,
+      });
+    }
+  }
+  const stable = modal != null
+    && phases.length > 0
+    && Math.round(24 / modal) === phases.length
+    && cadenceTransitions.length === 0;
+  return {
+    modal_interval_hours: modal,
+    observed_phase_set_utc_hours: phases,
+    cadence_transitions: cadenceTransitions,
+    stable_observed_contract: stable
+      ? {
+        interval_hours: modal,
+        slot_hours_utc: phases,
+        expected_settlements_per_day: phases.length,
+      }
+      : null,
+    ambiguous: !stable,
+  };
+}
+
+/**
  * funding_daily[UTC date] = mean(all eligible settlements that UTC date).
- * COMPLETE_DAY requires settlement count matching established cadence/phase.
+ * COMPLETE_DAY only when day matches established observed cadence/phase.
  */
 export function buildFundingDailySurface(canonicalAscending, provider) {
   const fallback = DOCUMENTED_FUNDING_FALLBACK[provider] || DOCUMENTED_FUNDING_FALLBACK.binance;
-  const expectedCount = Math.round(24 / (fallback.intervalHours || 8));
-  const expectedSlots = new Set(fallback.slotHoursUtc);
+  const observed = inferObservedCadenceSegments(canonicalAscending);
+  const contract = observed.stable_observed_contract;
   const byDate = new Map();
   for (const row of canonicalAscending) {
     const d = utcDateString(row.source_timestamp_utc);
@@ -248,22 +303,28 @@ export function buildFundingDailySurface(canonicalAscending, provider) {
   for (const [date, rows] of [...byDate.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
     const duplicates = classifyFundingDuplicates(rows);
     let classification = 'INCOMPLETE_DAY';
+    const hours = rows.map((r) => new Date(r.source_timestamp_utc).getUTCHours());
     if (duplicates.conflicting_duplicates.length) {
       classification = 'CONFLICTING_DAY';
-    } else if (rows.length === expectedCount) {
-      const hours = rows.map((r) => new Date(r.source_timestamp_utc).getUTCHours());
+    } else if (!contract) {
+      classification = 'CADENCE_AMBIGUOUS_DAY';
+    } else if (rows.length === contract.expected_settlements_per_day) {
+      const expectedSlots = new Set(contract.slot_hours_utc);
       const slotsOk = hours.every((h) => expectedSlots.has(h))
-        && new Set(hours).size === expectedCount;
+        && new Set(hours).size === contract.expected_settlements_per_day;
       classification = slotsOk ? 'COMPLETE_DAY' : 'INCOMPLETE_DAY';
     } else if (rows.length === 0) {
       classification = 'NO_DATA';
     }
-    const mean = rows.reduce((s, r) => s + r.funding_rate, 0) / rows.length;
+    const mean = rows.length
+      ? rows.reduce((s, r) => s + r.funding_rate, 0) / rows.length
+      : null;
     days.push({
       utc_date: date,
       classification,
       settlement_count: rows.length,
-      expected_settlement_count: expectedCount,
+      expected_settlement_count: contract?.expected_settlements_per_day ?? null,
+      observed_slot_hours: hours,
       funding_daily_mean: mean,
       rows,
     });
@@ -287,6 +348,12 @@ export function buildFundingDailySurface(canonicalAscending, provider) {
     earliest_complete_date: complete[0]?.utc_date ?? null,
     latest_complete_date: complete[complete.length - 1]?.utc_date ?? null,
     longest_consecutive_complete_date_run: longestRun,
+    observed_cadence: observed,
+    production_fallback_comparator: {
+      interval_hours: fallback.intervalHours,
+      slot_hours_utc: [...fallback.slotHoursUtc],
+      note: 'Comparator only; does not silently define historical completeness',
+    },
   };
 }
 
@@ -325,6 +392,18 @@ export function selectFundingWindow(canonicalAscending, endpointUtcIso, candidat
   };
 }
 
+/** Latest eligible funding settlement whose UTC date is <= D. */
+export function latestEligibleSettlementAtOrBeforeDate(canonicalAscending, cutoffDateD) {
+  if (!cutoffDateD) return null;
+  let best = null;
+  for (const row of canonicalAscending) {
+    const d = utcDateString(row.source_timestamp_utc);
+    if (!d || d > cutoffDateD) continue;
+    if (!best || row.source_timestamp_utc > best.source_timestamp_utc) best = row;
+  }
+  return best;
+}
+
 export function compareFunding30DayBoundaries(canonicalAscending, endpointUtcIso) {
   const halfOpen = selectFundingWindow(canonicalAscending, endpointUtcIso, 'F30_HALF_OPEN');
   const endpointSpan = selectFundingWindow(canonicalAscending, endpointUtcIso, 'F30_ENDPOINT_SPAN');
@@ -336,6 +415,32 @@ export function compareFunding30DayBoundaries(canonicalAscending, endpointUtcIso
         ? endpointSpan.average_funding - halfOpen.average_funding
         : null,
     automatic_winner: null,
+  };
+}
+
+export function compareFunding30DayBoundariesAtCutoff(canonicalAscending, cutoffDateD) {
+  const Trow = latestEligibleSettlementAtOrBeforeDate(canonicalAscending, cutoffDateD);
+  if (!Trow) {
+    return {
+      common_cutoff_date_D: cutoffDateD,
+      actual_T: null,
+      T_source_row: null,
+      F30_HALF_OPEN: null,
+      F30_ENDPOINT_SPAN: null,
+      average_difference: null,
+      automatic_winner: null,
+    };
+  }
+  const cmp = compareFunding30DayBoundaries(canonicalAscending, Trow.source_timestamp_utc);
+  return {
+    common_cutoff_date_D: cutoffDateD,
+    actual_T: Trow.source_timestamp_utc,
+    T_source_row: {
+      source_timestamp_utc: Trow.source_timestamp_utc,
+      funding_rate: Trow.funding_rate,
+      raw_index: Trow.raw_index,
+    },
+    ...cmp,
   };
 }
 
@@ -437,6 +542,7 @@ export function selectCompletedDailySpot(prices, asOfUtc) {
   const inventory = inventoryCoingeckoRows(prices);
   const eligible = [];
   const terminalIntraday = [];
+  const ambiguousNonMidnightPrior = [];
   const missing = [];
   const duplicates = [];
 
@@ -448,18 +554,16 @@ export function selectCompletedDailySpot(prices, asOfUtc) {
     const row = list[0];
     if (!row.finite_price || !row.utc_date) continue;
     if (asOfDate && row.utc_date >= asOfDate) {
-      if (row.intraday || row.utc_date === asOfDate) terminalIntraday.push(row);
+      terminalIntraday.push({
+        ...row,
+        classification: 'CURRENT_DAY_OR_INTRADAY',
+      });
       continue;
     }
-    if (row.intraday && !row.exact_midnight) {
-      // Still allow non-midnight completed prior dates as completed daily evidence
-      // when unambiguously one observation for that UTC date and date < as-of.
-      eligible.push({
-        utc_date: row.utc_date,
-        price: row.price,
-        source_timestamp_utc: row.source_timestamp_utc,
-        exact_midnight: row.exact_midnight,
-        raw_index: row.raw_index,
+    if (!row.exact_midnight) {
+      ambiguousNonMidnightPrior.push({
+        ...row,
+        classification: 'AMBIGUOUS_NON_MIDNIGHT_PRIOR_ROW',
       });
       continue;
     }
@@ -467,14 +571,13 @@ export function selectCompletedDailySpot(prices, asOfUtc) {
       utc_date: row.utc_date,
       price: row.price,
       source_timestamp_utc: row.source_timestamp_utc,
-      exact_midnight: row.exact_midnight,
+      exact_midnight: true,
       raw_index: row.raw_index,
     });
   }
 
   eligible.sort((a, b) => a.utc_date.localeCompare(b.utc_date));
 
-  // Detect missing dates inside eligible span
   if (eligible.length >= 2) {
     let cursor = eligible[0].utc_date;
     const present = new Set(eligible.map((e) => e.utc_date));
@@ -503,8 +606,9 @@ export function selectCompletedDailySpot(prices, asOfUtc) {
     eligible_completed_dates: eligible,
     missing_dates_inside_span: missing,
     duplicate_dates: duplicates,
-    midnight_count: eligible.filter((e) => e.exact_midnight).length,
-    non_midnight_count: eligible.filter((e) => !e.exact_midnight).length,
+    midnight_count: eligible.length,
+    non_midnight_count: 0,
+    ambiguous_non_midnight_prior_rows: ambiguousNonMidnightPrior,
     terminal_intraday_or_current_day_rows: terminalIntraday,
     longest_consecutive_completed_date_run: longestRun,
   };
@@ -520,24 +624,44 @@ export function rmsSimpleReturns(prices) {
 }
 
 export function compareVolatility30DayCandidates(completedDaily) {
-  const sorted = [...completedDaily].sort((a, b) => a.utc_date.localeCompare(b.utc_date));
+  return compareVolatility30DayCandidatesAtD(completedDaily, null);
+}
+
+/** Both V30 candidates end at common cutoff D when provided. */
+export function compareVolatility30DayCandidatesAtD(completedDaily, endpointDateD) {
+  let sorted = [...completedDaily].sort((a, b) => a.utc_date.localeCompare(b.utc_date));
+  if (endpointDateD) {
+    sorted = sorted.filter((r) => r.utc_date <= endpointDateD);
+    if (!sorted.length || sorted[sorted.length - 1].utc_date !== endpointDateD) {
+      return {
+        endpoint_date_D: endpointDateD,
+        V30_30_PRICES: null,
+        V30_30_RETURNS: null,
+        formula: 'RMS(simple daily returns) * 100',
+        automatic_winner: null,
+        reason: 'endpoint_D_not_present_in_completed_daily',
+      };
+    }
+  }
   function window(nPrices) {
     if (sorted.length < nPrices) return null;
     const slice = sorted.slice(sorted.length - nPrices);
+    if (endpointDateD && slice[slice.length - 1].utc_date !== endpointDateD) return null;
     const prices = slice.map((r) => r.price);
-    const returnsCount = nPrices - 1;
     return {
       price_count: nPrices,
-      return_count: returnsCount,
+      return_count: nPrices - 1,
       first_utc_date: slice[0].utc_date,
       last_utc_date: slice[slice.length - 1].utc_date,
       calendar_span_days: daysBetweenUtcDates(slice[0].utc_date, slice[slice.length - 1].utc_date),
       volatility_result: rmsSimpleReturns(prices),
       prices,
       rows: slice,
+      ends_at_common_cutoff_D: endpointDateD ? true : null,
     };
   }
   return {
+    endpoint_date_D: endpointDateD,
     V30_30_PRICES: window(30),
     V30_30_RETURNS: window(31),
     formula: 'RMS(simple daily returns) * 100',
@@ -815,16 +939,20 @@ export function runFingerprintMutationTests(baseInput) {
 export function bindingLastUpdated({
   latestRawFundingUtc,
   latestUsedFundingUtc,
+  latestUsedFundingForStressUtc = null,
   latestRawSpotUtc,
   latestUsedSpotUtc,
   commonCutoffD,
 }) {
-  const candidates = [latestUsedFundingUtc, latestUsedSpotUtc].filter(Boolean);
-  const binding = candidates.length
-    ? candidates.reduce((a, b) => (a < b ? a : b))
+  const required = [latestUsedFundingUtc, latestUsedSpotUtc].filter(Boolean);
+  const binding = required.length
+    ? required.reduce((a, b) => (a < b ? a : b))
     : null;
   return {
     latest_raw_funding_observation_utc: latestRawFundingUtc,
+    latest_funding_observation_used_by_funding_current_window_utc: latestUsedFundingUtc,
+    latest_funding_observation_used_by_stress_current_window_utc:
+      latestUsedFundingForStressUtc,
     latest_funding_observation_used_by_score_utc: latestUsedFundingUtc,
     latest_raw_coingecko_observation_utc: latestRawSpotUtc,
     latest_spot_observation_used_by_score_utc: latestUsedSpotUtc,
@@ -832,8 +960,12 @@ export function bindingLastUpdated({
     funding_observation_utc: latestUsedFundingUtc,
     spot_observation_utc: latestUsedSpotUtc,
     binding_lastUpdated: binding,
+    funding_vs_stress_latest_funding_differ:
+      latestUsedFundingForStressUtc != null
+      && latestUsedFundingUtc != null
+      && latestUsedFundingForStressUtc !== latestUsedFundingUtc,
     rule: 'minimum/oldest of latest REQUIRED score-eligible source observations',
-    never_uses: ['acquisition_timestamp', 'cache_timestamp', 'wall_clock_now'],
+    never_uses: ['acquisition_timestamp', 'cache_timestamp', 'wall_clock_now', 'synthetic_midnight'],
   };
 }
 
@@ -926,8 +1058,8 @@ export function providerRequestStrategies() {
     bitmex: {
       endpoint: 'https://www.bitmex.com/api/v1/funding',
       params: { symbol: 'XBTUSD', count: 500, reverse: true },
-      pagination: 'start/end timestamp windows; max count 500 per request',
-      notes: 'Do not rely on default 30-row recent responses for REFERENCE_60.',
+      pagination: 'endTime exclusive/decremented oldest timestamp; max count 500',
+      notes: 'Uses documented endTime (not end). Do not rely on default 30-row responses.',
     },
     binance: {
       endpoint: 'https://fapi.binance.com/fapi/v1/fundingRate',
@@ -938,16 +1070,51 @@ export function providerRequestStrategies() {
     okx: {
       endpoint: 'https://www.okx.com/api/v5/public/funding-rate-history',
       params: { instId: 'BTC-USDT-SWAP', limit: 100 },
-      pagination: 'before/after pagination by fundingTime',
-      notes: 'Public history depth may be shorter than BitMEX/Binance.',
+      pagination: 'after=oldest fundingTime requests older records',
+      notes: 'before=newer; after=older. Public history depth may be shorter.',
     },
     coingecko: {
       endpoint: 'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range',
       params: { vs_currency: 'usd' },
       interval: 'daily implied by range sampling',
-      notes: 'Use explicit from/to unix seconds; exclude terminal intraday/current-day for CG_COMPLETED_UTC_DAILY_V1.',
+      notes: 'CG_COMPLETED_UTC_DAILY_V1 requires exact 00:00:00.000Z prior-date rows.',
     },
   };
+}
+
+/** Deterministic BitMEX page URL builder for tests + live. */
+export function buildBitmexFundingPageUrl({ endTime = null, count = 500 } = {}) {
+  const url = new URL('https://www.bitmex.com/api/v1/funding');
+  url.searchParams.set('symbol', 'XBTUSD');
+  url.searchParams.set('count', String(count));
+  url.searchParams.set('reverse', 'true');
+  if (endTime != null) url.searchParams.set('endTime', String(endTime));
+  return url.toString();
+}
+
+/** Deterministic OKX page URL builder. `after` walks older. */
+export function buildOkxFundingPageUrl({ after = null, limit = 100 } = {}) {
+  const url = new URL('https://www.okx.com/api/v5/public/funding-rate-history');
+  url.searchParams.set('instId', 'BTC-USDT-SWAP');
+  url.searchParams.set('limit', String(limit));
+  if (after != null) url.searchParams.set('after', String(after));
+  return url.toString();
+}
+
+export function bitmexNextEndTimeCursor(oldestTimestampIso) {
+  const ms = parseUtcMs(oldestTimestampIso);
+  if (ms == null) return null;
+  return new Date(ms - 1).toISOString();
+}
+
+export function detectPaginationAdvance({ previousOldestMs, nextOldestMs }) {
+  if (!Number.isFinite(previousOldestMs) || !Number.isFinite(nextOldestMs)) {
+    return { advanced: false, stalled: true, reason: 'missing_timestamp' };
+  }
+  if (nextOldestMs < previousOldestMs) {
+    return { advanced: true, stalled: false, reason: null };
+  }
+  return { advanced: false, stalled: true, reason: 'cursor_did_not_move_older' };
 }
 
 async function fetchJson(url, { timeoutMs = 25000, userAgent = 'btc-risk-r09c-feasibility' } = {}) {
@@ -996,24 +1163,51 @@ function sleep(ms) {
 export async function fetchBitmexFundingHistory({ pages = 3 } = {}) {
   const all = [];
   const requests = [];
-  let end = null;
+  const pageMeta = [];
+  let endTime = null;
+  let stalled = false;
   for (let p = 0; p < pages; p += 1) {
-    const url = new URL('https://www.bitmex.com/api/v1/funding');
-    url.searchParams.set('symbol', 'XBTUSD');
-    url.searchParams.set('count', '500');
-    url.searchParams.set('reverse', 'true');
-    if (end) url.searchParams.set('end', end);
-    const result = await fetchJson(url.toString());
+    const url = buildBitmexFundingPageUrl({ endTime });
+    const result = await fetchJson(url);
     requests.push(result);
     const rows = Array.isArray(result.json) ? result.json : [];
+    const newest = rows[0]?.timestamp ?? null;
+    const oldest = rows[rows.length - 1]?.timestamp ?? null;
+    const oldestMs = parseUtcMs(oldest);
+    const prevOldestMs = pageMeta.length
+      ? parseUtcMs(pageMeta[pageMeta.length - 1].oldest_row)
+      : null;
+    const advance = p === 0
+      ? { advanced: true, stalled: false, reason: null }
+      : detectPaginationAdvance({ previousOldestMs: prevOldestMs, nextOldestMs: oldestMs });
+    pageMeta.push({
+      page: p + 1,
+      cursor_endTime: endTime,
+      request_identity: url,
+      newest_row: newest,
+      oldest_row: oldest,
+      row_count: rows.length,
+      cursor_advanced: advance.advanced,
+      stalled: advance.stalled,
+      stall_reason: advance.reason,
+    });
     if (!rows.length) break;
+    if (p > 0 && advance.stalled) {
+      stalled = true;
+      break;
+    }
     all.push(...rows);
-    const oldest = rows[rows.length - 1]?.timestamp;
     if (!oldest) break;
-    end = oldest;
+    endTime = bitmexNextEndTimeCursor(oldest);
     await sleep(200);
   }
-  return { requests, rows: all, request_count: requests.length };
+  return {
+    requests,
+    rows: all,
+    request_count: requests.length,
+    pagination_pages: pageMeta,
+    pagination_stalled: stalled,
+  };
 }
 
 export async function fetchBinanceFundingHistory({
@@ -1022,7 +1216,9 @@ export async function fetchBinanceFundingHistory({
 } = {}) {
   const all = [];
   const requests = [];
+  const pageMeta = [];
   let cursorEnd = endTime;
+  let stalled = false;
   for (let p = 0; p < pages; p += 1) {
     const url = new URL('https://fapi.binance.com/fapi/v1/fundingRate');
     url.searchParams.set('symbol', 'BTCUSDT');
@@ -1031,39 +1227,90 @@ export async function fetchBinanceFundingHistory({
     const result = await fetchJson(url.toString());
     requests.push(result);
     const rows = Array.isArray(result.json) ? result.json : [];
+    const times = rows.map((r) => Number(r.fundingTime)).filter(Number.isFinite);
+    const newest = times.length ? Math.max(...times) : null;
+    const oldest = times.length ? Math.min(...times) : null;
+    const prevOldest = pageMeta.length ? pageMeta[pageMeta.length - 1].oldest_ms : null;
+    const advance = p === 0
+      ? { advanced: true, stalled: false, reason: null }
+      : detectPaginationAdvance({ previousOldestMs: prevOldest, nextOldestMs: oldest });
+    pageMeta.push({
+      page: p + 1,
+      cursor_endTime: cursorEnd,
+      request_identity: url.toString(),
+      newest_ms: newest,
+      oldest_ms: oldest,
+      row_count: rows.length,
+      cursor_advanced: advance.advanced,
+      stalled: advance.stalled,
+    });
     if (!rows.length) break;
+    if (p > 0 && advance.stalled) {
+      stalled = true;
+      break;
+    }
     all.push(...rows);
-    const oldest = Math.min(...rows.map((r) => Number(r.fundingTime)));
     if (!Number.isFinite(oldest)) break;
     cursorEnd = oldest - 1;
     await sleep(150);
   }
-  return { requests, rows: all, request_count: requests.length };
+  return {
+    requests,
+    rows: all,
+    request_count: requests.length,
+    pagination_pages: pageMeta,
+    pagination_stalled: stalled,
+  };
 }
 
 export async function fetchOkxFundingHistory({ pages = 10 } = {}) {
   const all = [];
   const requests = [];
-  let before = null;
+  const pageMeta = [];
+  let after = null;
+  let stalled = false;
   for (let p = 0; p < pages; p += 1) {
-    const url = new URL('https://www.okx.com/api/v5/public/funding-rate-history');
-    url.searchParams.set('instId', 'BTC-USDT-SWAP');
-    url.searchParams.set('limit', '100');
-    if (before) url.searchParams.set('before', String(before));
-    const result = await fetchJson(url.toString());
+    const url = buildOkxFundingPageUrl({ after });
+    const result = await fetchJson(url);
     requests.push(result);
     const rows = Array.isArray(result.json?.data) ? result.json.data : [];
+    const times = rows.map((r) => Number(r.fundingTime)).filter(Number.isFinite);
+    const newest = times.length ? Math.max(...times) : null;
+    const oldest = times.length ? Math.min(...times) : null;
+    const prevOldest = pageMeta.length ? pageMeta[pageMeta.length - 1].oldest_ms : null;
+    const advance = p === 0
+      ? { advanced: true, stalled: false, reason: null }
+      : detectPaginationAdvance({ previousOldestMs: prevOldest, nextOldestMs: oldest });
+    pageMeta.push({
+      page: p + 1,
+      cursor_after: after,
+      request_identity: url,
+      newest_ms: newest,
+      oldest_ms: oldest,
+      row_count: rows.length,
+      cursor_advanced: advance.advanced,
+      stalled: advance.stalled,
+      stall_reason: advance.reason,
+      provider_code: result.json?.code ?? null,
+      provider_msg: result.json?.msg ?? null,
+    });
     if (!rows.length) break;
+    if (p > 0 && advance.stalled) {
+      stalled = true;
+      break;
+    }
     all.push(...rows);
-    const oldest = rows.reduce((min, r) => {
-      const t = Number(r.fundingTime);
-      return Number.isFinite(t) && t < min ? t : min;
-    }, Infinity);
     if (!Number.isFinite(oldest)) break;
-    before = oldest;
+    after = String(oldest);
     await sleep(150);
   }
-  return { requests, rows: all, request_count: requests.length };
+  return {
+    requests,
+    rows: all,
+    request_count: requests.length,
+    pagination_pages: pageMeta,
+    pagination_stalled: stalled,
+  };
 }
 
 export async function fetchCoingeckoRange({ daysBack = 200, asOfMs = Date.now() } = {}) {
@@ -1084,53 +1331,115 @@ export async function fetchCoingeckoRange({ daysBack = 200, asOfMs = Date.now() 
   };
 }
 
-function summarizeProviderProvenance({
-  provider,
+/** Raw returned order from timestamps BEFORE canonical sort. */
+export function classifyRawReturnedOrder(timestamps) {
+  const ms = (timestamps || [])
+    .map((t) => parseUtcMs(t))
+    .filter((n) => Number.isFinite(n));
+  if (ms.length < 2) return 'INSUFFICIENT';
+  let asc = true;
+  let desc = true;
+  for (let i = 1; i < ms.length; i += 1) {
+    if (ms[i] < ms[i - 1]) asc = false;
+    if (ms[i] > ms[i - 1]) desc = false;
+  }
+  if (asc) return 'ASCENDING';
+  if (desc) return 'DESCENDING';
+  return 'MIXED';
+}
+
+export function deriveProviderSemanticStatus({
   requests,
-  rows,
+  usableRowCount,
+  provider,
+}) {
+  if (!requests?.length) return 'EMPTY';
+  const last = requests[requests.length - 1];
+  if (last.http_outcome_class === 'NETWORK_ERROR') return 'NETWORK_ERROR';
+  if (last.parse_error) return 'PARSE_ERROR';
+  if (last.http_status != null && last.http_status !== 200) return 'HTTP_ERROR';
+  if (provider === 'okx' && last.json && String(last.json.code) !== '0') {
+    return 'PROVIDER_ERROR';
+  }
+  if (usableRowCount > 0) return 'VALID';
+  if (Array.isArray(last.json) && last.json.length === 0) return 'EMPTY';
+  if (provider === 'okx' && Array.isArray(last.json?.data) && last.json.data.length === 0) {
+    return 'EMPTY';
+  }
+  if (last.json == null) return 'MALFORMED';
+  return usableRowCount === 0 ? 'EMPTY' : 'VALID';
+}
+
+export function summarizeProviderProvenance({
+  provider,
+  requests = [],
+  rows = [],
   canonical,
   cadence,
   daily,
+  paginationPages = [],
+  paginationStalled = false,
 }) {
-  const usable = canonical.eligible;
+  const usable = canonical?.eligible || [];
   const ts = usable.map((r) => r.source_timestamp_utc).sort();
-  const lastReq = requests[requests.length - 1] || {};
+  const rawTimestamps = rows.map((row) => {
+    const raw = extractRawFundingTimestamp(row, provider);
+    const iso = extractFundingObservationUtc(row, provider);
+    return iso || (raw != null ? String(raw) : null);
+  }).filter(Boolean);
+  const duplicates = classifyFundingDuplicates(usable);
   return {
     provider,
-    request_identity: requests.map((r) => r.request_identity),
-    http_outcome: requests.map((r) => ({
-      status: r.http_status,
-      class: r.http_outcome_class,
-    })),
-    provider_semantic_status: usable.length ? 'VALID' : 'EMPTY_OR_ERROR',
-    acquisition_timestamp_utc: lastReq.fetch_acquisition_timestamp_utc || null,
-    payload_sha256: requests.map((r) => r.payload_sha256),
+    request_identities: requests.map((r) => r.request_identity),
+    http_status_per_request: requests.map((r) => r.http_status),
+    http_outcome_class_per_request: requests.map((r) => r.http_outcome_class),
+    parse_outcome_per_request: requests.map((r) => (r.parse_error ? 'PARSE_ERROR' : 'OK')),
+    provider_returned_code: requests.map((r) => r.json?.code ?? null),
+    provider_returned_message: requests.map((r) => r.json?.msg ?? null),
+    acquisition_timestamps_utc: requests.map((r) => r.fetch_acquisition_timestamp_utc),
+    payload_sha256_per_request: requests.map((r) => r.payload_sha256),
     request_page_count: requests.length,
+    pagination_cursors: paginationPages,
+    pagination_stalled: paginationStalled,
     raw_row_count: rows.length,
     usable_row_count: usable.length,
-    earliest_source_timestamp: ts[0] || null,
-    latest_source_timestamp: ts[ts.length - 1] || null,
-    total_elapsed_coverage_days:
+    malformed_row_count: canonical?.malformed?.length || 0,
+    malformed_rows: canonical?.malformed || [],
+    earliest_usable_source_timestamp: ts[0] || null,
+    latest_usable_source_timestamp: ts[ts.length - 1] || null,
+    elapsed_history_coverage_days:
       ts.length >= 2
         ? (parseUtcMs(ts[ts.length - 1]) - parseUtcMs(ts[0])) / MS_DAY
         : null,
-    returned_order: classifyReturnedOrder(usable.map((r) => r.source_timestamp_utc)),
-    malformed_rows: canonical.malformed,
-    duplicates: classifyFundingDuplicates(usable),
-    cadence,
-    daily_surface_summary: {
-      earliest_complete_date: daily.earliest_complete_date,
-      latest_complete_date: daily.latest_complete_date,
-      longest_consecutive_complete_date_run: daily.longest_consecutive_complete_date_run,
-      complete_day_count: daily.complete_days.length,
-    },
+    raw_returned_order: classifyRawReturnedOrder(rawTimestamps),
+    canonicalized_order: usable.length >= 2 ? 'ASCENDING' : 'INSUFFICIENT',
+    exact_duplicates: duplicates.exact_duplicates,
+    conflicting_duplicates: duplicates.conflicting_duplicates,
+    provider_semantic_status: deriveProviderSemanticStatus({
+      requests,
+      usableRowCount: usable.length,
+      provider,
+    }),
+    cadence_summary: cadence
+      ? {
+        modal_cadence_hours: cadence.modal_cadence_hours,
+        phases: cadence.utc_settlement_phases_observed,
+      }
+      : null,
+    daily_surface_summary: daily
+      ? {
+        earliest_complete_date: daily.earliest_complete_date,
+        latest_complete_date: daily.latest_complete_date,
+        longest_consecutive_complete_date_run: daily.longest_consecutive_complete_date_run,
+        complete_day_count: daily.complete_days.length,
+        observed_cadence: daily.observed_cadence || null,
+      }
+      : null,
   };
 }
 
-export function classifyReturnedOrder(timestampsAscAlreadyCanonical) {
-  // Input is canonical ascending; report original raw would differ — here report sorted order.
-  if (timestampsAscAlreadyCanonical.length < 2) return 'INSUFFICIENT';
-  return 'ASCENDING_AFTER_CANONICALIZATION';
+export function classifyReturnedOrder(timestamps) {
+  return classifyRawReturnedOrder(timestamps);
 }
 
 function fundingEndpointValidFactory(completeDateSet, fundingDaily) {
@@ -1173,6 +1482,9 @@ export function analyzeProviderFeasibility({
   completedSpot,
   asOfUtc,
   boundaryCandidate = 'F30_HALF_OPEN',
+  requests = [],
+  paginationPages = [],
+  paginationStalled = false,
 }) {
   const canonical = canonicalizeFundingRows(rawRows, provider);
   const cadence = analyzeFundingCadence(canonical.eligible, provider);
@@ -1186,18 +1498,33 @@ export function analyzeProviderFeasibility({
     asOfUtc,
   });
   const D = cutoff.common_cutoff_date_D;
-  const endpointIso = D ? `${D}T23:59:59.999Z` : null;
-  const boundaries = endpointIso
-    ? compareFunding30DayBoundaries(canonical.eligible, endpointIso)
+  const boundaries = D
+    ? compareFunding30DayBoundariesAtCutoff(canonical.eligible, D)
     : null;
   const windowRows = boundaries?.[boundaryCandidate]?.rows || [];
   const aggregations = compareFundingAggregations(windowRows, provider);
-  const volCompare = compareVolatility30DayCandidates(completedSpot.eligible_completed_dates);
+  const volCompare = compareVolatility30DayCandidatesAtD(
+    completedSpot.eligible_completed_dates,
+    D
+  );
   const stress = buildAlignedStressWindow({
     fundingDailyByDate: daily.funding_daily,
     completedSpot: completedSpot.eligible_completed_dates,
     endpointDateD: D,
   });
+
+  // Actual settlement timestamps contributing to Stress daily means on D-29..D
+  const stressFundingTimestamps = [];
+  if (stress.available && stress.dates) {
+    for (const d of stress.dates) {
+      const day = daily.days.find((x) => x.utc_date === d);
+      for (const row of day?.rows || []) {
+        stressFundingTimestamps.push(row.source_timestamp_utc);
+      }
+    }
+  }
+  stressFundingTimestamps.sort();
+
   const { returns_by_date: returnsByDate } = buildSpotReturnsByDate(
     completedSpot.eligible_completed_dates
   );
@@ -1207,7 +1534,6 @@ export function analyzeProviderFeasibility({
 
   const fundingValid = fundingEndpointValidFactory(completeSet, daily.funding_daily);
   const stressValid = stressEndpointValidFactory(completeSet, returnsByDate);
-  const volValid30p = (ep) => volEndpointValidFactory(spotByDate)(ep, 30);
   const volValid31p = (ep) => volEndpointValidFactory(spotByDate)(ep, 31);
 
   const fundingRefs = D ? enumerateValidReferenceEndpoints({
@@ -1257,6 +1583,30 @@ export function analyzeProviderFeasibility({
     sourceHistoryAvailableDays: availableDays,
   });
 
+  const provenance = summarizeProviderProvenance({
+    provider,
+    requests,
+    rows: rawRows,
+    canonical,
+    cadence,
+    daily,
+    paginationPages,
+    paginationStalled,
+  });
+
+  const scoreRelevantFunding = selectScoreRelevantFundingRows({
+    eligibleRows: canonical.eligible,
+    currentWindowRows: windowRows,
+    referenceEndpoints: fundingRefs.slice(0, REFERENCE_DEPTH_CANDIDATE),
+    cutoffDateD: D,
+  });
+  const scoreRelevantSpot = selectScoreRelevantSpotRows({
+    completedDaily: completedSpot.eligible_completed_dates,
+    endpointDateD: D,
+    referenceDepth: REFERENCE_DEPTH_CANDIDATE,
+    priceCountForReturnsWindow: 31,
+  });
+
   return {
     provider,
     canonical_eligible_count: canonical.eligible.length,
@@ -1266,7 +1616,12 @@ export function analyzeProviderFeasibility({
     boundaries,
     aggregations,
     volatility_candidates: volCompare,
-    stress_window: stress,
+    stress_window: {
+      ...stress,
+      funding_settlement_timestamps_used: stressFundingTimestamps,
+      latest_funding_settlement_used_by_stress:
+        stressFundingTimestamps.at(-1) || null,
+    },
     reference_60: { funding: funding60, volatility: vol60, stress: stress60 },
     max_reference_depth: {
       funding: maxFeasibleReferenceDepth(fundingRefs),
@@ -1279,8 +1634,59 @@ export function analyzeProviderFeasibility({
       && stress60.REFERENCE_60_FEASIBLE
       && stress.available === true,
     latest_funding_by_timestamp: latestFundingByMaxTimestamp(canonical.eligible),
+    latest_funding_T_for_F30: boundaries?.actual_T || null,
     eligible_rows: canonical.eligible,
+    score_relevant_funding_rows: scoreRelevantFunding,
+    score_relevant_spot_rows: scoreRelevantSpot,
+    provenance,
   };
+}
+
+/** Funding rows needed for current + REFERENCE_DEPTH prior windows ending at D. */
+export function selectScoreRelevantFundingRows({
+  eligibleRows,
+  currentWindowRows,
+  referenceEndpoints,
+  cutoffDateD,
+}) {
+  const needed = new Map();
+  for (const row of currentWindowRows || []) {
+    needed.set(row.source_timestamp_utc + '|' + row.funding_rate, row);
+  }
+  for (const ep of referenceEndpoints || []) {
+    const cmp = compareFunding30DayBoundariesAtCutoff(eligibleRows, ep);
+    for (const row of cmp.F30_HALF_OPEN?.rows || []) {
+      needed.set(row.source_timestamp_utc + '|' + row.funding_rate, row);
+    }
+  }
+  // Also include settlements contributing to daily means on windows when present
+  if (cutoffDateD) {
+    for (const row of eligibleRows || []) {
+      const d = utcDateString(row.source_timestamp_utc);
+      if (!d || d > cutoffDateD) continue;
+      // keep only if already selected via windows — no, endpoints cover windows
+    }
+  }
+  return [...needed.values()].sort((a, b) =>
+    a.source_timestamp_utc.localeCompare(b.source_timestamp_utc)
+  );
+}
+
+export function selectScoreRelevantSpotRows({
+  completedDaily,
+  endpointDateD,
+  referenceDepth,
+  priceCountForReturnsWindow = 31,
+}) {
+  if (!endpointDateD) return [];
+  const sorted = [...completedDaily].sort((a, b) => a.utc_date.localeCompare(b.utc_date));
+  const endIdx = sorted.findIndex((r) => r.utc_date === endpointDateD);
+  if (endIdx < 0) return [];
+  const earliestNeeded = addUtcDays(
+    endpointDateD,
+    -(referenceDepth + priceCountForReturnsWindow)
+  );
+  return sorted.filter((r) => r.utc_date >= earliestNeeded && r.utc_date <= endpointDateD);
 }
 
 export function buildSyntheticFixtureBundle({
@@ -1358,19 +1764,23 @@ export function buildFeasibilityReportFromSources({
   const providerAnalyses = {};
   for (const provider of PROVIDER_PREFERENCE_ORDER) {
     const rows = sources.funding?.[provider] || [];
+    const meta = sources.fundingMeta?.[provider] || {};
     providerAnalyses[provider] = analyzeProviderFeasibility({
       provider,
       rawRows: rows,
       completedSpot,
       asOfUtc,
+      requests: meta.requests || [],
+      paginationPages: meta.pagination_pages || [],
+      paginationStalled: Boolean(meta.pagination_stalled),
     });
   }
 
-  // Gate 1 using preserved PR #56 selection on recent freshness sample
+  // Gate 1: pass FULL fetched history — PR #56 derives latest by timestamp.
   const freshnessSelection = selectFreshFundingProvider({
-    bitmex: (sources.funding?.bitmex || []).slice(-30),
-    binance: (sources.funding?.binance || []).slice(-30),
-    okx: (sources.funding?.okx || []).slice(-30),
+    bitmex: sources.funding?.bitmex || [],
+    binance: sources.funding?.binance || [],
+    okx: sources.funding?.okx || [],
     asOfUtc,
   });
 
@@ -1394,14 +1804,6 @@ export function buildFeasibilityReportFromSources({
     || freshnessSelection.provider;
   const selectedAnalysis = selected ? providerAnalyses[selected] : null;
 
-  const maxCommon = selected
-    ? Math.min(
-      providerAnalyses[selected].max_reference_depth.funding,
-      providerAnalyses[selected].max_reference_depth.volatility,
-      providerAnalyses[selected].max_reference_depth.stress
-    )
-    : 0;
-
   const maxByProvider = Object.fromEntries(
     PROVIDER_PREFERENCE_ORDER.map((p) => [
       p,
@@ -1409,19 +1811,36 @@ export function buildFeasibilityReportFromSources({
         funding: providerAnalyses[p].max_reference_depth.funding,
         volatility: providerAnalyses[p].max_reference_depth.volatility,
         stress: providerAnalyses[p].max_reference_depth.stress,
-        common: Math.min(
+        common_funding_stress: Math.min(
           providerAnalyses[p].max_reference_depth.funding,
-          providerAnalyses[p].max_reference_depth.volatility,
           providerAnalyses[p].max_reference_depth.stress
         ),
+        gate1_status:
+          (freshnessSelection.candidates || []).find((c) => c.provider === p)?.status
+          || 'unavailable',
       },
     ])
   );
 
+  // True cross-provider mechanical minimum across BitMEX/Binance/OKX funding+stress
+  // and CoinGecko volatility capacity (volatility shared; use max across providers' vol depth).
+  const cgVolDepth = Math.max(
+    ...PROVIDER_PREFERENCE_ORDER.map((p) => providerAnalyses[p].max_reference_depth.volatility),
+    0
+  );
+  const maxCommonLive = Math.min(
+    maxByProvider.bitmex.common_funding_stress,
+    maxByProvider.binance.common_funding_stress,
+    maxByProvider.okx.common_funding_stress,
+    cgVolDepth
+  );
+
+  const fingerprintFunding = selectedAnalysis?.score_relevant_funding_rows || [];
+  const fingerprintSpot = selectedAnalysis?.score_relevant_spot_rows || [];
   const fingerprintInput = buildSuccessorFingerprintInput({
     selectedProvider: selected,
-    fundingRows: selectedAnalysis?.eligible_rows || [],
-    spotRows: completedSpot.eligible_completed_dates,
+    fundingRows: fingerprintFunding,
+    spotRows: fingerprintSpot,
     semanticIds: {
       funding_boundary_rule: 'UNRESOLVED_F30_HALF_OPEN_VS_ENDPOINT_SPAN',
       funding_aggregation_rule: 'UNRESOLVED_SETTLEMENT_MEAN_VS_DAILY_THEN_MEAN',
@@ -1435,9 +1854,11 @@ export function buildFeasibilityReportFromSources({
 
   const latestRawFunding = selectedAnalysis?.eligible_rows?.at(-1)?.source_timestamp_utc
     ?? null;
-  const latestUsedFunding = selectedAnalysis?.cutoff?.common_cutoff_date_D
-    ? `${selectedAnalysis.cutoff.common_cutoff_date_D}T00:00:00.000Z`
-    : null;
+  const latestUsedFunding = selectedAnalysis?.latest_funding_T_for_F30
+    || selectedAnalysis?.boundaries?.actual_T
+    || null;
+  const latestUsedFundingStress =
+    selectedAnalysis?.stress_window?.latest_funding_settlement_used_by_stress || null;
   const latestRawSpot = sources.coingeckoPrices?.length
     ? (() => {
       const last = sources.coingeckoPrices[sources.coingeckoPrices.length - 1];
@@ -1445,15 +1866,26 @@ export function buildFeasibilityReportFromSources({
       return Number.isFinite(Number(ts)) ? new Date(Number(ts)).toISOString() : null;
     })()
     : null;
-  const latestUsedSpot = completedSpot.eligible_completed_dates.at(-1)?.source_timestamp_utc
-    ?? null;
+  const D = selectedAnalysis?.cutoff?.common_cutoff_date_D ?? null;
+  const latestUsedSpot = D
+    ? (completedSpot.eligible_completed_dates.find((r) => r.utc_date === D)
+      ?.source_timestamp_utc || null)
+    : null;
 
   const lastUpdated = bindingLastUpdated({
     latestRawFundingUtc: latestRawFunding,
     latestUsedFundingUtc: latestUsedFunding,
+    latestUsedFundingForStressUtc: latestUsedFundingStress,
     latestRawSpotUtc: latestRawSpot,
     latestUsedSpotUtc: latestUsedSpot,
-    commonCutoffD: selectedAnalysis?.cutoff?.common_cutoff_date_D ?? null,
+    commonCutoffD: D,
+  });
+
+  const { blockers, warnings } = collectFeasibilityBlockersAndWarnings({
+    live,
+    sources,
+    providerAnalyses,
+    completedSpot,
   });
 
   const unresolved = [
@@ -1493,13 +1925,20 @@ export function buildFeasibilityReportFromSources({
     },
     provider_request_strategies: providerRequestStrategies(),
     live_source_envelopes: sources.envelopes || null,
+    live_source_provenance: {
+      bitmex: providerAnalyses.bitmex.provenance,
+      binance: providerAnalyses.binance.provenance,
+      okx: providerAnalyses.okx.provenance,
+      coingecko: sources.coingeckoProvenance || null,
+    },
     coingecko_completed_daily: {
       candidate: CG_COMPLETED_DAILY_CANDIDATE_ID,
       eligible_count: completedSpot.eligible_completed_dates.length,
       missing_dates_inside_span: completedSpot.missing_dates_inside_span,
       duplicate_dates: completedSpot.duplicate_dates,
       midnight_count: completedSpot.midnight_count,
-      non_midnight_count: completedSpot.non_midnight_count,
+      ambiguous_non_midnight_prior_rows:
+        completedSpot.ambiguous_non_midnight_prior_rows?.length || 0,
       terminal_intraday_or_current_day_rows:
         completedSpot.terminal_intraday_or_current_day_rows.length,
       longest_consecutive_completed_date_run:
@@ -1510,23 +1949,30 @@ export function buildFeasibilityReportFromSources({
         const a = providerAnalyses[p];
         return [p, {
           canonical_eligible_count: a.canonical_eligible_count,
+          provenance: a.provenance,
           cadence_summary: {
             modal_cadence_hours: a.cadence.modal_cadence_hours,
             gap_hours_min: a.cadence.gap_hours_min,
             gap_hours_max: a.cadence.gap_hours_max,
             phases: a.cadence.utc_settlement_phases_observed,
             conflicting_duplicates: a.cadence.conflicting_duplicates,
+            observed_cadence: a.daily.observed_cadence,
+            production_fallback_comparator: a.daily.production_fallback_comparator,
           },
           complete_day: {
             earliest: a.daily.earliest_complete_date,
             latest: a.daily.latest_complete_date,
             longest_run: a.daily.longest_consecutive_complete_date_run,
             count: a.daily.complete_days.length,
+            ambiguous_day_count: a.daily.days.filter(
+              (d) => d.classification === 'CADENCE_AMBIGUOUS_DAY'
+            ).length,
           },
           common_cutoff: a.cutoff,
           F30_comparison: a.boundaries,
           funding_aggregation_comparison: a.aggregations,
           volatility_candidates: {
+            endpoint_date_D: a.volatility_candidates.endpoint_date_D,
             V30_30_PRICES: a.volatility_candidates.V30_30_PRICES && {
               price_count: a.volatility_candidates.V30_30_PRICES.price_count,
               return_count: a.volatility_candidates.V30_30_PRICES.return_count,
@@ -1534,6 +1980,8 @@ export function buildFeasibilityReportFromSources({
               last_utc_date: a.volatility_candidates.V30_30_PRICES.last_utc_date,
               calendar_span_days: a.volatility_candidates.V30_30_PRICES.calendar_span_days,
               volatility_result: a.volatility_candidates.V30_30_PRICES.volatility_result,
+              ends_at_common_cutoff_D:
+                a.volatility_candidates.V30_30_PRICES.ends_at_common_cutoff_D,
             },
             V30_30_RETURNS: a.volatility_candidates.V30_30_RETURNS && {
               price_count: a.volatility_candidates.V30_30_RETURNS.price_count,
@@ -1542,6 +1990,8 @@ export function buildFeasibilityReportFromSources({
               last_utc_date: a.volatility_candidates.V30_30_RETURNS.last_utc_date,
               calendar_span_days: a.volatility_candidates.V30_30_RETURNS.calendar_span_days,
               volatility_result: a.volatility_candidates.V30_30_RETURNS.volatility_result,
+              ends_at_common_cutoff_D:
+                a.volatility_candidates.V30_30_RETURNS.ends_at_common_cutoff_D,
             },
             automatic_winner: null,
           },
@@ -1550,9 +2000,9 @@ export function buildFeasibilityReportFromSources({
             reason: a.stress_window.reason || null,
             endpoint_date_D: a.stress_window.endpoint_date_D || null,
             stress_indicator: a.stress_window.stress_indicator ?? null,
-            nearest_date_join_used: a.stress_window.nearest_date_join_used === false
-              ? false
-              : a.stress_window.nearest_date_join_used || false,
+            latest_funding_settlement_used_by_stress:
+              a.stress_window.latest_funding_settlement_used_by_stress || null,
+            nearest_date_join_used: false,
             fill_used: false,
             interpolation_used: false,
             coefficients: a.stress_window.coefficients || { ...STRESS_COEFFICIENTS },
@@ -1567,13 +2017,34 @@ export function buildFeasibilityReportFromSources({
       selected_provider: freshnessSelection.provider,
       fundingObservationUtc: freshnessSelection.fundingObservationUtc,
       preference_order: [...PROVIDER_PREFERENCE_ORDER],
+      candidates: (freshnessSelection.candidates || []).map((c) => ({
+        provider: c.provider,
+        status: c.status,
+        fundingObservationUtc: c.fundingObservationUtc,
+      })),
+      note: 'Gate 1 uses full fetched provider history; PR #56 selects by latest timestamp',
     },
     two_gate_provider_selection: twoGate,
     max_reference_depth_by_provider: maxByProvider,
-    max_common_live_reference_depth: maxCommon,
+    max_common_live_reference_depth: maxCommonLive,
+    max_common_live_reference_depth_definition:
+      'min(BitMEX funding+stress, Binance funding+stress, OKX funding+stress, CoinGecko vol capacity)',
     fingerprint_candidate: {
       contract_id: FINGERPRINT_CONTRACT_ID,
       hash: hashFingerprintInput(fingerprintInput),
+      score_relevant_only: true,
+      funding_row_count: fingerprintFunding.length,
+      earliest_fingerprinted_funding_timestamp:
+        fingerprintFunding[0]?.source_timestamp_utc ?? null,
+      latest_fingerprinted_funding_timestamp:
+        fingerprintFunding.at(-1)?.source_timestamp_utc ?? null,
+      spot_row_count: fingerprintSpot.length,
+      earliest_fingerprinted_spot_date: fingerprintSpot[0]?.utc_date ?? null,
+      latest_fingerprinted_spot_date: fingerprintSpot.at(-1)?.utc_date ?? null,
+      earliest_fingerprinted_spot_timestamp:
+        fingerprintSpot[0]?.source_timestamp_utc ?? null,
+      latest_fingerprinted_spot_timestamp:
+        fingerprintSpot.at(-1)?.source_timestamp_utc ?? null,
       mutation_tests: fingerprintTests,
     },
     lastUpdated_provenance_candidate: lastUpdated,
@@ -1597,14 +2068,90 @@ export function buildFeasibilityReportFromSources({
       unresolved_choices: unresolved,
     },
     human_r09c_adjudication_questions: unresolved,
-    blockers: [],
-    warnings: [],
+    blockers,
+    warnings,
     finding_labels: [
       'R09C_FEASIBILITY_DIAGNOSTIC_ONLY',
       'NO_AUTOMATIC_DESIGN_VERDICT',
       'NO_PRODUCTION_AUTHORIZATION',
     ],
   };
+}
+
+export function collectFeasibilityBlockersAndWarnings({
+  live,
+  sources,
+  providerAnalyses,
+  completedSpot,
+}) {
+  const blockers = [];
+  const warnings = [];
+  if (live) {
+    for (const provider of PROVIDER_PREFERENCE_ORDER) {
+      const prov = providerAnalyses[provider]?.provenance;
+      const status = prov?.provider_semantic_status;
+      if (['HTTP_ERROR', 'NETWORK_ERROR', 'PARSE_ERROR', 'PROVIDER_ERROR', 'MALFORMED'].includes(status)) {
+        blockers.push({
+          type: 'provider_acquisition_failure',
+          provider,
+          provider_semantic_status: status,
+          action: 'historical_capacity_cannot_be_evaluated',
+        });
+      }
+      if (prov?.pagination_stalled) {
+        blockers.push({
+          type: 'pagination_failed_to_advance',
+          provider,
+          action: 'do_not_claim_complete_history_envelope',
+        });
+      }
+    }
+    const cg = sources.coingeckoProvenance;
+    if (cg) {
+      const bad = ['HTTP_ERROR', 'NETWORK_ERROR', 'PARSE_ERROR', 'MALFORMED'].includes(
+        cg.provider_semantic_status
+      );
+      if (bad || cg.unavailable) {
+        blockers.push({
+          type: 'coingecko_source_unavailable',
+          provider_semantic_status: cg.provider_semantic_status,
+          action: 'common_feasibility_cannot_be_measured',
+        });
+      }
+    } else if (!(sources.coingeckoPrices || []).length) {
+      blockers.push({
+        type: 'coingecko_source_unavailable',
+        action: 'common_feasibility_cannot_be_measured',
+      });
+    }
+  }
+
+  for (const provider of PROVIDER_PREFERENCE_ORDER) {
+    const a = providerAnalyses[provider];
+    if (a?.daily?.observed_cadence?.cadence_transitions?.length) {
+      warnings.push({
+        type: 'cadence_transition_observed',
+        provider,
+        transitions: a.daily.observed_cadence.cadence_transitions.length,
+      });
+    }
+    if (a?.provenance?.exact_duplicates?.length) {
+      warnings.push({
+        type: 'exact_funding_duplicates_observed',
+        provider,
+        count: a.provenance.exact_duplicates.length,
+      });
+    }
+  }
+  if (completedSpot.ambiguous_non_midnight_prior_rows?.length) {
+    warnings.push({
+      type: 'ambiguous_non_midnight_coingecko_rows',
+      count: completedSpot.ambiguous_non_midnight_prior_rows.length,
+    });
+  }
+
+  // REFERENCE_60=false is a scientific result, not a tooling blocker.
+  return { blockers, warnings };
 }
 
 export function buildOfflineFeasibilityReport({
@@ -1622,6 +2169,11 @@ export function buildOfflineFeasibilityReport({
       funding: fixture.funding,
       coingeckoPrices: fixture.spot,
       envelopes: { mode: 'deterministic_fixtures', complete_days: 120 },
+      coingeckoProvenance: {
+        provider_semantic_status: 'VALID',
+        request_identities: ['fixture://coingecko'],
+        payload_sha256_per_request: ['fixture'],
+      },
     },
   });
 }
@@ -1644,6 +2196,12 @@ export async function buildLiveFeasibilityReport({
     fundingRate: r.fundingRate ?? r.realizedRate,
   }));
 
+  const cgStatus = deriveProviderSemanticStatus({
+    requests: coingecko.requests,
+    usableRowCount: coingecko.prices.length,
+    provider: 'coingecko',
+  });
+
   return buildFeasibilityReportFromSources({
     repositorySha,
     generatedAtUtc,
@@ -1655,22 +2213,53 @@ export async function buildLiveFeasibilityReport({
         binance: binance.rows,
         okx: normalizeOkx(okx.rows),
       },
+      fundingMeta: {
+        bitmex: {
+          requests: bitmex.requests,
+          pagination_pages: bitmex.pagination_pages,
+          pagination_stalled: bitmex.pagination_stalled,
+        },
+        binance: {
+          requests: binance.requests,
+          pagination_pages: binance.pagination_pages,
+          pagination_stalled: binance.pagination_stalled,
+        },
+        okx: {
+          requests: okx.requests,
+          pagination_pages: okx.pagination_pages,
+          pagination_stalled: okx.pagination_stalled,
+        },
+      },
       coingeckoPrices: coingecko.prices,
+      coingeckoProvenance: {
+        request_identities: coingecko.requests.map((r) => r.request_identity),
+        http_status_per_request: coingecko.requests.map((r) => r.http_status),
+        http_outcome_class_per_request: coingecko.requests.map((r) => r.http_outcome_class),
+        payload_sha256_per_request: coingecko.requests.map((r) => r.payload_sha256),
+        acquisition_timestamps_utc: coingecko.requests.map(
+          (r) => r.fetch_acquisition_timestamp_utc
+        ),
+        raw_row_count: coingecko.prices.length,
+        provider_semantic_status: cgStatus,
+        unavailable: cgStatus !== 'VALID' || coingecko.prices.length === 0,
+        requested_range: coingecko.requested_range,
+      },
       envelopes: {
         bitmex: {
           request_count: bitmex.request_count,
           rows_retrieved: bitmex.rows.length,
-          oldest: bitmex.rows.at(-1)?.timestamp ?? null,
-          newest: bitmex.rows[0]?.timestamp ?? null,
+          pagination_stalled: bitmex.pagination_stalled,
         },
         binance: {
           request_count: binance.request_count,
           rows_retrieved: binance.rows.length,
           ascending_semantics: true,
+          pagination_stalled: binance.pagination_stalled,
         },
         okx: {
           request_count: okx.request_count,
           rows_retrieved: okx.rows.length,
+          pagination_stalled: okx.pagination_stalled,
         },
         coingecko: {
           request_count: coingecko.request_count,

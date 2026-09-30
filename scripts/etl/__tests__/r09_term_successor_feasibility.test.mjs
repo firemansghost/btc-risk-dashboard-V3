@@ -18,23 +18,32 @@ import {
   analyzeFundingCadence,
   assessReference60,
   bindingLastUpdated,
+  bitmexNextEndTimeCursor,
   buildAlignedStressWindow,
+  buildBitmexFundingPageUrl,
   buildFeasibilityReportFromSources,
   buildFundingDailySurface,
   buildOfflineFeasibilityReport,
+  buildOkxFundingPageUrl,
   buildSuccessorFingerprintInput,
   buildSyntheticFixtureBundle,
   buildUnavailabilityMatrix,
   canonicalizeFundingRows,
   characterizeTwoGateSelection,
   classifyFundingDuplicates,
+  classifyRawReturnedOrder,
+  collectFeasibilityBlockersAndWarnings,
+  compareFunding30DayBoundariesAtCutoff,
   compareFunding30DayBoundaries,
   compareFundingAggregations,
   compareVolatility30DayCandidates,
+  compareVolatility30DayCandidatesAtD,
   computeCommonCutoffDate,
   dailyMeanThen30dMean,
+  detectPaginationAdvance,
   enumerateValidReferenceEndpoints,
   hashFingerprintInput,
+  latestEligibleSettlementAtOrBeforeDate,
   latestFundingByMaxTimestamp,
   maxFeasibleReferenceDepth,
   providerRequestStrategies,
@@ -42,9 +51,13 @@ import {
   runFingerprintMutationTests,
   selectCompletedDailySpot,
   selectFundingWindow,
+  selectScoreRelevantFundingRows,
+  selectScoreRelevantSpotRows,
   settlementMean30d,
+  summarizeProviderProvenance,
   utcDateString,
 } from '../../research/lib/r09-term-successor-feasibility.mjs';
+import { selectFreshFundingProvider } from '../../etl/lib/termFreshness.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const WORKFLOW = fs.readFileSync(
@@ -135,14 +148,18 @@ test('7. complete-day detection', () => {
   assert.ok(daily.complete_days.some((d) => d.utc_date === '2026-09-28'));
 });
 
-test('8. incomplete-day detection', () => {
+test('8. incomplete-day / cadence-ambiguous detection', () => {
   const rows = [
     { fundingTime: Date.parse('2026-09-28T00:00:00.000Z'), fundingRate: '0.0001' },
     { fundingTime: Date.parse('2026-09-28T08:00:00.000Z'), fundingRate: '0.0002' },
   ];
   const { eligible } = canonicalizeFundingRows(rows, 'binance');
   const daily = buildFundingDailySurface(eligible, 'binance');
-  assert.equal(daily.days[0].classification, 'INCOMPLETE_DAY');
+  assert.ok(
+    daily.days[0].classification === 'INCOMPLETE_DAY'
+    || daily.days[0].classification === 'CADENCE_AMBIGUOUS_DAY'
+  );
+  assert.notEqual(daily.days[0].classification, 'COMPLETE_DAY');
 });
 
 test('9. F30_HALF_OPEN', () => {
@@ -539,6 +556,8 @@ test('55. offline report schema and primary candidate', () => {
   assert.ok(report.provider_analyses.binance.REFERENCE_60.funding.REFERENCE_60_FEASIBLE);
   assert.ok(report.two_gate_provider_selection.selected_provider_under_two_gate_concept);
   assert.equal(report.max_common_live_reference_depth >= REFERENCE_DEPTH_CANDIDATE, true);
+  assert.ok(report.live_source_provenance);
+  assert.ok(report.lastUpdated_provenance_candidate.never_uses.includes('synthetic_midnight'));
 });
 
 test('56. rms helper matches volatility formula scale', () => {
@@ -575,4 +594,412 @@ test('58. fixture builder supports report assembly', () => {
   });
   assert.equal(report.mode, 'OFFLINE_DETERMINISTIC_FIXTURES');
   assert.ok(utcDateString('2026-09-30T16:00:00.000Z'), '2026-09-30');
+});
+
+test('59. BitMEX uses endTime not end', () => {
+  const url1 = buildBitmexFundingPageUrl();
+  const url2 = buildBitmexFundingPageUrl({ endTime: '2026-09-01T00:00:00.000Z' });
+  assert.match(url2, /endTime=/);
+  assert.doesNotMatch(url1, /[?&]end=/);
+  assert.doesNotMatch(url2, /[?&]end=/);
+  assert.match(url1, /count=500/);
+  assert.match(url1, /reverse=true/);
+});
+
+test('60. BitMEX page cursor moves older', () => {
+  const oldest = '2026-09-10T12:00:00.000Z';
+  const next = bitmexNextEndTimeCursor(oldest);
+  assert.ok(Date.parse(next) < Date.parse(oldest));
+  const url = buildBitmexFundingPageUrl({ endTime: next });
+  assert.match(url, /endTime=/);
+  assert.ok(url.includes(encodeURIComponent(next)) || url.includes(next));
+});
+
+test('61. OKX uses after to request older rows', () => {
+  const url = buildOkxFundingPageUrl({ after: '1720000000000' });
+  assert.match(url, /after=1720000000000/);
+  assert.doesNotMatch(url, /before=/);
+});
+
+test('62. OKX pagination cursor moves older via after', () => {
+  const page1Oldest = 1720000000000;
+  const page2Oldest = 1719000000000;
+  const advance = detectPaginationAdvance({
+    previousOldestMs: page1Oldest,
+    nextOldestMs: page2Oldest,
+  });
+  assert.equal(advance.advanced, true);
+  assert.equal(advance.stalled, false);
+  const url2 = buildOkxFundingPageUrl({ after: String(page1Oldest) });
+  assert.match(url2, /after=/);
+});
+
+test('63. pagination-stall detection', () => {
+  const stalled = detectPaginationAdvance({
+    previousOldestMs: 1000,
+    nextOldestMs: 1000,
+  });
+  assert.equal(stalled.stalled, true);
+  assert.equal(stalled.advanced, false);
+});
+
+test('64. Gate 1 with fresh first page + old appended page remains FRESH', () => {
+  const asOf = '2026-09-30T16:00:00.000Z';
+  const freshPage = [
+    { fundingTime: Date.parse('2026-09-30T00:00:00.000Z'), fundingRate: '0.0001' },
+    { fundingTime: Date.parse('2026-09-30T08:00:00.000Z'), fundingRate: '0.0002' },
+    { fundingTime: Date.parse('2026-09-30T16:00:00.000Z'), fundingRate: '0.0003' },
+  ];
+  const oldPage = [
+    { fundingTime: Date.parse('2026-08-01T00:00:00.000Z'), fundingRate: '0.0001' },
+    { fundingTime: Date.parse('2026-08-01T08:00:00.000Z'), fundingRate: '0.0001' },
+    { fundingTime: Date.parse('2026-08-01T16:00:00.000Z'), fundingRate: '0.0001' },
+  ];
+  // Concatenated history ends with OLD rows (simulating wrong slice(-30) trap)
+  const concatenated = [...freshPage, ...oldPage];
+  const selected = selectFreshFundingProvider({
+    bitmex: null,
+    binance: concatenated,
+    okx: null,
+    asOfUtc: asOf,
+  });
+  assert.equal(selected.provider, 'binance');
+  assert.equal(selected.candidates.find((c) => c.provider === 'binance').status, 'fresh');
+  // Prove slice(-30) of this tiny array would be dominated by old if we only passed oldPage
+  const wrong = selectFreshFundingProvider({
+    bitmex: null,
+    binance: oldPage,
+    okx: null,
+    asOfUtc: asOf,
+  });
+  assert.equal(wrong.candidates.find((c) => c.provider === 'binance').status, 'stale');
+});
+
+test('65. raw ASCENDING order detection', () => {
+  assert.equal(
+    classifyRawReturnedOrder([
+      '2026-09-01T00:00:00.000Z',
+      '2026-09-01T08:00:00.000Z',
+      '2026-09-01T16:00:00.000Z',
+    ]),
+    'ASCENDING'
+  );
+});
+
+test('66. raw DESCENDING order detection', () => {
+  assert.equal(
+    classifyRawReturnedOrder([
+      '2026-09-01T16:00:00.000Z',
+      '2026-09-01T08:00:00.000Z',
+      '2026-09-01T00:00:00.000Z',
+    ]),
+    'DESCENDING'
+  );
+});
+
+test('67. raw MIXED order detection', () => {
+  assert.equal(
+    classifyRawReturnedOrder([
+      '2026-09-01T08:00:00.000Z',
+      '2026-09-01T16:00:00.000Z',
+      '2026-09-01T00:00:00.000Z',
+    ]),
+    'MIXED'
+  );
+});
+
+test('68. source provenance appears in report', () => {
+  const report = buildOfflineFeasibilityReport({
+    repositorySha: 'e'.repeat(40),
+    generatedAtUtc: '2026-09-30T16:00:00.000Z',
+    asOfUtc: '2026-09-30T16:00:00.000Z',
+  });
+  assert.ok(report.live_source_provenance.binance);
+  assert.ok(report.provider_analyses.binance.provenance);
+  assert.ok('raw_returned_order' in report.provider_analyses.binance.provenance);
+  assert.ok('canonicalized_order' in report.provider_analyses.binance.provenance);
+});
+
+test('69. HTTP/provider error appears in provenance', () => {
+  const provenance = summarizeProviderProvenance({
+    provider: 'binance',
+    requests: [{
+      request_identity: 'https://example.test',
+      http_status: 500,
+      http_outcome_class: 'HTTP_500',
+      payload_sha256: 'abc',
+      fetch_acquisition_timestamp_utc: '2026-09-30T16:00:00.000Z',
+      json: null,
+      parse_error: null,
+    }],
+    rows: [],
+    canonical: { eligible: [], malformed: [] },
+  });
+  assert.equal(provenance.provider_semantic_status, 'HTTP_ERROR');
+  assert.deepEqual(provenance.http_status_per_request, [500]);
+});
+
+test('70. payload SHA appears in provenance', () => {
+  const provenance = summarizeProviderProvenance({
+    provider: 'okx',
+    requests: [{
+      request_identity: 'https://example.test/okx',
+      http_status: 200,
+      http_outcome_class: 'VALID_HTTP',
+      payload_sha256: 'deadbeef',
+      fetch_acquisition_timestamp_utc: '2026-09-30T16:00:00.000Z',
+      json: { code: '0', data: [] },
+      parse_error: null,
+    }],
+    rows: [],
+    canonical: { eligible: [], malformed: [] },
+  });
+  assert.deepEqual(provenance.payload_sha256_per_request, ['deadbeef']);
+});
+
+test('71. F30 endpoint T is actual source settlement', () => {
+  const rows = [
+    { fundingTime: Date.parse('2026-08-31T16:00:00.000Z'), fundingRate: '0.0001' },
+    { fundingTime: Date.parse('2026-09-29T00:00:00.000Z'), fundingRate: '0.0002' },
+    { fundingTime: Date.parse('2026-09-29T08:00:00.000Z'), fundingRate: '0.0003' },
+    { fundingTime: Date.parse('2026-09-29T16:00:00.000Z'), fundingRate: '0.0004' },
+  ];
+  const { eligible } = canonicalizeFundingRows(rows, 'binance');
+  const cmp = compareFunding30DayBoundariesAtCutoff(eligible, '2026-09-29');
+  assert.equal(cmp.actual_T, '2026-09-29T16:00:00.000Z');
+  assert.notEqual(cmp.actual_T, '2026-09-29T23:59:59.999Z');
+  assert.equal(cmp.T_source_row.funding_rate, 0.0004);
+});
+
+test('72. exact T-30d row creates HALF_OPEN vs ENDPOINT_SPAN difference', () => {
+  const T = '2026-09-29T16:00:00.000Z';
+  const left = '2026-08-30T16:00:00.000Z';
+  const rows = [
+    { fundingTime: Date.parse(left), fundingRate: '0.0100' },
+    { fundingTime: Date.parse('2026-09-01T16:00:00.000Z'), fundingRate: '0.0001' },
+    { fundingTime: Date.parse(T), fundingRate: '0.0002' },
+  ];
+  const { eligible } = canonicalizeFundingRows(rows, 'binance');
+  const cmp = compareFunding30DayBoundaries(eligible, T);
+  assert.equal(cmp.F30_ENDPOINT_SPAN.exact_left_boundary_observation_exists, true);
+  assert.equal(cmp.F30_HALF_OPEN.rows_included + 1, cmp.F30_ENDPOINT_SPAN.rows_included);
+  assert.notEqual(cmp.average_difference, 0);
+  assert.equal(cmp.automatic_winner, null);
+});
+
+test('73. latestUsedFunding is actual row timestamp not synthetic midnight', () => {
+  const report = buildOfflineFeasibilityReport({
+    repositorySha: 'f'.repeat(40),
+    generatedAtUtc: '2026-09-30T16:00:00.000Z',
+    asOfUtc: '2026-09-30T16:00:00.000Z',
+  });
+  const used = report.lastUpdated_provenance_candidate
+    .latest_funding_observation_used_by_funding_current_window_utc;
+  assert.ok(used);
+  assert.doesNotMatch(used, /T00:00:00\.000Z$/);
+  assert.match(used, /T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+});
+
+test('74. max common depth uses all three providers + CoinGecko', () => {
+  const report = buildOfflineFeasibilityReport({
+    repositorySha: '1'.repeat(40),
+    generatedAtUtc: '2026-09-30T16:00:00.000Z',
+    asOfUtc: '2026-09-30T16:00:00.000Z',
+  });
+  assert.ok(report.max_reference_depth_by_provider.bitmex);
+  assert.ok(report.max_reference_depth_by_provider.binance);
+  assert.ok(report.max_reference_depth_by_provider.okx);
+  assert.match(
+    report.max_common_live_reference_depth_definition,
+    /BitMEX|Binance|OKX|CoinGecko/
+  );
+  const expected = Math.min(
+    report.max_reference_depth_by_provider.bitmex.common_funding_stress,
+    report.max_reference_depth_by_provider.binance.common_funding_stress,
+    report.max_reference_depth_by_provider.okx.common_funding_stress,
+    Math.max(
+      report.max_reference_depth_by_provider.bitmex.volatility,
+      report.max_reference_depth_by_provider.binance.volatility,
+      report.max_reference_depth_by_provider.okx.volatility
+    )
+  );
+  assert.equal(report.max_common_live_reference_depth, expected);
+});
+
+test('75. stale provider capacity separated from Gate-1 eligibility', () => {
+  const report = buildOfflineFeasibilityReport({
+    repositorySha: '2'.repeat(40),
+    generatedAtUtc: '2026-09-30T16:00:00.000Z',
+    asOfUtc: '2026-09-30T16:00:00.000Z',
+  });
+  for (const p of ['bitmex', 'binance', 'okx']) {
+    assert.ok('gate1_status' in report.max_reference_depth_by_provider[p]);
+    assert.ok(Number.isFinite(report.max_reference_depth_by_provider[p].funding));
+  }
+});
+
+test('76. cadence transition reported', () => {
+  const rows = [];
+  // stable 8h then jump to 24h
+  for (const iso of [
+    '2026-09-01T00:00:00.000Z',
+    '2026-09-01T08:00:00.000Z',
+    '2026-09-01T16:00:00.000Z',
+    '2026-09-02T00:00:00.000Z',
+    '2026-09-02T08:00:00.000Z',
+    '2026-09-02T16:00:00.000Z',
+    '2026-09-03T16:00:00.000Z',
+  ]) {
+    rows.push({ fundingTime: Date.parse(iso), fundingRate: '0.0001' });
+  }
+  const { eligible } = canonicalizeFundingRows(rows, 'binance');
+  const daily = buildFundingDailySurface(eligible, 'binance');
+  assert.ok(daily.observed_cadence.cadence_transitions.length >= 1);
+});
+
+test('77. ambiguous cadence day is not COMPLETE', () => {
+  const rows = [
+    { fundingTime: Date.parse('2026-09-01T00:00:00.000Z'), fundingRate: '0.0001' },
+    { fundingTime: Date.parse('2026-09-01T05:00:00.000Z'), fundingRate: '0.0001' },
+    { fundingTime: Date.parse('2026-09-01T19:00:00.000Z'), fundingRate: '0.0001' },
+  ];
+  const { eligible } = canonicalizeFundingRows(rows, 'binance');
+  const daily = buildFundingDailySurface(eligible, 'binance');
+  assert.equal(daily.observed_cadence.ambiguous, true);
+  assert.equal(daily.days[0].classification, 'CADENCE_AMBIGUOUS_DAY');
+  assert.notEqual(daily.days[0].classification, 'COMPLETE_DAY');
+});
+
+test('78. prior-date non-midnight CoinGecko row excluded', () => {
+  const prices = [
+    [Date.parse('2026-09-28T00:00:00.000Z'), 100],
+    [Date.parse('2026-09-29T12:00:00.000Z'), 101],
+  ];
+  const sel = selectCompletedDailySpot(prices, '2026-09-30T16:00:00.000Z');
+  assert.equal(sel.eligible_completed_dates.length, 1);
+  assert.equal(sel.ambiguous_non_midnight_prior_rows.length, 1);
+  assert.equal(
+    sel.ambiguous_non_midnight_prior_rows[0].classification,
+    'AMBIGUOUS_NON_MIDNIGHT_PRIOR_ROW'
+  );
+});
+
+test('79. prior-date non-midnight classified separately from current intraday', () => {
+  const prices = [
+    [Date.parse('2026-09-28T12:00:00.000Z'), 100],
+    [Date.parse('2026-09-30T15:54:20.000Z'), 102],
+  ];
+  const sel = selectCompletedDailySpot(prices, '2026-09-30T16:00:00.000Z');
+  assert.equal(sel.ambiguous_non_midnight_prior_rows.length, 1);
+  assert.equal(sel.terminal_intraday_or_current_day_rows.length, 1);
+  assert.equal(sel.eligible_completed_dates.length, 0);
+});
+
+test('80. V30 candidates end exactly at common D', () => {
+  const rows = Array.from({ length: 40 }, (_, i) => ({
+    utc_date: addUtcDays('2026-08-01', i),
+    price: 100000 + i,
+    source_timestamp_utc: `${addUtcDays('2026-08-01', i)}T00:00:00.000Z`,
+  }));
+  const D = '2026-09-05';
+  const cmp = compareVolatility30DayCandidatesAtD(rows, D);
+  assert.equal(cmp.V30_30_PRICES.last_utc_date, D);
+  assert.equal(cmp.V30_30_RETURNS.last_utc_date, D);
+  assert.equal(cmp.V30_30_PRICES.ends_at_common_cutoff_D, true);
+});
+
+test('81. fingerprint excludes unrelated older fetched rows', () => {
+  const old = {
+    source_timestamp_utc: '2025-01-01T00:00:00.000Z',
+    funding_rate: 0.9,
+  };
+  const relevant = [
+    { source_timestamp_utc: '2026-09-01T00:00:00.000Z', funding_rate: 0.0001 },
+    { source_timestamp_utc: '2026-09-29T16:00:00.000Z', funding_rate: 0.0002 },
+  ];
+  const scoreRelevant = selectScoreRelevantFundingRows({
+    eligibleRows: [old, ...relevant],
+    currentWindowRows: relevant,
+    referenceEndpoints: [],
+    cutoffDateD: '2026-09-29',
+  });
+  assert.ok(!scoreRelevant.some((r) => r.source_timestamp_utc.startsWith('2025')));
+  const input = buildSuccessorFingerprintInput({
+    selectedProvider: 'binance',
+    fundingRows: scoreRelevant,
+    spotRows: [
+      {
+        utc_date: '2026-09-29',
+        source_timestamp_utc: '2026-09-29T00:00:00.000Z',
+        price: 100,
+      },
+    ],
+    semanticIds: {},
+    referenceDepth: 60,
+  });
+  assert.equal(input.funding_rows.length, 2);
+});
+
+test('82. live acquisition failure produces blocker', () => {
+  const fixture = buildSyntheticFixtureBundle({
+    asOfUtc: '2026-09-30T16:00:00.000Z',
+    completeDays: 40,
+  });
+  const report = buildFeasibilityReportFromSources({
+    repositorySha: '3'.repeat(40),
+    generatedAtUtc: '2026-09-30T16:00:00.000Z',
+    asOfUtc: '2026-09-30T16:00:00.000Z',
+    live: true,
+    sources: {
+      funding: fixture.funding,
+      fundingMeta: {
+        binance: {
+          requests: [{
+            request_identity: 'https://example.test',
+            http_status: null,
+            http_outcome_class: 'NETWORK_ERROR',
+            payload_sha256: null,
+            fetch_acquisition_timestamp_utc: '2026-09-30T16:00:00.000Z',
+            json: null,
+            parse_error: null,
+          }],
+          pagination_pages: [],
+          pagination_stalled: false,
+        },
+      },
+      coingeckoPrices: fixture.spot,
+      coingeckoProvenance: {
+        provider_semantic_status: 'VALID',
+        unavailable: false,
+      },
+    },
+  });
+  assert.ok(report.blockers.some((b) => b.type === 'provider_acquisition_failure'));
+});
+
+test('83. scientific REFERENCE_60=false does NOT itself create tooling blocker', () => {
+  const { blockers } = collectFeasibilityBlockersAndWarnings({
+    live: false,
+    sources: { coingeckoPrices: [] },
+    providerAnalyses: {
+      bitmex: {
+        gate2_pass: false,
+        reference_60: { funding: { REFERENCE_60_FEASIBLE: false } },
+        provenance: { provider_semantic_status: 'VALID' },
+        daily: { observed_cadence: { cadence_transitions: [] } },
+      },
+      binance: {
+        gate2_pass: false,
+        provenance: { provider_semantic_status: 'VALID' },
+        daily: { observed_cadence: { cadence_transitions: [] } },
+      },
+      okx: {
+        gate2_pass: false,
+        provenance: { provider_semantic_status: 'VALID' },
+        daily: { observed_cadence: { cadence_transitions: [] } },
+      },
+    },
+    completedSpot: { ambiguous_non_midnight_prior_rows: [] },
+  });
+  assert.equal(blockers.length, 0);
 });
