@@ -38,7 +38,13 @@ R01/R08 Net Liquidity source/unit/date/cache adjudication is complete as a
 documentation freeze only. Production Net Liquidity semantics remain unchanged
 until a later authorized activation creates a new model/implementation era.
 
+R03 Social missingness adjudication is complete as a documentation freeze only.
+Production Social scoring remains unchanged until a later authorized activation
+creates a new model/implementation era. Selected successor: require both
+official components (C2). C0/C1 rejected; C3 deferred.
+
 - [R01/R08 Net Liquidity successor-semantics adjudication](R01_R08_NET_LIQUIDITY_ADJUDICATION_2026-09-30.md)
+- [R03 Social missingness successor-semantics adjudication](R03_SOCIAL_MISSINGNESS_ADJUDICATION_2026-09-30.md)
 - [R07 Stablecoin successor-semantics adjudication](R07_STABLECOIN_ADJUDICATION_2026-09-30.md)
 - [H8 v2 preregistration](H8_V2_PROSPECTIVE_30D_RISK_DISCRIMINATION_PREREGISTRATION.md)
 - [H8 v2 capture implementation contract](H8_V2_CAPTURE_IMPLEMENTATION_CONTRACT.md)
