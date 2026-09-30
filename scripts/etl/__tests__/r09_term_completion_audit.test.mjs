@@ -30,7 +30,9 @@ import {
   evaluateCacheDetectorScenarios,
   evaluateSpotValidityVsFreshnessCases,
   extractFundingObservationUtc,
+  extractSpotObservationUtc,
   hasFundingDataChanged,
+  inspectCoingeckoPricesForProductionScoring,
   loadDashboardTermContract,
   normalizeCoingeckoSource,
   normalizeFundingSource,
@@ -906,4 +908,249 @@ test('69. normalizeCoingecko missing prices is not VALID', () => {
   assert.equal(normalized.provider_semantic_status, 'PROVIDER_ERROR');
   assert.equal(normalized.payload_shape_status, 'MISSING_PRICES');
   assert.equal(normalized.prices, null);
+});
+
+test('70. non-finite price rows keep score-row timestamps one-to-one', () => {
+  const ts1 = Date.UTC(2026, 8, 20);
+  const ts2 = Date.UTC(2026, 8, 21);
+  const ts3 = Date.UTC(2026, 8, 22);
+  const inspection = inspectCoingeckoPricesForProductionScoring([
+    [ts1, 100],
+    [ts2, Number.POSITIVE_INFINITY],
+    [ts3, 102],
+  ]);
+  assert.deepEqual(inspection.numeric_prices, [100, 102]);
+  assert.deepEqual(inspection.aligned_diagnostic_timestamps, [
+    new Date(ts1).toISOString(),
+    new Date(ts3).toISOString(),
+  ]);
+  assert.equal(inspection.live_spot_scoring_rows[1].raw_index, 2);
+});
+
+test('71. finite price + invalid timestamp stays in numeric input with null diagnostic ts', () => {
+  const inspection = inspectCoingeckoPricesForProductionScoring([
+    [Date.UTC(2026, 8, 20), 100],
+    ['not-a-ts', 101],
+    [Date.UTC(2026, 8, 22), 102],
+  ]);
+  assert.deepEqual(inspection.numeric_prices, [100, 101, 102]);
+  assert.equal(inspection.aligned_diagnostic_timestamps[1], null);
+  assert.equal(inspection.live_spot_scoring_rows[1].diagnostic_timestamp_utc, null);
+  assert.equal(inspection.aligned_diagnostic_timestamps[2], new Date(Date.UTC(2026, 8, 22)).toISOString());
+});
+
+test('72. non-Array spot row records production throw/null without crashing audit', () => {
+  const prices = Array.from({ length: 8 }, (_, i) => [Date.UTC(2026, 8, 20 + i), 100 + i]);
+  prices[3] = null;
+  assert.doesNotThrow(() => {
+    const report = buildOfflineR09Report({
+      repositorySha: '8'.repeat(40),
+      generatedAtUtc: '2026-09-22T11:00:00.000Z',
+      live: makeLiveBundle({ prices }),
+    });
+    assert.equal(report.section_5_volatility_horizon.available, false);
+    assert.ok(
+      report.blockers.some((b) => b.type === 'live_spot_extraction_would_throw_in_current_production')
+    );
+    assert.equal(
+      report.blockers.find((b) => b.type === 'live_spot_extraction_would_throw_in_current_production')
+        .current_production_outcome,
+      'WHOLE_TERM_OUTER_CATCH_NULL'
+    );
+  });
+  const inspection = inspectCoingeckoPricesForProductionScoring(prices);
+  assert.equal(inspection.current_production_spot_extraction_would_throw, true);
+  assert.equal(inspection.current_production_outcome, 'WHOLE_TERM_OUTER_CATCH_NULL');
+});
+
+test('73. numeric spot count 6 reproduces insufficient_spot_data', () => {
+  const prices = Array.from({ length: 6 }, (_, i) => [Date.UTC(2026, 8, 20 + i), 100 + i]);
+  const evidence = buildLiveScoringEvidence(
+    makeLiveBundle({ prices }),
+    '2026-09-22T11:00:00.000Z'
+  );
+  assert.equal(evidence.live_scoring_available, false);
+  assert.equal(evidence.current_production_spot_outcome, 'insufficient_spot_data');
+  assert.ok(
+    evidence.blockers.some((b) => b.type === 'insufficient_live_spot_history_for_current_production_scoring')
+  );
+});
+
+test('74. numeric spot count 7 passes production minimum-history gate', () => {
+  const prices = Array.from({ length: 7 }, (_, i) => [Date.UTC(2026, 8, 20 + i), 100000 + i * 10]);
+  const evidence = buildLiveScoringEvidence(
+    makeLiveBundle({ prices }),
+    '2026-09-22T11:00:00.000Z'
+  );
+  assert.equal(evidence.live_scoring_available, true);
+  assert.equal(evidence.numeric_spot_row_count, 7);
+  assert.equal(evidence.current_production_spot_outcome, 'would_score');
+});
+
+test('75. LIVE section 13 funding timestamp equals selected live provider observation', () => {
+  const live = makeLiveBundle();
+  const report = buildOfflineR09Report({
+    repositorySha: '9'.repeat(40),
+    generatedAtUtc: '2026-09-22T11:00:00.000Z',
+    live,
+  });
+  assert.equal(report.section_13_factor_lastUpdated_semantics.evidence_origin, 'LIVE_PROVIDER_PAYLOAD');
+  assert.equal(
+    report.section_13_factor_lastUpdated_semantics.funding_observation_utc,
+    report.live_provider_selection.fundingObservationUtc
+  );
+});
+
+test('76. LIVE section 13 spot observation equals extractSpotObservationUtc()', () => {
+  const prices = makeLiveSpot(16);
+  const live = makeLiveBundle({ prices });
+  const report = buildOfflineR09Report({
+    repositorySha: 'a'.repeat(40),
+    generatedAtUtc: '2026-09-22T11:00:00.000Z',
+    live,
+  });
+  assert.equal(
+    report.section_13_factor_lastUpdated_semantics.spot_observation_utc,
+    extractSpotObservationUtc({ prices })
+  );
+});
+
+test('77. LIVE section 13 does not use checked-in cache timestamps', () => {
+  const cache = readTermCacheSnapshot();
+  const report = buildOfflineR09Report({
+    repositorySha: 'b'.repeat(40),
+    generatedAtUtc: '2026-09-22T11:00:00.000Z',
+    live: makeLiveBundle(),
+  });
+  assert.equal(report.section_13_factor_lastUpdated_semantics.evidence_origin, 'LIVE_PROVIDER_PAYLOAD');
+  assert.notEqual(
+    report.section_13_factor_lastUpdated_semantics.funding_observation_utc,
+    cache.funding_observation_utc
+  );
+  assert.equal(
+    report.checked_in_cache_lastUpdated_reference.evidence_origin,
+    'CHECKED_IN_CACHE_REFERENCE'
+  );
+  assert.equal(
+    report.checked_in_cache_lastUpdated_reference.funding_observation_utc,
+    cache.funding_observation_utc
+  );
+});
+
+test('78. OFFLINE section 13 still uses checked-in-cache reference', () => {
+  const cache = readTermCacheSnapshot();
+  const report = buildOfflineR09Report({
+    repositorySha: 'c'.repeat(40),
+    generatedAtUtc: '2026-09-30T12:00:00.000Z',
+  });
+  assert.equal(
+    report.section_13_factor_lastUpdated_semantics.funding_observation_utc,
+    cache.funding_observation_utc
+  );
+  assert.equal(
+    report.section_13_factor_lastUpdated_semantics.spot_observation_utc,
+    cache.spot_observation_utc
+  );
+});
+
+test('79. latest score-eligible spot timestamp is independently reported', () => {
+  const prices = [
+    ...Array.from({ length: 10 }, (_, i) => [Date.UTC(2026, 8, 20 + i), 100000 + i]),
+    [Date.UTC(2026, 8, 30, 16), Number.POSITIVE_INFINITY],
+  ];
+  // final non-finite excluded; latest scored is prior midnight row
+  const report = buildOfflineR09Report({
+    repositorySha: 'd'.repeat(40),
+    generatedAtUtc: '2026-09-22T11:00:00.000Z',
+    live: makeLiveBundle({
+      prices: [
+        ...Array.from({ length: 10 }, (_, i) => [Date.UTC(2026, 8, 20 + i), 100000 + i]),
+        [Date.UTC(2026, 8, 30, 12), 101000],
+      ],
+      okxRows: makeFreshOkxRows('2026-09-22T08:00:00.000Z'),
+    }),
+  });
+  assert.ok(report.section_13_factor_lastUpdated_semantics.latest_score_eligible_spot_timestamp);
+  assert.equal(
+    report.section_13_factor_lastUpdated_semantics.latest_score_eligible_spot_timestamp,
+    new Date(Date.UTC(2026, 8, 30, 12)).toISOString()
+  );
+});
+
+test('80. raw-final spot timestamp differing from latest scored timestamp is exposed', () => {
+  const prices = [
+    ...Array.from({ length: 10 }, (_, i) => [Date.UTC(2026, 8, 20 + i), 100000 + i]),
+    [Date.UTC(2026, 8, 30, 16), Number.POSITIVE_INFINITY],
+  ];
+  // raw final has valid timestamp + non-finite price → extractSpotObservationUtc uses final row ts
+  // latest scored is previous finite row
+  const report = buildOfflineR09Report({
+    repositorySha: 'e'.repeat(40),
+    generatedAtUtc: '2026-09-22T11:00:00.000Z',
+    live: makeLiveBundle({ prices }),
+  });
+  assert.equal(
+    report.section_13_factor_lastUpdated_semantics.spot_observation_utc,
+    extractSpotObservationUtc({ prices })
+  );
+  assert.equal(
+    report.section_13_factor_lastUpdated_semantics.latest_score_eligible_spot_timestamp,
+    new Date(Date.UTC(2026, 8, 29)).toISOString()
+  );
+  assert.equal(
+    report.section_13_factor_lastUpdated_semantics.raw_spot_observation_differs_from_latest_scored_spot_timestamp,
+    true
+  );
+});
+
+test('81. malformed timestamp / finite price does not shift later score-row timestamps', () => {
+  const ts1 = Date.UTC(2026, 8, 20);
+  const ts3 = Date.UTC(2026, 8, 22);
+  const inspection = inspectCoingeckoPricesForProductionScoring([
+    [ts1, 100],
+    ['bad', 101],
+    [ts3, 102],
+  ]);
+  assert.equal(inspection.aligned_diagnostic_timestamps[0], new Date(ts1).toISOString());
+  assert.equal(inspection.aligned_diagnostic_timestamps[1], null);
+  assert.equal(inspection.aligned_diagnostic_timestamps[2], new Date(ts3).toISOString());
+  const stress = calculateStressComponentWithAlignment(
+    Array.from({ length: 15 }, (_, i) => ({
+      rate: 0.01,
+      timestamp: new Date(Date.UTC(2026, 8, 29, 16) - i * 8 * 3600000),
+    })),
+    inspection.numeric_prices.concat(Array.from({ length: 20 }, (_, i) => 103 + i)),
+    inspection.aligned_diagnostic_timestamps.concat(
+      Array.from({ length: 20 }, (_, i) => new Date(Date.UTC(2026, 8, 23 + i)).toISOString())
+    )
+  );
+  assert.equal(stress.pairing[0].spot_subset_timestamps[0], new Date(ts1).toISOString());
+  assert.equal(stress.pairing[0].spot_subset_timestamps[1], null);
+  assert.equal(stress.pairing[0].spot_subset_timestamps[2], new Date(ts3).toISOString());
+});
+
+test('82. authorization flags remain false after live alignment repair', () => {
+  const report = buildOfflineR09Report({
+    repositorySha: 'f'.repeat(40),
+    generatedAtUtc: '2026-09-22T11:00:00.000Z',
+    live: makeLiveBundle(),
+  });
+  assert.equal(report.production_change_authorized, false);
+  assert.equal(report.term_repair_authorized_for_production, false);
+  assert.equal(report.provider_routing_change_authorized, false);
+  assert.equal(report.automatic_completion_verdict, null);
+  assert.equal(report.automatic_repair_verdict, null);
+});
+
+test('83. offline deterministic reference remains present in live mode', () => {
+  const report = buildOfflineR09Report({
+    repositorySha: '0'.repeat(40),
+    generatedAtUtc: '2026-09-22T11:00:00.000Z',
+    live: makeLiveBundle(),
+  });
+  assert.equal(
+    report.offline_deterministic_reference.evidence_origin,
+    'OFFLINE_DETERMINISTIC_REFERENCE'
+  );
+  assert.ok(report.offline_deterministic_reference.funding_component);
 });

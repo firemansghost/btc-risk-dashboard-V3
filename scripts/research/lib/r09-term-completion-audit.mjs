@@ -1055,12 +1055,34 @@ export function characterizeBinanceProviderStatusProvenance() {
 export function characterizeLastUpdatedSemantics({
   fundingObservationUtc,
   spotObservationUtc,
+  evidence_origin = null,
+  latest_score_eligible_spot_timestamp = null,
+  available = true,
+  blockers = null,
 } = {}) {
+  if (available === false) {
+    return {
+      available: false,
+      evidence_origin,
+      blockers: blockers || [],
+      funding_observation_utc: fundingObservationUtc ?? null,
+      spot_observation_utc: spotObservationUtc ?? null,
+      current_lastUpdated: null,
+      oldest_binding_of_two_timestamps: null,
+      lastUpdated_equals_binding_timestamp: null,
+      latest_score_eligible_spot_timestamp: latest_score_eligible_spot_timestamp ?? null,
+      raw_spot_observation_differs_from_latest_scored_spot_timestamp: null,
+      top_level_term_freshness_checks_both_legs: true,
+    };
+  }
   const fundingMs = Date.parse(fundingObservationUtc);
   const spotMs = Date.parse(spotObservationUtc);
   const bindingMs = [fundingMs, spotMs].filter(Number.isFinite).sort((a, b) => a - b)[0];
   const lastUpdated = fundingObservationUtc;
+  const latestScored = latest_score_eligible_spot_timestamp ?? null;
   return {
+    available: true,
+    evidence_origin,
     funding_observation_utc: fundingObservationUtc,
     spot_observation_utc: spotObservationUtc,
     current_lastUpdated: lastUpdated,
@@ -1068,9 +1090,134 @@ export function characterizeLastUpdatedSemantics({
       Number.isFinite(bindingMs) ? new Date(bindingMs).toISOString() : null,
     lastUpdated_equals_binding_timestamp:
       Number.isFinite(bindingMs) && lastUpdated === new Date(bindingMs).toISOString(),
+    latest_score_eligible_spot_timestamp: latestScored,
+    raw_spot_observation_differs_from_latest_scored_spot_timestamp:
+      Boolean(spotObservationUtc && latestScored && spotObservationUtc !== latestScored),
     top_level_term_freshness_checks_both_legs: true,
     note:
-      'Fresh compute sets lastUpdated = fundingObservationUtc while preserving funding_observation_utc and spot_observation_utc; getStalenessStatus(term_leverage) still checks both legs.',
+      'Fresh compute sets lastUpdated = fundingObservationUtc while preserving funding_observation_utc and spot_observation_utc; getStalenessStatus(term_leverage) still checks both legs. Current production spot observation uses extractSpotObservationUtc(raw final row), which may differ from the latest score-eligible numeric price timestamp.',
+  };
+}
+
+/**
+ * Inspect CoinGecko prices[] exactly as current production destructures them.
+ * Aligns diagnostic timestamps 1:1 with Number.isFinite-filtered numeric prices.
+ */
+export function inspectCoingeckoPricesForProductionScoring(prices) {
+  const raw = Array.isArray(prices) ? prices : null;
+  const rowInspections = [];
+  const offendingNonIterableIndices = [];
+
+  if (!raw) {
+    return {
+      prices_is_array: false,
+      raw_price_row_count: null,
+      current_production_spot_extraction_would_throw: false,
+      current_production_outcome: 'no_spot_data_or_prices_not_array',
+      offending_raw_indices: [],
+      live_spot_scoring_rows: [],
+      numeric_prices: [],
+      aligned_diagnostic_timestamps: [],
+      row_quality: {
+        raw_price_rows: null,
+        array_iterable_rows: 0,
+        non_array_rows: 0,
+        finite_price_rows: 0,
+        non_finite_price_rows: 0,
+        finite_price_rows_with_valid_timestamp: 0,
+        finite_price_rows_with_invalid_timestamp: 0,
+      },
+      row_inspections: [],
+    };
+  }
+
+  for (let i = 0; i < raw.length; i += 1) {
+    const row = raw[i];
+    if (!Array.isArray(row)) {
+      offendingNonIterableIndices.push(i);
+      rowInspections.push({
+        raw_index: i,
+        row_kind: 'NON_ITERABLE',
+        current_production_destructuring: 'WOULD_THROW',
+        raw_timestamp: null,
+        numeric_price: null,
+        diagnostic_timestamp_utc: null,
+        enters_production_numeric_scoring: false,
+      });
+      continue;
+    }
+    const timestamp = row[0];
+    const price = row[1];
+    const finite = Number.isFinite(price);
+    const diagnosticTs = safeIsoFromTimestamp(timestamp);
+    rowInspections.push({
+      raw_index: i,
+      row_kind: 'ARRAY',
+      current_production_destructuring: 'SUCCEEDS',
+      raw_timestamp: timestamp,
+      numeric_price: finite ? price : price,
+      price_is_finite: finite,
+      diagnostic_timestamp_utc: diagnosticTs,
+      enters_production_numeric_scoring: finite,
+    });
+  }
+
+  if (offendingNonIterableIndices.length > 0) {
+    return {
+      prices_is_array: true,
+      raw_price_row_count: raw.length,
+      current_production_spot_extraction_would_throw: true,
+      current_production_outcome: 'WHOLE_TERM_OUTER_CATCH_NULL',
+      offending_raw_indices: offendingNonIterableIndices,
+      live_spot_scoring_rows: [],
+      numeric_prices: [],
+      aligned_diagnostic_timestamps: [],
+      row_quality: summarizeSpotRowQuality(rowInspections, raw.length),
+      row_inspections: rowInspections,
+    };
+  }
+
+  const scoringRows = rowInspections
+    .filter((row) => row.enters_production_numeric_scoring)
+    .map((row) => ({
+      raw_index: row.raw_index,
+      numeric_price: row.numeric_price,
+      raw_timestamp: row.raw_timestamp,
+      diagnostic_timestamp_utc: row.diagnostic_timestamp_utc,
+    }));
+
+  let currentProductionOutcome = 'would_score';
+  if (scoringRows.length < 7) {
+    currentProductionOutcome = 'insufficient_spot_data';
+  }
+
+  return {
+    prices_is_array: true,
+    raw_price_row_count: raw.length,
+    current_production_spot_extraction_would_throw: false,
+    current_production_outcome: currentProductionOutcome,
+    offending_raw_indices: [],
+    live_spot_scoring_rows: scoringRows,
+    numeric_prices: scoringRows.map((row) => row.numeric_price),
+    aligned_diagnostic_timestamps: scoringRows.map((row) => row.diagnostic_timestamp_utc),
+    latest_score_eligible_spot_timestamp:
+      scoringRows.length ? scoringRows[scoringRows.length - 1].diagnostic_timestamp_utc : null,
+    row_quality: summarizeSpotRowQuality(rowInspections, raw.length),
+    row_inspections: rowInspections,
+  };
+}
+
+function summarizeSpotRowQuality(rowInspections, rawCount) {
+  const arrayRows = rowInspections.filter((row) => row.row_kind === 'ARRAY');
+  const finite = arrayRows.filter((row) => row.enters_production_numeric_scoring);
+  return {
+    raw_price_rows: rawCount,
+    array_iterable_rows: arrayRows.length,
+    non_array_rows: rowInspections.length - arrayRows.length,
+    finite_price_rows: finite.length,
+    non_finite_price_rows: arrayRows.length - finite.length,
+    finite_price_rows_with_valid_timestamp: finite.filter((row) => row.diagnostic_timestamp_utc).length,
+    finite_price_rows_with_invalid_timestamp: finite.filter((row) => !row.diagnostic_timestamp_utc).length,
   };
 }
 
@@ -1394,6 +1541,9 @@ export function normalizeCoingeckoSource(result) {
     payloadShape = 'EXPECTED_PRICES_ARRAY';
     semantic = 'VALID';
   }
+  const rowInspection = prices
+    ? inspectCoingeckoPricesForProductionScoring(prices)
+    : inspectCoingeckoPricesForProductionScoring(null);
   const usability = deriveUsabilityClass({
     httpOutcomeClass: result.http_outcome_class,
     providerSemanticStatus: semantic,
@@ -1410,6 +1560,14 @@ export function normalizeCoingeckoSource(result) {
     prices,
     row_count: prices ? prices.length : null,
     usable_row_count: prices ? prices.length : 0,
+    row_quality: rowInspection.row_quality,
+    spot_scoring_inspection: {
+      current_production_spot_extraction_would_throw:
+        rowInspection.current_production_spot_extraction_would_throw,
+      current_production_outcome: rowInspection.current_production_outcome,
+      offending_raw_indices: rowInspection.offending_raw_indices,
+      finite_price_row_count: rowInspection.numeric_prices.length,
+    },
   };
 }
 
@@ -1562,6 +1720,7 @@ function buildOfflineDeterministicEvidence(cacheSnapshot) {
 /**
  * Live scoring evidence using exact production selection + current mechanics.
  * Never reorders arrays; never substitutes checked-in cache.
+ * Spot timestamps supplied to Stress are 1:1 with Number.isFinite-filtered prices.
  */
 export function buildLiveScoringEvidence(live, generatedAtUtc) {
   const selected = selectFreshFundingProvider({
@@ -1571,6 +1730,9 @@ export function buildLiveScoringEvidence(live, generatedAtUtc) {
     asOfUtc: generatedAtUtc,
   });
   const prices = live?.coingecko?.prices;
+  const spotInspection = inspectCoingeckoPricesForProductionScoring(
+    Array.isArray(prices) ? prices : null
+  );
   const blockers = [];
   if (!selected.provider || !selected.rows?.length) {
     blockers.push({
@@ -1578,34 +1740,79 @@ export function buildLiveScoringEvidence(live, generatedAtUtc) {
       action: 'do_not_substitute_checked_in_cache_into_live_scoring_sections',
     });
   }
-  const numericPrices = Array.isArray(prices)
-    ? prices.map((row) => (Array.isArray(row) ? row[1] : null)).filter(Number.isFinite)
-    : [];
-  if (!Array.isArray(prices) || numericPrices.length === 0) {
+  if (!Array.isArray(prices)) {
     blockers.push({
       type: 'coingecko_spot_unavailable_or_unscoreable_for_live_scoring_audit',
       action: 'do_not_substitute_synthetic_spot_into_live_scoring_sections',
     });
   }
+  if (spotInspection.current_production_spot_extraction_would_throw) {
+    blockers.push({
+      type: 'live_spot_extraction_would_throw_in_current_production',
+      action: 'do_not_claim_successful_live_component_scoring',
+      offending_raw_indices: spotInspection.offending_raw_indices,
+      current_production_outcome: 'WHOLE_TERM_OUTER_CATCH_NULL',
+    });
+  } else if (
+    Array.isArray(prices)
+    && spotInspection.numeric_prices.length > 0
+    && spotInspection.numeric_prices.length < 7
+  ) {
+    blockers.push({
+      type: 'insufficient_live_spot_history_for_current_production_scoring',
+      action: 'do_not_substitute_synthetic_spot_into_live_scoring_sections',
+      numeric_spot_row_count: spotInspection.numeric_prices.length,
+      current_production_outcome: 'insufficient_spot_data',
+    });
+  } else if (Array.isArray(prices) && spotInspection.numeric_prices.length === 0) {
+    blockers.push({
+      type: 'coingecko_spot_unavailable_or_unscoreable_for_live_scoring_audit',
+      action: 'do_not_substitute_synthetic_spot_into_live_scoring_sections',
+      current_production_outcome: spotInspection.current_production_outcome,
+    });
+  }
 
-  if (blockers.length) {
+  const liveScoringAvailable = blockers.length === 0;
+
+  if (!liveScoringAvailable) {
     return {
       evidence_origin: 'LIVE_PROVIDER_PAYLOAD',
       available: false,
+      live_scoring_available: false,
       blockers,
-      selected,
+      selected: {
+        provider: selected.provider,
+        fundingObservationUtc: selected.fundingObservationUtc,
+        freshness: selected.freshness,
+        candidates: selected.candidates,
+        row_count: selected.rows?.length || 0,
+      },
+      current_production_spot_outcome: spotInspection.current_production_outcome,
+      current_production_spot_extraction_would_throw:
+        spotInspection.current_production_spot_extraction_would_throw,
+      live_spot_scoring_rows: spotInspection.live_spot_scoring_rows,
+      numeric_spot_row_count: spotInspection.numeric_prices.length,
+      spot_row_quality: spotInspection.row_quality,
       funding_component: null,
       volatility_component: null,
       stress_alignment: null,
       utc_date_feasibility: null,
-      funding_window_analysis: null,
+      funding_window_analysis: selected.provider
+        ? analyzeFundingProviderRows(selected.rows || [], selected.provider)
+        : null,
       spot_analysis: Array.isArray(prices) ? analyzeSpotRows({ prices }) : null,
+      raw_spot_observation_utc: Array.isArray(prices)
+        ? extractSpotObservationUtc({ prices })
+        : null,
+      latest_score_eligible_spot_timestamp:
+        spotInspection.latest_score_eligible_spot_timestamp ?? null,
       finding_labels: [],
     };
   }
 
+  const numericPrices = spotInspection.numeric_prices;
+  const spotTimestamps = spotInspection.aligned_diagnostic_timestamps;
   const fundingRates = buildFundingRatesForScoring(selected.rows, selected.provider);
-  const spotTimestamps = prices.map((row) => safeIsoFromTimestamp(Array.isArray(row) ? row[0] : null));
   const fundingComponent = calculateFundingComponentSync(fundingRates);
   const volatility = calculateVolatilityComponentSync(numericPrices);
   const stress = calculateStressComponentWithAlignment(
@@ -1634,6 +1841,7 @@ export function buildLiveScoringEvidence(live, generatedAtUtc) {
   return {
     evidence_origin: 'LIVE_PROVIDER_PAYLOAD',
     available: true,
+    live_scoring_available: true,
     blockers: [],
     selected: {
       provider: selected.provider,
@@ -1642,6 +1850,11 @@ export function buildLiveScoringEvidence(live, generatedAtUtc) {
       candidates: selected.candidates,
       row_count: selected.rows.length,
     },
+    current_production_spot_outcome: spotInspection.current_production_outcome,
+    current_production_spot_extraction_would_throw: false,
+    live_spot_scoring_rows: spotInspection.live_spot_scoring_rows,
+    numeric_spot_row_count: numericPrices.length,
+    spot_row_quality: spotInspection.row_quality,
     funding_component: {
       ...enrichFundingComponent(
         fundingComponent,
@@ -1661,6 +1874,7 @@ export function buildLiveScoringEvidence(live, generatedAtUtc) {
       ...stress,
       evidence_origin: 'LIVE_PROVIDER_PAYLOAD',
       selected_provider: selected.provider,
+      spot_timestamps_aligned_to_numeric_prices: true,
     },
     utc_date_feasibility: {
       ...buildUtcDateFundingFeasibility(selected.rows, selected.provider, prices),
@@ -1668,6 +1882,9 @@ export function buildLiveScoringEvidence(live, generatedAtUtc) {
     },
     funding_window_analysis: fundingWindow,
     spot_analysis: spotAnalysis,
+    raw_spot_observation_utc: extractSpotObservationUtc({ prices }),
+    latest_score_eligible_spot_timestamp:
+      spotInspection.latest_score_eligible_spot_timestamp ?? null,
     finding_labels: findingLabels,
   };
 }
@@ -1687,10 +1904,49 @@ export function buildOfflineR09Report({
   const preservation = characterizeCachePreservation();
   const offlineEvidence = buildOfflineDeterministicEvidence(cacheSnapshot);
   const liveEvidence = live ? buildLiveScoringEvidence(live, generatedAtUtc) : null;
-  const lastUpdated = characterizeLastUpdatedSemantics({
+  const checkedInCacheLastUpdatedReference = characterizeLastUpdatedSemantics({
     fundingObservationUtc: cacheSnapshot.funding_observation_utc,
     spotObservationUtc: cacheSnapshot.spot_observation_utc,
+    evidence_origin: 'CHECKED_IN_CACHE_REFERENCE',
   });
+
+  let lastUpdated;
+  if (live) {
+    const fundingObs = liveEvidence?.selected?.fundingObservationUtc || null;
+    const spotObs = Array.isArray(live?.coingecko?.prices)
+      ? extractSpotObservationUtc({ prices: live.coingecko.prices })
+      : null;
+    const canCharacterizeLive = Boolean(fundingObs && spotObs);
+    lastUpdated = canCharacterizeLive
+      ? characterizeLastUpdatedSemantics({
+        fundingObservationUtc: fundingObs,
+        spotObservationUtc: spotObs,
+        evidence_origin: 'LIVE_PROVIDER_PAYLOAD',
+        latest_score_eligible_spot_timestamp:
+          liveEvidence?.latest_score_eligible_spot_timestamp ?? null,
+      })
+      : characterizeLastUpdatedSemantics({
+        fundingObservationUtc: fundingObs,
+        spotObservationUtc: spotObs,
+        evidence_origin: 'LIVE_PROVIDER_PAYLOAD',
+        latest_score_eligible_spot_timestamp:
+          liveEvidence?.latest_score_eligible_spot_timestamp ?? null,
+        available: false,
+        blockers: [
+          {
+            type: 'live_lastUpdated_semantics_unavailable',
+            action: 'do_not_fall_back_to_checked_in_cache_while_labeling_section_live',
+            missing_funding_observation: !fundingObs,
+            missing_spot_observation: !spotObs,
+          },
+        ],
+      });
+  } else {
+    lastUpdated = {
+      ...checkedInCacheLastUpdatedReference,
+      evidence_origin: 'OFFLINE_DETERMINISTIC_REFERENCE',
+    };
+  }
 
   const blockers = [...dashboardTermContract.blockers];
   if (live) {
@@ -1873,6 +2129,7 @@ export function buildOfflineR09Report({
       ),
     },
     section_13_factor_lastUpdated_semantics: lastUpdated,
+    checked_in_cache_lastUpdated_reference: checkedInCacheLastUpdatedReference,
     section_14_provider_status_fallback_provenance: binanceProvenance,
     section_15_checked_in_cache_snapshot: cacheSnapshot,
     section_16_subweights_factor_contract: {
