@@ -1304,6 +1304,18 @@ export function bitmexNextEndTimeCursor(oldestTimestampIso) {
   return new Date(ms - 1).toISOString();
 }
 
+/** Binance endTime cursor: one ms older than the oldest normalized page timestamp. */
+export function binanceNextEndTimeCursor(oldestMs) {
+  if (!Number.isFinite(oldestMs)) return null;
+  return oldestMs - 1;
+}
+
+/** OKX `after` cursor: oldest fundingTime as millisecond string. */
+export function okxNextAfterCursor(oldestMs) {
+  if (!Number.isFinite(oldestMs)) return null;
+  return String(oldestMs);
+}
+
 export function detectPaginationAdvance({ previousOldestMs, nextOldestMs }) {
   if (!Number.isFinite(previousOldestMs) || !Number.isFinite(nextOldestMs)) {
     return { advanced: false, stalled: true, reason: 'missing_timestamp' };
@@ -1312,6 +1324,40 @@ export function detectPaginationAdvance({ previousOldestMs, nextOldestMs }) {
     return { advanced: true, stalled: false, reason: null };
   }
   return { advanced: false, stalled: true, reason: 'cursor_did_not_move_older' };
+}
+
+export const PAGINATION_TERMINATION_REASONS = Object.freeze({
+  MAX_CONFIGURED_PAGES_REACHED: 'MAX_CONFIGURED_PAGES_REACHED',
+  EMPTY_PAGE: 'EMPTY_PAGE',
+  PROVIDER_HISTORY_EXHAUSTED: 'PROVIDER_HISTORY_EXHAUSTED',
+  PAGINATION_STALLED: 'PAGINATION_STALLED',
+  TIMESTAMP_BOUNDS_UNRESOLVED: 'TIMESTAMP_BOUNDS_UNRESOLVED',
+  HTTP_ERROR: 'HTTP_ERROR',
+  NETWORK_ERROR: 'NETWORK_ERROR',
+  PARSE_ERROR: 'PARSE_ERROR',
+});
+
+export function classifyPaginationRequestFailure(result, provider = null) {
+  if (!result) return PAGINATION_TERMINATION_REASONS.NETWORK_ERROR;
+  if (result.http_outcome_class === 'NETWORK_ERROR') {
+    return PAGINATION_TERMINATION_REASONS.NETWORK_ERROR;
+  }
+  // Prefer HTTP class over body-parse failure (e.g. Binance 451 plain-text body).
+  if (result.http_status != null && result.http_status !== 200) {
+    return PAGINATION_TERMINATION_REASONS.HTTP_ERROR;
+  }
+  if (result.parse_error) return PAGINATION_TERMINATION_REASONS.PARSE_ERROR;
+  if (provider === 'okx' && result.json && String(result.json.code) !== '0') {
+    return PAGINATION_TERMINATION_REASONS.HTTP_ERROR;
+  }
+  return null;
+}
+
+export function pageHasUnresolvedTimestampBounds(page) {
+  return Boolean(page)
+    && Number(page.row_count) > 0
+    && !Number.isFinite(page.oldest_ms)
+    && !Number.isFinite(page.newest_ms);
 }
 
 async function fetchJson(url, { timeoutMs = 25000, userAgent = 'btc-risk-r09c-feasibility' } = {}) {
@@ -1357,13 +1403,18 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-/** Derive min/max timestamps from parsed values — never raw array position. */
-export function pageTimestampBounds(rows, getRawTs) {
+/**
+ * Derive min/max page timestamps via the SSOT provider observation normalizer.
+ * Array position is irrelevant. Never Date.parse raw fundingTime / epoch strings.
+ */
+export function pageTimestampBounds(rows, provider) {
   const parsed = [];
   for (const row of rows || []) {
-    const raw = getRawTs(row);
-    const ms = parseUtcMs(raw);
-    if (ms != null) parsed.push({ raw, ms, iso: new Date(ms).toISOString() });
+    const iso = extractFundingObservationUtc(row, provider);
+    if (!iso) continue;
+    const ms = parseUtcMs(iso);
+    if (ms == null) continue;
+    parsed.push({ ms, iso });
   }
   if (!parsed.length) {
     return {
@@ -1373,6 +1424,7 @@ export function pageTimestampBounds(rows, getRawTs) {
       oldest_iso: null,
       raw_order: 'INSUFFICIENT',
       raw_timestamps: [],
+      resolved: false,
     };
   }
   let newest = parsed[0];
@@ -1388,6 +1440,7 @@ export function pageTimestampBounds(rows, getRawTs) {
     oldest_iso: oldest.iso,
     raw_order: classifyRawReturnedOrder(parsed.map((p) => p.iso)),
     raw_timestamps: parsed.map((p) => p.iso),
+    resolved: true,
   };
 }
 
@@ -1397,12 +1450,35 @@ export async function fetchBitmexFundingHistory({ pages = 3 } = {}) {
   const pageMeta = [];
   let endTime = null;
   let stalled = false;
+  let terminationReason = null;
   for (let p = 0; p < pages; p += 1) {
     const url = buildBitmexFundingPageUrl({ endTime });
     const result = await fetchJson(url);
     requests.push(result);
+    const requestFailure = classifyPaginationRequestFailure(result, 'bitmex');
+    if (requestFailure) {
+      pageMeta.push({
+        page: p + 1,
+        cursor_endTime: endTime,
+        cursor_used: endTime,
+        request_identity: url,
+        newest_row: null,
+        oldest_row: null,
+        newest_ms: null,
+        oldest_ms: null,
+        row_count: 0,
+        raw_order: 'INSUFFICIENT',
+        cursor_advanced: false,
+        stalled: false,
+        stall_reason: null,
+        http_status: result.http_status,
+        termination_hint: requestFailure,
+      });
+      terminationReason = requestFailure;
+      break;
+    }
     const rows = Array.isArray(result.json) ? result.json : [];
-    const bounds = pageTimestampBounds(rows, (row) => row?.timestamp);
+    const bounds = pageTimestampBounds(rows, 'bitmex');
     const prevOldestMs = pageMeta.length ? pageMeta[pageMeta.length - 1].oldest_ms : null;
     const advance = p === 0
       ? { advanced: true, stalled: false, reason: null }
@@ -1424,16 +1500,39 @@ export async function fetchBitmexFundingHistory({ pages = 3 } = {}) {
       cursor_advanced: advance.advanced,
       stalled: advance.stalled,
       stall_reason: advance.reason,
+      http_status: result.http_status,
+      bounds_resolved: bounds.resolved,
     });
-    if (!rows.length) break;
+    if (!rows.length) {
+      terminationReason = p === 0
+        ? PAGINATION_TERMINATION_REASONS.EMPTY_PAGE
+        : PAGINATION_TERMINATION_REASONS.PROVIDER_HISTORY_EXHAUSTED;
+      break;
+    }
+    if (pageHasUnresolvedTimestampBounds(pageMeta[pageMeta.length - 1])) {
+      all.push(...rows);
+      terminationReason = PAGINATION_TERMINATION_REASONS.TIMESTAMP_BOUNDS_UNRESOLVED;
+      break;
+    }
     if (p > 0 && advance.stalled) {
       stalled = true;
+      terminationReason = PAGINATION_TERMINATION_REASONS.PAGINATION_STALLED;
       break;
     }
     all.push(...rows);
-    if (bounds.oldest_iso == null) break;
     endTime = bitmexNextEndTimeCursor(bounds.oldest_iso);
+    if (endTime == null) {
+      terminationReason = PAGINATION_TERMINATION_REASONS.TIMESTAMP_BOUNDS_UNRESOLVED;
+      break;
+    }
+    if (p === pages - 1) {
+      terminationReason = PAGINATION_TERMINATION_REASONS.MAX_CONFIGURED_PAGES_REACHED;
+      break;
+    }
     await sleep(200);
+  }
+  if (!terminationReason) {
+    terminationReason = PAGINATION_TERMINATION_REASONS.MAX_CONFIGURED_PAGES_REACHED;
   }
   return {
     requests,
@@ -1441,6 +1540,7 @@ export async function fetchBitmexFundingHistory({ pages = 3 } = {}) {
     request_count: requests.length,
     pagination_pages: pageMeta,
     pagination_stalled: stalled,
+    pagination_termination_reason: terminationReason,
     raw_order_per_request: pageMeta.map((p) => ({
       page: p.page,
       raw_row_count: p.row_count,
@@ -1464,6 +1564,7 @@ export async function fetchBinanceFundingHistory({
   const pageMeta = [];
   let cursorEnd = endTime;
   let stalled = false;
+  let terminationReason = null;
   for (let p = 0; p < pages; p += 1) {
     const url = new URL('https://fapi.binance.com/fapi/v1/fundingRate');
     url.searchParams.set('symbol', 'BTCUSDT');
@@ -1471,8 +1572,29 @@ export async function fetchBinanceFundingHistory({
     url.searchParams.set('endTime', String(cursorEnd));
     const result = await fetchJson(url.toString());
     requests.push(result);
+    const requestFailure = classifyPaginationRequestFailure(result, 'binance');
+    if (requestFailure) {
+      pageMeta.push({
+        page: p + 1,
+        cursor_endTime: cursorEnd,
+        cursor_used: cursorEnd,
+        request_identity: url.toString(),
+        newest_ms: null,
+        oldest_ms: null,
+        newest_row: null,
+        oldest_row: null,
+        row_count: 0,
+        raw_order: 'INSUFFICIENT',
+        cursor_advanced: false,
+        stalled: false,
+        http_status: result.http_status,
+        termination_hint: requestFailure,
+      });
+      terminationReason = requestFailure;
+      break;
+    }
     const rows = Array.isArray(result.json) ? result.json : [];
-    const bounds = pageTimestampBounds(rows, (row) => row?.fundingTime);
+    const bounds = pageTimestampBounds(rows, 'binance');
     const prevOldest = pageMeta.length ? pageMeta[pageMeta.length - 1].oldest_ms : null;
     const advance = p === 0
       ? { advanced: true, stalled: false, reason: null }
@@ -1493,16 +1615,40 @@ export async function fetchBinanceFundingHistory({
       raw_order: bounds.raw_order,
       cursor_advanced: advance.advanced,
       stalled: advance.stalled,
+      http_status: result.http_status,
+      bounds_resolved: bounds.resolved,
     });
-    if (!rows.length) break;
+    if (!rows.length) {
+      terminationReason = p === 0
+        ? PAGINATION_TERMINATION_REASONS.EMPTY_PAGE
+        : PAGINATION_TERMINATION_REASONS.PROVIDER_HISTORY_EXHAUSTED;
+      break;
+    }
+    if (pageHasUnresolvedTimestampBounds(pageMeta[pageMeta.length - 1])) {
+      all.push(...rows);
+      terminationReason = PAGINATION_TERMINATION_REASONS.TIMESTAMP_BOUNDS_UNRESOLVED;
+      break;
+    }
     if (p > 0 && advance.stalled) {
       stalled = true;
+      terminationReason = PAGINATION_TERMINATION_REASONS.PAGINATION_STALLED;
       break;
     }
     all.push(...rows);
-    if (!Number.isFinite(bounds.oldest_ms)) break;
-    cursorEnd = bounds.oldest_ms - 1;
+    const nextEnd = binanceNextEndTimeCursor(bounds.oldest_ms);
+    if (nextEnd == null) {
+      terminationReason = PAGINATION_TERMINATION_REASONS.TIMESTAMP_BOUNDS_UNRESOLVED;
+      break;
+    }
+    cursorEnd = nextEnd;
+    if (p === pages - 1) {
+      terminationReason = PAGINATION_TERMINATION_REASONS.MAX_CONFIGURED_PAGES_REACHED;
+      break;
+    }
     await sleep(150);
+  }
+  if (!terminationReason) {
+    terminationReason = PAGINATION_TERMINATION_REASONS.MAX_CONFIGURED_PAGES_REACHED;
   }
   return {
     requests,
@@ -1510,6 +1656,7 @@ export async function fetchBinanceFundingHistory({
     request_count: requests.length,
     pagination_pages: pageMeta,
     pagination_stalled: stalled,
+    pagination_termination_reason: terminationReason,
     raw_order_per_request: pageMeta.map((p) => ({
       page: p.page,
       raw_row_count: p.row_count,
@@ -1530,12 +1677,37 @@ export async function fetchOkxFundingHistory({ pages = 10 } = {}) {
   const pageMeta = [];
   let after = null;
   let stalled = false;
+  let terminationReason = null;
   for (let p = 0; p < pages; p += 1) {
     const url = buildOkxFundingPageUrl({ after });
     const result = await fetchJson(url);
     requests.push(result);
+    const requestFailure = classifyPaginationRequestFailure(result, 'okx');
+    if (requestFailure) {
+      pageMeta.push({
+        page: p + 1,
+        cursor_after: after,
+        cursor_used: after,
+        request_identity: url,
+        newest_ms: null,
+        oldest_ms: null,
+        newest_row: null,
+        oldest_row: null,
+        row_count: 0,
+        raw_order: 'INSUFFICIENT',
+        cursor_advanced: false,
+        stalled: false,
+        stall_reason: null,
+        provider_code: result.json?.code ?? null,
+        provider_msg: result.json?.msg ?? null,
+        http_status: result.http_status,
+        termination_hint: requestFailure,
+      });
+      terminationReason = requestFailure;
+      break;
+    }
     const rows = Array.isArray(result.json?.data) ? result.json.data : [];
-    const bounds = pageTimestampBounds(rows, (row) => row?.fundingTime);
+    const bounds = pageTimestampBounds(rows, 'okx');
     const prevOldest = pageMeta.length ? pageMeta[pageMeta.length - 1].oldest_ms : null;
     const advance = p === 0
       ? { advanced: true, stalled: false, reason: null }
@@ -1559,16 +1731,40 @@ export async function fetchOkxFundingHistory({ pages = 10 } = {}) {
       stall_reason: advance.reason,
       provider_code: result.json?.code ?? null,
       provider_msg: result.json?.msg ?? null,
+      http_status: result.http_status,
+      bounds_resolved: bounds.resolved,
     });
-    if (!rows.length) break;
+    if (!rows.length) {
+      terminationReason = p === 0
+        ? PAGINATION_TERMINATION_REASONS.EMPTY_PAGE
+        : PAGINATION_TERMINATION_REASONS.PROVIDER_HISTORY_EXHAUSTED;
+      break;
+    }
+    if (pageHasUnresolvedTimestampBounds(pageMeta[pageMeta.length - 1])) {
+      all.push(...rows);
+      terminationReason = PAGINATION_TERMINATION_REASONS.TIMESTAMP_BOUNDS_UNRESOLVED;
+      break;
+    }
     if (p > 0 && advance.stalled) {
       stalled = true;
+      terminationReason = PAGINATION_TERMINATION_REASONS.PAGINATION_STALLED;
       break;
     }
     all.push(...rows);
-    if (!Number.isFinite(bounds.oldest_ms)) break;
-    after = String(bounds.oldest_ms);
+    const nextAfter = okxNextAfterCursor(bounds.oldest_ms);
+    if (nextAfter == null) {
+      terminationReason = PAGINATION_TERMINATION_REASONS.TIMESTAMP_BOUNDS_UNRESOLVED;
+      break;
+    }
+    after = nextAfter;
+    if (p === pages - 1) {
+      terminationReason = PAGINATION_TERMINATION_REASONS.MAX_CONFIGURED_PAGES_REACHED;
+      break;
+    }
     await sleep(150);
+  }
+  if (!terminationReason) {
+    terminationReason = PAGINATION_TERMINATION_REASONS.MAX_CONFIGURED_PAGES_REACHED;
   }
   return {
     requests,
@@ -1576,6 +1772,7 @@ export async function fetchOkxFundingHistory({ pages = 10 } = {}) {
     request_count: requests.length,
     pagination_pages: pageMeta,
     pagination_stalled: stalled,
+    pagination_termination_reason: terminationReason,
     raw_order_per_request: pageMeta.map((p) => ({
       page: p.page,
       raw_row_count: p.row_count,
@@ -1667,6 +1864,7 @@ export function summarizeProviderProvenance({
   daily,
   paginationPages = [],
   paginationStalled = false,
+  paginationTerminationReason = null,
 }) {
   const usable = canonical?.eligible || [];
   const ts = usable.map((r) => r.source_timestamp_utc).sort();
@@ -1676,6 +1874,7 @@ export function summarizeProviderProvenance({
     return iso || (raw != null ? String(raw) : null);
   }).filter(Boolean);
   const duplicates = classifyFundingDuplicates(usable);
+  const unresolvedBounds = paginationPages.some((p) => pageHasUnresolvedTimestampBounds(p));
   return {
     provider,
     request_identities: requests.map((r) => r.request_identity),
@@ -1689,6 +1888,11 @@ export function summarizeProviderProvenance({
     request_page_count: requests.length,
     pagination_cursors: paginationPages,
     pagination_stalled: paginationStalled,
+    pagination_termination_reason: paginationTerminationReason
+      || (unresolvedBounds
+        ? PAGINATION_TERMINATION_REASONS.TIMESTAMP_BOUNDS_UNRESOLVED
+        : null),
+    pagination_timestamp_bounds_unresolved: unresolvedBounds,
     raw_row_count: rows.length,
     usable_row_count: usable.length,
     malformed_row_count: canonical?.malformed?.length || 0,
@@ -1708,6 +1912,7 @@ export function summarizeProviderProvenance({
       oldest_timestamp: p.oldest_row ?? p.oldest_iso ?? null,
       newest_timestamp: p.newest_row ?? p.newest_iso ?? null,
       cursor_used: p.cursor_used ?? p.cursor_endTime ?? p.cursor_after ?? null,
+      cursor_advanced: p.cursor_advanced ?? null,
     })),
     concatenated_fetch_order: classifyRawReturnedOrder(rawTimestamps),
     raw_returned_order: classifyRawReturnedOrder(rawTimestamps),
@@ -1784,6 +1989,7 @@ export function analyzeProviderFeasibility({
   requests = [],
   paginationPages = [],
   paginationStalled = false,
+  paginationTerminationReason = null,
 }) {
   const canonical = canonicalizeFundingRows(rawRows, provider);
   const cadence = analyzeFundingCadence(canonical.eligible, provider);
@@ -1895,6 +2101,7 @@ export function analyzeProviderFeasibility({
     daily,
     paginationPages,
     paginationStalled,
+    paginationTerminationReason,
   });
 
   const scoreRelevant = buildScoreRelevantEvidenceUnion({
@@ -2171,6 +2378,7 @@ export function buildFeasibilityReportFromSources({
       requests: meta.requests || [],
       paginationPages: meta.pagination_pages || [],
       paginationStalled: Boolean(meta.pagination_stalled),
+      paginationTerminationReason: meta.pagination_termination_reason || null,
     });
   }
 
@@ -2521,6 +2729,24 @@ export function collectFeasibilityBlockersAndWarnings({
           action: 'do_not_claim_complete_history_envelope',
         });
       }
+      const unresolvedPages = (prov?.pagination_cursors || []).filter((p) =>
+        pageHasUnresolvedTimestampBounds(p)
+      );
+      if (
+        unresolvedPages.length
+        || prov?.pagination_termination_reason
+          === PAGINATION_TERMINATION_REASONS.TIMESTAMP_BOUNDS_UNRESOLVED
+        || prov?.pagination_timestamp_bounds_unresolved
+      ) {
+        blockers.push({
+          type: 'PAGINATION_TIMESTAMP_BOUNDS_UNRESOLVED',
+          provider,
+          unresolved_page_count: unresolvedPages.length
+            || (prov?.pagination_timestamp_bounds_unresolved ? 1 : 0),
+          pagination_termination_reason: prov?.pagination_termination_reason || null,
+          action: 'do_not_treat_truncated_page_as_provider_history_capacity',
+        });
+      }
     }
     const cg = sources.coingeckoProvenance;
     if (cg) {
@@ -2539,6 +2765,29 @@ export function collectFeasibilityBlockersAndWarnings({
         type: 'coingecko_source_unavailable',
         action: 'common_feasibility_cannot_be_measured',
       });
+    }
+  } else {
+    // Offline/fixture paths may still surface explicit unresolved page-bound tooling defects.
+    for (const provider of PROVIDER_PREFERENCE_ORDER) {
+      const prov = providerAnalyses[provider]?.provenance;
+      const unresolvedPages = (prov?.pagination_cursors || []).filter((p) =>
+        pageHasUnresolvedTimestampBounds(p)
+      );
+      if (
+        unresolvedPages.length
+        || prov?.pagination_termination_reason
+          === PAGINATION_TERMINATION_REASONS.TIMESTAMP_BOUNDS_UNRESOLVED
+        || prov?.pagination_timestamp_bounds_unresolved
+      ) {
+        blockers.push({
+          type: 'PAGINATION_TIMESTAMP_BOUNDS_UNRESOLVED',
+          provider,
+          unresolved_page_count: unresolvedPages.length
+            || (prov?.pagination_timestamp_bounds_unresolved ? 1 : 0),
+          pagination_termination_reason: prov?.pagination_termination_reason || null,
+          action: 'do_not_treat_truncated_page_as_provider_history_capacity',
+        });
+      }
     }
   }
 
@@ -2634,16 +2883,19 @@ export async function buildLiveFeasibilityReport({
           requests: bitmex.requests,
           pagination_pages: bitmex.pagination_pages,
           pagination_stalled: bitmex.pagination_stalled,
+          pagination_termination_reason: bitmex.pagination_termination_reason,
         },
         binance: {
           requests: binance.requests,
           pagination_pages: binance.pagination_pages,
           pagination_stalled: binance.pagination_stalled,
+          pagination_termination_reason: binance.pagination_termination_reason,
         },
         okx: {
           requests: okx.requests,
           pagination_pages: okx.pagination_pages,
           pagination_stalled: okx.pagination_stalled,
+          pagination_termination_reason: okx.pagination_termination_reason,
         },
       },
       coingeckoPrices: coingecko.prices,

@@ -18,6 +18,7 @@ import {
   analyzeFundingCadence,
   assessReference60,
   bindingLastUpdated,
+  binanceNextEndTimeCursor,
   bitmexNextEndTimeCursor,
   buildAlignedStressWindow,
   buildBitmexFundingPageUrl,
@@ -33,6 +34,7 @@ import {
   canonicalizeFundingRows,
   characterizeTwoGateSelection,
   classifyFundingDuplicates,
+  classifyPaginationRequestFailure,
   classifyRawReturnedOrder,
   collectFeasibilityBlockersAndWarnings,
   compareFunding30DayBoundariesAtCutoff,
@@ -44,11 +46,16 @@ import {
   dailyMeanThen30dMean,
   detectPaginationAdvance,
   enumerateValidReferenceEndpoints,
+  fetchBinanceFundingHistory,
+  fetchOkxFundingHistory,
   hashFingerprintInput,
   inferObservedCadenceSegments,
   latestEligibleSettlementAtOrBeforeDate,
   latestFundingByMaxTimestamp,
   maxFeasibleReferenceDepth,
+  okxNextAfterCursor,
+  pageHasUnresolvedTimestampBounds,
+  PAGINATION_TERMINATION_REASONS,
   pageTimestampBounds,
   providerRequestStrategies,
   rmsSimpleReturns,
@@ -1016,7 +1023,7 @@ test('84. BitMEX pagination derives min/max independent of array order', () => {
     { timestamp: '2026-09-01T08:00:00.000Z' },
     { timestamp: '2026-09-01T16:00:00.000Z' },
   ];
-  const bounds = pageTimestampBounds(ascendingPage, (r) => r.timestamp);
+  const bounds = pageTimestampBounds(ascendingPage, 'bitmex');
   assert.equal(bounds.raw_order, 'ASCENDING');
   assert.equal(bounds.oldest_iso, '2026-09-01T00:00:00.000Z');
   assert.equal(bounds.newest_iso, '2026-09-01T16:00:00.000Z');
@@ -1533,4 +1540,335 @@ test('104. D-30 mutation changes fingerprint when required for first Stress retu
     referenceDepth: 60,
   }));
   assert.notEqual(h1, h2);
+});
+
+function makeOkxNumericStringPage({ count = 100, newestMs, stepMs = 8 * 3600 * 1000 }) {
+  const rows = [];
+  for (let i = 0; i < count; i += 1) {
+    const ms = newestMs - i * stepMs;
+    rows.push({
+      fundingTime: String(ms),
+      fundingRate: '0.0001',
+      instId: 'BTC-USDT-SWAP',
+    });
+  }
+  return rows;
+}
+
+test('105. OKX 13-digit numeric-string fundingTime produces valid page min/max', () => {
+  const newestMs = Date.parse('2026-09-30T16:00:00.000Z');
+  const oldestMs = Date.parse('2026-08-28T16:00:00.000Z');
+  const rows = [
+    { fundingTime: String(newestMs), fundingRate: '0.0001' },
+    { fundingTime: String(oldestMs), fundingRate: '0.0002' },
+  ];
+  // Official-run defect: Date.parse on numeric-string epoch is NaN
+  assert.equal(Number.isNaN(Date.parse(String(newestMs))), true);
+  const bounds = pageTimestampBounds(rows, 'okx');
+  assert.equal(bounds.resolved, true);
+  assert.equal(bounds.newest_ms, newestMs);
+  assert.equal(bounds.oldest_ms, oldestMs);
+  assert.equal(bounds.newest_iso, '2026-09-30T16:00:00.000Z');
+  assert.equal(bounds.oldest_iso, '2026-08-28T16:00:00.000Z');
+});
+
+test('106. Binance numeric fundingTime produces valid page min/max', () => {
+  const newestMs = Date.parse('2026-09-30T16:00:00.000Z');
+  const oldestMs = Date.parse('2026-09-01T00:00:00.000Z');
+  const rows = [
+    { fundingTime: newestMs, fundingRate: '0.0001' },
+    { fundingTime: oldestMs, fundingRate: '0.0002' },
+  ];
+  assert.equal(Number.isNaN(Date.parse(newestMs)), true);
+  const bounds = pageTimestampBounds(rows, 'binance');
+  assert.equal(bounds.resolved, true);
+  assert.equal(bounds.newest_ms, newestMs);
+  assert.equal(bounds.oldest_ms, oldestMs);
+  assert.ok(Number.isFinite(bounds.oldest_ms));
+  assert.ok(Number.isFinite(bounds.newest_ms));
+});
+
+test('107. ISO BitMEX timestamps continue to produce valid page min/max', () => {
+  const rows = [
+    { timestamp: '2026-09-30T16:00:00.000Z', fundingRate: 0.0001 },
+    { timestamp: '2026-09-01T00:00:00.000Z', fundingRate: 0.0002 },
+  ];
+  const bounds = pageTimestampBounds(rows, 'bitmex');
+  assert.equal(bounds.resolved, true);
+  assert.equal(bounds.oldest_iso, '2026-09-01T00:00:00.000Z');
+  assert.equal(bounds.newest_iso, '2026-09-30T16:00:00.000Z');
+});
+
+test('108. OKX page 1 with 100 numeric-string rows produces after cursor', () => {
+  const newestMs = Date.parse('2026-09-30T16:00:00.000Z');
+  const page1 = makeOkxNumericStringPage({ count: 100, newestMs });
+  const bounds = pageTimestampBounds(page1, 'okx');
+  assert.equal(page1.length, 100);
+  assert.equal(bounds.resolved, true);
+  const after = okxNextAfterCursor(bounds.oldest_ms);
+  assert.equal(after, String(bounds.oldest_ms));
+  const url = buildOkxFundingPageUrl({ after, limit: 100 });
+  assert.match(url, new RegExp(`after=${after}`));
+  assert.match(url, /limit=100/);
+});
+
+test('109. OKX page 2 moves strictly older than page 1', async () => {
+  const newestMs = Date.parse('2026-09-30T16:00:00.000Z');
+  const page1 = makeOkxNumericStringPage({ count: 100, newestMs });
+  const page1Bounds = pageTimestampBounds(page1, 'okx');
+  const after = okxNextAfterCursor(page1Bounds.oldest_ms);
+  const page2Newest = page1Bounds.oldest_ms - (8 * 3600 * 1000);
+  const page2 = makeOkxNumericStringPage({ count: 100, newestMs: page2Newest });
+  const page2Bounds = pageTimestampBounds(page2, 'okx');
+  const advance = detectPaginationAdvance({
+    previousOldestMs: page1Bounds.oldest_ms,
+    nextOldestMs: page2Bounds.oldest_ms,
+  });
+  assert.equal(advance.advanced, true);
+  assert.equal(advance.stalled, false);
+  assert.ok(page2Bounds.oldest_ms < page1Bounds.oldest_ms);
+  assert.ok(page2Bounds.newest_ms < page1Bounds.newest_ms);
+
+  const originalFetch = globalThis.fetch;
+  let call = 0;
+  globalThis.fetch = async (url) => {
+    call += 1;
+    const href = String(url);
+    if (call === 1) {
+      assert.doesNotMatch(href, /after=/);
+      return new Response(JSON.stringify({ code: '0', data: page1 }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    assert.match(href, new RegExp(`after=${after}`));
+    return new Response(JSON.stringify({ code: '0', data: page2 }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  };
+  try {
+    const result = await fetchOkxFundingHistory({ pages: 2 });
+    assert.equal(result.request_count, 2);
+    assert.equal(result.pagination_pages[0].oldest_ms, page1Bounds.oldest_ms);
+    assert.equal(result.pagination_pages[1].oldest_ms, page2Bounds.oldest_ms);
+    assert.ok(result.pagination_pages[1].oldest_ms < result.pagination_pages[0].oldest_ms);
+    assert.equal(result.pagination_pages[1].cursor_used, after);
+    assert.equal(
+      result.pagination_termination_reason,
+      PAGINATION_TERMINATION_REASONS.MAX_CONFIGURED_PAGES_REACHED
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('110. Binance valid page produces backward-moving endTime cursor', () => {
+  const newestMs = Date.parse('2026-09-30T16:00:00.000Z');
+  const oldestMs = Date.parse('2026-09-20T00:00:00.000Z');
+  const rows = [
+    { fundingTime: newestMs, fundingRate: '0.0001' },
+    { fundingTime: oldestMs, fundingRate: '0.0002' },
+  ];
+  const bounds = pageTimestampBounds(rows, 'binance');
+  const next = binanceNextEndTimeCursor(bounds.oldest_ms);
+  assert.equal(next, oldestMs - 1);
+  assert.ok(next < bounds.oldest_ms);
+});
+
+test('111. raw page order remains correct after epoch normalization', () => {
+  const descOkx = [
+    { fundingTime: String(Date.parse('2026-09-30T16:00:00.000Z')), fundingRate: '0.0001' },
+    { fundingTime: String(Date.parse('2026-09-30T08:00:00.000Z')), fundingRate: '0.0002' },
+    { fundingTime: String(Date.parse('2026-09-30T00:00:00.000Z')), fundingRate: '0.0003' },
+  ];
+  const ascBinance = [
+    { fundingTime: Date.parse('2026-09-30T00:00:00.000Z'), fundingRate: '0.0001' },
+    { fundingTime: Date.parse('2026-09-30T08:00:00.000Z'), fundingRate: '0.0002' },
+    { fundingTime: Date.parse('2026-09-30T16:00:00.000Z'), fundingRate: '0.0003' },
+  ];
+  assert.equal(pageTimestampBounds(descOkx, 'okx').raw_order, 'DESCENDING');
+  assert.equal(pageTimestampBounds(ascBinance, 'binance').raw_order, 'ASCENDING');
+});
+
+test('112. row_count>0 with unresolved timestamp bounds creates tooling blocker', () => {
+  const unresolvedPage = {
+    page: 1,
+    row_count: 100,
+    oldest_ms: null,
+    newest_ms: null,
+    raw_order: 'INSUFFICIENT',
+  };
+  assert.equal(pageHasUnresolvedTimestampBounds(unresolvedPage), true);
+  const { blockers } = collectFeasibilityBlockersAndWarnings({
+    live: true,
+    sources: {
+      coingeckoPrices: [{ utc_date: '2026-09-29', price: 1, source_timestamp_utc: '2026-09-29T00:00:00.000Z' }],
+      coingeckoProvenance: { provider_semantic_status: 'VALID', unavailable: false },
+    },
+    providerAnalyses: {
+      bitmex: {
+        provenance: { provider_semantic_status: 'VALID', pagination_cursors: [] },
+        daily: { observed_cadence: { cadence_transitions: [] } },
+      },
+      binance: {
+        provenance: { provider_semantic_status: 'VALID', pagination_cursors: [] },
+        daily: { observed_cadence: { cadence_transitions: [] } },
+      },
+      okx: {
+        provenance: {
+          provider_semantic_status: 'VALID',
+          pagination_cursors: [unresolvedPage],
+          pagination_termination_reason: PAGINATION_TERMINATION_REASONS.TIMESTAMP_BOUNDS_UNRESOLVED,
+          pagination_timestamp_bounds_unresolved: true,
+        },
+        daily: { observed_cadence: { cadence_transitions: [] } },
+      },
+    },
+    completedSpot: { ambiguous_non_midnight_prior_rows: [] },
+  });
+  assert.ok(blockers.some((b) => b.type === 'PAGINATION_TIMESTAMP_BOUNDS_UNRESOLVED' && b.provider === 'okx'));
+});
+
+test('113. unresolved timestamp bounds cannot masquerade as valid provider history capacity', () => {
+  const report = buildFeasibilityReportFromSources({
+    repositorySha: 'd'.repeat(40),
+    generatedAtUtc: '2026-09-30T16:00:00.000Z',
+    asOfUtc: '2026-09-30T16:00:00.000Z',
+    live: true,
+    sources: {
+      funding: {
+        bitmex: [],
+        binance: [],
+        okx: makeOkxNumericStringPage({
+          count: 10,
+          newestMs: Date.parse('2026-09-30T16:00:00.000Z'),
+        }),
+      },
+      fundingMeta: {
+        okx: {
+          requests: [{
+            request_identity: 'https://www.okx.com/api/v5/public/funding-rate-history',
+            http_status: 200,
+            http_outcome_class: 'VALID_HTTP',
+            payload_sha256: 'x',
+            fetch_acquisition_timestamp_utc: '2026-09-30T16:00:00.000Z',
+            json: { code: '0', data: [] },
+            parse_error: null,
+          }],
+          pagination_pages: [{
+            page: 1,
+            row_count: 100,
+            oldest_ms: null,
+            newest_ms: null,
+            raw_order: 'INSUFFICIENT',
+          }],
+          pagination_stalled: false,
+          pagination_termination_reason: PAGINATION_TERMINATION_REASONS.TIMESTAMP_BOUNDS_UNRESOLVED,
+        },
+      },
+      coingeckoPrices: Array.from({ length: 100 }, (_, i) => {
+        const d = addUtcDays('2026-06-20', i);
+        return { utc_date: d, price: 100000 + i, source_timestamp_utc: `${d}T00:00:00.000Z` };
+      }),
+      coingeckoProvenance: { provider_semantic_status: 'VALID', unavailable: false },
+    },
+  });
+  assert.ok(report.blockers.some((b) => b.type === 'PAGINATION_TIMESTAMP_BOUNDS_UNRESOLVED'));
+  assert.equal(
+    report.provider_analyses.okx.provenance.pagination_termination_reason,
+    PAGINATION_TERMINATION_REASONS.TIMESTAMP_BOUNDS_UNRESOLVED
+  );
+  // Tooling blocker present — truncated acquisition must not be a clean capacity conclusion
+  assert.notEqual(
+    report.provider_analyses.okx.provenance.pagination_termination_reason,
+    PAGINATION_TERMINATION_REASONS.PROVIDER_HISTORY_EXHAUSTED
+  );
+});
+
+test('114. Binance HTTP 451 remains HTTP_ERROR / truthful provenance', async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response('unavailable for legal reasons', {
+    status: 451,
+    headers: { 'Content-Type': 'text/plain' },
+  });
+  try {
+    const result = await fetchBinanceFundingHistory({
+      endTime: Date.parse('2026-09-30T16:00:00.000Z'),
+      pages: 3,
+    });
+    assert.equal(result.request_count, 1);
+    assert.equal(result.rows.length, 0);
+    assert.equal(result.pagination_termination_reason, PAGINATION_TERMINATION_REASONS.HTTP_ERROR);
+    assert.equal(
+      classifyPaginationRequestFailure(result.requests[0], 'binance'),
+      PAGINATION_TERMINATION_REASONS.HTTP_ERROR
+    );
+    const { blockers } = collectFeasibilityBlockersAndWarnings({
+      live: true,
+      sources: {
+        coingeckoPrices: [{ utc_date: '2026-09-29', price: 1, source_timestamp_utc: '2026-09-29T00:00:00.000Z' }],
+        coingeckoProvenance: { provider_semantic_status: 'VALID', unavailable: false },
+      },
+      providerAnalyses: {
+        bitmex: {
+          provenance: { provider_semantic_status: 'VALID', pagination_cursors: [] },
+          daily: { observed_cadence: { cadence_transitions: [] } },
+        },
+        binance: {
+          gate2_pass: false,
+          provenance: {
+            provider_semantic_status: 'HTTP_ERROR',
+            pagination_termination_reason: result.pagination_termination_reason,
+            pagination_cursors: result.pagination_pages,
+            http_status_per_request: [451],
+          },
+          daily: { observed_cadence: { cadence_transitions: [] } },
+          reference_60: { funding: { REFERENCE_60_FEASIBLE: false } },
+        },
+        okx: {
+          provenance: { provider_semantic_status: 'VALID', pagination_cursors: [] },
+          daily: { observed_cadence: { cadence_transitions: [] } },
+        },
+      },
+      completedSpot: { ambiguous_non_midnight_prior_rows: [] },
+    });
+    assert.ok(blockers.some((b) =>
+      b.type === 'provider_acquisition_failure'
+      && b.provider === 'binance'
+      && b.provider_semantic_status === 'HTTP_ERROR'
+    ));
+    assert.ok(!blockers.some((b) =>
+      b.provider === 'binance' && b.type === 'PAGINATION_TIMESTAMP_BOUNDS_UNRESOLVED'
+    ));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('115. scientific REFERENCE_60=false still does NOT create tooling blocker', () => {
+  const { blockers } = collectFeasibilityBlockersAndWarnings({
+    live: false,
+    sources: { coingeckoPrices: [] },
+    providerAnalyses: {
+      bitmex: {
+        gate2_pass: false,
+        reference_60: { funding: { REFERENCE_60_FEASIBLE: false } },
+        provenance: { provider_semantic_status: 'VALID', pagination_cursors: [] },
+        daily: { observed_cadence: { cadence_transitions: [] } },
+      },
+      binance: {
+        gate2_pass: false,
+        provenance: { provider_semantic_status: 'VALID', pagination_cursors: [] },
+        daily: { observed_cadence: { cadence_transitions: [] } },
+      },
+      okx: {
+        gate2_pass: false,
+        provenance: { provider_semantic_status: 'VALID', pagination_cursors: [] },
+        daily: { observed_cadence: { cadence_transitions: [] } },
+      },
+    },
+    completedSpot: { ambiguous_non_midnight_prior_rows: [] },
+  });
+  assert.equal(blockers.length, 0);
 });
