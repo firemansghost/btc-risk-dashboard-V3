@@ -155,34 +155,60 @@ export function assertOfficialSocialBlend(dashboardContract = loadDashboardSocia
   };
 }
 
+/**
+ * Component-path outcome labels.
+ *
+ * Non-throwing paths report COMPONENT facts only — they do not establish the
+ * final Social factor score or G-Score eligibility (the other component may
+ * still throw or supply a different value).
+ *
+ * Throwing paths that terminate computeSocialInterest via the outer catch DO
+ * establish whole-factor facts (score null / excluded).
+ */
 function outcomeFields({
   throwsBeforeComponentScoring = false,
   usesNeutralDefault = false,
-  factorScore = null,
-  factorReasonClass = null,
-  canEnterGscore = null,
+  componentScore = null,
   productionOutcome = null,
 } = {}) {
-  const score = throwsBeforeComponentScoring ? null : factorScore;
+  if (throwsBeforeComponentScoring) {
+    return {
+      current_production_outcome: productionOutcome || 'WHOLE_FACTOR_OUTER_CATCH_NULL',
+      current_throws_before_component_scoring: true,
+      current_path_reaches_factor_blend: false,
+      whole_factor_score_known: true,
+      current_component_score: null,
+      current_component_uses_neutral_default: false,
+      current_uses_neutral_default: false,
+      current_factor_score: null,
+      current_factor_reason_class: 'error',
+      current_can_enter_gscore: false,
+      applicable_to_c0_neutral_default_matrix: false,
+    };
+  }
+
   return {
     current_production_outcome:
       productionOutcome
-      || (throwsBeforeComponentScoring
-        ? 'WHOLE_FACTOR_OUTER_CATCH_NULL'
-        : usesNeutralDefault
-          ? 'NEUTRAL_DEFAULT_BLEND_PATH'
-          : 'OBSERVED_OR_COMPUTED_BLEND_PATH'),
-    current_throws_before_component_scoring: throwsBeforeComponentScoring,
-    current_factor_score: score,
-    current_factor_reason_class:
-      factorReasonClass
-      || (throwsBeforeComponentScoring ? 'error' : 'success'),
-    current_can_enter_gscore:
-      canEnterGscore == null ? Number.isFinite(score) : canEnterGscore,
-    current_uses_neutral_default: Boolean(usesNeutralDefault) && !throwsBeforeComponentScoring,
-    applicable_to_c0_neutral_default_matrix: Boolean(usesNeutralDefault) && !throwsBeforeComponentScoring,
+      || (usesNeutralDefault
+        ? 'NEUTRAL_DEFAULT_BLEND_PATH'
+        : 'OBSERVED_OR_COMPUTED_BLEND_PATH'),
+    current_throws_before_component_scoring: false,
+    current_path_reaches_factor_blend: true,
+    whole_factor_score_known: false,
+    current_component_score: componentScore,
+    current_component_uses_neutral_default: Boolean(usesNeutralDefault),
+    // Alias retained for earlier diagnostic assertions / report readers.
+    current_uses_neutral_default: Boolean(usesNeutralDefault),
+    current_factor_score: null,
+    current_factor_reason_class: 'unknown_until_other_component',
+    current_can_enter_gscore: null,
+    applicable_to_c0_neutral_default_matrix: Boolean(usesNeutralDefault),
   };
 }
+
+export const COMPONENT_CHARACTERIZATION_SCOPE =
+  'Component-level evidence objects describe whether that component path reaches the Social blend and what numeric component value current production supplies. They do not establish the final Social factor score unless the path itself throws and therefore conclusively nulls the entire factor.';
 
 /** Exact current production trending-rank → search score mapping. */
 export function searchScoreFromRank(rank) {
@@ -237,8 +263,7 @@ export function characterizeTrendingEvidence(trendsData, { fetchError = false } 
       ...outcomeFields({
         throwsBeforeComponentScoring: false,
         usesNeutralDefault: true,
-        factorScore: CURRENT_NEUTRAL_DEFAULT, // Search component alone; factor continues with defaults
-        factorReasonClass: 'success',
+        componentScore: CURRENT_NEUTRAL_DEFAULT, // Search component alone; factor continues with defaults
       }),
     };
   }
@@ -260,10 +285,6 @@ export function characterizeTrendingEvidence(trendsData, { fetchError = false } 
       extraction_error: rankExtraction.error,
       ...outcomeFields({
         throwsBeforeComponentScoring: true,
-        usesNeutralDefault: false,
-        factorScore: null,
-        factorReasonClass: 'error',
-        canEnterGscore: false,
         productionOutcome: 'WHOLE_FACTOR_OUTER_CATCH_NULL',
       }),
     };
@@ -281,8 +302,7 @@ export function characterizeTrendingEvidence(trendsData, { fetchError = false } 
       ...outcomeFields({
         throwsBeforeComponentScoring: false,
         usesNeutralDefault: true,
-        factorScore: CURRENT_NEUTRAL_DEFAULT,
-        factorReasonClass: 'success',
+        componentScore: CURRENT_NEUTRAL_DEFAULT,
       }),
     };
   }
@@ -301,8 +321,7 @@ export function characterizeTrendingEvidence(trendsData, { fetchError = false } 
       ...outcomeFields({
         throwsBeforeComponentScoring: false,
         usesNeutralDefault: true,
-        factorScore: CURRENT_NEUTRAL_DEFAULT,
-        factorReasonClass: 'success',
+        componentScore: CURRENT_NEUTRAL_DEFAULT,
       }),
     };
   }
@@ -319,8 +338,7 @@ export function characterizeTrendingEvidence(trendsData, { fetchError = false } 
       ...outcomeFields({
         throwsBeforeComponentScoring: false,
         usesNeutralDefault: true,
-        factorScore: CURRENT_NEUTRAL_DEFAULT,
-        factorReasonClass: 'success',
+        componentScore: CURRENT_NEUTRAL_DEFAULT,
       }),
     };
   }
@@ -338,8 +356,7 @@ export function characterizeTrendingEvidence(trendsData, { fetchError = false } 
     ...outcomeFields({
       throwsBeforeComponentScoring: false,
       usesNeutralDefault: false,
-      factorScore: score,
-      factorReasonClass: 'success',
+      componentScore: score,
     }),
   };
 }
@@ -480,8 +497,7 @@ export function characterizePriceMomentumEvidence(priceData, { fetchError = fals
       ...outcomeFields({
         throwsBeforeComponentScoring: false,
         usesNeutralDefault: true,
-        factorScore: CURRENT_NEUTRAL_DEFAULT,
-        factorReasonClass: 'success',
+        componentScore: CURRENT_NEUTRAL_DEFAULT,
       }),
     };
   }
@@ -500,8 +516,7 @@ export function characterizePriceMomentumEvidence(priceData, { fetchError = fals
       ...outcomeFields({
         throwsBeforeComponentScoring: false,
         usesNeutralDefault: true,
-        factorScore: CURRENT_NEUTRAL_DEFAULT,
-        factorReasonClass: 'success',
+        componentScore: CURRENT_NEUTRAL_DEFAULT,
       }),
     };
   }
@@ -522,8 +537,7 @@ export function characterizePriceMomentumEvidence(priceData, { fetchError = fals
       ...outcomeFields({
         throwsBeforeComponentScoring: false,
         usesNeutralDefault: true,
-        factorScore: CURRENT_NEUTRAL_DEFAULT,
-        factorReasonClass: 'success',
+        componentScore: CURRENT_NEUTRAL_DEFAULT,
       }),
     };
   }
@@ -545,10 +559,6 @@ export function characterizePriceMomentumEvidence(priceData, { fetchError = fals
       change_series_length: 0,
       ...outcomeFields({
         throwsBeforeComponentScoring: true,
-        usesNeutralDefault: false,
-        factorScore: null,
-        factorReasonClass: 'error',
-        canEnterGscore: false,
       }),
     };
   }
@@ -569,8 +579,7 @@ export function characterizePriceMomentumEvidence(priceData, { fetchError = fals
       ...outcomeFields({
         throwsBeforeComponentScoring: false,
         usesNeutralDefault: true,
-        factorScore: CURRENT_NEUTRAL_DEFAULT,
-        factorReasonClass: 'success',
+        componentScore: CURRENT_NEUTRAL_DEFAULT,
       }),
     };
   }
@@ -591,10 +600,6 @@ export function characterizePriceMomentumEvidence(priceData, { fetchError = fals
       change_series_length: 0,
       ...outcomeFields({
         throwsBeforeComponentScoring: true,
-        usesNeutralDefault: false,
-        factorScore: null,
-        factorReasonClass: 'error',
-        canEnterGscore: false,
       }),
     };
   }
@@ -614,8 +619,7 @@ export function characterizePriceMomentumEvidence(priceData, { fetchError = fals
       ...outcomeFields({
         throwsBeforeComponentScoring: false,
         usesNeutralDefault: true,
-        factorScore: CURRENT_NEUTRAL_DEFAULT,
-        factorReasonClass: 'success',
+        componentScore: CURRENT_NEUTRAL_DEFAULT,
       }),
     };
   }
@@ -638,8 +642,7 @@ export function characterizePriceMomentumEvidence(priceData, { fetchError = fals
       ...outcomeFields({
         throwsBeforeComponentScoring: false,
         usesNeutralDefault: true,
-        factorScore: CURRENT_NEUTRAL_DEFAULT,
-        factorReasonClass: 'success',
+        componentScore: CURRENT_NEUTRAL_DEFAULT,
       }),
     };
   }
@@ -665,8 +668,7 @@ export function characterizePriceMomentumEvidence(priceData, { fetchError = fals
     ...outcomeFields({
       throwsBeforeComponentScoring: false,
       usesNeutralDefault: mapped.used_neutral_default,
-      factorScore: mapped.momentumScore,
-      factorReasonClass: 'success',
+      componentScore: mapped.momentumScore,
     }),
   };
 }
@@ -1311,6 +1313,7 @@ export function buildOfflineR03Report({
       components: fixture.components,
       case_ids: fixture.cases.map((row) => row.id),
     },
+    component_characterization_scope: COMPONENT_CHARACTERIZATION_SCOPE,
     current_behavior: {
       initializes_searchScore_to: CURRENT_NEUTRAL_DEFAULT,
       initializes_momentumScore_to: CURRENT_NEUTRAL_DEFAULT,
@@ -1323,6 +1326,7 @@ export function buildOfflineR03Report({
       violates_frozen_invariant_when_any_component_unavailable: true,
       malformed_paths_that_throw_are_not_neutral_default_paths: true,
       c0_applies_only_to_paths_that_reach_neutral_default_blend: true,
+      component_path_evidence_does_not_imply_whole_factor_score: true,
     },
     cache_layers: describeCacheLayers(
       ssotSocialStaleness ?? dashboardSocialContract.staleness
@@ -1372,6 +1376,7 @@ export function buildOfflineR03Report({
       'Score examples are mathematical illustrations only — not historical replay, backtest, or predictive validation.',
       'C0 applies only to paths that actually reach component blending with a retained numeric default 50; throwing malformed paths are whole-factor null.',
       'C3 is a structural contract surface only; current provenance is insufficient for safe component-level prior-observation reuse because cache lacks durable per-component evidence-state/eligibility.',
+      COMPONENT_CHARACTERIZATION_SCOPE,
     ],
   };
 }

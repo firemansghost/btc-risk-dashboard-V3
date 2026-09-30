@@ -424,6 +424,8 @@ test('checked-in Social cache remains unchanged by diagnostic imports', () => {
 test('non-array coins trending payload throws before scoring (not C0=50)', () => {
   const result = characterizeTrendingEvidence({ coins: 'not-an-array' });
   assert.equal(result.current_throws_before_component_scoring, true);
+  assert.equal(result.current_path_reaches_factor_blend, false);
+  assert.equal(result.whole_factor_score_known, true);
   assert.equal(result.current_factor_score, null);
   assert.equal(result.current_factor_reason_class, 'error');
   assert.equal(result.current_can_enter_gscore, false);
@@ -434,7 +436,9 @@ test('null-element trending array throws inside find callback', () => {
   const result = characterizeTrendingEvidence({ coins: [null] });
   assert.equal(result.diagnostic_state, 'THROWS_BEFORE_COMPONENT_SCORING');
   assert.equal(result.detail, 'array_element_throws_inside_find_callback');
+  assert.equal(result.whole_factor_score_known, true);
   assert.equal(result.current_factor_score, null);
+  assert.equal(result.current_can_enter_gscore, false);
 });
 
 test('malformed price null-row throws during map destructuring', () => {
@@ -442,7 +446,9 @@ test('malformed price null-row throws during map destructuring', () => {
     prices: Array.from({ length: 14 }, (_, i) => (i === 3 ? null : [i, 100 + i])),
   });
   assert.equal(result.current_throws_before_component_scoring, true);
+  assert.equal(result.whole_factor_score_known, true);
   assert.equal(result.current_factor_score, null);
+  assert.equal(result.current_can_enter_gscore, false);
   assert.equal(result.applicable_to_c0_neutral_default_matrix, false);
   assert.match(result.detail, /map_destructuring_throws/);
 });
@@ -455,8 +461,12 @@ test('non-finite latest priceChange still yields numeric percentile Momentum sco
   assert.ok(result.change_series_length > 0);
   assert.equal(result.changePercentile, 1);
   assert.equal(result.current_production_momentum_score, 95);
+  assert.equal(result.current_component_score, 95);
   assert.equal(result.numeric_score_from_nonfinite_latest_input, true);
   assert.equal(result.current_uses_neutral_default, false);
+  assert.equal(result.whole_factor_score_known, false);
+  assert.equal(result.current_factor_score, null);
+  assert.equal(result.current_can_enter_gscore, null);
 });
 
 test('cache matrix includes undefined/NaN current-price coercion reuse behavior', () => {
@@ -494,7 +504,9 @@ test('C0 is not applied to throwing descriptive subcases', () => {
     const evidence = row.trending || row.price;
     assert.equal(row.c0_applicable, false);
     assert.equal(evidence.applicable_to_c0_neutral_default_matrix, false);
+    assert.equal(evidence.whole_factor_score_known, true);
     assert.equal(evidence.current_factor_score, null);
+    assert.equal(evidence.current_can_enter_gscore, false);
   }
   assert.equal(
     report.candidate_treatments.C0_CURRENT_NEUTRAL_DEFAULT
@@ -518,4 +530,119 @@ test('dashboard config Social weight/subweights agree with locked blend', () => 
     btc_price_momentum_7d: 0.3,
   });
   assert.equal(report.blockers.length, 0);
+});
+
+test('missing Search component path does not claim whole-factor score', () => {
+  const trending = characterizeTrendingEvidence({
+    coins: [{ item: { id: 'ethereum', symbol: 'eth' } }],
+  });
+  assert.equal(trending.current_component_score, 50);
+  assert.equal(trending.current_production_search_score, 50);
+  assert.equal(trending.current_path_reaches_factor_blend, true);
+  assert.equal(trending.whole_factor_score_known, false);
+  assert.equal(trending.current_factor_score, null);
+  assert.equal(trending.current_factor_reason_class, 'unknown_until_other_component');
+  assert.equal(trending.current_can_enter_gscore, null);
+});
+
+test('observed Search=85 does not claim Social factor=85', () => {
+  const trending = characterizeTrendingEvidence({
+    coins: [
+      { item: { id: 'bitcoin', symbol: 'btc' } },
+      { item: { id: 'ethereum', symbol: 'eth' } },
+    ],
+  });
+  assert.equal(trending.rank, 1);
+  assert.equal(trending.current_component_score, 85);
+  assert.equal(trending.current_production_search_score, 85);
+  assert.equal(trending.current_path_reaches_factor_blend, true);
+  assert.equal(trending.whole_factor_score_known, false);
+  assert.equal(trending.current_factor_score, null);
+  assert.equal(trending.current_can_enter_gscore, null);
+});
+
+test('non-finite Momentum component=95 does not claim Social factor=95', () => {
+  const price = characterizePriceMomentumEvidence(buildNonFiniteMomentumFixture());
+  assert.equal(price.current_component_score, 95);
+  assert.equal(price.current_production_momentum_score, 95);
+  assert.equal(price.whole_factor_score_known, false);
+  assert.equal(price.current_factor_score, null);
+  assert.notEqual(price.current_factor_score, 95);
+});
+
+test('exactly-14 Momentum default component score does not claim whole-factor score', () => {
+  const exactly14 = characterizePriceMomentumEvidence({
+    prices: Array.from({ length: 14 }, (_, i) => [i, 100 + i]),
+  });
+  assert.equal(exactly14.current_component_score, 50);
+  assert.equal(exactly14.current_path_reaches_factor_blend, true);
+  assert.equal(exactly14.whole_factor_score_known, false);
+  assert.equal(exactly14.current_factor_score, null);
+  assert.equal(exactly14.current_can_enter_gscore, null);
+});
+
+test('throwing trending path conclusively reports whole-factor null/error', () => {
+  const result = characterizeTrendingEvidence({ coins: 'not-an-array' });
+  assert.equal(result.whole_factor_score_known, true);
+  assert.equal(result.current_path_reaches_factor_blend, false);
+  assert.equal(result.current_factor_score, null);
+  assert.equal(result.current_factor_reason_class, 'error');
+  assert.equal(result.current_can_enter_gscore, false);
+  assert.equal(result.current_production_outcome, 'WHOLE_FACTOR_OUTER_CATCH_NULL');
+});
+
+test('throwing price path conclusively reports whole-factor null/error', () => {
+  const result = characterizePriceMomentumEvidence({
+    prices: Array.from({ length: 14 }, (_, i) => (i === 3 ? null : [i, 100 + i])),
+  });
+  assert.equal(result.whole_factor_score_known, true);
+  assert.equal(result.current_path_reaches_factor_blend, false);
+  assert.equal(result.current_factor_score, null);
+  assert.equal(result.current_factor_reason_class, 'error');
+  assert.equal(result.current_can_enter_gscore, false);
+});
+
+test('C0/C1/C2 still report actual factor scores when both component states supplied', () => {
+  const c0 = scoreC0CurrentNeutralDefault({
+    searchAvailable: false,
+    momentumAvailable: true,
+    momentumObserved: 63,
+  });
+  assert.equal(c0.factor_score, 54);
+  assert.equal(c0.can_enter_gscore_if_fresh, true);
+
+  const c1 = scoreC1AvailableComponentRenormalization({
+    searchAvailable: false,
+    momentumAvailable: true,
+    momentumObserved: 63,
+  });
+  assert.equal(c1.factor_score, 63);
+  assert.equal(c1.can_enter_gscore_if_fresh, true);
+
+  const c2 = scoreC2RequireBothComponents({
+    searchAvailable: false,
+    momentumAvailable: true,
+    momentumObserved: 63,
+  });
+  assert.equal(c2.factor_score, null);
+  assert.equal(c2.can_enter_gscore_if_fresh, false);
+});
+
+test('component characterization scope note and auth flags remain false', () => {
+  const report = buildOfflineR03Report({
+    repositorySha: '4'.repeat(40),
+    generatedAtUtc: '2026-09-30T12:00:00.000Z',
+    ssotSocialStaleness: { ttl_hours: 24, market_dependent: false, business_days_only: false },
+  });
+  assert.match(report.component_characterization_scope, /do not establish the final Social factor score/i);
+  assert.equal(report.production_change_authorized, false);
+  assert.equal(report.missingness_repair_authorized, false);
+  assert.equal(report.cache_policy_change_authorized, false);
+  assert.equal(report.component_reweighting_authorized, false);
+  assert.equal(report.whole_factor_exclusion_authorized, false);
+  assert.equal(report.model_version_change_authorized, false);
+  assert.equal(report.automatic_adjudication_verdict, null);
+  assert.equal(report.candidate_treatments.C1_AVAILABLE_COMPONENT_RENORMALIZATION.selected, false);
+  assert.equal(report.candidate_treatments.C2_REQUIRE_BOTH_COMPONENTS.selected, false);
+  assert.equal(report.candidate_treatments.C3_ELIGIBLE_PRIOR_OBSERVATION.selected, false);
 });
