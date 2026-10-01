@@ -3,12 +3,13 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { getFactorsArray } from '../../../lib/config-loader.mjs';
 import { decidePostComputeHealthCheck } from '../lib/postComputeHealth.mjs';
 import { getStalenessStatus } from '../stalenessUtils.mjs';
 import { runProductionComposite } from '../../research/lib/v1-2-gate-instrumentation.mjs';
+import { computeAllFactors } from '../factors.mjs';
 import {
   LEGACY_SCORE_CACHE_PATHS,
   V12_PUBLICATION_IDENTITY,
@@ -19,6 +20,8 @@ import {
   fredObservationsUrl,
   isLegacyScoreCachePath,
   loadDatedStablecoinCalibration,
+  paginateTermProvider,
+  publicationContradiction,
   publishNetLiquidityFactor,
   publishSocialFactor,
   publishStablecoinFactor,
@@ -272,8 +275,10 @@ test('net liquidity uses native series, wew RRP, and separate dates', async () =
   assert.notEqual(published.r10.latest_walcl_date, null);
   assert.equal(published.lastUpdated, `${published.r10.selected_scoring_date}T00:00:00.000Z`);
   assert.equal(published.successor_candidate.usd_multipliers.RRPONTSYD, 1e9);
-  assert.equal(published.requests.rrpUrl.includes('frequency=wew'), true);
-  assert.equal(published.requests.walclUrl.includes('frequency='), false);
+  assert.equal(published.request_semantics.rrp.frequency, 'wew');
+  assert.equal(published.request_semantics.rrp.aggregation_method, 'avg');
+  assert.equal(published.request_semantics.walcl.query_semantics, 'NATIVE');
+  assert.equal(JSON.stringify(published).includes('api_key='), false);
 });
 
 test('social requires both components and keeps cached acquisition time', async () => {
@@ -309,7 +314,7 @@ test('term pages one provider, fails closed on conflict, and keeps raw timing', 
   assert.equal(published.successor_candidate.candidate_only, true);
   const pages = published.pageReports.okx.requests.length;
   assert.ok(pages > 1);
-  assert.equal(published.pageReports.bitmex.termination, 'HTTP_ERROR');
+  assert.equal(published.pageReports.bitmex.termination, 'HTTP_451');
   const freshness = termSuccessorFreshness({
     result: published,
     asOfUtc: AS_OF,
@@ -407,37 +412,201 @@ test('publication health fails when a required factor is not fresh and when weig
   assert.equal(noneHealth.ok, false);
 });
 
-test('negative controls fail the named requirement', async () => {
-  const evidence = okxFunding();
-  const term = await publishTermFactor({ fetchImpl: termFetch(evidence), asOfUtc: AS_OF, writeCache: false });
-  const stale = {
-    ...term,
-    spot_observation_utc: '2026-01-01T00:00:00.000Z',
-    successor_candidate: { ...term.successor_candidate, spot_observation_utc: '2026-01-01T00:00:00.000Z' },
-  };
-  const honest = termSuccessorFreshness({ result: stale, asOfUtc: AS_OF, fundingRows: evidence.funding });
-  const forced = { ...honest, eligible: true, status: 'fresh', reason: 'mutated_include_stale' };
-  assert.equal(honest.eligible, false);
-  assert.equal(honest.reason, 'scored_window_not_fresh');
-  assert.notEqual(forced.status, honest.status);
-
-  const malformed = structuredClone(term.successor_candidate);
-  delete malformed.components.funding.percentile;
-  const { canReuseV12TermCache } = await import('../candidates/v1_2/term.mjs');
-  const reuse = canReuseV12TermCache({ current: term.successor_candidate, cached: malformed });
-  const injectedAccept = true;
-  assert.equal(reuse, false);
-  assert.notEqual(injectedAccept, reuse);
-
+test('cache publication mutations are rejected or replaced by the current candidate', async () => {
   const endpointMs = Date.parse('2026-09-30T12:00:00.000Z');
-  const stable = await publishStablecoinFactor({
+  const root = cacheRoot();
+  const published = await publishStablecoinFactor({
     fetchImpl: stablecoinFetch(endpointMs),
     asOfUtc: AS_OF,
     calibration: loadDatedStablecoinCalibration(REPO_ROOT),
-    writeCache: false,
+    cacheRoot: root,
+    writeCache: true,
   });
-  const liquidity = await publishNetLiquidityFactor({ ...nlFetch(), asOfUtc: AS_OF, apiKey: 'fixture', writeCache: false });
-  assert.notEqual(stable.score, liquidity.score);
-  const swappedStable = liquidity.score;
-  assert.notEqual(swappedStable, stable.score);
+  const filePath = path.join(root, 'stablecoins/result.json');
+  const cached = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  for (const mutate of [
+    (copy) => { copy.publication.score = 1; },
+    (copy) => { copy.publication.lastUpdated = '2020-01-01T00:00:00.000Z'; },
+    (copy) => { copy.publication.r10.provider = 'mutated'; },
+    (copy) => { copy.publication.factor_key = 'term_leverage'; },
+    (copy) => { copy.publication.model_version = 'v1.1.2'; },
+    (copy) => { copy.factor_key = 'term_leverage'; },
+  ]) {
+    const copy = structuredClone(cached);
+    mutate(copy);
+    fs.writeFileSync(filePath, JSON.stringify(copy));
+    const again = await publishStablecoinFactor({
+      fetchImpl: stablecoinFetch(endpointMs),
+      asOfUtc: AS_OF,
+      calibration: loadDatedStablecoinCalibration(REPO_ROOT),
+      cacheRoot: root,
+      writeCache: true,
+    });
+    assert.equal(again.score, published.score);
+    assert.notEqual(again.score, 1);
+    assert.equal(again.model_version, 'v1.2.0');
+    assert.equal(again.factor_key, 'stablecoins');
+  }
+  assert.equal(publicationContradiction('stablecoins', {
+    ...cached,
+    publication: { ...cached.publication, score: 1 },
+  }), 'score');
+});
+
+test('BitMEX endTime is a date-time string and a later malformed page is not scored', async () => {
+  const seen = [];
+  const firstPage = Array.from({ length: 500 }, (_, index) => ({
+    timestamp: new Date(Date.parse('2026-09-30T04:00:00.000Z') - index * 8 * 3_600_000).toISOString(),
+    fundingRate: 0.0001,
+    symbol: 'XBTUSD',
+  }));
+  const fetchImpl = async (url) => {
+    seen.push(url);
+    if (url.includes('endTime=')) {
+      const endTime = new URL(url).searchParams.get('endTime');
+      assert.match(endTime, /^\d{4}-\d{2}-\d{2}T/);
+      return { status: 200, ok: true, json: async () => { throw new SyntaxError('bad json'); } };
+    }
+    return jsonResponse(firstPage);
+  };
+  const page = await paginateTermProvider({ provider: 'bitmex', fetchImpl, asOfMs: Date.parse(AS_OF) });
+  assert.equal(page.acquisition.classification, 'MALFORMED_RESPONSE');
+  assert.equal(page.rows.length, 0);
+  assert.equal(page.discarded_partial_rows > 0, true);
+  assert.equal(seen.length, 2);
+});
+
+function fixedUnchangedFactors() {
+  return {
+    trend_valuation: { score: 65, lastUpdated: AS_OF, reason: 'success' },
+    onchain: { score: null, reason: 'disabled' },
+    etf_flows: {
+      score: 33,
+      lastUpdated: '2026-09-29T00:00:00.000Z',
+      reason: 'success',
+      sourceTradingDate: '2026-09-29',
+      expectedEligibleTradingDate: '2026-09-29',
+    },
+    macro_overlay: {
+      score: 95,
+      lastUpdated: '2026-09-30T00:00:00.000Z',
+      reason: 'success',
+      latestDxyDate: '2026-09-30',
+      latestDgs2Date: '2026-09-30',
+      latestVixDate: '2026-09-30',
+    },
+  };
+}
+
+function combinedFetch(endpointMs, evidence) {
+  const stable = stablecoinFetch(endpointMs);
+  const nl = nlFetch().fetchImpl;
+  const term = termFetch(evidence);
+  return async (url, init) => {
+    const href = String(url);
+    if (href.includes('series_id=')) return nl(href, init);
+    if (href.includes('days=90')) return stable(href, init);
+    if (href.includes('funding') || href.includes('days=120')) return term(href, init);
+    return stable(href, init);
+  };
+}
+
+function requireRouted(factors, key, predicate) {
+  const row = factors.find((factor) => factor.key === key);
+  if (!row || !predicate(row)) throw new Error(`${key}_route_eligibility`);
+  return row;
+}
+
+test('computeAllFactors dispatch serializes successor provenance without secrets', async () => {
+  const endpointMs = Date.parse('2026-09-30T12:00:00.000Z');
+  const evidence = okxFunding();
+  const root = cacheRoot();
+  const RealDate = globalThis.Date;
+  const frozenMs = RealDate.parse(AS_OF);
+  globalThis.Date = class extends RealDate {
+    constructor(...args) {
+      if (args.length === 0) super(frozenMs);
+      else super(...args);
+    }
+
+    static now() {
+      return frozenMs;
+    }
+  };
+  globalThis.__V12_OFFLINE_ACQUISITION__ = {
+    fetchImpl: combinedFetch(endpointMs, evidence),
+    cacheRoot: root,
+    asOfUtc: AS_OF,
+    writeCache: true,
+    fredApiKey: 'fixture-secret',
+    social: socialPayload('2026-09-30T17:00:00.000Z'),
+    fixedFactors: fixedUnchangedFactors(),
+  };
+  try {
+    const result = await computeAllFactors(50_000);
+    const stable = requireRouted(result.factors, 'stablecoins', (row) => row.r10?.calibration_id === 'STABLECOIN_DATED_CALIBRATION_V1' && Number.isFinite(row.score));
+    const liquidity = requireRouted(result.factors, 'net_liquidity', (row) => row.r10?.selected_scoring_date === '2026-09-23');
+    const term = requireRouted(result.factors, 'term_leverage', (row) => row.latest_raw_funding_observation_utc && row.latest_raw_funding_observation_utc !== row.funding_observation_utc);
+    requireRouted(result.factors, 'social_interest', (row) => Number.isFinite(row.score) && row.r10?.trending_from_cache === true && row.r10?.trending_fetched_at === '2026-09-30T17:00:00.000Z');
+    assert.equal(stable.candidate_only, false);
+    assert.equal(stable.successor_candidate_only, true);
+    assert.equal(stable.successor_production_active, false);
+    assert.equal(liquidity.r10.request_semantics.rrp.frequency, 'wew');
+    assert.equal(term.successor_term_freshness, true);
+    const serialized = JSON.stringify({
+      factors: result.factors,
+      successor_provenance: result.factors.filter((factor) => factor.publication_identity).map((factor) => ({
+        key: factor.key,
+        r10: factor.r10,
+        lastUpdated: factor.lastUpdated,
+        funding_observation_utc: factor.funding_observation_utc,
+        latest_raw_funding_observation_utc: factor.latest_raw_funding_observation_utc,
+      })),
+    });
+    assert.equal(serialized.includes('api_key='), false);
+    assert.equal(serialized.includes('fixture-secret'), false);
+    assert.match(serialized, /STABLECOIN_DATED_CALIBRATION_V1/);
+    assert.match(serialized, /2026-09-23/);
+    const termRow = result.factors.find((factor) => factor.key === 'term_leverage');
+    assert.equal(termRow.status, 'fresh');
+  } finally {
+    globalThis.Date = RealDate;
+    delete globalThis.__V12_OFFLINE_ACQUISITION__;
+  }
+});
+
+test('mutating a production wrapper fails that factor route assertion', async () => {
+  const sourcePath = path.join(REPO_ROOT, 'scripts/etl/factors.mjs');
+  const original = fs.readFileSync(sourcePath, 'utf8');
+  const replaced = original.replace(
+    /async function computeStablecoins\(\) \{\r?\n  const \{ publishStablecoinFactor, v12CallOptions \} = await import\('\.\/lib\/v12ProductionAdapters\.mjs'\);\r?\n  return publishStablecoinFactor\(v12CallOptions\(\)\);\r?\n\}/,
+    'async function computeStablecoins() {\n  return { score: null, reason: \'mutated_unavailable\', publication_identity: true, candidate_only: false, lastUpdated: null, r10: { provider: \'mutated\' } };\n}',
+  );
+  assert.notEqual(replaced, original);
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'gg-v12-route-'));
+  const target = path.join(directory, 'factors.mjs');
+  const toUrl = (spec) => pathToFileURL(path.resolve(path.dirname(sourcePath), spec)).href;
+  let rewritten = replaced.replace(/from\s+['"](\.[^'"]+)['"]/g, (match, spec) => match.replace(spec, toUrl(spec)));
+  rewritten = rewritten.replace(/import\(\s*['"](\.[^'"]+)['"]\s*\)/g, (_match, spec) => `import(${JSON.stringify(toUrl(spec))})`);
+  fs.writeFileSync(target, rewritten);
+  const endpointMs = Date.parse('2026-09-30T12:00:00.000Z');
+  globalThis.__V12_OFFLINE_ACQUISITION__ = {
+    fetchImpl: combinedFetch(endpointMs, okxFunding()),
+    cacheRoot: cacheRoot(),
+    asOfUtc: AS_OF,
+    writeCache: false,
+    fredApiKey: 'fixture-secret',
+    social: socialPayload('2026-09-30T17:00:00.000Z'),
+    fixedFactors: fixedUnchangedFactors(),
+  };
+  try {
+    const namespace = await import(pathToFileURL(target).href);
+    const result = await namespace.computeAllFactors(50_000);
+    assert.throws(
+      () => requireRouted(result.factors, 'stablecoins', (row) => Number.isFinite(row.score) && row.r10?.calibration_id === 'STABLECOIN_DATED_CALIBRATION_V1'),
+      /stablecoins_route_eligibility/,
+    );
+  } finally {
+    delete globalThis.__V12_OFFLINE_ACQUISITION__;
+  }
 });

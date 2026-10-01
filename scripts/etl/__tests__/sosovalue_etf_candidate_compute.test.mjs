@@ -355,7 +355,7 @@ test('the candidate is not wired into production and has no legacy clock', () =>
   }
   const factors = fs.readFileSync(path.join(REPO_ROOT, 'scripts/etl/factors.mjs'), 'utf8');
   assert.equal(factors.includes('etfCandidateCompute'), false);
-  assert.equal(factors.includes("['etf_flows', () => computeEtfFlows()]"), true);
+  assert.equal(factors.includes("guarded('etf_flows', () => computeEtfFlows())"), true);
   for (const relativePath of [
     'scripts/etl/compute.mjs',
     '.github/workflows/daily-etl.yml',

@@ -222,10 +222,22 @@ export function convertCryptoCompareToMarketCaps(ccData) {
   return marketCaps.length ? { market_caps: marketCaps } : null;
 }
 
-async function readResponseJson(response) {
-  if (response == null) return null;
-  if (typeof response.json === 'function') return response.json();
-  return response.body ?? response;
+async function readDecodedJson(response) {
+  if (response == null) return { ok: false, error: 'MALFORMED_RESPONSE' };
+  try {
+    if (typeof response.json === 'function') {
+      return { ok: true, body: await response.json() };
+    }
+    if (typeof response.text === 'function') {
+      return { ok: true, body: JSON.parse(await response.text()) };
+    }
+    if (Object.prototype.hasOwnProperty.call(response, 'body')) {
+      return { ok: true, body: response.body };
+    }
+    return { ok: true, body: response };
+  } catch {
+    return { ok: false, error: 'MALFORMED_RESPONSE' };
+  }
 }
 
 export async function acquireStablecoinResponses({
@@ -244,7 +256,8 @@ export async function acquireStablecoinResponses({
     try {
       const primary = await fetchImpl(primaryUrl, { provider: 'coingecko', coin: coin.symbol });
       if (primary?.ok !== false && primary?.status !== 503) {
-        payload = await readResponseJson(primary);
+        const decoded = await readDecodedJson(primary);
+        payload = decoded.ok ? decoded.body : null;
         provider = 'coingecko';
       }
     } catch {
@@ -258,7 +271,8 @@ export async function acquireStablecoinResponses({
           coin: coin.symbol,
           headers: { 'X-CMC_PRO_API_KEY': cmcApiKey },
         });
-        const converted = convertCmcQuotesToMarketCaps(await readResponseJson(cmc));
+        const decoded = await readDecodedJson(cmc);
+        const converted = decoded.ok ? convertCmcQuotesToMarketCaps(decoded.body) : null;
         if (converted) {
           payload = converted;
           provider = 'coinmarketcap';
@@ -274,7 +288,8 @@ export async function acquireStablecoinResponses({
           provider: 'cryptocompare',
           coin: coin.symbol,
         });
-        const converted = convertCryptoCompareToMarketCaps(await readResponseJson(cc));
+        const decoded = await readDecodedJson(cc);
+        const converted = decoded.ok ? convertCryptoCompareToMarketCaps(decoded.body) : null;
         if (converted) {
           payload = converted;
           provider = 'cryptocompare';
@@ -348,6 +363,7 @@ export function nextTermCursor(provider, rows) {
   const oldest = oldestMs(rows, provider);
   if (!Number.isFinite(oldest)) return { cursor: null, reason: 'TIMESTAMP_BOUNDS_UNRESOLVED' };
   if (provider === 'okx') return { cursor: String(oldest), reason: null };
+  if (provider === 'bitmex') return { cursor: new Date(oldest - 1).toISOString(), reason: null };
   return { cursor: oldest - 1, reason: null };
 }
 
@@ -361,12 +377,34 @@ export function normalizeTermPage(provider, body) {
   return { rows: body, httpOk: true };
 }
 
+function candidateAcquisition(classification, httpStatus = null) {
+  if (classification === 'HTTP_451' || httpStatus === 451) {
+    return { classification: 'HTTP_451', http_status: httpStatus ?? 451 };
+  }
+  if (classification === 'NETWORK_ERROR') return { classification: 'NETWORK_ERROR', http_status: httpStatus };
+  if (classification === 'MALFORMED_RESPONSE') return { classification: 'MALFORMED_RESPONSE', http_status: httpStatus };
+  if (classification === 'PROVIDER_ERROR') return { classification: 'PROVIDER_ERROR', http_status: httpStatus };
+  if (classification === 'EMPTY') return { classification: 'EMPTY', http_status: httpStatus };
+  if (classification === 'HTTP_ERROR' || (Number.isInteger(httpStatus) && httpStatus >= 400)) {
+    return { classification: 'HTTP_OTHER', http_status: httpStatus };
+  }
+  return null;
+}
+
 export async function paginateTermProvider({ provider, fetchImpl, asOfMs }) {
   const pageLimit = provider === 'bitmex' ? TERM_PAGE.bitmex.count : provider === 'binance' ? TERM_PAGE.binance.limit : TERM_PAGE.okx.limit;
   const rows = [];
   const requests = [];
   let cursor = provider === 'binance' ? asOfMs : null;
   let termination = null;
+  const fail = (classification, httpStatus) => ({
+    provider,
+    rows: [],
+    requests,
+    termination: classification,
+    acquisition: candidateAcquisition(classification, httpStatus),
+    discarded_partial_rows: rows.length,
+  });
   for (let page = 0; page < TERM_MAX_PAGES; page += 1) {
     let url;
     if (provider === 'bitmex') url = buildBitmexFundingPageUrl({ endTime: cursor, count: pageLimit });
@@ -376,39 +414,44 @@ export async function paginateTermProvider({ provider, fetchImpl, asOfMs }) {
     try {
       response = await fetchImpl(url, { provider, page: page + 1 });
     } catch (error) {
-      termination = 'NETWORK_ERROR';
-      requests.push({ url, termination, error: error.message });
-      break;
+      requests.push({ provider, page: page + 1, termination: 'NETWORK_ERROR', error: error.message });
+      return fail('NETWORK_ERROR', null);
     }
     const status = response?.status ?? 200;
     if (status === 451 || (status && status !== 200)) {
-      termination = 'HTTP_ERROR';
-      requests.push({ url, termination, http_status: status });
-      return {
-        provider,
-        rows,
-        requests,
-        termination,
-        acquisition: { classification: status === 451 ? 'HTTP_451' : 'HTTP_ERROR', http_status: status },
-      };
+      requests.push({ provider, page: page + 1, termination: 'HTTP_ERROR', http_status: status });
+      return fail(status === 451 ? 'HTTP_451' : 'HTTP_ERROR', status);
     }
-    const body = await readResponseJson(response);
-    const normalized = normalizeTermPage(provider, body);
-    requests.push({ url, row_count: normalized.rows?.length ?? 0, http_status: status });
+    const decoded = await readDecodedJson(response);
+    if (!decoded.ok) {
+      requests.push({ provider, page: page + 1, termination: 'MALFORMED_RESPONSE' });
+      return fail('MALFORMED_RESPONSE', status);
+    }
+    const normalized = normalizeTermPage(provider, decoded.body);
+    if (provider === 'okx' && decoded.body && String(decoded.body.code) !== '0') {
+      requests.push({ provider, page: page + 1, termination: 'PROVIDER_ERROR', provider_code: decoded.body.code });
+      return fail('PROVIDER_ERROR', status);
+    }
+    requests.push({
+      provider,
+      page: page + 1,
+      row_count: normalized.rows?.length ?? 0,
+      http_status: status,
+      cursor: cursor == null ? null : String(cursor),
+    });
     if (!normalized.httpOk || normalized.rows == null) {
-      termination = 'PARSE_ERROR';
-      break;
+      return fail('MALFORMED_RESPONSE', status);
     }
     if (normalized.rows.length === 0) {
-      termination = page === 0 ? 'EMPTY_PAGE' : 'PROVIDER_HISTORY_EXHAUSTED';
+      if (page === 0) return fail('EMPTY', status);
+      termination = 'PROVIDER_HISTORY_EXHAUSTED';
       break;
     }
     const previousOldest = oldestMs(rows, provider);
     rows.push(...normalized.rows);
     const nextOldest = oldestMs(rows, provider);
     if (page > 0 && previousOldest != null && nextOldest != null && nextOldest >= previousOldest) {
-      termination = 'PAGINATION_STALLED';
-      break;
+      return fail('MALFORMED_RESPONSE', status);
     }
     if (normalized.rows.length < pageLimit) {
       termination = 'PROVIDER_HISTORY_EXHAUSTED';
@@ -422,15 +465,13 @@ export async function paginateTermProvider({ provider, fetchImpl, asOfMs }) {
     cursor = next.cursor;
     termination = 'MAX_CONFIGURED_PAGES_REACHED';
   }
-  const httpError = termination === 'HTTP_ERROR' || termination === 'NETWORK_ERROR' || termination === 'PARSE_ERROR';
   return {
     provider,
     rows,
     requests,
     termination,
-    acquisition: httpError
-      ? { classification: termination, http_status: requests.at(-1)?.http_status ?? null }
-      : null,
+    acquisition: null,
+    discarded_partial_rows: 0,
   };
 }
 
@@ -446,17 +487,26 @@ export async function acquireTermEvidence({ fetchImpl, asOfMs }) {
     const page = await paginateTermProvider({ provider, fetchImpl, asOfMs });
     pageReports[provider] = { termination: page.termination, requests: page.requests, row_count: page.rows.length };
     if (page.acquisition) {
-      funding[provider] = { rows: page.rows, acquisition: page.acquisition };
+      funding[provider] = { rows: null, acquisition: page.acquisition };
     } else {
       funding[provider] = page.rows;
     }
   }
   const spotResponse = await fetchImpl(termSpotUrl(), { provider: 'coingecko', kind: 'spot' });
-  const spotBody = await readResponseJson(spotResponse);
+  const spotDecoded = await readDecodedJson(spotResponse);
+  if (!spotDecoded.ok) {
+    return {
+      funding,
+      spotPrices: [],
+      pageReports,
+      spot_acquisition: { classification: 'MALFORMED_RESPONSE' },
+    };
+  }
   return {
     funding,
-    spotPrices: spotPricesFromMarketChart(spotBody),
+    spotPrices: spotPricesFromMarketChart(spotDecoded.body),
     pageReports,
+    spot_acquisition: null,
   };
 }
 
@@ -524,6 +574,7 @@ export function scoreNetLiquidity({ walclObservations, rrpObservations, wtregenO
       latest_wtregen_date: candidate.latest_available_wtregen_source_date,
       acquisition: 'fred_native_and_rrp_wew',
       fallback: 'none',
+      request_semantics: netLiquidityRequestSemantics(),
       derivation: 'selected common Wednesday, not the latest WALCL print and not the wall clock',
     },
   });
@@ -566,12 +617,167 @@ export function canReuseStablecoinCache({ current, cached }) {
   return currentStamps.length > 0 && currentStamps === cachedStamps;
 }
 
+export function v12CallOptions(extra = {}) {
+  const hook = globalThis.__V12_OFFLINE_ACQUISITION__;
+  if (!hook || typeof hook !== 'object') {
+    return { fetchImpl: globalThis.fetch, writeCache: true, ...extra };
+  }
+  return {
+    fetchImpl: hook.fetchImpl || globalThis.fetch,
+    writeCache: hook.writeCache !== false,
+    cacheRoot: hook.cacheRoot,
+    asOfUtc: hook.asOfUtc,
+    apiKey: hook.fredApiKey || 'fixture',
+    social: hook.social || null,
+    ...extra,
+  };
+}
+
+export function sanitizePublicationValue(value) {
+  if (Array.isArray(value)) return value.map(sanitizePublicationValue);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, sanitizePublicationValue(item)]));
+  }
+  if (typeof value === 'string' && /api_key=/i.test(value)) return '[redacted]';
+  return value;
+}
+
+export function netLiquidityRequestSemantics() {
+  return {
+    walcl: { series_id: 'WALCL', query_semantics: 'NATIVE' },
+    wtregen: { series_id: 'WTREGEN', query_semantics: 'NATIVE' },
+    rrp: { series_id: 'RRPONTSYD', frequency: 'wew', aggregation_method: 'avg' },
+  };
+}
+
+function expectedPublicationLastUpdated(factor, candidate) {
+  if (factor === 'stablecoins') return deriveStablecoinLastUpdated(candidate).iso;
+  return candidate?.lastUpdated ?? null;
+}
+
+export function publicationContradiction(factor, cached) {
+  const publication = cached?.publication;
+  const candidate = cached?.successor_candidate;
+  if (!publication || typeof publication !== 'object') return 'missing_publication';
+  if (publication.factor_key !== factor) return 'factor_key';
+  if (publication.model_version !== V12_PUBLICATION_IDENTITY.model_version) return 'identity';
+  if (publication.implementation_revision !== V12_PUBLICATION_IDENTITY.implementation_revision) return 'identity';
+  if (publication.ssot_version !== V12_PUBLICATION_IDENTITY.ssot_version) return 'identity';
+  if (publication.score !== candidate?.score) return 'score';
+  if ((publication.lastUpdated ?? null) !== expectedPublicationLastUpdated(factor, candidate)) return 'lastUpdated';
+  if (factor === 'term_leverage') {
+    if (publication.latest_raw_funding_observation_utc !== candidate.latest_raw_funding_observation_utc) return 'raw_funding';
+    if (publication.funding_observation_utc !== candidate.funding_observation_utc) return 'scored_funding';
+    if (publication.spot_observation_utc !== candidate.spot_observation_utc) return 'scored_spot';
+    if (publication.funding_provider !== candidate.selected_provider) return 'provider';
+    if (publication.successor_term_freshness !== true) return 'term_freshness';
+  }
+  if (factor === 'net_liquidity' && publication.r10?.provider !== 'fred') return 'provider';
+  if (factor === 'social_interest' && publication.r10?.provider !== 'coingecko') return 'provider';
+  if (factor === 'stablecoins' && publication.r10?.provider !== 'per_coin') return 'provider';
+  return null;
+}
+
+export function rebuildPublicationFromCandidate(factor, candidate) {
+  if (factor === 'stablecoins') {
+    return scoreStablecoins({
+      responses: null,
+      calibration: { calibration_id: candidate.calibration_id },
+      asOfUtc: candidate.as_of_utc,
+      provenance: null,
+    }).published;
+  }
+  if (factor === 'net_liquidity') {
+    return publishWrapper(candidate, {
+      factorKey: 'net_liquidity',
+      lastUpdated: candidate.lastUpdated,
+      r10: {
+        provider: 'fred',
+        source_observation_utc: candidate.lastUpdated,
+        scored_observation_utc: candidate.lastUpdated,
+        selected_scoring_date: candidate.selected_common_scoring_date,
+        latest_walcl_date: candidate.latest_available_walcl_source_date,
+        latest_rrp_date: candidate.latest_available_rrp_wew_source_date,
+        latest_wtregen_date: candidate.latest_available_wtregen_source_date,
+        request_semantics: netLiquidityRequestSemantics(),
+        acquisition: 'fred_native_and_rrp_wew',
+        fallback: 'none',
+        derivation: 'selected common Wednesday, not the latest WALCL print and not the wall clock',
+        request_semantics: netLiquidityRequestSemantics(),
+      },
+    });
+  }
+  if (factor === 'social_interest') {
+    return publishWrapper(candidate, {
+      factorKey: 'social_interest',
+      lastUpdated: candidate.lastUpdated,
+      r10: {
+        provider: 'coingecko',
+        source_observation_utc: candidate.lastUpdated,
+        scored_observation_utc: candidate.lastUpdated,
+        trending_fetched_at: candidate.trending_fetched_at || null,
+        trending_from_cache: true,
+        price_observation_utc: candidate.price_observation_utc || null,
+        acquisition: 'coingecko_transport_cache',
+        fallback: 'none',
+        derivation: candidate.lastUpdated_semantics || null,
+      },
+    });
+  }
+  const published = publishWrapper(candidate, {
+    factorKey: 'term_leverage',
+    lastUpdated: candidate.lastUpdated,
+    r10: {
+      provider: candidate.selected_provider,
+      raw_funding_observation_utc: candidate.latest_raw_funding_observation_utc,
+      scored_funding_observation_utc: candidate.funding_observation_utc,
+      scored_spot_observation_utc: candidate.spot_observation_utc,
+      raw_spot_observation_utc: candidate.latest_raw_spot_observation_utc,
+      scored_cutoff_D: candidate.common_cutoff_date_D,
+      source_observation_utc: candidate.latest_raw_funding_observation_utc,
+      scored_observation_utc: candidate.spot_observation_utc,
+      acquisition: candidate.provider_dispositions,
+      fallback: candidate.provider_dispositions,
+      derivation: 'candidate lastUpdated is the earliest scored funding, stress, and spot timestamp',
+    },
+  });
+  published.successor_term_freshness = true;
+  published.latest_raw_funding_observation_utc = candidate.latest_raw_funding_observation_utc;
+  published.funding_observation_utc = candidate.funding_observation_utc;
+  published.spot_observation_utc = candidate.spot_observation_utc;
+  published.funding_provider = candidate.selected_provider;
+  published.selected_provider = candidate.selected_provider;
+  return published;
+}
+export function publicationFromCandidate(factor, candidate) {
+  if (factor === 'stablecoins') {
+    const derived = deriveStablecoinLastUpdated(candidate);
+    return publishWrapper(candidate, {
+      factorKey: 'stablecoins',
+      lastUpdated: derived.iso,
+      r10: {
+        provider: 'per_coin',
+        source_observation_utc: derived.iso,
+        scored_observation_utc: derived.iso,
+        acquisition: candidate.coins?.map((coin) => coin.provider_source_provenance) || null,
+        fallback: null,
+        derivation: derived.derivation,
+        calibration_id: candidate.calibration_id,
+        legacy_baseline_used: candidate.legacy_baseline_used === true,
+      },
+    });
+  }
+  return rebuildPublicationFromCandidate(factor, candidate);
+}
+
 export function reuseCachedPublication(factor, currentCandidate, cacheRoot) {
   const filePath = cacheFile(factor, cacheRoot);
   if (isLegacyScoreCachePath(filePath)) return { reuse: false, reason: 'legacy_path' };
   const cached = readJsonIfExists(filePath);
   if (!cached) return { reuse: false, reason: 'missing' };
   if (!v12CacheIdentityOk(cached, factor)) return { reuse: false, reason: 'identity' };
+  const contradiction = publicationContradiction(factor, cached);
+  if (contradiction) return { reuse: false, reason: contradiction };
   let ok = false;
   if (factor === 'stablecoins') ok = canReuseStablecoinCache({ current: currentCandidate, cached });
   if (factor === 'net_liquidity') {
@@ -583,7 +789,7 @@ export function reuseCachedPublication(factor, currentCandidate, cacheRoot) {
   if (factor === 'social_interest') ok = canReuseV12SocialCache({ current: currentCandidate, cached: cached.successor_candidate });
   if (factor === 'term_leverage') ok = canReuseV12TermCache({ current: currentCandidate, cached: cached.successor_candidate });
   if (!ok) return { reuse: false, reason: 'current_evidence' };
-  return { reuse: true, published: cached.publication };
+  return { reuse: true, published: publicationFromCandidate(factor, currentCandidate), reason: 'rebuilt_from_current_candidate' };
 }
 
 export function writeV12Cache(factor, published, candidate, cacheRoot = V12_CACHE_ROOT) {
@@ -685,11 +891,24 @@ export async function publishNetLiquidityFactor({
     frequency: 'wew',
     aggregationMethod: 'avg',
   });
-  const [walclBody, rrpBody, wtregenBody] = await Promise.all([
-    readResponseJson(await fetchImpl(walclUrl, { seriesId: 'WALCL' })),
-    readResponseJson(await fetchImpl(rrpUrl, { seriesId: 'RRPONTSYD' })),
-    readResponseJson(await fetchImpl(wtregenUrl, { seriesId: 'WTREGEN' })),
+  const decoded = await Promise.all([
+    readDecodedJson(await fetchImpl(walclUrl, { seriesId: 'WALCL' })),
+    readDecodedJson(await fetchImpl(rrpUrl, { seriesId: 'RRPONTSYD' })),
+    readDecodedJson(await fetchImpl(wtregenUrl, { seriesId: 'WTREGEN' })),
   ]);
+  if (decoded.some((item) => !item.ok)) {
+    return publishWrapper({ score: null, reason: 'malformed_fred_response', candidate_only: true, production_active: false }, {
+      factorKey: 'net_liquidity',
+      lastUpdated: null,
+      r10: {
+        provider: 'fred',
+        acquisition: 'MALFORMED_RESPONSE',
+        fallback: 'none',
+        request_semantics: netLiquidityRequestSemantics(),
+      },
+    });
+  }
+  const [walclBody, rrpBody, wtregenBody] = decoded.map((item) => item.body);
   const scored = scoreNetLiquidity({
     asOfUtc,
     walclObservations: walclBody?.observations || [],
@@ -697,9 +916,9 @@ export async function publishNetLiquidityFactor({
     wtregenObservations: wtregenBody?.observations || [],
   });
   const cached = reuseCachedPublication('net_liquidity', scored.candidate, cacheRoot);
-  if (cached.reuse) return { ...cached.published, cache_reuse: true };
+  if (cached.reuse) return { ...cached.published, cache_reuse: true, request_semantics: netLiquidityRequestSemantics() };
   if (writeCache) writeV12Cache('net_liquidity', scored.published, scored.candidate, cacheRoot);
-  return { ...scored.published, cache_reuse: false, requests: { walclUrl, rrpUrl, wtregenUrl } };
+  return { ...scored.published, cache_reuse: false, request_semantics: netLiquidityRequestSemantics() };
 }
 
 export async function publishSocialFactor({
