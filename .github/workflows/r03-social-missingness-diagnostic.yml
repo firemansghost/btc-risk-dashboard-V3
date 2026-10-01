@@ -28,10 +28,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Use Node 20
+      - name: Use Node 24
         uses: actions/setup-node@v5
         with:
-          node-version: "20.18.0"
+          node-version: "24"
 
       - name: Require origin/main before diagnostic
         run: |

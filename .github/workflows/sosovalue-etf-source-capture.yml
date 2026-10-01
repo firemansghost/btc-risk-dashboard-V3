@@ -58,10 +58,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Use Node 20
+      - name: Use Node 24
         uses: actions/setup-node@v5
         with:
-          node-version: "20.18.0"
+          node-version: "24"
 
       - name: Preview SoSoValue ETF source
         env:
@@ -97,10 +97,10 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Use Node 20
+      - name: Use Node 24
         uses: actions/setup-node@v5
         with:
-          node-version: "20.18.0"
+          node-version: "24"
 
       - name: Commit SoSoValue ETF source history
         env:

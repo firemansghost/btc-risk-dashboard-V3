@@ -524,7 +524,7 @@ These updates improve readability, mobile usability, and ETL resilience **withou
 - `public/data/cache/macro_overlay/`
 
 ### GitHub Actions Workflows
-- `.github/workflows/daily-etl.yml` → Daily ETL at 11:00 UTC (Node 20.18.0)
+- `.github/workflows/daily-etl.yml` → Daily ETL at 11:00 UTC (Node 24)
 - `.github/workflows/weekly-backtesting.yml` → Weekly **backtesting report** + **monthly SSOT** `dca_vs_risk_comparison.json` (same workflow; Sunday 11:30 UTC; see below)
 - `.github/workflows/bundle-size-tracking.yml` → Bundle size monitoring
 
@@ -633,7 +633,7 @@ Both read from `public/data/history.csv`, but **methodologies differ**. Headline
 
 ### Node/React/Next Version Pinning
 **✅ CRITICAL:** Version constraints:
-- **Node:** `20.18.x` (pinned in `package.json` engines, GitHub Actions uses `20.18.0`)
+- **Node:** `24.x` (pinned in `package.json` engines, GitHub Actions uses `24`)
 - **Next.js:** `15.5.7`
 - **React:** `18.3.1`
 - **React DOM:** `18.3.1`
