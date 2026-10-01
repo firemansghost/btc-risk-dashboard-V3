@@ -480,6 +480,18 @@ export function spotPricesFromMarketChart(body) {
   return Array.isArray(prices) ? prices : [];
 }
 
+export function classifySpotAcquisition(response, decoded) {
+  if (response?.networkError) return { classification: 'NETWORK_ERROR', http_status: null };
+  const status = response?.status ?? (response ? 200 : null);
+  if (status === 451) return { classification: 'HTTP_451', http_status: 451 };
+  if (Number.isInteger(status) && status !== 200) return { classification: 'HTTP_OTHER', http_status: status };
+  if (!decoded?.ok) return { classification: 'MALFORMED_RESPONSE', http_status: status };
+  const prices = decoded.body?.prices;
+  if (!Array.isArray(prices)) return { classification: 'MALFORMED_RESPONSE', http_status: status };
+  if (prices.length === 0) return { classification: 'EMPTY', http_status: status };
+  return { classification: 'ACQUIRED', http_status: status };
+}
+
 export async function acquireTermEvidence({ fetchImpl, asOfMs }) {
   const funding = {};
   const pageReports = {};
@@ -492,26 +504,42 @@ export async function acquireTermEvidence({ fetchImpl, asOfMs }) {
       funding[provider] = page.rows;
     }
   }
-  const spotResponse = await fetchImpl(termSpotUrl(), { provider: 'coingecko', kind: 'spot' });
-  const spotDecoded = await readDecodedJson(spotResponse);
-  if (!spotDecoded.ok) {
+  let spotResponse;
+  try {
+    spotResponse = await fetchImpl(termSpotUrl(), { provider: 'coingecko', kind: 'spot' });
+  } catch (error) {
     return {
       funding,
       spotPrices: [],
       pageReports,
-      spot_acquisition: { classification: 'MALFORMED_RESPONSE' },
+      spot_acquisition: { classification: 'NETWORK_ERROR', http_status: null, message: error.message },
     };
   }
+  const status = spotResponse?.status ?? 200;
+  if (status === 451 || (status && status !== 200)) {
+    return {
+      funding,
+      spotPrices: [],
+      pageReports,
+      spot_acquisition: {
+        classification: status === 451 ? 'HTTP_451' : 'HTTP_OTHER',
+        http_status: status,
+      },
+    };
+  }
+  const spotDecoded = await readDecodedJson(spotResponse);
+  const spotAcquisition = classifySpotAcquisition(spotResponse, spotDecoded);
   return {
     funding,
-    spotPrices: spotPricesFromMarketChart(spotDecoded.body),
+    spotPrices: spotAcquisition.classification === 'ACQUIRED' ? spotDecoded.body.prices : [],
     pageReports,
-    spot_acquisition: null,
+    spot_acquisition: spotAcquisition,
   };
 }
 
-export function scoreTerm({ funding, spotPrices, asOfUtc }) {
+export function scoreTerm({ funding, spotPrices, asOfUtc, spotAcquisition = null }) {
   const candidate = computeV12TermCandidate({ asOfUtc, funding, spotPrices });
+  const spotFailure = spotAcquisition && spotAcquisition.classification && spotAcquisition.classification !== 'ACQUIRED';
   const published = publishWrapper(candidate, {
     factorKey: 'term_leverage',
     lastUpdated: candidate.lastUpdated,
@@ -526,9 +554,14 @@ export function scoreTerm({ funding, spotPrices, asOfUtc }) {
       scored_observation_utc: candidate.spot_observation_utc,
       acquisition: candidate.provider_dispositions,
       fallback: candidate.provider_dispositions,
-      derivation: 'candidate lastUpdated is the earliest scored funding, stress, and spot timestamp',
+      spot_acquisition: spotAcquisition,
+      candidate_reason: candidate.reason,
+      derivation: spotFailure
+        ? 'spot acquisition failed before scoring; candidate reason is unchanged'
+        : 'candidate lastUpdated is the earliest scored funding, stress, and spot timestamp',
     },
   });
+  if (spotFailure) published.reason = `spot_acquisition_${spotAcquisition.classification}`;
   published.successor_term_freshness = true;
   published.latest_raw_funding_observation_utc = candidate.latest_raw_funding_observation_utc;
   published.funding_observation_utc = candidate.funding_observation_utc;
@@ -595,10 +628,11 @@ export function scoreSocial({ trendsData, priceData, trendingFetchedAt, trending
       source_observation_utc: candidate.lastUpdated,
       scored_observation_utc: candidate.lastUpdated,
       trending_fetched_at: trendingFetchedAt || null,
-      trending_from_cache: trendingFromCache === true,
-      price_observation_utc: candidate.price_observation_utc || candidate.components?.momentum?.price_observation_utc || null,
-      acquisition: trendingFromCache ? 'coingecko_transport_cache' : 'coingecko_live',
-      fallback: 'none',
+        trending_from_cache: trendingFromCache === true,
+        price_observation_utc: candidate.price_observation_utc || candidate.components?.momentum?.price_observation_utc || null,
+        acquisition: trendingFromCache === true ? 'coingecko_transport_cache' : 'coingecko_live',
+        score_cache_reuse: false,
+        fallback: 'none',
       derivation: candidate.lastUpdated_semantics || null,
     },
   });
@@ -678,7 +712,7 @@ export function publicationContradiction(factor, cached) {
   return null;
 }
 
-export function rebuildPublicationFromCandidate(factor, candidate) {
+export function rebuildPublicationFromCandidate(factor, candidate, context = null) {
   if (factor === 'stablecoins') {
     return scoreStablecoins({
       responses: null,
@@ -703,7 +737,6 @@ export function rebuildPublicationFromCandidate(factor, candidate) {
         acquisition: 'fred_native_and_rrp_wew',
         fallback: 'none',
         derivation: 'selected common Wednesday, not the latest WALCL print and not the wall clock',
-        request_semantics: netLiquidityRequestSemantics(),
       },
     });
   }
@@ -715,10 +748,11 @@ export function rebuildPublicationFromCandidate(factor, candidate) {
         provider: 'coingecko',
         source_observation_utc: candidate.lastUpdated,
         scored_observation_utc: candidate.lastUpdated,
-        trending_fetched_at: candidate.trending_fetched_at || null,
-        trending_from_cache: true,
+        trending_fetched_at: context?.trendingFetchedAt ?? candidate.trending_fetched_at ?? null,
+        trending_from_cache: context?.trendingFromCache === true,
         price_observation_utc: candidate.price_observation_utc || null,
-        acquisition: 'coingecko_transport_cache',
+        acquisition: context?.trendingFromCache === true ? 'coingecko_transport_cache' : 'coingecko_live',
+        score_cache_reuse: context?.scoreCacheReuse === true,
         fallback: 'none',
         derivation: candidate.lastUpdated_semantics || null,
       },
@@ -749,7 +783,7 @@ export function rebuildPublicationFromCandidate(factor, candidate) {
   published.selected_provider = candidate.selected_provider;
   return published;
 }
-export function publicationFromCandidate(factor, candidate) {
+export function publicationFromCandidate(factor, candidate, context = null) {
   if (factor === 'stablecoins') {
     const derived = deriveStablecoinLastUpdated(candidate);
     return publishWrapper(candidate, {
@@ -767,10 +801,10 @@ export function publicationFromCandidate(factor, candidate) {
       },
     });
   }
-  return rebuildPublicationFromCandidate(factor, candidate);
+  return rebuildPublicationFromCandidate(factor, candidate, context);
 }
 
-export function reuseCachedPublication(factor, currentCandidate, cacheRoot) {
+export function reuseCachedPublication(factor, currentCandidate, cacheRoot, context = null) {
   const filePath = cacheFile(factor, cacheRoot);
   if (isLegacyScoreCachePath(filePath)) return { reuse: false, reason: 'legacy_path' };
   const cached = readJsonIfExists(filePath);
@@ -789,7 +823,7 @@ export function reuseCachedPublication(factor, currentCandidate, cacheRoot) {
   if (factor === 'social_interest') ok = canReuseV12SocialCache({ current: currentCandidate, cached: cached.successor_candidate });
   if (factor === 'term_leverage') ok = canReuseV12TermCache({ current: currentCandidate, cached: cached.successor_candidate });
   if (!ok) return { reuse: false, reason: 'current_evidence' };
-  return { reuse: true, published: publicationFromCandidate(factor, currentCandidate), reason: 'rebuilt_from_current_candidate' };
+  return { reuse: true, published: publicationFromCandidate(factor, currentCandidate, { ...context, scoreCacheReuse: true }), reason: 'rebuilt_from_current_candidate' };
 }
 
 export function writeV12Cache(factor, published, candidate, cacheRoot = V12_CACHE_ROOT) {
@@ -927,16 +961,21 @@ export async function publishSocialFactor({
   writeCache = true,
   cacheRoot = V12_CACHE_ROOT,
 } = {}) {
+  const context = {
+    trendingFetchedAt: trending?.acquiredAt ?? null,
+    trendingFromCache: trending?.fromCache === true,
+    scoreCacheReuse: false,
+  };
   const scored = scoreSocial({
     trendsData: trending?.data ?? null,
     priceData: price?.data ?? null,
-    trendingFetchedAt: trending?.acquiredAt ?? null,
-    trendingFromCache: trending?.fromCache === true,
+    trendingFetchedAt: context.trendingFetchedAt,
+    trendingFromCache: context.trendingFromCache,
   });
-  const cached = reuseCachedPublication('social_interest', scored.candidate, cacheRoot);
-  if (cached.reuse) return { ...cached.published, cache_reuse: true };
+  const cached = reuseCachedPublication('social_interest', scored.candidate, cacheRoot, context);
+  if (cached.reuse) return { ...cached.published, cache_reuse: true, score_cache_reuse: true };
   if (writeCache && scored.candidate) writeV12Cache('social_interest', scored.published, scored.candidate, cacheRoot);
-  return { ...scored.published, cache_reuse: false };
+  return { ...scored.published, cache_reuse: false, score_cache_reuse: false };
 }
 
 export async function publishTermFactor({
@@ -946,7 +985,12 @@ export async function publishTermFactor({
   cacheRoot = V12_CACHE_ROOT,
 } = {}) {
   const acquired = await acquireTermEvidence({ fetchImpl, asOfMs: Date.parse(asOfUtc) });
-  const scored = scoreTerm({ funding: acquired.funding, spotPrices: acquired.spotPrices, asOfUtc });
+  const scored = scoreTerm({
+    funding: acquired.funding,
+    spotPrices: acquired.spotPrices,
+    asOfUtc,
+    spotAcquisition: acquired.spot_acquisition,
+  });
   const cached = reuseCachedPublication('term_leverage', scored.candidate, cacheRoot);
   if (cached.reuse) return { ...cached.published, cache_reuse: true, pageReports: acquired.pageReports };
   if (writeCache) writeV12Cache('term_leverage', scored.published, scored.candidate, cacheRoot);

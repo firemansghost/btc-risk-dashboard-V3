@@ -10,6 +10,7 @@ import { decidePostComputeHealthCheck } from '../lib/postComputeHealth.mjs';
 import { getStalenessStatus } from '../stalenessUtils.mjs';
 import { runProductionComposite } from '../../research/lib/v1-2-gate-instrumentation.mjs';
 import { computeAllFactors } from '../factors.mjs';
+import { writePublicationArtifacts } from '../lib/v12PublicationRecords.mjs';
 import {
   LEGACY_SCORE_CACHE_PATHS,
   V12_PUBLICATION_IDENTITY,
@@ -569,6 +570,25 @@ test('computeAllFactors dispatch serializes successor provenance without secrets
     assert.match(serialized, /2026-09-23/);
     const termRow = result.factors.find((factor) => factor.key === 'term_leverage');
     assert.equal(termRow.status, 'fresh');
+    const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gg-v12-pub-'));
+    writePublicationArtifacts(outDir, result.factors, {
+      model_version: 'v1.2.0',
+      implementation_revision: 'semantic-correctness-2026-09',
+      ssot_version: '2.1.1',
+    });
+    const latest = JSON.parse(fs.readFileSync(path.join(outDir, 'latest.json'), 'utf8'));
+    const status = JSON.parse(fs.readFileSync(path.join(outDir, 'status.json'), 'utf8'));
+    const latestTerm = latest.factors.find((factor) => factor.key === 'term_leverage');
+    const statusTerm = status.successor_provenance.find((factor) => factor.key === 'term_leverage');
+    assert.notEqual(latestTerm.latest_raw_funding_observation_utc, latestTerm.funding_observation_utc);
+    assert.equal(statusTerm.raw_funding_observation_utc, latestTerm.latest_raw_funding_observation_utc);
+    assert.equal(statusTerm.scored_funding_observation_utc, latestTerm.funding_observation_utc);
+    assert.equal(latestTerm.successor_candidate_only, true);
+    assert.equal(latestTerm.candidate_only, false);
+    assert.equal(statusTerm.successor_candidate_only, true);
+    assert.equal(statusTerm.candidate_only, false);
+    assert.equal(statusTerm.successor_production_active, false);
+    assert.equal(JSON.stringify(status).includes('api_key='), false);
   } finally {
     globalThis.Date = RealDate;
     delete globalThis.__V12_OFFLINE_ACQUISITION__;
@@ -609,4 +629,72 @@ test('mutating a production wrapper fails that factor route assertion', async ()
   } finally {
     delete globalThis.__V12_OFFLINE_ACQUISITION__;
   }
+});
+
+test('spot acquisition failures stay distinct from funding history insufficiency', async () => {
+  const evidence = okxFunding();
+  const cases = [
+    ['HTTP_451', async () => jsonResponse({ error: 'nope' }, 451)],
+    ['HTTP_OTHER', async () => jsonResponse({ error: 'down' }, 503)],
+    ['NETWORK_ERROR', async () => { throw new Error('socket'); }],
+    ['MALFORMED_RESPONSE', async () => ({ status: 200, ok: true, json: async () => { throw new SyntaxError('bad'); } })],
+    ['MALFORMED_RESPONSE', async () => jsonResponse({ close: 1 })],
+  ];
+  for (const [classification, spotResponder] of cases) {
+    const published = await publishTermFactor({
+      fetchImpl: async (url, init) => {
+        if (String(url).includes('days=120')) return spotResponder();
+        return termFetch(evidence)(url, init);
+      },
+      asOfUtc: AS_OF,
+      writeCache: false,
+    });
+    assert.equal(published.score, null, classification);
+    assert.equal(published.r10.spot_acquisition.classification, classification, classification);
+    assert.equal(published.reason, `spot_acquisition_${classification}`, classification);
+    assert.notEqual(published.successor_candidate.reason, published.reason);
+  }
+  const shortPrices = evidence.prices.slice(0, 5);
+  const insufficient = await publishTermFactor({
+    fetchImpl: async (url, init) => {
+      if (String(url).includes('days=120')) return jsonResponse({ prices: shortPrices });
+      return termFetch(evidence)(url, init);
+    },
+    asOfUtc: AS_OF,
+    writeCache: false,
+  });
+  assert.equal(insufficient.score, null);
+  assert.equal(insufficient.r10.spot_acquisition.classification, 'ACQUIRED');
+  assert.equal(insufficient.reason, insufficient.successor_candidate.reason);
+  assert.notEqual(insufficient.reason, 'spot_acquisition_ACQUIRED');
+});
+
+test('social score-cache reuse keeps the current trending acquisition', async () => {
+  const root = cacheRoot();
+  const first = socialPayload('2026-09-30T12:00:00.000Z');
+  first.trending.fromCache = false;
+  const missed = await publishSocialFactor({ ...first, cacheRoot: root, writeCache: true });
+  assert.equal(missed.score_cache_reuse, false);
+  assert.equal(missed.r10.trending_from_cache, false);
+  assert.equal(missed.r10.acquisition, 'coingecko_live');
+  const liveAgain = socialPayload('2026-09-30T16:00:00.000Z');
+  liveAgain.trending.fromCache = false;
+  const hit = await publishSocialFactor({ ...liveAgain, cacheRoot: root, writeCache: true });
+  assert.equal(hit.score_cache_reuse, true);
+  assert.equal(hit.r10.trending_from_cache, false);
+  assert.equal(hit.r10.trending_fetched_at, '2026-09-30T16:00:00.000Z');
+  assert.equal(hit.r10.acquisition, 'coingecko_live');
+  const cachedTrend = socialPayload('2026-09-30T17:00:00.000Z');
+  cachedTrend.trending.fromCache = true;
+  const transportHit = await publishSocialFactor({ ...cachedTrend, cacheRoot: root, writeCache: true });
+  assert.equal(transportHit.score_cache_reuse, true);
+  assert.equal(transportHit.r10.trending_from_cache, true);
+  assert.equal(transportHit.r10.trending_fetched_at, '2026-09-30T17:00:00.000Z');
+  assert.equal(transportHit.r10.acquisition, 'coingecko_transport_cache');
+  const missingTime = socialPayload('2026-09-30T17:00:00.000Z');
+  missingTime.trending.fromCache = false;
+  missingTime.trending.acquiredAt = null;
+  const closed = await publishSocialFactor({ ...missingTime, cacheRoot: cacheRoot(), writeCache: false });
+  assert.equal(closed.lastUpdated, null);
+  assert.equal(closed.r10.trending_fetched_at, null);
 });

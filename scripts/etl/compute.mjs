@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "url";
 import { computeAllFactors } from "./factors.mjs";
+import { buildSuccessorProvenance } from "./lib/v12PublicationRecords.mjs";
 import { upsertGScoreHistoryCsv } from "./lib/gscoreHistoryCsv.mjs";
 import { getDashboardConfig, getModelVersion, getSsotVersion } from "../../lib/config-loader.mjs";
 import { gateOfficialAdjustments } from "./lib/officialAdjustments.mjs";
@@ -1228,26 +1229,7 @@ function buildEtfProvenance(factors) {
     factors_computed: factorResults.factors.length,
     factors_successful: factorResults.factors.filter(f => f.status === 'fresh').length,
     term_leverage: termLeverageStatus,
-    successor_provenance: (factorResults.factors || []).filter((factor) => factor.publication_identity === true).map((factor) => ({
-      key: factor.key,
-      score: factor.score,
-      status: factor.status,
-      last_updated_utc: factor.lastUpdated || factor.last_utc || null,
-      provider: factor.r10?.provider ?? factor.funding_provider ?? factor.selected_provider ?? null,
-      source_observation_utc: factor.r10?.source_observation_utc ?? null,
-      scored_observation_utc: factor.r10?.scored_observation_utc ?? null,
-      raw_funding_observation_utc: factor.latest_raw_funding_observation_utc ?? factor.r10?.raw_funding_observation_utc ?? null,
-      scored_funding_observation_utc: factor.funding_observation_utc ?? factor.r10?.scored_funding_observation_utc ?? null,
-      scored_spot_observation_utc: factor.spot_observation_utc ?? factor.r10?.scored_spot_observation_utc ?? null,
-      selected_scoring_date: factor.r10?.selected_scoring_date ?? null,
-      calibration_id: factor.r10?.calibration_id ?? null,
-      acquisition: factor.r10?.acquisition ?? null,
-      fallback: factor.r10?.fallback ?? null,
-      derivation: factor.r10?.derivation ?? null,
-      candidate_only: factor.candidate_only === true,
-      successor_candidate_only: factor.successor_candidate_only === true,
-      successor_production_active: factor.successor_production_active === false,
-    })),
+    successor_provenance: buildSuccessorProvenance(factorResults.factors),
     macro_overlay: (() => {
       const macro = factorResults.factors.find((factor) => factor.key === 'macro_overlay');
       if (!macro) return null;
