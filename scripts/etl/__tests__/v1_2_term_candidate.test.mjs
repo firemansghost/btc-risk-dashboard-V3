@@ -18,6 +18,7 @@ import {
   fundingDayClassification,
   normalizeFundingRatePercent,
   normalizeProviderTimestampUtc,
+  requiredScoreEligibleSpotUtc,
 } from '../candidates/v1_2/term.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -513,4 +514,211 @@ test('C10/C11/C13 fingerprint, cache, and frozen blend', () => {
   assert.equal(a.components.realized_vol.score, 95);
   assert.equal(a.components.stress.score, 95);
   assert.equal(a.score, 95);
+});
+
+function stripAsOfSettlements(rows) {
+  const start = Date.parse(`${AS_OF_DATE}T00:00:00.000Z`);
+  return rows.filter((row) => {
+    const ms = Number(row.fundingTime ?? Date.parse(row.timestamp));
+    return !(ms >= start && ms < start + MS_DAY);
+  });
+}
+
+test('strict funding evidence cannot freshen a stale provider', () => {
+  const base = buildEvidence({ priceForIndex: () => 100 });
+  const staleRows = stripAsOfSettlements(base.funding);
+  const stale = computeV12TermCandidate({
+    asOfUtc: AS_OF,
+    funding: { okx: staleRows },
+    spotPrices: base.prices,
+  });
+  assert.equal(stale.score, null);
+  assert.equal(stale.provider_dispositions.find((row) => row.provider === 'okx').disposition, 'STALE');
+
+  const terminal = isoAt(AS_OF_DATE, 16);
+  const badRates = [null, '', '   ', false, {}, 'not-a-rate', Number.NaN, Infinity, Number.MAX_VALUE];
+  for (const fundingRate of badRates) {
+    const rows = staleRows.slice();
+    rows.push({
+      instId: 'BTC-USDT-SWAP',
+      fundingTime: String(Date.parse(terminal)),
+      fundingRate,
+      fundingInterval: '8h',
+    });
+    const result = computeV12TermCandidate({
+      asOfUtc: AS_OF,
+      funding: { okx: rows },
+      spotPrices: base.prices,
+    });
+    assert.equal(result.score, null, `rate ${String(fundingRate)} must not score`);
+    assert.equal(result.provider_dispositions.find((row) => row.provider === 'okx').disposition, 'STALE');
+  }
+  assert.equal(normalizeFundingRatePercent(Number.MAX_VALUE), null);
+  assert.equal(normalizeFundingRatePercent(0.0001), 0.01);
+});
+
+test('score-eligible spot freshness rejects stale completed history', () => {
+  assert.equal(requiredScoreEligibleSpotUtc(AS_OF), '2026-09-29T00:00:00.000Z');
+  const current = candidateFrom(buildEvidence({ priceForIndex: () => 100 }));
+  assert.equal(current.score, 95);
+  assert.equal(current.common_cutoff_date_D, '2026-09-29');
+  assert.equal(current.spot_observation_utc, '2026-09-29T00:00:00.000Z');
+
+  const stale = buildEvidence({ completeDays: 130, priceForIndex: () => 100 });
+  const limit = Date.parse('2026-09-19T00:00:00.000Z');
+  stale.prices = stale.prices.filter((row) => row[0] <= limit);
+  const withoutIntraday = candidateFrom(stale);
+  assert.equal(withoutIntraday.score, null);
+  assert.equal(withoutIntraday.reason, 'stale_score_eligible_spot');
+  assert.notEqual(withoutIntraday.common_cutoff_date_D, '2026-09-19');
+
+  stale.prices.push([Date.parse(AS_OF), 250_000]);
+  const rescued = candidateFrom(stale);
+  assert.equal(rescued.score, null);
+  assert.equal(rescued.reason, 'stale_score_eligible_spot');
+  assert.equal(rescued.latest_raw_spot_observation_utc, AS_OF);
+  assert.equal(rescued.latest_score_eligible_spot_utc, '2026-09-19T00:00:00.000Z');
+});
+
+test('malformed duplicates fail closed in current and reference windows', () => {
+  const valid = candidateFrom(buildEvidence({ priceForIndex: () => 100 }));
+  assert.equal(valid.score, 95);
+
+  const currentFunding = buildEvidence({ priceForIndex: () => 100 });
+  currentFunding.funding.push({
+    instId: 'BTC-USDT-SWAP',
+    fundingTime: String(Date.parse(isoAt(addDays(D, -10), 8))),
+    fundingRate: null,
+  });
+  assert.equal(candidateFrom(currentFunding).score, null);
+  const currentSurface = buildV12FundingDailySurface(currentFunding.funding, 'okx');
+  assert.equal(fundingDayClassification(currentSurface, addDays(D, -10)), V12_TERM_DAY_STATE.CONFLICTING_DAY);
+
+  const referenceFunding = buildEvidence({ priceForIndex: () => 100 });
+  referenceFunding.funding.push({
+    instId: 'BTC-USDT-SWAP',
+    fundingTime: String(Date.parse(isoAt(addDays(D, -50), 8))),
+    fundingRate: null,
+  });
+  assert.equal(candidateFrom(referenceFunding).score, null);
+
+  const currentSpot = buildEvidence({ priceForIndex: () => 100 });
+  currentSpot.prices.push([Date.parse(`${addDays(D, -5)}T00:00:00.000Z`), Number.NaN]);
+  assert.equal(candidateFrom(currentSpot).score, null);
+
+  const referenceSpot = buildEvidence({ priceForIndex: () => 100 });
+  referenceSpot.prices.push([Date.parse(`${addDays(D, -70)}T00:00:00.000Z`), Number.NaN]);
+  assert.equal(candidateFrom(referenceSpot).score, null);
+
+  const unrelated = buildEvidence({ priceForIndex: () => 100 });
+  unrelated.funding.push({ fundingTime: null, fundingRate: null });
+  unrelated.prices.push([null, Number.NaN]);
+  const untouched = candidateFrom(unrelated);
+  assert.equal(untouched.score, 95);
+  assert.equal(untouched.fingerprint, valid.fingerprint);
+});
+
+test('cache reuse requires a complete consistent candidate result', () => {
+  const current = candidateFrom(buildEvidence({ priceForIndex: () => 100 }));
+  assert.equal(canReuseV12TermCache({ current, cached: structuredClone(current) }), true);
+  assert.equal(canReuseV12TermCache({
+    current,
+    cached: { ...current, score: 999 },
+  }), false);
+  assert.equal(canReuseV12TermCache({
+    current,
+    cached: {
+      ...current,
+      lastUpdated: null,
+      funding_observation_utc: null,
+      stress_funding_observation_utc: null,
+      spot_observation_utc: null,
+    },
+  }), false);
+  assert.equal(canReuseV12TermCache({
+    current,
+    cached: { ...current, components: {} },
+  }), false);
+  assert.equal(canReuseV12TermCache({
+    current,
+    cached: {
+      ...current,
+      components: {
+        ...current.components,
+        funding: { ...current.components.funding, reference_count: 59 },
+      },
+    },
+  }), false);
+  const corruptedInput = structuredClone(current);
+  corruptedInput.fingerprint_input.selected_provider = 'bitmex';
+  assert.equal(canReuseV12TermCache({ current, cached: corruptedInput }), false);
+});
+
+test('timestamps reject invalid calendar dates and zoneless ISO', () => {
+  assert.equal(normalizeProviderTimestampUtc('2026-02-30T00:00:00.000Z'), null);
+  assert.equal(normalizeProviderTimestampUtc('2026-01-15T00:00:00'), null);
+  assert.equal(normalizeProviderTimestampUtc('2026-01-15T00:00:00.000'), null);
+  assert.equal(normalizeProviderTimestampUtc('2026-01-15T00:00:00.000Z'), '2026-01-15T00:00:00.000Z');
+  assert.equal(normalizeProviderTimestampUtc('2026-01-15T05:00:00.000+05:00'), '2026-01-15T00:00:00.000Z');
+  assert.equal(normalizeProviderTimestampUtc('2026-01-15T00:00:00.000-00:00'), '2026-01-15T00:00:00.000Z');
+  const ms = Date.parse('2026-01-15T00:00:00.000Z');
+  assert.equal(normalizeProviderTimestampUtc(ms), '2026-01-15T00:00:00.000Z');
+  assert.equal(normalizeProviderTimestampUtc(String(ms)), '2026-01-15T00:00:00.000Z');
+  for (const bad of [null, '', '   ', false, {}, Number.NaN, Infinity, 'nope']) {
+    assert.equal(normalizeProviderTimestampUtc(bad), null);
+  }
+});
+
+test('supplied acquisition failure classes stay distinguishable', () => {
+  const okx = buildEvidence({ provider: 'okx', priceForIndex: () => 100 });
+  const classes = [
+    ['HTTP_451', 451],
+    ['HTTP_OTHER', 500],
+    ['NETWORK_ERROR', null],
+    ['MALFORMED_RESPONSE', null],
+    ['PROVIDER_ERROR', null],
+  ];
+  for (const [classification, httpStatus] of classes) {
+    const result = computeV12TermCandidate({
+      asOfUtc: AS_OF,
+      funding: {
+        bitmex: {
+          rows: null,
+          acquisition: { classification, http_status: httpStatus },
+        },
+        okx: okx.funding,
+      },
+      spotPrices: okx.prices,
+    });
+    const bitmex = result.provider_dispositions.find((row) => row.provider === 'bitmex');
+    assert.equal(bitmex.acquisition_classification, classification);
+    assert.equal(bitmex.disposition, 'SOURCE_ACQUISITION_UNAVAILABLE');
+    assert.equal(bitmex.http_status, httpStatus);
+    assert.notEqual(bitmex.disposition, 'HISTORY_INSUFFICIENT');
+    assert.equal(result.selected_provider, 'okx');
+  }
+
+  const empty = computeV12TermCandidate({
+    asOfUtc: AS_OF,
+    funding: {
+      bitmex: { rows: [], acquisition: { classification: 'EMPTY' } },
+      okx: okx.funding,
+    },
+    spotPrices: okx.prices,
+  });
+  const emptyBitmex = empty.provider_dispositions.find((row) => row.provider === 'bitmex');
+  assert.equal(emptyBitmex.acquisition_classification, 'EMPTY');
+  assert.equal(emptyBitmex.disposition, 'UNAVAILABLE');
+  assert.notEqual(emptyBitmex.disposition, 'HISTORY_INSUFFICIENT');
+  assert.equal(emptyBitmex.http_status, null);
+
+  const fresh = computeV12TermCandidate({
+    asOfUtc: AS_OF,
+    funding: {
+      okx: { rows: okx.funding, acquisition: { classification: 'FRESH' } },
+    },
+    spotPrices: okx.prices,
+  });
+  assert.equal(fresh.provider_dispositions.find((row) => row.provider === 'okx').acquisition_classification, 'FRESH');
+  assert.equal(fresh.provider_dispositions.find((row) => row.provider === 'okx').disposition, 'SELECTED');
 });

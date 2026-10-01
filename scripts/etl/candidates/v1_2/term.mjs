@@ -12,7 +12,12 @@
 
 import { createHash } from 'node:crypto';
 import { LOCKED_OFFICIAL_BLENDS } from '../../lib/ssotSubweights.mjs';
-import { selectFreshFundingProvider } from '../../lib/termFreshness.mjs';
+import {
+  COINGECKO_DAILY_SPOT_CADENCE,
+  expectedLatestSlotUtc,
+  isObservationAcceptable,
+  selectFreshFundingProvider,
+} from '../../lib/termFreshness.mjs';
 
 export const V12_TERM_CANDIDATE_ONLY = true;
 export const V12_MODEL_VERSION_TARGET = 'v1.2.0';
@@ -90,10 +95,49 @@ export function addUtcDays(dateStr, days) {
 }
 
 /**
- * Fail-closed provider timestamp. Rejects null/boolean/object/blank and
- * non-finite values so Number(null|''|false) cannot become Unix epoch.
- * Accepts finite epoch milliseconds, non-empty numeric-string epoch
- * milliseconds, and valid ISO timestamps.
+ * Explicit-zone ISO only. Calendar fields are validated in UTC so Feb 30
+ * cannot roll forward, and zoneless strings are not interpreted in the host zone.
+ */
+function parseExplicitZoneIso(text) {
+  const match = text.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d{1,9})?(Z|[+-]\d{2}:\d{2}|[+-]\d{4})$/
+  );
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const hour = Number(match[4]);
+  const minute = Number(match[5]);
+  const second = Number(match[6]);
+  const fraction = match[7] ? match[7].slice(1) : '';
+  const millis = Number((fraction + '000').slice(0, 3));
+  if (month < 1 || month > 12 || hour > 23 || minute > 59 || second > 59) return null;
+  const civil = new Date(Date.UTC(year, month - 1, day, hour, minute, second, millis));
+  if (
+    civil.getUTCFullYear() !== year
+    || civil.getUTCMonth() !== month - 1
+    || civil.getUTCDate() !== day
+    || civil.getUTCHours() !== hour
+    || civil.getUTCMinutes() !== minute
+    || civil.getUTCSeconds() !== second
+  ) return null;
+  const zone = match[8];
+  let offsetMinutes = 0;
+  if (zone !== 'Z') {
+    const sign = zone[0] === '-' ? -1 : 1;
+    const hours = Number(zone.slice(1, 3));
+    const minutes = Number(zone.length === 5 ? zone.slice(3, 5) : zone.slice(4, 6));
+    if (hours > 23 || minutes > 59) return null;
+    offsetMinutes = sign * (hours * 60 + minutes);
+  }
+  return new Date(civil.getTime() - offsetMinutes * 60_000).toISOString();
+}
+
+/**
+ * Fail-closed provider timestamp. Rejects null/boolean/object/blank,
+ * non-finite values, invalid calendar dates, and timezone-ambiguous ISO.
+ * Accepts finite epoch milliseconds, numeric-string epoch milliseconds,
+ * and explicit-zone ISO timestamps.
  */
 export function normalizeProviderTimestampUtc(ts) {
   if (ts == null || typeof ts === 'boolean' || typeof ts === 'object') return null;
@@ -106,11 +150,7 @@ export function normalizeProviderTimestampUtc(ts) {
   if (typeof ts !== 'string') return null;
   const trimmed = ts.trim();
   if (!trimmed) return null;
-  if (trimmed.includes('T')) {
-    const ms = Date.parse(trimmed);
-    if (!Number.isFinite(ms)) return null;
-    return new Date(ms).toISOString();
-  }
+  if (trimmed.includes('T') || trimmed.includes('t')) return parseExplicitZoneIso(trimmed);
   if (!/^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/.test(trimmed)) return null;
   const ms = Number(trimmed);
   if (!Number.isFinite(ms)) return null;
@@ -133,7 +173,9 @@ export function normalizeFundingRatePercent(raw) {
     n = Number(trimmed);
   } else return null;
   if (!Number.isFinite(n)) return null;
-  return n * 100;
+  const percent = n * 100;
+  if (!Number.isFinite(percent)) return null;
+  return percent;
 }
 
 function rawFundingTimestamp(row, provider) {
@@ -328,11 +370,10 @@ function modalExactSlots(seg, chronological) {
  */
 export function buildV12FundingDailySurface(rawRows, provider) {
   const parsed = (rawRows || []).map((row, i) => parseFundingObservation(row, provider, i));
-  const malformed = parsed.filter((row) => !row.valid);
-  const valid = parsed.filter((row) => row.valid);
-
+  const malformed = parsed.filter((row) => !row.source_timestamp_utc || row.funding_rate_percent == null);
   const byTs = new Map();
-  for (const row of valid) {
+  for (const row of parsed) {
+    if (!row.source_timestamp_utc) continue;
     const list = byTs.get(row.source_timestamp_utc) || [];
     list.push(row);
     byTs.set(row.source_timestamp_utc, list);
@@ -342,27 +383,42 @@ export function buildV12FundingDailySurface(rawRows, provider) {
   const exactDuplicates = [];
   const conflicting = [];
   for (const [ts, list] of byTs) {
-    const rates = [...new Set(list.map((r) => r.funding_rate_percent))];
+    const finite = list.filter((row) => row.funding_rate_percent != null);
+    const bad = list.filter((row) => row.funding_rate_percent == null);
+    if (bad.length > 0 && finite.length > 0) {
+      conflicting.push({
+        source_timestamp_utc: ts,
+        utc_date: list[0].utc_date,
+        kind: 'MALFORMED_DUPLICATE',
+        funding_rates_percent: [...new Set(finite.map((row) => row.funding_rate_percent))].sort((a, b) => a - b),
+        malformed_count: bad.length,
+        count: list.length,
+      });
+      continue;
+    }
+    if (finite.length === 0) continue;
+    const rates = [...new Set(finite.map((row) => row.funding_rate_percent))];
     if (rates.length > 1) {
       conflicting.push({
         source_timestamp_utc: ts,
         utc_date: list[0].utc_date,
+        kind: 'CONFLICTING_DUPLICATE',
         funding_rates_percent: rates.slice().sort((a, b) => a - b),
         count: list.length,
       });
       continue;
     }
-    const sample = list.slice().sort((a, b) => a.raw_index - b.raw_index)[0];
+    const sample = finite.slice().sort((a, b) => a.raw_index - b.raw_index)[0];
     collapsed.push({
       ...sample,
-      exact_duplicate_count: list.length,
+      exact_duplicate_count: finite.length,
     });
-    if (list.length > 1) {
+    if (finite.length > 1) {
       exactDuplicates.push({
         source_timestamp_utc: ts,
         utc_date: sample.utc_date,
         funding_rate_percent: sample.funding_rate_percent,
-        count: list.length,
+        count: finite.length,
       });
     }
   }
@@ -457,15 +513,28 @@ export function selectV12CompletedDailySpot(prices, asOfUtc) {
     const price = row[1];
     const finite = typeof price === 'number' && Number.isFinite(price);
     if (iso && (!latestRaw || iso > latestRaw)) latestRaw = iso;
+    const date = iso ? utcDateFromIso(iso) : null;
     if (!iso || !finite) {
       rejected.push({
         raw_index: rawIndex,
         reason: !iso ? 'invalid_timestamp' : 'non_finite_price',
         source_timestamp_utc: iso,
+        utc_date: date,
       });
+      if (date) {
+        const list = grouped.get(date) || [];
+        list.push({
+          raw_index: rawIndex,
+          utc_date: date,
+          source_timestamp_utc: iso,
+          price: null,
+          malformed_price: true,
+          exact_midnight: isExactUtcMidnight(iso),
+        });
+        grouped.set(date, list);
+      }
       return;
     }
-    const date = utcDateFromIso(iso);
     const list = grouped.get(date) || [];
     list.push({
       raw_index: rawIndex,
@@ -480,11 +549,17 @@ export function selectV12CompletedDailySpot(prices, asOfUtc) {
   const eligible = [];
   const duplicateDates = [];
   for (const [date, list] of [...grouped.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
-    if (list.length > 1) {
+    const finiteRows = list.filter((row) => !row.malformed_price);
+    const malformedRows = list.filter((row) => row.malformed_price);
+    if (malformedRows.length > 0 && finiteRows.length > 0) {
       duplicateDates.push(date);
       continue;
     }
-    const row = list[0];
+    if (finiteRows.length !== 1) {
+      if (finiteRows.length > 1) duplicateDates.push(date);
+      continue;
+    }
+    const row = finiteRows[0];
     if (!asOfDate || row.utc_date >= asOfDate) continue;
     if (!row.exact_midnight) continue;
     eligible.push(row);
@@ -737,10 +812,102 @@ function readProviderBundle(raw) {
   return { rows: null, acquisition: null };
 }
 
+const ACQUISITION_CLASSES = new Set([
+  'HTTP_451',
+  'HTTP_OTHER',
+  'NETWORK_ERROR',
+  'MALFORMED_RESPONSE',
+  'PROVIDER_ERROR',
+  'EMPTY',
+  'STALE',
+  'VALID',
+  'FRESH',
+]);
+const ACQUISITION_FAILURE_CLASSES = new Set([
+  'HTTP_451',
+  'HTTP_OTHER',
+  'NETWORK_ERROR',
+  'MALFORMED_RESPONSE',
+  'PROVIDER_ERROR',
+]);
+
+function suppliedAcquisitionClassification(acquisition) {
+  if (!acquisition || typeof acquisition !== 'object') return null;
+  const named = acquisition.classification ?? acquisition.failure_class ?? null;
+  if (typeof named === 'string' && ACQUISITION_CLASSES.has(named)) return named;
+  if (acquisition.http_status === 451) return 'HTTP_451';
+  if (Number.isInteger(acquisition.http_status) && acquisition.http_status >= 400) return 'HTTP_OTHER';
+  return null;
+}
+
 function acquisitionUnavailable(acquisition) {
   if (!acquisition) return false;
   if (acquisition.state === 'SOURCE_ACQUISITION_UNAVAILABLE') return true;
+  const klass = suppliedAcquisitionClassification(acquisition);
+  if (ACQUISITION_FAILURE_CLASSES.has(klass)) return true;
   return Number.isInteger(acquisition.http_status) && acquisition.http_status >= 400;
+}
+
+/**
+ * Rows Gate 1 may treat as funding observations.
+ * Strict percent-finite rates only, so Number(null) cannot become a fresh settlement.
+ * Cadence metadata is copied onto a non-mutated row when the invalid terminal row held it.
+ * Raw rows stay intact for Gate 2 duplicate and completeness checks.
+ */
+function strictFundingRowsForGate1(rows, provider) {
+  const source = Array.isArray(rows) ? rows : [];
+  let cadence = null;
+  const strict = [];
+  for (const row of source) {
+    if (row && typeof row === 'object' && !Array.isArray(row)) {
+      const interval = row.fundingInterval ?? row.fundingIntervalHours ?? row.funding_interval ?? null;
+      const nextFundingTime = row.nextFundingTime ?? null;
+      if ((interval != null || nextFundingTime != null) && !cadence) {
+        cadence = { fundingInterval: interval, nextFundingTime };
+      }
+    }
+    const iso = normalizeProviderTimestampUtc(rawFundingTimestamp(row, provider));
+    const rate = normalizeFundingRatePercent(row?.fundingRate);
+    if (!iso || rate == null) continue;
+    strict.push(row);
+  }
+  if (cadence && strict.length > 0) {
+    const hasMeta = strict.some((row) =>
+      row.fundingInterval != null || row.fundingIntervalHours != null || row.nextFundingTime != null
+    );
+    if (!hasMeta) strict[0] = { ...strict[0], ...cadence };
+  }
+  return strict;
+}
+
+/**
+ * Latest completed daily slot that CG_COMPLETED can actually score.
+ * Uses the existing 00:00 UTC / 180-minute CoinGecko cadence. When that
+ * published slot falls on the as-of UTC date, it is excluded from completed
+ * daily eligibility, so the required score-eligible observation is the prior slot.
+ */
+export function requiredScoreEligibleSpotUtc(asOfIso) {
+  const published = expectedLatestSlotUtc(asOfIso, COINGECKO_DAILY_SPOT_CADENCE);
+  const asOfDate = utcDateFromIso(asOfIso);
+  const publishedDate = utcDateFromIso(published);
+  if (asOfDate && publishedDate && publishedDate >= asOfDate) {
+    return new Date(
+      Date.parse(published) - COINGECKO_DAILY_SPOT_CADENCE.intervalHours * 3_600_000
+    ).toISOString();
+  }
+  return published;
+}
+
+function spotEvidenceIsFresh(spot, asOfIso) {
+  const required = requiredScoreEligibleSpotUtc(asOfIso);
+  const latestEligible = spot.eligible.length
+    ? spot.eligible[spot.eligible.length - 1].source_timestamp_utc
+    : null;
+  return {
+    required_score_eligible_spot_utc: required,
+    latest_score_eligible_spot_utc: latestEligible,
+    fresh: isObservationAcceptable(latestEligible, required),
+  };
 }
 
 function baseResult(asOfIso, extra = {}) {
@@ -901,6 +1068,7 @@ export function computeV12TermCandidate({
     return baseResult(null, { reason: 'missing_or_invalid_as_of_utc' });
   }
   const spot = selectV12CompletedDailySpot(spotPrices || prices || [], asOfIso);
+  const spotFreshness = spotEvidenceIsFresh(spot, asOfIso);
   const dispositions = [];
   let selected = null;
   let selectedEval = null;
@@ -908,7 +1076,7 @@ export function computeV12TermCandidate({
   const freshPack = {};
   for (const provider of PROVIDER_ORDER) {
     const bundle = readProviderBundle(funding[provider]);
-    freshPack[provider] = bundle.rows || [];
+    freshPack[provider] = strictFundingRowsForGate1(bundle.rows, provider);
   }
   const freshness = selectFreshFundingProvider({ ...freshPack, asOfUtc: asOfIso });
   const freshByProvider = Object.fromEntries((freshness.candidates || []).map((c) => [c.provider, c]));
@@ -918,10 +1086,23 @@ export function computeV12TermCandidate({
     const httpStatus = Number.isInteger(bundle.acquisition?.http_status)
       ? bundle.acquisition.http_status
       : null;
+    const acquisitionClassification = suppliedAcquisitionClassification(bundle.acquisition);
     if (acquisitionUnavailable(bundle.acquisition)) {
       dispositions.push({
         provider,
         disposition: 'SOURCE_ACQUISITION_UNAVAILABLE',
+        acquisition_classification: acquisitionClassification,
+        http_status: httpStatus,
+        gate1: 'NOT_EVALUATED',
+        gate2: 'NOT_EVALUATED',
+      });
+      continue;
+    }
+    if (acquisitionClassification === 'EMPTY' && !(bundle.rows && bundle.rows.length)) {
+      dispositions.push({
+        provider,
+        disposition: 'UNAVAILABLE',
+        acquisition_classification: 'EMPTY',
         http_status: httpStatus,
         gate1: 'NOT_EVALUATED',
         gate2: 'NOT_EVALUATED',
@@ -933,8 +1114,20 @@ export function computeV12TermCandidate({
       dispositions.push({
         provider,
         disposition: gate1?.status === 'stale' ? 'STALE' : 'UNAVAILABLE',
+        acquisition_classification: acquisitionClassification,
         http_status: httpStatus,
         gate1: gate1?.status || 'unavailable',
+        gate2: 'NOT_EVALUATED',
+      });
+      continue;
+    }
+    if (!spotFreshness.fresh) {
+      dispositions.push({
+        provider,
+        disposition: 'SPOT_EVIDENCE_STALE',
+        acquisition_classification: acquisitionClassification,
+        http_status: httpStatus,
+        gate1: 'fresh',
         gate2: 'NOT_EVALUATED',
       });
       continue;
@@ -944,6 +1137,7 @@ export function computeV12TermCandidate({
       dispositions.push({
         provider,
         disposition: 'HISTORY_INSUFFICIENT',
+        acquisition_classification: acquisitionClassification,
         http_status: httpStatus,
         gate1: 'fresh',
         gate2: evaln.reason,
@@ -958,6 +1152,7 @@ export function computeV12TermCandidate({
     dispositions.push({
       provider,
       disposition: 'SELECTED',
+      acquisition_classification: acquisitionClassification,
       http_status: httpStatus,
       gate1: 'fresh',
       gate2: 'PASS',
@@ -968,10 +1163,13 @@ export function computeV12TermCandidate({
   }
 
   if (!selected || !selectedEval) {
+    const spotStale = dispositions.some((row) => row.disposition === 'SPOT_EVIDENCE_STALE');
     return baseResult(asOfIso, {
-      reason: 'no_provider_passes_both_gates',
+      reason: spotStale ? 'stale_score_eligible_spot' : 'no_provider_passes_both_gates',
       provider_dispositions: dispositions,
       latest_raw_spot_observation_utc: spot.latest_raw_observation_utc,
+      score_eligible_spot_required_utc: spotFreshness.required_score_eligible_spot_utc,
+      latest_score_eligible_spot_utc: spotFreshness.latest_score_eligible_spot_utc,
     });
   }
 
@@ -1032,6 +1230,7 @@ export function computeV12TermCandidate({
     spot_observation_utc: selectedEval.spotObs,
     latest_raw_funding_observation_utc: selectedEval.latestRawFunding,
     latest_raw_spot_observation_utc: selectedEval.latestRawSpot,
+    score_eligible_spot_required_utc: spotFreshness.required_score_eligible_spot_utc,
     lastUpdated,
     fingerprint: selectedEval.fp.fingerprint,
     fingerprint_input: selectedEval.fp.fingerprint_input,
@@ -1040,16 +1239,62 @@ export function computeV12TermCandidate({
   });
 }
 
+function boundedComponentScore(value) {
+  return Number.isInteger(value) && value >= 0 && value <= 100;
+}
+
+function sameEndpoints(left, right) {
+  return Array.isArray(left)
+    && Array.isArray(right)
+    && left.length === V12_TERM_REFERENCE_DEPTH
+    && right.length === V12_TERM_REFERENCE_DEPTH
+    && left.every((endpoint, index) => endpoint === right[index]);
+}
+
+function cachedComponentMatches(cachedComponent, currentComponent) {
+  if (!cachedComponent || !currentComponent) return false;
+  if (cachedComponent.state !== 'OBSERVED' || currentComponent.state !== 'OBSERVED') return false;
+  if (!boundedComponentScore(cachedComponent.score) || cachedComponent.score !== currentComponent.score) {
+    return false;
+  }
+  if (cachedComponent.value !== currentComponent.value) return false;
+  if (cachedComponent.reference_count !== V12_TERM_REFERENCE_DEPTH) return false;
+  return sameEndpoints(cachedComponent.reference_endpoints, currentComponent.reference_endpoints);
+}
+
+function canonicalObservation(value) {
+  if (typeof value !== 'string' || !value) return null;
+  const normalized = normalizeProviderTimestampUtc(value);
+  return normalized === value ? value : null;
+}
+
 export function canReuseV12TermCache({ current, cached } = {}) {
   if (!current?.cache_reuse_current_evidence_eligible) return false;
   if (!cached || typeof cached !== 'object') return false;
+  if (cached.candidate_only !== true || cached.production_active !== false) return false;
+  if (cached.factor_key !== V12_FACTOR_KEY) return false;
   if (cached.model_version_target !== V12_MODEL_VERSION_TARGET) return false;
   if (cached.implementation_revision_target !== V12_IMPLEMENTATION_REVISION_TARGET) return false;
   if (cached.ssot_version !== V12_SSOT_VERSION) return false;
   if (cached.contract_id !== V12_TERM_CONTRACT_ID) return false;
   if (cached.selected_provider !== current.selected_provider) return false;
-  if (!Number.isFinite(cached.score)) return false;
-  if (typeof cached.fingerprint !== 'string' || cached.fingerprint !== current.fingerprint) return false;
   if (cached.common_cutoff_date_D !== current.common_cutoff_date_D) return false;
+  if (!boundedComponentScore(cached.score) || cached.score !== current.score) return false;
+  if (!cachedComponentMatches(cached.components?.funding, current.components?.funding)) return false;
+  if (!cachedComponentMatches(cached.components?.realized_vol, current.components?.realized_vol)) return false;
+  if (!cachedComponentMatches(cached.components?.stress, current.components?.stress)) return false;
+  const fundingUtc = canonicalObservation(cached.funding_observation_utc);
+  const stressUtc = canonicalObservation(cached.stress_funding_observation_utc);
+  const spotUtc = canonicalObservation(cached.spot_observation_utc);
+  if (!fundingUtc || !stressUtc || !spotUtc) return false;
+  const binding = [fundingUtc, stressUtc, spotUtc].reduce((oldest, value) => (oldest < value ? oldest : value));
+  if (canonicalObservation(cached.lastUpdated) !== binding) return false;
+  if (fundingUtc !== current.funding_observation_utc) return false;
+  if (stressUtc !== current.stress_funding_observation_utc) return false;
+  if (spotUtc !== current.spot_observation_utc) return false;
+  if (cached.lastUpdated !== current.lastUpdated) return false;
+  if (typeof cached.fingerprint !== 'string' || cached.fingerprint !== current.fingerprint) return false;
+  if (!cached.fingerprint_input || sha256Hex(cached.fingerprint_input) !== cached.fingerprint) return false;
+  if (sha256Hex(cached.fingerprint_input) !== sha256Hex(current.fingerprint_input)) return false;
   return true;
 }
