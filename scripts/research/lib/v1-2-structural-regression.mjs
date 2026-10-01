@@ -21,12 +21,22 @@ import { computeEtfCandidate } from '../../etl/lib/etfCandidateCompute.mjs';
 import { createEmptyEtfSourceHistory, planEtfSourceHistoryMerge } from '../../etl/lib/etfSourceHistory.mjs';
 import { isUsTradingDay } from '../../etl/marketCalendar.mjs';
 import { fetchProductionVix, parseCboeVixHistory } from '../../etl/lib/vixSource.mjs';
-import { computeTrendValuation } from '../../etl/factors/trendValuation.mjs';
-
 import {
+  analyzeV12StablecoinCoin,
+  selectPriorDatedCalibrationObservations,
+  stablecoinCoverageEligible,
   V12_STABLECOIN_CONFIG,
   computeV12StablecoinCandidate,
 } from '../../etl/candidates/v1_2/stablecoins.mjs';
+import {
+  assertReportDirectoryOutsideRepo,
+  readGitRef,
+  readGitRevision,
+  runInstrumentedMacro,
+  runInstrumentedTrend,
+  runProductionComposite,
+  sha256 as hashText,
+} from './v1-2-gate-instrumentation.mjs';
 import {
   V12_NET_LIQUIDITY_USD_MULTIPLIERS,
   canReuseV12NetLiquidityCache,
@@ -507,24 +517,53 @@ function contractAssertions(bundle, executed) {
       calibration_id: stable.calibration_id,
       validation: stable.calibration_validation,
     }));
-  const exactLag = computeV12StablecoinCandidate({
-    responses: bundle.stable.responses.map((response) => ({
-      market_caps: response.market_caps.map((row, index, rows) => (
-        index === rows.length - 1 ? [row[0] - MS_DAY, row[1]] : row
-      )),
-    })),
-    calibration: bundle.stable.calibration,
-    asOfUtc: GATE_AS_OF_UTC,
-  });
+  const endpoint = Date.parse('2026-09-30T12:00:00.000Z');
+  const target7 = endpoint - 7 * MS_DAY;
+  const target30 = endpoint - 30 * MS_DAY;
+  const exactCaps = [];
+  const underCaps = [];
+  for (let day = 40; day >= 0; day -= 1) {
+    const ts = endpoint - day * MS_DAY;
+    if (ts !== target7 && ts !== target30) exactCaps.push([ts, 1e9]);
+    if (ts === target7 || ts === target30) underCaps.push([ts - 23 * 60 * 60 * 1000, 1e9]);
+    else underCaps.push([ts, 1e9]);
+  }
+  const asOfMs = Date.parse(GATE_AS_OF_UTC);
+  const exact = analyzeV12StablecoinCoin('USDT', exactCaps, { asOfMs });
+  const under = analyzeV12StablecoinCoin('USDT', underCaps, { asOfMs });
   out.push(finiteScore(stable)
     ? pass('stablecoin_scored', 'strict positive-cap evidence scores', { score: stable.score, observation_date: stable.observation_date })
     : fail('stablecoin_scored', 'strict positive-cap evidence scores', { reason: stable.reason }));
-  out.push(!finiteScore(exactLag)
-    ? pass('stablecoin_exact_24h_lag', 'moving the endpoint a full day earlier fails the lag contract', { reason: exactLag.reason })
-    : limitation('stablecoin_exact_24h_lag', 'exact 24h lag', {
-      note: 'This supplied shift still scored. The dedicated candidate suite remains the lag oracle; this gate did not independently reproduce a 24h failure with this fixture.',
-      score: exactLag.score,
+  out.push(exact.horizon_7d?.available === false
+    && exact.horizon_7d?.lag_hours_target_to_prior === 24
+    && exact.horizon_30d?.available === false
+    && exact.horizon_30d?.lag_hours_target_to_prior === 24
+    && under.horizon_7d?.available === true
+    && under.horizon_7d?.lag_hours_target_to_prior === 23
+    && under.horizon_30d?.available === true
+    && under.horizon_30d?.lag_hours_target_to_prior === 23
+    ? pass('stablecoin_exact_24h_lag', 'removing the target observation leaves a prior exactly 24h behind', {
+      exact_7d: exact.horizon_7d?.lag_hours_target_to_prior,
+      exact_30d: exact.horizon_30d?.lag_hours_target_to_prior,
+      under_7d: under.horizon_7d?.lag_hours_target_to_prior,
+    })
+    : fail('stablecoin_exact_24h_lag', 'removing the target observation leaves a prior exactly 24h behind', {
+      exact7: exact.horizon_7d,
+      exact30: exact.horizon_30d,
+      under7: under.horizon_7d,
+      under30: under.horizon_30d,
     }));
+  const priors = selectPriorDatedCalibrationObservations(bundle.stable.calibration, stable.observation_date);
+  out.push(priors.length > 0 && priors.every((row) => row.observation_date < stable.observation_date)
+    ? pass('stablecoin_prior_calibration', 'calibration rows used as reference are strictly before the observation date', {
+      observation_date: stable.observation_date,
+      prior_count: priors.length,
+    })
+    : fail('stablecoin_prior_calibration', 'calibration rows are strictly earlier', { observation_date: stable.observation_date }));
+  const thin = stablecoinCoverageEligible({ validCoinCount: 2, includedWeightSum: 0.6, totalConfiguredWeight: 1 });
+  out.push(thin.eligible === false
+    ? pass('stablecoin_coverage_floor', 'fewer than three coins or under 70 percent coverage is ineligible', thin)
+    : fail('stablecoin_coverage_floor', 'coverage floor', thin));
 
   out.push(executed.liquidity.usd_multipliers.WALCL === 1e6
     && executed.liquidity.usd_multipliers.WTREGEN === 1e6
@@ -677,39 +716,38 @@ async function unchangedFactorAssertions(config) {
     ? pass('trend_blend', 'executed official 60/30/10 Trend blend', { score: blend })
     : fail('trend_blend', 'executed official 60/30/10 Trend blend', { score: blend }));
 
-  let trendFetchCalls = 0;
-  const originalFetch = globalThis.fetch;
-  globalThis.fetch = async () => {
-    trendFetchCalls += 1;
-    throw new Error('structural_regression_network_forbidden');
-  };
-  let trendResult = null;
-  let trendError = null;
-  try {
-    trendResult = await computeTrendValuation(100_000);
-  } catch (error) {
-    trendError = error.message;
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
-  if (trendError || !Number.isFinite(trendResult?.score)) {
-    out.push(limitation('trend_full_execution', 'full Trend production execution', {
-      note: 'computeTrendValuation was invoked with network blocked. A frozen numeric parity PASS is not claimed because the production function binds its own as-of to the wall clock and reads repository price history.',
-      error: trendError,
-      reason: trendResult?.reason || null,
-      fetch_calls: trendFetchCalls,
-      numeric_score_excluded_from_evidence_hash: true,
-    }));
-  } else {
-    out.push(limitation('trend_full_execution', 'full Trend production execution', {
-      note: 'The real function returned a finite score without network. That number is descriptive only and is excluded from the evidence hash because production as-of is wall-clock.',
-      fetch_calls: trendFetchCalls,
-      numeric_score_excluded_from_evidence_hash: true,
-    }));
-  }
-  const trendDescriptive = trendResult && Number.isFinite(trendResult.score)
-    ? { score: trendResult.score }
+
+  const trendRun = await runInstrumentedTrend(GATE_AS_OF_UTC);
+  const trendResult = trendRun.result;
+  const componentLine = (trendResult.details || []).find((row) => row.label === "Component Scores")?.value || "";
+  const componentNumbers = [...componentLine.matchAll(/-?\d+/g)].map((match) => Number(match[0]));
+  const componentBlend = componentNumbers.length >= 3
+    ? blendComponentScores({
+      bmsb_distance: componentNumbers[0],
+      mayer_stretch: componentNumbers[1],
+      weekly_rsi: componentNumbers[2],
+    }, LOCKED_OFFICIAL_BLENDS.trend_valuation)
     : null;
+  out.push(Number.isFinite(trendResult.score)
+    && trendResult.reason === "success"
+    && trendResult.lastUpdated === GATE_AS_OF_UTC
+    && trendResult.score === componentBlend
+    ? pass("trend_full_execution", "instrumented Trend production function with a frozen clock and supplied prices", {
+      score: trendResult.score,
+      lastUpdated: trendResult.lastUpdated,
+      instrumentation: trendRun.instrumentation,
+    })
+    : fail("trend_full_execution", "instrumented Trend production function with a frozen clock and supplied prices", {
+      score: trendResult.score,
+      reason: trendResult.reason,
+      lastUpdated: trendResult.lastUpdated,
+      componentLine,
+      componentBlend,
+    }));
+  const trendDescriptive = {
+    score: trendResult.score,
+    instrumentation_sha256: trendRun.instrumentation.instrumented_sha256,
+  };
 
   const universe = fingerprintEtfUniverse(APPROVED_ETF_SCORED_TICKERS);
   const missingBtc = validateEtfProviderObservation({
@@ -721,86 +759,60 @@ async function unchangedFactorAssertions(config) {
   out.push(APPROVED_ETF_SCORED_TICKERS.length === 12
     && APPROVED_ETF_SCORED_TICKERS.includes('BTC')
     && APPROVED_ETF_SCORED_TICKERS.includes('FBTC')
-    && APPROVED_ETF_SCORED_TICKERS.indexOf('BTC') !== APPROVED_ETF_SCORED_TICKERS.indexOf('FBTC')
     && universe.ok
     && missingBtc.complete === false
     ? pass('etf_universe', '12 approved tickers, BTC distinct from FBTC, missing BTC fails closed', {
       fingerprint: universe.fingerprint,
-      missing_reasons: missingBtc.reasons.filter((reason) => reason.includes('BTC')),
     })
     : fail('etf_universe', '12 approved tickers and fail-closed identity', { universe, missingBtc }));
-
   const etf = etfHistory(GATE_AS_OF_UTC);
-  let etfResult = null;
-  if (!etf.plan.ok) {
-    out.push(limitation('etf_executed_selection', 'ETF candidate compute', { reason: etf.plan.reason }));
-  } else {
-    etfResult = computeEtfCandidate({
+  const etfResult = etf.plan.ok
+    ? computeEtfCandidate({
       history: etf.plan.history,
       historicalCalibrationDocument: calibrationDocument(),
       dashboardConfig: config,
       asOfUtc: GATE_AS_OF_UTC,
       isTradingDay: etf.isTradingDay,
-    });
-    out.push(etfResult.ok
-      ? pass('etf_executed_selection', 'real ETF compute at the gate as-of using production date selection', {
-        score: etfResult.score,
-        selectedTradingDate: etfResult.selectedTradingDate,
-        expected: etf.expected,
-      })
-      : fail('etf_executed_selection', 'real ETF compute at the gate as-of using production date selection', {
-        reason: etfResult.reason,
-        expected: etf.expected,
-      }));
-  }
-  const sub = blendComponentScores(
-    { sum_21d: 40, acceleration: 60, diversification: 80 },
-    LOCKED_OFFICIAL_BLENDS.etf_flows,
-  );
-  out.push(sub === Math.round(40 * 0.3 + 60 * 0.3 + 80 * 0.4)
-    ? pass('etf_subweights', 'executed ETF 30/30/40 blend helper', { score: sub })
-    : fail('etf_subweights', 'executed ETF 30/30/40 blend helper', { score: sub }));
-
-  const macroBlend = blendComponentScores(
-    { dxy_20d: 20, us2y_20d: 40, vix_pct: 60 },
-    LOCKED_OFFICIAL_BLENDS.macro_overlay,
-  );
-  out.push(macroBlend === Math.round(20 * 0.4 + 40 * 0.35 + 60 * 0.25)
-    ? pass('macro_blend', 'executed Macro 40/35/25 blend helper', { score: macroBlend })
-    : fail('macro_blend', 'executed Macro 40/35/25 blend helper', { score: macroBlend }));
-  const rows = [];
-  for (let age = 39; age >= 0; age -= 1) {
-    const date = new Date(Date.parse('2026-09-30T00:00:00.000Z') - age * MS_DAY).toISOString().slice(0, 10);
-    rows.push(`${date},15,16,14,15.5`);
-  }
-  const csv = `DATE,OPEN,HIGH,LOW,CLOSE\n${rows.join('\n')}\n`;
-  const parsed = parseCboeVixHistory(csv, '2026-08-01', '2026-09-30');
-  let fredCalled = false;
-  const vix = await fetchProductionVix({
-    fredApiKey: 'not-used',
-    startISO: '2026-08-01',
-    endISO: '2026-09-30',
-    asOfUtc: GATE_AS_OF_UTC,
-    fetchImpl: async (url) => {
-      if (String(url).includes('stlouisfed')) fredCalled = true;
-      const body = Buffer.from(csv);
-      return {
-        status: 200,
-        headers: { get: () => 'text/csv' },
-        arrayBuffer: async () => body,
-      };
-    },
-  });
-  out.push(parsed.ok && vix.provider === 'cboe' && vix.fallbackUsed === false && fredCalled === false
-    ? pass('macro_vix_cboe_primary', 'real VIX selector keeps Cboe primary and does not call FRED', {
-      provider: vix.provider,
-      sourceObservationDate: vix.sourceObservationDate,
     })
-    : fail('macro_vix_cboe_primary', 'real VIX selector keeps Cboe primary', { provider: vix.provider, fredCalled, parsed }));
-  out.push(limitation('macro_full_factor', 'full Macro factor execution', {
-    note: 'computeMacroOverlay is unexported inside factors.mjs and performs provider I/O. This gate executed the official blend helper and the production VIX selector with a stub fetch. It does not claim a full Macro factor-score replay.',
-  }));
-  return { assertions: out, trendDescriptive };
+    : { ok: false, reason: etf.plan.reason };
+  out.push(etfResult.ok
+    ? pass('etf_executed_selection', 'real ETF compute at the gate as-of', {
+      score: etfResult.score,
+      selectedTradingDate: etfResult.selectedTradingDate,
+      expected: etf.expected,
+    })
+    : fail('etf_executed_selection', 'real ETF compute at the gate as-of', etfResult));
+
+  const primary = await runInstrumentedMacro('cboe_primary');
+  const fallback = await runInstrumentedMacro('fred_fallback');
+  const unavailable = await runInstrumentedMacro('unavailable');
+  out.push(primary.result.score === 95 && primary.result.vixProvider === 'cboe' && primary.result.vixFallbackUsed === false
+    ? pass('macro_cboe_primary', 'full computeMacroOverlay keeps Cboe primary on constant supplied series', {
+      score: primary.result.score,
+      lastUpdated: primary.result.lastUpdated,
+      vixProvider: primary.result.vixProvider,
+    })
+    : fail('macro_cboe_primary', 'full computeMacroOverlay keeps Cboe primary', primary.result));
+  out.push(fallback.result.vixProvider === 'fred' && fallback.result.vixFallbackUsed === true && Number.isFinite(fallback.result.score)
+    ? pass('macro_fred_fallback', 'full computeMacroOverlay uses guarded FRED fallback when Cboe transport fails', {
+      score: fallback.result.score,
+      reason: fallback.result.vixFallbackReason,
+    })
+    : fail('macro_fred_fallback', 'guarded FRED fallback', fallback.result));
+  out.push(unavailable.result.score === null
+    ? pass('macro_unavailable', 'full computeMacroOverlay fails closed when Cboe and FRED VIX are unavailable', {
+      reason: unavailable.result.reason,
+    })
+    : fail('macro_unavailable', 'unavailable macro evidence', unavailable.result));
+
+  return {
+    assertions: out,
+    trendDescriptive,
+    trendResult,
+    macroResult: primary.result,
+    etfResult,
+    macroInstrumentation: primary.instrumentation,
+  };
 }
 
 function compositeAssertions(config, compositeFn) {
@@ -860,7 +872,162 @@ function compositeAssertions(config, compositeFn) {
   return out;
 }
 
-export async function runV12StructuralRegression() {
+function fulfilled(value) {
+  return { status: 'fulfilled', value };
+}
+
+async function productionIntegrationAssertions(executed, unchanged, mutate = null) {
+  const out = [];
+  const settled = {
+    trend_valuation: fulfilled({
+      score: unchanged.trendResult.score,
+      lastUpdated: unchanged.trendResult.lastUpdated,
+      reason: unchanged.trendResult.reason,
+    }),
+    onchain: fulfilled({ score: 99, lastUpdated: GATE_AS_OF_UTC, reason: 'must_not_map' }),
+    stablecoins: fulfilled({
+      score: executed.stable.score,
+      lastUpdated: executed.stable.lastUpdated || GATE_AS_OF_UTC,
+      reason: executed.stable.reason || 'success',
+    }),
+    etf_flows: fulfilled({
+      score: unchanged.etfResult.score,
+      lastUpdated: GATE_AS_OF_UTC,
+      reason: 'success',
+      sourceTradingDate: unchanged.etfResult.selectedTradingDate,
+      expectedEligibleTradingDate: unchanged.etfResult.expectedEligibleTradingDate,
+    }),
+    net_liquidity: fulfilled({
+      score: executed.liquidity.score,
+      lastUpdated: executed.liquidity.lastUpdated || GATE_AS_OF_UTC,
+      reason: executed.liquidity.reason || 'success',
+    }),
+    term_leverage: fulfilled({
+      score: executed.term.score,
+      lastUpdated: executed.term.lastUpdated,
+      reason: executed.term.reason || 'success',
+      funding_observation_utc: executed.term.funding_observation_utc,
+      spot_observation_utc: executed.term.spot_observation_utc,
+      funding_provider: executed.term.selected_provider,
+    }),
+    macro_overlay: fulfilled({
+      score: unchanged.macroResult.score,
+      lastUpdated: unchanged.macroResult.lastUpdated,
+      reason: unchanged.macroResult.reason || 'success',
+      latestDxyDate: unchanged.macroResult.latestDxyDate,
+      latestDgs2Date: unchanged.macroResult.latestDgs2Date,
+      latestVixDate: unchanged.macroResult.latestVixDate,
+    }),
+    social_interest: fulfilled({
+      score: executed.social.score,
+      lastUpdated: executed.social.lastUpdated || GATE_AS_OF_UTC,
+      reason: executed.social.reason || 'success',
+    }),
+  };
+  if (mutate === 'swap_keys') {
+    const trend = settled.trend_valuation;
+    settled.trend_valuation = settled.social_interest;
+    settled.social_interest = trend;
+  }
+  const asOf = mutate === 'stale_as_term' ? executed.term.lastUpdated : GATE_AS_OF_UTC;
+  const integrated = await runProductionComposite(settled, asOf);
+  const rows = integrated.result.factors;
+  const byKey = Object.fromEntries(rows.map((row) => [row.key, row]));
+  const termAdapter = adaptV12TermCandidateForStatus(executed.term, GATE_AS_OF_UTC);
+  const trendMapped = byKey.trend_valuation?.score === unchanged.trendResult.score;
+  out.push(!byKey.onchain && trendMapped
+    ? pass('composite_factor_mapping', 'production loop maps by factor key and omits disabled On-chain', {
+      keys: rows.map((row) => row.key),
+    })
+    : fail('composite_factor_mapping', 'production loop maps by factor key and omits disabled On-chain', {
+      keys: rows.map((row) => row.key),
+      trend: byKey.trend_valuation?.score,
+      expected_trend: unchanged.trendResult.score,
+    }));
+  const termRow = byKey.term_leverage;
+  const termStaleAtGateAsOf = mutate !== 'stale_as_term';
+  out.push(termAdapter.selected_provider === executed.term.selected_provider
+    && termAdapter.scored_spot_observation_utc === executed.term.spot_observation_utc
+    && termAdapter.raw_spot_observation_utc === executed.term.latest_raw_spot_observation_utc
+    && termAdapter.lastUpdated === executed.term.lastUpdated
+    && termRow?.lastUpdated === executed.term.lastUpdated
+    && (termStaleAtGateAsOf ? termRow?.status === 'stale' : termRow?.status === 'fresh')
+    ? pass('term_adapter_on_production_path', 'Term adapter keeps scored timing and production staleness is not rewritten', {
+      adapter_status: termAdapter.status,
+      production_status: termRow?.status,
+      lastUpdated: termRow?.lastUpdated,
+      scored_spot: termAdapter.scored_spot_observation_utc,
+      raw_spot: termAdapter.raw_spot_observation_utc,
+    })
+    : fail('term_adapter_on_production_path', 'Term adapter keeps scored timing and production staleness is not rewritten', {
+      adapter: termAdapter,
+      production: termRow,
+    }));
+  const fresh = rows.filter((row) => row.status === 'fresh');
+  const includedWeight = fresh.reduce((sum, row) => sum + row.weight, 0);
+  const weightedSum = fresh.reduce((sum, row) => sum + row.weight * row.score, 0);
+  const expectedComposite = includedWeight === 0 ? 50 : Math.round(weightedSum / includedWeight);
+  out.push(integrated.result.totalWeight === includedWeight
+    && integrated.result.weightedSum === weightedSum
+    && integrated.result.composite === expectedComposite
+    && fresh.every((row) => row.key !== 'onchain')
+    && (termStaleAtGateAsOf ? !fresh.some((row) => row.key === 'term_leverage') : fresh.some((row) => row.key === 'term_leverage'))
+    ? pass('composite_included_weight', 'only fresh enabled factors enter the production weighted sum', {
+      composite: integrated.result.composite,
+      totalWeight: integrated.result.totalWeight,
+      fresh: fresh.map((row) => row.key),
+    })
+    : fail('composite_included_weight', 'only fresh enabled factors enter the production weighted sum', {
+      composite: integrated.result.composite,
+      expectedComposite,
+      totalWeight: integrated.result.totalWeight,
+      includedWeight,
+      fresh: fresh.map((row) => row.key),
+    }));
+  const withoutSocial = {
+    ...settled,
+    social_interest: fulfilled({ score: null, lastUpdated: null, reason: 'social_component_unavailable' }),
+  };
+  const missingSocial = await runProductionComposite(withoutSocial, GATE_AS_OF_UTC);
+  const socialRow = missingSocial.result.factors.find((row) => row.key === 'social_interest');
+  out.push(socialRow?.status === 'excluded' && missingSocial.result.totalWeight === integrated.result.totalWeight - (byKey.social_interest?.status === 'fresh' ? byKey.social_interest.weight : 0)
+    ? pass('composite_missing_social', 'a null Social score is excluded and the remaining fresh weight is renormalized by the production loop', {
+      social: socialRow?.status,
+      totalWeight: missingSocial.result.totalWeight,
+      composite: missingSocial.result.composite,
+    })
+    : fail('composite_missing_social', 'a null Social score is excluded', {
+      social: socialRow,
+      totalWeight: missingSocial.result.totalWeight,
+      baseline: integrated.result.totalWeight,
+    }));
+  const empty = Object.fromEntries(Object.keys(settled).map((key) => [key, fulfilled({ score: null, reason: 'unavailable' })]));
+  const none = await runProductionComposite(empty, GATE_AS_OF_UTC);
+  const health = decidePostComputeHealthCheck({
+    failedFactors: none.result.factors.filter((row) => row.status !== 'fresh').map((row) => row.key),
+  });
+  out.push(none.result.composite === 50 && none.result.totalWeight === 0 && health.ok === false
+    ? pass('composite_zero_weight_health', 'zero included weight stays 50 and does not satisfy publication health', {
+      composite: none.result.composite,
+      health: health.reason,
+    })
+    : fail('composite_zero_weight_health', 'zero included weight stays 50 and does not satisfy publication health', {
+      composite: none.result.composite,
+      totalWeight: none.result.totalWeight,
+      health,
+    }));
+  if (mutate === 'cache') {
+    const corrupted = structuredClone(executed.term);
+    delete corrupted.components.funding.percentile;
+    const reuse = canReuseV12TermCache({ current: executed.term, cached: corrupted });
+    out.push(reuse === true
+      ? pass('cache_mutation_control', 'corrupted cache was incorrectly accepted', { reuse })
+      : fail('cache_mutation_control', 'corrupted cache must not be accepted', { reuse }));
+  }
+  return { assertions: out, instrumentation: integrated.instrumentation };
+}
+
+export async function runV12StructuralRegression({ mutate = null } = {}) {
   const hashesBefore = Object.fromEntries(PROTECTED_PATHS.map((item) => [item, fileSha(item)]));
   const config = readJson('config/dashboard-config.json');
   const factorsSource = fs.readFileSync(path.join(REPO_ROOT, 'scripts/etl/factors.mjs'), 'utf8');
@@ -874,13 +1041,18 @@ export async function runV12StructuralRegression() {
   const first = runCandidates(bundle);
   const second = runCandidates(bundle);
   const unchanged = await unchangedFactorAssertions(config);
+  const identityConfig = mutate === 'weight'
+    ? { ...config, factors: { ...config.factors, term_leverage: { ...config.factors.term_leverage, weight: 1 } } }
+    : config;
+  const integration = await productionIntegrationAssertions(first, unchanged, mutate);
   const assertions = [
-    ...identityAssertions(config, first),
+    ...identityAssertions(identityConfig, first),
     ...isolationAssertions(),
     ...coordinatedAssertions(bundle, first, second),
     ...contractAssertions(bundle, first),
     ...unchanged.assertions,
     ...compositeAssertions(config, compositeFn),
+    ...integration.assertions,
   ];
   const hashesAfter = Object.fromEntries(PROTECTED_PATHS.map((item) => [item, fileSha(item)]));
   const mutated = PROTECTED_PATHS.filter((item) => hashesBefore[item] !== hashesAfter[item]);
@@ -888,14 +1060,20 @@ export async function runV12StructuralRegression() {
     ? pass('protected_files_unmodified', 'protected production and candidate files were not mutated', { count: PROTECTED_PATHS.length })
     : fail('protected_files_unmodified', 'protected production and candidate files were not mutated', mutated));
 
-  const failures = assertions.filter((item) => item.status === 'FAIL');
+  const failures = assertions.filter((item) => item.status === 'FAIL' || item.status === 'BLOCKED');
   const limitations = assertions.filter((item) => item.status === 'LIMITATION');
   const evidence = {
     gate: GATE_ID,
-    repository_sha: readRepositorySha(),
     fixture_id: FIXTURE_ID,
     as_of_utc: GATE_AS_OF_UTC,
     production_activation_authorized: false,
+    starting_base_sha: '6f228082a70c0cb758718346da98f31caed0f221',
+    source_hashes: hashesBefore,
+    gate_hashes: {
+      regression: hashText(fs.readFileSync(path.join(REPO_ROOT, 'scripts/research/lib/v1-2-structural-regression.mjs'), 'utf8')),
+      instrumentation: hashText(fs.readFileSync(path.join(REPO_ROOT, 'scripts/research/lib/v1-2-gate-instrumentation.mjs'), 'utf8')),
+    },
+    composite_instrumentation: integration.instrumentation,
     active_identity: {
       model_version: config.model_version,
       implementation_revision: config.implementation_revision,
@@ -927,9 +1105,11 @@ export async function runV12StructuralRegression() {
     run_metadata_excluded_from_evidence_hash: {
       node: process.version,
       platform: process.platform,
-      trend_descriptive_score: unchanged.trendDescriptive,
-    },
-  };
+    tested_revision: readGitRevision(),
+    starting_base_sha: readGitRef('origin/main'),
+    trend_descriptive_score: unchanged.trendDescriptive,
+  },
+};
 }
 
 function readRepositorySha() {
@@ -941,8 +1121,10 @@ function readRepositorySha() {
 }
 
 export function writeStructuralRegressionReport(outputDirectory, report) {
+  assertReportDirectoryOutsideRepo(outputDirectory, REPO_ROOT);
   fs.mkdirSync(outputDirectory, { recursive: true });
   const target = path.join(outputDirectory, 'v1-2-structural-regression.json');
+  assertReportDirectoryOutsideRepo(target, REPO_ROOT);
   fs.writeFileSync(target, `${JSON.stringify(report, null, 2)}\n`);
   return target;
 }
