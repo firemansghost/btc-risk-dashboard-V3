@@ -12,7 +12,6 @@ import {
   LOCKED_OFFICIAL_BLENDS,
   blendComponentScores,
 } from '../../lib/ssotSubweights.mjs';
-import { extractSpotObservationUtc } from '../../lib/termFreshness.mjs';
 import { socialSourceObservationUtc } from '../../lib/sourceObservationTime.mjs';
 import {
   percentileRank,
@@ -44,29 +43,53 @@ export const V12_SOCIAL_COMPONENT_WEIGHTS = Object.freeze({
 
 export const V12_SOCIAL_VALID_PRICE_CACHE_DELTA = 1000;
 
-function normalizeProvider(raw) {
+function isFiniteNumber(value) {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+function isValidIsoTimestamp(value) {
+  if (typeof value !== 'string' || value === '') return false;
+  const ms = Date.parse(value);
+  return Number.isFinite(ms);
+}
+
+/**
+ * Truthful provider provenance.
+ * Absent/empty/non-string identity => UNPROVEN/null.
+ * Caller-controlled status cannot relabel absent identity as SUPPLIED.
+ */
+export function normalizeProvider(raw) {
   if (raw == null) {
     return { status: 'UNPROVEN', provider: null };
   }
-  if (typeof raw === 'string') return { status: 'SUPPLIED', provider: raw };
-  return {
-    status: raw.status || 'SUPPLIED',
-    provider: raw.provider ?? raw.source ?? null,
-  };
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (!trimmed) return { status: 'UNPROVEN', provider: null };
+    return { status: 'SUPPLIED', provider: trimmed };
+  }
+  if (typeof raw !== 'object') {
+    return { status: 'UNPROVEN', provider: null };
+  }
+  const identity = raw.provider ?? raw.source ?? null;
+  if (typeof identity !== 'string' || !identity.trim()) {
+    return { status: 'UNPROVEN', provider: null };
+  }
+  return { status: 'SUPPLIED', provider: identity.trim() };
 }
 
-function isFiniteNumber(value) {
-  return typeof value === 'number' && Number.isFinite(value);
+/** Strict provider price-row shape: [timestamp, price]. */
+export function isStrictPriceRow(row) {
+  return Array.isArray(row) && row.length >= 2;
 }
 
 /**
  * Pure observed-component blend helper (mathematical contract only).
  * Caller must already have established both components OBSERVED.
+ * Weights are frozen — caller cannot override SSOT 70/30.
  */
 export function combineObservedSocialComponents({
   searchScore,
   momentumScore,
-  weights = V12_SOCIAL_COMPONENT_WEIGHTS,
 } = {}) {
   if (!isFiniteNumber(searchScore) || !isFiniteNumber(momentumScore)) return null;
   return blendComponentScores(
@@ -74,7 +97,7 @@ export function combineObservedSocialComponents({
       coingecko_trending_rank: searchScore,
       btc_price_momentum_7d: momentumScore,
     },
-    weights
+    V12_SOCIAL_COMPONENT_WEIGHTS
   );
 }
 
@@ -109,17 +132,20 @@ function baseMomentumResult(overrides) {
     change_series_length: 0,
     price_change_pct: null,
     change_percentile: null,
-    latest_price: null,
+    latest_score_eligible_price: null,
+    cache_comparison_latest_price: null,
     price_observation_utc: null,
     score_eligible_price_observation_utc: null,
+    provider_latest_observation_utc: null,
     detail: null,
     provider: null,
     provider_status: 'UNPROVEN',
     price_fetched_at: null,
     timestamp_semantics: {
       price_fetched_at: 'acquisition_or_fetch_wall_clock',
-      price_observation_utc: 'provider_data_derived_when_available',
+      price_observation_utc: 'latest_score_eligible_finite_price_row',
       score_eligible_price_observation_utc: 'latest_finite_price_row_in_momentum_input',
+      provider_latest_observation_utc: 'raw_final_provider_row_may_be_non_scoring',
     },
     ...overrides,
   };
@@ -228,7 +254,7 @@ export function computeV12MomentumFromFinitePrices(prices) {
       priceChange: null,
       changePercentile: null,
       momentumScore: null,
-      latest_price: finite.length ? finite[finite.length - 1] : null,
+      latest_score_eligible_price: finite.length ? finite[finite.length - 1] : null,
     };
   }
   const recent7d = finite.slice(-7);
@@ -259,22 +285,36 @@ export function computeV12MomentumFromFinitePrices(prices) {
     priceChange,
     changePercentile,
     momentumScore,
-    latest_price: finite[finite.length - 1],
+    latest_score_eligible_price: finite[finite.length - 1],
   };
 }
 
-function extractScoreEligiblePriceObservationUtc(priceRows) {
+/**
+ * Timestamp from latest row whose price participates in finite scoring vector.
+ * Eligibility matches scoring: Number.isFinite(price) — no numeric-string coercion.
+ */
+export function extractScoreEligiblePriceObservationUtc(priceRows) {
   if (!Array.isArray(priceRows)) return null;
   for (let i = priceRows.length - 1; i >= 0; i -= 1) {
     const row = priceRows[i];
-    if (!Array.isArray(row)) continue;
+    if (!isStrictPriceRow(row)) continue;
     const [ts, price] = row;
-    if (!Number.isFinite(Number(price))) continue;
+    if (!Number.isFinite(price)) continue;
     const date = new Date(Number(ts));
     if (Number.isNaN(date.getTime())) continue;
     return date.toISOString();
   }
   return null;
+}
+
+/** Raw final provider-row timestamp (may be non-scoring). Descriptive only. */
+export function extractProviderLatestObservationUtc(priceRows) {
+  if (!Array.isArray(priceRows) || priceRows.length === 0) return null;
+  const last = priceRows[priceRows.length - 1];
+  if (!isStrictPriceRow(last)) return null;
+  const date = new Date(Number(last[0]));
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
 }
 
 /**
@@ -293,7 +333,6 @@ export function classifyV12SocialMomentum({
     provider: prov.provider,
     provider_status: prov.status,
     price_fetched_at: priceFetchedAt ?? null,
-    price_observation_utc: null,
   };
 
   if (priceFetchError || priceData == null) {
@@ -321,44 +360,48 @@ export function classifyV12SocialMomentum({
   }
 
   const rawCount = priceData.prices.length;
-  let finitePrices;
-  let latestPriceRaw = null;
-  try {
-    // Safe structural traversal — non-iterable rows become MALFORMED.
-    finitePrices = [];
-    for (let i = 0; i < priceData.prices.length; i += 1) {
-      const row = priceData.prices[i];
-      if (row == null || typeof row[Symbol.iterator] !== 'function') {
-        throw new TypeError('non_iterable_price_row');
-      }
-      const [, price] = row;
-      if (Number.isFinite(price)) finitePrices.push(price);
+  const finitePrices = [];
+  let cacheComparisonLatestPrice = null;
+
+  for (let i = 0; i < priceData.prices.length; i += 1) {
+    const row = priceData.prices[i];
+    if (!isStrictPriceRow(row)) {
+      return baseMomentumResult({
+        ...common,
+        state: V12_SOCIAL_EVIDENCE_STATE.MALFORMED,
+        raw_price_row_count: rawCount,
+        detail: 'price_row_not_strict_timestamp_price_array',
+      });
     }
-    if (rawCount > 0) {
-      const last = priceData.prices[rawCount - 1];
-      latestPriceRaw = Array.isArray(last) ? last[1] : last?.price ?? null;
-    }
-  } catch {
-    return baseMomentumResult({
-      ...common,
-      state: V12_SOCIAL_EVIDENCE_STATE.MALFORMED,
-      raw_price_row_count: rawCount,
-      detail: 'price_row_structurally_unusable',
-    });
+    const [, price] = row;
+    if (Number.isFinite(price)) finitePrices.push(price);
   }
 
-  const priceObservationUtc = extractSpotObservationUtc(priceData);
+  if (rawCount > 0) {
+    // Production cache comparison uses the CURRENT final raw price-row value.
+    cacheComparisonLatestPrice = priceData.prices[rawCount - 1][1];
+  }
+
   const scoreEligibleUtc = extractScoreEligiblePriceObservationUtc(priceData.prices);
-  common.price_observation_utc = priceObservationUtc;
+  const providerLatestUtc = extractProviderLatestObservationUtc(priceData.prices);
+
+  const stampFields = {
+    price_observation_utc: scoreEligibleUtc,
+    score_eligible_price_observation_utc: scoreEligibleUtc,
+    provider_latest_observation_utc: providerLatestUtc,
+    cache_comparison_latest_price: cacheComparisonLatestPrice,
+  };
 
   if (finitePrices.length < 14) {
     return baseMomentumResult({
       ...common,
+      ...stampFields,
       state: V12_SOCIAL_EVIDENCE_STATE.INSUFFICIENT_HISTORY,
       finite_price_count: finitePrices.length,
       raw_price_row_count: rawCount,
-      latest_price: latestPriceRaw,
-      score_eligible_price_observation_utc: scoreEligibleUtc,
+      latest_score_eligible_price: finitePrices.length
+        ? finitePrices[finitePrices.length - 1]
+        : null,
       detail: 'fewer_than_14_finite_prices',
     });
   }
@@ -368,13 +411,13 @@ export function classifyV12SocialMomentum({
   if (computed.change_series_length === 0) {
     return baseMomentumResult({
       ...common,
+      ...stampFields,
       state: V12_SOCIAL_EVIDENCE_STATE.INSUFFICIENT_HISTORY,
       finite_price_count: computed.finite_price_count,
       raw_price_row_count: rawCount,
       change_series_length: 0,
       price_change_pct: Number.isFinite(computed.priceChange) ? computed.priceChange : null,
-      latest_price: computed.latest_price,
-      score_eligible_price_observation_utc: scoreEligibleUtc,
+      latest_score_eligible_price: computed.latest_score_eligible_price,
       detail: 'no_usable_finite_comparison_change_series',
     });
   }
@@ -382,13 +425,13 @@ export function classifyV12SocialMomentum({
   if (!Number.isFinite(computed.priceChange)) {
     return baseMomentumResult({
       ...common,
+      ...stampFields,
       state: V12_SOCIAL_EVIDENCE_STATE.INVALID_DERIVED,
       finite_price_count: computed.finite_price_count,
       raw_price_row_count: rawCount,
       change_series_length: computed.change_series_length,
       price_change_pct: null,
-      latest_price: computed.latest_price,
-      score_eligible_price_observation_utc: scoreEligibleUtc,
+      latest_score_eligible_price: computed.latest_score_eligible_price,
       detail: 'nonfinite_current_priceChange',
     });
   }
@@ -396,14 +439,14 @@ export function classifyV12SocialMomentum({
   if (!Number.isFinite(computed.changePercentile)) {
     return baseMomentumResult({
       ...common,
+      ...stampFields,
       state: V12_SOCIAL_EVIDENCE_STATE.INVALID_DERIVED,
       finite_price_count: computed.finite_price_count,
       raw_price_row_count: rawCount,
       change_series_length: computed.change_series_length,
       price_change_pct: computed.priceChange,
       change_percentile: computed.changePercentile,
-      latest_price: computed.latest_price,
-      score_eligible_price_observation_utc: scoreEligibleUtc,
+      latest_score_eligible_price: computed.latest_score_eligible_price,
       detail: 'nonfinite_change_percentile',
     });
   }
@@ -411,20 +454,21 @@ export function classifyV12SocialMomentum({
   if (!Number.isFinite(computed.momentumScore)) {
     return baseMomentumResult({
       ...common,
+      ...stampFields,
       state: V12_SOCIAL_EVIDENCE_STATE.INVALID_DERIVED,
       finite_price_count: computed.finite_price_count,
       raw_price_row_count: rawCount,
       change_series_length: computed.change_series_length,
       price_change_pct: computed.priceChange,
       change_percentile: computed.changePercentile,
-      latest_price: computed.latest_price,
-      score_eligible_price_observation_utc: scoreEligibleUtc,
+      latest_score_eligible_price: computed.latest_score_eligible_price,
       detail: 'nonfinite_momentum_score',
     });
   }
 
   return baseMomentumResult({
     ...common,
+    ...stampFields,
     state: V12_SOCIAL_EVIDENCE_STATE.OBSERVED,
     eligible: true,
     score: computed.momentumScore,
@@ -433,24 +477,38 @@ export function classifyV12SocialMomentum({
     change_series_length: computed.change_series_length,
     price_change_pct: computed.priceChange,
     change_percentile: computed.changePercentile,
-    latest_price: computed.latest_price,
-    score_eligible_price_observation_utc: scoreEligibleUtc,
+    latest_score_eligible_price: computed.latest_score_eligible_price,
     detail: 'sufficient_history_percentile_momentum',
   });
 }
 
+function readComponentState(result, componentKey, flattenedKey) {
+  const nested = result?.components?.[componentKey]?.state;
+  if (typeof nested === 'string') return nested;
+  if (typeof result?.[flattenedKey] === 'string') return result[flattenedKey];
+  return null;
+}
+
 /**
  * Pure cache-reuse helper encoding frozen R03 missingness/cache rule.
+ * Accepts native computeV12SocialCandidate() output shapes directly.
+ * Flattened search_state/momentum_state retained for backward compatibility only.
  * No actual cache I/O. No prior-component fallback.
  */
 export function canReuseV12SocialCache({ current, cached } = {}) {
   if (!current || typeof current !== 'object') return false;
   if (!cached || typeof cached !== 'object') return false;
 
+  const currentSearchState = readComponentState(current, 'search', 'search_state');
+  const currentMomentumState = readComponentState(current, 'momentum', 'momentum_state');
+  const cachedSearchState = readComponentState(cached, 'search', 'search_state');
+  const cachedMomentumState = readComponentState(cached, 'momentum', 'momentum_state');
+
   // Current evidence must first prove both OBSERVED + finite comparison inputs.
-  if (current.search_state !== V12_SOCIAL_EVIDENCE_STATE.OBSERVED) return false;
-  if (current.momentum_state !== V12_SOCIAL_EVIDENCE_STATE.OBSERVED) return false;
+  if (currentSearchState !== V12_SOCIAL_EVIDENCE_STATE.OBSERVED) return false;
+  if (currentMomentumState !== V12_SOCIAL_EVIDENCE_STATE.OBSERVED) return false;
   if (!isFiniteNumber(current.bitcoinRank)) return false;
+  // latestPrice is the cache-comparison input (finite only); never substitute score-eligible.
   if (!isFiniteNumber(current.latestPrice)) return false;
 
   // Cached successor result structural eligibility.
@@ -458,8 +516,8 @@ export function canReuseV12SocialCache({ current, cached } = {}) {
   if (cached.implementation_revision_target !== V12_IMPLEMENTATION_REVISION_TARGET) return false;
   if (cached.ssot_version !== V12_SSOT_VERSION) return false;
   if (!isFiniteNumber(cached.score)) return false;
-  if (cached.search_state !== V12_SOCIAL_EVIDENCE_STATE.OBSERVED) return false;
-  if (cached.momentum_state !== V12_SOCIAL_EVIDENCE_STATE.OBSERVED) return false;
+  if (cachedSearchState !== V12_SOCIAL_EVIDENCE_STATE.OBSERVED) return false;
+  if (cachedMomentumState !== V12_SOCIAL_EVIDENCE_STATE.OBSERVED) return false;
   if (!isFiniteNumber(cached.bitcoinRank)) return false;
   if (!isFiniteNumber(cached.latestPrice)) return false;
 
@@ -504,10 +562,14 @@ export function computeV12SocialCandidate({
     && isFiniteNumber(search.score)
     && isFiniteNumber(momentum.score);
 
+  // Top-level latestPrice = finite cache-comparison raw price only; else null.
+  const cacheComparisonPrice = momentum.cache_comparison_latest_price;
+  const latestPrice = isFiniteNumber(cacheComparisonPrice) ? cacheComparisonPrice : null;
+
   const cacheReuseCurrentEvidenceEligible =
     bothObserved
     && isFiniteNumber(search.bitcoin_rank)
-    && isFiniteNumber(momentum.latest_price);
+    && isFiniteNumber(latestPrice);
 
   let score = null;
   let reason = null;
@@ -524,10 +586,18 @@ export function computeV12SocialCandidate({
       reason = 'social_blend_nonfinite';
     } else {
       reason = null;
-      lastUpdated = socialSourceObservationUtc({
-        trendingFetchedAt: search.trending_fetched_at,
-        priceObservationUtc: momentum.price_observation_utc,
-      });
+      // Fail closed unless BOTH required freshness inputs are valid timestamps.
+      if (
+        isValidIsoTimestamp(search.trending_fetched_at)
+        && isValidIsoTimestamp(momentum.price_observation_utc)
+      ) {
+        lastUpdated = socialSourceObservationUtc({
+          trendingFetchedAt: search.trending_fetched_at,
+          priceObservationUtc: momentum.price_observation_utc,
+        });
+      } else {
+        lastUpdated = null;
+      }
     }
   } else {
     reason = 'social_component_unavailable';
@@ -550,13 +620,15 @@ export function computeV12SocialCandidate({
       momentum,
     },
     bitcoinRank: search.bitcoin_rank,
-    latestPrice: momentum.latest_price,
+    latestPrice,
+    latest_score_eligible_price: momentum.latest_score_eligible_price,
+    cache_comparison_latest_price: cacheComparisonPrice,
     trending_fetched_at: search.trending_fetched_at,
     price_observation_utc: momentum.price_observation_utc,
     lastUpdated,
     lastUpdated_semantics: {
-      rule: 'min_of_trending_fetched_at_and_price_observation_utc',
-      note: 'mixed factor-level freshness marker; does not prove Search has provider source-observation timestamp',
+      rule: 'min_of_valid_trending_fetched_at_and_score_eligible_price_observation_utc',
+      note: 'requires both valid timestamps; otherwise null; does not prove Search provider source-observation',
     },
     cache_reuse_current_evidence_eligible: cacheReuseCurrentEvidenceEligible,
   };

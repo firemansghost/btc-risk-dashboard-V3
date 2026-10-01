@@ -18,6 +18,8 @@ import {
   combineObservedSocialComponents,
   computeV12MomentumFromFinitePrices,
   computeV12SocialCandidate,
+  extractScoreEligiblePriceObservationUtc,
+  normalizeProvider,
 } from '../candidates/v1_2/social.mjs';
 import {
   buildNonFiniteMomentumFixture,
@@ -531,9 +533,14 @@ test('79-88. provenance and timestamp semantics', () => {
   );
   assert.ok(typeof result.price_observation_utc === 'string');
   assert.equal(result.price_observation_utc, result.components.momentum.price_observation_utc);
+  assert.equal(
+    result.price_observation_utc,
+    result.components.momentum.score_eligible_price_observation_utc
+  );
   assert.ok(result.lastUpdated);
-  // lastUpdated is min of trending fetch and price observation
-  assert.ok(result.lastUpdated <= ts || result.lastUpdated <= result.price_observation_utc);
+  // lastUpdated is min of trending fetch and score-eligible price observation
+  const expectedMin = [ts, result.price_observation_utc].sort()[0];
+  assert.equal(result.lastUpdated, expectedMin);
 
   const unproven = computeV12SocialCandidate({
     trendsData: trendingWithRank(8),
@@ -578,5 +585,257 @@ test('evidence-state enum is explicit and exhaustive for unavailable set', () =>
       'MISSING',
       'OBSERVED',
     ].sort()
+  );
+});
+
+// --- Micro-repair: structural rows / timestamps / cache / provenance ---
+
+test('repair-1-5. strict [timestamp, price] row shape; ordinary rows retained', () => {
+  const base = observedMomentumPrices();
+  assert.equal(
+    classifyV12SocialMomentum({
+      priceData: { prices: [...base.prices.slice(0, 20), '123'] },
+    }).state,
+    V12_SOCIAL_EVIDENCE_STATE.MALFORMED
+  );
+  assert.equal(
+    classifyV12SocialMomentum({
+      priceData: { prices: [...base.prices.slice(0, 20), new Set([1, 2])] },
+    }).state,
+    V12_SOCIAL_EVIDENCE_STATE.MALFORMED
+  );
+  assert.equal(
+    classifyV12SocialMomentum({
+      priceData: { prices: [...base.prices.slice(0, 20), []] },
+    }).state,
+    V12_SOCIAL_EVIDENCE_STATE.MALFORMED
+  );
+  assert.equal(
+    classifyV12SocialMomentum({
+      priceData: { prices: [...base.prices.slice(0, 20), [1]] },
+    }).state,
+    V12_SOCIAL_EVIDENCE_STATE.MALFORMED
+  );
+  assert.equal(
+    classifyV12SocialMomentum({ priceData: base }).state,
+    V12_SOCIAL_EVIDENCE_STATE.OBSERVED
+  );
+});
+
+test('repair-6-8. score-eligible timestamp matches Number.isFinite(price) scoring', () => {
+  const startTs = Date.parse('2026-01-01T00:00:00.000Z');
+  const finiteRows = [];
+  for (let i = 0; i < 20; i += 1) {
+    finiteRows.push([startTs + i * 86_400_000, 70_000 + i * 10]);
+  }
+  const lastFiniteTs = finiteRows[finiteRows.length - 1][0];
+  // Numeric-string price must NOT qualify as score-eligible
+  const withString = [
+    ...finiteRows,
+    [startTs + 30 * 86_400_000, '83000'],
+  ];
+  assert.equal(
+    extractScoreEligiblePriceObservationUtc(withString),
+    new Date(lastFiniteTs).toISOString()
+  );
+  // Non-finite must not qualify
+  const withNaN = [
+    ...finiteRows,
+    [startTs + 31 * 86_400_000, Number.NaN],
+  ];
+  assert.equal(
+    extractScoreEligiblePriceObservationUtc(withNaN),
+    new Date(lastFiniteTs).toISOString()
+  );
+});
+
+test('repair-9-20. trailing NaN / nonfinite raw price: scoring vs cache comparison', () => {
+  const base = observedMomentumPrices();
+  const lastFinite = base.prices[base.prices.length - 1];
+  const laterTs = lastFinite[0] + 86_400_000;
+  const withTrailingNaN = {
+    prices: [...base.prices, [laterTs, Number.NaN]],
+  };
+
+  const scoredBase = computeV12SocialCandidate({
+    trendsData: trendingWithRank(10),
+    priceData: base,
+    trendingFetchedAt: '2026-09-29T12:00:00.000Z',
+  });
+  const scoredTrail = computeV12SocialCandidate({
+    trendsData: trendingWithRank(10),
+    priceData: withTrailingNaN,
+    trendingFetchedAt: '2026-09-29T12:00:00.000Z',
+  });
+
+  // Momentum scoring follows finite-price formula (trailing NaN excluded)
+  assert.equal(scoredTrail.components.momentum.state, V12_SOCIAL_EVIDENCE_STATE.OBSERVED);
+  assert.equal(scoredTrail.score, scoredBase.score);
+  assert.equal(
+    scoredTrail.components.momentum.latest_score_eligible_price,
+    scoredBase.components.momentum.latest_score_eligible_price
+  );
+  assert.equal(
+    scoredTrail.price_observation_utc,
+    scoredBase.price_observation_utc
+  );
+  assert.equal(
+    scoredTrail.components.momentum.provider_latest_observation_utc,
+    new Date(laterTs).toISOString()
+  );
+  assert.notEqual(
+    scoredTrail.components.momentum.provider_latest_observation_utc,
+    scoredTrail.price_observation_utc
+  );
+  assert.equal(scoredTrail.latestPrice, null);
+  assert.equal(Number.isNaN(scoredTrail.cache_comparison_latest_price), true);
+  assert.equal(scoredTrail.cache_reuse_current_evidence_eligible, false);
+  assert.equal(
+    canReuseV12SocialCache({ current: scoredTrail, cached: scoredBase }),
+    false
+  );
+
+  const trailers = [
+    undefined,
+    Infinity,
+    -Infinity,
+    '83000',
+    'not-a-number',
+  ];
+  for (const raw of trailers) {
+    const pdata = { prices: [...base.prices, [laterTs, raw]] };
+    // undefined/string as second element of array is still strict shape; classification continues
+    const result = computeV12SocialCandidate({
+      trendsData: trendingWithRank(10),
+      priceData: pdata,
+    });
+    assert.equal(result.latestPrice, null, `latestPrice for trailer=${String(raw)}`);
+    assert.equal(result.cache_reuse_current_evidence_eligible, false);
+    assert.equal(
+      canReuseV12SocialCache({ current: result, cached: scoredBase }),
+      false
+    );
+    // Must not substitute earlier finite price into top-level latestPrice
+    assert.notEqual(result.latestPrice, lastFinite[1]);
+  }
+});
+
+test('repair-21-25. lastUpdated requires both valid timestamps', () => {
+  const priceData = observedMomentumPrices();
+  const trendsData = trendingWithRank(8);
+  const priceObs = extractScoreEligiblePriceObservationUtc(priceData.prices);
+
+  const both = computeV12SocialCandidate({
+    trendsData,
+    priceData,
+    trendingFetchedAt: '2026-09-29T12:00:00.000Z',
+  });
+  assert.ok(both.lastUpdated);
+  assert.equal(
+    both.lastUpdated,
+    ['2026-09-29T12:00:00.000Z', priceObs].sort()[0]
+  );
+
+  assert.equal(
+    computeV12SocialCandidate({ trendsData, priceData }).lastUpdated,
+    null
+  );
+  assert.equal(
+    computeV12SocialCandidate({
+      trendsData,
+      priceData,
+      trendingFetchedAt: 'not-a-timestamp',
+    }).lastUpdated,
+    null
+  );
+
+  // Missing momentum score-eligible timestamp: empty prices after search-only would not score;
+  // use OBSERVED momentum but strip observation by using prices without valid timestamps
+  const noTsPrices = {
+    prices: Array.from({ length: 30 }, (_, i) => [Number.NaN, 70_000 + i]),
+  };
+  const missingMomTs = computeV12SocialCandidate({
+    trendsData,
+    priceData: noTsPrices,
+    trendingFetchedAt: '2026-09-29T12:00:00.000Z',
+  });
+  // May be OBSERVED or not depending on formula; lastUpdated must be null without valid mom ts
+  assert.equal(missingMomTs.components.momentum.price_observation_utc, null);
+  if (missingMomTs.score != null) {
+    assert.equal(missingMomTs.lastUpdated, null);
+  }
+});
+
+test('repair-26-32. cache helper accepts native candidate outputs', () => {
+  const trendsData = trendingWithRank(11);
+  const priceData = priceRows(30, { start: 83_000, step: 0, lastPrice: 83_000 });
+  const current = computeV12SocialCandidate({
+    trendsData,
+    priceData,
+    trendingFetchedAt: '2026-09-29T12:00:00.000Z',
+  });
+  const cached = computeV12SocialCandidate({
+    trendsData,
+    priceData,
+    trendingFetchedAt: '2026-09-28T12:00:00.000Z',
+  });
+  assert.equal(current.components.search.state, 'OBSERVED');
+  assert.equal(current.components.momentum.state, 'OBSERVED');
+  assert.ok(Number.isFinite(current.latestPrice));
+  assert.equal(canReuseV12SocialCache({ current, cached }), true);
+
+  const delta1000 = computeV12SocialCandidate({
+    trendsData,
+    priceData: priceRows(30, { start: 83_000, step: 0, lastPrice: 84_000 }),
+    trendingFetchedAt: '2026-09-29T12:00:00.000Z',
+  });
+  assert.equal(canReuseV12SocialCache({ current: delta1000, cached }), true);
+
+  const deltaOver = computeV12SocialCandidate({
+    trendsData,
+    priceData: priceRows(30, { start: 83_000, step: 0, lastPrice: 84_000.01 }),
+    trendingFetchedAt: '2026-09-29T12:00:00.000Z',
+  });
+  assert.equal(canReuseV12SocialCache({ current: deltaOver, cached }), false);
+
+  const unavailable = computeV12SocialCandidate({
+    trendsData: { coins: [] },
+    priceData,
+  });
+  assert.equal(canReuseV12SocialCache({ current: unavailable, cached }), false);
+
+  const malformedRaw = computeV12SocialCandidate({
+    trendsData,
+    priceData: {
+      prices: [...priceData.prices, [Date.parse('2026-03-01T00:00:00.000Z'), Number.NaN]],
+    },
+  });
+  assert.equal(malformedRaw.latestPrice, null);
+  assert.equal(canReuseV12SocialCache({ current: malformedRaw, cached }), false);
+});
+
+test('repair-33-34. frozen weights not caller-overridable; 55/63=>57', () => {
+  assert.equal(combineObservedSocialComponents({ searchScore: 55, momentumScore: 63 }), 57);
+  assert.equal(
+    combineObservedSocialComponents({
+      searchScore: 55,
+      momentumScore: 63,
+      weights: { coingecko_trending_rank: 1, btc_price_momentum_7d: 0 },
+    }),
+    57
+  );
+});
+
+test('repair-35-38. truthful provider UNPROVEN/SUPPLIED', () => {
+  assert.deepEqual(normalizeProvider(undefined), { status: 'UNPROVEN', provider: null });
+  assert.deepEqual(normalizeProvider(null), { status: 'UNPROVEN', provider: null });
+  assert.deepEqual(normalizeProvider(''), { status: 'UNPROVEN', provider: null });
+  assert.deepEqual(normalizeProvider({}), { status: 'UNPROVEN', provider: null });
+  assert.deepEqual(normalizeProvider({ provider: null }), { status: 'UNPROVEN', provider: null });
+  assert.deepEqual(normalizeProvider({ status: 'SUPPLIED' }), { status: 'UNPROVEN', provider: null });
+  assert.deepEqual(normalizeProvider('CoinGecko'), { status: 'SUPPLIED', provider: 'CoinGecko' });
+  assert.deepEqual(
+    normalizeProvider({ provider: 'CoinGecko' }),
+    { status: 'SUPPLIED', provider: 'CoinGecko' }
   );
 });
