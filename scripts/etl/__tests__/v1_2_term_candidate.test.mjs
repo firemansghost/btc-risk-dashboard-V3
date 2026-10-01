@@ -570,7 +570,8 @@ test('score-eligible spot freshness rejects stale completed history', () => {
   const withoutIntraday = candidateFrom(stale);
   assert.equal(withoutIntraday.score, null);
   assert.equal(withoutIntraday.reason, 'stale_score_eligible_spot');
-  assert.notEqual(withoutIntraday.common_cutoff_date_D, '2026-09-19');
+  assert.equal(withoutIntraday.common_cutoff_date_D, '2026-09-19');
+  assert.equal(withoutIntraday.spot_observation_utc, '2026-09-19T00:00:00.000Z');
 
   stale.prices.push([Date.parse(AS_OF), 250_000]);
   const rescued = candidateFrom(stale);
@@ -721,4 +722,84 @@ test('supplied acquisition failure classes stay distinguishable', () => {
   });
   assert.equal(fresh.provider_dispositions.find((row) => row.provider === 'okx').acquisition_classification, 'FRESH');
   assert.equal(fresh.provider_dispositions.find((row) => row.provider === 'okx').disposition, 'SELECTED');
+});
+
+function dropFundingDates(rows, fromDate, toDate) {
+  return rows.filter((row) => {
+    const ms = Number(row.fundingTime ?? Date.parse(row.timestamp));
+    if (!Number.isFinite(ms)) return true;
+    const date = new Date(ms).toISOString().slice(0, 10);
+    return date < fromDate || date > toDate;
+  });
+}
+
+test('freshness binds to the spot evidence scored at D', () => {
+  const holed = buildEvidence({ completeDays: 160, priceForIndex: () => 100 });
+  holed.funding = dropFundingDates(holed.funding, '2026-09-19', '2026-09-29');
+  const staleCutoff = candidateFrom(holed);
+  assert.equal(staleCutoff.score, null);
+  assert.equal(staleCutoff.reason, 'stale_score_eligible_spot');
+  assert.equal(staleCutoff.common_cutoff_date_D, '2026-09-18');
+  assert.equal(staleCutoff.spot_observation_utc, '2026-09-18T00:00:00.000Z');
+  assert.equal(staleCutoff.score_eligible_spot_required_utc, '2026-09-29T00:00:00.000Z');
+  assert.equal(staleCutoff.latest_score_eligible_spot_utc, '2026-09-29T00:00:00.000Z');
+  assert.notEqual(staleCutoff.selected_provider, 'okx');
+
+  const malformedLatest = buildEvidence({ completeDays: 160, priceForIndex: () => 100 });
+  malformedLatest.funding.push({
+    instId: 'BTC-USDT-SWAP',
+    fundingTime: String(Date.parse(isoAt('2026-09-29', 8))),
+    fundingRate: null,
+  });
+  const shifted = candidateFrom(malformedLatest);
+  assert.equal(shifted.score, null);
+  assert.equal(shifted.reason, 'stale_score_eligible_spot');
+  assert.equal(shifted.common_cutoff_date_D, '2026-09-28');
+  assert.equal(shifted.spot_observation_utc, '2026-09-28T00:00:00.000Z');
+
+  const valid = candidateFrom(buildEvidence({ priceForIndex: () => 100 }));
+  assert.equal(valid.score, 95);
+  assert.equal(valid.common_cutoff_date_D, '2026-09-29');
+  assert.equal(canReuseV12TermCache({ current: staleCutoff, cached: valid }), false);
+  assert.equal(canReuseV12TermCache({ current: shifted, cached: structuredClone(valid) }), false);
+
+  const bitmex = buildEvidence({ provider: 'bitmex', completeDays: 160, priceForIndex: () => 100 });
+  bitmex.funding = dropFundingDates(bitmex.funding, '2026-09-19', '2026-09-29');
+  const okx = buildEvidence({ provider: 'okx', completeDays: 160, priceForIndex: () => 100 });
+  const fallback = computeV12TermCandidate({
+    asOfUtc: AS_OF,
+    funding: { bitmex: bitmex.funding, okx: okx.funding },
+    spotPrices: okx.prices,
+  });
+  assert.equal(fallback.selected_provider, 'okx');
+  assert.equal(fallback.score, 95);
+  assert.equal(fallback.common_cutoff_date_D, '2026-09-29');
+  assert.equal(fallback.spot_observation_utc, '2026-09-29T00:00:00.000Z');
+  const bitmexDisposition = fallback.provider_dispositions.find((row) => row.provider === 'bitmex');
+  assert.equal(bitmexDisposition.disposition, 'STALE_SCORED_EVIDENCE');
+  assert.equal(bitmexDisposition.common_cutoff_date_D, '2026-09-18');
+});
+
+test('cache provenance rejects missing or contradictory component evidence', () => {
+  const current = candidateFrom(buildEvidence({ priceForIndex: () => 100 }));
+  assert.equal(canReuseV12TermCache({ current, cached: structuredClone(current) }), true);
+
+  function reject(mutate) {
+    const cached = structuredClone(current);
+    mutate(cached);
+    assert.equal(canReuseV12TermCache({ current, cached }), false);
+  }
+
+  reject((cached) => { delete cached.components.funding.percentile; });
+  reject((cached) => { cached.components.funding.percentile = 0; });
+  reject((cached) => { cached.components.funding.T_utc = '1970-01-01T00:00:00.000Z'; });
+  reject((cached) => { cached.components.funding.settlement_timestamps_used = []; });
+  reject((cached) => { cached.components.funding.left_boundary_utc = '1970-01-01T00:00:00.000Z'; });
+  reject((cached) => { delete cached.components.realized_vol.price_count; });
+  reject((cached) => { cached.components.realized_vol.return_count = 29; });
+  reject((cached) => { cached.components.stress.funding_dates = []; });
+  reject((cached) => { cached.components.stress.spot_return_dates = cached.components.stress.spot_return_dates.slice(1); });
+  reject((cached) => { cached.component_weights = { funding: 1, realized_vol: 0, stress: 0 }; });
+  reject((cached) => { cached.term_factor_weight = 0.5; });
+  reject((cached) => { cached.normalized_funding_unit = 'decimal'; });
 });

@@ -898,18 +898,6 @@ export function requiredScoreEligibleSpotUtc(asOfIso) {
   return published;
 }
 
-function spotEvidenceIsFresh(spot, asOfIso) {
-  const required = requiredScoreEligibleSpotUtc(asOfIso);
-  const latestEligible = spot.eligible.length
-    ? spot.eligible[spot.eligible.length - 1].source_timestamp_utc
-    : null;
-  return {
-    required_score_eligible_spot_utc: required,
-    latest_score_eligible_spot_utc: latestEligible,
-    fresh: isObservationAcceptable(latestEligible, required),
-  };
-}
-
 function baseResult(asOfIso, extra = {}) {
   return {
     candidate_only: true,
@@ -979,6 +967,17 @@ function evaluateProvider(provider, rows, spot) {
   const fundingInside = fundingNow.rows.every((row) => half.rows.includes(row));
   if (!fundingInside) {
     return { gate2_pass: false, reason: 'half_open_excludes_required_slot', surface, D, T };
+  }
+  const scoredSpotUtc = spot.by_date.get(D)?.source_timestamp_utc || null;
+  const requiredSpotUtc = requiredScoreEligibleSpotUtc(spot.as_of_utc);
+  if (!isObservationAcceptable(scoredSpotUtc, requiredSpotUtc)) {
+    return {
+      gate2_pass: false,
+      reason: 'stale_score_eligible_spot',
+      D,
+      scored_spot_observation_utc: scoredSpotUtc,
+      required_score_eligible_spot_utc: requiredSpotUtc,
+    };
   }
   const fundingRefs = collectReferenceEndpoints(D, (ep) => fundingWindowAt(surface, ep).ok);
   const volRefs = collectReferenceEndpoints(D, (ep) => spotWindowAt(spot, ep).ok);
@@ -1068,7 +1067,6 @@ export function computeV12TermCandidate({
     return baseResult(null, { reason: 'missing_or_invalid_as_of_utc' });
   }
   const spot = selectV12CompletedDailySpot(spotPrices || prices || [], asOfIso);
-  const spotFreshness = spotEvidenceIsFresh(spot, asOfIso);
   const dispositions = [];
   let selected = null;
   let selectedEval = null;
@@ -1121,18 +1119,21 @@ export function computeV12TermCandidate({
       });
       continue;
     }
-    if (!spotFreshness.fresh) {
+    const evaln = evaluateProvider(provider, bundle.rows || [], spot);
+    if (!evaln.gate2_pass && evaln.reason === 'stale_score_eligible_spot') {
       dispositions.push({
         provider,
-        disposition: 'SPOT_EVIDENCE_STALE',
+        disposition: 'STALE_SCORED_EVIDENCE',
         acquisition_classification: acquisitionClassification,
         http_status: httpStatus,
         gate1: 'fresh',
-        gate2: 'NOT_EVALUATED',
+        gate2: 'stale_score_eligible_spot',
+        common_cutoff_date_D: evaln.D,
+        scored_spot_observation_utc: evaln.scored_spot_observation_utc,
+        required_score_eligible_spot_utc: evaln.required_score_eligible_spot_utc,
       });
       continue;
     }
-    const evaln = evaluateProvider(provider, bundle.rows || [], spot);
     if (!evaln.gate2_pass) {
       dispositions.push({
         provider,
@@ -1163,13 +1164,15 @@ export function computeV12TermCandidate({
   }
 
   if (!selected || !selectedEval) {
-    const spotStale = dispositions.some((row) => row.disposition === 'SPOT_EVIDENCE_STALE');
+    const staleScored = dispositions.find((row) => row.disposition === 'STALE_SCORED_EVIDENCE');
     return baseResult(asOfIso, {
-      reason: spotStale ? 'stale_score_eligible_spot' : 'no_provider_passes_both_gates',
+      reason: staleScored ? 'stale_score_eligible_spot' : 'no_provider_passes_both_gates',
       provider_dispositions: dispositions,
       latest_raw_spot_observation_utc: spot.latest_raw_observation_utc,
-      score_eligible_spot_required_utc: spotFreshness.required_score_eligible_spot_utc,
-      latest_score_eligible_spot_utc: spotFreshness.latest_score_eligible_spot_utc,
+      score_eligible_spot_required_utc: requiredScoreEligibleSpotUtc(asOfIso),
+      latest_score_eligible_spot_utc: spot.eligible.at(-1)?.source_timestamp_utc || null,
+      common_cutoff_date_D: staleScored?.common_cutoff_date_D || null,
+      spot_observation_utc: staleScored?.scored_spot_observation_utc || null,
     });
   }
 
@@ -1230,7 +1233,7 @@ export function computeV12TermCandidate({
     spot_observation_utc: selectedEval.spotObs,
     latest_raw_funding_observation_utc: selectedEval.latestRawFunding,
     latest_raw_spot_observation_utc: selectedEval.latestRawSpot,
-    score_eligible_spot_required_utc: spotFreshness.required_score_eligible_spot_utc,
+    score_eligible_spot_required_utc: requiredScoreEligibleSpotUtc(asOfIso),
     lastUpdated,
     fingerprint: selectedEval.fp.fingerprint,
     fingerprint_input: selectedEval.fp.fingerprint_input,
@@ -1251,15 +1254,72 @@ function sameEndpoints(left, right) {
     && left.every((endpoint, index) => endpoint === right[index]);
 }
 
+function sameStringArray(left, right) {
+  return Array.isArray(left)
+    && Array.isArray(right)
+    && left.length === right.length
+    && left.every((value, index) => value === right[index]);
+}
+
+function boundedPercentile(value, expected) {
+  return typeof value === 'number'
+    && Number.isFinite(value)
+    && value >= 0
+    && value <= 1
+    && value === expected;
+}
+
 function cachedComponentMatches(cachedComponent, currentComponent) {
   if (!cachedComponent || !currentComponent) return false;
   if (cachedComponent.state !== 'OBSERVED' || currentComponent.state !== 'OBSERVED') return false;
   if (!boundedComponentScore(cachedComponent.score) || cachedComponent.score !== currentComponent.score) {
     return false;
   }
+  if (!boundedPercentile(cachedComponent.percentile, currentComponent.percentile)) return false;
   if (cachedComponent.value !== currentComponent.value) return false;
   if (cachedComponent.reference_count !== V12_TERM_REFERENCE_DEPTH) return false;
   return sameEndpoints(cachedComponent.reference_endpoints, currentComponent.reference_endpoints);
+}
+
+function fundingProvenanceMatches(cachedComponent, currentComponent) {
+  if (!cachedComponentMatches(cachedComponent, currentComponent)) return false;
+  if (canonicalObservation(cachedComponent.T_utc) !== currentComponent.T_utc) return false;
+  if (canonicalObservation(cachedComponent.left_boundary_utc) !== currentComponent.left_boundary_utc) return false;
+  if (cachedComponent.left_boundary_included !== currentComponent.left_boundary_included) return false;
+  return sameStringArray(
+    cachedComponent.settlement_timestamps_used,
+    currentComponent.settlement_timestamps_used
+  ) && cachedComponent.settlement_timestamps_used.length > 0;
+}
+
+function volatilityProvenanceMatches(cachedComponent, currentComponent) {
+  if (!cachedComponentMatches(cachedComponent, currentComponent)) return false;
+  return cachedComponent.price_count === 31
+    && cachedComponent.return_count === 30
+    && cachedComponent.price_count === currentComponent.price_count
+    && cachedComponent.return_count === currentComponent.return_count;
+}
+
+function stressProvenanceMatches(cachedComponent, currentComponent) {
+  if (!cachedComponentMatches(cachedComponent, currentComponent)) return false;
+  return sameStringArray(cachedComponent.funding_dates, currentComponent.funding_dates)
+    && sameStringArray(cachedComponent.spot_return_dates, currentComponent.spot_return_dates)
+    && cachedComponent.funding_dates.length === 30
+    && cachedComponent.spot_return_dates.length === 30;
+}
+
+function frozenIdentityMatches(cached) {
+  if (cached.term_factor_weight !== V12_TERM_FACTOR_WEIGHT) return false;
+  if (cached.normalized_funding_unit !== V12_TERM_NORMALIZED_FUNDING_UNIT) return false;
+  if (cached.cross_provider_splicing !== false) return false;
+  const weights = cached.component_weights;
+  const frozen = V12_TERM_COMPONENT_WEIGHTS;
+  if (!weights || typeof weights !== 'object') return false;
+  const keys = Object.keys(weights);
+  return keys.length === 3
+    && weights.funding === frozen.funding
+    && weights.realized_vol === frozen.realized_vol
+    && weights.stress === frozen.stress;
 }
 
 function canonicalObservation(value) {
@@ -1277,12 +1337,13 @@ export function canReuseV12TermCache({ current, cached } = {}) {
   if (cached.implementation_revision_target !== V12_IMPLEMENTATION_REVISION_TARGET) return false;
   if (cached.ssot_version !== V12_SSOT_VERSION) return false;
   if (cached.contract_id !== V12_TERM_CONTRACT_ID) return false;
+  if (!frozenIdentityMatches(cached)) return false;
   if (cached.selected_provider !== current.selected_provider) return false;
   if (cached.common_cutoff_date_D !== current.common_cutoff_date_D) return false;
   if (!boundedComponentScore(cached.score) || cached.score !== current.score) return false;
-  if (!cachedComponentMatches(cached.components?.funding, current.components?.funding)) return false;
-  if (!cachedComponentMatches(cached.components?.realized_vol, current.components?.realized_vol)) return false;
-  if (!cachedComponentMatches(cached.components?.stress, current.components?.stress)) return false;
+  if (!fundingProvenanceMatches(cached.components?.funding, current.components?.funding)) return false;
+  if (!volatilityProvenanceMatches(cached.components?.realized_vol, current.components?.realized_vol)) return false;
+  if (!stressProvenanceMatches(cached.components?.stress, current.components?.stress)) return false;
   const fundingUtc = canonicalObservation(cached.funding_observation_utc);
   const stressUtc = canonicalObservation(cached.stress_funding_observation_utc);
   const spotUtc = canonicalObservation(cached.spot_observation_utc);
