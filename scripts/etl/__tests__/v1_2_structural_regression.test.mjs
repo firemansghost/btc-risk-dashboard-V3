@@ -37,18 +37,32 @@ test('structural regression gate passes the executed production paths', async ()
     'composite_factor_mapping',
     'composite_included_weight',
     'composite_zero_weight_health',
-    'term_adapter_on_production_path',
+    'term_successor_integration',
+    'factor_eligibility',
+    'factor_provenance',
+    'macro_varying_coefficients',
+    'joint_unavailable',
+    'malformed_current_valid_cache',
+    'requirement_matrix',
     'protected_files_unmodified',
   ]) {
     assert.equal(byId[id], 'PASS', id);
   }
 });
 
-test('negative controls fail inside the gate machinery', async () => {
-  for (const kind of ['swap_keys', 'weight', 'cache', 'stale_as_term']) {
+test('negative controls fail the named requirement', async () => {
+  const controls = [
+    ['exclude_stablecoins', ['factor_eligibility', 'composite_included_weight']],
+    ['include_stale_term', ['term_successor_integration']],
+    ['swap_stable_liquidity', ['composite_factor_mapping']],
+    ['cache_accept', ['term_cache_rejection']],
+    ['weight', ['factor_weights']],
+  ];
+  for (const [kind, ids] of controls) {
     const report = await runV12StructuralRegression({ mutate: kind });
     assert.equal(report.overall_disposition, 'BLOCKED', kind);
-    assert.ok(report.blockers.length > 0, kind);
+    const failed = new Set(report.blockers.map((item) => item.id));
+    for (const id of ids) assert.equal(failed.has(id), true, `${kind} missing ${id} in ${[...failed].join(',')}`);
   }
 });
 
@@ -60,7 +74,7 @@ test('CLI exits nonzero for a blocking negative control', () => {
     execFileSync(NODE, [
       'scripts/research/validate-v1-2-structural-regression.mjs',
       '--negative-control',
-      'swap_keys',
+      'swap_stable_liquidity',
     ], { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
   } catch (error) {
     code = error.status;

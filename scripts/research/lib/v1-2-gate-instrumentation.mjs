@@ -81,16 +81,30 @@ export function compositeLoopInstrumentation(factorsSource, asOfIso) {
   }
   const originalSlice = lines.slice(start, returnEnd + 1).join('\n');
   const replacement = `asOf: ${JSON.stringify(asOfIso)},`;
-  const instrumented = originalSlice
-    .replace('asOf: new Date().toISOString(),', replacement)
-    .replace(
-      "const { loadDashboardConfig, getFactorsArray } = await import('../../lib/config-loader.mjs');\n",
-      '',
-    )
-    .replace(
-      "const { validateCompositeScore } = await import('../../lib/composite-validator.mjs');\n",
-      '',
-    );
+  const successorBoundary = `status = stalenessStatus.status;
+        lastUpdated = dataLastUpdated;
+        if (factor.key === 'term_leverage' && termSuccessorDecision) {
+          status = termSuccessorDecision.eligible ? 'fresh' : 'stale';
+          reason = termSuccessorDecision.reason;
+          lastUpdated = data.lastUpdated;
+        }
+        if (eligibilityOverride && Object.prototype.hasOwnProperty.call(eligibilityOverride, factor.key)) {
+          status = eligibilityOverride[factor.key];
+        }`;
+  let instrumented = originalSlice.replace('asOf: new Date().toISOString(),', replacement);
+  instrumented = instrumented.replace(
+    `status = stalenessStatus.status;
+        // Preserve the lastUpdated from factor computation, not from staleness check
+        // The staleness check returns the same timestamp, but we want to ensure we use the one from data
+        lastUpdated = dataLastUpdated;`,
+    successorBoundary,
+  );
+  instrumented = instrumented
+    .replace("const { loadDashboardConfig, getFactorsArray } = await import('../../lib/config-loader.mjs');\n", '')
+    .replace("const { validateCompositeScore } = await import('../../lib/composite-validator.mjs');\n", '');
+  if (!instrumented.includes('termSuccessorDecision')) {
+    throw new Error('term_successor_boundary_not_applied');
+  }
   return {
     original_sha256: sha256(originalSlice),
     instrumented_sha256: sha256(instrumented),
@@ -103,7 +117,7 @@ export function compositeLoopInstrumentation(factorsSource, asOfIso) {
   };
 }
 
-export async function runProductionComposite(settledByKey, asOfIso = GATE_AS_OF_UTC) {
+export async function runProductionComposite(settledByKey, asOfIso = GATE_AS_OF_UTC, options = {}) {
   const factorsSource = fs.readFileSync(path.join(ROOT, 'scripts/etl/factors.mjs'), 'utf8');
   const gscore = loadCalculateEnhancedGScore(factorsSource);
   const loop = compositeLoopInstrumentation(factorsSource, asOfIso);
@@ -118,6 +132,8 @@ export async function runProductionComposite(settledByKey, asOfIso = GATE_AS_OF_
     'getFactorsArray',
     'validateCompositeScore',
     'calculateEnhancedGScore',
+    'termSuccessorDecision',
+    'eligibilityOverride',
     `return (async () => {\n${loop.instrumented}\n})();`,
   );
   const result = await runner(
@@ -128,6 +144,8 @@ export async function runProductionComposite(settledByKey, asOfIso = GATE_AS_OF_
     getFactorsArray,
     validateCompositeScore,
     gscore.fn,
+    options.termSuccessorDecision || null,
+    options.eligibilityOverride || null,
   );
   return {
     result,
@@ -140,7 +158,7 @@ export async function runProductionComposite(settledByKey, asOfIso = GATE_AS_OF_
   };
 }
 
-function trendRecords() {
+export function trendPriceRecords() {
   const records = [];
   const endMs = Date.parse('2026-09-29T00:00:00.000Z');
   for (let age = 420; age >= 0; age -= 1) {
@@ -199,7 +217,7 @@ export async function runInstrumentedTrend(asOfIso = GATE_AS_OF_UTC) {
     .replace('await loadPriceHistory()', 'globalThis.__GATE_TREND_RECORDS');
   const RealDate = globalThis.Date;
   globalThis.Date = frozenDate(asOfIso);
-  globalThis.__GATE_TREND_RECORDS = trendRecords();
+  globalThis.__GATE_TREND_RECORDS = trendPriceRecords();
   try {
     const namespace = await importInstrumented(absolute, instrumented);
     const result = await namespace.computeTrendValuation(50_000);
@@ -222,20 +240,47 @@ export async function runInstrumentedTrend(asOfIso = GATE_AS_OF_UTC) {
   }
 }
 
-function fredSeries(value) {
-  const observations = [];
+export function macroEvidenceValues(mode = 'cboe_primary') {
+  const dates = [];
   const end = Date.parse('2026-09-30T00:00:00.000Z');
   for (let age = 90; age >= 0; age -= 1) {
-    observations.push({
-      date: new Date(end - age * 86_400_000).toISOString().slice(0, 10),
-      value: String(value),
-    });
+    dates.push(new Date(end - age * 86_400_000).toISOString().slice(0, 10));
   }
-  return { observations };
+  const flat = (value) => dates.map(() => value);
+  if (mode !== 'varying_dxy') {
+    return { dates, dxy: flat(100), dgs2: flat(4), dgs10: flat(5), dfii10: flat(2), vix: flat(18) };
+  }
+  return {
+    dates,
+    dxy: dates.map((_, index) => (index >= 72 ? 90 : 100)),
+    dgs2: dates.map((_, index) => (index >= 72 ? 5 : 4)),
+    dgs10: flat(6),
+    dfii10: flat(2),
+    vix: dates.map((_, index) => {
+      if (index < 30) return 40;
+      if (index < 61) return 10;
+      if (index < 84) return 20;
+      return 12;
+    }),
+  };
 }
 
-function cboeCsv(endDate) {
+function fredSeriesFrom(dates, values) {
+  return {
+    observations: dates.map((date, index) => ({ date, value: String(values[index]) })),
+  };
+}
+
+function cboeCsv(endDate, closes = null) {
   const lines = ['DATE,OPEN,HIGH,LOW,CLOSE'];
+  if (closes) {
+    const evidence = macroEvidenceValues('varying_dxy');
+    evidence.dates.forEach((date, index) => {
+      const close = evidence.vix[index];
+      lines.push(`${date},${close},${close},${close},${close}`);
+    });
+    return `${lines.join('\n')}\n`;
+  }
   const end = Date.parse(`${endDate}T00:00:00.000Z`);
   for (let age = 45; age >= 0; age -= 1) {
     const date = new Date(end - age * 86_400_000).toISOString().slice(0, 10);
@@ -269,16 +314,18 @@ export function createMacroFetch(mode) {
         return fetchResponse('down', { status: 503, contentType: 'text/plain' });
       }
       if (mode === 'stale_cboe') return fetchResponse(cboeCsv('2026-08-01'), { contentType: 'text/csv' });
+      if (mode === 'varying_dxy') return fetchResponse(cboeCsv('2026-09-30', macroEvidenceValues(mode).vix), { contentType: 'text/csv' });
       return fetchResponse(cboeCsv('2026-09-30'), { contentType: 'text/csv' });
     }
+    const evidence = macroEvidenceValues(mode);
     if (href.includes('series_id=VIXCLS')) {
       if (mode === 'unavailable') return fetchResponse({ observations: [] });
-      return fetchResponse(fredSeries(18));
+      return fetchResponse(fredSeriesFrom(evidence.dates, evidence.vix));
     }
-    if (href.includes('series_id=DTWEXBGS')) return fetchResponse(fredSeries(100));
-    if (href.includes('series_id=DGS2')) return fetchResponse(fredSeries(4));
-    if (href.includes('series_id=DGS10')) return fetchResponse(fredSeries(5));
-    if (href.includes('series_id=DFII10')) return fetchResponse(fredSeries(2));
+    if (href.includes('series_id=DTWEXBGS')) return fetchResponse(fredSeriesFrom(evidence.dates, evidence.dxy));
+    if (href.includes('series_id=DGS2')) return fetchResponse(fredSeriesFrom(evidence.dates, evidence.dgs2));
+    if (href.includes('series_id=DGS10')) return fetchResponse(fredSeriesFrom(evidence.dates, evidence.dgs10));
+    if (href.includes('series_id=DFII10')) return fetchResponse(fredSeriesFrom(evidence.dates, evidence.dfii10));
     return fetchResponse({ observations: [] }, { status: 404 });
   };
   return { fetchImpl, calls };
