@@ -59,7 +59,7 @@ Do not treat any label as a guarantee that a change is scientifically harmless.
 - Concurrency group: `etl`
 - `cancel-in-progress: false`
 - Checkout: `actions/checkout@v5` with `fetch-depth: 0` and `persist-credentials: true`
-- Node: `20.18.0` via `actions/setup-node@v5`
+- Node: `24` via `actions/setup-node@v5`
 - Install: `npm ci --ignore-scripts --no-audit --fund=false`
 - Production secrets used by the compute step: `FRED_API_KEY`, `ALPHA_VANTAGE_API_KEY`
 - Production commit stages only: `public/data`, `public/signals`, `public/extras`, `public/alerts`
@@ -306,7 +306,7 @@ Daily ETL runs `npm ci` **before** scientific execution. The 13 Git object ident
 | Surface | Why it is H8-indirect |
 | --- | --- |
 | `package.json` / `package-lock.json` | `npm ci` resolves the compute process dependencies |
-| Node runtime version | Daily ETL pins `20.18.0`; `package.json` `engines` is `>=20.18 <21` |
+| Node runtime version | Daily ETL pins `24`; `package.json` `engines` is `24.x` |
 | GitHub Actions runner / `actions/checkout` / `actions/setup-node` | Daily ETL currently uses action major v5; Tests still uses v4 |
 | Workflow env / secrets / provider availability | Compute step injects FRED and Alpha Vantage secrets; missing providers change factor fetch/fallback behavior |
 | `scripts/etl/factor-history-tracking.mjs` and child `exec` scripts | Called by frozen `compute.mjs` but not fingerprint members |
@@ -325,7 +325,7 @@ Do not assert that dependency or runner changes are scientifically harmless.
 Triggers: `push` and `pull_request` to `main` / `develop` only (no `schedule`, no `workflow_dispatch`).  
 Permissions: `contents: read`.  
 Checkout: `actions/checkout@v4`, `fetch-depth: 0`, `persist-credentials: false`.  
-Node: `20.18.0`.
+Node: `24`.
 
 ### Current commands (order)
 
@@ -374,7 +374,7 @@ Do not delete or repair it inside E07.
 - Concurrency group: `weekly-backtesting`
 - `cancel-in-progress: false`
 - Permissions: `contents: write`
-- Node: `"20"` (not the Daily ETL `20.18.0` pin)
+- Node: `"24"` (aligned with Daily ETL / package engines major)
 - Commands: `npm run etl:backtesting` → `scripts/etl/weekly-backtesting.mjs`; `npm run etl:strategy-comparison` → `scripts/etl/dca-vs-risk-strategy-comparison.mjs`
 - Commit adds only:
   - `public/data/weekly_backtesting_report.json`
@@ -479,7 +479,7 @@ Verified from current code:
 - H8 research artifacts are intentionally **not** part of the production `git add` (explicit `research/` staging refusal).
 - `package.json` / lockfile / Node / action versions can affect scientific runtime even though they are outside the 13-path fingerprint, because Daily ETL runs `npm ci` then `etl:compute`.
 - `app/api/refresh/route.ts` still contains a separate real-time computation implementation (`buildLatest` + `lib/factors/**`) that is **not** called by current GET/POST handlers.
-- Weekly backtesting is an independent public-artifact writer with its own concurrency group and a Node 20 major-version request, rather than Daily ETL's exact 20.18.0 runtime request.
+- Weekly backtesting is an independent public-artifact writer with its own concurrency group and a Node 24 major-version request, aligned with Daily ETL and `package.json` engines `24.x`.
 - Alerts has a current-output contract (`public/alerts/latest.json`) and legacy artifact/generator families under `public/data/*_alerts.json`.
 - Public artifact commits (`[skip ci]`) can still trigger Vercel/build behavior because they are commits to `main`, even though the payload is data rather than application source. Exact Vercel skip rules for docs-only PRs are **UNRESOLVED** without deployment-config evidence (`vercel.json` is absent).
 - `compute.mjs` shells out to non-fingerprint scripts; frozen identity of `compute.mjs` does not freeze those callees.
