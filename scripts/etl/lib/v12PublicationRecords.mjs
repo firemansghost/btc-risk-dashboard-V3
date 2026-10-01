@@ -21,6 +21,7 @@ export function buildSuccessorProvenance(factors) {
     calibration_id: factor.r10?.calibration_id ?? null,
     acquisition: factor.r10?.acquisition ?? null,
     spot_acquisition: factor.r10?.spot_acquisition ?? null,
+    series_acquisition: factor.r10?.series_acquisition ?? null,
     fallback: factor.r10?.fallback ?? null,
     derivation: factor.r10?.derivation ?? null,
     trending_fetched_at: factor.r10?.trending_fetched_at ?? null,

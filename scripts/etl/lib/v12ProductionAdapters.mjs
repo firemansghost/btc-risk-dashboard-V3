@@ -240,6 +240,13 @@ async function readDecodedJson(response) {
   }
 }
 
+function httpBodyIsAcceptable(response) {
+  if (response == null) return false;
+  if (Number.isInteger(response.status) && response.status !== 200) return false;
+  if (response.ok === false) return false;
+  return true;
+}
+
 export async function acquireStablecoinResponses({
   fetchImpl,
   asOfMs,
@@ -255,7 +262,7 @@ export async function acquireStablecoinResponses({
     let fallback = 'none';
     try {
       const primary = await fetchImpl(primaryUrl, { provider: 'coingecko', coin: coin.symbol });
-      if (primary?.ok !== false && primary?.status !== 503) {
+      if (httpBodyIsAcceptable(primary)) {
         const decoded = await readDecodedJson(primary);
         payload = decoded.ok ? decoded.body : null;
         provider = 'coingecko';
@@ -271,11 +278,13 @@ export async function acquireStablecoinResponses({
           coin: coin.symbol,
           headers: { 'X-CMC_PRO_API_KEY': cmcApiKey },
         });
-        const decoded = await readDecodedJson(cmc);
-        const converted = decoded.ok ? convertCmcQuotesToMarketCaps(decoded.body) : null;
-        if (converted) {
-          payload = converted;
-          provider = 'coinmarketcap';
+        if (httpBodyIsAcceptable(cmc)) {
+          const decoded = await readDecodedJson(cmc);
+          const converted = decoded.ok ? convertCmcQuotesToMarketCaps(decoded.body) : null;
+          if (converted) {
+            payload = converted;
+            provider = 'coinmarketcap';
+          }
         }
       } catch {
         payload = payload?.market_caps ? payload : null;
@@ -288,11 +297,13 @@ export async function acquireStablecoinResponses({
           provider: 'cryptocompare',
           coin: coin.symbol,
         });
-        const decoded = await readDecodedJson(cc);
-        const converted = decoded.ok ? convertCryptoCompareToMarketCaps(decoded.body) : null;
-        if (converted) {
-          payload = converted;
-          provider = 'cryptocompare';
+        if (httpBodyIsAcceptable(cc)) {
+          const decoded = await readDecodedJson(cc);
+          const converted = decoded.ok ? convertCryptoCompareToMarketCaps(decoded.body) : null;
+          if (converted) {
+            payload = converted;
+            provider = 'cryptocompare';
+          }
         }
       } catch {
         payload = null;
@@ -555,6 +566,7 @@ export function scoreTerm({ funding, spotPrices, asOfUtc, spotAcquisition = null
       acquisition: candidate.provider_dispositions,
       fallback: candidate.provider_dispositions,
       spot_acquisition: spotAcquisition,
+      score_cache_reuse: false,
       candidate_reason: candidate.reason,
       derivation: spotFailure
         ? 'spot acquisition failed before scoring; candidate reason is unchanged'
@@ -587,7 +599,7 @@ export function fredBundle({ seriesId, observations, kind }) {
   };
 }
 
-export function scoreNetLiquidity({ walclObservations, rrpObservations, wtregenObservations, asOfUtc }) {
+export function scoreNetLiquidity({ walclObservations, rrpObservations, wtregenObservations, asOfUtc, seriesAcquisition = null }) {
   const candidate = computeV12NetLiquidityCandidate({
     asOfUtc,
     walcl: fredBundle({ seriesId: 'WALCL', observations: walclObservations, kind: 'native' }),
@@ -606,6 +618,7 @@ export function scoreNetLiquidity({ walclObservations, rrpObservations, wtregenO
       latest_rrp_date: candidate.latest_available_rrp_wew_source_date,
       latest_wtregen_date: candidate.latest_available_wtregen_source_date,
       acquisition: 'fred_native_and_rrp_wew',
+      series_acquisition: seriesAcquisition,
       fallback: 'none',
       request_semantics: netLiquidityRequestSemantics(),
       derivation: 'selected common Wednesday, not the latest WALCL print and not the wall clock',
@@ -735,6 +748,7 @@ export function rebuildPublicationFromCandidate(factor, candidate, context = nul
         latest_wtregen_date: candidate.latest_available_wtregen_source_date,
         request_semantics: netLiquidityRequestSemantics(),
         acquisition: 'fred_native_and_rrp_wew',
+        series_acquisition: context?.seriesAcquisition ?? null,
         fallback: 'none',
         derivation: 'selected common Wednesday, not the latest WALCL print and not the wall clock',
       },
@@ -772,6 +786,8 @@ export function rebuildPublicationFromCandidate(factor, candidate, context = nul
       scored_observation_utc: candidate.spot_observation_utc,
       acquisition: candidate.provider_dispositions,
       fallback: candidate.provider_dispositions,
+      spot_acquisition: context?.spotAcquisition ?? null,
+      score_cache_reuse: context?.scoreCacheReuse === true,
       derivation: 'candidate lastUpdated is the earliest scored funding, stress, and spot timestamp',
     },
   });
@@ -897,6 +913,33 @@ export async function publishStablecoinFactor({
   return { ...scored.published, cache_reuse: false };
 }
 
+async function acquireFredSeries({ fetchImpl, url, seriesId }) {
+  let response;
+  try {
+    response = await fetchImpl(url, { seriesId });
+  } catch (error) {
+    return { series_id: seriesId, classification: 'NETWORK_ERROR', http_status: null, observations: null, message: error.message };
+  }
+  const status = Number.isInteger(response?.status) ? response.status : (response ? 200 : null);
+  if (status == null || status !== 200) {
+    return {
+      series_id: seriesId,
+      classification: status === 451 ? 'HTTP_451' : (status == null ? 'NETWORK_ERROR' : 'HTTP_OTHER'),
+      http_status: status,
+      observations: null,
+    };
+  }
+  const decoded = await readDecodedJson(response);
+  const observations = decoded.ok ? decoded.body?.observations : null;
+  if (!decoded.ok || !Array.isArray(observations)) {
+    return { series_id: seriesId, classification: 'MALFORMED_RESPONSE', http_status: status, observations: null };
+  }
+  if (observations.length === 0) {
+    return { series_id: seriesId, classification: 'EMPTY', http_status: status, observations: null };
+  }
+  return { series_id: seriesId, classification: 'ACQUIRED', http_status: status, observations };
+}
+
 export async function publishNetLiquidityFactor({
   fetchImpl,
   asOfUtc = new Date().toISOString(),
@@ -925,31 +968,47 @@ export async function publishNetLiquidityFactor({
     frequency: 'wew',
     aggregationMethod: 'avg',
   });
-  const decoded = await Promise.all([
-    readDecodedJson(await fetchImpl(walclUrl, { seriesId: 'WALCL' })),
-    readDecodedJson(await fetchImpl(rrpUrl, { seriesId: 'RRPONTSYD' })),
-    readDecodedJson(await fetchImpl(wtregenUrl, { seriesId: 'WTREGEN' })),
+  const acquiredSeries = await Promise.all([
+    acquireFredSeries({ fetchImpl, url: walclUrl, seriesId: 'WALCL' }),
+    acquireFredSeries({ fetchImpl, url: rrpUrl, seriesId: 'RRPONTSYD' }),
+    acquireFredSeries({ fetchImpl, url: wtregenUrl, seriesId: 'WTREGEN' }),
   ]);
-  if (decoded.some((item) => !item.ok)) {
-    return publishWrapper({ score: null, reason: 'malformed_fred_response', candidate_only: true, production_active: false }, {
-      factorKey: 'net_liquidity',
-      lastUpdated: null,
-      r10: {
-        provider: 'fred',
-        acquisition: 'MALFORMED_RESPONSE',
-        fallback: 'none',
-        request_semantics: netLiquidityRequestSemantics(),
-      },
-    });
+  const seriesAcquisition = Object.fromEntries(acquiredSeries.map((row) => [row.series_id, {
+    classification: row.classification,
+    http_status: row.http_status,
+  }]));
+  const failedSeries = acquiredSeries.filter((row) => row.classification !== 'ACQUIRED');
+  if (failedSeries.length) {
+    return {
+      ...publishWrapper({
+        score: null,
+        reason: failedSeries.map((row) => `series_acquisition_${row.series_id}_${row.classification}`).join('__'),
+        candidate_only: true,
+        production_active: false,
+      }, {
+        factorKey: 'net_liquidity',
+        lastUpdated: null,
+        r10: {
+          provider: 'fred',
+          acquisition: 'fred_acquisition_failure',
+          series_acquisition: seriesAcquisition,
+          fallback: 'none',
+          request_semantics: netLiquidityRequestSemantics(),
+        },
+      }),
+      cache_reuse: false,
+      request_semantics: netLiquidityRequestSemantics(),
+    };
   }
-  const [walclBody, rrpBody, wtregenBody] = decoded.map((item) => item.body);
+  const byId = Object.fromEntries(acquiredSeries.map((row) => [row.series_id, row.observations]));
   const scored = scoreNetLiquidity({
     asOfUtc,
-    walclObservations: walclBody?.observations || [],
-    rrpObservations: rrpBody?.observations || [],
-    wtregenObservations: wtregenBody?.observations || [],
+    walclObservations: byId.WALCL,
+    rrpObservations: byId.RRPONTSYD,
+    wtregenObservations: byId.WTREGEN,
+    seriesAcquisition,
   });
-  const cached = reuseCachedPublication('net_liquidity', scored.candidate, cacheRoot);
+  const cached = reuseCachedPublication('net_liquidity', scored.candidate, cacheRoot, { seriesAcquisition });
   if (cached.reuse) return { ...cached.published, cache_reuse: true, request_semantics: netLiquidityRequestSemantics() };
   if (writeCache) writeV12Cache('net_liquidity', scored.published, scored.candidate, cacheRoot);
   return { ...scored.published, cache_reuse: false, request_semantics: netLiquidityRequestSemantics() };
@@ -991,8 +1050,12 @@ export async function publishTermFactor({
     asOfUtc,
     spotAcquisition: acquired.spot_acquisition,
   });
-  const cached = reuseCachedPublication('term_leverage', scored.candidate, cacheRoot);
-  if (cached.reuse) return { ...cached.published, cache_reuse: true, pageReports: acquired.pageReports };
-  if (writeCache) writeV12Cache('term_leverage', scored.published, scored.candidate, cacheRoot);
+  const context = { spotAcquisition: acquired.spot_acquisition };
+  const spotFailed = acquired.spot_acquisition?.classification !== 'ACQUIRED';
+  if (!spotFailed) {
+    const cached = reuseCachedPublication('term_leverage', scored.candidate, cacheRoot, context);
+    if (cached.reuse) return { ...cached.published, cache_reuse: true, pageReports: acquired.pageReports };
+    if (writeCache) writeV12Cache('term_leverage', scored.published, scored.candidate, cacheRoot);
+  }
   return { ...scored.published, cache_reuse: false, pageReports: acquired.pageReports };
 }

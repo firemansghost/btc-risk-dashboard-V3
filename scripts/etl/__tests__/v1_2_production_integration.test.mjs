@@ -279,6 +279,10 @@ test('net liquidity uses native series, wew RRP, and separate dates', async () =
   assert.equal(published.request_semantics.rrp.frequency, 'wew');
   assert.equal(published.request_semantics.rrp.aggregation_method, 'avg');
   assert.equal(published.request_semantics.walcl.query_semantics, 'NATIVE');
+  assert.equal(published.r10.series_acquisition.WALCL.classification, 'ACQUIRED');
+  assert.equal(published.r10.series_acquisition.WTREGEN.classification, 'ACQUIRED');
+  assert.equal(published.r10.series_acquisition.RRPONTSYD.classification, 'ACQUIRED');
+  assert.equal(published.r10.series_acquisition.WALCL.http_status, 200);
   assert.equal(JSON.stringify(published).includes('api_key='), false);
 });
 
@@ -588,6 +592,12 @@ test('computeAllFactors dispatch serializes successor provenance without secrets
     assert.equal(statusTerm.successor_candidate_only, true);
     assert.equal(statusTerm.candidate_only, false);
     assert.equal(statusTerm.successor_production_active, false);
+    assert.equal(statusTerm.spot_acquisition.classification, 'ACQUIRED');
+    assert.equal(statusTerm.spot_acquisition.http_status, 200);
+    const statusLiquidity = status.successor_provenance.find((factor) => factor.key === 'net_liquidity');
+    assert.equal(statusLiquidity.series_acquisition.WALCL.classification, 'ACQUIRED');
+    assert.equal(statusLiquidity.series_acquisition.RRPONTSYD.classification, 'ACQUIRED');
+    assert.equal(statusLiquidity.series_acquisition.WTREGEN.classification, 'ACQUIRED');
     assert.equal(JSON.stringify(status).includes('api_key='), false);
   } finally {
     globalThis.Date = RealDate;
@@ -697,4 +707,302 @@ test('social score-cache reuse keeps the current trending acquisition', async ()
   const closed = await publishSocialFactor({ ...missingTime, cacheRoot: cacheRoot(), writeCache: false });
   assert.equal(closed.lastUpdated, null);
   assert.equal(closed.r10.trending_fetched_at, null);
+});
+
+test('stablecoin CMC and CryptoCompare reject failed HTTP bodies', async () => {
+  const endpointMs = Date.parse('2026-09-30T12:00:00.000Z');
+  let cmcDecoded = false;
+  const quotes = {
+    data: {
+      quotes: [{
+        timestamp: new Date(endpointMs).toISOString(),
+        quote: { USD: { market_cap: 1e9, price: 1, volume_24h: 1 } },
+      }],
+    },
+  };
+  const failed = await acquireStablecoinResponses({
+    fetchImpl: async (url) => {
+      if (url.includes('api.coingecko.com')) return jsonResponse({ market_caps: [[endpointMs, 1e9]] }, 500);
+      if (url.includes('coinmarketcap.com')) {
+        return {
+          ok: false,
+          status: 503,
+          json: async () => {
+            cmcDecoded = true;
+            return quotes;
+          },
+        };
+      }
+      if (url.includes('cryptocompare.com')) return jsonResponse({ Data: { Data: [{ time: Math.floor(endpointMs / 1000), mktcap: 1e9 }] } }, 502);
+      throw new Error(url);
+    },
+    asOfMs: endpointMs,
+    cryptoCompareApiKey: 'fixture',
+  });
+  assert.equal(cmcDecoded, false);
+  assert.equal(failed.provenance.USDT.status, 'ACQUISITION_FAILED');
+  assert.equal(failed.provenance.USDT.provider, null);
+  const recovered = await acquireStablecoinResponses({
+    fetchImpl: async (url) => {
+      if (url.includes('api.coingecko.com')) return jsonResponse({ error: 'down' }, 503);
+      if (url.includes('coinmarketcap.com')) return jsonResponse(quotes, 503);
+      if (url.includes('cryptocompare.com')) {
+        return jsonResponse({ Data: { Data: [{ time: Math.floor(endpointMs / 1000), mktcap: 1e9 }] } });
+      }
+      throw new Error(url);
+    },
+    asOfMs: endpointMs,
+    cryptoCompareApiKey: 'fixture',
+  });
+  assert.equal(recovered.provenance.USDT.provider, 'cryptocompare');
+  assert.equal(recovered.provenance.USDT.status, 'SUPPLIED');
+});
+
+test('net liquidity rejects HTTP bodies that are not acquired evidence', async () => {
+  const base = nlFetch().fetchImpl;
+  const validBody = async (url) => {
+    const response = await base(url);
+    return response.json();
+  };
+  const cases = [
+    ['WALCL', 'HTTP_OTHER', 503, async (url) => ({
+      ok: false,
+      status: 503,
+      json: async () => validBody(url),
+    })],
+    ['RRPONTSYD', 'HTTP_OTHER', 404, async () => jsonResponse({ observations: [{ date: '2026-09-23', value: '1' }] }, 404)],
+    ['WTREGEN', 'NETWORK_ERROR', null, async () => { throw new Error('socket'); }],
+    ['WALCL', 'MALFORMED_RESPONSE', 200, async () => ({ ok: true, status: 200, json: async () => { throw new SyntaxError('bad'); } })],
+    ['WALCL', 'MALFORMED_RESPONSE', 200, async () => jsonResponse({ close: 1 })],
+    ['WALCL', 'EMPTY', 200, async () => jsonResponse({ observations: [] })],
+  ];
+  for (const [seriesId, classification, httpStatus, responder] of cases) {
+    const published = await publishNetLiquidityFactor({
+      fetchImpl: async (url, init) => {
+        if (url.includes(`series_id=${seriesId}`)) return responder(url, init);
+        return base(url, init);
+      },
+      asOfUtc: AS_OF,
+      apiKey: 'fixture',
+      writeCache: false,
+    });
+    assert.equal(published.score, null, classification);
+    assert.equal(published.cache_reuse, false, classification);
+    assert.equal(published.r10.series_acquisition[seriesId].classification, classification, classification);
+    assert.equal(published.r10.series_acquisition[seriesId].http_status, httpStatus, classification);
+    assert.equal(published.reason.includes(`series_acquisition_${seriesId}_${classification}`), true, published.reason);
+    assert.notEqual(published.reason, 'insufficient_exact_common_wednesday_history');
+  }
+  const root = cacheRoot();
+  const good = await publishNetLiquidityFactor({ ...nlFetch(), asOfUtc: AS_OF, apiKey: 'fixture', cacheRoot: root, writeCache: true });
+  assert.equal(Number.isFinite(good.score), true);
+  const short = [{ date: '2026-09-23', value: '10' }];
+  const insufficient = await publishNetLiquidityFactor({
+    fetchImpl: async (url) => {
+      assert.equal(url.includes('frequency=w&'), false);
+      if (url.includes('series_id=RRPONTSYD')) {
+        assert.match(url, /frequency=wew/);
+        assert.match(url, /aggregation_method=avg/);
+      } else {
+        assert.equal(url.includes('frequency='), false);
+      }
+      return jsonResponse({ observations: short });
+    },
+    asOfUtc: AS_OF,
+    apiKey: 'fixture',
+    cacheRoot: root,
+    writeCache: true,
+  });
+  assert.equal(insufficient.score, null);
+  assert.equal(insufficient.cache_reuse, false);
+  assert.notEqual(insufficient.score, good.score);
+  assert.equal(insufficient.reason, 'insufficient_exact_common_wednesday_history');
+  assert.equal(insufficient.r10.series_acquisition.WALCL.classification, 'ACQUIRED');
+  assert.equal(insufficient.r10.series_acquisition.RRPONTSYD.classification, 'ACQUIRED');
+  assert.equal(insufficient.r10.series_acquisition.WTREGEN.classification, 'ACQUIRED');
+  assert.equal(insufficient.r10.acquisition, 'fred_native_and_rrp_wew');
+});
+
+test('term cache hits keep current spot acquisition and failures do not reuse cache', async () => {
+  const endpointMs = Date.parse('2026-09-30T12:00:00.000Z');
+  const evidence = okxFunding();
+  const root = cacheRoot();
+  const goodFetch = combinedFetch(endpointMs, evidence);
+  let spotMode = 'good';
+  let spotDecoded = 0;
+  const RealDate = globalThis.Date;
+  const frozenMs = RealDate.parse(AS_OF);
+  globalThis.Date = class extends RealDate {
+    constructor(...args) {
+      if (args.length === 0) super(frozenMs);
+      else super(...args);
+    }
+
+    static now() {
+      return frozenMs;
+    }
+  };
+  globalThis.__V12_OFFLINE_ACQUISITION__ = {
+    fetchImpl: async (url, init) => {
+      if (spotMode === 'http-503' && String(url).includes('days=120')) {
+        return {
+          ok: false,
+          status: 503,
+          json: async () => {
+            spotDecoded += 1;
+            return { prices: evidence.prices };
+          },
+        };
+      }
+      return goodFetch(url, init);
+    },
+    cacheRoot: root,
+    asOfUtc: AS_OF,
+    writeCache: true,
+    fredApiKey: 'fixture-secret',
+    social: socialPayload('2026-09-30T17:00:00.000Z'),
+    fixedFactors: fixedUnchangedFactors(),
+  };
+  try {
+    const missed = await computeAllFactors(50_000);
+    const hit = await computeAllFactors(50_000);
+    const missTerm = missed.factors.find((factor) => factor.key === 'term_leverage');
+    const hitTerm = hit.factors.find((factor) => factor.key === 'term_leverage');
+    assert.equal(missTerm.r10.score_cache_reuse, false);
+    assert.equal(hitTerm.r10.score_cache_reuse, true);
+    assert.equal(hitTerm.r10.spot_acquisition.classification, 'ACQUIRED');
+    assert.equal(hitTerm.r10.spot_acquisition.http_status, 200);
+    assert.deepEqual(hitTerm.r10.spot_acquisition, missTerm.r10.spot_acquisition);
+    assert.deepEqual(hitTerm.r10.acquisition, missTerm.r10.acquisition);
+    assert.deepEqual(hitTerm.r10.fallback, missTerm.r10.fallback);
+    assert.ok(hitTerm.r10.acquisition.length > 0);
+    assert.notEqual(hitTerm.latest_raw_funding_observation_utc, hitTerm.funding_observation_utc);
+    assert.equal(hitTerm.lastUpdated, missTerm.lastUpdated);
+    assert.equal(hitTerm.candidate_only, false);
+    assert.equal(hitTerm.successor_candidate_only, true);
+    assert.equal(hitTerm.successor_production_active, false);
+    const hitDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gg-v12-term-hit-'));
+    writePublicationArtifacts(hitDir, hit.factors, {
+      model_version: 'v1.2.0',
+      implementation_revision: 'semantic-correctness-2026-09',
+      ssot_version: '2.1.1',
+    });
+    const hitStatus = JSON.parse(fs.readFileSync(path.join(hitDir, 'status.json'), 'utf8'));
+    const hitLatest = JSON.parse(fs.readFileSync(path.join(hitDir, 'latest.json'), 'utf8'));
+    const statusHit = hitStatus.successor_provenance.find((factor) => factor.key === 'term_leverage');
+    const latestHit = hitLatest.factors.find((factor) => factor.key === 'term_leverage');
+    assert.equal(statusHit.spot_acquisition.classification, 'ACQUIRED');
+    assert.equal(statusHit.spot_acquisition.http_status, 200);
+    assert.equal(statusHit.raw_funding_observation_utc, latestHit.latest_raw_funding_observation_utc);
+    assert.equal(statusHit.scored_funding_observation_utc, latestHit.funding_observation_utc);
+    assert.equal(statusHit.score_cache_reuse, true);
+    assert.equal(statusHit.candidate_only, false);
+    assert.equal(statusHit.successor_candidate_only, true);
+    spotMode = 'http-503';
+    const failed = await computeAllFactors(50_000);
+    const failedTerm = failed.factors.find((factor) => factor.key === 'term_leverage');
+    assert.equal(spotDecoded, 0);
+    assert.equal(failedTerm.score, null);
+    assert.notEqual(failedTerm.score, hitTerm.score);
+    assert.equal(failedTerm.reason, 'spot_acquisition_HTTP_OTHER');
+    assert.equal(failedTerm.r10.spot_acquisition.classification, 'HTTP_OTHER');
+    assert.equal(failedTerm.r10.spot_acquisition.http_status, 503);
+    assert.equal(failedTerm.r10.score_cache_reuse, false);
+    const failDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gg-v12-term-fail-'));
+    writePublicationArtifacts(failDir, failed.factors, {
+      model_version: 'v1.2.0',
+      implementation_revision: 'semantic-correctness-2026-09',
+      ssot_version: '2.1.1',
+    });
+    const failStatus = JSON.parse(fs.readFileSync(path.join(failDir, 'status.json'), 'utf8'));
+    const statusFail = failStatus.successor_provenance.find((factor) => factor.key === 'term_leverage');
+    assert.equal(statusFail.spot_acquisition.classification, 'HTTP_OTHER');
+    assert.equal(statusFail.spot_acquisition.http_status, 503);
+    assert.equal(statusFail.score, null);
+    assert.equal(statusFail.successor_production_active, false);
+  } finally {
+    globalThis.Date = RealDate;
+    delete globalThis.__V12_OFFLINE_ACQUISITION__;
+  }
+});
+
+test('failed net liquidity HTTP evidence is not rescued by a valid score cache', async () => {
+  const endpointMs = Date.parse('2026-09-30T12:00:00.000Z');
+  const evidence = okxFunding();
+  const root = cacheRoot();
+  const goodFetch = combinedFetch(endpointMs, evidence);
+  let walclMode = 'good';
+  let walclDecoded = 0;
+  const RealDate = globalThis.Date;
+  const frozenMs = RealDate.parse(AS_OF);
+  globalThis.Date = class extends RealDate {
+    constructor(...args) {
+      if (args.length === 0) super(frozenMs);
+      else super(...args);
+    }
+
+    static now() {
+      return frozenMs;
+    }
+  };
+  globalThis.__V12_OFFLINE_ACQUISITION__ = {
+    fetchImpl: async (url, init) => {
+      if (walclMode === 'http-503' && String(url).includes('series_id=WALCL')) {
+        return {
+          ok: false,
+          status: 503,
+          json: async () => {
+            walclDecoded += 1;
+            return goodFetch(url, init).then((response) => response.json());
+          },
+        };
+      }
+      return goodFetch(url, init);
+    },
+    cacheRoot: root,
+    asOfUtc: AS_OF,
+    writeCache: true,
+    fredApiKey: 'fixture-secret',
+    social: socialPayload('2026-09-30T17:00:00.000Z'),
+    fixedFactors: fixedUnchangedFactors(),
+  };
+  try {
+    const good = await computeAllFactors(50_000);
+    const goodLiquidity = good.factors.find((factor) => factor.key === 'net_liquidity');
+    assert.equal(Number.isFinite(goodLiquidity.score), true);
+    assert.equal(goodLiquidity.r10.series_acquisition.WALCL.classification, 'ACQUIRED');
+    assert.equal(goodLiquidity.r10.request_semantics.walcl.query_semantics, 'NATIVE');
+    assert.equal(goodLiquidity.r10.request_semantics.rrp.frequency, 'wew');
+    assert.equal(goodLiquidity.r10.request_semantics.rrp.aggregation_method, 'avg');
+    walclMode = 'http-503';
+    const failed = await computeAllFactors(50_000);
+    const failedLiquidity = failed.factors.find((factor) => factor.key === 'net_liquidity');
+    assert.equal(walclDecoded, 0);
+    assert.equal(failedLiquidity.score, null);
+    assert.notEqual(failedLiquidity.score, goodLiquidity.score);
+    assert.equal(failedLiquidity.reason, 'series_acquisition_WALCL_HTTP_OTHER');
+    assert.equal(failedLiquidity.r10.acquisition, 'fred_acquisition_failure');
+    assert.equal(failedLiquidity.r10.series_acquisition.WALCL.classification, 'HTTP_OTHER');
+    assert.equal(failedLiquidity.r10.series_acquisition.WALCL.http_status, 503);
+    assert.equal(failedLiquidity.successor_production_active, false);
+    const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gg-v12-nl-fail-'));
+    writePublicationArtifacts(outDir, failed.factors, {
+      model_version: 'v1.2.0',
+      implementation_revision: 'semantic-correctness-2026-09',
+      ssot_version: '2.1.1',
+    });
+    const status = JSON.parse(fs.readFileSync(path.join(outDir, 'status.json'), 'utf8'));
+    const latest = JSON.parse(fs.readFileSync(path.join(outDir, 'latest.json'), 'utf8'));
+    const statusRow = status.successor_provenance.find((factor) => factor.key === 'net_liquidity');
+    const latestRow = latest.factors.find((factor) => factor.key === 'net_liquidity');
+    assert.equal(statusRow.series_acquisition.WALCL.classification, 'HTTP_OTHER');
+    assert.equal(statusRow.series_acquisition.WALCL.http_status, 503);
+    assert.equal(statusRow.score, null);
+    assert.equal(latestRow.score, null);
+    assert.equal(latestRow.r10.series_acquisition.WALCL.classification, 'HTTP_OTHER');
+    assert.equal(JSON.stringify(status).includes('api_key='), false);
+  } finally {
+    globalThis.Date = RealDate;
+    delete globalThis.__V12_OFFLINE_ACQUISITION__;
+  }
 });
