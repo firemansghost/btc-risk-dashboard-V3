@@ -369,12 +369,12 @@ function identityAssertions(config, executed) {
       revision: result.implementation_revision_target,
       ssot: result.ssot_version,
     }))));
-  const productionOk = config.model_version === 'v1.1.2'
-    && config.implementation_revision === 'etf-sosovalue-vix-cboe-2026-09'
+  const productionOk = config.model_version === 'v1.2.0'
+    && config.implementation_revision === 'semantic-correctness-2026-09'
     && config.ssot_version === '2.1.1';
   out.push(productionOk
-    ? pass('production_identity', 'active production identity', 'v1.1.2 / etf-sosovalue-vix-cboe-2026-09 / SSOT 2.1.1')
-    : fail('production_identity', 'active production identity', {
+    ? pass('production_identity', 'integrated publication identity', 'v1.2.0 / semantic-correctness-2026-09 / SSOT 2.1.1')
+    : fail('production_identity', 'integrated publication identity', {
       model_version: config.model_version,
       implementation_revision: config.implementation_revision,
       ssot_version: config.ssot_version,
@@ -419,16 +419,24 @@ function identityAssertions(config, executed) {
 function isolationAssertions() {
   const factors = fs.readFileSync(path.join(REPO_ROOT, 'scripts/etl/factors.mjs'), 'utf8');
   const compute = fs.readFileSync(path.join(REPO_ROOT, 'scripts/etl/compute.mjs'), 'utf8');
-  const isolated = !/candidates\/v1_2\//.test(factors)
-    && !/v1-2-structural-regression/.test(factors)
+  const adapter = fs.readFileSync(path.join(REPO_ROOT, 'scripts/etl/lib/v12ProductionAdapters.mjs'), 'utf8');
+  const isolated = !/v1-2-structural-regression/.test(factors)
+    && !/v1-2-structural-regression/.test(compute)
+    && !/v1-2-structural-regression/.test(adapter)
+    && !/candidates\/v1_2\//.test(factors)
     && !/candidates\/v1_2\//.test(compute)
-    && !/v1-2-structural-regression/.test(compute);
+    && factors.includes('v12ProductionAdapters.mjs')
+    && adapter.includes('candidates/v1_2/stablecoins.mjs')
+    && adapter.includes('candidates/v1_2/net-liquidity.mjs')
+    && adapter.includes('candidates/v1_2/social.mjs')
+    && adapter.includes('candidates/v1_2/term.mjs');
   return [isolated
-    ? pass('production_isolation', 'production entry points do not import candidates or this gate', {
-      factors_imports_candidate: false,
-      compute_imports_candidate: false,
+    ? pass('production_isolation', 'production routes through the v1.2 adapter and does not import this gate', {
+      factors_import_adapter: true,
+      factors_import_gate: false,
+      adapter_imports_candidates: true,
     })
-    : fail('production_isolation', 'production entry points do not import candidates or this gate', {})];
+    : fail('production_isolation', 'production routes through the v1.2 adapter and does not import this gate', {})];
 }
 
 function coordinatedAssertions(bundle, first, second) {

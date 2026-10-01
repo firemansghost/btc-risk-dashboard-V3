@@ -343,6 +343,32 @@ async function fetchSocialDataWithFallback() {
 // 2. SOCIAL INTEREST (Search trends and social sentiment)
 // Enhanced with caching, fallback sources, and incremental updates
 async function computeSocialInterest() {
+  const {
+    publishSocialFactor,
+    socialTrendingUrl,
+    socialPriceUrl,
+  } = await import('./lib/v12ProductionAdapters.mjs');
+  const { getCacheKey, readCoinGeckoTransportEnvelope, saveToDiskCache } = await import('./coinGeckoCache.mjs');
+
+  async function load(kind) {
+    const url = kind === 'trending' ? socialTrendingUrl() : socialPriceUrl();
+    const cacheKey = getCacheKey(kind === 'trending' ? 'trending' : 'market_chart_30_daily');
+    const hit = await readCoinGeckoTransportEnvelope(cacheKey);
+    if (hit) return hit;
+    const acquiredAt = new Date().toISOString();
+    const response = await fetch(url, { headers: { 'User-Agent': 'btc-risk-etl' } });
+    if (!response.ok) return { data: null, acquiredAt: null, fromCache: false };
+    const data = await response.json();
+    await saveToDiskCache(cacheKey, data, { cachedAt: acquiredAt });
+    return { data, acquiredAt, fromCache: false };
+  }
+
+  const trending = await load('trending');
+  const price = await load('price');
+  return publishSocialFactor({ trending, price, writeCache: true });
+}
+
+async function computeSocialInterestRetiredV11() {
   try {
     // Check for cached data first
     const cachedData = await loadSocialInterestCache();
@@ -715,6 +741,11 @@ async function tryNetLiquidityFredFallback(cachedFromWarmLoad, err) {
 // 3. NET LIQUIDITY (FRED data - requires API key)
 // Enhanced with caching, retry logic, and incremental updates
 async function computeNetLiquidity() {
+  const { publishNetLiquidityFactor } = await import('./lib/v12ProductionAdapters.mjs');
+  return publishNetLiquidityFactor({ fetchImpl: globalThis.fetch, writeCache: true });
+}
+
+async function computeNetLiquidityRetiredV11() {
   const apiKey = process.env.FRED_API_KEY;
   if (!apiKey) {
     return { score: null, reason: "missing_fred_api_key" };
@@ -1028,6 +1059,11 @@ function convertCryptoCompareToCoinGeckoFormat(ccData, symbol) {
 
 // 4. STABLECOINS (Multi-stablecoin analysis with 365-day historical baseline and incremental updates)
 async function computeStablecoins() {
+  const { publishStablecoinFactor } = await import('./lib/v12ProductionAdapters.mjs');
+  return publishStablecoinFactor({ fetchImpl: globalThis.fetch, writeCache: true });
+}
+
+async function computeStablecoinsRetiredV11() {
   try {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     const cacheDir = 'public/data/cache/stablecoins';
@@ -2217,6 +2253,11 @@ async function calculateStressComponent(fundingRates, spotPrices) {
 // 6. TERM STRUCTURE & LEVERAGE (Multi-factor derivatives analysis)
 // Enhanced with caching, multi-exchange fallback, and parallel processing
 async function computeTermLeverage() {
+  const { publishTermFactor } = await import('./lib/v12ProductionAdapters.mjs');
+  return publishTermFactor({ fetchImpl: globalThis.fetch, writeCache: true });
+}
+
+async function computeTermLeverageRetiredV11() {
   try {
     // Check for cached data first
     const cachedData = await loadTermLeverageCache();

@@ -62,6 +62,26 @@ async function ensureCacheDir(cacheDir = CACHE_DIR) {
   }
 }
 
+export async function readCoinGeckoTransportEnvelope(
+  cacheKey,
+  { cacheDir = CACHE_DIR, nowMs = Date.now(), ttlMinutes = CACHE_TTL_MINUTES } = {},
+) {
+  try {
+    const cacheFile = path.join(cacheDir, `${cacheKey}.json`);
+    const content = await fs.readFile(cacheFile, 'utf8');
+    const parsed = JSON.parse(content);
+    const evaluated = evaluateDiskCacheEntry(parsed, { nowMs, ttlMinutes });
+    if (!evaluated.hit) return null;
+    return {
+      data: evaluated.data,
+      acquiredAt: parsed.cachedAt,
+      fromCache: true,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function loadFromDiskCache(
   cacheKey,
   { cacheDir = CACHE_DIR, nowMs = Date.now(), ttlMinutes = CACHE_TTL_MINUTES } = {}

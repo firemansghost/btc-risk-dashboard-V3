@@ -1023,7 +1023,7 @@ async function main() {
   await fs.writeFile("public/data/history.csv", historyCsv);
 
   // Load model_version from SSOT
-  let modelVersion = 'v1.1.2';
+  let modelVersion = 'v1.2.0';
   let implementationRevision = IMPLEMENTATION_REVISION;
   try {
     const dashboardConfigPath = path.join(process.cwd(), 'config', 'dashboard-config.json');
