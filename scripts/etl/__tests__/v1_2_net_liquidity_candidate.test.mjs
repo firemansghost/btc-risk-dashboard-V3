@@ -14,6 +14,7 @@ import {
   canReuseV12NetLiquidityCache,
   computeV12NetLiquidityCandidate,
   exactCommonWednesdayJoin,
+  isStrictUtcDate,
   isUtcWednesday,
   observationDateFromAsOfMs,
 } from '../candidates/v1_2/net-liquidity.mjs';
@@ -649,4 +650,141 @@ test('87-89. deterministic exact-Wednesday series and score parity with R01/R08 
     wtregenRows: result.canonical_series.map((r) => ({ date: r.date, normalized_usd: r.wtregen_usd })),
   });
   assert.equal(local.length, result.canonical_series.length);
+});
+
+// --- Strict UTC calendar-date integrity ---
+
+test('strict-1. valid Wednesday 2026-07-01 is accepted by isStrictUtcDate / isUtcWednesday', () => {
+  assert.equal(isStrictUtcDate('2026-07-01'), true);
+  assert.equal(isUtcWednesday('2026-07-01'), true);
+});
+
+test('strict-2. impossible 2026-06-31 is malformed (not silently Wednesday July 1)', () => {
+  // JS would normalize 2026-06-31 → 2026-07-01 (Wednesday); candidate must reject.
+  assert.equal(
+    new Date('2026-06-31T00:00:00.000Z').toISOString().slice(0, 10),
+    '2026-07-01'
+  );
+  assert.equal(isStrictUtcDate('2026-06-31'), false);
+  assert.equal(isUtcWednesday('2026-06-31'), false);
+});
+
+test('strict-3. non-leap 2026-02-29 is malformed', () => {
+  assert.equal(isStrictUtcDate('2026-02-29'), false);
+  assert.equal(isUtcWednesday('2026-02-29'), false);
+});
+
+test('strict-4. leap-day 2024-02-29 is a valid UTC date', () => {
+  assert.equal(isStrictUtcDate('2024-02-29'), true);
+});
+
+test('strict-5. month 13 is malformed', () => {
+  assert.equal(isStrictUtcDate('2026-13-01'), false);
+});
+
+test('strict-6. day 00 is malformed', () => {
+  assert.equal(isStrictUtcDate('2026-01-00'), false);
+});
+
+test('strict-7. trailing-text date is malformed and not truncated into eligibility', () => {
+  assert.equal(isStrictUtcDate('2026-09-23-extra'), false);
+  const base = runCandidate({ commonCount: 16 });
+  const { walcl, rrp, wtregen } = baseSources({ commonCount: 16 });
+  walcl.observations.push({ date: '2026-09-23-extra', value: '99999' });
+  const result = computeV12NetLiquidityCandidate({
+    walcl,
+    rrp,
+    wtregen,
+    asOfUtc: '2026-09-23T23:59:59.000Z',
+  });
+  assert.ok(result.source_provenance.WALCL.excluded_malformed_date_count >= 1);
+  assert.equal(result.canonical_input_fingerprint, base.canonical_input_fingerprint);
+  assert.deepEqual(result.canonical_series, base.canonical_series);
+});
+
+test('strict-8. full timestamp string in source date field is malformed', () => {
+  assert.equal(isStrictUtcDate('2026-09-23T00:00:00Z'), false);
+  const { walcl, rrp, wtregen } = baseSources({ commonCount: 16 });
+  walcl.observations.push({ date: '2026-09-23T00:00:00Z', value: '99999' });
+  const result = computeV12NetLiquidityCandidate({
+    walcl,
+    rrp,
+    wtregen,
+    asOfUtc: '2026-09-23T23:59:59.000Z',
+  });
+  assert.ok(result.source_provenance.WALCL.excluded_malformed_date_count >= 1);
+  assert.ok(!result.canonical_series.some((r) => String(r.date).includes('T')));
+});
+
+test('strict-9-10. impossible-date increments malformed count; no series/score/fingerprint mutation', () => {
+  const base = runCandidate({ commonCount: 16 });
+  const malformedBefore = base.source_provenance.WALCL.excluded_malformed_date_count;
+  const nonWedBefore = base.source_provenance.WALCL.excluded_non_wednesday_count;
+  const { walcl, rrp, wtregen } = baseSources({ commonCount: 16 });
+  walcl.observations.push({ date: '2026-06-31', value: '12345' });
+  walcl.observations.push({ date: '2026-02-29', value: '12345' });
+  walcl.observations.push({ date: '2026-13-01', value: '12345' });
+  walcl.observations.push({ date: '2026-01-00', value: '12345' });
+  const result = computeV12NetLiquidityCandidate({
+    walcl,
+    rrp,
+    wtregen,
+    asOfUtc: '2026-09-23T23:59:59.000Z',
+  });
+  assert.equal(
+    result.source_provenance.WALCL.excluded_malformed_date_count,
+    malformedBefore + 4
+  );
+  // Impossible dates must not be misclassified as non-Wednesday.
+  assert.equal(
+    result.source_provenance.WALCL.excluded_non_wednesday_count,
+    nonWedBefore
+  );
+  assert.deepEqual(result.canonical_series, base.canonical_series);
+  assert.equal(result.score, base.score);
+  assert.equal(result.canonical_input_fingerprint, base.canonical_input_fingerprint);
+});
+
+test('strict-11. valid non-Wednesday remains non-Wednesday, not malformed', () => {
+  const { walcl, rrp, wtregen } = baseSources({ commonCount: 16 });
+  const malformedBefore = 0;
+  walcl.observations.push({ date: '2026-09-22', value: '100' }); // Tuesday, strict-valid
+  assert.equal(isStrictUtcDate('2026-09-22'), true);
+  assert.equal(isUtcWednesday('2026-09-22'), false);
+  const result = computeV12NetLiquidityCandidate({
+    walcl,
+    rrp,
+    wtregen,
+    asOfUtc: '2026-09-23T23:59:59.000Z',
+  });
+  assert.equal(result.source_provenance.WALCL.excluded_malformed_date_count, malformedBefore);
+  assert.ok(result.source_provenance.WALCL.excluded_non_wednesday_count >= 1);
+});
+
+test('strict-12. deterministic R01/R08 diagnostic series/score parity unchanged after strict dates', () => {
+  const { walcl, rrp, wtregen } = baseSources({ commonCount: 16 });
+  const asOfUtc = '2026-09-23T23:59:59.000Z';
+  const result = computeV12NetLiquidityCandidate({ walcl, rrp, wtregen, asOfUtc });
+  const startDate = result.scoring_window_start_date;
+  const endDate = result.scoring_window_end_date;
+  const filterWindow = (obs) => obs.filter(
+    (r) => isStrictUtcDate(r.date)
+      && r.date >= startDate
+      && r.date <= endDate
+      && isUtcWednesday(r.date)
+  );
+  const diagnostic = buildExactDateIntersection({
+    walclObservations: filterWindow(walcl.observations),
+    rrpObservations: filterWindow(rrp.observations),
+    wtregenObservations: filterWindow(wtregen.observations),
+    multipliers: CORRECT_USD_MULTIPLIERS,
+  });
+  assert.equal(result.canonical_series.length, diagnostic.series.length);
+  for (let i = 0; i < diagnostic.series.length; i += 1) {
+    assert.equal(result.canonical_series[i].date, diagnostic.series[i].date);
+    assert.equal(result.canonical_series[i].net_liquidity_usd, diagnostic.series[i].net_liquidity_usd);
+  }
+  const oracle = scoreNetLiquiditySeries(diagnostic.series.map((r) => r.net_liquidity_usd));
+  assert.deepEqual(result.component_scores, oracle.component_scores);
+  assert.equal(result.score, oracle.composite_score);
 });

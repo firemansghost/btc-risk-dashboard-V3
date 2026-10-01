@@ -93,8 +93,20 @@ export function observationDateFromAsOfMs(asOfMs) {
   return new Date(asOfMs).toISOString().slice(0, 10);
 }
 
+/**
+ * Exact YYYY-MM-DD UTC calendar date. Rejects impossible dates that JS would
+ * silently normalize (e.g. 2026-06-31 → 2026-07-01).
+ */
+export function isStrictUtcDate(dateStr) {
+  if (typeof dateStr !== 'string') return false;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
+  const ms = Date.parse(`${dateStr}T00:00:00.000Z`);
+  if (!Number.isFinite(ms)) return false;
+  return new Date(ms).toISOString().slice(0, 10) === dateStr;
+}
+
 export function isUtcWednesday(dateStr) {
-  if (typeof dateStr !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
+  if (!isStrictUtcDate(dateStr)) return false;
   return new Date(`${dateStr}T00:00:00.000Z`).getUTCDay() === 3;
 }
 
@@ -198,16 +210,24 @@ export function normalizeCanonicalWednesdayRows({
   let excludedMalformedDate = 0;
 
   for (let i = 0; i < source.length; i += 1) {
-    const parsed = parseFredObservationRow(source[i]);
-    if (!parsed.date || !/^\d{4}-\d{2}-\d{2}$/.test(parsed.date)) {
+    const row = source[i];
+    // Validate ORIGINAL source date before parseFredObservationRow truncation.
+    if (!isStrictUtcDate(row?.date)) {
       excludedMalformedDate += 1;
       continue;
     }
-    if (parsed.date < startDate || parsed.date > endDate) {
+    const date = row.date;
+    const parsed = parseFredObservationRow(row);
+    if (parsed.date !== date) {
+      // Defensive: truncated/rewritten identity must not enter eligibility.
+      excludedMalformedDate += 1;
+      continue;
+    }
+    if (date < startDate || date > endDate) {
       excludedOutsideWindow += 1;
       continue;
     }
-    if (!isUtcWednesday(parsed.date)) {
+    if (!isUtcWednesday(date)) {
       excludedNonWednesday += 1;
       continue;
     }
@@ -215,18 +235,18 @@ export function normalizeCanonicalWednesdayRows({
       excludedNonFinite += 1;
       continue;
     }
-    if (byDate.has(parsed.date)) {
+    if (byDate.has(date)) {
       return {
         ok: false,
         reason: 'ambiguous_duplicate_source_date',
         source: sourceLabel,
-        date: parsed.date,
+        date,
         rows: [],
         provenance: null,
       };
     }
-    byDate.set(parsed.date, {
-      date: parsed.date,
+    byDate.set(date, {
+      date,
       raw_value: parsed.value,
       normalized_usd: parsed.value * usdMultiplier,
       original_source_index: i,
