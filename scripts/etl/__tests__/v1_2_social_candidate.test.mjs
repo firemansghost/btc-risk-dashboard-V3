@@ -18,8 +18,10 @@ import {
   combineObservedSocialComponents,
   computeV12MomentumFromFinitePrices,
   computeV12SocialCandidate,
+  extractProviderLatestObservationUtc,
   extractScoreEligiblePriceObservationUtc,
   normalizeProvider,
+  normalizeProviderTimestampUtc,
 } from '../candidates/v1_2/social.mjs';
 import {
   buildNonFiniteMomentumFixture,
@@ -838,4 +840,140 @@ test('repair-35-38. truthful provider UNPROVEN/SUPPLIED', () => {
     normalizeProvider({ provider: 'CoinGecko' }),
     { status: 'SUPPLIED', provider: 'CoinGecko' }
   );
+});
+
+test('repair-ts-1-11. normalizeProviderTimestampUtc rejects coercion to epoch', () => {
+  const EPOCH = '1970-01-01T00:00:00.000Z';
+  assert.equal(normalizeProviderTimestampUtc(null), null);
+  assert.equal(normalizeProviderTimestampUtc(undefined), null);
+  assert.equal(normalizeProviderTimestampUtc(''), null);
+  assert.equal(normalizeProviderTimestampUtc('   '), null);
+  assert.equal(normalizeProviderTimestampUtc(false), null);
+  assert.equal(normalizeProviderTimestampUtc(true), null);
+  assert.equal(normalizeProviderTimestampUtc({}), null);
+  assert.equal(normalizeProviderTimestampUtc(Number.NaN), null);
+  assert.equal(normalizeProviderTimestampUtc(Infinity), null);
+  assert.equal(normalizeProviderTimestampUtc(-Infinity), null);
+  assert.equal(normalizeProviderTimestampUtc('not-a-number'), null);
+  assert.equal(normalizeProviderTimestampUtc([1]), null);
+
+  const validMs = Date.parse('2026-01-15T12:00:00.000Z');
+  assert.equal(normalizeProviderTimestampUtc(validMs), '2026-01-15T12:00:00.000Z');
+  assert.equal(normalizeProviderTimestampUtc(String(validMs)), '2026-01-15T12:00:00.000Z');
+
+  // Coercion traps that previously produced epoch must stay null
+  for (const bad of [null, '', false]) {
+    assert.notEqual(normalizeProviderTimestampUtc(bad), EPOCH);
+    assert.equal(normalizeProviderTimestampUtc(bad), null);
+  }
+});
+
+test('repair-ts-12-14. score-eligible timestamp skips invalid ts; falls back; all-invalid => null', () => {
+  const earlierValid = Date.parse('2026-01-20T00:00:00.000Z');
+  const laterInvalid = [
+    [earlierValid, 70_000],
+    [null, 71_000],
+  ];
+  assert.equal(
+    extractScoreEligiblePriceObservationUtc(laterInvalid),
+    '2026-01-20T00:00:00.000Z'
+  );
+
+  const trailingBadTs = [
+    [earlierValid, 70_000],
+    [undefined, 71_000],
+    ['', 72_000],
+    ['   ', 73_000],
+    [false, 74_000],
+    [{}, 75_000],
+    [Number.NaN, 76_000],
+    [Infinity, 77_000],
+    ['not-a-ts', 78_000],
+  ];
+  assert.equal(
+    extractScoreEligiblePriceObservationUtc(trailingBadTs),
+    '2026-01-20T00:00:00.000Z'
+  );
+  assert.notEqual(
+    extractScoreEligiblePriceObservationUtc(trailingBadTs),
+    '1970-01-01T00:00:00.000Z'
+  );
+
+  const allInvalidTs = [
+    [null, 70_000],
+    ['', 71_000],
+    [false, 72_000],
+    [{}, 73_000],
+  ];
+  assert.equal(extractScoreEligiblePriceObservationUtc(allInvalidTs), null);
+});
+
+test('repair-ts-15-17. provider-latest timestamp fail-closed', () => {
+  assert.equal(extractProviderLatestObservationUtc([]), null);
+  assert.equal(
+    extractProviderLatestObservationUtc([[null, 83_000]]),
+    null
+  );
+  assert.equal(
+    extractProviderLatestObservationUtc([['', 83_000]]),
+    null
+  );
+  assert.equal(
+    extractProviderLatestObservationUtc([['   ', 83_000]]),
+    null
+  );
+  assert.equal(
+    extractProviderLatestObservationUtc([[false, 83_000]]),
+    null
+  );
+  const validMs = Date.parse('2026-02-01T00:00:00.000Z');
+  assert.equal(
+    extractProviderLatestObservationUtc([[validMs, 83_000]]),
+    '2026-02-01T00:00:00.000Z'
+  );
+});
+
+test('repair-ts-18-21. candidate Momentum parity; null price_observation/lastUpdated; no epoch', () => {
+  const base = observedMomentumPrices();
+  const withInvalidLatestTs = {
+    prices: base.prices.map((row, i, arr) => (
+      i === arr.length - 1 ? [null, row[1]] : row
+    )),
+  };
+  const trendsData = {
+    ...trendingWithRank(5),
+    trending_fetched_at: '2026-06-01T00:00:00.000Z',
+  };
+
+  const scoredBase = computeV12SocialCandidate({ trendsData, priceData: base });
+  const scoredBadTs = computeV12SocialCandidate({
+    trendsData,
+    priceData: withInvalidLatestTs,
+  });
+
+  // Momentum calculation unchanged when prices identical (invalid ts is provenance-only)
+  assert.equal(scoredBadTs.components.momentum.state, scoredBase.components.momentum.state);
+  assert.equal(scoredBadTs.components.momentum.score, scoredBase.components.momentum.score);
+  assert.equal(scoredBadTs.score, scoredBase.score);
+
+  // Latest finite-price row has invalid ts → fall back to earlier valid score-eligible ts
+  assert.equal(
+    scoredBadTs.price_observation_utc,
+    normalizeProviderTimestampUtc(base.prices[base.prices.length - 2][0])
+  );
+  assert.notEqual(scoredBadTs.price_observation_utc, '1970-01-01T00:00:00.000Z');
+  assert.equal(scoredBadTs.components.momentum.provider_latest_observation_utc, null);
+
+  // All scoring rows invalid timestamps → price_observation_utc null, lastUpdated null
+  const allBadTs = {
+    prices: base.prices.map(([, price]) => [null, price]),
+  };
+  const noTruthfulTs = computeV12SocialCandidate({ trendsData, priceData: allBadTs });
+  assert.equal(noTruthfulTs.components.momentum.state, scoredBase.components.momentum.state);
+  assert.equal(noTruthfulTs.components.momentum.score, scoredBase.components.momentum.score);
+  assert.equal(noTruthfulTs.price_observation_utc, null);
+  assert.equal(noTruthfulTs.components.momentum.score_eligible_price_observation_utc, null);
+  assert.equal(noTruthfulTs.lastUpdated, null);
+  assert.notEqual(noTruthfulTs.lastUpdated, '1970-01-01T00:00:00.000Z');
+  assert.notEqual(noTruthfulTs.price_observation_utc, '1970-01-01T00:00:00.000Z');
 });

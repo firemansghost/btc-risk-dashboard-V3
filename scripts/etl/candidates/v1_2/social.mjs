@@ -290,8 +290,27 @@ export function computeV12MomentumFromFinitePrices(prices) {
 }
 
 /**
+ * Fail-closed provider/source timestamp normalizer (R10).
+ * Rejects null/boolean/object/empty/whitespace and non-finite values so
+ * Number(null|''|false) cannot become Unix epoch evidence.
+ * Accepts finite numeric (and non-empty numeric-string) epoch milliseconds.
+ */
+export function normalizeProviderTimestampUtc(ts) {
+  if (ts == null) return null;
+  if (typeof ts !== 'number' && typeof ts !== 'string') return null;
+  if (typeof ts === 'string' && !ts.trim()) return null;
+  const ms = Number(ts);
+  if (!Number.isFinite(ms)) return null;
+  const date = new Date(ms);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
+}
+
+/**
  * Timestamp from latest row whose price participates in finite scoring vector.
- * Eligibility matches scoring: Number.isFinite(price) — no numeric-string coercion.
+ * Price eligibility matches scoring: Number.isFinite(price) — no numeric-string coercion.
+ * Timestamp is fail-closed via normalizeProviderTimestampUtc; invalid ts skips the row
+ * for provenance only (finite price still participates in Momentum scoring).
  */
 export function extractScoreEligiblePriceObservationUtc(priceRows) {
   if (!Array.isArray(priceRows)) return null;
@@ -300,9 +319,9 @@ export function extractScoreEligiblePriceObservationUtc(priceRows) {
     if (!isStrictPriceRow(row)) continue;
     const [ts, price] = row;
     if (!Number.isFinite(price)) continue;
-    const date = new Date(Number(ts));
-    if (Number.isNaN(date.getTime())) continue;
-    return date.toISOString();
+    const iso = normalizeProviderTimestampUtc(ts);
+    if (iso == null) continue;
+    return iso;
   }
   return null;
 }
@@ -312,9 +331,7 @@ export function extractProviderLatestObservationUtc(priceRows) {
   if (!Array.isArray(priceRows) || priceRows.length === 0) return null;
   const last = priceRows[priceRows.length - 1];
   if (!isStrictPriceRow(last)) return null;
-  const date = new Date(Number(last[0]));
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toISOString();
+  return normalizeProviderTimestampUtc(last[0]);
 }
 
 /**
