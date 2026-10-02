@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -29,11 +30,13 @@ import {
 import { runR07StablecoinElapsedTimeDiagnostic } from '../../research/diagnose-r07-stablecoin-elapsed-time.mjs';
 import { LOCKED_OFFICIAL_BLENDS } from '../lib/ssotSubweights.mjs';
 
-const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
+const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = path.resolve(TEST_DIR, '../../..');
 const WORKFLOW_PATH = path.join(REPO_ROOT, '.github/workflows/r07-stablecoin-elapsed-time-diagnostic.yml');
 const CACHE_DIR = path.join(REPO_ROOT, 'public/data/cache/stablecoins');
 const BASELINE_PATH = path.join(REPO_ROOT, 'public/data/stablecoins-historical.json');
-const LATEST_PATH = path.join(REPO_ROOT, 'public/data/latest.json');
+const V112_PREACTIVATION_COMMIT = '179ab311e6f7a4df0e01dedcd8c17d478fe4a4c9';
+const V112_FIXTURE_DIR = path.join(TEST_DIR, 'fixtures/r07-v112-preactivation');
 const FIXED_SHA = '4bd9d7197319bdcaac09cd0a50c91513afde7075';
 const FIXED_GENERATED_AT = '2026-09-26T18:00:00.000Z';
 
@@ -345,18 +348,27 @@ test('workflow is manual read-only only and never writes the repository', () => 
 });
 
 test('latest current positional aggregate matches committed latest.json pct_change_30d within tolerance', () => {
-  const latest = JSON.parse(fs.readFileSync(LATEST_PATH, 'utf8'));
+  const source = JSON.parse(fs.readFileSync(path.join(V112_FIXTURE_DIR, 'source.json'), 'utf8'));
+  assert.equal(source.source_commit, V112_PREACTIVATION_COMMIT);
+  assert.equal(source.model_version, 'v1.1.2');
+  const latestBytes = fs.readFileSync(path.join(V112_FIXTURE_DIR, source.files.latest.fixture_file));
+  const cacheBytes = fs.readFileSync(path.join(V112_FIXTURE_DIR, source.files.stablecoin_cache.fixture_file));
+  assert.equal(crypto.createHash('sha256').update(latestBytes).digest('hex'), source.files.latest.sha256);
+  assert.equal(crypto.createHash('sha256').update(cacheBytes).digest('hex'), source.files.stablecoin_cache.sha256);
+  assert.equal(source.files.latest.git_blob, '24ee0fc54b0ea3b1c20684b3450db5fa8f07029d');
+  assert.equal(source.files.stablecoin_cache.git_blob, '3c88bee9da6cb57086ae278609dc4bb5a6556b11');
+  assert.equal(source.files.stablecoin_cache.source_path, 'public/data/cache/stablecoins/2026-09-29.json');
+  const latest = JSON.parse(latestBytes.toString('utf8'));
+  assert.equal(latest.model_version, 'v1.1.2');
   const factor = latest.factors.find((row) => row.key === 'stablecoins');
   const expectedPct = factor.metrics.pct_change_30d;
-  const names = fs.readdirSync(CACHE_DIR).filter((name) => name.endsWith('.json')).sort();
-  const latestCacheName = names.at(-1);
-  const responses = JSON.parse(fs.readFileSync(path.join(CACHE_DIR, latestCacheName), 'utf8'));
+  const responses = JSON.parse(cacheBytes.toString('utf8'));
   const current = buildValidStablecoinGrowthSnapshot(PRODUCTION_STABLECOIN_CONFIG_SNAPSHOT, responses);
   assert.equal(current.ok, true);
   const reconstructedPct = current.aggregateChange * 100;
   assert.ok(
     Math.abs(reconstructedPct - expectedPct) <= 1e-9,
-    `expected ${expectedPct}, got ${reconstructedPct} from ${latestCacheName}`
+    `expected ${expectedPct}, got ${reconstructedPct} from ${source.files.stablecoin_cache.source_path}`
   );
 });
 

@@ -1,0 +1,20 @@
+{
+  "source_commit": "179ab311e6f7a4df0e01dedcd8c17d478fe4a4c9",
+  "model_version": "v1.1.2",
+  "files": {
+    "latest": {
+      "source_path": "public/data/latest.json",
+      "fixture_file": "latest.json",
+      "git_blob": "24ee0fc54b0ea3b1c20684b3450db5fa8f07029d",
+      "sha256": "c31396416ecb62498df92fa69bae01b462e907617bfee9cce620278a5ff58653",
+      "bytes": 26687
+    },
+    "stablecoin_cache": {
+      "source_path": "public/data/cache/stablecoins/2026-09-29.json",
+      "fixture_file": "stablecoins-2026-09-29.json",
+      "git_blob": "3c88bee9da6cb57086ae278609dc4bb5a6556b11",
+      "sha256": "a908679e0bb46968bff379215ea0f459370926f5506785630beedf1ca7e5f2d3",
+      "bytes": 43907
+    }
+  }
+}
