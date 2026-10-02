@@ -1143,9 +1143,16 @@ test('stale newest funding page stops older pages and fresh evidence stops when 
   assert.equal(typeof stale.gate1.cadence_source, 'string');
 
   let deepCalls = 0;
+  const spotPrices = [];
+  for (let age = 0; age <= 200; age += 1) {
+    const day = new Date(Date.parse('2026-09-30T00:00:00.000Z') - age * MS_DAY).toISOString();
+    spotPrices.push([Date.parse(day), 100]);
+  }
+  spotPrices.push([Date.parse(AS_OF), 100]);
   const enough = await paginateTermProvider({
     provider: 'bitmex',
     asOfMs: Date.parse(AS_OF),
+    spotPrices,
     fetchImpl: async () => {
       deepCalls += 1;
       return jsonResponse(Array.from({ length: 500 }, (_, index) => ({
@@ -1156,9 +1163,13 @@ test('stale newest funding page stops older pages and fresh evidence stops when 
     },
   });
   assert.equal(deepCalls, 1);
-  assert.equal(enough.termination, 'REFERENCE_WINDOWS_ESTABLISHED');
+  assert.equal(enough.termination, 'CANDIDATE_SELECTED');
   assert.equal(enough.funding_only.sufficient_reference_windows, true);
-  assert.equal(enough.funding_only.prior_valid_windows >= 60, true);
+  assert.equal(enough.scored_sufficiency.selected, true);
+  assert.equal(typeof enough.scored_sufficiency.scored_cutoff_D, 'string');
+  assert.equal(enough.scored_sufficiency.reference_counts.funding >= 60, true);
+  assert.equal(enough.scored_sufficiency.reference_counts.realized_vol >= 60, true);
+  assert.equal(enough.scored_sufficiency.reference_counts.stress >= 60, true);
 });
 
 test('spot acquisition failure stays distinct from funding depth', async () => {
@@ -1185,4 +1196,118 @@ test('spot acquisition failure stays distinct from funding depth', async () => {
   assert.notEqual(published.reason, 'HISTORY_INSUFFICIENT');
   assert.equal(published.score, null);
   assert.equal(published.r10.raw_funding_observation_utc, null);
+});
+
+test('numeric-string OKX timestamps use provider-aware bounds', async () => {
+  const newest = Date.parse('2026-09-30T16:00:00.000Z');
+  const oldest = Date.parse('2026-09-30T00:00:00.000Z');
+  const page = await paginateTermProvider({
+    provider: 'okx',
+    asOfMs: Date.parse(AS_OF),
+    newestPageOnly: true,
+    fetchImpl: async () => jsonResponse({
+      code: '0',
+      data: [
+        { instId: 'BTC-USDT-SWAP', fundingTime: String(newest), fundingRate: '0.0001' },
+        { instId: 'BTC-USDT-SWAP', fundingTime: String(oldest), fundingRate: '0.0001' },
+      ],
+    }),
+  });
+  assert.equal(page.gate1.newest_valid_utc, '2026-09-30T16:00:00.000Z');
+  assert.equal(page.gate1.oldest_valid_utc, '2026-09-30T00:00:00.000Z');
+  assert.notEqual(page.gate1.newest_valid_utc, null);
+});
+
+test('raw-fresh BitMEX with a stale scored cutoff falls through to OKX', async () => {
+  const slots = { bitmex: [4, 12, 20], okx: [0, 8, 16] };
+  function evidence(provider, { dropFrom, dropTo } = {}) {
+    const funding = [];
+    const start = addDays('2026-09-29', -159);
+    for (let age = 0; age < 160; age += 1) {
+      const date = addDays(start, age);
+      if (dropFrom && date >= dropFrom && date <= dropTo) continue;
+      for (const hour of slots[provider]) {
+        const iso = `${date}T${String(hour).padStart(2, '0')}:00:00.000Z`;
+        if (provider === 'bitmex') funding.push({ timestamp: iso, fundingRate: 0.0001, symbol: 'XBTUSD' });
+        else funding.push({ instId: 'BTC-USDT-SWAP', fundingTime: String(Date.parse(iso)), fundingRate: '0.0001' });
+      }
+    }
+    for (const hour of slots[provider]) {
+      if (hour <= 18) {
+        const iso = `2026-09-30T${String(hour).padStart(2, '0')}:00:00.000Z`;
+        if (provider === 'bitmex') funding.push({ timestamp: iso, fundingRate: 0.0002, symbol: 'XBTUSD' });
+        else funding.push({ instId: 'BTC-USDT-SWAP', fundingTime: String(Date.parse(iso)), fundingRate: '0.0002' });
+      }
+    }
+    return funding;
+  }
+  const prices = [];
+  for (let age = 0; age <= 220; age += 1) prices.push([Date.parse(`${addDays('2026-09-30', -age)}T00:00:00.000Z`), 100]);
+  prices.push([Date.parse(AS_OF), 100]);
+  const calls = [];
+  const published = await publishTermFactor({
+    asOfUtc: AS_OF,
+    writeCache: false,
+    fetchImpl: async (url) => {
+      calls.push(String(url));
+      if (String(url).includes('days=120')) return jsonResponse({ prices });
+      if (String(url).includes('www.bitmex.com')) return jsonResponse(evidence('bitmex', { dropFrom: '2026-09-19', dropTo: '2026-09-29' }));
+      if (String(url).includes('www.okx.com')) return jsonResponse({ code: '0', data: evidence('okx') });
+      return jsonResponse({ error: 'restricted' }, 451);
+    },
+  });
+  assert.equal(calls.some((url) => url.includes('www.okx.com')), true);
+  assert.equal(published.selected_provider, 'okx');
+  assert.equal(published.pageReports.bitmex.termination, 'STALE_SCORED_CUTOFF');
+  assert.equal(published.pageReports.bitmex.funding_only != null, true);
+  assert.equal(Number.isFinite(published.score), true);
+});
+
+test('current acquisition diagnostics survive score-cache hits', async () => {
+  const endpointMs = Date.parse('2026-09-30T12:00:00.000Z');
+  const caps = stablecoinCaps(endpointMs);
+  const ccBody = { Data: { Data: caps.market_caps.map(([ts, cap]) => ({ time: Math.floor(ts / 1000), mktcap: cap })) } };
+  const root = cacheRoot();
+  const fetchImpl = async (url) => {
+    if (String(url).includes('api.coingecko.com')) return jsonResponse({ error: 'down' }, 503);
+    if (String(url).includes('cryptocompare.com')) return jsonResponse(ccBody);
+    throw new Error(url);
+  };
+  const first = await publishStablecoinFactor({
+    fetchImpl,
+    asOfUtc: AS_OF,
+    cacheRoot: root,
+    writeCache: true,
+    cryptoCompareApiKey: 'fixture',
+  });
+  assert.equal(first.r10.fallback_skips.some((row) => row.status === 'NOT_CONFIGURED' && row.provider === 'coinmarketcap'), true);
+  assert.equal(first.r10.acquisition_attempts.some((row) => row.termination === 'exhausted'), true);
+  const second = await publishStablecoinFactor({
+    fetchImpl,
+    asOfUtc: AS_OF,
+    cacheRoot: root,
+    writeCache: true,
+    cryptoCompareApiKey: 'fixture',
+  });
+  assert.equal(second.cache_reuse, true);
+  assert.equal(second.r10.fallback_skips.some((row) => row.status === 'NOT_CONFIGURED' && row.provider === 'coinmarketcap'), true);
+  assert.equal(second.r10.acquisition_attempts.some((row) => row.termination === 'exhausted'), true);
+
+  const socialRoot = cacheRoot();
+  const live = socialPayload('2026-09-30T12:00:00.000Z');
+  live.trending.fromCache = false;
+  live.trending.acquisition_attempts = [{ attempt: 1, http_status: 429, retry_after: '1', retry_delay_ms: 1000, termination: 'retry' }];
+  live.trending.acquisition_termination = 'final';
+  await publishSocialFactor({ ...live, cacheRoot: socialRoot, writeCache: true });
+  const cachedTrend = socialPayload('2026-09-30T17:00:00.000Z');
+  cachedTrend.trending.fromCache = true;
+  cachedTrend.trending.acquisition_attempts = [{ attempt: 1, http_status: 200, retry_after: null, termination: 'final' }];
+  cachedTrend.trending.acquisition_termination = 'final';
+  const hit = await publishSocialFactor({ ...cachedTrend, cacheRoot: socialRoot, writeCache: true });
+  assert.equal(hit.score_cache_reuse, true);
+  assert.equal(hit.r10.trending_from_cache, true);
+  assert.equal(hit.r10.trending_fetched_at, '2026-09-30T17:00:00.000Z');
+  assert.equal(hit.r10.acquisition_attempts[0].http_status, 200);
+  assert.equal(hit.r10.acquisition_termination, 'final');
+  assert.equal(hit.r10.acquisition_attempts.some((row) => row.http_status === 429), false);
 });

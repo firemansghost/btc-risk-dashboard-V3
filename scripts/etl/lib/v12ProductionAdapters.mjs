@@ -8,7 +8,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   expectedLatestSlotUtc,
+  extractFundingObservationUtc,
   isObservationAcceptable,
+  latestFundingObservationUtc,
   resolveFundingCadence,
   selectFreshFundingProvider,
 } from './termFreshness.mjs';
@@ -275,14 +277,14 @@ function assessNewestPage(rows, provider, asOfUtc) {
     asOfUtc,
   });
   const mine = (selected.candidates || []).find((candidate) => candidate.provider === provider);
-  const times = (mine?.rows || []).map((row) => {
-    const raw = provider === 'bitmex' ? row.timestamp : (row.fundingTime ?? row.timestamp);
-    const ms = Date.parse(raw);
-    return Number.isFinite(ms) ? ms : null;
-  }).filter((ms) => ms != null);
+  const times = (mine?.rows || [])
+    .map((row) => extractFundingObservationUtc(row, provider))
+    .filter((iso) => typeof iso === 'string')
+    .map((iso) => Date.parse(iso))
+    .filter((ms) => Number.isFinite(ms));
   return {
     status: mine?.status || 'unavailable',
-    newest_valid_utc: mine?.fundingObservationUtc || null,
+    newest_valid_utc: latestFundingObservationUtc(mine?.rows || [], provider),
     oldest_valid_utc: times.length ? new Date(Math.min(...times)).toISOString() : null,
     expected_slot_utc: mine?.freshness?.expectedFundingUtc || null,
     cadence_source: mine?.freshness?.cadenceSource || null,
@@ -329,6 +331,29 @@ function fundingOnlyCensus(rows, provider) {
     gap_dates: gapDates,
     exact_duplicate_count: surface.exact_duplicates?.length || 0,
     conflicting_duplicate_count: surface.conflicting_duplicates?.length || 0,
+  };
+}
+
+function scoredSufficiency(rows, provider, spotPrices, asOfUtc) {
+  if (!Array.isArray(spotPrices)) return null;
+  const candidate = computeV12TermCandidate({
+    asOfUtc,
+    funding: { [provider]: rows },
+    spotPrices,
+  });
+  const disposition = (candidate.provider_dispositions || []).find((row) => row.provider === provider) || null;
+  const components = candidate.components || {};
+  const fromDisposition = disposition?.reference_counts || null;
+  return {
+    selected: candidate.selected_provider === provider && Number.isFinite(candidate.score),
+    disposition: disposition?.disposition || null,
+    gate2: disposition?.gate2 || null,
+    scored_cutoff_D: candidate.common_cutoff_date_D || disposition?.common_cutoff_date_D || null,
+    reference_counts: fromDisposition || {
+      funding: components.funding?.reference_count ?? null,
+      realized_vol: components.realized_vol?.reference_count ?? null,
+      stress: components.stress?.reference_count ?? null,
+    },
   };
 }
 
@@ -500,7 +525,7 @@ function candidateAcquisition(classification, httpStatus = null) {
   return null;
 }
 
-export async function paginateTermProvider({ provider, fetchImpl, asOfMs, newestPageOnly = false }) {
+export async function paginateTermProvider({ provider, fetchImpl, asOfMs, newestPageOnly = false, spotPrices = null }) {
   const pageLimit = provider === 'bitmex' ? TERM_PAGE.bitmex.count : provider === 'binance' ? TERM_PAGE.binance.limit : TERM_PAGE.okx.limit;
   const asOfUtc = new Date(asOfMs).toISOString();
   const rows = [];
@@ -509,6 +534,7 @@ export async function paginateTermProvider({ provider, fetchImpl, asOfMs, newest
   let termination = null;
   let gate1 = null;
   let fundingOnly = null;
+  let scoredSufficiencyResult = null;
   const fail = (classification, httpStatus) => ({
     provider,
     rows: [],
@@ -518,6 +544,7 @@ export async function paginateTermProvider({ provider, fetchImpl, asOfMs, newest
     discarded_partial_rows: rows.length,
     gate1,
     funding_only: fundingOnly,
+    scored_sufficiency: scoredSufficiencyResult,
   });
   for (let page = 0; page < TERM_MAX_PAGES; page += 1) {
     let url;
@@ -577,9 +604,16 @@ export async function paginateTermProvider({ provider, fetchImpl, asOfMs, newest
       termination = 'NEWEST_PAGE_ONLY_SPOT_UNAVAILABLE';
       break;
     }
-    if (fundingOnly.sufficient_reference_windows) {
-      termination = 'REFERENCE_WINDOWS_ESTABLISHED';
-      break;
+    if (Array.isArray(spotPrices)) {
+      scoredSufficiencyResult = scoredSufficiency(rows, provider, spotPrices, asOfUtc);
+      if (scoredSufficiencyResult?.selected) {
+        termination = 'CANDIDATE_SELECTED';
+        break;
+      }
+      if (scoredSufficiencyResult?.disposition === 'STALE_SCORED_EVIDENCE') {
+        termination = 'STALE_SCORED_CUTOFF';
+        break;
+      }
     }
     if (normalized.rows.length < pageLimit) {
       termination = 'PROVIDER_HISTORY_EXHAUSTED';
@@ -602,6 +636,7 @@ export async function paginateTermProvider({ provider, fetchImpl, asOfMs, newest
     discarded_partial_rows: 0,
     gate1,
     funding_only: fundingOnly,
+    scored_sufficiency: scoredSufficiencyResult,
   };
 }
 
@@ -638,21 +673,32 @@ export async function acquireTermEvidence({ fetchImpl, asOfMs }) {
     spotAcquisition = { classification: 'NETWORK_ERROR', http_status: null, message: error.message };
   }
   spotAcquisition = { ...spotAcquisition, attempts: acquisitionAttempts };
+  const asOfUtc = new Date(asOfMs).toISOString();
   const newestPageOnly = spotAcquisition.classification !== 'ACQUIRED';
   const funding = {};
   const pageReports = {};
   for (const provider of ['bitmex', 'binance', 'okx']) {
-    const page = await paginateTermProvider({ provider, fetchImpl, asOfMs, newestPageOnly });
+    const page = await paginateTermProvider({
+      provider,
+      fetchImpl,
+      asOfMs,
+      newestPageOnly,
+      spotPrices: newestPageOnly ? null : spotPrices,
+    });
     pageReports[provider] = {
       termination: page.termination,
       requests: page.requests,
       row_count: page.rows.length,
       gate1: page.gate1,
       funding_only: page.funding_only,
+      scored_sufficiency: page.scored_sufficiency,
       discarded_partial_rows: page.discarded_partial_rows,
     };
     funding[provider] = page.acquisition ? { rows: null, acquisition: page.acquisition } : page.rows;
-    if (!newestPageOnly && page.termination === 'REFERENCE_WINDOWS_ESTABLISHED') break;
+    if (!newestPageOnly) {
+      const decision = computeV12TermCandidate({ asOfUtc, funding, spotPrices });
+      if (decision.selected_provider) break;
+    }
   }
   return { funding, spotPrices, pageReports, spot_acquisition: spotAcquisition };
 }
@@ -742,7 +788,16 @@ export function scoreNetLiquidity({ walclObservations, rrpObservations, wtregenO
   return { published, candidate };
 }
 
-export function scoreSocial({ trendsData, priceData, trendingFetchedAt, trendingFromCache }) {
+export function scoreSocial({
+  trendsData,
+  priceData,
+  trendingFetchedAt,
+  trendingFromCache,
+  acquisitionAttempts = null,
+  acquisitionTermination = null,
+  priceAcquisitionAttempts = null,
+  priceAcquisitionTermination = null,
+}) {
   const candidate = computeV12SocialCandidate({
     trendsData,
     priceData,
@@ -762,6 +817,10 @@ export function scoreSocial({ trendsData, priceData, trendingFetchedAt, trending
         score_cache_reuse: false,
         fallback: 'none',
         scored_provenance: scoredProvenanceLabel(candidate.lastUpdated, trendingFetchedAt, candidate.price_observation_utc),
+        acquisition_attempts: acquisitionAttempts,
+        acquisition_termination: acquisitionTermination,
+        price_acquisition_attempts: priceAcquisitionAttempts,
+        price_acquisition_termination: priceAcquisitionTermination,
       derivation: candidate.lastUpdated_semantics || null,
     },
   });
@@ -886,6 +945,10 @@ export function rebuildPublicationFromCandidate(factor, candidate, context = nul
         score_cache_reuse: context?.scoreCacheReuse === true,
         fallback: 'none',
         scored_provenance: scoredProvenanceLabel(candidate.lastUpdated, candidate.lastUpdated, candidate.price_observation_utc),
+        acquisition_attempts: context?.acquisitionAttempts || null,
+        acquisition_termination: context?.acquisitionTermination || null,
+        price_acquisition_attempts: context?.priceAcquisitionAttempts || null,
+        price_acquisition_termination: context?.priceAcquisitionTermination || null,
         derivation: candidate.lastUpdated_semantics || null,
       },
     });
@@ -935,6 +998,9 @@ export function publicationFromCandidate(factor, candidate, context = null) {
         derivation: derived.derivation,
         calibration_id: candidate.calibration_id,
         legacy_baseline_used: candidate.legacy_baseline_used === true,
+        scored_provenance: scoredProvenanceLabel(derived.iso, derived.iso, derived.iso),
+        fallback_skips: context?.fallbackSkips || [],
+        acquisition_attempts: context?.acquisitionAttempts || [],
       },
     });
   }
@@ -1030,7 +1096,10 @@ export async function publishStablecoinFactor({
     fallbackSkips: acquired.fallbackSkips,
     acquisitionAttempts: acquired.acquisitionAttempts,
   });
-  const cached = reuseCachedPublication('stablecoins', scored.candidate, cacheRoot);
+  const cached = reuseCachedPublication('stablecoins', scored.candidate, cacheRoot, {
+    fallbackSkips: acquired.fallbackSkips,
+    acquisitionAttempts: acquired.acquisitionAttempts,
+  });
   if (cached.reuse) return { ...cached.published, cache_reuse: true };
   if (writeCache) writeV12Cache('stablecoins', scored.published, scored.candidate, cacheRoot);
   return { ...scored.published, cache_reuse: false };
@@ -1148,12 +1217,20 @@ export async function publishSocialFactor({
     trendingFetchedAt: trending?.acquiredAt ?? null,
     trendingFromCache: trending?.fromCache === true,
     scoreCacheReuse: false,
+    acquisitionAttempts: trending?.acquisition_attempts || null,
+    acquisitionTermination: trending?.acquisition_termination || null,
+    priceAcquisitionAttempts: price?.acquisition_attempts || null,
+    priceAcquisitionTermination: price?.acquisition_termination || null,
   };
   const scored = scoreSocial({
     trendsData: trending?.data ?? null,
     priceData: price?.data ?? null,
     trendingFetchedAt: context.trendingFetchedAt,
     trendingFromCache: context.trendingFromCache,
+    acquisitionAttempts: context.acquisitionAttempts,
+    acquisitionTermination: context.acquisitionTermination,
+    priceAcquisitionAttempts: context.priceAcquisitionAttempts,
+    priceAcquisitionTermination: context.priceAcquisitionTermination,
   });
   const cached = reuseCachedPublication('social_interest', scored.candidate, cacheRoot, context);
   if (cached.reuse) return { ...cached.published, cache_reuse: true, score_cache_reuse: true };
