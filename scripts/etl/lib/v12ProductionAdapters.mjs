@@ -260,10 +260,16 @@ function scoredProvenanceLabel(...stamps) {
 async function fetchForAcquisition(url, init, fetchImpl, attemptsLog = null) {
   try {
     const fetched = await fetchWithCoinGeckoPolicy(url, init, fetchImpl);
-    if (attemptsLog && fetched.attempts) {
-      attemptsLog.push({ target_host: 'api.coingecko.com', attempts: fetched.attempts, termination: fetched.termination });
-    }
-    return fetched.response;
+  if (attemptsLog && fetched.attempts) {
+    attemptsLog.push({ target_host: 'api.coingecko.com', attempts: fetched.attempts, termination: fetched.termination });
+  }
+  if (fetched.termination === 'COOLDOWN_BUDGET_EXHAUSTED') {
+    const blocked = new Error('COOLDOWN_BUDGET_EXHAUSTED');
+    blocked.acquisition_termination = 'COOLDOWN_BUDGET_EXHAUSTED';
+    blocked.cooldown_budget_exhausted = true;
+    throw blocked;
+  }
+  return fetched.response;
   } catch (error) {
     if (attemptsLog && Array.isArray(error?.acquisition_attempts)) {
       attemptsLog.push({
@@ -680,9 +686,11 @@ export async function acquireTermEvidence({ fetchImpl, asOfMs }) {
       ? { classification: status === 451 ? 'HTTP_451' : 'HTTP_OTHER', http_status: status }
       : classifySpotAcquisition(spotResponse, decoded);
     if (spotAcquisition.classification === 'ACQUIRED') spotPrices = decoded.body.prices;
-  } catch (error) {
-    spotAcquisition = { classification: 'NETWORK_ERROR', http_status: null, message: error.message };
-  }
+    } catch (error) {
+      spotAcquisition = error?.cooldown_budget_exhausted || error?.acquisition_termination === 'COOLDOWN_BUDGET_EXHAUSTED'
+        ? { classification: 'COOLDOWN_BUDGET_EXHAUSTED', http_status: null }
+        : { classification: 'NETWORK_ERROR', http_status: null, message: error.message };
+    }
   spotAcquisition = { ...spotAcquisition, attempts: acquisitionAttempts };
   const asOfUtc = new Date(asOfMs).toISOString();
   const newestPageOnly = spotAcquisition.classification !== 'ACQUIRED';

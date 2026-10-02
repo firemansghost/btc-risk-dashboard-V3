@@ -15,6 +15,8 @@ import {
   COINGECKO_MAX_ATTEMPTS,
   COINGECKO_PACE_MS,
   COINGECKO_RETRY_AFTER_BUDGET_MS,
+  COINGECKO_SHARED_COOLDOWN_MAX_MS,
+  coinGeckoCooldownSnapshot,
   configureAcquisitionRuntime,
   fetchCoinGecko,
   fetchSocialLiveEnvelope,
@@ -1462,5 +1464,104 @@ test('malformed Social JSON keeps the fetch attempt history', async () => {
     assert.notEqual(published.r10.acquisition_termination, 'network_exhausted', item.name);
     assert.equal(published.r10.trending_fetched_at, null, item.name);
     assert.deepEqual(published.r10.acquisition_attempts.map((row) => row.http_status), item.statuses, item.name);
+  }
+});
+
+test('one shared CoinGecko cooldown is run-scoped and bounded', async () => {
+  const response429 = (retryAfter) => ({
+    ok: false,
+    status: 429,
+    headers: { get: (name) => (name === 'Retry-After' ? retryAfter : null) },
+    json: async () => ({ error: 'rate' }),
+  });
+  function useClock() {
+    resetAcquisitionQueue();
+    let clock = Date.parse('2026-10-02T00:00:00.000Z');
+    const waits = [];
+    configureAcquisitionRuntime({
+      now: () => new Date(clock),
+      sleep: async (ms) => { waits.push(ms); clock += ms; },
+    });
+    return { waits, longWaits: () => waits.filter((ms) => ms > COINGECKO_RETRY_AFTER_BUDGET_MS) };
+  }
+  try {
+    const shared = useClock();
+    let calls = 0;
+    const fetchImpl = async () => {
+      calls += 1;
+      if (calls === 1) return response429('60');
+      return jsonResponse({ ok: true });
+    };
+    const concurrent = await Promise.all([
+      fetchCoinGecko('https://api.coingecko.com/api/v3/search/trending', {}, fetchImpl),
+      fetchCoinGecko('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?days=30', {}, fetchImpl),
+      fetchCoinGecko('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?days=120', {}, fetchImpl),
+    ]);
+    assert.equal(concurrent[0].termination, 'retry_after_exceeds_budget');
+    assert.equal(concurrent[0].response.status, 429);
+    assert.equal(concurrent[0].attempts[0].cooldown.required_wait_ms, 60_000);
+    assert.equal(concurrent[1].response.status, 200);
+    assert.equal(concurrent[2].response.status, 200);
+    assert.equal(concurrent[1].attempts[0].scheduler.kind, 'shared_cooldown');
+    assert.equal(shared.longWaits().length, 1);
+    assert.equal(calls, 3);
+    const recovered = await fetchCoinGecko('https://api.coingecko.com/api/v3/coins/tether/market_chart?days=90', {}, fetchImpl);
+    assert.equal(recovered.response.status, 200);
+    assert.equal(shared.longWaits().length, 1);
+    calls += 0;
+    const secondLong = await fetchCoinGecko('https://api.coingecko.com/api/v3/coins/dai/market_chart?days=90', {}, async () => response429('40'));
+    assert.equal(secondLong.response.status, 429);
+    assert.equal(secondLong.termination, 'retry_after_exceeds_budget');
+    const blocked = await fetchCoinGecko('https://api.coingecko.com/api/v3/coins/frax/market_chart?days=90', {}, fetchImpl);
+    assert.equal(blocked.response, null);
+    assert.equal(blocked.termination, 'COOLDOWN_BUDGET_EXHAUSTED');
+    assert.equal(blocked.attempts[0].http_status, null);
+    assert.equal(blocked.attempts[0].termination, 'COOLDOWN_BUDGET_EXHAUSTED');
+    assert.equal(calls, 4);
+
+    const above = useClock();
+    let aboveCalls = 0;
+    const aboveFirst = await fetchCoinGecko('https://api.coingecko.com/api/v3/search/trending', {}, async () => {
+      aboveCalls += 1;
+      return response429(String((COINGECKO_SHARED_COOLDOWN_MAX_MS / 1000) + 10));
+    });
+    const aboveSecond = await fetchCoinGecko('https://api.coingecko.com/api/v3/coins/dai/market_chart?days=90', {}, async () => {
+      aboveCalls += 1;
+      return jsonResponse({ ok: true });
+    });
+    assert.equal(aboveFirst.response.status, 429);
+    assert.equal(aboveFirst.termination, 'retry_after_exceeds_budget');
+    assert.equal(aboveSecond.response, null);
+    assert.equal(aboveSecond.termination, 'COOLDOWN_BUDGET_EXHAUSTED');
+    assert.equal(aboveCalls, 1);
+    assert.equal(above.longWaits().length, 0);
+
+    useClock();
+    let shortCalls = 0;
+    const short = await fetchCoinGecko('https://api.coingecko.com/api/v3/search/trending', {}, async () => {
+      shortCalls += 1;
+      return shortCalls === 1 ? response429('2') : jsonResponse({ ok: true });
+    });
+    assert.equal(short.termination, 'final');
+    assert.equal(short.response.status, 200);
+    assert.equal(shortCalls, 2);
+    assert.equal(coinGeckoCooldownSnapshot(), null);
+
+    const blockedRun = useClock();
+    await fetchCoinGecko('https://api.coingecko.com/api/v3/search/trending', {}, async () => response429('80'));
+    assert.equal((await fetchCoinGecko('https://api.coingecko.com/api/v3/coins/dai/market_chart?days=90', {}, async () => jsonResponse({ ok: true }))).termination, 'COOLDOWN_BUDGET_EXHAUSTED');
+    const isolated = useClock();
+    let isolatedCalls = 0;
+    const isolatedFetch = async () => {
+      isolatedCalls += 1;
+      return isolatedCalls === 1 ? response429('60') : jsonResponse({ ok: true });
+    };
+    await fetchCoinGecko('https://api.coingecko.com/api/v3/search/trending', {}, isolatedFetch);
+    const afterReset = await fetchCoinGecko('https://api.coingecko.com/api/v3/coins/dai/market_chart?days=90', {}, isolatedFetch);
+    assert.equal(afterReset.response.status, 200);
+    assert.equal(isolated.longWaits().length, 1);
+    assert.equal(blockedRun.longWaits().length, 0);
+  } finally {
+    restoreInstantAcquisition();
   }
 });
