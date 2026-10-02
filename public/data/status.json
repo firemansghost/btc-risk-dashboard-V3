@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-29T16:53:34.175Z",
+  "updated_at": "2026-10-02T16:59:46.841Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -71,7 +71,7 @@
   "factors_successful": 7,
   "gold_cross_rates": {
     "status": "failed",
-    "reason": "error: CoinGecko 429"
+    "reason": "no_gold_price"
   },
   "satoshis_per_dollar": {
     "status": "success",
@@ -81,43 +81,43 @@
   "etf_schema_hash": "12cf3a62",
   "etf_schema_last_check": "2026-09-08T15:00:29.774Z",
   "price_history": {
-    "total_rows": 733,
+    "total_rows": 736,
     "oldest_date": "2024-09-26",
-    "newest_date": "2026-09-28",
+    "newest_date": "2026-10-01",
     "alpha_vantage_backfill": null,
     "coinbase_daily_update": {
       "status": "success",
       "rows_fetched": 15,
-      "ms": 160
+      "ms": 219
     },
     "drift_check": null
   },
   "term_leverage": {
     "status": "fresh",
-    "last_updated_utc": "2026-09-29T16:00:00.000Z",
+    "last_updated_utc": "2026-10-01T00:00:00.000Z",
     "providers": {
-      "bitmex": "available_stale",
-      "binance": "451",
-      "okx": "ok"
+      "bitmex": "unknown",
+      "binance": "unknown",
+      "okx": "unknown"
     },
     "ttl_hours": 6,
     "stale_beyond_hours": 12,
-    "score": 59,
-    "reason": "fresh_source_cadence"
+    "score": 27,
+    "reason": "successor_eligible"
   },
   "etf_flows": {
     "status": "fresh",
-    "score": 49,
+    "score": 71,
     "reason": "fresh_expected_eligible_trading_date",
     "live_provider": "sosovalue",
     "source_contract_version": "sosovalue_etf_source_contract_v1",
-    "market_date": "2026-09-29",
-    "expected_eligible_trading_date": "2026-09-28",
-    "source_trading_date": "2026-09-28",
+    "market_date": "2026-10-02",
+    "expected_eligible_trading_date": "2026-10-01",
+    "source_trading_date": "2026-10-01",
     "acquisition_state": "live_refresh",
     "acquisition_failure_reason": null,
-    "source_history_updated_at_utc": "2026-09-29T16:52:08.151Z",
-    "source_history_commit_sha": "8cdb5e663af3d7137f50806782cb4622510ef728",
+    "source_history_updated_at_utc": "2026-10-02T16:58:20.387Z",
+    "source_history_commit_sha": "06e8575dd2400bf295ccabf24c4a5dd0c7fa6c35",
     "provider_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
     "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
     "revision_number": 0,
@@ -126,12 +126,278 @@
   },
   "macro_overlay": {
     "status": "fresh",
-    "score": 84,
+    "score": 86,
     "reason": "fresh_source_cadence",
-    "latest_vix_date": "2026-09-28",
+    "latest_vix_date": "2026-10-01",
     "vix_provider": "cboe",
     "vix_source_url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
     "vix_fallback_used": false,
     "vix_fallback_reason": null
-  }
+  },
+  "successor_provenance": [
+    {
+      "key": "stablecoins",
+      "score": 53,
+      "status": "fresh",
+      "last_updated_utc": "2026-10-02T16:56:40.000Z",
+      "provider": "per_coin",
+      "source_observation_utc": "2026-10-02T16:56:40.000Z",
+      "scored_observation_utc": "2026-10-02T16:56:40.000Z",
+      "raw_funding_observation_utc": null,
+      "scored_funding_observation_utc": null,
+      "scored_spot_observation_utc": null,
+      "selected_scoring_date": null,
+      "scored_cutoff_D": null,
+      "calibration_id": "STABLECOIN_DATED_CALIBRATION_V1",
+      "acquisition": {
+        "USDT": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "USDC": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "DAI": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "BUSD": {
+          "status": "ACQUISITION_FAILED",
+          "provider": null,
+          "fallback_attempted": "cryptocompare"
+        },
+        "TUSD": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "FRAX": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "LUSD": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        }
+      },
+      "spot_acquisition": null,
+      "series_acquisition": null,
+      "fallback": {
+        "USDT": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "USDC": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "DAI": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "BUSD": {
+          "status": "ACQUISITION_FAILED",
+          "provider": null,
+          "fallback_attempted": "cryptocompare"
+        },
+        "TUSD": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "FRAX": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "LUSD": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        }
+      },
+      "derivation": "oldest eligible coin endpoint_timestamp_iso",
+      "trending_fetched_at": null,
+      "trending_from_cache": false,
+      "score_cache_reuse": false,
+      "candidate_only": false,
+      "successor_candidate_only": true,
+      "successor_production_active": false
+    },
+    {
+      "key": "net_liquidity",
+      "score": 38,
+      "status": "fresh",
+      "last_updated_utc": "2026-09-30T00:00:00.000Z",
+      "provider": "fred",
+      "source_observation_utc": "2026-09-30T00:00:00.000Z",
+      "scored_observation_utc": "2026-09-30T00:00:00.000Z",
+      "raw_funding_observation_utc": null,
+      "scored_funding_observation_utc": null,
+      "scored_spot_observation_utc": null,
+      "selected_scoring_date": "2026-09-30",
+      "scored_cutoff_D": null,
+      "calibration_id": null,
+      "acquisition": "fred_native_and_rrp_wew",
+      "spot_acquisition": null,
+      "series_acquisition": {
+        "WALCL": {
+          "classification": "ACQUIRED",
+          "http_status": 200
+        },
+        "RRPONTSYD": {
+          "classification": "ACQUIRED",
+          "http_status": 200
+        },
+        "WTREGEN": {
+          "classification": "ACQUIRED",
+          "http_status": 200
+        }
+      },
+      "fallback": "none",
+      "derivation": "selected common Wednesday, not the latest WALCL print and not the wall clock",
+      "trending_fetched_at": null,
+      "trending_from_cache": false,
+      "score_cache_reuse": false,
+      "candidate_only": false,
+      "successor_candidate_only": true,
+      "successor_production_active": false
+    },
+    {
+      "key": "term_leverage",
+      "score": 27,
+      "status": "fresh",
+      "last_updated_utc": "2026-10-01T00:00:00.000Z",
+      "provider": "okx",
+      "source_observation_utc": "2026-10-02T16:00:00.000Z",
+      "scored_observation_utc": "2026-10-01T00:00:00.000Z",
+      "raw_funding_observation_utc": "2026-10-02T16:00:00.000Z",
+      "scored_funding_observation_utc": "2026-10-01T16:00:00.000Z",
+      "scored_spot_observation_utc": "2026-10-01T00:00:00.000Z",
+      "selected_scoring_date": null,
+      "scored_cutoff_D": "2026-10-01",
+      "calibration_id": null,
+      "acquisition": [
+        {
+          "provider": "bitmex",
+          "disposition": "STALE",
+          "acquisition_classification": null,
+          "http_status": null,
+          "gate1": "stale",
+          "gate2": "NOT_EVALUATED"
+        },
+        {
+          "provider": "binance",
+          "disposition": "SOURCE_ACQUISITION_UNAVAILABLE",
+          "acquisition_classification": "HTTP_451",
+          "http_status": 451,
+          "gate1": "NOT_EVALUATED",
+          "gate2": "NOT_EVALUATED"
+        },
+        {
+          "provider": "okx",
+          "disposition": "SELECTED",
+          "acquisition_classification": null,
+          "http_status": null,
+          "gate1": "fresh",
+          "gate2": "PASS"
+        }
+      ],
+      "spot_acquisition": {
+        "classification": "ACQUIRED",
+        "http_status": 200,
+        "attempts": [
+          {
+            "target_host": "api.coingecko.com",
+            "attempts": [
+              {
+                "attempt": 1,
+                "http_status": 200,
+                "retry_delay_ms": null,
+                "termination": "final",
+                "scheduler": {
+                  "kind": "pace",
+                  "pace_wait_ms": 1999,
+                  "cooldown": null
+                }
+              }
+            ],
+            "termination": "final"
+          }
+        ]
+      },
+      "series_acquisition": null,
+      "fallback": [
+        {
+          "provider": "bitmex",
+          "disposition": "STALE",
+          "acquisition_classification": null,
+          "http_status": null,
+          "gate1": "stale",
+          "gate2": "NOT_EVALUATED"
+        },
+        {
+          "provider": "binance",
+          "disposition": "SOURCE_ACQUISITION_UNAVAILABLE",
+          "acquisition_classification": "HTTP_451",
+          "http_status": 451,
+          "gate1": "NOT_EVALUATED",
+          "gate2": "NOT_EVALUATED"
+        },
+        {
+          "provider": "okx",
+          "disposition": "SELECTED",
+          "acquisition_classification": null,
+          "http_status": null,
+          "gate1": "fresh",
+          "gate2": "PASS"
+        }
+      ],
+      "derivation": "candidate lastUpdated is the earliest scored funding, stress, and spot timestamp",
+      "trending_fetched_at": null,
+      "trending_from_cache": false,
+      "score_cache_reuse": false,
+      "candidate_only": false,
+      "successor_candidate_only": true,
+      "successor_production_active": false
+    },
+    {
+      "key": "social_interest",
+      "score": 45,
+      "status": "fresh",
+      "last_updated_utc": "2026-10-02T16:56:50.000Z",
+      "provider": "coingecko",
+      "source_observation_utc": "2026-10-02T16:56:50.000Z",
+      "scored_observation_utc": "2026-10-02T16:56:50.000Z",
+      "raw_funding_observation_utc": null,
+      "scored_funding_observation_utc": null,
+      "scored_spot_observation_utc": null,
+      "selected_scoring_date": null,
+      "scored_cutoff_D": null,
+      "calibration_id": null,
+      "acquisition": "coingecko_live",
+      "spot_acquisition": null,
+      "series_acquisition": null,
+      "fallback": "none",
+      "derivation": {
+        "rule": "min_of_valid_trending_fetched_at_and_score_eligible_price_observation_utc",
+        "note": "requires both valid timestamps; otherwise null; does not prove Search provider source-observation"
+      },
+      "trending_fetched_at": "2026-10-02T16:58:29.832Z",
+      "trending_from_cache": false,
+      "score_cache_reuse": false,
+      "candidate_only": false,
+      "successor_candidate_only": true,
+      "successor_production_active": false
+    }
+  ]
 }

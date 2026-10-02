@@ -1,0 +1,763 @@
+{
+  "cache_namespace": "v1.2.0",
+  "model_version": "v1.2.0",
+  "implementation_revision": "semantic-correctness-2026-09",
+  "ssot_version": "2.1.1",
+  "factor_key": "stablecoins",
+  "successor_candidate": {
+    "candidate_only": true,
+    "production_active": false,
+    "model_version_target": "v1.2.0",
+    "implementation_revision_target": "semantic-correctness-2026-09",
+    "ssot_version": "2.1.1",
+    "factor_key": "stablecoins",
+    "endpoint_rule": "CURRENT_CACHE_LATEST_STRICT_VALID_POSITIVE_CAP_OBSERVATION",
+    "cross_vintage_rule": "LATEST_KNOWN_VINTAGE_AT_OR_BEFORE_T",
+    "calibration_id": "STABLECOIN_DATED_CALIBRATION_V1",
+    "calibration_schema": "ghostgauge_v1_2_stablecoin_dated_calibration_v1",
+    "calibration_validation": {
+      "ok": true,
+      "reason": null,
+      "errors": []
+    },
+    "as_of_utc": "2026-10-02T16:58:25.403Z",
+    "as_of_ms": 1790960305403,
+    "observation_date": "2026-10-02",
+    "frozen_configured_weight_total": 0.9300000000000002,
+    "component_blend": {
+      "supply_growth": 0.55,
+      "momentum": 0.3,
+      "concentration": 0.15
+    },
+    "score": 53,
+    "reason": null,
+    "aggregate_elapsed_30d_growth": 0.0037059282180348964,
+    "recent_elapsed_momentum": -0.6914370074333674,
+    "concentration": 56.76863444715431,
+    "supply_percentile": 0.5504587155963303,
+    "component_scores": {
+      "supply_growth": 42,
+      "momentum": 70,
+      "concentration": 56.76863444715431
+    },
+    "valid_coin_count": 6,
+    "configured_weight_coverage": 0.967741935483871,
+    "calibration_prior_count": 327,
+    "coins": [
+      {
+        "symbol": "USDT",
+        "id": "tether",
+        "configured_weight": 0.55,
+        "eligible": true,
+        "exclusion_reason": null,
+        "endpoint_timestamp_ms": 1790960200000,
+        "endpoint_timestamp_iso": "2026-10-02T16:56:40.000Z",
+        "endpoint_cap": 184030418310.5983,
+        "target7_timestamp_ms": 1790355400000,
+        "target7_timestamp_iso": "2026-09-25T16:56:40.000Z",
+        "selected_7d_prior_timestamp_ms": 1790294400000,
+        "selected_7d_prior_timestamp_iso": "2026-09-25T00:00:00.000Z",
+        "selected_7d_prior_cap": 183722752284.55322,
+        "lag_hours_7d": 16.944444444444443,
+        "change7d": 0.0016746212552300305,
+        "target30_timestamp_ms": 1788368200000,
+        "target30_timestamp_iso": "2026-09-02T16:56:40.000Z",
+        "selected_30d_prior_timestamp_ms": 1788307200000,
+        "selected_30d_prior_timestamp_iso": "2026-09-02T00:00:00.000Z",
+        "selected_30d_prior_cap": 183309200454.6889,
+        "lag_hours_30d": 16.944444444444443,
+        "change30d": 0.003934433482446326,
+        "provider_source_provenance": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        }
+      },
+      {
+        "symbol": "USDC",
+        "id": "usd-coin",
+        "configured_weight": 0.25,
+        "eligible": true,
+        "exclusion_reason": null,
+        "endpoint_timestamp_ms": 1790960210000,
+        "endpoint_timestamp_iso": "2026-10-02T16:56:50.000Z",
+        "endpoint_cap": 73926544398.71089,
+        "target7_timestamp_ms": 1790355410000,
+        "target7_timestamp_iso": "2026-09-25T16:56:50.000Z",
+        "selected_7d_prior_timestamp_ms": 1790294400000,
+        "selected_7d_prior_timestamp_iso": "2026-09-25T00:00:00.000Z",
+        "selected_7d_prior_cap": 75082005286.8179,
+        "lag_hours_7d": 16.947222222222223,
+        "change7d": -0.015389318435130733,
+        "target30_timestamp_ms": 1788368210000,
+        "target30_timestamp_iso": "2026-09-02T16:56:50.000Z",
+        "selected_30d_prior_timestamp_ms": 1788307200000,
+        "selected_30d_prior_timestamp_iso": "2026-09-02T00:00:00.000Z",
+        "selected_30d_prior_cap": 73592850378.26047,
+        "lag_hours_30d": 16.947222222222223,
+        "change30d": 0.004534326619165689,
+        "provider_source_provenance": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        }
+      },
+      {
+        "symbol": "DAI",
+        "id": "dai",
+        "configured_weight": 0.05,
+        "eligible": true,
+        "exclusion_reason": null,
+        "endpoint_timestamp_ms": 1790960230000,
+        "endpoint_timestamp_iso": "2026-10-02T16:57:10.000Z",
+        "endpoint_cap": 4598258131.631325,
+        "target7_timestamp_ms": 1790355430000,
+        "target7_timestamp_iso": "2026-09-25T16:57:10.000Z",
+        "selected_7d_prior_timestamp_ms": 1790294400000,
+        "selected_7d_prior_timestamp_iso": "2026-09-25T00:00:00.000Z",
+        "selected_7d_prior_cap": 4591046548.255203,
+        "lag_hours_7d": 16.95277777777778,
+        "change7d": 0.0015707929118824193,
+        "target30_timestamp_ms": 1788368230000,
+        "target30_timestamp_iso": "2026-09-02T16:57:10.000Z",
+        "selected_30d_prior_timestamp_ms": 1788307200000,
+        "selected_30d_prior_timestamp_iso": "2026-09-02T00:00:00.000Z",
+        "selected_30d_prior_cap": 4577844753.052302,
+        "lag_hours_30d": 16.95277777777778,
+        "change30d": 0.004459167944787048,
+        "provider_source_provenance": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        }
+      },
+      {
+        "symbol": "BUSD",
+        "id": "binance-usd",
+        "configured_weight": 0.03,
+        "eligible": false,
+        "exclusion_reason": "missing_market_caps",
+        "endpoint_timestamp_ms": null,
+        "endpoint_timestamp_iso": null,
+        "endpoint_cap": null,
+        "target7_timestamp_ms": null,
+        "target7_timestamp_iso": null,
+        "selected_7d_prior_timestamp_ms": null,
+        "selected_7d_prior_timestamp_iso": null,
+        "selected_7d_prior_cap": null,
+        "lag_hours_7d": null,
+        "change7d": null,
+        "target30_timestamp_ms": null,
+        "target30_timestamp_iso": null,
+        "selected_30d_prior_timestamp_ms": null,
+        "selected_30d_prior_timestamp_iso": null,
+        "selected_30d_prior_cap": null,
+        "lag_hours_30d": null,
+        "change30d": null,
+        "provider_source_provenance": {
+          "status": "ACQUISITION_FAILED",
+          "provider": null,
+          "fallback_attempted": "cryptocompare"
+        }
+      },
+      {
+        "symbol": "TUSD",
+        "id": "true-usd",
+        "configured_weight": 0.02,
+        "eligible": true,
+        "exclusion_reason": null,
+        "endpoint_timestamp_ms": 1790960300000,
+        "endpoint_timestamp_iso": "2026-10-02T16:58:20.000Z",
+        "endpoint_cap": 494450129.6101665,
+        "target7_timestamp_ms": 1790355500000,
+        "target7_timestamp_iso": "2026-09-25T16:58:20.000Z",
+        "selected_7d_prior_timestamp_ms": 1790294400000,
+        "selected_7d_prior_timestamp_iso": "2026-09-25T00:00:00.000Z",
+        "selected_7d_prior_cap": 494355602.3548276,
+        "lag_hours_7d": 16.97222222222222,
+        "change7d": 0.00019121307594904035,
+        "target30_timestamp_ms": 1788368300000,
+        "target30_timestamp_iso": "2026-09-02T16:58:20.000Z",
+        "selected_30d_prior_timestamp_ms": 1788307200000,
+        "selected_30d_prior_timestamp_iso": "2026-09-02T00:00:00.000Z",
+        "selected_30d_prior_cap": 493247873.14010465,
+        "lag_hours_30d": 16.97222222222222,
+        "change30d": 0.0024374285942847717,
+        "provider_source_provenance": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        }
+      },
+      {
+        "symbol": "FRAX",
+        "id": "frax",
+        "configured_weight": 0.02,
+        "eligible": true,
+        "exclusion_reason": null,
+        "endpoint_timestamp_ms": 1790960300000,
+        "endpoint_timestamp_iso": "2026-10-02T16:58:20.000Z",
+        "endpoint_cap": 216803336.00430512,
+        "target7_timestamp_ms": 1790355500000,
+        "target7_timestamp_iso": "2026-09-25T16:58:20.000Z",
+        "selected_7d_prior_timestamp_ms": 1790294400000,
+        "selected_7d_prior_timestamp_iso": "2026-09-25T00:00:00.000Z",
+        "selected_7d_prior_cap": 217483679.36766586,
+        "lag_hours_7d": 16.97222222222222,
+        "change7d": -0.003128250199457873,
+        "target30_timestamp_ms": 1788368300000,
+        "target30_timestamp_iso": "2026-09-02T16:58:20.000Z",
+        "selected_30d_prior_timestamp_ms": 1788307200000,
+        "selected_30d_prior_timestamp_iso": "2026-09-02T00:00:00.000Z",
+        "selected_30d_prior_cap": 217304646.01178554,
+        "lag_hours_30d": 16.97222222222222,
+        "change30d": -0.0023069456483375147,
+        "provider_source_provenance": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        }
+      },
+      {
+        "symbol": "LUSD",
+        "id": "liquity-usd",
+        "configured_weight": 0.01,
+        "eligible": true,
+        "exclusion_reason": null,
+        "endpoint_timestamp_ms": 1790960300000,
+        "endpoint_timestamp_iso": "2026-10-02T16:58:20.000Z",
+        "endpoint_cap": 26287527.423711833,
+        "target7_timestamp_ms": 1790355500000,
+        "target7_timestamp_iso": "2026-09-25T16:58:20.000Z",
+        "selected_7d_prior_timestamp_ms": 1790294400000,
+        "selected_7d_prior_timestamp_iso": "2026-09-25T00:00:00.000Z",
+        "selected_7d_prior_cap": 26285701.480725653,
+        "lag_hours_7d": 16.97222222222222,
+        "change7d": 0.00006946525614003647,
+        "target30_timestamp_ms": 1788368300000,
+        "target30_timestamp_iso": "2026-09-02T16:58:20.000Z",
+        "selected_30d_prior_timestamp_ms": 1788307200000,
+        "selected_30d_prior_timestamp_iso": "2026-09-02T00:00:00.000Z",
+        "selected_30d_prior_cap": 26790526.87986606,
+        "lag_hours_30d": 16.97222222222222,
+        "change30d": -0.01877527300637926,
+        "provider_source_provenance": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        }
+      }
+    ]
+  },
+  "publication": {
+    "score": 53,
+    "reason": null,
+    "lastUpdated": "2026-10-02T16:56:40.000Z",
+    "model_version": "v1.2.0",
+    "implementation_revision": "semantic-correctness-2026-09",
+    "ssot_version": "2.1.1",
+    "publication_identity": true,
+    "candidate_only": false,
+    "factor_key": "stablecoins",
+    "r10": {
+      "provider": "per_coin",
+      "source_observation_utc": "2026-10-02T16:56:40.000Z",
+      "scored_observation_utc": "2026-10-02T16:56:40.000Z",
+      "acquisition": {
+        "USDT": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "USDC": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "DAI": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "BUSD": {
+          "status": "ACQUISITION_FAILED",
+          "provider": null,
+          "fallback_attempted": "cryptocompare"
+        },
+        "TUSD": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "FRAX": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "LUSD": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        }
+      },
+      "fallback": {
+        "USDT": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "USDC": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "DAI": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "BUSD": {
+          "status": "ACQUISITION_FAILED",
+          "provider": null,
+          "fallback_attempted": "cryptocompare"
+        },
+        "TUSD": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "FRAX": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        },
+        "LUSD": {
+          "status": "SUPPLIED",
+          "provider": "coingecko",
+          "fallback_attempted": "none"
+        }
+      },
+      "derivation": "oldest eligible coin endpoint_timestamp_iso",
+      "calibration_id": "STABLECOIN_DATED_CALIBRATION_V1",
+      "legacy_baseline_used": false,
+      "scored_provenance": "populated",
+      "fallback_skips": [
+        {
+          "symbol": "BUSD",
+          "provider": "coinmarketcap",
+          "status": "NOT_CONFIGURED"
+        },
+        {
+          "symbol": "BUSD",
+          "provider": "cryptocompare",
+          "status": "NOT_CONFIGURED"
+        }
+      ],
+      "acquisition_attempts": [
+        {
+          "target_host": "api.coingecko.com",
+          "attempts": [
+            {
+              "attempt": 1,
+              "http_status": 200,
+              "retry_delay_ms": null,
+              "termination": "final",
+              "scheduler": {
+                "kind": "pace",
+                "pace_wait_ms": 0,
+                "cooldown": null
+              }
+            }
+          ],
+          "termination": "final"
+        },
+        {
+          "target_host": "api.coingecko.com",
+          "attempts": [
+            {
+              "attempt": 1,
+              "http_status": 200,
+              "retry_delay_ms": null,
+              "termination": "final",
+              "scheduler": {
+                "kind": "pace",
+                "pace_wait_ms": 2000,
+                "cooldown": null
+              }
+            }
+          ],
+          "termination": "final"
+        },
+        {
+          "target_host": "api.coingecko.com",
+          "attempts": [
+            {
+              "attempt": 1,
+              "http_status": 200,
+              "retry_delay_ms": null,
+              "termination": "final",
+              "scheduler": {
+                "kind": "pace",
+                "pace_wait_ms": 2000,
+                "cooldown": null
+              }
+            }
+          ],
+          "termination": "final"
+        },
+        {
+          "target_host": "api.coingecko.com",
+          "attempts": [
+            {
+              "attempt": 1,
+              "http_status": 429,
+              "retry_after": "60",
+              "retry_delay_ms": 60000,
+              "termination": "retry_after_exceeds_budget",
+              "scheduler": {
+                "kind": "pace",
+                "pace_wait_ms": 1878,
+                "cooldown": null
+              },
+              "cooldown": {
+                "kind": "shared_cooldown",
+                "receipt_utc": "2026-10-02T16:58:37.824Z",
+                "required_deadline_utc": "2026-10-02T16:59:37.824Z",
+                "required_wait_ms": 60000,
+                "actual_wait_ms": 0,
+                "budget_ms": 70000,
+                "budget_consumed_ms": 60000,
+                "pace_ms": 2000,
+                "reason": "shared_wait_armed"
+              }
+            }
+          ],
+          "termination": "retry_after_exceeds_budget"
+        },
+        {
+          "target_host": "api.coingecko.com",
+          "attempts": [
+            {
+              "attempt": 1,
+              "http_status": 200,
+              "retry_delay_ms": null,
+              "termination": "final",
+              "scheduler": {
+                "kind": "shared_cooldown",
+                "pace_wait_ms": 0,
+                "cooldown": {
+                  "kind": "shared_cooldown",
+                  "wait_ms": 60008,
+                  "receipt_utc": "2026-10-02T16:58:37.824Z",
+                  "required_deadline_utc": "2026-10-02T16:59:37.824Z",
+                  "required_wait_ms": 60000,
+                  "actual_wait_ms": 60000,
+                  "budget_consumed_ms": 60000,
+                  "budget_ms": 70000
+                }
+              }
+            }
+          ],
+          "termination": "final"
+        },
+        {
+          "target_host": "api.coingecko.com",
+          "attempts": [
+            {
+              "attempt": 1,
+              "http_status": 200,
+              "retry_delay_ms": null,
+              "termination": "final",
+              "scheduler": {
+                "kind": "shared_cooldown",
+                "pace_wait_ms": 1815,
+                "cooldown": {
+                  "kind": "shared_cooldown",
+                  "wait_ms": 0,
+                  "receipt_utc": "2026-10-02T16:58:37.824Z",
+                  "required_deadline_utc": "2026-10-02T16:59:37.824Z",
+                  "required_wait_ms": 60000,
+                  "actual_wait_ms": 60000,
+                  "budget_consumed_ms": 60000,
+                  "budget_ms": 70000
+                }
+              }
+            }
+          ],
+          "termination": "final"
+        },
+        {
+          "target_host": "api.coingecko.com",
+          "attempts": [
+            {
+              "attempt": 1,
+              "http_status": 200,
+              "retry_delay_ms": null,
+              "termination": "final",
+              "scheduler": {
+                "kind": "shared_cooldown",
+                "pace_wait_ms": 1860,
+                "cooldown": {
+                  "kind": "shared_cooldown",
+                  "wait_ms": 0,
+                  "receipt_utc": "2026-10-02T16:58:37.824Z",
+                  "required_deadline_utc": "2026-10-02T16:59:37.824Z",
+                  "required_wait_ms": 60000,
+                  "actual_wait_ms": 60000,
+                  "budget_consumed_ms": 60000,
+                  "budget_ms": 70000
+                }
+              }
+            }
+          ],
+          "termination": "final"
+        }
+      ]
+    },
+    "successor_candidate": {
+      "candidate_only": true,
+      "production_active": false,
+      "model_version_target": "v1.2.0",
+      "implementation_revision_target": "semantic-correctness-2026-09",
+      "ssot_version": "2.1.1",
+      "factor_key": "stablecoins",
+      "endpoint_rule": "CURRENT_CACHE_LATEST_STRICT_VALID_POSITIVE_CAP_OBSERVATION",
+      "cross_vintage_rule": "LATEST_KNOWN_VINTAGE_AT_OR_BEFORE_T",
+      "calibration_id": "STABLECOIN_DATED_CALIBRATION_V1",
+      "calibration_schema": "ghostgauge_v1_2_stablecoin_dated_calibration_v1",
+      "calibration_validation": {
+        "ok": true,
+        "reason": null,
+        "errors": []
+      },
+      "as_of_utc": "2026-10-02T16:58:25.403Z",
+      "as_of_ms": 1790960305403,
+      "observation_date": "2026-10-02",
+      "frozen_configured_weight_total": 0.9300000000000002,
+      "component_blend": {
+        "supply_growth": 0.55,
+        "momentum": 0.3,
+        "concentration": 0.15
+      },
+      "score": 53,
+      "reason": null,
+      "aggregate_elapsed_30d_growth": 0.0037059282180348964,
+      "recent_elapsed_momentum": -0.6914370074333674,
+      "concentration": 56.76863444715431,
+      "supply_percentile": 0.5504587155963303,
+      "component_scores": {
+        "supply_growth": 42,
+        "momentum": 70,
+        "concentration": 56.76863444715431
+      },
+      "valid_coin_count": 6,
+      "configured_weight_coverage": 0.967741935483871,
+      "calibration_prior_count": 327,
+      "coins": [
+        {
+          "symbol": "USDT",
+          "id": "tether",
+          "configured_weight": 0.55,
+          "eligible": true,
+          "exclusion_reason": null,
+          "endpoint_timestamp_ms": 1790960200000,
+          "endpoint_timestamp_iso": "2026-10-02T16:56:40.000Z",
+          "endpoint_cap": 184030418310.5983,
+          "target7_timestamp_ms": 1790355400000,
+          "target7_timestamp_iso": "2026-09-25T16:56:40.000Z",
+          "selected_7d_prior_timestamp_ms": 1790294400000,
+          "selected_7d_prior_timestamp_iso": "2026-09-25T00:00:00.000Z",
+          "selected_7d_prior_cap": 183722752284.55322,
+          "lag_hours_7d": 16.944444444444443,
+          "change7d": 0.0016746212552300305,
+          "target30_timestamp_ms": 1788368200000,
+          "target30_timestamp_iso": "2026-09-02T16:56:40.000Z",
+          "selected_30d_prior_timestamp_ms": 1788307200000,
+          "selected_30d_prior_timestamp_iso": "2026-09-02T00:00:00.000Z",
+          "selected_30d_prior_cap": 183309200454.6889,
+          "lag_hours_30d": 16.944444444444443,
+          "change30d": 0.003934433482446326,
+          "provider_source_provenance": {
+            "status": "SUPPLIED",
+            "provider": "coingecko",
+            "fallback_attempted": "none"
+          }
+        },
+        {
+          "symbol": "USDC",
+          "id": "usd-coin",
+          "configured_weight": 0.25,
+          "eligible": true,
+          "exclusion_reason": null,
+          "endpoint_timestamp_ms": 1790960210000,
+          "endpoint_timestamp_iso": "2026-10-02T16:56:50.000Z",
+          "endpoint_cap": 73926544398.71089,
+          "target7_timestamp_ms": 1790355410000,
+          "target7_timestamp_iso": "2026-09-25T16:56:50.000Z",
+          "selected_7d_prior_timestamp_ms": 1790294400000,
+          "selected_7d_prior_timestamp_iso": "2026-09-25T00:00:00.000Z",
+          "selected_7d_prior_cap": 75082005286.8179,
+          "lag_hours_7d": 16.947222222222223,
+          "change7d": -0.015389318435130733,
+          "target30_timestamp_ms": 1788368210000,
+          "target30_timestamp_iso": "2026-09-02T16:56:50.000Z",
+          "selected_30d_prior_timestamp_ms": 1788307200000,
+          "selected_30d_prior_timestamp_iso": "2026-09-02T00:00:00.000Z",
+          "selected_30d_prior_cap": 73592850378.26047,
+          "lag_hours_30d": 16.947222222222223,
+          "change30d": 0.004534326619165689,
+          "provider_source_provenance": {
+            "status": "SUPPLIED",
+            "provider": "coingecko",
+            "fallback_attempted": "none"
+          }
+        },
+        {
+          "symbol": "DAI",
+          "id": "dai",
+          "configured_weight": 0.05,
+          "eligible": true,
+          "exclusion_reason": null,
+          "endpoint_timestamp_ms": 1790960230000,
+          "endpoint_timestamp_iso": "2026-10-02T16:57:10.000Z",
+          "endpoint_cap": 4598258131.631325,
+          "target7_timestamp_ms": 1790355430000,
+          "target7_timestamp_iso": "2026-09-25T16:57:10.000Z",
+          "selected_7d_prior_timestamp_ms": 1790294400000,
+          "selected_7d_prior_timestamp_iso": "2026-09-25T00:00:00.000Z",
+          "selected_7d_prior_cap": 4591046548.255203,
+          "lag_hours_7d": 16.95277777777778,
+          "change7d": 0.0015707929118824193,
+          "target30_timestamp_ms": 1788368230000,
+          "target30_timestamp_iso": "2026-09-02T16:57:10.000Z",
+          "selected_30d_prior_timestamp_ms": 1788307200000,
+          "selected_30d_prior_timestamp_iso": "2026-09-02T00:00:00.000Z",
+          "selected_30d_prior_cap": 4577844753.052302,
+          "lag_hours_30d": 16.95277777777778,
+          "change30d": 0.004459167944787048,
+          "provider_source_provenance": {
+            "status": "SUPPLIED",
+            "provider": "coingecko",
+            "fallback_attempted": "none"
+          }
+        },
+        {
+          "symbol": "BUSD",
+          "id": "binance-usd",
+          "configured_weight": 0.03,
+          "eligible": false,
+          "exclusion_reason": "missing_market_caps",
+          "endpoint_timestamp_ms": null,
+          "endpoint_timestamp_iso": null,
+          "endpoint_cap": null,
+          "target7_timestamp_ms": null,
+          "target7_timestamp_iso": null,
+          "selected_7d_prior_timestamp_ms": null,
+          "selected_7d_prior_timestamp_iso": null,
+          "selected_7d_prior_cap": null,
+          "lag_hours_7d": null,
+          "change7d": null,
+          "target30_timestamp_ms": null,
+          "target30_timestamp_iso": null,
+          "selected_30d_prior_timestamp_ms": null,
+          "selected_30d_prior_timestamp_iso": null,
+          "selected_30d_prior_cap": null,
+          "lag_hours_30d": null,
+          "change30d": null,
+          "provider_source_provenance": {
+            "status": "ACQUISITION_FAILED",
+            "provider": null,
+            "fallback_attempted": "cryptocompare"
+          }
+        },
+        {
+          "symbol": "TUSD",
+          "id": "true-usd",
+          "configured_weight": 0.02,
+          "eligible": true,
+          "exclusion_reason": null,
+          "endpoint_timestamp_ms": 1790960300000,
+          "endpoint_timestamp_iso": "2026-10-02T16:58:20.000Z",
+          "endpoint_cap": 494450129.6101665,
+          "target7_timestamp_ms": 1790355500000,
+          "target7_timestamp_iso": "2026-09-25T16:58:20.000Z",
+          "selected_7d_prior_timestamp_ms": 1790294400000,
+          "selected_7d_prior_timestamp_iso": "2026-09-25T00:00:00.000Z",
+          "selected_7d_prior_cap": 494355602.3548276,
+          "lag_hours_7d": 16.97222222222222,
+          "change7d": 0.00019121307594904035,
+          "target30_timestamp_ms": 1788368300000,
+          "target30_timestamp_iso": "2026-09-02T16:58:20.000Z",
+          "selected_30d_prior_timestamp_ms": 1788307200000,
+          "selected_30d_prior_timestamp_iso": "2026-09-02T00:00:00.000Z",
+          "selected_30d_prior_cap": 493247873.14010465,
+          "lag_hours_30d": 16.97222222222222,
+          "change30d": 0.0024374285942847717,
+          "provider_source_provenance": {
+            "status": "SUPPLIED",
+            "provider": "coingecko",
+            "fallback_attempted": "none"
+          }
+        },
+        {
+          "symbol": "FRAX",
+          "id": "frax",
+          "configured_weight": 0.02,
+          "eligible": true,
+          "exclusion_reason": null,
+          "endpoint_timestamp_ms": 1790960300000,
+          "endpoint_timestamp_iso": "2026-10-02T16:58:20.000Z",
+          "endpoint_cap": 216803336.00430512,
+          "target7_timestamp_ms": 1790355500000,
+          "target7_timestamp_iso": "2026-09-25T16:58:20.000Z",
+          "selected_7d_prior_timestamp_ms": 1790294400000,
+          "selected_7d_prior_timestamp_iso": "2026-09-25T00:00:00.000Z",
+          "selected_7d_prior_cap": 217483679.36766586,
+          "lag_hours_7d": 16.97222222222222,
+          "change7d": -0.003128250199457873,
+          "target30_timestamp_ms": 1788368300000,
+          "target30_timestamp_iso": "2026-09-02T16:58:20.000Z",
+          "selected_30d_prior_timestamp_ms": 1788307200000,
+          "selected_30d_prior_timestamp_iso": "2026-09-02T00:00:00.000Z",
+          "selected_30d_prior_cap": 217304646.01178554,
+          "lag_hours_30d": 16.97222222222222,
+          "change30d": -0.0023069456483375147,
+          "provider_source_provenance": {
+            "status": "SUPPLIED",
+            "provider": "coingecko",
+            "fallback_attempted": "none"
+          }
+        },
+        {
+          "symbol": "LUSD",
+          "id": "liquity-usd",
+          "configured_weight": 0.01,
+          "eligible": true,
+          "exclusion_reason": null,
+          "endpoint_timestamp_ms": 1790960300000,
+          "endpoint_timestamp_iso": "2026-10-02T16:58:20.000Z",
+          "endpoint_cap": 26287527.423711833,
+          "target7_timestamp_ms": 1790355500000,
+          "target7_timestamp_iso": "2026-09-25T16:58:20.000Z",
+          "selected_7d_prior_timestamp_ms": 1790294400000,
+          "selected_7d_prior_timestamp_iso": "2026-09-25T00:00:00.000Z",
+          "selected_7d_prior_cap": 26285701.480725653,
+          "lag_hours_7d": 16.97222222222222,
+          "change7d": 0.00006946525614003647,
+          "target30_timestamp_ms": 1788368300000,
+          "target30_timestamp_iso": "2026-09-02T16:58:20.000Z",
+          "selected_30d_prior_timestamp_ms": 1788307200000,
+          "selected_30d_prior_timestamp_iso": "2026-09-02T00:00:00.000Z",
+          "selected_30d_prior_cap": 26790526.87986606,
+          "lag_hours_30d": 16.97222222222222,
+          "change30d": -0.01877527300637926,
+          "provider_source_provenance": {
+            "status": "SUPPLIED",
+            "provider": "coingecko",
+            "fallback_attempted": "none"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,1028 @@
+{
+  "cache_namespace": "v1.2.0",
+  "model_version": "v1.2.0",
+  "implementation_revision": "semantic-correctness-2026-09",
+  "ssot_version": "2.1.1",
+  "factor_key": "net_liquidity",
+  "successor_candidate": {
+    "candidate_only": true,
+    "production_active": false,
+    "model_version_target": "v1.2.0",
+    "implementation_revision_target": "semantic-correctness-2026-09",
+    "ssot_version": "2.1.1",
+    "factor_key": "net_liquidity",
+    "source_contracts": {
+      "WALCL": {
+        "series_id": "WALCL",
+        "query_semantics": "NATIVE",
+        "usd_multiplier": 1000000,
+        "canonical_source_date": "Wednesday"
+      },
+      "WTREGEN": {
+        "series_id": "WTREGEN",
+        "query_semantics": "NATIVE",
+        "usd_multiplier": 1000000,
+        "canonical_source_date": "Wednesday"
+      },
+      "RRPONTSYD": {
+        "series_id": "RRPONTSYD",
+        "frequency": "wew",
+        "aggregation_method": "avg",
+        "usd_multiplier": 1000000000,
+        "canonical_source_date": "Wednesday"
+      }
+    },
+    "usd_multipliers": {
+      "WALCL": 1000000,
+      "WTREGEN": 1000000,
+      "RRPONTSYD": 1000000000
+    },
+    "component_blend": {
+      "level": 0.15,
+      "rate_of_change": 0.4,
+      "momentum": 0.45
+    },
+    "as_of_utc": "2026-10-02T16:58:25.404Z",
+    "as_of_ms": 1790960305404,
+    "as_of_date": "2026-10-02",
+    "source_contract_validation": {
+      "ok": true,
+      "reason": null,
+      "errors": []
+    },
+    "scoring_window_start_date": "2025-10-02",
+    "scoring_window_end_date": "2026-10-02",
+    "selected_common_scoring_date": "2026-09-30",
+    "lastUpdated": "2026-09-30T00:00:00.000Z",
+    "latest_available_walcl_source_date": "2026-09-30",
+    "latest_available_rrp_wew_source_date": "2026-09-30",
+    "latest_available_wtregen_source_date": "2026-09-30",
+    "canonical_input_fingerprint": "b17b494471fe0b31251d970d7c48d278b88413eac3c9f7166782012a9df22167",
+    "fingerprint_schema": "ghostgauge_v1_2_net_liquidity_input_fingerprint_v1",
+    "canonical_common_wednesday_count": 52,
+    "source_provenance": {
+      "WALCL": {
+        "series_id": "WALCL",
+        "query_semantics": "NATIVE",
+        "usd_multiplier": 1000000,
+        "eligible_in_window_row_count": 52,
+        "excluded_non_finite_count": 0,
+        "excluded_non_wednesday_count": 0,
+        "excluded_outside_window_or_after_asof_count": 5,
+        "excluded_malformed_date_count": 0,
+        "latest_available_eligible_source_date": "2026-09-30",
+        "provider_source_provenance": {
+          "status": "UNPROVEN",
+          "provider": null,
+          "note": "provider identity not supplied to candidate; not invented"
+        }
+      },
+      "RRPONTSYD": {
+        "series_id": "RRPONTSYD",
+        "frequency": "wew",
+        "aggregation_method": "avg",
+        "usd_multiplier": 1000000000,
+        "eligible_in_window_row_count": 52,
+        "excluded_non_finite_count": 0,
+        "excluded_non_wednesday_count": 0,
+        "excluded_outside_window_or_after_asof_count": 6,
+        "excluded_malformed_date_count": 0,
+        "latest_available_eligible_source_date": "2026-09-30",
+        "provider_source_provenance": {
+          "status": "UNPROVEN",
+          "provider": null,
+          "note": "provider identity not supplied to candidate; not invented"
+        }
+      },
+      "WTREGEN": {
+        "series_id": "WTREGEN",
+        "query_semantics": "NATIVE",
+        "usd_multiplier": 1000000,
+        "eligible_in_window_row_count": 52,
+        "excluded_non_finite_count": 0,
+        "excluded_non_wednesday_count": 0,
+        "excluded_outside_window_or_after_asof_count": 5,
+        "excluded_malformed_date_count": 0,
+        "latest_available_eligible_source_date": "2026-09-30",
+        "provider_source_provenance": {
+          "status": "UNPROVEN",
+          "provider": null,
+          "note": "provider identity not supplied to candidate; not invented"
+        }
+      }
+    },
+    "canonical_series": [
+      {
+        "date": "2025-10-08",
+        "walcl_usd": 6590815000000,
+        "rrp_usd": 13091000000,
+        "wtregen_usd": 807428000000,
+        "net_liquidity_usd": 5770296000000
+      },
+      {
+        "date": "2025-10-15",
+        "walcl_usd": 6596454000000,
+        "rrp_usd": 4405000000,
+        "wtregen_usd": 809593000000,
+        "net_liquidity_usd": 5782456000000
+      },
+      {
+        "date": "2025-10-22",
+        "walcl_usd": 6589533000000,
+        "rrp_usd": 5139000000,
+        "wtregen_usd": 908001000000,
+        "net_liquidity_usd": 5676393000000
+      },
+      {
+        "date": "2025-10-29",
+        "walcl_usd": 6587034000000,
+        "rrp_usd": 10724000000,
+        "wtregen_usd": 957990000000,
+        "net_liquidity_usd": 5618320000000
+      },
+      {
+        "date": "2025-11-05",
+        "walcl_usd": 6572732000000,
+        "rrp_usd": 24911000000,
+        "wtregen_usd": 940979000000,
+        "net_liquidity_usd": 5606842000000
+      },
+      {
+        "date": "2025-11-12",
+        "walcl_usd": 6580462000000,
+        "rrp_usd": 7174000000,
+        "wtregen_usd": 953816000000,
+        "net_liquidity_usd": 5619472000000
+      },
+      {
+        "date": "2025-11-19",
+        "walcl_usd": 6555283000000,
+        "rrp_usd": 2105000000,
+        "wtregen_usd": 941926000000,
+        "net_liquidity_usd": 5611252000000
+      },
+      {
+        "date": "2025-11-26",
+        "walcl_usd": 6552419000000,
+        "rrp_usd": 2926000000,
+        "wtregen_usd": 903394000000,
+        "net_liquidity_usd": 5646099000000
+      },
+      {
+        "date": "2025-12-03",
+        "walcl_usd": 6535781000000,
+        "rrp_usd": 4734000000,
+        "wtregen_usd": 937167000000,
+        "net_liquidity_usd": 5593880000000
+      },
+      {
+        "date": "2025-12-10",
+        "walcl_usd": 6539303000000,
+        "rrp_usd": 2735000000,
+        "wtregen_usd": 858946000000,
+        "net_liquidity_usd": 5677622000000
+      },
+      {
+        "date": "2025-12-17",
+        "walcl_usd": 6556861000000,
+        "rrp_usd": 3646000000,
+        "wtregen_usd": 833093000000,
+        "net_liquidity_usd": 5720122000000
+      },
+      {
+        "date": "2025-12-24",
+        "walcl_usd": 6581231000000,
+        "rrp_usd": 5395000000,
+        "wtregen_usd": 837120000000,
+        "net_liquidity_usd": 5738716000000
+      },
+      {
+        "date": "2025-12-31",
+        "walcl_usd": 6640618000000,
+        "rrp_usd": 37372000000,
+        "wtregen_usd": 837306000000,
+        "net_liquidity_usd": 5765940000000
+      },
+      {
+        "date": "2026-01-07",
+        "walcl_usd": 6573602000000,
+        "rrp_usd": 4829000000,
+        "wtregen_usd": 796148000000,
+        "net_liquidity_usd": 5772625000000
+      },
+      {
+        "date": "2026-01-14",
+        "walcl_usd": 6581700000000,
+        "rrp_usd": 3253000000,
+        "wtregen_usd": 779175000000,
+        "net_liquidity_usd": 5799272000000
+      },
+      {
+        "date": "2026-01-21",
+        "walcl_usd": 6584580000000,
+        "rrp_usd": 2519000000,
+        "wtregen_usd": 869261000000,
+        "net_liquidity_usd": 5712800000000
+      },
+      {
+        "date": "2026-01-28",
+        "walcl_usd": 6587568000000,
+        "rrp_usd": 1366000000,
+        "wtregen_usd": 923042000000,
+        "net_liquidity_usd": 5663160000000
+      },
+      {
+        "date": "2026-02-04",
+        "walcl_usd": 6605909000000,
+        "rrp_usd": 5419000000,
+        "wtregen_usd": 908773000000,
+        "net_liquidity_usd": 5691717000000
+      },
+      {
+        "date": "2026-02-11",
+        "walcl_usd": 6622382000000,
+        "rrp_usd": 1732000000,
+        "wtregen_usd": 915306000000,
+        "net_liquidity_usd": 5705344000000
+      },
+      {
+        "date": "2026-02-18",
+        "walcl_usd": 6613395000000,
+        "rrp_usd": 1130000000,
+        "wtregen_usd": 912727000000,
+        "net_liquidity_usd": 5699538000000
+      },
+      {
+        "date": "2026-02-25",
+        "walcl_usd": 6613797000000,
+        "rrp_usd": 816000000,
+        "wtregen_usd": 887612000000,
+        "net_liquidity_usd": 5725369000000
+      },
+      {
+        "date": "2026-03-04",
+        "walcl_usd": 6628894000000,
+        "rrp_usd": 4564000000,
+        "wtregen_usd": 832053000000,
+        "net_liquidity_usd": 5792277000000
+      },
+      {
+        "date": "2026-03-11",
+        "walcl_usd": 6646344000000,
+        "rrp_usd": 1093000000,
+        "wtregen_usd": 838186000000,
+        "net_liquidity_usd": 5807065000000
+      },
+      {
+        "date": "2026-03-18",
+        "walcl_usd": 6655939000000,
+        "rrp_usd": 528000000,
+        "wtregen_usd": 853052000000,
+        "net_liquidity_usd": 5802359000000
+      },
+      {
+        "date": "2026-03-25",
+        "walcl_usd": 6657161000000,
+        "rrp_usd": 843000000,
+        "wtregen_usd": 874077000000,
+        "net_liquidity_usd": 5782241000000
+      },
+      {
+        "date": "2026-04-01",
+        "walcl_usd": 6675344000000,
+        "rrp_usd": 4104000000,
+        "wtregen_usd": 847718000000,
+        "net_liquidity_usd": 5823522000000
+      },
+      {
+        "date": "2026-04-08",
+        "walcl_usd": 6693871000000,
+        "rrp_usd": 4019000000,
+        "wtregen_usd": 748376000000,
+        "net_liquidity_usd": 5941476000000
+      },
+      {
+        "date": "2026-04-15",
+        "walcl_usd": 6705696000000,
+        "rrp_usd": 333000000,
+        "wtregen_usd": 751354000000,
+        "net_liquidity_usd": 5954009000000
+      },
+      {
+        "date": "2026-04-22",
+        "walcl_usd": 6707419000000,
+        "rrp_usd": 429000000,
+        "wtregen_usd": 1005968000000,
+        "net_liquidity_usd": 5701022000000
+      },
+      {
+        "date": "2026-04-29",
+        "walcl_usd": 6699950000000,
+        "rrp_usd": 390000000,
+        "wtregen_usd": 981929000000,
+        "net_liquidity_usd": 5717631000000
+      },
+      {
+        "date": "2026-05-06",
+        "walcl_usd": 6709505000000,
+        "rrp_usd": 2448000000,
+        "wtregen_usd": 877761000000,
+        "net_liquidity_usd": 5829296000000
+      },
+      {
+        "date": "2026-05-13",
+        "walcl_usd": 6728502000000,
+        "rrp_usd": 1522000000,
+        "wtregen_usd": 838584000000,
+        "net_liquidity_usd": 5888396000000
+      },
+      {
+        "date": "2026-05-20",
+        "walcl_usd": 6713643000000,
+        "rrp_usd": 9530000000,
+        "wtregen_usd": 781293000000,
+        "net_liquidity_usd": 5922820000000
+      },
+      {
+        "date": "2026-05-27",
+        "walcl_usd": 6704383000000,
+        "rrp_usd": 1972000000,
+        "wtregen_usd": 830296000000,
+        "net_liquidity_usd": 5872115000000
+      },
+      {
+        "date": "2026-06-03",
+        "walcl_usd": 6711495000000,
+        "rrp_usd": 3741000000,
+        "wtregen_usd": 875713000000,
+        "net_liquidity_usd": 5832041000000
+      },
+      {
+        "date": "2026-06-10",
+        "walcl_usd": 6725397000000,
+        "rrp_usd": 936000000,
+        "wtregen_usd": 828122000000,
+        "net_liquidity_usd": 5896339000000
+      },
+      {
+        "date": "2026-06-17",
+        "walcl_usd": 6736424000000,
+        "rrp_usd": 3809000000,
+        "wtregen_usd": 880713000000,
+        "net_liquidity_usd": 5851902000000
+      },
+      {
+        "date": "2026-06-24",
+        "walcl_usd": 6735645000000,
+        "rrp_usd": 3799000000,
+        "wtregen_usd": 918696000000,
+        "net_liquidity_usd": 5813150000000
+      },
+      {
+        "date": "2026-07-01",
+        "walcl_usd": 6724564000000,
+        "rrp_usd": 8718000000,
+        "wtregen_usd": 880237000000,
+        "net_liquidity_usd": 5835609000000
+      },
+      {
+        "date": "2026-07-08",
+        "walcl_usd": 6735609000000,
+        "rrp_usd": 3181000000,
+        "wtregen_usd": 774062000000,
+        "net_liquidity_usd": 5958366000000
+      },
+      {
+        "date": "2026-07-15",
+        "walcl_usd": 6743028000000,
+        "rrp_usd": 1508000000,
+        "wtregen_usd": 756218000000,
+        "net_liquidity_usd": 5985302000000
+      },
+      {
+        "date": "2026-07-22",
+        "walcl_usd": 6747378000000,
+        "rrp_usd": 181000000,
+        "wtregen_usd": 829623000000,
+        "net_liquidity_usd": 5917574000000
+      },
+      {
+        "date": "2026-07-29",
+        "walcl_usd": 6738190000000,
+        "rrp_usd": 1332000000,
+        "wtregen_usd": 910776000000,
+        "net_liquidity_usd": 5826082000000
+      },
+      {
+        "date": "2026-08-05",
+        "walcl_usd": 6748567000000,
+        "rrp_usd": 1851000000,
+        "wtregen_usd": 907324000000,
+        "net_liquidity_usd": 5839392000000
+      },
+      {
+        "date": "2026-08-12",
+        "walcl_usd": 6759955000000,
+        "rrp_usd": 1166000000,
+        "wtregen_usd": 963950000000,
+        "net_liquidity_usd": 5794839000000
+      },
+      {
+        "date": "2026-08-19",
+        "walcl_usd": 6745699000000,
+        "rrp_usd": 285000000,
+        "wtregen_usd": 953612000000,
+        "net_liquidity_usd": 5791802000000
+      },
+      {
+        "date": "2026-08-26",
+        "walcl_usd": 6730912000000,
+        "rrp_usd": 382000000,
+        "wtregen_usd": 950736000000,
+        "net_liquidity_usd": 5779794000000
+      },
+      {
+        "date": "2026-09-02",
+        "walcl_usd": 6737204000000,
+        "rrp_usd": 1721000000,
+        "wtregen_usd": 967935000000,
+        "net_liquidity_usd": 5767548000000
+      },
+      {
+        "date": "2026-09-09",
+        "walcl_usd": 6740619000000,
+        "rrp_usd": 609000000,
+        "wtregen_usd": 883335000000,
+        "net_liquidity_usd": 5856675000000
+      },
+      {
+        "date": "2026-09-16",
+        "walcl_usd": 6746548000000,
+        "rrp_usd": 3497000000,
+        "wtregen_usd": 877028000000,
+        "net_liquidity_usd": 5866023000000
+      },
+      {
+        "date": "2026-09-23",
+        "walcl_usd": 6747704000000,
+        "rrp_usd": 470000000,
+        "wtregen_usd": 977084000000,
+        "net_liquidity_usd": 5770150000000
+      },
+      {
+        "date": "2026-09-30",
+        "walcl_usd": 6743031000000,
+        "rrp_usd": 5008000000,
+        "wtregen_usd": 948674000000,
+        "net_liquidity_usd": 5789349000000
+      }
+    ],
+    "score": 38,
+    "reason": null,
+    "component_scores": {
+      "level": 47,
+      "rate_of_change": 44,
+      "momentum": 29
+    },
+    "level_percentile": 0.5192307692307693,
+    "roc4w_pct": 0.37799425336382114,
+    "net_liquidity_usd": 5789349000000
+  },
+  "publication": {
+    "score": 38,
+    "reason": null,
+    "lastUpdated": "2026-09-30T00:00:00.000Z",
+    "model_version": "v1.2.0",
+    "implementation_revision": "semantic-correctness-2026-09",
+    "ssot_version": "2.1.1",
+    "publication_identity": true,
+    "candidate_only": false,
+    "factor_key": "net_liquidity",
+    "r10": {
+      "provider": "fred",
+      "source_observation_utc": "2026-09-30T00:00:00.000Z",
+      "scored_observation_utc": "2026-09-30T00:00:00.000Z",
+      "selected_scoring_date": "2026-09-30",
+      "latest_walcl_date": "2026-09-30",
+      "latest_rrp_date": "2026-09-30",
+      "latest_wtregen_date": "2026-09-30",
+      "acquisition": "fred_native_and_rrp_wew",
+      "series_acquisition": {
+        "WALCL": {
+          "classification": "ACQUIRED",
+          "http_status": 200
+        },
+        "RRPONTSYD": {
+          "classification": "ACQUIRED",
+          "http_status": 200
+        },
+        "WTREGEN": {
+          "classification": "ACQUIRED",
+          "http_status": 200
+        }
+      },
+      "fallback": "none",
+      "request_semantics": {
+        "walcl": {
+          "series_id": "WALCL",
+          "query_semantics": "NATIVE"
+        },
+        "wtregen": {
+          "series_id": "WTREGEN",
+          "query_semantics": "NATIVE"
+        },
+        "rrp": {
+          "series_id": "RRPONTSYD",
+          "frequency": "wew",
+          "aggregation_method": "avg"
+        }
+      },
+      "scored_provenance": "populated",
+      "derivation": "selected common Wednesday, not the latest WALCL print and not the wall clock"
+    },
+    "successor_candidate": {
+      "candidate_only": true,
+      "production_active": false,
+      "model_version_target": "v1.2.0",
+      "implementation_revision_target": "semantic-correctness-2026-09",
+      "ssot_version": "2.1.1",
+      "factor_key": "net_liquidity",
+      "source_contracts": {
+        "WALCL": {
+          "series_id": "WALCL",
+          "query_semantics": "NATIVE",
+          "usd_multiplier": 1000000,
+          "canonical_source_date": "Wednesday"
+        },
+        "WTREGEN": {
+          "series_id": "WTREGEN",
+          "query_semantics": "NATIVE",
+          "usd_multiplier": 1000000,
+          "canonical_source_date": "Wednesday"
+        },
+        "RRPONTSYD": {
+          "series_id": "RRPONTSYD",
+          "frequency": "wew",
+          "aggregation_method": "avg",
+          "usd_multiplier": 1000000000,
+          "canonical_source_date": "Wednesday"
+        }
+      },
+      "usd_multipliers": {
+        "WALCL": 1000000,
+        "WTREGEN": 1000000,
+        "RRPONTSYD": 1000000000
+      },
+      "component_blend": {
+        "level": 0.15,
+        "rate_of_change": 0.4,
+        "momentum": 0.45
+      },
+      "as_of_utc": "2026-10-02T16:58:25.404Z",
+      "as_of_ms": 1790960305404,
+      "as_of_date": "2026-10-02",
+      "source_contract_validation": {
+        "ok": true,
+        "reason": null,
+        "errors": []
+      },
+      "scoring_window_start_date": "2025-10-02",
+      "scoring_window_end_date": "2026-10-02",
+      "selected_common_scoring_date": "2026-09-30",
+      "lastUpdated": "2026-09-30T00:00:00.000Z",
+      "latest_available_walcl_source_date": "2026-09-30",
+      "latest_available_rrp_wew_source_date": "2026-09-30",
+      "latest_available_wtregen_source_date": "2026-09-30",
+      "canonical_input_fingerprint": "b17b494471fe0b31251d970d7c48d278b88413eac3c9f7166782012a9df22167",
+      "fingerprint_schema": "ghostgauge_v1_2_net_liquidity_input_fingerprint_v1",
+      "canonical_common_wednesday_count": 52,
+      "source_provenance": {
+        "WALCL": {
+          "series_id": "WALCL",
+          "query_semantics": "NATIVE",
+          "usd_multiplier": 1000000,
+          "eligible_in_window_row_count": 52,
+          "excluded_non_finite_count": 0,
+          "excluded_non_wednesday_count": 0,
+          "excluded_outside_window_or_after_asof_count": 5,
+          "excluded_malformed_date_count": 0,
+          "latest_available_eligible_source_date": "2026-09-30",
+          "provider_source_provenance": {
+            "status": "UNPROVEN",
+            "provider": null,
+            "note": "provider identity not supplied to candidate; not invented"
+          }
+        },
+        "RRPONTSYD": {
+          "series_id": "RRPONTSYD",
+          "frequency": "wew",
+          "aggregation_method": "avg",
+          "usd_multiplier": 1000000000,
+          "eligible_in_window_row_count": 52,
+          "excluded_non_finite_count": 0,
+          "excluded_non_wednesday_count": 0,
+          "excluded_outside_window_or_after_asof_count": 6,
+          "excluded_malformed_date_count": 0,
+          "latest_available_eligible_source_date": "2026-09-30",
+          "provider_source_provenance": {
+            "status": "UNPROVEN",
+            "provider": null,
+            "note": "provider identity not supplied to candidate; not invented"
+          }
+        },
+        "WTREGEN": {
+          "series_id": "WTREGEN",
+          "query_semantics": "NATIVE",
+          "usd_multiplier": 1000000,
+          "eligible_in_window_row_count": 52,
+          "excluded_non_finite_count": 0,
+          "excluded_non_wednesday_count": 0,
+          "excluded_outside_window_or_after_asof_count": 5,
+          "excluded_malformed_date_count": 0,
+          "latest_available_eligible_source_date": "2026-09-30",
+          "provider_source_provenance": {
+            "status": "UNPROVEN",
+            "provider": null,
+            "note": "provider identity not supplied to candidate; not invented"
+          }
+        }
+      },
+      "canonical_series": [
+        {
+          "date": "2025-10-08",
+          "walcl_usd": 6590815000000,
+          "rrp_usd": 13091000000,
+          "wtregen_usd": 807428000000,
+          "net_liquidity_usd": 5770296000000
+        },
+        {
+          "date": "2025-10-15",
+          "walcl_usd": 6596454000000,
+          "rrp_usd": 4405000000,
+          "wtregen_usd": 809593000000,
+          "net_liquidity_usd": 5782456000000
+        },
+        {
+          "date": "2025-10-22",
+          "walcl_usd": 6589533000000,
+          "rrp_usd": 5139000000,
+          "wtregen_usd": 908001000000,
+          "net_liquidity_usd": 5676393000000
+        },
+        {
+          "date": "2025-10-29",
+          "walcl_usd": 6587034000000,
+          "rrp_usd": 10724000000,
+          "wtregen_usd": 957990000000,
+          "net_liquidity_usd": 5618320000000
+        },
+        {
+          "date": "2025-11-05",
+          "walcl_usd": 6572732000000,
+          "rrp_usd": 24911000000,
+          "wtregen_usd": 940979000000,
+          "net_liquidity_usd": 5606842000000
+        },
+        {
+          "date": "2025-11-12",
+          "walcl_usd": 6580462000000,
+          "rrp_usd": 7174000000,
+          "wtregen_usd": 953816000000,
+          "net_liquidity_usd": 5619472000000
+        },
+        {
+          "date": "2025-11-19",
+          "walcl_usd": 6555283000000,
+          "rrp_usd": 2105000000,
+          "wtregen_usd": 941926000000,
+          "net_liquidity_usd": 5611252000000
+        },
+        {
+          "date": "2025-11-26",
+          "walcl_usd": 6552419000000,
+          "rrp_usd": 2926000000,
+          "wtregen_usd": 903394000000,
+          "net_liquidity_usd": 5646099000000
+        },
+        {
+          "date": "2025-12-03",
+          "walcl_usd": 6535781000000,
+          "rrp_usd": 4734000000,
+          "wtregen_usd": 937167000000,
+          "net_liquidity_usd": 5593880000000
+        },
+        {
+          "date": "2025-12-10",
+          "walcl_usd": 6539303000000,
+          "rrp_usd": 2735000000,
+          "wtregen_usd": 858946000000,
+          "net_liquidity_usd": 5677622000000
+        },
+        {
+          "date": "2025-12-17",
+          "walcl_usd": 6556861000000,
+          "rrp_usd": 3646000000,
+          "wtregen_usd": 833093000000,
+          "net_liquidity_usd": 5720122000000
+        },
+        {
+          "date": "2025-12-24",
+          "walcl_usd": 6581231000000,
+          "rrp_usd": 5395000000,
+          "wtregen_usd": 837120000000,
+          "net_liquidity_usd": 5738716000000
+        },
+        {
+          "date": "2025-12-31",
+          "walcl_usd": 6640618000000,
+          "rrp_usd": 37372000000,
+          "wtregen_usd": 837306000000,
+          "net_liquidity_usd": 5765940000000
+        },
+        {
+          "date": "2026-01-07",
+          "walcl_usd": 6573602000000,
+          "rrp_usd": 4829000000,
+          "wtregen_usd": 796148000000,
+          "net_liquidity_usd": 5772625000000
+        },
+        {
+          "date": "2026-01-14",
+          "walcl_usd": 6581700000000,
+          "rrp_usd": 3253000000,
+          "wtregen_usd": 779175000000,
+          "net_liquidity_usd": 5799272000000
+        },
+        {
+          "date": "2026-01-21",
+          "walcl_usd": 6584580000000,
+          "rrp_usd": 2519000000,
+          "wtregen_usd": 869261000000,
+          "net_liquidity_usd": 5712800000000
+        },
+        {
+          "date": "2026-01-28",
+          "walcl_usd": 6587568000000,
+          "rrp_usd": 1366000000,
+          "wtregen_usd": 923042000000,
+          "net_liquidity_usd": 5663160000000
+        },
+        {
+          "date": "2026-02-04",
+          "walcl_usd": 6605909000000,
+          "rrp_usd": 5419000000,
+          "wtregen_usd": 908773000000,
+          "net_liquidity_usd": 5691717000000
+        },
+        {
+          "date": "2026-02-11",
+          "walcl_usd": 6622382000000,
+          "rrp_usd": 1732000000,
+          "wtregen_usd": 915306000000,
+          "net_liquidity_usd": 5705344000000
+        },
+        {
+          "date": "2026-02-18",
+          "walcl_usd": 6613395000000,
+          "rrp_usd": 1130000000,
+          "wtregen_usd": 912727000000,
+          "net_liquidity_usd": 5699538000000
+        },
+        {
+          "date": "2026-02-25",
+          "walcl_usd": 6613797000000,
+          "rrp_usd": 816000000,
+          "wtregen_usd": 887612000000,
+          "net_liquidity_usd": 5725369000000
+        },
+        {
+          "date": "2026-03-04",
+          "walcl_usd": 6628894000000,
+          "rrp_usd": 4564000000,
+          "wtregen_usd": 832053000000,
+          "net_liquidity_usd": 5792277000000
+        },
+        {
+          "date": "2026-03-11",
+          "walcl_usd": 6646344000000,
+          "rrp_usd": 1093000000,
+          "wtregen_usd": 838186000000,
+          "net_liquidity_usd": 5807065000000
+        },
+        {
+          "date": "2026-03-18",
+          "walcl_usd": 6655939000000,
+          "rrp_usd": 528000000,
+          "wtregen_usd": 853052000000,
+          "net_liquidity_usd": 5802359000000
+        },
+        {
+          "date": "2026-03-25",
+          "walcl_usd": 6657161000000,
+          "rrp_usd": 843000000,
+          "wtregen_usd": 874077000000,
+          "net_liquidity_usd": 5782241000000
+        },
+        {
+          "date": "2026-04-01",
+          "walcl_usd": 6675344000000,
+          "rrp_usd": 4104000000,
+          "wtregen_usd": 847718000000,
+          "net_liquidity_usd": 5823522000000
+        },
+        {
+          "date": "2026-04-08",
+          "walcl_usd": 6693871000000,
+          "rrp_usd": 4019000000,
+          "wtregen_usd": 748376000000,
+          "net_liquidity_usd": 5941476000000
+        },
+        {
+          "date": "2026-04-15",
+          "walcl_usd": 6705696000000,
+          "rrp_usd": 333000000,
+          "wtregen_usd": 751354000000,
+          "net_liquidity_usd": 5954009000000
+        },
+        {
+          "date": "2026-04-22",
+          "walcl_usd": 6707419000000,
+          "rrp_usd": 429000000,
+          "wtregen_usd": 1005968000000,
+          "net_liquidity_usd": 5701022000000
+        },
+        {
+          "date": "2026-04-29",
+          "walcl_usd": 6699950000000,
+          "rrp_usd": 390000000,
+          "wtregen_usd": 981929000000,
+          "net_liquidity_usd": 5717631000000
+        },
+        {
+          "date": "2026-05-06",
+          "walcl_usd": 6709505000000,
+          "rrp_usd": 2448000000,
+          "wtregen_usd": 877761000000,
+          "net_liquidity_usd": 5829296000000
+        },
+        {
+          "date": "2026-05-13",
+          "walcl_usd": 6728502000000,
+          "rrp_usd": 1522000000,
+          "wtregen_usd": 838584000000,
+          "net_liquidity_usd": 5888396000000
+        },
+        {
+          "date": "2026-05-20",
+          "walcl_usd": 6713643000000,
+          "rrp_usd": 9530000000,
+          "wtregen_usd": 781293000000,
+          "net_liquidity_usd": 5922820000000
+        },
+        {
+          "date": "2026-05-27",
+          "walcl_usd": 6704383000000,
+          "rrp_usd": 1972000000,
+          "wtregen_usd": 830296000000,
+          "net_liquidity_usd": 5872115000000
+        },
+        {
+          "date": "2026-06-03",
+          "walcl_usd": 6711495000000,
+          "rrp_usd": 3741000000,
+          "wtregen_usd": 875713000000,
+          "net_liquidity_usd": 5832041000000
+        },
+        {
+          "date": "2026-06-10",
+          "walcl_usd": 6725397000000,
+          "rrp_usd": 936000000,
+          "wtregen_usd": 828122000000,
+          "net_liquidity_usd": 5896339000000
+        },
+        {
+          "date": "2026-06-17",
+          "walcl_usd": 6736424000000,
+          "rrp_usd": 3809000000,
+          "wtregen_usd": 880713000000,
+          "net_liquidity_usd": 5851902000000
+        },
+        {
+          "date": "2026-06-24",
+          "walcl_usd": 6735645000000,
+          "rrp_usd": 3799000000,
+          "wtregen_usd": 918696000000,
+          "net_liquidity_usd": 5813150000000
+        },
+        {
+          "date": "2026-07-01",
+          "walcl_usd": 6724564000000,
+          "rrp_usd": 8718000000,
+          "wtregen_usd": 880237000000,
+          "net_liquidity_usd": 5835609000000
+        },
+        {
+          "date": "2026-07-08",
+          "walcl_usd": 6735609000000,
+          "rrp_usd": 3181000000,
+          "wtregen_usd": 774062000000,
+          "net_liquidity_usd": 5958366000000
+        },
+        {
+          "date": "2026-07-15",
+          "walcl_usd": 6743028000000,
+          "rrp_usd": 1508000000,
+          "wtregen_usd": 756218000000,
+          "net_liquidity_usd": 5985302000000
+        },
+        {
+          "date": "2026-07-22",
+          "walcl_usd": 6747378000000,
+          "rrp_usd": 181000000,
+          "wtregen_usd": 829623000000,
+          "net_liquidity_usd": 5917574000000
+        },
+        {
+          "date": "2026-07-29",
+          "walcl_usd": 6738190000000,
+          "rrp_usd": 1332000000,
+          "wtregen_usd": 910776000000,
+          "net_liquidity_usd": 5826082000000
+        },
+        {
+          "date": "2026-08-05",
+          "walcl_usd": 6748567000000,
+          "rrp_usd": 1851000000,
+          "wtregen_usd": 907324000000,
+          "net_liquidity_usd": 5839392000000
+        },
+        {
+          "date": "2026-08-12",
+          "walcl_usd": 6759955000000,
+          "rrp_usd": 1166000000,
+          "wtregen_usd": 963950000000,
+          "net_liquidity_usd": 5794839000000
+        },
+        {
+          "date": "2026-08-19",
+          "walcl_usd": 6745699000000,
+          "rrp_usd": 285000000,
+          "wtregen_usd": 953612000000,
+          "net_liquidity_usd": 5791802000000
+        },
+        {
+          "date": "2026-08-26",
+          "walcl_usd": 6730912000000,
+          "rrp_usd": 382000000,
+          "wtregen_usd": 950736000000,
+          "net_liquidity_usd": 5779794000000
+        },
+        {
+          "date": "2026-09-02",
+          "walcl_usd": 6737204000000,
+          "rrp_usd": 1721000000,
+          "wtregen_usd": 967935000000,
+          "net_liquidity_usd": 5767548000000
+        },
+        {
+          "date": "2026-09-09",
+          "walcl_usd": 6740619000000,
+          "rrp_usd": 609000000,
+          "wtregen_usd": 883335000000,
+          "net_liquidity_usd": 5856675000000
+        },
+        {
+          "date": "2026-09-16",
+          "walcl_usd": 6746548000000,
+          "rrp_usd": 3497000000,
+          "wtregen_usd": 877028000000,
+          "net_liquidity_usd": 5866023000000
+        },
+        {
+          "date": "2026-09-23",
+          "walcl_usd": 6747704000000,
+          "rrp_usd": 470000000,
+          "wtregen_usd": 977084000000,
+          "net_liquidity_usd": 5770150000000
+        },
+        {
+          "date": "2026-09-30",
+          "walcl_usd": 6743031000000,
+          "rrp_usd": 5008000000,
+          "wtregen_usd": 948674000000,
+          "net_liquidity_usd": 5789349000000
+        }
+      ],
+      "score": 38,
+      "reason": null,
+      "component_scores": {
+        "level": 47,
+        "rate_of_change": 44,
+        "momentum": 29
+      },
+      "level_percentile": 0.5192307692307693,
+      "roc4w_pct": 0.37799425336382114,
+      "net_liquidity_usd": 5789349000000
+    }
+  }
+}
