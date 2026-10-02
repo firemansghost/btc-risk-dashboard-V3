@@ -25,6 +25,7 @@ import {
 import { detectEtfZeroCrossFromRows } from "./lib/etfZeroCross.mjs";
 import { fallbackTracker, resetFallbackTracker } from "./fetch-helper.mjs";
 import { decidePostComputeHealthCheck } from "./lib/postComputeHealth.mjs";
+import { purgeEligibleStaleCaches } from "./lib/etlSelfCheckCaches.mjs";
 
 // Resolve absolute paths
 const __filename = fileURLToPath(import.meta.url);
@@ -481,22 +482,32 @@ async function runSelfCheck() {
             const stalenessConfig = await getStalenessConfig(factorKey);
             const ageHours = getDataAgeHours(lastUpdated);
             
-            // Purge if cache is older than stale_beyond_hours (or 24h as fallback)
+            // Purge if cache is older than stale_beyond_hours (or 24h as fallback).
+            // Frozen v1.1.2 rollback score caches and the undated Stablecoin baseline stay.
             const purgeThreshold = stalenessConfig.staleBeyondHours || 24;
             if (ageHours > purgeThreshold) {
-              staleFactors.push({
-                key: factorKey,
-                lastUpdated,
-                ageHours: ageHours.toFixed(1),
-                ttl: stalenessConfig.ttlHours,
-                staleBeyond: stalenessConfig.staleBeyondHours
+              const relativePath = `public/data/cache/${factorKey}/${factorKey}_cache.json`;
+              let didPurge = false;
+              const decision = await purgeEligibleStaleCaches({
+                entries: [{ relativePath, absolutePath: cachePath, stale: true }],
+                remove: async (target) => {
+                  didPurge = await purgeFactorCache(factorKey, target);
+                },
               });
-              
-              // Purge the stale cache
-              const purged = await purgeFactorCache(factorKey, cachePath);
-              if (purged) {
-                purgedCount++;
-                console.log(`[ETL self-check] purged stale cache: ${factorKey} (age=${ageHours.toFixed(1)}h, stale>${purgeThreshold}h)`);
+              if (decision.preserved.some((row) => row.reason === 'frozen_rollback_cache')) {
+                console.log(`[ETL self-check] preserved frozen rollback cache: ${relativePath} (age=${ageHours.toFixed(1)}h)`);
+              } else {
+                staleFactors.push({
+                  key: factorKey,
+                  lastUpdated,
+                  ageHours: ageHours.toFixed(1),
+                  ttl: stalenessConfig.ttlHours,
+                  staleBeyond: stalenessConfig.staleBeyondHours
+                });
+                if (didPurge) {
+                  purgedCount++;
+                  console.log(`[ETL self-check] purged stale cache: ${factorKey} (age=${ageHours.toFixed(1)}h, stale>${purgeThreshold}h)`);
+                }
               }
             }
           }
