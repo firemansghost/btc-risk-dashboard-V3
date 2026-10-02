@@ -147,26 +147,9 @@ export async function fetchWithCoinGeckoPolicy(url, init, fetchImpl) {
 }
 
 export async function fetchSocialLiveEnvelope(url, fetchImpl) {
+  let fetched;
   try {
-    const fetched = await fetchCoinGecko(url, { headers: { 'User-Agent': 'btc-risk-etl' } }, fetchImpl);
-    const response = fetched.response;
-    if (!response || response.ok === false) {
-      return {
-        data: null,
-        acquiredAt: null,
-        fromCache: false,
-        acquisition_attempts: fetched.attempts,
-        acquisition_termination: fetched.termination,
-      };
-    }
-    const data = await response.json();
-    return {
-      data,
-      acquiredAt: acquisitionNow().toISOString(),
-      fromCache: false,
-      acquisition_attempts: fetched.attempts,
-      acquisition_termination: fetched.termination,
-    };
+    fetched = await fetchCoinGecko(url, { headers: { 'User-Agent': 'btc-risk-etl' } }, fetchImpl);
   } catch (error) {
     return {
       data: null,
@@ -176,4 +159,33 @@ export async function fetchSocialLiveEnvelope(url, fetchImpl) {
       acquisition_termination: error?.acquisition_termination || 'network_exhausted',
     };
   }
+  const response = fetched.response;
+  if (!response || response.ok === false) {
+    return {
+      data: null,
+      acquiredAt: null,
+      fromCache: false,
+      acquisition_attempts: fetched.attempts,
+      acquisition_termination: fetched.termination,
+    };
+  }
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    return {
+      data: null,
+      acquiredAt: null,
+      fromCache: false,
+      acquisition_attempts: fetched.attempts,
+      acquisition_termination: 'MALFORMED_RESPONSE',
+    };
+  }
+  return {
+    data,
+    acquiredAt: acquisitionNow().toISOString(),
+    fromCache: false,
+    acquisition_attempts: fetched.attempts,
+    acquisition_termination: fetched.termination,
+  };
 }

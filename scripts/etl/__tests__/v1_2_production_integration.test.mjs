@@ -1420,3 +1420,47 @@ test('network exhaustion keeps all three attempts on Term, Stablecoin, and Socia
     assertThreeAttempts(hit.r10.acquisition_attempts, sequence);
   }
 });
+
+test('malformed Social JSON keeps the fetch attempt history', async () => {
+  const malformed = () => ({
+    ok: true,
+    status: 200,
+    json: async () => { throw new SyntaxError('bad'); },
+  });
+  const cases = [
+    {
+      name: 'http 200',
+      fetchImpl: async () => malformed(),
+      statuses: [200],
+    },
+    {
+      name: '429 then http 200',
+      fetchImpl: (() => {
+        let calls = 0;
+        return async () => {
+          calls += 1;
+          if (calls === 1) return jsonResponse({ error: 'rate' }, 429);
+          return malformed();
+        };
+      })(),
+      statuses: [429, 200],
+    },
+  ];
+  for (const item of cases) {
+    const envelope = await fetchSocialLiveEnvelope('https://api.coingecko.com/api/v3/search/trending', item.fetchImpl);
+    assert.equal(envelope.data, null, item.name);
+    assert.equal(envelope.acquiredAt, null, item.name);
+    assert.equal(envelope.acquisition_termination, 'MALFORMED_RESPONSE', item.name);
+    assert.notEqual(envelope.acquisition_termination, 'network_exhausted', item.name);
+    assert.deepEqual(envelope.acquisition_attempts.map((row) => row.http_status), item.statuses, item.name);
+    const published = await publishSocialFactor({
+      trending: envelope,
+      price: socialPayload('2026-09-30T12:00:00.000Z').price,
+      writeCache: false,
+    });
+    assert.equal(published.r10.acquisition_termination, 'MALFORMED_RESPONSE', item.name);
+    assert.notEqual(published.r10.acquisition_termination, 'network_exhausted', item.name);
+    assert.equal(published.r10.trending_fetched_at, null, item.name);
+    assert.deepEqual(published.r10.acquisition_attempts.map((row) => row.http_status), item.statuses, item.name);
+  }
+});
