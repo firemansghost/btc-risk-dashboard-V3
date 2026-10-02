@@ -258,11 +258,22 @@ function scoredProvenanceLabel(...stamps) {
 }
 
 async function fetchForAcquisition(url, init, fetchImpl, attemptsLog = null) {
-  const fetched = await fetchWithCoinGeckoPolicy(url, init, fetchImpl);
-  if (attemptsLog && fetched.attempts) {
-    attemptsLog.push({ target_host: 'api.coingecko.com', attempts: fetched.attempts, termination: fetched.termination });
+  try {
+    const fetched = await fetchWithCoinGeckoPolicy(url, init, fetchImpl);
+    if (attemptsLog && fetched.attempts) {
+      attemptsLog.push({ target_host: 'api.coingecko.com', attempts: fetched.attempts, termination: fetched.termination });
+    }
+    return fetched.response;
+  } catch (error) {
+    if (attemptsLog && Array.isArray(error?.acquisition_attempts)) {
+      attemptsLog.push({
+        target_host: 'api.coingecko.com',
+        attempts: error.acquisition_attempts,
+        termination: error.acquisition_termination || 'network_exhausted',
+      });
+    }
+    throw error;
   }
-  return fetched.response;
 }
 
 function addUtcDate(date, days) {

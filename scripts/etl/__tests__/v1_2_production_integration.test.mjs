@@ -17,6 +17,7 @@ import {
   COINGECKO_RETRY_AFTER_BUDGET_MS,
   configureAcquisitionRuntime,
   fetchCoinGecko,
+  fetchSocialLiveEnvelope,
   resetAcquisitionQueue,
 } from '../lib/v12AcquisitionPacing.mjs';
 import {
@@ -1310,4 +1311,112 @@ test('current acquisition diagnostics survive score-cache hits', async () => {
   assert.equal(hit.r10.acquisition_attempts[0].http_status, 200);
   assert.equal(hit.r10.acquisition_termination, 'final');
   assert.equal(hit.r10.acquisition_attempts.some((row) => row.http_status === 429), false);
+});
+
+function repeatingCoinGecko(sequence) {
+  let index = 0;
+  return async () => {
+    const step = sequence[index % sequence.length];
+    index += 1;
+    if (step === '429') return jsonResponse({ error: 'rate' }, 429);
+    if (step === 'network') throw new Error('socket');
+    return jsonResponse({ coins: [] });
+  };
+}
+
+function assertThreeAttempts(attempts, sequence) {
+  assert.equal(attempts.length, 3);
+  sequence.forEach((step, index) => {
+    if (step === '429') assert.equal(attempts[index].http_status, 429);
+    if (step === 'network') assert.equal(attempts[index].http_status, null);
+  });
+  assert.equal(attempts[2].termination, 'network_exhausted');
+}
+
+test('network exhaustion keeps all three attempts on Term, Stablecoin, and Social', async () => {
+  const sequences = [
+    ['429', 'network', 'network'],
+    ['network', 'network', 'network'],
+  ];
+  for (const sequence of sequences) {
+    const endpointMs = Date.parse('2026-09-30T12:00:00.000Z');
+    const caps = stablecoinCaps(endpointMs);
+    const ccBody = { Data: { Data: caps.market_caps.map(([ts, cap]) => ({ time: Math.floor(ts / 1000), mktcap: cap })) } };
+    const termGate = repeatingCoinGecko(sequence);
+    const term = await publishTermFactor({
+      asOfUtc: AS_OF,
+      writeCache: false,
+      fetchImpl: async (url) => {
+        if (String(url).includes('api.coingecko.com')) return termGate();
+        return jsonResponse({ error: 'restricted' }, 451);
+      },
+    });
+    const termAttempts = term.r10.spot_acquisition.attempts[0];
+    assert.equal(term.r10.spot_acquisition.classification, 'NETWORK_ERROR');
+    assert.equal(termAttempts.termination, 'network_exhausted');
+    assertThreeAttempts(termAttempts.attempts, sequence);
+
+    const root = cacheRoot();
+    const stableGate = repeatingCoinGecko(sequence);
+    const stableFetch = async (url) => {
+      const href = String(url);
+      if (href.includes('api.coingecko.com')) return stableGate();
+      if (href.includes('cryptocompare.com')) return jsonResponse(ccBody);
+      throw new Error(href);
+    };
+    const first = await publishStablecoinFactor({
+      fetchImpl: stableFetch,
+      asOfUtc: AS_OF,
+      cacheRoot: root,
+      writeCache: true,
+      cryptoCompareApiKey: 'fixture',
+    });
+    assert.equal(Number.isFinite(first.score), true);
+    assert.equal(first.r10.acquisition_attempts[0].termination, 'network_exhausted');
+    assertThreeAttempts(first.r10.acquisition_attempts[0].attempts, sequence);
+    const second = await publishStablecoinFactor({
+      fetchImpl: stableFetch,
+      asOfUtc: AS_OF,
+      cacheRoot: root,
+      writeCache: true,
+      cryptoCompareApiKey: 'fixture',
+    });
+    assert.equal(second.cache_reuse, true);
+    assert.equal(second.r10.acquisition_attempts[0].termination, 'network_exhausted');
+    assertThreeAttempts(second.r10.acquisition_attempts[0].attempts, sequence);
+
+    const envelope = await fetchSocialLiveEnvelope(
+      'https://api.coingecko.com/api/v3/search/trending',
+      repeatingCoinGecko(sequence),
+    );
+    assert.equal(envelope.data, null);
+    assert.equal(envelope.acquiredAt, null);
+    assert.equal(envelope.acquisition_termination, 'network_exhausted');
+    assertThreeAttempts(envelope.acquisition_attempts, sequence);
+    const failedSocial = await publishSocialFactor({
+      trending: envelope,
+      price: socialPayload('2026-09-30T12:00:00.000Z').price,
+      writeCache: false,
+    });
+    assert.equal(failedSocial.r10.trending_fetched_at, null);
+    assertThreeAttempts(failedSocial.r10.acquisition_attempts, sequence);
+
+    const socialRoot = cacheRoot();
+    const transportAt = '2026-09-30T17:00:00.000Z';
+    const carried = socialPayload(transportAt);
+    carried.trending.fromCache = true;
+    carried.trending.acquisition_attempts = envelope.acquisition_attempts;
+    carried.trending.acquisition_termination = envelope.acquisition_termination;
+    const seeded = socialPayload('2026-09-30T12:00:00.000Z');
+    seeded.trending.fromCache = false;
+    seeded.trending.acquisition_attempts = [{ attempt: 1, http_status: 200, termination: 'final' }];
+    seeded.trending.acquisition_termination = 'final';
+    await publishSocialFactor({ ...seeded, cacheRoot: socialRoot, writeCache: true });
+    const hit = await publishSocialFactor({ ...carried, cacheRoot: socialRoot, writeCache: true });
+    assert.equal(hit.score_cache_reuse, true);
+    assert.equal(hit.r10.trending_from_cache, true);
+    assert.equal(hit.r10.trending_fetched_at, transportAt);
+    assert.equal(hit.r10.acquisition_termination, 'network_exhausted');
+    assertThreeAttempts(hit.r10.acquisition_attempts, sequence);
+  }
 });

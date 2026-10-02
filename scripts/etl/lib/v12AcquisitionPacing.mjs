@@ -145,3 +145,35 @@ export async function fetchWithCoinGeckoPolicy(url, init, fetchImpl) {
   }
   return fetchCoinGecko(url, init, fetchImpl);
 }
+
+export async function fetchSocialLiveEnvelope(url, fetchImpl) {
+  try {
+    const fetched = await fetchCoinGecko(url, { headers: { 'User-Agent': 'btc-risk-etl' } }, fetchImpl);
+    const response = fetched.response;
+    if (!response || response.ok === false) {
+      return {
+        data: null,
+        acquiredAt: null,
+        fromCache: false,
+        acquisition_attempts: fetched.attempts,
+        acquisition_termination: fetched.termination,
+      };
+    }
+    const data = await response.json();
+    return {
+      data,
+      acquiredAt: acquisitionNow().toISOString(),
+      fromCache: false,
+      acquisition_attempts: fetched.attempts,
+      acquisition_termination: fetched.termination,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      acquiredAt: null,
+      fromCache: false,
+      acquisition_attempts: Array.isArray(error?.acquisition_attempts) ? error.acquisition_attempts : null,
+      acquisition_termination: error?.acquisition_termination || 'network_exhausted',
+    };
+  }
+}
