@@ -338,13 +338,13 @@ test('impossible and overflow calendar dates are rejected without throwing', () 
   }
 });
 
-test('freshness constants and pending production identity stay in their own eras', () => {
+test('freshness constants stay fixed while publication identity is v1.2.0', () => {
   assert.equal(VIX_PUBLISH_HOUR_CT, 8);
   assert.equal(VIX_PUBLISH_MINUTE_CT, 30);
   assert.equal(VIX_PUBLISH_GRACE_MINUTES, 60);
   const config = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'config/dashboard-config.json'), 'utf8'));
-  assert.equal(config.model_version, 'v1.1.2');
-  assert.equal(config.implementation_revision, 'etf-sosovalue-vix-cboe-2026-09');
+  assert.equal(config.model_version, 'v1.2.0');
+  assert.equal(config.implementation_revision, 'semantic-correctness-2026-09');
   assert.equal(config.ssot_version, '2.1.1');
   assert.equal(config.factors.macro_overlay.weight, 0.1);
   assert.deepEqual(config.subweights.macro_overlay, { dxy_20d: 0.4, us2y_20d: 0.35, vix_pct: 0.25 });

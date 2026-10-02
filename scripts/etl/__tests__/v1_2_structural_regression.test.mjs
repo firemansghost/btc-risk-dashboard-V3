@@ -16,6 +16,14 @@ import { assertReportDirectoryOutsideRepo } from '../../research/lib/v1-2-gate-i
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const NODE = process.execPath;
 
+test('historical preactivation evidence remains distinct from integrated production', () => {
+  const text = fs.readFileSync(path.join(REPO_ROOT, 'docs/V1.2.0_STRUCTURAL_REGRESSION_2026-10-01.md'), 'utf8');
+  assert.match(text, /8f40cf3caaf2c563ade5c2878a09fade87085c1630f345e1a68bf8fef978652e/);
+  assert.match(text, /115 PASS, 0 FAIL, 0 LIMITATION/);
+  assert.match(text, /Production activation authorized \| `false`/);
+  assert.match(text, /does not activate v1\.2\.0/);
+});
+
 test('structural regression gate passes the executed production paths', async () => {
   const first = await runV12StructuralRegression();
   const second = await runV12StructuralRegression();

@@ -78,7 +78,7 @@ export default function MethodologyPage() {
           A transparent, data-driven approach to Bitcoin risk assessment using five analytical pillars.
         </p>
         <div className="mt-2 text-sm text-gray-500">
-          Current production: v1.1.2 / etf-sosovalue-vix-cboe-2026-09 · five pillars weighted 30/30/20/10/10. Live ETF source: SoSoValue. Farside is the frozen calibration baseline. Macro uses FRED for dollar and rates, and direct Cboe official daily history for VIX, with a guarded FRED VIXCLS fallback.
+          Current production: v1.2.0 / semantic-correctness-2026-09 · five pillars weighted 30/30/20/10/10. Live ETF source: SoSoValue. Farside is the frozen historical calibration, not the live source. Macro uses FRED for dollar and rates, and direct Cboe official daily history for VIX, with a guarded FRED VIXCLS fallback. Stablecoins use elapsed 7-day and 30-day horizons against a dated calibration. Net Liquidity uses native WALCL and WTREGEN with official Wednesday-ending RRP. Social scores only when search and momentum are both observed. Term keeps raw-provider freshness, the completed scored cutoff, and binding lastUpdated as separate times.
         </div>
       </div>
 
@@ -103,7 +103,7 @@ export default function MethodologyPage() {
         
         <h3 className="text-heading-3 mb-4">How it's made (in one breath)</h3>
         <p className="text-body text-gray-600 mb-6">
-          Each enabled factor uses its factor-specific production logic to produce a 0–100 score. Only factors classified fresh under the production source-cadence rules contribute to the composite; their versioned weights are normalized over the included set for that snapshot. Cycle and Spike adjustment mechanisms remain implemented but are disabled in production v1.1.1 and contribute zero points. The current BTC price observation is a UTC intraday snapshot. Completed daily price history is maintained separately for production calculations that require historical closes.
+          Each enabled factor uses its factor-specific production logic to produce a 0–100 score. Only factors classified fresh under the production source-cadence rules contribute to the composite; their versioned weights are normalized over the included set for that snapshot. A missing required factor is omitted and fails strict publication health. It is not replaced with a neutral score. Cycle and Spike adjustment mechanisms remain implemented but are disabled and contribute zero points. The current BTC price observation is a UTC intraday snapshot. Completed daily price history is maintained separately for production calculations that require historical closes.
         </p>
         
         <h3 className="text-heading-3 mb-4">The Five Pillars (SSOT)</h3>
@@ -123,13 +123,13 @@ export default function MethodologyPage() {
           </div>
           
           <div className="card-elevated card-md">
-            <h3 className="text-heading-3 mb-3">Adjustments (disabled in v1.1.1)</h3>
+            <h3 className="text-heading-3 mb-3">Adjustments (disabled)</h3>
             <p className="text-body mb-4">
-              Cycle and Spike adjustment mechanisms remain implemented but are disabled for production v1.1.1. They contribute zero points to the current score. Reactivation would require a separate versioned methodology decision.
+              Cycle and Spike adjustment mechanisms remain implemented but are disabled. They contribute zero points to the current score. Reactivation would require a separate versioned methodology decision.
             </p>
             <ul className="list-disc list-inside space-y-2 text-body">
-              <li><strong>Cycle (Power-Law):</strong> Disabled in v1.1.1 — contributes 0 points.</li>
-              <li><strong>Spike (Volatility):</strong> Disabled in v1.1.1 — contributes 0 points.</li>
+              <li><strong>Cycle (Power-Law):</strong> Disabled — contributes 0 points.</li>
+              <li><strong>Spike (Volatility):</strong> Disabled — contributes 0 points.</li>
             </ul>
           </div>
         </div>
@@ -407,7 +407,7 @@ export default function MethodologyPage() {
       <section id="factors" className="section-spacing">
         <h2 className="text-heading-2 mb-4">Key Risk Factors</h2>
         <p className="text-body mb-6">
-          The current production G-Score combines seven enabled scoring factors across five analytical pillars. Their weights are defined by the versioned production configuration. On-chain Activity remains defined in configuration but is disabled at 0% in v1.1.1 and does not contribute to the current score.
+          The current production G-Score combines seven enabled scoring factors across five analytical pillars. Their weights are defined by the versioned production configuration. On-chain Activity remains defined in configuration but is disabled at weight 0 and does not contribute to the current score.
         </p>
         
         {/* Factor Overview */}
@@ -539,9 +539,9 @@ export default function MethodologyPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">What we look at</h4>
                 <ul className="text-sm text-gray-700 space-y-1">
-                  <li>• 30-day change in total USDT/USDC (and 5 others)</li>
-                  <li>• Market-cap weighted supply growth</li>
-                  <li>• 365-day historical baseline percentile</li>
+                  <li>• Elapsed 7-day and 30-day supply change from the latest positive market-cap print</li>
+                  <li>• Market-cap weighted supply growth across the frozen seven-coin basket</li>
+                  <li>• Percentile versus dated calibration rows strictly before the observation date</li>
                 </ul>
               </div>
               
@@ -589,9 +589,10 @@ export default function MethodologyPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">What we look at</h4>
                 <ul className="text-sm text-gray-700 space-y-1">
-                  <li>• Fed balance sheet (WALCL)</li>
-                  <li>• Reverse Repo (RRPONTSYD)</li>
-                  <li>• Treasury General Account (WTREGEN) → net liquidity proxy</li>
+                  <li>• Fed balance sheet (WALCL), native Wednesday observations, ×1e6</li>
+                  <li>• Reverse Repo (RRPONTSYD), official FRED Wednesday-ending weekly average, ×1e9</li>
+                  <li>• Treasury General Account (WTREGEN), native Wednesday observations, ×1e6</li>
+                  <li>• Exact common-Wednesday intersection only; a missing RRP print makes the factor unavailable</li>
                 </ul>
               </div>
               
@@ -671,7 +672,7 @@ export default function MethodologyPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
                 <p className="text-sm text-gray-700">
-                  <a href="https://farside.co" className="text-blue-600 hover:underline">Farside Provider CSVs</a>
+                  SoSoValue supplies the live ETF observations. Farside supplies the preserved frozen historical calibration and is not the live source.
                 </p>
               </div>
               
@@ -693,16 +694,17 @@ export default function MethodologyPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">What we look at</h4>
                 <ul className="text-sm text-gray-700 space-y-1">
-                  <li>• Funding rate level across exchanges</li>
-                  <li>• Funding rate volatility (instability)</li>
-                  <li>• Term structure stress indicator</li>
+                  <li>• Completed 30-day funding mean from one eligible provider</li>
+                  <li>• Realized spot volatility from 31 prices and the 30 returns between them</li>
+                  <li>• The frozen stress component on that same completed window</li>
+                  <li>• Calibration against exactly 60 prior valid reference windows</li>
                 </ul>
               </div>
               
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Why it matters</h4>
                 <p className="text-sm text-gray-700">
-                  Captures derivatives funding, realized-volatility, and leverage-stress conditions used by the model.
+                  Captures derivatives funding, realized-volatility, and leverage-stress conditions used by the model. Each component is scored from one provider&apos;s own history.
                 </p>
               </div>
               
@@ -715,19 +717,21 @@ export default function MethodologyPage() {
               
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Update cadence & staleness</h4>
-                <p className="text-sm text-gray-700">{FACTOR_FRESHNESS_COPY}</p>
+                <p className="text-sm text-gray-700">
+                  Raw-provider freshness is the latest funding observation from the selected provider. The completed scored cutoff is the daily window that is scored. Binding lastUpdated is the earliest of the scored funding, stress, and spot observations. Those three times stay distinct. {FACTOR_FRESHNESS_COPY}
+                </p>
               </div>
               
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Primary sources</h4>
                 <p className="text-sm text-gray-700">
-                  Derivatives funding data used by the current production factor.
+                  Provider preference is BitMEX, then Binance, then OKX. Fallback is independent. Funding history is not spliced across providers.
                 </p>
               </div>
               
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Caveats</h4>
-                <p className="text-sm text-gray-700">Exchange-specific funding rate differences can vary.</p>
+                <p className="text-sm text-gray-700">Fewer than 60 prior valid windows leaves the factor unavailable. A failed provider does not contribute rows to another provider.</p>
               </div>
             </div>
           </div>
@@ -752,7 +756,7 @@ export default function MethodologyPage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Why it matters</h4>
                 <p className="text-sm text-gray-700">
-                  Social Interest is a supporting attention signal within the current five-pillar framework.
+                  Social Interest scores only when CoinGecko search rank and 7-day price momentum are both observed. A missing component does not become a neutral score. The factor time is the earlier of the search acquisition time and the score-eligible price observation. A cached search response keeps its original acquisition time.
                 </p>
               </div>
               
@@ -843,7 +847,7 @@ export default function MethodologyPage() {
             </span>
           </div>
           <p className="text-sm text-gray-700">
-            On-chain Activity remains defined in configuration but is disabled at 0% in v1.1.1 and does not contribute to the current score. It is not a current scoring source and is not part of the Momentum pillar contribution.
+            On-chain Activity remains defined in configuration but is disabled at weight 0 and does not contribute to the current score. It is not a current scoring source and is not part of the Momentum pillar contribution.
           </p>
         </div>
 
@@ -877,7 +881,7 @@ export default function MethodologyPage() {
       <section id="weights" className="section-spacing">
         <h2 className="text-heading-2 mb-4">Factor Weights</h2>
         <div className="card-elevated card-md">
-          <h3 className="text-heading-3 mb-4">Current Weights (v1.1.2)</h3>
+          <h3 className="text-heading-3 mb-4">Current Weights (v1.2.0)</h3>
           <p className="text-body mb-6">
             Liquidity/Flows 30%, Momentum/Valuation 30%, Term Structure/Leverage 20%, Macro Overlay 10%, Social/Attention 10%. Seven enabled scoring factors contribute according to the versioned production configuration. Only factors included under the production freshness rules contribute to a snapshot, with weights normalized over the included set.
           </p>
@@ -953,9 +957,9 @@ export default function MethodologyPage() {
               <ul className="list-disc list-inside space-y-2 text-body">
                 <li>UTC intraday BTC price snapshot, with completed daily closes maintained separately for historical calculations</li>
                 <li>Stablecoin market data used by the current production factor</li>
-                <li>Business-day ETF flow source</li>
+                <li>SoSoValue live ETF observations, with Farside kept as the frozen historical calibration</li>
                 <li>FRED public-data series for Net Liquidity and Macro Overlay</li>
-                <li>Derivatives funding data for Term Structure &amp; Leverage</li>
+                <li>One eligible funding provider for Term Structure &amp; Leverage: BitMEX, then Binance, then OKX, without cross-provider splicing</li>
                 <li>CoinGecko trending attention/rank plus BTC price-momentum context</li>
               </ul>
             </div>
@@ -975,7 +979,7 @@ export default function MethodologyPage() {
       {/* Model Version Note */}
       <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
         <p className="text-sm text-gray-600">
-          <strong>Model version:</strong> Current production: v1.1.2 / etf-sosovalue-vix-cboe-2026-09 · five pillars weighted 30/30/20/10/10. Live ETF source: SoSoValue. Farside is the frozen calibration baseline. Macro uses FRED for dollar and rates, and direct Cboe official daily history for VIX, with a guarded FRED VIXCLS fallback.
+          <strong>Model version:</strong> Current production: v1.2.0 / semantic-correctness-2026-09 · five pillars weighted 30/30/20/10/10. Live ETF source: SoSoValue. Farside is the frozen historical calibration, not the live source. Macro uses FRED for dollar and rates, and direct Cboe official daily history for VIX, with a guarded FRED VIXCLS fallback. Stablecoins, Net Liquidity, Social, and Term use the v1.2.0 successor semantics described above. On-chain remains disabled at weight 0.
         </p>
       </div>
     </div>

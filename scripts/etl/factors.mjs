@@ -343,6 +343,41 @@ async function fetchSocialDataWithFallback() {
 // 2. SOCIAL INTEREST (Search trends and social sentiment)
 // Enhanced with caching, fallback sources, and incremental updates
 async function computeSocialInterest() {
+  const {
+    publishSocialFactor,
+    socialTrendingUrl,
+    socialPriceUrl,
+    v12CallOptions,
+  } = await import('./lib/v12ProductionAdapters.mjs');
+  const options = v12CallOptions();
+  if (options.social) {
+    return publishSocialFactor({
+      ...options.social,
+      cacheRoot: options.cacheRoot,
+      writeCache: options.writeCache,
+    });
+  }
+  const { getCacheKey, readCoinGeckoTransportEnvelope, saveToDiskCache } = await import('./coinGeckoCache.mjs');
+  const { fetchSocialLiveEnvelope } = await import('./lib/v12AcquisitionPacing.mjs');
+
+  async function load(kind) {
+    const url = kind === 'trending' ? socialTrendingUrl() : socialPriceUrl();
+    const cacheKey = getCacheKey(kind === 'trending' ? 'trending' : 'market_chart_30_daily');
+    const hit = await readCoinGeckoTransportEnvelope(cacheKey);
+    if (hit) return hit;
+    const envelope = await fetchSocialLiveEnvelope(url, globalThis.fetch);
+    if (envelope.data && envelope.acquiredAt) {
+      await saveToDiskCache(cacheKey, envelope.data, { cachedAt: envelope.acquiredAt });
+    }
+    return envelope;
+  }
+
+  const trending = await load('trending');
+  const price = await load('price');
+  return publishSocialFactor({ trending, price, writeCache: options.writeCache, cacheRoot: options.cacheRoot });
+}
+
+async function computeSocialInterestRetiredV11() {
   try {
     // Check for cached data first
     const cachedData = await loadSocialInterestCache();
@@ -715,6 +750,11 @@ async function tryNetLiquidityFredFallback(cachedFromWarmLoad, err) {
 // 3. NET LIQUIDITY (FRED data - requires API key)
 // Enhanced with caching, retry logic, and incremental updates
 async function computeNetLiquidity() {
+  const { publishNetLiquidityFactor, v12CallOptions } = await import('./lib/v12ProductionAdapters.mjs');
+  return publishNetLiquidityFactor(v12CallOptions());
+}
+
+async function computeNetLiquidityRetiredV11() {
   const apiKey = process.env.FRED_API_KEY;
   if (!apiKey) {
     return { score: null, reason: "missing_fred_api_key" };
@@ -1028,6 +1068,11 @@ function convertCryptoCompareToCoinGeckoFormat(ccData, symbol) {
 
 // 4. STABLECOINS (Multi-stablecoin analysis with 365-day historical baseline and incremental updates)
 async function computeStablecoins() {
+  const { publishStablecoinFactor, v12CallOptions } = await import('./lib/v12ProductionAdapters.mjs');
+  return publishStablecoinFactor(v12CallOptions());
+}
+
+async function computeStablecoinsRetiredV11() {
   try {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     const cacheDir = 'public/data/cache/stablecoins';
@@ -2217,6 +2262,11 @@ async function calculateStressComponent(fundingRates, spotPrices) {
 // 6. TERM STRUCTURE & LEVERAGE (Multi-factor derivatives analysis)
 // Enhanced with caching, multi-exchange fallback, and parallel processing
 async function computeTermLeverage() {
+  const { publishTermFactor, v12CallOptions } = await import('./lib/v12ProductionAdapters.mjs');
+  return publishTermFactor(v12CallOptions());
+}
+
+async function computeTermLeverageRetiredV11() {
   try {
     // Check for cached data first
     const cachedData = await loadTermLeverageCache();
@@ -2825,14 +2875,18 @@ export async function computeAllFactors(dailyClose = null) {
   // Keys and compute order must stay in lockstep. getFactorsArray() returns only *enabled*
   // factors (e.g. omits disabled onchain) — never zip-index that list against raw results[]
   // or scores/details attach to the wrong factor keys.
+  const fixed = globalThis.__V12_OFFLINE_ACQUISITION__?.fixedFactors || null;
+  const guarded = (key, run) => () => (
+    fixed && Object.prototype.hasOwnProperty.call(fixed, key) ? Promise.resolve(fixed[key]) : run()
+  );
   const computeJobs = [
-    ['trend_valuation', () => computeTrendValuation(dailyClose)],
-    ['onchain', () => computeOnchain()],
+    ['trend_valuation', guarded('trend_valuation', () => computeTrendValuation(dailyClose))],
+    ['onchain', guarded('onchain', () => computeOnchain())],
     ['stablecoins', () => computeStablecoins()],
-    ['etf_flows', () => computeEtfFlows()],
+    ['etf_flows', guarded('etf_flows', () => computeEtfFlows())],
     ['net_liquidity', () => computeNetLiquidity()],
     ['term_leverage', () => computeTermLeverage()],
-    ['macro_overlay', () => computeMacroOverlay()],
+    ['macro_overlay', guarded('macro_overlay', () => computeMacroOverlay())],
     ['social_interest', () => computeSocialInterest()]
   ];
 
@@ -2845,6 +2899,35 @@ export async function computeAllFactors(dailyClose = null) {
   const { loadDashboardConfig, getFactorsArray } = await import('../../lib/config-loader.mjs');
   const config = await loadDashboardConfig();
   const factors = getFactorsArray(config);
+
+  function projectSuccessor(data) {
+    if (!data || data.publication_identity !== true) return {};
+    const scrub = (value) => {
+      if (Array.isArray(value)) return value.map(scrub);
+      if (value && typeof value === 'object') {
+        return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, scrub(item)]));
+      }
+      if (typeof value === 'string' && /api_key=/i.test(value)) return '[redacted]';
+      return value;
+    };
+    const projected = {
+      model_version: data.model_version,
+      implementation_revision: data.implementation_revision,
+      ssot_version: data.ssot_version,
+      publication_identity: true,
+      candidate_only: false,
+      successor_candidate_only: data.successor_candidate?.candidate_only === true,
+      successor_production_active: data.successor_candidate?.production_active === true,
+      r10: scrub(data.r10 || null),
+      latest_raw_funding_observation_utc: data.latest_raw_funding_observation_utc ?? null,
+      funding_observation_utc: data.funding_observation_utc ?? null,
+      spot_observation_utc: data.spot_observation_utc ?? null,
+      funding_provider: data.funding_provider ?? null,
+      selected_provider: data.selected_provider ?? null,
+      successor_term_freshness: data.successor_term_freshness === true,
+    };
+    return projected;
+  }
 
   const factorResults = [];
   let totalWeight = 0;
@@ -2942,6 +3025,7 @@ export async function computeAllFactors(dailyClose = null) {
       vixFallbackReason: result.status === 'fulfilled' ? result.value.vixFallbackReason : undefined,
       latestVixDate: result.status === 'fulfilled' ? result.value.latestVixDate : undefined,
       vixSourceProvenance: result.status === 'fulfilled' ? result.value.vixSourceProvenance : undefined,
+      ...((result.status === 'fulfilled') ? projectSuccessor(result.value) : {}),
     });
 
     console.log(`${factor.key}: ${score !== null ? score : 'null'} (${status}) - ${reason}`);

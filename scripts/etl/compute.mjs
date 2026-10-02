@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "url";
 import { computeAllFactors } from "./factors.mjs";
+import { buildSuccessorProvenance } from "./lib/v12PublicationRecords.mjs";
 import { upsertGScoreHistoryCsv } from "./lib/gscoreHistoryCsv.mjs";
 import { getDashboardConfig, getModelVersion, getSsotVersion } from "../../lib/config-loader.mjs";
 import { gateOfficialAdjustments } from "./lib/officialAdjustments.mjs";
@@ -1023,7 +1024,7 @@ async function main() {
   await fs.writeFile("public/data/history.csv", historyCsv);
 
   // Load model_version from SSOT
-  let modelVersion = 'v1.1.2';
+  let modelVersion = 'v1.2.0';
   let implementationRevision = IMPLEMENTATION_REVISION;
   try {
     const dashboardConfigPath = path.join(process.cwd(), 'config', 'dashboard-config.json');
@@ -1228,6 +1229,7 @@ function buildEtfProvenance(factors) {
     factors_computed: factorResults.factors.length,
     factors_successful: factorResults.factors.filter(f => f.status === 'fresh').length,
     term_leverage: termLeverageStatus,
+    successor_provenance: buildSuccessorProvenance(factorResults.factors),
     macro_overlay: (() => {
       const macro = factorResults.factors.find((factor) => factor.key === 'macro_overlay');
       if (!macro) return null;

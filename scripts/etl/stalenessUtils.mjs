@@ -4,6 +4,7 @@
 import { isEtfFlowsFreshForSourceCadence, isUsTradingDay } from './marketCalendar.mjs';
 import { getExpectedEligibleEtfTradingDate } from './lib/etfSourceContract.mjs';
 import { isTermLeverageFreshForSourceCadence } from './lib/termFreshness.mjs';
+import { termSuccessorFreshness } from './lib/v12ProductionAdapters.mjs';
 import { isMacroOverlayFreshForSourceCadence } from './lib/macroFreshness.mjs';
 
 export const CLOCK_SKEW_GRACE_MINUTES = 5;
@@ -275,6 +276,19 @@ export function getStalenessStatus(factorResult, ttlHours, options = {}) {
       status: 'stale',
       reason: 'future_source_timestamp',
       lastUpdated: factorResult.lastUpdated
+    };
+  }
+
+  if (factorName === 'term_leverage' && factorResult.successor_term_freshness === true) {
+    const successor = termSuccessorFreshness({
+      result: factorResult,
+      asOfUtc: asOf || new Date().toISOString(),
+      fundingRows: options.fundingRows || null,
+    });
+    return {
+      status: successor.status,
+      reason: successor.reason,
+      lastUpdated: factorResult.lastUpdated,
     };
   }
 

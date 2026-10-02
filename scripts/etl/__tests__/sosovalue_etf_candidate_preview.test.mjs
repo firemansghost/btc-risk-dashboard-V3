@@ -240,7 +240,7 @@ test('the preview script does not acquire providers or replace production scorin
     assert.equal(source.includes(token), false, token);
   }
   const factors = fs.readFileSync(path.join(REPO_ROOT, 'scripts/etl/factors.mjs'), 'utf8');
-  assert.equal(factors.includes("['etf_flows', () => computeEtfFlows()]"), true);
+  assert.equal(factors.includes("guarded('etf_flows', () => computeEtfFlows())"), true);
   assert.equal(factors.includes('preview-sosovalue-etf-candidate'), false);
   for (const relativePath of [
     'scripts/etl/compute.mjs',

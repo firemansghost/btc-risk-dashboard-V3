@@ -34,6 +34,17 @@ export default function DisclaimerPage() {
               rapidly, and past performance does not guarantee future results. Users should verify 
               information independently before making any financial decisions.
             </p>
+            <p className="mt-3">
+              Production v1.2.0 changes how four factors treat evidence. Stablecoin growth uses elapsed
+              horizons and a dated calibration, not the older undated baseline. Net Liquidity joins
+              native Wednesday WALCL and WTREGEN with the official Wednesday-ending reverse-repo average.
+              Social is unavailable unless search and momentum are both observed. Term inclusion checks
+              raw-provider funding freshness and the scored spot window separately. The completed scored
+              cutoff and the binding lastUpdated are different times: lastUpdated is the earliest of the
+              scored funding, stress, and spot observations. A factor that fails those rules is left out
+              of the composite, and that omission fails publication rather than being filled with a
+              neutral value.
+            </p>
           </div>
 
           <div>
