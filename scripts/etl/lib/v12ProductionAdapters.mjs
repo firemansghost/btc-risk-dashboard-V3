@@ -10,6 +10,7 @@ import {
   expectedLatestSlotUtc,
   isObservationAcceptable,
   resolveFundingCadence,
+  selectFreshFundingProvider,
 } from './termFreshness.mjs';
 import {
   V12_STABLECOIN_CONFIG,
@@ -24,10 +25,13 @@ import {
   computeV12SocialCandidate,
 } from '../candidates/v1_2/social.mjs';
 import {
+  buildV12FundingDailySurface,
   canReuseV12TermCache,
   computeV12TermCandidate,
+  normalizeFundingRatePercent,
   requiredScoreEligibleSpotUtc,
 } from '../candidates/v1_2/term.mjs';
+import { fetchWithCoinGeckoPolicy } from './v12AcquisitionPacing.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 
@@ -247,6 +251,87 @@ function httpBodyIsAcceptable(response) {
   return true;
 }
 
+function scoredProvenanceLabel(...stamps) {
+  return stamps.every((stamp) => typeof stamp === 'string' && stamp) ? 'populated' : 'unavailable';
+}
+
+async function fetchForAcquisition(url, init, fetchImpl, attemptsLog = null) {
+  const fetched = await fetchWithCoinGeckoPolicy(url, init, fetchImpl);
+  if (attemptsLog && fetched.attempts) {
+    attemptsLog.push({ target_host: 'api.coingecko.com', attempts: fetched.attempts, termination: fetched.termination });
+  }
+  return fetched.response;
+}
+
+function addUtcDate(date, days) {
+  return new Date(Date.parse(`${date}T00:00:00.000Z`) + days * 86_400_000).toISOString().slice(0, 10);
+}
+
+function assessNewestPage(rows, provider, asOfUtc) {
+  const selected = selectFreshFundingProvider({
+    bitmex: provider === 'bitmex' ? strictFiniteRows(rows) : [],
+    binance: provider === 'binance' ? strictFiniteRows(rows) : [],
+    okx: provider === 'okx' ? strictFiniteRows(rows) : [],
+    asOfUtc,
+  });
+  const mine = (selected.candidates || []).find((candidate) => candidate.provider === provider);
+  const times = (mine?.rows || []).map((row) => {
+    const raw = provider === 'bitmex' ? row.timestamp : (row.fundingTime ?? row.timestamp);
+    const ms = Date.parse(raw);
+    return Number.isFinite(ms) ? ms : null;
+  }).filter((ms) => ms != null);
+  return {
+    status: mine?.status || 'unavailable',
+    newest_valid_utc: mine?.fundingObservationUtc || null,
+    oldest_valid_utc: times.length ? new Date(Math.min(...times)).toISOString() : null,
+    expected_slot_utc: mine?.freshness?.expectedFundingUtc || null,
+    cadence_source: mine?.freshness?.cadenceSource || null,
+    interval_hours: mine?.freshness?.intervalHours || null,
+  };
+}
+
+function strictFiniteRows(rows) {
+  return (Array.isArray(rows) ? rows : []).filter((row) => normalizeFundingRatePercent(row?.fundingRate) != null);
+}
+
+function fundingOnlyCensus(rows, provider) {
+  const surface = buildV12FundingDailySurface(rows, provider);
+  const complete = surface.days.filter((day) => day.classification === 'COMPLETE_DAY').map((day) => day.utc_date).sort();
+  const completeSet = new Set(complete);
+  const windowOk = (end) => {
+    for (let age = 0; age < 30; age += 1) {
+      if (!completeSet.has(addUtcDate(end, -age))) return false;
+    }
+    return true;
+  };
+  const cutoff = complete.at(-1) || null;
+  let prior = 0;
+  if (cutoff && windowOk(cutoff)) {
+    for (let age = 1; age <= 5000 && prior < 60; age += 1) {
+      if (windowOk(addUtcDate(cutoff, -age))) prior += 1;
+    }
+  }
+  const gapDates = [];
+  if (complete.length > 1) {
+    let cursor = complete[0];
+    const last = complete[complete.length - 1];
+    while (cursor < last) {
+      cursor = addUtcDate(cursor, 1);
+      if (cursor < last && !completeSet.has(cursor)) gapDates.push(cursor);
+    }
+  }
+  return {
+    complete_day_count: complete.length,
+    prior_valid_windows: prior,
+    current_window: Boolean(cutoff && windowOk(cutoff)),
+    sufficient_reference_windows: prior >= 60 && Boolean(cutoff && windowOk(cutoff)),
+    gap_count: gapDates.length,
+    gap_dates: gapDates,
+    exact_duplicate_count: surface.exact_duplicates?.length || 0,
+    conflicting_duplicate_count: surface.conflicting_duplicates?.length || 0,
+  };
+}
+
 export async function acquireStablecoinResponses({
   fetchImpl,
   asOfMs,
@@ -255,13 +340,15 @@ export async function acquireStablecoinResponses({
 }) {
   const provenance = {};
   const responses = [];
+  const fallbackSkips = [];
+  const acquisitionAttempts = [];
   for (const coin of V12_STABLECOIN_CONFIG) {
     const primaryUrl = stablecoinCoinUrl(coin.id);
     let payload = null;
     let provider = null;
     let fallback = 'none';
     try {
-      const primary = await fetchImpl(primaryUrl, { provider: 'coingecko', coin: coin.symbol });
+      const primary = await fetchForAcquisition(primaryUrl, { provider: 'coingecko', coin: coin.symbol }, fetchImpl, acquisitionAttempts);
       if (httpBodyIsAcceptable(primary)) {
         const decoded = await readDecodedJson(primary);
         payload = decoded.ok ? decoded.body : null;
@@ -272,41 +359,49 @@ export async function acquireStablecoinResponses({
     }
     if (!payload?.market_caps) {
       fallback = 'coinmarketcap';
-      try {
-        const cmc = await fetchImpl(stablecoinCmcUrl(STABLECOIN_CMC_IDS[coin.id], asOfMs), {
-          provider: 'coinmarketcap',
-          coin: coin.symbol,
-          headers: { 'X-CMC_PRO_API_KEY': cmcApiKey },
-        });
-        if (httpBodyIsAcceptable(cmc)) {
-          const decoded = await readDecodedJson(cmc);
-          const converted = decoded.ok ? convertCmcQuotesToMarketCaps(decoded.body) : null;
-          if (converted) {
-            payload = converted;
-            provider = 'coinmarketcap';
+      if (!String(cmcApiKey || '').trim()) {
+        fallbackSkips.push({ symbol: coin.symbol, provider: 'coinmarketcap', status: 'NOT_CONFIGURED' });
+      } else {
+        try {
+          const cmc = await fetchForAcquisition(stablecoinCmcUrl(STABLECOIN_CMC_IDS[coin.id], asOfMs), {
+            provider: 'coinmarketcap',
+            coin: coin.symbol,
+            headers: { 'X-CMC_PRO_API_KEY': cmcApiKey },
+          }, fetchImpl, acquisitionAttempts);
+          if (httpBodyIsAcceptable(cmc)) {
+            const decoded = await readDecodedJson(cmc);
+            const converted = decoded.ok ? convertCmcQuotesToMarketCaps(decoded.body) : null;
+            if (converted) {
+              payload = converted;
+              provider = 'coinmarketcap';
+            }
           }
+        } catch {
+          payload = payload?.market_caps ? payload : null;
         }
-      } catch {
-        payload = payload?.market_caps ? payload : null;
       }
     }
     if (!payload?.market_caps) {
       fallback = 'cryptocompare';
-      try {
-        const cc = await fetchImpl(`${stablecoinCryptoCompareUrl(coin.symbol)}&api_key=${cryptoCompareApiKey}`, {
-          provider: 'cryptocompare',
-          coin: coin.symbol,
-        });
-        if (httpBodyIsAcceptable(cc)) {
-          const decoded = await readDecodedJson(cc);
-          const converted = decoded.ok ? convertCryptoCompareToMarketCaps(decoded.body) : null;
-          if (converted) {
-            payload = converted;
-            provider = 'cryptocompare';
+      if (!String(cryptoCompareApiKey || '').trim()) {
+        fallbackSkips.push({ symbol: coin.symbol, provider: 'cryptocompare', status: 'NOT_CONFIGURED' });
+      } else {
+        try {
+          const cc = await fetchForAcquisition(`${stablecoinCryptoCompareUrl(coin.symbol)}&api_key=${cryptoCompareApiKey}`, {
+            provider: 'cryptocompare',
+            coin: coin.symbol,
+          }, fetchImpl, acquisitionAttempts);
+          if (httpBodyIsAcceptable(cc)) {
+            const decoded = await readDecodedJson(cc);
+            const converted = decoded.ok ? convertCryptoCompareToMarketCaps(decoded.body) : null;
+            if (converted) {
+              payload = converted;
+              provider = 'cryptocompare';
+            }
           }
+        } catch {
+          payload = null;
         }
-      } catch {
-        payload = null;
       }
     }
     if (!payload?.market_caps) {
@@ -317,7 +412,7 @@ export async function acquireStablecoinResponses({
       provenance[coin.symbol] = { status: 'SUPPLIED', provider, fallback_attempted: provider === 'coingecko' ? 'none' : fallback };
     }
   }
-  return { responses, provenance };
+  return { responses, provenance, fallbackSkips, acquisitionAttempts };
 }
 
 export function loadDatedStablecoinCalibration(root = REPO_ROOT) {
@@ -325,7 +420,7 @@ export function loadDatedStablecoinCalibration(root = REPO_ROOT) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
-export function scoreStablecoins({ responses, calibration, asOfUtc, provenance }) {
+export function scoreStablecoins({ responses, calibration, asOfUtc, provenance, fallbackSkips = [], acquisitionAttempts = [] }) {
   const candidate = computeV12StablecoinCandidate({
     responses,
     calibration,
@@ -345,6 +440,9 @@ export function scoreStablecoins({ responses, calibration, asOfUtc, provenance }
       derivation: derived.derivation,
       calibration_id: candidate.calibration_id,
       legacy_baseline_used: candidate.legacy_baseline_used === true,
+      scored_provenance: scoredProvenanceLabel(derived.iso, derived.iso, derived.iso),
+      fallback_skips: fallbackSkips,
+      acquisition_attempts: acquisitionAttempts,
     },
   });
   return { published, candidate };
@@ -402,12 +500,15 @@ function candidateAcquisition(classification, httpStatus = null) {
   return null;
 }
 
-export async function paginateTermProvider({ provider, fetchImpl, asOfMs }) {
+export async function paginateTermProvider({ provider, fetchImpl, asOfMs, newestPageOnly = false }) {
   const pageLimit = provider === 'bitmex' ? TERM_PAGE.bitmex.count : provider === 'binance' ? TERM_PAGE.binance.limit : TERM_PAGE.okx.limit;
+  const asOfUtc = new Date(asOfMs).toISOString();
   const rows = [];
   const requests = [];
   let cursor = provider === 'binance' ? asOfMs : null;
   let termination = null;
+  let gate1 = null;
+  let fundingOnly = null;
   const fail = (classification, httpStatus) => ({
     provider,
     rows: [],
@@ -415,6 +516,8 @@ export async function paginateTermProvider({ provider, fetchImpl, asOfMs }) {
     termination: classification,
     acquisition: candidateAcquisition(classification, httpStatus),
     discarded_partial_rows: rows.length,
+    gate1,
+    funding_only: fundingOnly,
   });
   for (let page = 0; page < TERM_MAX_PAGES; page += 1) {
     let url;
@@ -464,6 +567,20 @@ export async function paginateTermProvider({ provider, fetchImpl, asOfMs }) {
     if (page > 0 && previousOldest != null && nextOldest != null && nextOldest >= previousOldest) {
       return fail('MALFORMED_RESPONSE', status);
     }
+    gate1 = assessNewestPage(rows, provider, asOfUtc);
+    fundingOnly = fundingOnlyCensus(rows, provider);
+    if (gate1.status === 'stale') {
+      termination = 'GATE1_STALE';
+      break;
+    }
+    if (newestPageOnly) {
+      termination = 'NEWEST_PAGE_ONLY_SPOT_UNAVAILABLE';
+      break;
+    }
+    if (fundingOnly.sufficient_reference_windows) {
+      termination = 'REFERENCE_WINDOWS_ESTABLISHED';
+      break;
+    }
     if (normalized.rows.length < pageLimit) {
       termination = 'PROVIDER_HISTORY_EXHAUSTED';
       break;
@@ -483,6 +600,8 @@ export async function paginateTermProvider({ provider, fetchImpl, asOfMs }) {
     termination,
     acquisition: null,
     discarded_partial_rows: 0,
+    gate1,
+    funding_only: fundingOnly,
   };
 }
 
@@ -504,48 +623,38 @@ export function classifySpotAcquisition(response, decoded) {
 }
 
 export async function acquireTermEvidence({ fetchImpl, asOfMs }) {
+  const acquisitionAttempts = [];
+  let spotAcquisition;
+  let spotPrices = [];
+  try {
+    const spotResponse = await fetchForAcquisition(termSpotUrl(), { provider: 'coingecko', kind: 'spot' }, fetchImpl, acquisitionAttempts);
+    const status = spotResponse?.status ?? 200;
+    const decoded = status === 200 ? await readDecodedJson(spotResponse) : { ok: false };
+    spotAcquisition = status !== 200
+      ? { classification: status === 451 ? 'HTTP_451' : 'HTTP_OTHER', http_status: status }
+      : classifySpotAcquisition(spotResponse, decoded);
+    if (spotAcquisition.classification === 'ACQUIRED') spotPrices = decoded.body.prices;
+  } catch (error) {
+    spotAcquisition = { classification: 'NETWORK_ERROR', http_status: null, message: error.message };
+  }
+  spotAcquisition = { ...spotAcquisition, attempts: acquisitionAttempts };
+  const newestPageOnly = spotAcquisition.classification !== 'ACQUIRED';
   const funding = {};
   const pageReports = {};
   for (const provider of ['bitmex', 'binance', 'okx']) {
-    const page = await paginateTermProvider({ provider, fetchImpl, asOfMs });
-    pageReports[provider] = { termination: page.termination, requests: page.requests, row_count: page.rows.length };
-    if (page.acquisition) {
-      funding[provider] = { rows: null, acquisition: page.acquisition };
-    } else {
-      funding[provider] = page.rows;
-    }
-  }
-  let spotResponse;
-  try {
-    spotResponse = await fetchImpl(termSpotUrl(), { provider: 'coingecko', kind: 'spot' });
-  } catch (error) {
-    return {
-      funding,
-      spotPrices: [],
-      pageReports,
-      spot_acquisition: { classification: 'NETWORK_ERROR', http_status: null, message: error.message },
+    const page = await paginateTermProvider({ provider, fetchImpl, asOfMs, newestPageOnly });
+    pageReports[provider] = {
+      termination: page.termination,
+      requests: page.requests,
+      row_count: page.rows.length,
+      gate1: page.gate1,
+      funding_only: page.funding_only,
+      discarded_partial_rows: page.discarded_partial_rows,
     };
+    funding[provider] = page.acquisition ? { rows: null, acquisition: page.acquisition } : page.rows;
+    if (!newestPageOnly && page.termination === 'REFERENCE_WINDOWS_ESTABLISHED') break;
   }
-  const status = spotResponse?.status ?? 200;
-  if (status === 451 || (status && status !== 200)) {
-    return {
-      funding,
-      spotPrices: [],
-      pageReports,
-      spot_acquisition: {
-        classification: status === 451 ? 'HTTP_451' : 'HTTP_OTHER',
-        http_status: status,
-      },
-    };
-  }
-  const spotDecoded = await readDecodedJson(spotResponse);
-  const spotAcquisition = classifySpotAcquisition(spotResponse, spotDecoded);
-  return {
-    funding,
-    spotPrices: spotAcquisition.classification === 'ACQUIRED' ? spotDecoded.body.prices : [],
-    pageReports,
-    spot_acquisition: spotAcquisition,
-  };
+  return { funding, spotPrices, pageReports, spot_acquisition: spotAcquisition };
 }
 
 export function scoreTerm({ funding, spotPrices, asOfUtc, spotAcquisition = null }) {
@@ -566,6 +675,8 @@ export function scoreTerm({ funding, spotPrices, asOfUtc, spotAcquisition = null
       acquisition: candidate.provider_dispositions,
       fallback: candidate.provider_dispositions,
       spot_acquisition: spotAcquisition,
+      funding_only: null,
+      scored_provenance: scoredProvenanceLabel(candidate.lastUpdated, candidate.latest_raw_funding_observation_utc, candidate.spot_observation_utc),
       score_cache_reuse: false,
       candidate_reason: candidate.reason,
       derivation: spotFailure
@@ -573,7 +684,10 @@ export function scoreTerm({ funding, spotPrices, asOfUtc, spotAcquisition = null
         : 'candidate lastUpdated is the earliest scored funding, stress, and spot timestamp',
     },
   });
-  if (spotFailure) published.reason = `spot_acquisition_${spotAcquisition.classification}`;
+  if (spotFailure) {
+    published.reason = `spot_acquisition_${spotAcquisition.classification}`;
+    published.r10.scored_provenance = 'unavailable';
+  }
   published.successor_term_freshness = true;
   published.latest_raw_funding_observation_utc = candidate.latest_raw_funding_observation_utc;
   published.funding_observation_utc = candidate.funding_observation_utc;
@@ -621,6 +735,7 @@ export function scoreNetLiquidity({ walclObservations, rrpObservations, wtregenO
       series_acquisition: seriesAcquisition,
       fallback: 'none',
       request_semantics: netLiquidityRequestSemantics(),
+      scored_provenance: scoredProvenanceLabel(candidate.lastUpdated, candidate.lastUpdated, candidate.selected_common_scoring_date),
       derivation: 'selected common Wednesday, not the latest WALCL print and not the wall clock',
     },
   });
@@ -646,6 +761,7 @@ export function scoreSocial({ trendsData, priceData, trendingFetchedAt, trending
         acquisition: trendingFromCache === true ? 'coingecko_transport_cache' : 'coingecko_live',
         score_cache_reuse: false,
         fallback: 'none',
+        scored_provenance: scoredProvenanceLabel(candidate.lastUpdated, trendingFetchedAt, candidate.price_observation_utc),
       derivation: candidate.lastUpdated_semantics || null,
     },
   });
@@ -750,6 +866,7 @@ export function rebuildPublicationFromCandidate(factor, candidate, context = nul
         acquisition: 'fred_native_and_rrp_wew',
         series_acquisition: context?.seriesAcquisition ?? null,
         fallback: 'none',
+        scored_provenance: scoredProvenanceLabel(candidate.lastUpdated, candidate.lastUpdated, candidate.selected_common_scoring_date),
         derivation: 'selected common Wednesday, not the latest WALCL print and not the wall clock',
       },
     });
@@ -768,6 +885,7 @@ export function rebuildPublicationFromCandidate(factor, candidate, context = nul
         acquisition: context?.trendingFromCache === true ? 'coingecko_transport_cache' : 'coingecko_live',
         score_cache_reuse: context?.scoreCacheReuse === true,
         fallback: 'none',
+        scored_provenance: scoredProvenanceLabel(candidate.lastUpdated, candidate.lastUpdated, candidate.price_observation_utc),
         derivation: candidate.lastUpdated_semantics || null,
       },
     });
@@ -788,6 +906,9 @@ export function rebuildPublicationFromCandidate(factor, candidate, context = nul
       fallback: candidate.provider_dispositions,
       spot_acquisition: context?.spotAcquisition ?? null,
       score_cache_reuse: context?.scoreCacheReuse === true,
+      scored_provenance: context?.spotAcquisition && context.spotAcquisition.classification !== 'ACQUIRED'
+        ? 'unavailable'
+        : scoredProvenanceLabel(candidate.lastUpdated, candidate.latest_raw_funding_observation_utc, candidate.spot_observation_utc),
       derivation: 'candidate lastUpdated is the earliest scored funding, stress, and spot timestamp',
     },
   });
@@ -906,6 +1027,8 @@ export async function publishStablecoinFactor({
     calibration: dated,
     asOfUtc,
     provenance: acquired.provenance,
+    fallbackSkips: acquired.fallbackSkips,
+    acquisitionAttempts: acquired.acquisitionAttempts,
   });
   const cached = reuseCachedPublication('stablecoins', scored.candidate, cacheRoot);
   if (cached.reuse) return { ...cached.published, cache_reuse: true };
@@ -993,6 +1116,7 @@ export async function publishNetLiquidityFactor({
           acquisition: 'fred_acquisition_failure',
           series_acquisition: seriesAcquisition,
           fallback: 'none',
+          scored_provenance: 'unavailable',
           request_semantics: netLiquidityRequestSemantics(),
         },
       }),
@@ -1050,11 +1174,16 @@ export async function publishTermFactor({
     asOfUtc,
     spotAcquisition: acquired.spot_acquisition,
   });
+  const fundingOnly = Object.fromEntries(Object.entries(acquired.pageReports || {}).map(([provider, report]) => [provider, report.funding_only || null]));
+  scored.published.r10.funding_only = fundingOnly;
   const context = { spotAcquisition: acquired.spot_acquisition };
   const spotFailed = acquired.spot_acquisition?.classification !== 'ACQUIRED';
   if (!spotFailed) {
     const cached = reuseCachedPublication('term_leverage', scored.candidate, cacheRoot, context);
-    if (cached.reuse) return { ...cached.published, cache_reuse: true, pageReports: acquired.pageReports };
+    if (cached.reuse) {
+      cached.published.r10.funding_only = fundingOnly;
+      return { ...cached.published, cache_reuse: true, pageReports: acquired.pageReports };
+    }
     if (writeCache) writeV12Cache('term_leverage', scored.published, scored.candidate, cacheRoot);
   }
   return { ...scored.published, cache_reuse: false, pageReports: acquired.pageReports };

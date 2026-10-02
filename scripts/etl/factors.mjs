@@ -358,18 +358,22 @@ async function computeSocialInterest() {
     });
   }
   const { getCacheKey, readCoinGeckoTransportEnvelope, saveToDiskCache } = await import('./coinGeckoCache.mjs');
+  const { fetchCoinGecko, acquisitionNow } = await import('./lib/v12AcquisitionPacing.mjs');
 
   async function load(kind) {
     const url = kind === 'trending' ? socialTrendingUrl() : socialPriceUrl();
     const cacheKey = getCacheKey(kind === 'trending' ? 'trending' : 'market_chart_30_daily');
     const hit = await readCoinGeckoTransportEnvelope(cacheKey);
     if (hit) return hit;
-    const acquiredAt = new Date().toISOString();
-    const response = await fetch(url, { headers: { 'User-Agent': 'btc-risk-etl' } });
-    if (!response.ok) return { data: null, acquiredAt: null, fromCache: false };
+    const fetched = await fetchCoinGecko(url, { headers: { 'User-Agent': 'btc-risk-etl' } }, globalThis.fetch);
+    const response = fetched.response;
+    if (!response || !response.ok) {
+      return { data: null, acquiredAt: null, fromCache: false, acquisition_attempts: fetched.attempts, acquisition_termination: fetched.termination };
+    }
     const data = await response.json();
+    const acquiredAt = acquisitionNow().toISOString();
     await saveToDiskCache(cacheKey, data, { cachedAt: acquiredAt });
-    return { data, acquiredAt, fromCache: false };
+    return { data, acquiredAt, fromCache: false, acquisition_attempts: fetched.attempts, acquisition_termination: fetched.termination };
   }
 
   const trending = await load('trending');

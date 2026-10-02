@@ -12,6 +12,14 @@ import { runProductionComposite } from '../../research/lib/v1-2-gate-instrumenta
 import { computeAllFactors } from '../factors.mjs';
 import { writePublicationArtifacts } from '../lib/v12PublicationRecords.mjs';
 import {
+  COINGECKO_MAX_ATTEMPTS,
+  COINGECKO_PACE_MS,
+  COINGECKO_RETRY_AFTER_BUDGET_MS,
+  configureAcquisitionRuntime,
+  fetchCoinGecko,
+  resetAcquisitionQueue,
+} from '../lib/v12AcquisitionPacing.mjs';
+import {
   LEGACY_SCORE_CACHE_PATHS,
   V12_PUBLICATION_IDENTITY,
   acquireStablecoinResponses,
@@ -36,6 +44,11 @@ import {
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const AS_OF = '2026-09-30T18:00:00.000Z';
 const MS_DAY = 86_400_000;
+
+configureAcquisitionRuntime({
+  sleep: async () => {},
+  now: () => new Date(),
+});
 
 function addDays(date, days) {
   return new Date(Date.parse(`${date}T00:00:00.000Z`) + days * MS_DAY).toISOString().slice(0, 10);
@@ -256,7 +269,7 @@ test('stablecoin fallback order stays CoinGecko then CMC then CryptoCompare', as
     }
     throw new Error('cryptocompare should not be required');
   };
-  const acquired = await acquireStablecoinResponses({ fetchImpl, asOfMs: endpointMs });
+  const acquired = await acquireStablecoinResponses({ fetchImpl, asOfMs: endpointMs, cmcApiKey: 'fixture-key' });
   assert.equal(acquired.provenance.USDT.provider, 'coinmarketcap');
   assert.equal(calls.some((url) => url.includes('coingecko')), true);
   assert.equal(calls.some((url) => url.includes('coinmarketcap')), true);
@@ -460,11 +473,11 @@ test('cache publication mutations are rejected or replaced by the current candid
 
 test('BitMEX endTime is a date-time string and a later malformed page is not scored', async () => {
   const seen = [];
-  const firstPage = Array.from({ length: 500 }, (_, index) => ({
-    timestamp: new Date(Date.parse('2026-09-30T04:00:00.000Z') - index * 8 * 3_600_000).toISOString(),
-    fundingRate: 0.0001,
-    symbol: 'XBTUSD',
-  }));
+    const firstPage = Array.from({ length: 500 }, (_, index) => ({
+      timestamp: new Date(Date.parse('2026-09-30T12:00:00.000Z') - (index % 10) * 8 * 3_600_000).toISOString(),
+      fundingRate: 0.0001,
+      symbol: 'XBTUSD',
+    }));
   const fetchImpl = async (url) => {
     seen.push(url);
     if (url.includes('endTime=')) {
@@ -737,6 +750,7 @@ test('stablecoin CMC and CryptoCompare reject failed HTTP bodies', async () => {
       throw new Error(url);
     },
     asOfMs: endpointMs,
+    cmcApiKey: 'fixture',
     cryptoCompareApiKey: 'fixture',
   });
   assert.equal(cmcDecoded, false);
@@ -752,6 +766,7 @@ test('stablecoin CMC and CryptoCompare reject failed HTTP bodies', async () => {
       throw new Error(url);
     },
     asOfMs: endpointMs,
+    cmcApiKey: 'fixture',
     cryptoCompareApiKey: 'fixture',
   });
   assert.equal(recovered.provenance.USDT.provider, 'cryptocompare');
@@ -1005,4 +1020,169 @@ test('failed net liquidity HTTP evidence is not rescued by a valid score cache',
     globalThis.Date = RealDate;
     delete globalThis.__V12_OFFLINE_ACQUISITION__;
   }
+});
+
+function restoreInstantAcquisition() {
+  configureAcquisitionRuntime({ sleep: async () => {}, now: () => new Date() });
+  resetAcquisitionQueue();
+}
+
+test('coingecko pacing is shared by concurrent callers', async () => {
+  resetAcquisitionQueue();
+  let clock = Date.parse('2026-10-02T00:00:00.000Z');
+  const waits = [];
+  let active = 0;
+  let maxActive = 0;
+  configureAcquisitionRuntime({
+    now: () => new Date(clock),
+    sleep: async (ms) => { waits.push(ms); clock += ms; },
+  });
+  try {
+    const fetchImpl = async (url) => {
+      assert.equal(String(url).includes('api.coingecko.com'), true);
+      active += 1;
+      maxActive = Math.max(maxActive, active);
+      active -= 1;
+      return jsonResponse({ market_caps: [[Date.parse(AS_OF), 1e9]] });
+    };
+    await Promise.all([
+      fetchCoinGecko('https://api.coingecko.com/api/v3/search/trending', {}, fetchImpl),
+      fetchCoinGecko('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30&interval=daily', {}, fetchImpl),
+      fetchCoinGecko('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=120&interval=daily', {}, fetchImpl),
+    ]);
+    assert.equal(maxActive, 1);
+    assert.equal(waits.filter((ms) => ms === COINGECKO_PACE_MS).length >= 2, true);
+  } finally {
+    restoreInstantAcquisition();
+  }
+});
+
+test('429 retries stay HTTP failures and honor Retry-After bounds', async () => {
+  resetAcquisitionQueue();
+  let clock = Date.parse('2026-10-02T00:00:00.000Z');
+  const waits = [];
+  configureAcquisitionRuntime({
+    now: () => new Date(clock),
+    sleep: async (ms) => { waits.push(ms); clock += ms; },
+  });
+  const response429 = (retryAfter) => ({
+    ok: false,
+    status: 429,
+    headers: { get: (name) => (name === 'Retry-After' ? retryAfter : null) },
+    json: async () => ({ error: 'rate' }),
+  });
+  try {
+    let calls = 0;
+    const recovered = await fetchCoinGecko('https://api.coingecko.com/api/v3/search/trending', {}, async () => {
+      calls += 1;
+      return calls === 1 ? response429('1') : jsonResponse({ coins: [] });
+    });
+    assert.equal(recovered.termination, 'final');
+    assert.equal(recovered.response.status, 200);
+    assert.equal(recovered.attempts[0].http_status, 429);
+    assert.equal(recovered.attempts[0].retry_delay_ms, 1000);
+    assert.equal(calls, 2);
+
+    calls = 0;
+    const exhausted = await fetchCoinGecko('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?days=30', {}, async () => {
+      calls += 1;
+      return response429('2');
+    });
+    assert.equal(exhausted.termination, 'exhausted');
+    assert.equal(exhausted.response.status, 429);
+    assert.equal(calls, COINGECKO_MAX_ATTEMPTS);
+    assert.equal(exhausted.attempts.every((row) => row.termination !== 'network_exhausted'), true);
+
+    resetAcquisitionQueue();
+    const httpDate = new Date(clock + 3000).toUTCString();
+    const dated = await fetchCoinGecko('https://api.coingecko.com/api/v3/coins/tether/market_chart?days=90', {}, async () => response429(httpDate));
+    assert.equal(dated.attempts[0].retry_delay_ms, 3000);
+    assert.equal(dated.termination, 'exhausted');
+
+    const tooLong = await fetchCoinGecko('https://api.coingecko.com/api/v3/coins/dai/market_chart?days=90', {}, async () => response429(String((COINGECKO_RETRY_AFTER_BUDGET_MS / 1000) + 5)));
+    assert.equal(tooLong.termination, 'retry_after_exceeds_budget');
+    assert.equal(tooLong.attempts.length, 1);
+    assert.equal(tooLong.response.status, 429);
+    assert.equal(waits.includes((COINGECKO_RETRY_AFTER_BUDGET_MS / 1000 + 5) * 1000), false);
+  } finally {
+    restoreInstantAcquisition();
+  }
+});
+
+test('missing stablecoin credentials skip fallback requests', async () => {
+  const calls = [];
+  const acquired = await acquireStablecoinResponses({
+    fetchImpl: async (url) => {
+      calls.push(url);
+      return jsonResponse({ error: 'down' }, 503);
+    },
+    asOfMs: Date.parse(AS_OF),
+  });
+  assert.equal(calls.some((url) => url.includes('coinmarketcap')), false);
+  assert.equal(calls.some((url) => url.includes('cryptocompare')), false);
+  assert.equal(acquired.fallbackSkips.filter((row) => row.status === 'NOT_CONFIGURED').length, 14);
+  assert.equal(acquired.provenance.USDT.status, 'ACQUISITION_FAILED');
+  assert.equal(acquired.provenance.USDT.provider, null);
+});
+
+test('stale newest funding page stops older pages and fresh evidence stops when windows are enough', async () => {
+  let staleCalls = 0;
+  const stale = await paginateTermProvider({
+    provider: 'bitmex',
+    asOfMs: Date.parse(AS_OF),
+    fetchImpl: async () => {
+      staleCalls += 1;
+      return jsonResponse([{ timestamp: '2026-08-01T04:00:00.000Z', fundingRate: 0.0001, symbol: 'XBTUSD' }]);
+    },
+  });
+  assert.equal(staleCalls, 1);
+  assert.equal(stale.termination, 'GATE1_STALE');
+  assert.equal(stale.rows.length, 1);
+  assert.equal(stale.gate1.newest_valid_utc, '2026-08-01T04:00:00.000Z');
+  assert.equal(typeof stale.gate1.expected_slot_utc, 'string');
+  assert.equal(typeof stale.gate1.cadence_source, 'string');
+
+  let deepCalls = 0;
+  const enough = await paginateTermProvider({
+    provider: 'bitmex',
+    asOfMs: Date.parse(AS_OF),
+    fetchImpl: async () => {
+      deepCalls += 1;
+      return jsonResponse(Array.from({ length: 500 }, (_, index) => ({
+        timestamp: new Date(Date.parse('2026-09-30T12:00:00.000Z') - index * 8 * 3_600_000).toISOString(),
+        fundingRate: 0.0001,
+        symbol: 'XBTUSD',
+      })));
+    },
+  });
+  assert.equal(deepCalls, 1);
+  assert.equal(enough.termination, 'REFERENCE_WINDOWS_ESTABLISHED');
+  assert.equal(enough.funding_only.sufficient_reference_windows, true);
+  assert.equal(enough.funding_only.prior_valid_windows >= 60, true);
+});
+
+test('spot acquisition failure stays distinct from funding depth', async () => {
+  let okxCalls = 0;
+  const published = await publishTermFactor({
+    asOfUtc: AS_OF,
+    writeCache: false,
+    fetchImpl: async (url) => {
+      if (String(url).includes('days=120')) return jsonResponse({ prices: okxFunding().prices }, 429);
+      if (String(url).includes('www.okx.com')) {
+        okxCalls += 1;
+        const rows = okxFunding().funding;
+        return jsonResponse({ code: '0', data: rows.slice(-100) });
+      }
+      return jsonResponse({ error: 'nope' }, 451);
+    },
+  });
+  assert.equal(okxCalls, 1);
+  assert.equal(published.reason, 'spot_acquisition_HTTP_OTHER');
+  assert.equal(published.r10.scored_provenance, 'unavailable');
+  assert.equal(published.r10.spot_acquisition.classification, 'HTTP_OTHER');
+  assert.equal(published.pageReports.okx.termination, 'NEWEST_PAGE_ONLY_SPOT_UNAVAILABLE');
+  assert.equal(published.r10.funding_only.okx.complete_day_count > 0, true);
+  assert.notEqual(published.reason, 'HISTORY_INSUFFICIENT');
+  assert.equal(published.score, null);
+  assert.equal(published.r10.raw_funding_observation_utc, null);
 });
