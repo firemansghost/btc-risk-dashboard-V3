@@ -18,7 +18,7 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2026-10-05T19:47:06.042Z"
+    "generated_at": "2026-10-06T17:08:50.733Z"
   },
   {
     "id": "51f5f8fb94b32561",
@@ -39,27 +39,6 @@
     "recommendations": [
       "Monitor situation for further developments"
     ],
-    "generated_at": "2026-10-05T19:47:06.042Z"
-  },
-  {
-    "id": "1349dcd4e833d5e8",
-    "type": "sma50w_warning",
-    "timestamp": "2026-09-06T14:03:51.869Z",
-    "severity": "critical",
-    "title": "50-Week SMA Warning",
-    "message": "Bitcoin has closed below 50W SMA for 10 consecutive weeks",
-    "details": {
-      "sma50": 81042.242,
-      "current_close": 77665.14,
-      "consecutive_weeks_below": 10,
-      "is_below": true,
-      "price_vs_sma": "-4.17"
-    },
-    "action_required": "Consider reducing risk exposure",
-    "context": "Alert generated based on current conditions",
-    "recommendations": [
-      "Monitor situation for further developments"
-    ],
-    "generated_at": "2026-10-05T19:47:06.042Z"
+    "generated_at": "2026-10-06T17:08:50.733Z"
   }
 ]
