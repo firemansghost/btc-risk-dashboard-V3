@@ -5,7 +5,7 @@
   "asset": "BTC",
   "country": "US",
   "canonical_monetary_unit": "USD",
-  "updated_at_utc": "2026-10-07T17:44:34.490Z",
+  "updated_at_utc": "2026-10-08T17:48:52.275Z",
   "observations_by_date": {
     "2026-08-24": {
       "trading_date": "2026-08-24",
@@ -586,7 +586,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-09-23T21:54:34.343Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -639,7 +639,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-09-23T21:54:34.343Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -692,7 +692,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-09-23T21:54:34.343Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -745,7 +745,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-09-23T21:54:34.343Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -798,7 +798,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-09-23T21:54:34.343Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -851,7 +851,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-09-23T21:54:34.343Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -904,7 +904,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-09-23T21:54:34.343Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -957,7 +957,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-09-23T21:54:34.343Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -1010,7 +1010,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-09-23T21:54:34.343Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -1063,7 +1063,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-09-23T21:54:34.343Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -1116,7 +1116,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-09-23T21:54:34.343Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -1169,7 +1169,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-09-24T13:16:42.928Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -1222,7 +1222,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-09-25T15:47:35.633Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -1275,7 +1275,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-09-26T08:19:31.391Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -1328,7 +1328,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-09-29T16:52:08.151Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -1381,7 +1381,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-10-02T16:58:20.387Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -1434,7 +1434,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-10-02T16:58:20.387Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -1487,7 +1487,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-10-02T16:58:20.387Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -1540,7 +1540,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-10-05T19:45:21.575Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -1593,7 +1593,7 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-10-06T17:07:26.309Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     },
@@ -1646,7 +1646,60 @@
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "complete": true,
       "first_seen_at_utc": "2026-10-07T17:44:34.490Z",
-      "last_seen_at_utc": "2026-10-07T17:44:34.490Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
+      "revision_number": 0,
+      "last_revision_batch_id": null
+    },
+    "2026-10-07": {
+      "trading_date": "2026-10-07",
+      "summary_total_usd": -487067411.5,
+      "ticker_flows_usd": {
+        "IBIT": -207666800,
+        "FBTC": -105149764.55,
+        "ARKB": -101711921.12,
+        "BTCO": 0,
+        "BTCW": 0,
+        "BRRR": -2114298,
+        "BITB": -27594144.83,
+        "EZBC": 0,
+        "HODL": -3535686,
+        "GBTC": -39294797,
+        "BTC": 0,
+        "MSBT": 0
+      },
+      "provider_universe": [
+        "ARKB",
+        "BITB",
+        "BRRR",
+        "BTC",
+        "BTCO",
+        "BTCW",
+        "EZBC",
+        "FBTC",
+        "GBTC",
+        "HODL",
+        "IBIT",
+        "MSBT"
+      ],
+      "provider_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
+      "scored_universe": [
+        "IBIT",
+        "FBTC",
+        "ARKB",
+        "BTCO",
+        "BTCW",
+        "BRRR",
+        "BITB",
+        "EZBC",
+        "HODL",
+        "GBTC",
+        "BTC",
+        "MSBT"
+      ],
+      "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
+      "complete": true,
+      "first_seen_at_utc": "2026-10-08T17:48:52.275Z",
+      "last_seen_at_utc": "2026-10-08T17:48:52.275Z",
       "revision_number": 0,
       "last_revision_batch_id": null
     }
