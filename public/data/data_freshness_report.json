@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-07T17:45:57.733Z",
+  "timestamp": "2026-10-08T17:50:26.998Z",
   "sources": [
     {
       "source": "blockchain_info",
@@ -12,16 +12,16 @@
           "name": "mempool-size",
           "url": "https://api.blockchain.info/charts/mempool-size?timespan=7days&format=json",
           "status": "success",
-          "lastUpdate": "2026-10-07T16:30:00.000Z",
-          "stalenessHours": 1.2662177777777779,
+          "lastUpdate": "2026-10-08T16:30:00.000Z",
+          "stalenessHours": 1.3410397222222221,
           "error": null
         },
         {
           "name": "transaction-fees",
           "url": "https://api.blockchain.info/charts/transaction-fees?timespan=7days&format=json",
           "status": "success",
-          "lastUpdate": "2026-10-06T00:00:00.000Z",
-          "stalenessHours": 41.76636138888889,
+          "lastUpdate": "2026-10-07T00:00:00.000Z",
+          "stalenessHours": 41.84119805555556,
           "error": null
         }
       ],
@@ -39,14 +39,6 @@
       "stalenessHours": null,
       "endpoints": [
         {
-          "name": "bitcoin-price",
-          "url": "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",
-          "status": "success",
-          "lastUpdate": null,
-          "stalenessHours": null,
-          "error": null
-        },
-        {
           "name": "trending",
           "url": "https://api.coingecko.com/api/v3/search/trending",
           "status": "success",
@@ -56,7 +48,7 @@
         }
       ],
       "alerts": [
-        "❓ bitcoin-price: Could not determine last update time",
+        "❌ bitcoin-price: HTTP 429",
         "❓ trending: Could not determine last update time"
       ]
     },
