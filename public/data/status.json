@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-09T17:26:05.754Z",
+  "updated_at": "2026-10-10T16:11:51.493Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -81,20 +81,20 @@
   "etf_schema_hash": "12cf3a62",
   "etf_schema_last_check": "2026-09-08T15:00:29.774Z",
   "price_history": {
-    "total_rows": 743,
+    "total_rows": 744,
     "oldest_date": "2024-09-26",
-    "newest_date": "2026-10-08",
+    "newest_date": "2026-10-09",
     "alpha_vantage_backfill": null,
     "coinbase_daily_update": {
       "status": "success",
       "rows_fetched": 15,
-      "ms": 191
+      "ms": 217
     },
     "drift_check": null
   },
   "term_leverage": {
     "status": "fresh",
-    "last_updated_utc": "2026-10-08T00:00:00.000Z",
+    "last_updated_utc": "2026-10-09T00:00:00.000Z",
     "providers": {
       "bitmex": "unknown",
       "binance": "unknown",
@@ -102,22 +102,22 @@
     },
     "ttl_hours": 6,
     "stale_beyond_hours": 12,
-    "score": 22,
+    "score": 19,
     "reason": "successor_eligible"
   },
   "etf_flows": {
     "status": "fresh",
-    "score": 81,
+    "score": 77,
     "reason": "fresh_expected_eligible_trading_date",
     "live_provider": "sosovalue",
     "source_contract_version": "sosovalue_etf_source_contract_v1",
-    "market_date": "2026-10-09",
-    "expected_eligible_trading_date": "2026-10-08",
-    "source_trading_date": "2026-10-08",
+    "market_date": "2026-10-10",
+    "expected_eligible_trading_date": "2026-10-09",
+    "source_trading_date": "2026-10-09",
     "acquisition_state": "live_refresh",
     "acquisition_failure_reason": null,
-    "source_history_updated_at_utc": "2026-10-09T17:24:39.175Z",
-    "source_history_commit_sha": "8f0e2324694ef59e2015f711ce41ccd01c76fa0e",
+    "source_history_updated_at_utc": "2026-10-10T16:10:26.889Z",
+    "source_history_commit_sha": "0fd840adaa6dac136673b7752a1cb02b58c35d13",
     "provider_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
     "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
     "revision_number": 0,
@@ -126,9 +126,9 @@
   },
   "macro_overlay": {
     "status": "fresh",
-    "score": 75,
+    "score": 66,
     "reason": "fresh_source_cadence",
-    "latest_vix_date": "2026-10-08",
+    "latest_vix_date": "2026-10-09",
     "vix_provider": "cboe",
     "vix_source_url": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
     "vix_fallback_used": false,
@@ -137,12 +137,12 @@
   "successor_provenance": [
     {
       "key": "stablecoins",
-      "score": 63,
+      "score": 62,
       "status": "fresh",
-      "last_updated_utc": "2026-10-09T17:23:20.000Z",
+      "last_updated_utc": "2026-10-10T16:08:30.000Z",
       "provider": "per_coin",
-      "source_observation_utc": "2026-10-09T17:23:20.000Z",
-      "scored_observation_utc": "2026-10-09T17:23:20.000Z",
+      "source_observation_utc": "2026-10-10T16:08:30.000Z",
+      "scored_observation_utc": "2026-10-10T16:08:30.000Z",
       "raw_funding_observation_utc": null,
       "scored_funding_observation_utc": null,
       "scored_spot_observation_utc": null,
@@ -274,17 +274,17 @@
     },
     {
       "key": "term_leverage",
-      "score": 22,
+      "score": 19,
       "status": "fresh",
-      "last_updated_utc": "2026-10-08T00:00:00.000Z",
+      "last_updated_utc": "2026-10-09T00:00:00.000Z",
       "provider": "okx",
-      "source_observation_utc": "2026-10-09T16:00:00.000Z",
-      "scored_observation_utc": "2026-10-08T00:00:00.000Z",
-      "raw_funding_observation_utc": "2026-10-09T16:00:00.000Z",
-      "scored_funding_observation_utc": "2026-10-08T16:00:00.000Z",
-      "scored_spot_observation_utc": "2026-10-08T00:00:00.000Z",
+      "source_observation_utc": "2026-10-10T16:00:00.000Z",
+      "scored_observation_utc": "2026-10-09T00:00:00.000Z",
+      "raw_funding_observation_utc": "2026-10-10T16:00:00.000Z",
+      "scored_funding_observation_utc": "2026-10-09T16:00:00.000Z",
+      "scored_spot_observation_utc": "2026-10-09T00:00:00.000Z",
       "selected_scoring_date": null,
-      "scored_cutoff_D": "2026-10-08",
+      "scored_cutoff_D": "2026-10-09",
       "calibration_id": null,
       "acquisition": [
         {
@@ -372,12 +372,12 @@
     },
     {
       "key": "social_interest",
-      "score": 42,
+      "score": 41,
       "status": "fresh",
-      "last_updated_utc": "2026-10-09T17:23:10.000Z",
+      "last_updated_utc": "2026-10-10T16:09:00.000Z",
       "provider": "coingecko",
-      "source_observation_utc": "2026-10-09T17:23:10.000Z",
-      "scored_observation_utc": "2026-10-09T17:23:10.000Z",
+      "source_observation_utc": "2026-10-10T16:09:00.000Z",
+      "scored_observation_utc": "2026-10-10T16:09:00.000Z",
       "raw_funding_observation_utc": null,
       "scored_funding_observation_utc": null,
       "scored_spot_observation_utc": null,
@@ -392,7 +392,7 @@
         "rule": "min_of_valid_trending_fetched_at_and_score_eligible_price_observation_utc",
         "note": "requires both valid timestamps; otherwise null; does not prove Search provider source-observation"
       },
-      "trending_fetched_at": "2026-10-09T17:24:47.120Z",
+      "trending_fetched_at": "2026-10-10T16:10:35.292Z",
       "trending_from_cache": false,
       "score_cache_reuse": false,
       "candidate_only": false,
