@@ -2,7 +2,7 @@
   "methodologyVersion": "2.0.0",
   "artifactType": "strategy_comparison_monthly_ssot",
   "metadata": {
-    "generatedAt": "2026-10-04T15:54:34.739Z",
+    "generatedAt": "2026-10-11T16:42:06.043Z",
     "dataSource": "public/data/history.csv",
     "schedule": "First row in each calendar month (sorted history ≈ first trading day on/after the 1st); months with no rows skipped for both strategies.",
     "bandDerivation": "Primary: numeric score → band via config/dashboard-config.json inclusive ranges. Fallback: CSV band column mapped to canonical six labels.",
@@ -21,8 +21,8 @@
       "monthlyAmount": 1000,
       "totalInvested": 38000,
       "totalBTC": 0.5850285934084262,
-      "finalValue": 49813.85086353452,
-      "totalReturn": 0.31089081219827686,
+      "finalValue": 48513.24454609858,
+      "totalReturn": 0.27666433016048886,
       "trades": [
         {
           "date": "2023-09-25",
@@ -330,9 +330,9 @@
         }
       ],
       "metrics": {
-        "totalReturn": 31.089081219827687,
+        "totalReturn": 27.666433016048884,
         "totalInvested": 38000,
-        "finalValue": 49813.85086353452,
+        "finalValue": 48513.24454609858,
         "totalBTC": 0.5850285934084262,
         "avgPrice": 64954.090155848244,
         "totalTrades": 38,
@@ -345,8 +345,8 @@
       "baseMonthlyAmount": 1000,
       "totalInvested": 19000,
       "totalBTC": 0.29893679394277817,
-      "finalValue": 25453.78642833737,
-      "totalReturn": 0.33967296991249324,
+      "finalValue": 24789.205094883488,
+      "totalReturn": 0.30469500499386776,
       "trades": [
         {
           "date": "2023-09-25",
@@ -782,9 +782,9 @@
         }
       ],
       "metrics": {
-        "totalReturn": 33.96729699124933,
+        "totalReturn": 30.469500499386776,
         "totalInvested": 19000,
-        "finalValue": 25453.78642833737,
+        "finalValue": 24789.205094883488,
         "totalBTC": 0.29893679394277817,
         "avgPrice": 63558.58624628502,
         "totalTrades": 36,
@@ -799,12 +799,12 @@
       {
         "rank": 1,
         "strategy": "Risk-Based DCA",
-        "return": 33.96729699124933
+        "return": 30.469500499386776
       },
       {
         "rank": 2,
         "strategy": "Baseline DCA",
-        "return": 31.089081219827687
+        "return": 27.666433016048884
       }
     ],
     "bySharpe": [
@@ -823,7 +823,7 @@
   "insights": [
     {
       "type": "performance",
-      "message": "Risk-Based DCA had the higher total return at 33.97%"
+      "message": "Risk-Based DCA had the higher total return at 30.47%"
     },
     {
       "type": "risk_adjusted",
@@ -831,7 +831,7 @@
     },
     {
       "type": "outperformance",
-      "message": "Risk-Based DCA vs Baseline DCA (total return spread): +2.88%"
+      "message": "Risk-Based DCA vs Baseline DCA (total return spread): +2.80%"
     }
   ],
   "exploratory": {
@@ -840,8 +840,8 @@
       "targetValue": 1000,
       "totalInvested": 4686.195354727652,
       "totalBTC": 0.13927961334122274,
-      "finalValue": 11859.341518486699,
-      "totalReturn": 1.5306972118698474,
+      "finalValue": 11549.70204608716,
+      "totalReturn": 1.464622400864122,
       "trades": [
         {
           "date": "2023-09-25",
@@ -900,9 +900,9 @@
       ],
       "monthlyAmount": 1000,
       "metrics": {
-        "totalReturn": 153.06972118698474,
+        "totalReturn": 146.4622400864122,
         "totalInvested": 4686.195354727652,
-        "finalValue": 11859.341518486699,
+        "finalValue": 11549.70204608716,
         "totalBTC": 0.13927961334122274,
         "avgPrice": 33645.95321819919,
         "totalTrades": 6,
