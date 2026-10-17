@@ -2,8 +2,8 @@
   "score": 82,
   "reason": "success",
   "lastUpdated": "2026-10-09T00:00:00.000Z",
-  "latestDgs2Date": "2026-10-13",
-  "latestVixDate": "2026-10-14",
+  "latestDgs2Date": "2026-10-15",
+  "latestVixDate": "2026-10-16",
   "vixProvider": "cboe",
   "vixSourceUrl": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
   "vixFallbackUsed": false,
@@ -13,7 +13,7 @@
     "sourceUrl": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
     "fallbackUsed": false,
     "fallbackReason": null,
-    "latestVixDate": "2026-10-14"
+    "latestVixDate": "2026-10-16"
   },
   "providers": {
     "vix": "cboe"
@@ -29,39 +29,39 @@
     },
     {
       "label": "Rate Environment",
-      "value": "Neutral (2.6%)"
+      "value": "Neutral (2.1%)"
     },
     {
       "label": "VIX Level",
-      "value": "16.9 (74%ile)"
+      "value": "20.0 (99%ile)"
     },
     {
       "label": "Yield Curve (10Y-2Y)",
-      "value": "0.42%"
+      "value": "0.33%"
     },
     {
       "label": "Real Rate (10Y TIPS)",
-      "value": "2.88%"
+      "value": "2.78%"
     },
     {
       "label": "Fetch Time",
-      "value": "835ms"
+      "value": "668ms"
     },
     {
       "label": "Component Scores",
-      "value": "Dollar: 95, Rates: 69, VIX: 81, Real: 93"
+      "value": "Dollar: 95, Rates: 59, VIX: 95, Real: 78"
     },
     {
       "label": "Current Levels",
-      "value": "DXY: 121.6, 2Y: 4.79%, VIX: 16.9"
+      "value": "DXY: 121.6, 2Y: 4.77%, VIX: 20.0"
     }
   ],
   "latestDxyDate": "2026-10-09",
-  "fetchTime": 835,
+  "fetchTime": 668,
   "metrics": {
     "dxy_20d_change_pct": 2.451717592463872,
     "score": 82
   },
-  "cachedAt": "2026-10-15T15:33:36.363Z",
+  "cachedAt": "2026-10-17T14:08:33.180Z",
   "version": "1.0.0"
 }
