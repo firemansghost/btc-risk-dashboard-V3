@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-17T14:09:52.818Z",
+  "updated_at": "2026-10-19T11:19:04.325Z",
   "sources": [
     {
       "name": "Coinbase daily candles",
@@ -81,20 +81,20 @@
   "etf_schema_hash": "12cf3a62",
   "etf_schema_last_check": "2026-09-08T15:00:29.774Z",
   "price_history": {
-    "total_rows": 751,
+    "total_rows": 753,
     "oldest_date": "2024-09-26",
-    "newest_date": "2026-10-16",
+    "newest_date": "2026-10-18",
     "alpha_vantage_backfill": null,
     "coinbase_daily_update": {
       "status": "success",
       "rows_fetched": 15,
-      "ms": 216
+      "ms": 109
     },
     "drift_check": null
   },
   "term_leverage": {
     "status": "fresh",
-    "last_updated_utc": "2026-10-16T00:00:00.000Z",
+    "last_updated_utc": "2026-10-18T00:00:00.000Z",
     "providers": {
       "bitmex": "unknown",
       "binance": "unknown",
@@ -102,7 +102,7 @@
     },
     "ttl_hours": 6,
     "stale_beyond_hours": 12,
-    "score": 8,
+    "score": 7,
     "reason": "successor_eligible"
   },
   "etf_flows": {
@@ -111,13 +111,13 @@
     "reason": "fresh_expected_eligible_trading_date",
     "live_provider": "sosovalue",
     "source_contract_version": "sosovalue_etf_source_contract_v1",
-    "market_date": "2026-10-17",
+    "market_date": "2026-10-19",
     "expected_eligible_trading_date": "2026-10-16",
     "source_trading_date": "2026-10-16",
     "acquisition_state": "live_refresh",
     "acquisition_failure_reason": null,
-    "source_history_updated_at_utc": "2026-10-17T14:08:28.208Z",
-    "source_history_commit_sha": "3af0543ae6c90d3a18899a54af2880172c99e6a6",
+    "source_history_updated_at_utc": "2026-10-19T11:17:20.639Z",
+    "source_history_commit_sha": "afede7752f13de83ee03c0ff64c4828364d8330c",
     "provider_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
     "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
     "revision_number": 0,
@@ -137,12 +137,12 @@
   "successor_provenance": [
     {
       "key": "stablecoins",
-      "score": 63,
+      "score": 65,
       "status": "fresh",
-      "last_updated_utc": "2026-10-17T14:06:50.000Z",
+      "last_updated_utc": "2026-10-19T11:15:30.000Z",
       "provider": "per_coin",
-      "source_observation_utc": "2026-10-17T14:06:50.000Z",
-      "scored_observation_utc": "2026-10-17T14:06:50.000Z",
+      "source_observation_utc": "2026-10-19T11:15:30.000Z",
+      "scored_observation_utc": "2026-10-19T11:15:30.000Z",
       "raw_funding_observation_utc": null,
       "scored_funding_observation_utc": null,
       "scored_spot_observation_utc": null,
@@ -274,17 +274,17 @@
     },
     {
       "key": "term_leverage",
-      "score": 8,
+      "score": 7,
       "status": "fresh",
-      "last_updated_utc": "2026-10-16T00:00:00.000Z",
+      "last_updated_utc": "2026-10-18T00:00:00.000Z",
       "provider": "okx",
-      "source_observation_utc": "2026-10-17T08:00:00.000Z",
-      "scored_observation_utc": "2026-10-16T00:00:00.000Z",
-      "raw_funding_observation_utc": "2026-10-17T08:00:00.000Z",
-      "scored_funding_observation_utc": "2026-10-16T16:00:00.000Z",
-      "scored_spot_observation_utc": "2026-10-16T00:00:00.000Z",
+      "source_observation_utc": "2026-10-19T08:00:00.000Z",
+      "scored_observation_utc": "2026-10-18T00:00:00.000Z",
+      "raw_funding_observation_utc": "2026-10-19T08:00:00.000Z",
+      "scored_funding_observation_utc": "2026-10-18T16:00:00.000Z",
+      "scored_spot_observation_utc": "2026-10-18T00:00:00.000Z",
       "selected_scoring_date": null,
-      "scored_cutoff_D": "2026-10-16",
+      "scored_cutoff_D": "2026-10-18",
       "calibration_id": null,
       "acquisition": [
         {
@@ -372,12 +372,12 @@
     },
     {
       "key": "social_interest",
-      "score": 65,
+      "score": 71,
       "status": "fresh",
-      "last_updated_utc": "2026-10-17T14:07:00.000Z",
+      "last_updated_utc": "2026-10-19T11:15:30.000Z",
       "provider": "coingecko",
-      "source_observation_utc": "2026-10-17T14:07:00.000Z",
-      "scored_observation_utc": "2026-10-17T14:07:00.000Z",
+      "source_observation_utc": "2026-10-19T11:15:30.000Z",
+      "scored_observation_utc": "2026-10-19T11:15:30.000Z",
       "raw_funding_observation_utc": null,
       "scored_funding_observation_utc": null,
       "scored_spot_observation_utc": null,
@@ -392,7 +392,7 @@
         "rule": "min_of_valid_trending_fetched_at_and_score_eligible_price_observation_utc",
         "note": "requires both valid timestamps; otherwise null; does not prove Search provider source-observation"
       },
-      "trending_fetched_at": "2026-10-17T14:08:36.525Z",
+      "trending_fetched_at": "2026-10-19T11:17:28.062Z",
       "trending_from_cache": false,
       "score_cache_reuse": false,
       "candidate_only": false,
