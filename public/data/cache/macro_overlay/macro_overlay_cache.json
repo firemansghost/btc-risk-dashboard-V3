@@ -1,9 +1,9 @@
 {
-  "score": 82,
+  "score": 67,
   "reason": "success",
-  "lastUpdated": "2026-10-09T00:00:00.000Z",
-  "latestDgs2Date": "2026-10-15",
-  "latestVixDate": "2026-10-16",
+  "lastUpdated": "2026-10-16T00:00:00.000Z",
+  "latestDgs2Date": "2026-10-16",
+  "latestVixDate": "2026-10-19",
   "vixProvider": "cboe",
   "vixSourceUrl": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
   "vixFallbackUsed": false,
@@ -13,7 +13,7 @@
     "sourceUrl": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
     "fallbackUsed": false,
     "fallbackReason": null,
-    "latestVixDate": "2026-10-16"
+    "latestVixDate": "2026-10-19"
   },
   "providers": {
     "vix": "cboe"
@@ -25,43 +25,43 @@
     },
     {
       "label": "Dollar Trend (20d)",
-      "value": "Stable (2.5%)"
+      "value": "Stable (1.6%)"
     },
     {
       "label": "Rate Environment",
-      "value": "Neutral (2.1%)"
+      "value": "Neutral (-0.4%)"
     },
     {
       "label": "VIX Level",
-      "value": "20.0 (99%ile)"
+      "value": "18.4 (88%ile)"
     },
     {
       "label": "Yield Curve (10Y-2Y)",
-      "value": "0.33%"
+      "value": "0.35%"
     },
     {
       "label": "Real Rate (10Y TIPS)",
-      "value": "2.78%"
+      "value": "2.74%"
     },
     {
       "label": "Fetch Time",
-      "value": "1189ms"
+      "value": "3919ms"
     },
     {
       "label": "Component Scores",
-      "value": "Dollar: 95, Rates: 59, VIX: 95, Real: 78"
+      "value": "Dollar: 95, Rates: 19, VIX: 91, Real: 36"
     },
     {
       "label": "Current Levels",
-      "value": "DXY: 121.6, 2Y: 4.77%, VIX: 20.0"
+      "value": "DXY: 121.4, 2Y: 4.74%, VIX: 18.4"
     }
   ],
-  "latestDxyDate": "2026-10-09",
-  "fetchTime": 1189,
+  "latestDxyDate": "2026-10-16",
+  "fetchTime": 3919,
   "metrics": {
-    "dxy_20d_change_pct": 2.451717592463872,
-    "score": 82
+    "dxy_20d_change_pct": 1.582669041855587,
+    "score": 67
   },
-  "cachedAt": "2026-10-19T11:17:25.237Z",
+  "cachedAt": "2026-10-20T11:17:40.007Z",
   "version": "1.0.0"
 }
