@@ -1,13 +1,13 @@
 {
   "ok": true,
-  "as_of_utc": "2026-10-27T11:18:51.158Z",
-  "snapshot_date": "2026-10-27",
-  "daily_close_date": "2026-10-27",
+  "as_of_utc": "2026-10-28T11:14:41.446Z",
+  "snapshot_date": "2026-10-28",
+  "daily_close_date": "2026-10-28",
   "price_kind": "utc_intraday_snapshot",
   "model_version": "v1.2.0",
   "implementation_revision": "semantic-correctness-2026-09",
-  "composite_score": 53,
-  "composite_raw": 53,
+  "composite_score": 52,
+  "composite_raw": 52,
   "band": {
     "key": "hold___wait",
     "label": "Hold & Wait",
@@ -29,16 +29,16 @@
       "score": 52,
       "status": "fresh",
       "reason": "fresh (1min)",
-      "last_utc": "2026-10-27T11:17:32.602Z",
-      "lastUpdated": "2026-10-27T11:17:32.602Z",
+      "last_utc": "2026-10-28T11:13:23.576Z",
+      "lastUpdated": "2026-10-28T11:13:23.576Z",
       "details": [
         {
           "label": "Price vs 200-day SMA (Mayer)",
-          "value": "1.09"
+          "value": "1.11"
         },
         {
           "label": "Bull Market Support Band",
-          "value": "above (+7.1%)"
+          "value": "above (+9.1%)"
         },
         {
           "label": "Weekly momentum (RSI)",
@@ -46,11 +46,11 @@
         },
         {
           "label": "BTC Price (UTC snapshot)",
-          "value": "$79,751.09"
+          "value": "$81,261.61"
         },
         {
           "label": "200-day SMA",
-          "value": "$72,985.074"
+          "value": "$73,024.082"
         },
         {
           "label": "Weekly Close (for BMSB)",
@@ -62,11 +62,11 @@
         },
         {
           "label": "Historical data points",
-          "value": "761 days"
+          "value": "762 days"
         },
         {
           "label": "Calculation method",
-          "value": "Parallel processing (24ms)"
+          "value": "Parallel processing (2ms)"
         },
         {
           "label": "BMSB (20W SMA / 21W EMA)",
@@ -78,12 +78,12 @@
         },
         {
           "label": "Component Scores",
-          "value": "BMSB: 55, Mayer: 45, RSI: 51"
+          "value": "BMSB: 56, Mayer: 43, RSI: 51"
         }
       ],
       "metrics": {
-        "mayer": 1.0927041040025465,
-        "sma200": 72985.07410000003,
+        "mayer": 1.1128056320077881,
+        "sma200": 73024.08225000004,
         "score": 52
       },
       "sma50wDiagnostic": {
@@ -101,23 +101,23 @@
         "rawRegime": "bullish",
         "interpretation": "Bitcoin has closed above the macro pivot for two completed weeks, confirming a bullish moving-average regime.",
         "durationLine": "6 consecutive weeks bullish",
-        "proximityLine": "4.9% above 50-week SMA ($76,052) — distance uses UTC snapshot price.",
+        "proximityLine": "6.9% above 50-week SMA ($76,052) — distance uses UTC snapshot price.",
         "nextConfirmationLine": "BMSB lower ~$72,367 is the nearer moving-average support zone.",
         "methodologyNote": "Uses the last two completed weekly closes vs the BMSB and 50-week SMA. Proximity uses the UTC snapshot price. Display-only; does not affect the G-Score.",
         "approximation": false,
-        "lastDailyDateUtc": "2026-10-26",
+        "lastDailyDateUtc": "2026-10-27",
         "completedWeekEnds": [
           "2026-10-18",
           "2026-10-25"
         ],
-        "priceForProximity": 79751.09,
+        "priceForProximity": 81261.61,
         "streakWeeks": 6,
         "streakLabel": "6 consecutive weeks bullish",
         "bmsbLower": 72367.269,
         "fiftyWeekSma": 76051.8746,
         "lastCompletedWeeklyClose": 80053.16,
         "distanceLabel": "Distance to 50-week SMA",
-        "distancePct": 4.9,
+        "distancePct": 6.9,
         "distanceSide": "above",
         "nextConfirmationText": "Nearer context: BMSB lower near $72,367 (moving averages only)"
       }
@@ -128,11 +128,11 @@
       "pillar": "liquidity",
       "weight": 18,
       "weight_pct": 18,
-      "score": 80,
+      "score": 81,
       "status": "fresh",
       "reason": "fresh (3min)",
-      "last_utc": "2026-10-27T11:15:50.000Z",
-      "lastUpdated": "2026-10-27T11:15:50.000Z",
+      "last_utc": "2026-10-28T11:11:40.000Z",
+      "lastUpdated": "2026-10-28T11:11:40.000Z",
       "model_version": "v1.2.0",
       "implementation_revision": "semantic-correctness-2026-09",
       "ssot_version": "2.1.1",
@@ -142,8 +142,8 @@
       "successor_production_active": false,
       "r10": {
         "provider": "per_coin",
-        "source_observation_utc": "2026-10-27T11:15:50.000Z",
-        "scored_observation_utc": "2026-10-27T11:15:50.000Z",
+        "source_observation_utc": "2026-10-28T11:11:40.000Z",
+        "scored_observation_utc": "2026-10-28T11:11:40.000Z",
         "acquisition": {
           "USDT": {
             "status": "SUPPLIED",
@@ -262,7 +262,7 @@
                 "termination": "final",
                 "scheduler": {
                   "kind": "pace",
-                  "pace_wait_ms": 1999,
+                  "pace_wait_ms": 2000,
                   "cooldown": null
                 }
               }
@@ -279,7 +279,7 @@
                 "termination": "final",
                 "scheduler": {
                   "kind": "pace",
-                  "pace_wait_ms": 1999,
+                  "pace_wait_ms": 2000,
                   "cooldown": null
                 }
               }
@@ -297,13 +297,13 @@
                 "termination": "retry_after_exceeds_budget",
                 "scheduler": {
                   "kind": "pace",
-                  "pace_wait_ms": 1909,
+                  "pace_wait_ms": 1914,
                   "cooldown": null
                 },
                 "cooldown": {
                   "kind": "shared_cooldown",
-                  "receipt_utc": "2026-10-27T11:17:44.551Z",
-                  "required_deadline_utc": "2026-10-27T11:18:44.551Z",
+                  "receipt_utc": "2026-10-28T11:13:35.570Z",
+                  "required_deadline_utc": "2026-10-28T11:14:35.570Z",
                   "required_wait_ms": 60000,
                   "actual_wait_ms": 0,
                   "budget_ms": 70000,
@@ -329,8 +329,8 @@
                   "cooldown": {
                     "kind": "shared_cooldown",
                     "wait_ms": 60007,
-                    "receipt_utc": "2026-10-27T11:17:44.551Z",
-                    "required_deadline_utc": "2026-10-27T11:18:44.551Z",
+                    "receipt_utc": "2026-10-28T11:13:35.570Z",
+                    "required_deadline_utc": "2026-10-28T11:14:35.570Z",
                     "required_wait_ms": 60000,
                     "actual_wait_ms": 60000,
                     "budget_consumed_ms": 60000,
@@ -351,12 +351,12 @@
                 "termination": "final",
                 "scheduler": {
                   "kind": "shared_cooldown",
-                  "pace_wait_ms": 1883,
+                  "pace_wait_ms": 1894,
                   "cooldown": {
                     "kind": "shared_cooldown",
                     "wait_ms": 0,
-                    "receipt_utc": "2026-10-27T11:17:44.551Z",
-                    "required_deadline_utc": "2026-10-27T11:18:44.551Z",
+                    "receipt_utc": "2026-10-28T11:13:35.570Z",
+                    "required_deadline_utc": "2026-10-28T11:14:35.570Z",
                     "required_wait_ms": 60000,
                     "actual_wait_ms": 60000,
                     "budget_consumed_ms": 60000,
@@ -377,12 +377,12 @@
                 "termination": "final",
                 "scheduler": {
                   "kind": "shared_cooldown",
-                  "pace_wait_ms": 1902,
+                  "pace_wait_ms": 1914,
                   "cooldown": {
                     "kind": "shared_cooldown",
-                    "wait_ms": 0,
-                    "receipt_utc": "2026-10-27T11:17:44.551Z",
-                    "required_deadline_utc": "2026-10-27T11:18:44.551Z",
+                    "wait_ms": 1,
+                    "receipt_utc": "2026-10-28T11:13:35.570Z",
+                    "required_deadline_utc": "2026-10-28T11:14:35.570Z",
                     "required_wait_ms": 60000,
                     "actual_wait_ms": 60000,
                     "budget_consumed_ms": 60000,
@@ -408,7 +408,7 @@
       "pillar": "liquidity",
       "weight": 7.7,
       "weight_pct": 7.7,
-      "score": 74,
+      "score": 66,
       "status": "fresh",
       "reason": "fresh_expected_eligible_trading_date",
       "last_utc": null,
@@ -416,23 +416,23 @@
       "details": [
         {
           "label": "Latest Daily Flow",
-          "value": 110344120
+          "value": 175993377
         },
         {
           "label": "21-day Sum",
-          "value": -253514391.10500008
+          "value": -108591580.555
         },
         {
           "label": "Recent 7-day Flow",
-          "value": 332684468.36999995
+          "value": 591067150.47
         },
         {
           "label": "Prior 7-day Flow",
-          "value": -856255678.28
+          "value": -451577571.88
         },
         {
           "label": "Flow Acceleration",
-          "value": 1188940146.6499999
+          "value": 1042644722.35
         },
         {
           "label": "21-day Percentile",
@@ -440,11 +440,11 @@
         },
         {
           "label": "21-day Z-Score",
-          "value": -2.3128354528532813
+          "value": -2.25958747280951
         },
         {
           "label": "Diversification HHI",
-          "value": 1
+          "value": 0.7600252159050396
         },
         {
           "label": "Source Provider",
@@ -452,7 +452,7 @@
         },
         {
           "label": "Source Trading Date",
-          "value": "2026-10-26"
+          "value": "2026-10-27"
         },
         {
           "label": "Acquisition State",
@@ -464,16 +464,16 @@
         }
       ],
       "metrics": {
-        "day_flow_usd": 110344120,
-        "sum21_usd": -253514391.10500008,
-        "z": -2.3128354528532813,
+        "day_flow_usd": 175993377,
+        "sum21_usd": -108591580.555,
+        "z": -2.25958747280951,
         "pct": 0,
-        "score": 74,
-        "acceleration_usd": 1188940146.6499999,
-        "acceleration_pct": 75,
-        "hhi": 1,
-        "diversification_score": 100,
-        "source_trading_date": "2026-10-26"
+        "score": 66,
+        "acceleration_usd": 1042644722.35,
+        "acceleration_pct": 68,
+        "hhi": 0.7600252159050396,
+        "diversification_score": 76.00252159050396,
+        "source_trading_date": "2026-10-27"
       },
       "individualEtfFlows": [
         {
@@ -1240,25 +1240,42 @@
             "BTC": 0,
             "MSBT": 0
           }
+        },
+        {
+          "date": "2026-10-27",
+          "flows": {
+            "IBIT": 151455080,
+            "FBTC": 24538297,
+            "ARKB": 0,
+            "BTCO": 0,
+            "BTCW": 0,
+            "BRRR": 0,
+            "BITB": 0,
+            "EZBC": 0,
+            "HODL": 0,
+            "GBTC": 0,
+            "BTC": 0,
+            "MSBT": 0
+          }
         }
       ],
       "source": "SoSoValue",
       "provider": "sosovalue",
       "sourceContractVersion": "sosovalue_etf_source_contract_v1",
-      "marketDate": "2026-10-27",
-      "expectedEligibleTradingDate": "2026-10-26",
-      "sourceTradingDate": "2026-10-26",
+      "marketDate": "2026-10-28",
+      "expectedEligibleTradingDate": "2026-10-27",
+      "sourceTradingDate": "2026-10-27",
       "acquisitionState": "live_refresh",
       "acquisitionFailureReason": null,
-      "sourceHistoryUpdatedAtUtc": "2026-10-27T11:17:29.267Z",
-      "sourceHistoryCommitSha": "d95d04e20c36495aaf4d41e6cbfba2bcc84892f1",
+      "sourceHistoryUpdatedAtUtc": "2026-10-28T11:13:19.634Z",
+      "sourceHistoryCommitSha": "f749f6d2387870cf9455e7f5aa32b8563b69b7f7",
       "sourceProvenance": {
         "providerUniverseFingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
         "scoredUniverseFingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
         "revisionNumber": 0,
         "lastRevisionBatchId": null,
-        "firstSeenAtUtc": "2026-10-27T11:17:29.267Z",
-        "lastSeenAtUtc": "2026-10-27T11:17:29.267Z"
+        "firstSeenAtUtc": "2026-10-28T11:13:19.634Z",
+        "lastSeenAtUtc": "2026-10-28T11:13:19.634Z"
       },
       "historicalCalibration": {
         "provider": "farside_frozen_baseline",
@@ -1279,7 +1296,7 @@
       "weight_pct": 4.3,
       "score": 34,
       "status": "fresh",
-      "reason": "fresh (6d)",
+      "reason": "fresh (7d)",
       "last_utc": "2026-10-21T00:00:00.000Z",
       "lastUpdated": "2026-10-21T00:00:00.000Z",
       "model_version": "v1.2.0",
@@ -1295,7 +1312,7 @@
         "scored_observation_utc": "2026-10-21T00:00:00.000Z",
         "selected_scoring_date": "2026-10-21",
         "latest_walcl_date": "2026-10-21",
-        "latest_rrp_date": "2026-10-21",
+        "latest_rrp_date": "2026-10-28",
         "latest_wtregen_date": "2026-10-21",
         "acquisition": "fred_native_and_rrp_wew",
         "series_acquisition": {
@@ -1344,11 +1361,11 @@
       "pillar": "leverage",
       "weight": 20,
       "weight_pct": 20,
-      "score": 11,
+      "score": 13,
       "status": "fresh",
       "reason": "successor_eligible",
-      "last_utc": "2026-10-26T00:00:00.000Z",
-      "lastUpdated": "2026-10-26T00:00:00.000Z",
+      "last_utc": "2026-10-27T00:00:00.000Z",
+      "lastUpdated": "2026-10-27T00:00:00.000Z",
       "model_version": "v1.2.0",
       "implementation_revision": "semantic-correctness-2026-09",
       "ssot_version": "2.1.1",
@@ -1358,13 +1375,13 @@
       "successor_production_active": false,
       "r10": {
         "provider": "okx",
-        "raw_funding_observation_utc": "2026-10-27T08:00:00.000Z",
-        "scored_funding_observation_utc": "2026-10-26T16:00:00.000Z",
-        "scored_spot_observation_utc": "2026-10-26T00:00:00.000Z",
-        "raw_spot_observation_utc": "2026-10-27T11:16:00.000Z",
-        "scored_cutoff_D": "2026-10-26",
-        "source_observation_utc": "2026-10-27T08:00:00.000Z",
-        "scored_observation_utc": "2026-10-26T00:00:00.000Z",
+        "raw_funding_observation_utc": "2026-10-28T08:00:00.000Z",
+        "scored_funding_observation_utc": "2026-10-27T16:00:00.000Z",
+        "scored_spot_observation_utc": "2026-10-27T00:00:00.000Z",
+        "raw_spot_observation_utc": "2026-10-28T11:12:10.000Z",
+        "scored_cutoff_D": "2026-10-27",
+        "source_observation_utc": "2026-10-28T08:00:00.000Z",
+        "scored_observation_utc": "2026-10-27T00:00:00.000Z",
         "acquisition": [
           {
             "provider": "bitmex",
@@ -1444,7 +1461,7 @@
           "bitmex": null,
           "binance": null,
           "okx": {
-            "complete_day_count": 91,
+            "complete_day_count": 92,
             "prior_valid_windows": 60,
             "current_window": true,
             "sufficient_reference_windows": true,
@@ -1459,9 +1476,9 @@
         "candidate_reason": null,
         "derivation": "candidate lastUpdated is the earliest scored funding, stress, and spot timestamp"
       },
-      "latest_raw_funding_observation_utc": "2026-10-27T08:00:00.000Z",
-      "funding_observation_utc": "2026-10-26T16:00:00.000Z",
-      "spot_observation_utc": "2026-10-26T00:00:00.000Z",
+      "latest_raw_funding_observation_utc": "2026-10-28T08:00:00.000Z",
+      "funding_observation_utc": "2026-10-27T16:00:00.000Z",
+      "spot_observation_utc": "2026-10-27T00:00:00.000Z",
       "funding_provider": "okx",
       "selected_provider": "okx",
       "successor_term_freshness": true
@@ -1472,7 +1489,7 @@
       "pillar": "macro",
       "weight": 10,
       "weight_pct": 10,
-      "score": 63,
+      "score": 62,
       "status": "fresh",
       "reason": "fresh_source_cadence",
       "last_utc": "2026-10-23T00:00:00.000Z",
@@ -1491,15 +1508,15 @@
         },
         {
           "label": "Rate Environment",
-          "value": "Neutral (-2.5%)"
+          "value": "Neutral (-4.9%)"
         },
         {
           "label": "VIX Level",
-          "value": "18.4 (88%ile)"
+          "value": "17.5 (84%ile)"
         },
         {
           "label": "Yield Curve (10Y-2Y)",
-          "value": "0.31%"
+          "value": "0.32%"
         },
         {
           "label": "Real Rate (10Y TIPS)",
@@ -1507,32 +1524,32 @@
         },
         {
           "label": "Fetch Time",
-          "value": "443ms"
+          "value": "509ms"
         },
         {
           "label": "Component Scores",
-          "value": "Dollar: 89, Rates: 6, VIX: 100, Real: 5"
+          "value": "Dollar: 89, Rates: 5, VIX: 98, Real: 5"
         },
         {
           "label": "Current Levels",
-          "value": "DXY: 121.3, 2Y: 4.69%, VIX: 18.4"
+          "value": "DXY: 121.3, 2Y: 4.68%, VIX: 17.5"
         }
       ],
       "metrics": {
         "dxy_20d_change_pct": 0.8229036815424263,
-        "score": 63
+        "score": 62
       },
       "vixProvider": "cboe",
       "vixSourceUrl": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
       "vixFallbackUsed": false,
       "vixFallbackReason": null,
-      "latestVixDate": "2026-10-26",
+      "latestVixDate": "2026-10-27",
       "vixSourceProvenance": {
         "provider": "cboe",
         "sourceUrl": "https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
         "fallbackUsed": false,
         "fallbackReason": null,
-        "latestVixDate": "2026-10-26"
+        "latestVixDate": "2026-10-27"
       }
     },
     {
@@ -1541,11 +1558,11 @@
       "pillar": "social",
       "weight": 10,
       "weight_pct": 10,
-      "score": 73,
+      "score": 60,
       "status": "fresh",
-      "reason": "fresh (3min)",
-      "last_utc": "2026-10-27T11:16:00.000Z",
-      "lastUpdated": "2026-10-27T11:16:00.000Z",
+      "reason": "fresh (2min)",
+      "last_utc": "2026-10-28T11:12:10.000Z",
+      "lastUpdated": "2026-10-28T11:12:10.000Z",
       "model_version": "v1.2.0",
       "implementation_revision": "semantic-correctness-2026-09",
       "ssot_version": "2.1.1",
@@ -1555,11 +1572,11 @@
       "successor_production_active": false,
       "r10": {
         "provider": "coingecko",
-        "source_observation_utc": "2026-10-27T11:16:00.000Z",
-        "scored_observation_utc": "2026-10-27T11:16:00.000Z",
-        "trending_fetched_at": "2026-10-27T11:17:36.557Z",
+        "source_observation_utc": "2026-10-28T11:12:10.000Z",
+        "scored_observation_utc": "2026-10-28T11:12:10.000Z",
+        "trending_fetched_at": "2026-10-28T11:13:27.573Z",
         "trending_from_cache": false,
-        "price_observation_utc": "2026-10-27T11:16:00.000Z",
+        "price_observation_utc": "2026-10-28T11:12:10.000Z",
         "acquisition": "coingecko_live",
         "score_cache_reuse": false,
         "fallback": "none",
@@ -1572,7 +1589,7 @@
             "termination": "final",
             "scheduler": {
               "kind": "pace",
-              "pace_wait_ms": 1999,
+              "pace_wait_ms": 2000,
               "cooldown": null
             }
           }
@@ -1606,8 +1623,8 @@
     }
   ],
   "btc": {
-    "spot_usd": 79751.09,
-    "as_of_utc": "2026-10-27T11:18:51.158Z",
+    "spot_usd": 81261.61,
+    "as_of_utc": "2026-10-28T11:14:41.446Z",
     "source": "Coinbase",
     "price_kind": "utc_intraday_snapshot"
   },
@@ -1616,18 +1633,18 @@
       "factor": "etf_flows",
       "live_provider": "sosovalue",
       "source_contract_version": "sosovalue_etf_source_contract_v1",
-      "source_trading_date": "2026-10-26",
-      "expected_eligible_trading_date": "2026-10-26",
+      "source_trading_date": "2026-10-27",
+      "expected_eligible_trading_date": "2026-10-27",
       "acquisition_state": "live_refresh",
       "acquisition_failure_reason": null,
-      "source_history_updated_at_utc": "2026-10-27T11:17:29.267Z",
-      "source_history_commit_sha": "d95d04e20c36495aaf4d41e6cbfba2bcc84892f1",
+      "source_history_updated_at_utc": "2026-10-28T11:13:19.634Z",
+      "source_history_commit_sha": "f749f6d2387870cf9455e7f5aa32b8563b69b7f7",
       "provider_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
       "revision_number": 0,
       "last_revision_batch_id": null,
-      "selected_first_seen_at_utc": "2026-10-27T11:17:29.267Z",
-      "selected_last_seen_at_utc": "2026-10-27T11:17:29.267Z",
+      "selected_first_seen_at_utc": "2026-10-28T11:13:19.634Z",
+      "selected_last_seen_at_utc": "2026-10-28T11:13:19.634Z",
       "historical_calibration": {
         "provider": "farside_frozen_baseline",
         "git_blob_sha": "2986a65e565516f374f57bf031a672c84647330c",
@@ -1646,7 +1663,7 @@
   "cycle_adjustment": {
     "adj_pts": 0,
     "residual_z": null,
-    "last_utc": "2026-10-27T11:18:51.155Z",
+    "last_utc": "2026-10-28T11:14:41.439Z",
     "source": "ETL disabled",
     "reason": "disabled"
   },
@@ -1655,9 +1672,9 @@
     "r_1d": 0,
     "sigma": 0,
     "z": 0,
-    "ref_close": 79751.09,
-    "spot": 79751.09,
-    "last_utc": "2026-10-27T11:18:51.155Z",
+    "ref_close": 81261.61,
+    "spot": 81261.61,
+    "last_utc": "2026-10-28T11:14:41.439Z",
     "source": "ETL disabled",
     "reason": "disabled"
   },
