@@ -1,3 +1,4 @@
 occurred_at,type,details
 2025-09-26,band_change,"{""type"":""band_change"",""from"":""High Risk"",""to"":""Hold/Neutral"",""composite_from"":85,""composite_to"":48}"
 2026-10-27,etf_zero_cross,"{""type"":""etf_zero_cross"",""direction"":""down"",""from"":99189133.11499989,""to"":-253514391.10500008,""deadband"":23616975}"
+2026-10-30,etf_zero_cross,"{""type"":""etf_zero_cross"",""direction"":""up"",""from"":-108591580.555,""to"":128303700.65000005,""deadband"":23461862}"
