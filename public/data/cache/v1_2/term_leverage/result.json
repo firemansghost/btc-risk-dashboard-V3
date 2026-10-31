@@ -19,7 +19,7 @@
       "stress": 0.25
     },
     "normalized_funding_unit": "percent",
-    "score": 24,
+    "score": 28,
     "reason": null,
     "selected_provider": "okx",
     "provider_dispositions": [
@@ -49,16 +49,17 @@
       }
     ],
     "cross_provider_splicing": false,
-    "as_of_utc": "2026-10-30T11:11:37.307Z",
-    "common_cutoff_date_D": "2026-10-29",
+    "as_of_utc": "2026-10-31T11:09:47.587Z",
+    "common_cutoff_date_D": "2026-10-30",
     "components": {
       "funding": {
         "state": "OBSERVED",
-        "value": 0.0049363905754068885,
-        "percentile": 0.48333333333333334,
-        "score": 48,
+        "value": 0.005030227583664445,
+        "percentile": 0.5333333333333333,
+        "score": 55,
         "reference_count": 60,
         "reference_endpoints": [
+          "2026-10-29",
           "2026-10-28",
           "2026-10-27",
           "2026-10-26",
@@ -117,16 +118,12 @@
           "2026-09-03",
           "2026-09-02",
           "2026-09-01",
-          "2026-08-31",
-          "2026-08-30"
+          "2026-08-31"
         ],
-        "T_utc": "2026-10-29T16:00:00.000Z",
-        "left_boundary_utc": "2026-09-29T16:00:00.000Z",
+        "T_utc": "2026-10-30T16:00:00.000Z",
+        "left_boundary_utc": "2026-09-30T16:00:00.000Z",
         "left_boundary_included": false,
         "settlement_timestamps_used": [
-          "2026-09-30T00:00:00.000Z",
-          "2026-09-30T08:00:00.000Z",
-          "2026-09-30T16:00:00.000Z",
           "2026-10-01T00:00:00.000Z",
           "2026-10-01T08:00:00.000Z",
           "2026-10-01T16:00:00.000Z",
@@ -213,16 +210,20 @@
           "2026-10-28T16:00:00.000Z",
           "2026-10-29T00:00:00.000Z",
           "2026-10-29T08:00:00.000Z",
-          "2026-10-29T16:00:00.000Z"
+          "2026-10-29T16:00:00.000Z",
+          "2026-10-30T00:00:00.000Z",
+          "2026-10-30T08:00:00.000Z",
+          "2026-10-30T16:00:00.000Z"
         ]
       },
       "realized_vol": {
         "state": "OBSERVED",
-        "value": 1.2887413703392783,
-        "percentile": 0.05,
-        "score": 6,
+        "value": 1.50174329790135,
+        "percentile": 0.13333333333333333,
+        "score": 10,
         "reference_count": 60,
         "reference_endpoints": [
+          "2026-10-29",
           "2026-10-28",
           "2026-10-27",
           "2026-10-26",
@@ -281,19 +282,19 @@
           "2026-09-03",
           "2026-09-02",
           "2026-09-01",
-          "2026-08-31",
-          "2026-08-30"
+          "2026-08-31"
         ],
         "return_count": 30,
         "price_count": 31
       },
       "stress": {
         "state": "OBSERVED",
-        "value": 0.1782380427879967,
-        "percentile": 0.11666666666666667,
-        "score": 9,
+        "value": 0.20047660562677946,
+        "percentile": 0.13333333333333333,
+        "score": 10,
         "reference_count": 60,
         "reference_endpoints": [
+          "2026-10-29",
           "2026-10-28",
           "2026-10-27",
           "2026-10-26",
@@ -352,11 +353,9 @@
           "2026-09-03",
           "2026-09-02",
           "2026-09-01",
-          "2026-08-31",
-          "2026-08-30"
+          "2026-08-31"
         ],
         "funding_dates": [
-          "2026-09-30",
           "2026-10-01",
           "2026-10-02",
           "2026-10-03",
@@ -385,10 +384,10 @@
           "2026-10-26",
           "2026-10-27",
           "2026-10-28",
-          "2026-10-29"
+          "2026-10-29",
+          "2026-10-30"
         ],
         "spot_return_dates": [
-          "2026-09-30",
           "2026-10-01",
           "2026-10-02",
           "2026-10-03",
@@ -417,17 +416,18 @@
           "2026-10-26",
           "2026-10-27",
           "2026-10-28",
-          "2026-10-29"
+          "2026-10-29",
+          "2026-10-30"
         ]
       }
     },
-    "funding_observation_utc": "2026-10-29T16:00:00.000Z",
-    "stress_funding_observation_utc": "2026-10-29T16:00:00.000Z",
-    "spot_observation_utc": "2026-10-29T00:00:00.000Z",
-    "latest_raw_funding_observation_utc": "2026-10-30T08:00:00.000Z",
-    "latest_raw_spot_observation_utc": "2026-10-30T11:10:00.000Z",
-    "lastUpdated": "2026-10-29T00:00:00.000Z",
-    "fingerprint": "074a3d16d39d64f9088a90a5f398f4b38964e8764d0870b2d26437442b50b022",
+    "funding_observation_utc": "2026-10-30T16:00:00.000Z",
+    "stress_funding_observation_utc": "2026-10-30T16:00:00.000Z",
+    "spot_observation_utc": "2026-10-30T00:00:00.000Z",
+    "latest_raw_funding_observation_utc": "2026-10-31T08:00:00.000Z",
+    "latest_raw_spot_observation_utc": "2026-10-31T11:08:10.000Z",
+    "lastUpdated": "2026-10-30T00:00:00.000Z",
+    "fingerprint": "1f9a6c14b399b7bc2abb8e00d2c4111103d49e0ef58f98889783d4724a31c5f4",
     "fingerprint_input": {
       "contract_id": "TERM_SUCCESSOR_SEMANTICS_V1",
       "funding_boundary_rule": "F30_HALF_OPEN",
@@ -447,6 +447,7 @@
       "normalized_funding_unit": "percent",
       "selected_provider": "okx",
       "funding_reference_endpoints": [
+        "2026-10-29",
         "2026-10-28",
         "2026-10-27",
         "2026-10-26",
@@ -505,10 +506,10 @@
         "2026-09-03",
         "2026-09-02",
         "2026-09-01",
-        "2026-08-31",
-        "2026-08-30"
+        "2026-08-31"
       ],
       "volatility_reference_endpoints": [
+        "2026-10-29",
         "2026-10-28",
         "2026-10-27",
         "2026-10-26",
@@ -567,10 +568,10 @@
         "2026-09-03",
         "2026-09-02",
         "2026-09-01",
-        "2026-08-31",
-        "2026-08-30"
+        "2026-08-31"
       ],
       "stress_reference_endpoints": [
+        "2026-10-29",
         "2026-10-28",
         "2026-10-27",
         "2026-10-26",
@@ -629,25 +630,9 @@
         "2026-09-03",
         "2026-09-02",
         "2026-09-01",
-        "2026-08-31",
-        "2026-08-30"
+        "2026-08-31"
       ],
       "funding_rows": [
-        {
-          "source_timestamp_utc": "2026-08-01T00:00:00.000Z",
-          "funding_rate_percent": 0.00539822210069,
-          "exact_duplicate_count": 1
-        },
-        {
-          "source_timestamp_utc": "2026-08-01T08:00:00.000Z",
-          "funding_rate_percent": 0.00258948940129,
-          "exact_duplicate_count": 1
-        },
-        {
-          "source_timestamp_utc": "2026-08-01T16:00:00.000Z",
-          "funding_rate_percent": -0.00167608519619,
-          "exact_duplicate_count": 1
-        },
         {
           "source_timestamp_utc": "2026-08-02T00:00:00.000Z",
           "funding_rate_percent": 0.0003932477315,
@@ -1982,14 +1967,24 @@
           "source_timestamp_utc": "2026-10-29T16:00:00.000Z",
           "funding_rate_percent": 0.00957877441903,
           "exact_duplicate_count": 1
+        },
+        {
+          "source_timestamp_utc": "2026-10-30T00:00:00.000Z",
+          "funding_rate_percent": 0.01,
+          "exact_duplicate_count": 1
+        },
+        {
+          "source_timestamp_utc": "2026-10-30T08:00:00.000Z",
+          "funding_rate_percent": 0.0054925285925499995,
+          "exact_duplicate_count": 1
+        },
+        {
+          "source_timestamp_utc": "2026-10-30T16:00:00.000Z",
+          "funding_rate_percent": 0.01,
+          "exact_duplicate_count": 1
         }
       ],
       "spot_rows": [
-        {
-          "utc_date": "2026-07-31",
-          "source_timestamp_utc": "2026-07-31T00:00:00.000Z",
-          "price": 64743.33714554026
-        },
         {
           "utc_date": "2026-08-01",
           "source_timestamp_utc": "2026-08-01T00:00:00.000Z",
@@ -2439,18 +2434,23 @@
           "utc_date": "2026-10-29",
           "source_timestamp_utc": "2026-10-29T00:00:00.000Z",
           "price": 81274.37414359077
+        },
+        {
+          "utc_date": "2026-10-30",
+          "source_timestamp_utc": "2026-10-30T00:00:00.000Z",
+          "price": 77838.81456587692
         }
       ],
       "exact_duplicate_collapses": []
     },
     "cache_reuse_current_evidence_eligible": true,
-    "score_eligible_spot_required_utc": "2026-10-29T00:00:00.000Z",
+    "score_eligible_spot_required_utc": "2026-10-30T00:00:00.000Z",
     "exact_duplicate_collapses": []
   },
   "publication": {
-    "score": 24,
+    "score": 28,
     "reason": null,
-    "lastUpdated": "2026-10-29T00:00:00.000Z",
+    "lastUpdated": "2026-10-30T00:00:00.000Z",
     "model_version": "v1.2.0",
     "implementation_revision": "semantic-correctness-2026-09",
     "ssot_version": "2.1.1",
@@ -2459,13 +2459,13 @@
     "factor_key": "term_leverage",
     "r10": {
       "provider": "okx",
-      "raw_funding_observation_utc": "2026-10-30T08:00:00.000Z",
-      "scored_funding_observation_utc": "2026-10-29T16:00:00.000Z",
-      "scored_spot_observation_utc": "2026-10-29T00:00:00.000Z",
-      "raw_spot_observation_utc": "2026-10-30T11:10:00.000Z",
-      "scored_cutoff_D": "2026-10-29",
-      "source_observation_utc": "2026-10-30T08:00:00.000Z",
-      "scored_observation_utc": "2026-10-29T00:00:00.000Z",
+      "raw_funding_observation_utc": "2026-10-31T08:00:00.000Z",
+      "scored_funding_observation_utc": "2026-10-30T16:00:00.000Z",
+      "scored_spot_observation_utc": "2026-10-30T00:00:00.000Z",
+      "raw_spot_observation_utc": "2026-10-31T11:08:10.000Z",
+      "scored_cutoff_D": "2026-10-30",
+      "source_observation_utc": "2026-10-31T08:00:00.000Z",
+      "scored_observation_utc": "2026-10-30T00:00:00.000Z",
       "acquisition": [
         {
           "provider": "bitmex",
@@ -2545,7 +2545,7 @@
         "bitmex": null,
         "binance": null,
         "okx": {
-          "complete_day_count": 94,
+          "complete_day_count": 95,
           "prior_valid_windows": 60,
           "current_window": true,
           "sufficient_reference_windows": true,
@@ -2575,7 +2575,7 @@
         "stress": 0.25
       },
       "normalized_funding_unit": "percent",
-      "score": 24,
+      "score": 28,
       "reason": null,
       "selected_provider": "okx",
       "provider_dispositions": [
@@ -2605,16 +2605,17 @@
         }
       ],
       "cross_provider_splicing": false,
-      "as_of_utc": "2026-10-30T11:11:37.307Z",
-      "common_cutoff_date_D": "2026-10-29",
+      "as_of_utc": "2026-10-31T11:09:47.587Z",
+      "common_cutoff_date_D": "2026-10-30",
       "components": {
         "funding": {
           "state": "OBSERVED",
-          "value": 0.0049363905754068885,
-          "percentile": 0.48333333333333334,
-          "score": 48,
+          "value": 0.005030227583664445,
+          "percentile": 0.5333333333333333,
+          "score": 55,
           "reference_count": 60,
           "reference_endpoints": [
+            "2026-10-29",
             "2026-10-28",
             "2026-10-27",
             "2026-10-26",
@@ -2673,16 +2674,12 @@
             "2026-09-03",
             "2026-09-02",
             "2026-09-01",
-            "2026-08-31",
-            "2026-08-30"
+            "2026-08-31"
           ],
-          "T_utc": "2026-10-29T16:00:00.000Z",
-          "left_boundary_utc": "2026-09-29T16:00:00.000Z",
+          "T_utc": "2026-10-30T16:00:00.000Z",
+          "left_boundary_utc": "2026-09-30T16:00:00.000Z",
           "left_boundary_included": false,
           "settlement_timestamps_used": [
-            "2026-09-30T00:00:00.000Z",
-            "2026-09-30T08:00:00.000Z",
-            "2026-09-30T16:00:00.000Z",
             "2026-10-01T00:00:00.000Z",
             "2026-10-01T08:00:00.000Z",
             "2026-10-01T16:00:00.000Z",
@@ -2769,16 +2766,20 @@
             "2026-10-28T16:00:00.000Z",
             "2026-10-29T00:00:00.000Z",
             "2026-10-29T08:00:00.000Z",
-            "2026-10-29T16:00:00.000Z"
+            "2026-10-29T16:00:00.000Z",
+            "2026-10-30T00:00:00.000Z",
+            "2026-10-30T08:00:00.000Z",
+            "2026-10-30T16:00:00.000Z"
           ]
         },
         "realized_vol": {
           "state": "OBSERVED",
-          "value": 1.2887413703392783,
-          "percentile": 0.05,
-          "score": 6,
+          "value": 1.50174329790135,
+          "percentile": 0.13333333333333333,
+          "score": 10,
           "reference_count": 60,
           "reference_endpoints": [
+            "2026-10-29",
             "2026-10-28",
             "2026-10-27",
             "2026-10-26",
@@ -2837,19 +2838,19 @@
             "2026-09-03",
             "2026-09-02",
             "2026-09-01",
-            "2026-08-31",
-            "2026-08-30"
+            "2026-08-31"
           ],
           "return_count": 30,
           "price_count": 31
         },
         "stress": {
           "state": "OBSERVED",
-          "value": 0.1782380427879967,
-          "percentile": 0.11666666666666667,
-          "score": 9,
+          "value": 0.20047660562677946,
+          "percentile": 0.13333333333333333,
+          "score": 10,
           "reference_count": 60,
           "reference_endpoints": [
+            "2026-10-29",
             "2026-10-28",
             "2026-10-27",
             "2026-10-26",
@@ -2908,11 +2909,9 @@
             "2026-09-03",
             "2026-09-02",
             "2026-09-01",
-            "2026-08-31",
-            "2026-08-30"
+            "2026-08-31"
           ],
           "funding_dates": [
-            "2026-09-30",
             "2026-10-01",
             "2026-10-02",
             "2026-10-03",
@@ -2941,10 +2940,10 @@
             "2026-10-26",
             "2026-10-27",
             "2026-10-28",
-            "2026-10-29"
+            "2026-10-29",
+            "2026-10-30"
           ],
           "spot_return_dates": [
-            "2026-09-30",
             "2026-10-01",
             "2026-10-02",
             "2026-10-03",
@@ -2973,17 +2972,18 @@
             "2026-10-26",
             "2026-10-27",
             "2026-10-28",
-            "2026-10-29"
+            "2026-10-29",
+            "2026-10-30"
           ]
         }
       },
-      "funding_observation_utc": "2026-10-29T16:00:00.000Z",
-      "stress_funding_observation_utc": "2026-10-29T16:00:00.000Z",
-      "spot_observation_utc": "2026-10-29T00:00:00.000Z",
-      "latest_raw_funding_observation_utc": "2026-10-30T08:00:00.000Z",
-      "latest_raw_spot_observation_utc": "2026-10-30T11:10:00.000Z",
-      "lastUpdated": "2026-10-29T00:00:00.000Z",
-      "fingerprint": "074a3d16d39d64f9088a90a5f398f4b38964e8764d0870b2d26437442b50b022",
+      "funding_observation_utc": "2026-10-30T16:00:00.000Z",
+      "stress_funding_observation_utc": "2026-10-30T16:00:00.000Z",
+      "spot_observation_utc": "2026-10-30T00:00:00.000Z",
+      "latest_raw_funding_observation_utc": "2026-10-31T08:00:00.000Z",
+      "latest_raw_spot_observation_utc": "2026-10-31T11:08:10.000Z",
+      "lastUpdated": "2026-10-30T00:00:00.000Z",
+      "fingerprint": "1f9a6c14b399b7bc2abb8e00d2c4111103d49e0ef58f98889783d4724a31c5f4",
       "fingerprint_input": {
         "contract_id": "TERM_SUCCESSOR_SEMANTICS_V1",
         "funding_boundary_rule": "F30_HALF_OPEN",
@@ -3003,6 +3003,7 @@
         "normalized_funding_unit": "percent",
         "selected_provider": "okx",
         "funding_reference_endpoints": [
+          "2026-10-29",
           "2026-10-28",
           "2026-10-27",
           "2026-10-26",
@@ -3061,10 +3062,10 @@
           "2026-09-03",
           "2026-09-02",
           "2026-09-01",
-          "2026-08-31",
-          "2026-08-30"
+          "2026-08-31"
         ],
         "volatility_reference_endpoints": [
+          "2026-10-29",
           "2026-10-28",
           "2026-10-27",
           "2026-10-26",
@@ -3123,10 +3124,10 @@
           "2026-09-03",
           "2026-09-02",
           "2026-09-01",
-          "2026-08-31",
-          "2026-08-30"
+          "2026-08-31"
         ],
         "stress_reference_endpoints": [
+          "2026-10-29",
           "2026-10-28",
           "2026-10-27",
           "2026-10-26",
@@ -3185,25 +3186,9 @@
           "2026-09-03",
           "2026-09-02",
           "2026-09-01",
-          "2026-08-31",
-          "2026-08-30"
+          "2026-08-31"
         ],
         "funding_rows": [
-          {
-            "source_timestamp_utc": "2026-08-01T00:00:00.000Z",
-            "funding_rate_percent": 0.00539822210069,
-            "exact_duplicate_count": 1
-          },
-          {
-            "source_timestamp_utc": "2026-08-01T08:00:00.000Z",
-            "funding_rate_percent": 0.00258948940129,
-            "exact_duplicate_count": 1
-          },
-          {
-            "source_timestamp_utc": "2026-08-01T16:00:00.000Z",
-            "funding_rate_percent": -0.00167608519619,
-            "exact_duplicate_count": 1
-          },
           {
             "source_timestamp_utc": "2026-08-02T00:00:00.000Z",
             "funding_rate_percent": 0.0003932477315,
@@ -4538,14 +4523,24 @@
             "source_timestamp_utc": "2026-10-29T16:00:00.000Z",
             "funding_rate_percent": 0.00957877441903,
             "exact_duplicate_count": 1
+          },
+          {
+            "source_timestamp_utc": "2026-10-30T00:00:00.000Z",
+            "funding_rate_percent": 0.01,
+            "exact_duplicate_count": 1
+          },
+          {
+            "source_timestamp_utc": "2026-10-30T08:00:00.000Z",
+            "funding_rate_percent": 0.0054925285925499995,
+            "exact_duplicate_count": 1
+          },
+          {
+            "source_timestamp_utc": "2026-10-30T16:00:00.000Z",
+            "funding_rate_percent": 0.01,
+            "exact_duplicate_count": 1
           }
         ],
         "spot_rows": [
-          {
-            "utc_date": "2026-07-31",
-            "source_timestamp_utc": "2026-07-31T00:00:00.000Z",
-            "price": 64743.33714554026
-          },
           {
             "utc_date": "2026-08-01",
             "source_timestamp_utc": "2026-08-01T00:00:00.000Z",
@@ -4995,18 +4990,23 @@
             "utc_date": "2026-10-29",
             "source_timestamp_utc": "2026-10-29T00:00:00.000Z",
             "price": 81274.37414359077
+          },
+          {
+            "utc_date": "2026-10-30",
+            "source_timestamp_utc": "2026-10-30T00:00:00.000Z",
+            "price": 77838.81456587692
           }
         ],
         "exact_duplicate_collapses": []
       },
       "cache_reuse_current_evidence_eligible": true,
-      "score_eligible_spot_required_utc": "2026-10-29T00:00:00.000Z",
+      "score_eligible_spot_required_utc": "2026-10-30T00:00:00.000Z",
       "exact_duplicate_collapses": []
     },
     "successor_term_freshness": true,
-    "latest_raw_funding_observation_utc": "2026-10-30T08:00:00.000Z",
-    "funding_observation_utc": "2026-10-29T16:00:00.000Z",
-    "spot_observation_utc": "2026-10-29T00:00:00.000Z",
+    "latest_raw_funding_observation_utc": "2026-10-31T08:00:00.000Z",
+    "funding_observation_utc": "2026-10-30T16:00:00.000Z",
+    "spot_observation_utc": "2026-10-30T00:00:00.000Z",
     "funding_provider": "okx",
     "selected_provider": "okx"
   }

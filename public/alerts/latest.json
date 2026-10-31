@@ -1,12 +1,12 @@
 {
-  "occurred_at": "2026-10-30T11:12:55.894Z",
+  "occurred_at": "2026-10-31T11:11:06.319Z",
   "alerts": [
     {
       "type": "etf_zero_cross",
-      "direction": "up",
-      "from": -108591580.555,
-      "to": 128303700.65000005,
-      "deadband": 23461862
+      "direction": "down",
+      "from": 128303700.65000005,
+      "to": -617697202.3100001,
+      "deadband": 23677788
     }
   ]
 }
