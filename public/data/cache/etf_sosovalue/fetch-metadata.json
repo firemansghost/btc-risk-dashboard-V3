@@ -4,8 +4,8 @@
   "provider": "sosovalue",
   "asset": "BTC",
   "country": "US",
-  "fetched_at_utc": "2026-10-30T11:11:33.666Z",
-  "repository_sha": "b17b226b75d40f82e32f8a0cdeb323aff5ebb71a",
+  "fetched_at_utc": "2026-10-31T11:09:42.817Z",
+  "repository_sha": "0ca1adbbdbd5722f21ca947cad7dccfda7cb095f",
   "capture_mode": "COMMIT",
   "provider_universe": [
     "IBIT",
@@ -25,110 +25,109 @@
   "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
   "summary_row_count": 22,
   "summary_distinct_dates": 22,
-  "summary_earliest": "2026-09-30",
-  "summary_latest": "2026-10-29",
+  "summary_earliest": "2026-10-01",
+  "summary_latest": "2026-10-30",
   "ticker_results": {
     "IBIT": {
       "http_status": 200,
       "row_count": 22,
       "distinct_date_count": 22,
-      "earliest": "2026-09-30",
-      "latest": "2026-10-29",
+      "earliest": "2026-10-01",
+      "latest": "2026-10-30",
       "retried": false
     },
     "FBTC": {
       "http_status": 200,
       "row_count": 22,
       "distinct_date_count": 22,
-      "earliest": "2026-09-30",
-      "latest": "2026-10-29",
+      "earliest": "2026-10-01",
+      "latest": "2026-10-30",
       "retried": false
     },
     "ARKB": {
       "http_status": 200,
       "row_count": 22,
       "distinct_date_count": 22,
-      "earliest": "2026-09-30",
-      "latest": "2026-10-29",
+      "earliest": "2026-10-01",
+      "latest": "2026-10-30",
       "retried": false
     },
     "BTCO": {
       "http_status": 200,
       "row_count": 22,
       "distinct_date_count": 22,
-      "earliest": "2026-09-30",
-      "latest": "2026-10-29",
+      "earliest": "2026-10-01",
+      "latest": "2026-10-30",
       "retried": false
     },
     "BTCW": {
       "http_status": 200,
       "row_count": 22,
       "distinct_date_count": 22,
-      "earliest": "2026-09-30",
-      "latest": "2026-10-29",
+      "earliest": "2026-10-01",
+      "latest": "2026-10-30",
       "retried": false
     },
     "BRRR": {
       "http_status": 200,
       "row_count": 22,
       "distinct_date_count": 22,
-      "earliest": "2026-09-30",
-      "latest": "2026-10-29",
+      "earliest": "2026-10-01",
+      "latest": "2026-10-30",
       "retried": false
     },
     "BITB": {
       "http_status": 200,
       "row_count": 22,
       "distinct_date_count": 22,
-      "earliest": "2026-09-30",
-      "latest": "2026-10-29",
+      "earliest": "2026-10-01",
+      "latest": "2026-10-30",
       "retried": false
     },
     "EZBC": {
       "http_status": 200,
       "row_count": 22,
       "distinct_date_count": 22,
-      "earliest": "2026-09-30",
-      "latest": "2026-10-29",
+      "earliest": "2026-10-01",
+      "latest": "2026-10-30",
       "retried": false
     },
     "HODL": {
       "http_status": 200,
       "row_count": 22,
       "distinct_date_count": 22,
-      "earliest": "2026-09-30",
-      "latest": "2026-10-29",
+      "earliest": "2026-10-01",
+      "latest": "2026-10-30",
       "retried": false
     },
     "GBTC": {
       "http_status": 200,
       "row_count": 22,
       "distinct_date_count": 22,
-      "earliest": "2026-09-30",
-      "latest": "2026-10-29",
+      "earliest": "2026-10-01",
+      "latest": "2026-10-30",
       "retried": false
     },
     "BTC": {
       "http_status": 200,
       "row_count": 22,
       "distinct_date_count": 22,
-      "earliest": "2026-09-30",
-      "latest": "2026-10-29",
+      "earliest": "2026-10-01",
+      "latest": "2026-10-30",
       "retried": false
     },
     "MSBT": {
       "http_status": 200,
       "row_count": 22,
       "distinct_date_count": 22,
-      "earliest": "2026-09-30",
-      "latest": "2026-10-29",
+      "earliest": "2026-10-01",
+      "latest": "2026-10-30",
       "retried": false
     }
   },
   "rate_limit_events": [],
   "complete_observation_count": 22,
   "complete_observation_dates": [
-    "2026-09-30",
     "2026-10-01",
     "2026-10-02",
     "2026-10-05",
@@ -149,11 +148,12 @@
     "2026-10-26",
     "2026-10-27",
     "2026-10-28",
-    "2026-10-29"
+    "2026-10-29",
+    "2026-10-30"
   ],
   "ticker_only_dates": [],
-  "history_before_observation_count": 47,
-  "history_after_observation_count": 48,
+  "history_before_observation_count": 48,
+  "history_after_observation_count": 49,
   "planned_revision_event_count": 0,
   "outcome": "committed"
 }
