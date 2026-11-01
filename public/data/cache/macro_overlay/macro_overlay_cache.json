@@ -33,7 +33,7 @@
     },
     {
       "label": "VIX Level",
-      "value": "19.4 (97%ile)"
+      "value": "19.4 (96%ile)"
     },
     {
       "label": "Yield Curve (10Y-2Y)",
@@ -45,7 +45,7 @@
     },
     {
       "label": "Fetch Time",
-      "value": "315ms"
+      "value": "353ms"
     },
     {
       "label": "Component Scores",
@@ -57,11 +57,11 @@
     }
   ],
   "latestDxyDate": "2026-10-23",
-  "fetchTime": 315,
+  "fetchTime": 353,
   "metrics": {
     "dxy_20d_change_pct": 0.8229036815424263,
     "score": 62
   },
-  "cachedAt": "2026-10-31T11:09:47.906Z",
+  "cachedAt": "2026-11-01T11:09:46.815Z",
   "version": "1.0.0"
 }
