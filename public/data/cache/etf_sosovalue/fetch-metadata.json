@@ -4,8 +4,8 @@
   "provider": "sosovalue",
   "asset": "BTC",
   "country": "US",
-  "fetched_at_utc": "2026-11-02T11:11:44.555Z",
-  "repository_sha": "039a3693b99ba8b5b94be839b7716898d72f1021",
+  "fetched_at_utc": "2026-11-03T11:11:48.412Z",
+  "repository_sha": "3990949532ac68d5a4b7761e7fb19cee307e302c",
   "capture_mode": "COMMIT",
   "provider_universe": [
     "IBIT",
@@ -23,110 +23,110 @@
   ],
   "provider_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
   "scored_universe_fingerprint": "354fff066da9baa3b8ecdbaed4a0b98a32291c2fc7c6cae65a8b7f329fe4ba9e",
-  "summary_row_count": 20,
-  "summary_distinct_dates": 20,
+  "summary_row_count": 21,
+  "summary_distinct_dates": 21,
   "summary_earliest": "2026-10-05",
-  "summary_latest": "2026-10-30",
+  "summary_latest": "2026-11-02",
   "ticker_results": {
     "IBIT": {
       "http_status": 200,
-      "row_count": 20,
-      "distinct_date_count": 20,
+      "row_count": 21,
+      "distinct_date_count": 21,
       "earliest": "2026-10-05",
-      "latest": "2026-10-30",
+      "latest": "2026-11-02",
       "retried": false
     },
     "FBTC": {
       "http_status": 200,
-      "row_count": 20,
-      "distinct_date_count": 20,
+      "row_count": 21,
+      "distinct_date_count": 21,
       "earliest": "2026-10-05",
-      "latest": "2026-10-30",
+      "latest": "2026-11-02",
       "retried": false
     },
     "ARKB": {
       "http_status": 200,
-      "row_count": 20,
-      "distinct_date_count": 20,
+      "row_count": 21,
+      "distinct_date_count": 21,
       "earliest": "2026-10-05",
-      "latest": "2026-10-30",
+      "latest": "2026-11-02",
       "retried": false
     },
     "BTCO": {
       "http_status": 200,
-      "row_count": 20,
-      "distinct_date_count": 20,
+      "row_count": 21,
+      "distinct_date_count": 21,
       "earliest": "2026-10-05",
-      "latest": "2026-10-30",
+      "latest": "2026-11-02",
       "retried": false
     },
     "BTCW": {
       "http_status": 200,
-      "row_count": 20,
-      "distinct_date_count": 20,
+      "row_count": 21,
+      "distinct_date_count": 21,
       "earliest": "2026-10-05",
-      "latest": "2026-10-30",
+      "latest": "2026-11-02",
       "retried": false
     },
     "BRRR": {
       "http_status": 200,
-      "row_count": 20,
-      "distinct_date_count": 20,
+      "row_count": 21,
+      "distinct_date_count": 21,
       "earliest": "2026-10-05",
-      "latest": "2026-10-30",
+      "latest": "2026-11-02",
       "retried": false
     },
     "BITB": {
       "http_status": 200,
-      "row_count": 20,
-      "distinct_date_count": 20,
+      "row_count": 21,
+      "distinct_date_count": 21,
       "earliest": "2026-10-05",
-      "latest": "2026-10-30",
+      "latest": "2026-11-02",
       "retried": false
     },
     "EZBC": {
       "http_status": 200,
-      "row_count": 20,
-      "distinct_date_count": 20,
+      "row_count": 21,
+      "distinct_date_count": 21,
       "earliest": "2026-10-05",
-      "latest": "2026-10-30",
+      "latest": "2026-11-02",
       "retried": false
     },
     "HODL": {
       "http_status": 200,
-      "row_count": 20,
-      "distinct_date_count": 20,
+      "row_count": 21,
+      "distinct_date_count": 21,
       "earliest": "2026-10-05",
-      "latest": "2026-10-30",
+      "latest": "2026-11-02",
       "retried": false
     },
     "GBTC": {
       "http_status": 200,
-      "row_count": 20,
-      "distinct_date_count": 20,
+      "row_count": 21,
+      "distinct_date_count": 21,
       "earliest": "2026-10-05",
-      "latest": "2026-10-30",
+      "latest": "2026-11-02",
       "retried": false
     },
     "BTC": {
       "http_status": 200,
-      "row_count": 20,
-      "distinct_date_count": 20,
+      "row_count": 21,
+      "distinct_date_count": 21,
       "earliest": "2026-10-05",
-      "latest": "2026-10-30",
+      "latest": "2026-11-02",
       "retried": false
     },
     "MSBT": {
       "http_status": 200,
-      "row_count": 20,
-      "distinct_date_count": 20,
+      "row_count": 21,
+      "distinct_date_count": 21,
       "earliest": "2026-10-05",
-      "latest": "2026-10-30",
+      "latest": "2026-11-02",
       "retried": false
     }
   },
   "rate_limit_events": [],
-  "complete_observation_count": 20,
+  "complete_observation_count": 21,
   "complete_observation_dates": [
     "2026-10-05",
     "2026-10-06",
@@ -147,11 +147,12 @@
     "2026-10-27",
     "2026-10-28",
     "2026-10-29",
-    "2026-10-30"
+    "2026-10-30",
+    "2026-11-02"
   ],
   "ticker_only_dates": [],
   "history_before_observation_count": 49,
-  "history_after_observation_count": 49,
+  "history_after_observation_count": 50,
   "planned_revision_event_count": 0,
   "outcome": "committed"
 }
