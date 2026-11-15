@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-11-08T11:33:02.228Z",
-  "lastUpdated": "2026-11-08T11:33:02.228Z",
+  "timestamp": "2026-11-15T11:33:04.496Z",
+  "lastUpdated": "2026-11-15T11:33:04.496Z",
   "dataRange": {
     "startDate": "2023-09-25",
-    "endDate": "2026-11-08",
-    "totalDays": 1074
+    "endDate": "2026-11-15",
+    "totalDays": 1080
   },
   "metadata": {
     "generatedBy": "weekly-backtesting-script",
@@ -869,8 +869,8 @@
         "signalCount": 134,
         "avgGScore": 45.17164179104478,
         "avgPrice": 87825.89432835818,
-        "winRate": 61.417322834645674,
-        "avgReturn30d": 2.297645465560297,
+        "winRate": 60,
+        "avgReturn30d": 1.8686532872753057,
         "avgReturn90d": 1.379625219422138,
         "bestReturn": 43.775524470161706,
         "worstReturn": -29.61892078534587
@@ -4879,15 +4879,39 @@
           "gScore": 64,
           "price": 75828.96,
           "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2026-11-09",
+          "gScore": 64,
+          "price": 73988.79,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2026-11-11",
+          "gScore": 62,
+          "price": 73926.58,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2026-11-12",
+          "gScore": 62,
+          "price": 73336.05,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2026-11-14",
+          "gScore": 63,
+          "price": 67212.01,
+          "originalBand": "Hold & Wait"
         }
       ],
       "performance": {
-        "signalCount": 667,
-        "avgGScore": 55.506746626686656,
-        "avgPrice": 72459.38913043475,
-        "winRate": 53.84615384615385,
-        "avgReturn30d": 3.8514549054357765,
-        "avgReturn90d": 12.350178172981467,
+        "signalCount": 671,
+        "avgGScore": 55.54992548435171,
+        "avgPrice": 72457.34125186285,
+        "winRate": 53.677621283255085,
+        "avgReturn30d": 3.796691610244863,
+        "avgReturn90d": 12.305283758741613,
         "bestReturn": 50.888065829088056,
         "worstReturn": -24.658162131480726
       }
@@ -5913,12 +5937,24 @@
           "gScore": 65,
           "price": 75908.17,
           "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2026-11-10",
+          "gScore": 65,
+          "price": 74227.39,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2026-11-15",
+          "gScore": 66,
+          "price": 65440.45,
+          "originalBand": "Reduce Risk"
         }
       ],
       "performance": {
-        "signalCount": 170,
-        "avgGScore": 71.99411764705883,
-        "avgPrice": 80778.74864705879,
+        "signalCount": 172,
+        "avgGScore": 71.9186046511628,
+        "avgPrice": 80651.48319767439,
         "winRate": 62.721893491124256,
         "avgReturn30d": 3.218178182036621,
         "avgReturn90d": 14.537815295415669,
@@ -6546,8 +6582,8 @@
       "monthlyAmount": 1000,
       "totalInvested": 36000,
       "totalBTC": 0.5390280342080536,
-      "finalValue": 40873.93524484113,
-      "totalReturn": 13.538709013447583,
+      "finalValue": 35274.23712119042,
+      "totalReturn": -2.016007996693285,
       "trades": [
         {
           "date": "2023-09-25",
@@ -6843,8 +6879,8 @@
       "monthlyAmount": 1000,
       "totalInvested": 17500,
       "totalBTC": 0.2672925844966247,
-      "finalValue": 20268.518698091175,
-      "totalReturn": 15.820106846235285,
+      "finalValue": 17491.74701112214,
+      "totalReturn": -0.047159936444908714,
       "trades": [
         {
           "date": "2023-09-25",
@@ -7210,10 +7246,10 @@
     }
   },
   "summary": {
-    "totalDataPoints": 1074,
-    "riskBasedReturn": 15.820106846235285,
-    "dcaReturn": 13.538709013447583,
-    "outperformance": 2.281397832787702,
+    "totalDataPoints": 1080,
+    "riskBasedReturn": -0.047159936444908714,
+    "dcaReturn": -2.016007996693285,
+    "outperformance": 1.9688480602483762,
     "bestPerformingBand": "High Risk",
     "worstPerformingBand": "Regular DCA Buying"
   }
