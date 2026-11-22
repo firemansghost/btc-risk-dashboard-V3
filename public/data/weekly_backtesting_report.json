@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-11-15T11:33:04.496Z",
-  "lastUpdated": "2026-11-15T11:33:04.496Z",
+  "timestamp": "2026-11-22T11:33:16.651Z",
+  "lastUpdated": "2026-11-22T11:33:16.651Z",
   "dataRange": {
     "startDate": "2023-09-25",
-    "endDate": "2026-11-15",
-    "totalDays": 1080
+    "endDate": "2026-11-20",
+    "totalDays": 1084
   },
   "metadata": {
     "generatedBy": "weekly-backtesting-script",
@@ -869,8 +869,8 @@
         "signalCount": 134,
         "avgGScore": 45.17164179104478,
         "avgPrice": 87825.89432835818,
-        "winRate": 60,
-        "avgReturn30d": 1.8686532872753057,
+        "winRate": 59.09090909090909,
+        "avgReturn30d": 1.5178713117854603,
         "avgReturn90d": 1.379625219422138,
         "bestReturn": 43.775524470161706,
         "worstReturn": -29.61892078534587
@@ -4903,15 +4903,27 @@
           "gScore": 63,
           "price": 67212.01,
           "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2026-11-19",
+          "gScore": 63,
+          "price": 63623.69,
+          "originalBand": "Hold & Wait"
+        },
+        {
+          "date": "2026-11-20",
+          "gScore": 62,
+          "price": 61821.78,
+          "originalBand": "Hold & Wait"
         }
       ],
       "performance": {
-        "signalCount": 671,
-        "avgGScore": 55.54992548435171,
-        "avgPrice": 72457.34125186285,
+        "signalCount": 673,
+        "avgGScore": 55.570579494799404,
+        "avgPrice": 72428.41225854379,
         "winRate": 53.677621283255085,
         "avgReturn30d": 3.796691610244863,
-        "avgReturn90d": 12.305283758741613,
+        "avgReturn90d": 12.10564387855577,
         "bestReturn": 50.888065829088056,
         "worstReturn": -24.658162131480726
       }
@@ -5949,12 +5961,24 @@
           "gScore": 66,
           "price": 65440.45,
           "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2026-11-16",
+          "gScore": 66,
+          "price": 64538.32,
+          "originalBand": "Reduce Risk"
+        },
+        {
+          "date": "2026-11-18",
+          "gScore": 66,
+          "price": 64090.33,
+          "originalBand": "Reduce Risk"
         }
       ],
       "performance": {
-        "signalCount": 172,
-        "avgGScore": 71.9186046511628,
-        "avgPrice": 80651.48319767439,
+        "signalCount": 174,
+        "avgGScore": 71.85057471264368,
+        "avgPrice": 80463.69977011491,
         "winRate": 62.721893491124256,
         "avgReturn30d": 3.218178182036621,
         "avgReturn90d": 14.537815295415669,
@@ -6580,10 +6604,10 @@
   "strategyPerformance": {
     "DCA": {
       "monthlyAmount": 1000,
-      "totalInvested": 36000,
-      "totalBTC": 0.5390280342080536,
-      "finalValue": 35274.23712119042,
-      "totalReturn": -2.016007996693285,
+      "totalInvested": 37000,
+      "totalBTC": 0.5545227046612045,
+      "finalValue": 34281.58065256996,
+      "totalReturn": -7.34707931737849,
       "trades": [
         {
           "date": "2023-09-25",
@@ -6872,15 +6896,23 @@
           "btcPurchased": 0.012400704459218918,
           "totalBTC": 0.5390280342080536,
           "totalInvested": 36000
+        },
+        {
+          "date": "2026-11-16",
+          "price": 64538.32,
+          "amount": 1000,
+          "btcPurchased": 0.015494670453150934,
+          "totalBTC": 0.5545227046612045,
+          "totalInvested": 37000
         }
       ]
     },
     "Risk-Based": {
       "monthlyAmount": 1000,
-      "totalInvested": 17500,
-      "totalBTC": 0.2672925844966247,
-      "finalValue": 17491.74701112214,
-      "totalReturn": -0.047159936444908714,
+      "totalInvested": 17750,
+      "totalBTC": 0.2711662521099124,
+      "finalValue": 16763.98038136354,
+      "totalReturn": -5.555040104994136,
       "trades": [
         {
           "date": "2023-09-25",
@@ -7241,15 +7273,25 @@
           "btcPurchased": 0.006200352229609459,
           "totalBTC": 0.2672925844966247,
           "totalInvested": 17500
+        },
+        {
+          "date": "2026-11-16",
+          "price": 64538.32,
+          "band": "Reduce Risk",
+          "mappedBand": "Reduce Risk",
+          "amount": 250,
+          "btcPurchased": 0.0038736676132877334,
+          "totalBTC": 0.2711662521099124,
+          "totalInvested": 17750
         }
       ]
     }
   },
   "summary": {
-    "totalDataPoints": 1080,
-    "riskBasedReturn": -0.047159936444908714,
-    "dcaReturn": -2.016007996693285,
-    "outperformance": 1.9688480602483762,
+    "totalDataPoints": 1084,
+    "riskBasedReturn": -5.555040104994136,
+    "dcaReturn": -7.34707931737849,
+    "outperformance": 1.7920392123843536,
     "bestPerformingBand": "High Risk",
     "worstPerformingBand": "Regular DCA Buying"
   }
