@@ -42,35 +42,35 @@
       "rate_of_change": 0.4,
       "momentum": 0.45
     },
-    "as_of_utc": "2026-11-27T11:11:31.351Z",
-    "as_of_ms": 1795777891351,
-    "as_of_date": "2026-11-27",
+    "as_of_utc": "2026-11-28T11:10:15.580Z",
+    "as_of_ms": 1795864215580,
+    "as_of_date": "2026-11-28",
     "source_contract_validation": {
       "ok": true,
       "reason": null,
       "errors": []
     },
-    "scoring_window_start_date": "2025-11-27",
-    "scoring_window_end_date": "2026-11-27",
-    "selected_common_scoring_date": "2026-11-18",
-    "lastUpdated": "2026-11-18T00:00:00.000Z",
-    "latest_available_walcl_source_date": "2026-11-18",
+    "scoring_window_start_date": "2025-11-28",
+    "scoring_window_end_date": "2026-11-28",
+    "selected_common_scoring_date": "2026-11-25",
+    "lastUpdated": "2026-11-25T00:00:00.000Z",
+    "latest_available_walcl_source_date": "2026-11-25",
     "latest_available_rrp_wew_source_date": "2026-11-25",
-    "latest_available_wtregen_source_date": "2026-11-18",
-    "canonical_input_fingerprint": "fc448ddcefeca010c6c8134fa928e3ca362c68496059a64725a10bc0882466a8",
+    "latest_available_wtregen_source_date": "2026-11-25",
+    "canonical_input_fingerprint": "86dc38f8a8452631544d32e253698ad2ba8fcec02b75aef848efc9586ae7fa23",
     "fingerprint_schema": "ghostgauge_v1_2_net_liquidity_input_fingerprint_v1",
-    "canonical_common_wednesday_count": 51,
+    "canonical_common_wednesday_count": 52,
     "source_provenance": {
       "WALCL": {
         "series_id": "WALCL",
         "query_semantics": "NATIVE",
         "usd_multiplier": 1000000,
-        "eligible_in_window_row_count": 51,
+        "eligible_in_window_row_count": 52,
         "excluded_non_finite_count": 0,
         "excluded_non_wednesday_count": 0,
         "excluded_outside_window_or_after_asof_count": 5,
         "excluded_malformed_date_count": 0,
-        "latest_available_eligible_source_date": "2026-11-18",
+        "latest_available_eligible_source_date": "2026-11-25",
         "provider_source_provenance": {
           "status": "UNPROVEN",
           "provider": null,
@@ -85,7 +85,7 @@
         "eligible_in_window_row_count": 52,
         "excluded_non_finite_count": 0,
         "excluded_non_wednesday_count": 0,
-        "excluded_outside_window_or_after_asof_count": 5,
+        "excluded_outside_window_or_after_asof_count": 6,
         "excluded_malformed_date_count": 0,
         "latest_available_eligible_source_date": "2026-11-25",
         "provider_source_provenance": {
@@ -98,12 +98,12 @@
         "series_id": "WTREGEN",
         "query_semantics": "NATIVE",
         "usd_multiplier": 1000000,
-        "eligible_in_window_row_count": 51,
+        "eligible_in_window_row_count": 52,
         "excluded_non_finite_count": 0,
         "excluded_non_wednesday_count": 0,
         "excluded_outside_window_or_after_asof_count": 5,
         "excluded_malformed_date_count": 0,
-        "latest_available_eligible_source_date": "2026-11-18",
+        "latest_available_eligible_source_date": "2026-11-25",
         "provider_source_provenance": {
           "status": "UNPROVEN",
           "provider": null,
@@ -468,23 +468,30 @@
         "rrp_usd": 288000000,
         "wtregen_usd": 916613000000,
         "net_liquidity_usd": 5824551000000
+      },
+      {
+        "date": "2026-11-25",
+        "walcl_usd": 6732044000000,
+        "rrp_usd": 351000000,
+        "wtregen_usd": 902038000000,
+        "net_liquidity_usd": 5829655000000
       }
     ],
-    "score": 32,
+    "score": 33,
     "reason": null,
     "component_scores": {
-      "level": 34,
-      "rate_of_change": 36,
-      "momentum": 27
+      "level": 28,
+      "rate_of_change": 16,
+      "momentum": 50
     },
-    "level_percentile": 0.6078431372549019,
-    "roc4w_pct": 0.40281439147842774,
-    "net_liquidity_usd": 5824551000000
+    "level_percentile": 0.6538461538461539,
+    "roc4w_pct": 1.4615858148656808,
+    "net_liquidity_usd": 5829655000000
   },
   "publication": {
-    "score": 32,
+    "score": 33,
     "reason": null,
-    "lastUpdated": "2026-11-18T00:00:00.000Z",
+    "lastUpdated": "2026-11-25T00:00:00.000Z",
     "model_version": "v1.2.0",
     "implementation_revision": "semantic-correctness-2026-09",
     "ssot_version": "2.1.1",
@@ -493,12 +500,12 @@
     "factor_key": "net_liquidity",
     "r10": {
       "provider": "fred",
-      "source_observation_utc": "2026-11-18T00:00:00.000Z",
-      "scored_observation_utc": "2026-11-18T00:00:00.000Z",
-      "selected_scoring_date": "2026-11-18",
-      "latest_walcl_date": "2026-11-18",
+      "source_observation_utc": "2026-11-25T00:00:00.000Z",
+      "scored_observation_utc": "2026-11-25T00:00:00.000Z",
+      "selected_scoring_date": "2026-11-25",
+      "latest_walcl_date": "2026-11-25",
       "latest_rrp_date": "2026-11-25",
-      "latest_wtregen_date": "2026-11-18",
+      "latest_wtregen_date": "2026-11-25",
       "acquisition": "fred_native_and_rrp_wew",
       "series_acquisition": {
         "WALCL": {
@@ -571,35 +578,35 @@
         "rate_of_change": 0.4,
         "momentum": 0.45
       },
-      "as_of_utc": "2026-11-27T11:11:31.351Z",
-      "as_of_ms": 1795777891351,
-      "as_of_date": "2026-11-27",
+      "as_of_utc": "2026-11-28T11:10:15.580Z",
+      "as_of_ms": 1795864215580,
+      "as_of_date": "2026-11-28",
       "source_contract_validation": {
         "ok": true,
         "reason": null,
         "errors": []
       },
-      "scoring_window_start_date": "2025-11-27",
-      "scoring_window_end_date": "2026-11-27",
-      "selected_common_scoring_date": "2026-11-18",
-      "lastUpdated": "2026-11-18T00:00:00.000Z",
-      "latest_available_walcl_source_date": "2026-11-18",
+      "scoring_window_start_date": "2025-11-28",
+      "scoring_window_end_date": "2026-11-28",
+      "selected_common_scoring_date": "2026-11-25",
+      "lastUpdated": "2026-11-25T00:00:00.000Z",
+      "latest_available_walcl_source_date": "2026-11-25",
       "latest_available_rrp_wew_source_date": "2026-11-25",
-      "latest_available_wtregen_source_date": "2026-11-18",
-      "canonical_input_fingerprint": "fc448ddcefeca010c6c8134fa928e3ca362c68496059a64725a10bc0882466a8",
+      "latest_available_wtregen_source_date": "2026-11-25",
+      "canonical_input_fingerprint": "86dc38f8a8452631544d32e253698ad2ba8fcec02b75aef848efc9586ae7fa23",
       "fingerprint_schema": "ghostgauge_v1_2_net_liquidity_input_fingerprint_v1",
-      "canonical_common_wednesday_count": 51,
+      "canonical_common_wednesday_count": 52,
       "source_provenance": {
         "WALCL": {
           "series_id": "WALCL",
           "query_semantics": "NATIVE",
           "usd_multiplier": 1000000,
-          "eligible_in_window_row_count": 51,
+          "eligible_in_window_row_count": 52,
           "excluded_non_finite_count": 0,
           "excluded_non_wednesday_count": 0,
           "excluded_outside_window_or_after_asof_count": 5,
           "excluded_malformed_date_count": 0,
-          "latest_available_eligible_source_date": "2026-11-18",
+          "latest_available_eligible_source_date": "2026-11-25",
           "provider_source_provenance": {
             "status": "UNPROVEN",
             "provider": null,
@@ -614,7 +621,7 @@
           "eligible_in_window_row_count": 52,
           "excluded_non_finite_count": 0,
           "excluded_non_wednesday_count": 0,
-          "excluded_outside_window_or_after_asof_count": 5,
+          "excluded_outside_window_or_after_asof_count": 6,
           "excluded_malformed_date_count": 0,
           "latest_available_eligible_source_date": "2026-11-25",
           "provider_source_provenance": {
@@ -627,12 +634,12 @@
           "series_id": "WTREGEN",
           "query_semantics": "NATIVE",
           "usd_multiplier": 1000000,
-          "eligible_in_window_row_count": 51,
+          "eligible_in_window_row_count": 52,
           "excluded_non_finite_count": 0,
           "excluded_non_wednesday_count": 0,
           "excluded_outside_window_or_after_asof_count": 5,
           "excluded_malformed_date_count": 0,
-          "latest_available_eligible_source_date": "2026-11-18",
+          "latest_available_eligible_source_date": "2026-11-25",
           "provider_source_provenance": {
             "status": "UNPROVEN",
             "provider": null,
@@ -997,18 +1004,25 @@
           "rrp_usd": 288000000,
           "wtregen_usd": 916613000000,
           "net_liquidity_usd": 5824551000000
+        },
+        {
+          "date": "2026-11-25",
+          "walcl_usd": 6732044000000,
+          "rrp_usd": 351000000,
+          "wtregen_usd": 902038000000,
+          "net_liquidity_usd": 5829655000000
         }
       ],
-      "score": 32,
+      "score": 33,
       "reason": null,
       "component_scores": {
-        "level": 34,
-        "rate_of_change": 36,
-        "momentum": 27
+        "level": 28,
+        "rate_of_change": 16,
+        "momentum": 50
       },
-      "level_percentile": 0.6078431372549019,
-      "roc4w_pct": 0.40281439147842774,
-      "net_liquidity_usd": 5824551000000
+      "level_percentile": 0.6538461538461539,
+      "roc4w_pct": 1.4615858148656808,
+      "net_liquidity_usd": 5829655000000
     }
   }
 }
